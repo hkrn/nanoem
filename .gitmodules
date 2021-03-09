@@ -1,0 +1,75 @@
+[submodule "dependencies/glm"]
+	path = dependencies/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "dependencies/stb"]
+	path = dependencies/stb
+	url = https://github.com/nothings/stb.git
+[submodule "dependencies/bullet3"]
+	path = dependencies/bullet3
+	url = https://github.com/bulletphysics/bullet3.git
+[submodule "dependencies/minizip"]
+	path = dependencies/minizip
+	url = https://github.com/nmoinvaz/minizip.git
+[submodule "dependencies/zlib"]
+	path = dependencies/zlib
+	url = https://github.com/madler/zlib.git
+[submodule "dependencies/bx"]
+	path = dependencies/bx
+	url = https://github.com/bkaradzic/bx.git
+[submodule "dependencies/protobuf-c"]
+	path = dependencies/protobuf-c
+	url = https://github.com/protobuf-c/protobuf-c.git
+[submodule "dependencies/par"]
+	path = dependencies/par
+	url = https://github.com/prideout/par/
+[submodule "dependencies/SPIRV-Cross"]
+	path = dependencies/spirv-cross
+	url = https://github.com/KhronosGroup/SPIRV-Cross.git
+[submodule "dependencies/glslang"]
+	path = dependencies/glslang
+	url = https://github.com/KhronosGroup/glslang.git
+[submodule "dependencies/bimg"]
+	path = dependencies/bimg
+	url = https://github.com/bkaradzic/bimg.git
+[submodule "dependencies/nanomsg"]
+	path = dependencies/nanomsg
+	url = https://github.com/nanomsg/nanomsg.git
+[submodule "dependencies/SPIRV-Tools"]
+	path = dependencies/spirv-tools
+	url = https://github.com/KhronosGroup/SPIRV-Tools.git
+[submodule "dependencies/sokol"]
+	path = dependencies/sokol
+	url = https://github.com/hkrn/sokol
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "dependencies/lz4"]
+	path = dependencies/lz4
+	url = https://github.com/lz4/lz4.git
+[submodule "dependencies/Catch2"]
+	path = dependencies/catch2
+	url = https://github.com/catchorg/Catch2.git
+[submodule "dependencies/ImGuizmo"]
+	path = dependencies/imguizmo
+	url = https://github.com/CedricGuillemet/ImGuizmo.git
+[submodule "dependencies/debug-draw"]
+	path = dependencies/debug-draw
+	url = https://github.com/glampert/debug-draw
+[submodule "dependencies/l-smash"]
+	path = dependencies/l-smash
+	url = https://github.com/l-smash/l-smash.git
+[submodule "dependencies/mimalloc"]
+	path = dependencies/mimalloc
+	url = https://github.com/microsoft/mimalloc.git
+[submodule "dependencies/sentry-native"]
+	path = dependencies/sentry-native
+	url = https://github.com/getsentry/sentry-native.git
+[submodule "dependencies/libsoundio"]
+	path = dependencies/libsoundio
+	url = https://github.com/andrewrk/libsoundio
+[submodule "dependencies/nativefiledialog"]
+	path = dependencies/nativefiledialog
+	url = https://github.com/mlabbe/nativefiledialog
+[submodule "dependencies/tbb"]
+	path = dependencies/tbb
+	url = https://github.com/wjakob/tbb.git

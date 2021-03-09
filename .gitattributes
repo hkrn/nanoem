@@ -1,0 +1,17 @@
+*.c  eol=lf
+*.in eol=lf
+*.cc eol=lf
+*.h  eol=lf
+*.sh eol=lf
+*.m  eol=lf
+*.mm eol=lf
+*.md eol=lf
+*.rb eol=lf
+*.fx eol=lf
+*.rst  eol=lf
+*.yml  eol=lf
+*.diff eol=lf
+*.hlsl eol=lf
+*.json eol=lf
+*.cmake eol=lf
+*.proto eol=lf

@@ -1,0 +1,12 @@
+# AVFoundation plugin
+option(${PROJECT_NAME_PREFIX}_INSTALL_AVFOUNDATION_PLUGIN OFF)
+if(${PROJECT_NAME_PREFIX}_INSTALL_AVFOUNDATION_PLUGIN)
+  set(_plugin_name plugin_avfoundation)
+  add_library(${_plugin_name} SHARED ${CMAKE_CURRENT_SOURCE_DIR}/avfoundation.mm)
+  set_property(TARGET ${_plugin_name} PROPERTY FOLDER plugins)
+  set_property(TARGET ${_plugin_name} APPEND PROPERTY COMPILE_OPTIONS "-fobjc-arc")
+  set_property(TARGET ${_plugin_name} APPEND PROPERTY INCLUDE_DIRECTORIES ${PROJECT_SOURCE_DIR}/emapp/include)
+  set_target_properties(${_plugin_name} PROPERTIES OUTPUT_NAME ${_plugin_name} PREFIX "" DEFINE_SYMBOL "")
+  target_link_libraries(${_plugin_name} "-framework Foundation -framework CoreGraphics -framework AudioToolbox -framework CoreMedia -framework CoreVideo -framework AVFoundation")
+  nanoem_emapp_plugin_install(${_plugin_name})
+endif()

@@ -1,0 +1,50 @@
+<html>
+<head>
+<script type="text/javascript">
+function roundedRect(ctx,x,y,width,height,radius){
+  ctx.beginPath();
+  ctx.moveTo(x,y+radius);
+  ctx.lineTo(x,y+height-radius);
+  ctx.quadraticCurveTo(x,y+height,x+radius,y+height);
+  ctx.lineTo(x+width-radius,y+height);
+  ctx.quadraticCurveTo(x+width,y+height,x+width,y+height-radius);
+  ctx.lineTo(x+width,y+radius);
+  ctx.quadraticCurveTo(x+width,y,x+width-radius,y);
+  ctx.lineTo(x+radius,y);
+  ctx.quadraticCurveTo(x,y,x,y+radius);
+  ctx.fill();
+}
+function onLoad(event) {
+  var e = document.getElementById("logo")
+  var ctx = e.getContext("2d")
+  var width = e.width, height = e.height
+  var radius = 50,
+      margin = radius * 0.5,
+      header_height = 100,
+      column_width = 250,
+      timeline_height = 200,
+      timeline_offset_y = height - timeline_height - margin,
+      column_height = timeline_offset_y - header_height - margin * 3
+  ctx.fillStyle = "lightgray"
+  ctx.globalAlpha = 1.0
+  ctx.rect(0, 0, e.width, e.height)
+  ctx.fill()
+  ctx.fillStyle = "rgb(0, 0, 0)"
+  ctx.globalAlpha = 0.75
+  roundedRect(ctx, margin, margin, width - margin * 2, header_height, radius)
+  roundedRect(ctx, margin, header_height + margin * 2, column_width, column_height, radius)
+  roundedRect(ctx, width - column_width - margin, header_height + margin * 2, column_width, column_height, radius)
+  ctx.fillStyle = "rgb(51, 51, 51)"
+  ctx.globalAlpha = 1.0
+  roundedRect(ctx, margin, timeline_offset_y, width - margin * 2, timeline_height, radius)
+  console.log(ctx)
+}
+</script>
+</head>
+<body onload="onLoad(event)">
+<div>
+<canvas id="logo" width="1024" height="1024">
+</canvas>
+</div>
+</body>
+</html>

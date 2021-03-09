@@ -1,0 +1,9 @@
+/* THIS IS AUTOMATICALLY GENERATED FILE BY CMAKE AND ALL CHANGES WILL BE LOST */
+
+#include "nanoem/nanoem.h"
+
+const char *APIENTRY
+nanoemGetVersionString(void)
+{
+    return "@NANOEM_VERSION_GIT@";
+}

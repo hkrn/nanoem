@@ -1,0 +1,1631 @@
+syntax = "proto2";
+
+import "common.proto";
+
+package nanoem.application;
+
+message URI {
+  required string absolute_path = 1;
+  required string fragment = 2;
+};
+
+message Archive {
+  message Entry {
+    required string name = 1;
+    required bytes data = 2;
+  };
+  repeated Entry entries = 1;
+};
+
+message Bone {
+  required int32 index = 1;
+  required string name = 2;
+};
+
+message Morph {
+  required int32 index = 1;
+  required string name = 2;
+};
+
+message OutsideParent {
+  optional int32 parent_model_handle = 1;
+  optional int32 parent_model_bone_index = 2;
+  optional int32 bone_index = 3;
+};
+
+message BoneInterpolation {
+  required nanoem.common.Interpolation x = 1;
+  required nanoem.common.Interpolation y = 2;
+  required nanoem.common.Interpolation z = 3;
+  required nanoem.common.Interpolation orientation = 4;
+};
+
+message CameraInterpolation {
+  required nanoem.common.Interpolation x = 1;
+  required nanoem.common.Interpolation y = 2;
+  required nanoem.common.Interpolation z = 3;
+  required nanoem.common.Interpolation angle = 4;
+  required nanoem.common.Interpolation fov = 5;
+  required nanoem.common.Interpolation distance = 6;
+};
+
+message Plugin {
+  required string name = 1;
+  required string author = 2;
+  required string description = 3;
+  repeated string functions = 4;
+};
+
+message InitializeCommand {
+  required uint32 renderer_type = 1;
+  required uint32 vendor_id = 2;
+  required uint32 device_id = 3;
+  required uint32 window_width = 4;
+  required uint32 window_height = 5;
+  required float window_device_pixel_ratio = 6;
+  required uint32 preferred_editing_fps = 7;
+  required string sokol_dll_path = 8;
+  required uint32 buffer_pool_size = 9;
+  required uint32 image_pool_size = 10;
+  required uint32 shader_pool_size = 11;
+  required uint32 pipeline_pool_size = 12;
+  required uint32 pass_pool_size = 13;
+  required uint32 mtl_global_uniform_buffer_size = 14;
+  optional uint32 pixel_format = 15;
+  optional float viewport_viewport_pixel_ratio = 16;
+};
+message RenderFrameCommand {
+};
+message DestroyCommand {
+};
+message TerminateCommand {
+};
+message WindowResizedCommand {
+  required uint32 width = 1;
+  required uint32 height = 2;
+};
+message ViewportResizedCommand {
+  required uint32 width = 1;
+  required uint32 height = 2;
+};
+message ActivateCommand {
+};
+message DeactivateCommand {
+};
+message CursorPressedCommand {
+  required int32 type = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 modifiers = 4;
+};
+message CursorMovedCommand {
+  required int32 type = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 delta_x = 4;
+  required int32 delta_y = 5;
+  required int32 modifiers = 6;
+};
+message CursorReleasedCommand {
+  required int32 type = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 modifiers = 4;
+};
+message CursorScrolledCommand {
+  required int32 x = 1;
+  required int32 y = 2;
+  required int32 delta_x = 3;
+  required int32 delta_y = 4;
+  optional int32 modifiers = 5;
+};
+message PointerPressedCommand {
+  required int32 type = 1;
+  required float x = 2;
+  required float y = 3;
+};
+message PointerMovedCommand {
+  required int32 type = 1;
+  required float x = 2;
+  required float y = 3;
+  required float delta_x = 4;
+  required float delta_y = 5;
+};
+message PointerReleasedCommand {
+  required int32 type = 1;
+  required float x = 2;
+  required float y = 3;
+};
+message PointerScrolledCommand {
+  required float x = 1;
+  required float y = 2;
+  required float delta_x = 3;
+  required float delta_y = 4;
+  optional int32 modifiers = 5;
+};
+message KeyPressedCommand {
+  required uint32 value = 1;
+};
+message KeyReleasedCommand {
+  required uint32 value = 1;
+};
+message UnicodeInputCommand {
+  required uint32 value = 1;
+};
+message MenuActionCommand {
+  required uint32 value = 1;
+};
+message DropFileCommand {
+  required URI file_uri = 1;
+};
+message LoadFileCommand {
+  required URI file_uri = 1;
+  required uint32 type = 2;
+};
+message SaveFileCommand {
+  required URI file_uri = 1;
+  required uint32 type = 2;
+};
+message NewProjectCommand {
+};
+message ConfirmBeforeNewProjectCommand {
+};
+message ConfirmBeforeOpenProjectCommand {
+};
+message ConfirmBeforeExitApplicationCommand {
+};
+message ChangeDevicePixelRatioCommand {
+  required float value = 1;
+};
+message ExportImageCommand {
+  required URI file_uri = 1;
+  optional uint32 width = 2;
+  optional uint32 height = 3;
+};
+message ExportVideoCommand {
+  required URI file_uri = 1;
+  optional uint32 width = 2;
+  optional uint32 height = 3;
+};
+message SetActiveAccessoryCommand {
+  required uint32 accessory_handle = 1;
+};
+message SetActiveModelCommand {
+  required uint32 model_handle = 1;
+};
+message SetActiveModelBoneCommand {
+  required string name = 1;
+};
+message SetActiveModelMorphCommand {
+  required string name = 1;
+  optional bool apply_category = 2;
+};
+message LoadAllDecoderPluginsCommand {
+  repeated URI file_uris = 1;
+};
+message LoadAllEncoderPluginsCommand {
+  repeated URI file_uris = 1;
+};
+message StartRecordingViewportPassCommand {
+};
+message StopRecordingViewportPassCommand {
+};
+message SeekCommand {
+  required uint64 local_frame_index = 1;
+};
+message SetCameraLookAtCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional bool can_undo = 4;
+};
+message SetCameraAngleCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional bool can_undo = 4;
+};
+message SetCameraFovCommand {
+  required int32 fov = 1;
+  optional bool can_undo = 2;
+};
+message SetCameraDistanceCommand {
+  required float distance = 1;
+  optional bool can_undo = 2;
+};
+message SetLightColorCommand {
+  required float red = 1;
+  required float green = 2;
+  required float blue = 3;
+  optional bool can_undo = 4;
+};
+message SetLightDirectionCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional bool can_undo = 4;
+};
+message SetAccessoryTranslationCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional uint32 accessory_handle = 4;
+  optional bool can_undo = 5;
+};
+message SetAccessoryOrientationCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional uint32 accessory_handle = 4;
+  optional bool can_undo = 5;
+};
+message SetAccessoryScaleFactorCommand {
+  required float scale_factor = 1;
+  optional uint32 accessory_handle = 2;
+  optional bool can_undo = 3;
+};
+message SetAccessoryOpacityCommand {
+  required float opacity = 1;
+  optional uint32 accessory_handle = 2;
+  optional bool can_undo = 3;
+};
+message SetModelMorphWeightCommand {
+  required float weight = 1;
+  optional uint32 model_handle = 2;
+  optional string morph_name = 3;
+  optional bool can_undo = 4;
+};
+message SetModelBoneTranslationCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  optional uint32 model_handle = 4;
+  optional string bone_name = 5;
+  optional bool can_undo = 6;
+};
+message SetModelBoneOrientationCommand {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  required float w = 4;
+  optional uint32 model_handle = 5;
+  optional string bone_name = 6;
+  optional bool can_undo = 7;
+};
+message UpdateModelCommand {
+  optional uint32 model_handle = 1;
+};
+message RegisterAccessoryKeyframeCommand {
+  optional uint32 accessory_handle = 1;
+};
+message RegisterAllSelectedBoneKeyframesCommand {
+  optional uint32 model_handle = 1;
+  repeated string bone_names = 2;
+};
+message RegisterCameraKeyframeCommand {
+};
+message RegisterLightKeyframeCommand {
+};
+message RegisterModelKeyframeCommand {
+  optional uint32 model_handle = 1;
+};
+message RegisterAllSelectedMorphKeyframesCommand {
+  optional uint32 model_handle = 1;
+  repeated string morph_names = 2;
+};
+message RegisterSelfShadowKeyframeCommand {
+};
+message RemoveAccessoryKeyframeCommand {
+  optional uint32 accessory_handle = 1;
+};
+message RemoveAllSelectedBoneKeyframesCommand {
+  optional uint32 model_handle = 1;
+  repeated string bone_names = 2;
+};
+message RemoveCameraKeyframeCommand {
+};
+message RemoveLightKeyframeCommand {
+};
+message RemoveModelKeyframeCommand {
+  optional uint32 model_handle = 1;
+};
+message RemoveAllSelectedMorphKeyframesCommand {
+  optional uint32 model_handle = 1;
+  repeated string morph_names = 2;
+};
+message RemoveSelfShadowKeyframeCommand {
+};
+message SetBoneBezierControlPointCommand {
+  required uint32 type = 1;
+  required uint32 x0 = 2;
+  required uint32 y0 = 3;
+  required uint32 x1 = 4;
+  required uint32 y1 = 5;
+  optional uint32 model_handle = 6;
+  optional string bone_name = 7;
+};
+message SetCameraBezierControlPointCommand {
+  required uint32 type = 1;
+  required uint32 x0 = 2;
+  required uint32 y0 = 3;
+  required uint32 x1 = 4;
+  required uint32 y1 = 5;
+};
+message SelectBoneCommand {
+  required string bone_name = 1;
+  optional uint32 model_handle = 2;
+};
+message SelectAllBonesCommand {
+  optional uint32 model_handle = 1;
+};
+message SelectAllDirtyBonesCommand {
+  optional uint32 model_handle = 1;
+};
+message SelectAllMovableBonesCommand {
+  optional uint32 model_handle = 1;
+};
+message ClearSelectBoneCommand {
+  required string bone_name = 1;
+  optional uint32 model_handle = 2;
+};
+message ClearSelectAllBonesCommand {
+  optional uint32 model_handle = 1;
+};
+message SelectMotionKeyframeCommand {
+  required uint64 local_frame_index = 1;
+  optional uint32 motion_handle = 2;
+  optional string track_name = 3;
+};
+message SelectAllRowMotionKeyframesCommand {
+  required string track_name = 1;
+  optional uint32 motion_handle = 2;
+};
+message SelectAllColumnMotionKeyframesCommand {
+  required uint64 local_frame_index = 1;
+  optional uint32 motion_handle = 2;
+};
+message ClearSelectAllMotionKeyframesCommand {
+  optional uint32 motion_handle = 1;
+};
+message UpdateCurrentFPSCommand {
+  required uint32 value = 1;
+};
+message StartDebugCaptureCommand {
+};
+message StopDebugCaptureCommand {
+};
+message ReloadAccessoryEffectCommand {
+  required uint32 accessory_handle = 1;
+};
+message ReloadModelEffectCommand {
+  required uint32 model_handle = 1;
+};
+message SetModelVisibleCommand {
+  required uint32 model_handle = 1;
+  required bool value = 2;
+};
+message SetModelEdgeColorCommand {
+  required uint32 model_handle = 1;
+  required float red = 2;
+  required float blue = 3;
+  required float green = 4;
+  required float alpha = 5;
+};
+message SetModelEdgeSizeCommand {
+  required uint32 model_handle = 1;
+  required float value = 2;
+};
+message SetModelConstraintStateCommand {
+  required uint32 model_handle = 1;
+  required string constraint_name = 2;
+  required bool value = 3;
+};
+message SetModelOutsideParentCommand {
+  required uint32 model_handle = 1;
+  required string bone_name = 2;
+  required string parent_model_name = 3;
+  required string parent_model_bone_name = 4;
+};
+message SetAccessoryOutsideParentCommand {
+  required uint32 accessory_handle = 1;
+  required string parent_model_name = 2;
+  required string parent_model_bone_name = 3;
+};
+message RecoveryCommand {
+  required URI file_uri = 1;
+};
+message SetEffectPluginEnabledCommand {
+  required bool value = 1;
+};
+message SavePointCommand {
+  required URI file_uri = 1;
+  repeated RedoLoadAccessoryCommand accessories = 2;
+  repeated RedoLoadModelCommand models = 3;
+};
+message SetAccessoryAddBlendEnabledCommand {
+  required uint32 accessory_handle = 1;
+  required bool value = 2;
+};
+message SetAccessoryShadowEnabledCommand {
+  required uint32 accessory_handle = 1;
+  required bool value = 2;
+};
+message SetAccessoryVisibleCommand {
+  required uint32 accessory_handle = 1;
+  required bool value = 2;
+};
+message SetModelAddBlendEnabledCommand {
+  required uint32 model_handle = 1;
+  required bool value = 2;
+};
+message SetModelShadowEnabledCommand {
+  required uint32 model_handle = 1;
+  required bool value = 2;
+};
+message SetModelShadowMapEnabledCommand {
+  required uint32 model_handle = 1;
+  required bool value = 2;
+};
+message SetDrawableOrderIndexCommand {
+  required uint32 handle = 1;
+  required uint32 value = 2;
+};
+message SetModelTransformOrderIndexCommand {
+  required uint32 model_handle = 1;
+  required uint32 value = 2;
+};
+message SetModelPhysicsSimulationEnabledCommand {
+  required uint32 model_handle = 1;
+  required bool value = 2;
+  optional string bone_name = 3;
+};
+message SetModelBoneKeyframeInterpolationCommand {
+  required uint32 model_handle = 1;
+  required string bone_name = 2;
+  required BoneInterpolation interpolation = 3;
+};
+message SetCameraKeyframeInterpolationCommand {
+  required CameraInterpolation interpolation = 1;
+};
+message UpdatePerformanceMonitorCommand {
+  required float current_cpu_percentage = 1;
+  required uint64 current_resident_memory_bytes = 2;
+  required uint64 max_resident_memory_bytes = 3;
+};
+message LoadAllModelIOPluginsCommand {
+  repeated URI file_uris = 1;
+};
+message LoadAllMotionIOPluginsCommand {
+  repeated URI file_uris = 1;
+};
+message ExecuteModelIOPluginCommand {
+  required uint32 plugin_handle = 1;
+  required uint32 function_handle = 2;
+};
+message ExecuteMotionIOPluginCommand {
+  required uint32 plugin_handle = 1;
+  required uint32 function_handle = 2;
+};
+message RequestExportImageConfigurationCommand {
+};
+message RequestExportVideoConfigurationCommand {
+};
+message ExecuteExportingImageCommand {
+  required URI file_uri = 1;
+};
+message ExecuteExportingVideoCommand {
+  required URI file_uri = 1;
+};
+message ScreenCursorPressCommand {
+  required int32 type = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 modifiers = 4;
+};
+message ScreenCursorMoveCommand {
+  required int32 type = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 modifiers = 4;
+};
+message ScreenCursorReleaseCommand {
+  required int32 type = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+  required int32 modifiers = 4;
+};
+message ConfirmBeforeExportingImageCommand {
+};
+message ConfirmBeforeExportingVideoCommand {
+};
+
+message UndoCommand {
+  optional uint32 model_handle = 1;
+};
+message RedoLoadAccessoryCommand {
+  required uint32 accessory_handle = 1;
+  required string name = 2;
+  oneof content {
+    Archive archive = 3;
+    URI file_uri = 4;
+  };
+};
+message RedoLoadModelCommand {
+  required uint32 model_handle = 1;
+  required string name = 2;
+  oneof content {
+    Archive archive = 3;
+    URI file_uri = 4;
+  };
+  repeated Bone bones = 5;
+  repeated Morph morphs = 6;
+};
+message RedoLoadMotionCommand {
+  enum Type {
+    ACCESSORY = 1;
+    CAMERA = 2;
+    LIGHT = 3;
+    MODEL = 4;
+    SELF_SHADOW = 5;
+  };
+  required Type type = 1;
+  optional uint32 handle = 2;
+  oneof content {
+    Archive archive = 3;
+    URI file_uri = 4;
+  };
+};
+message RedoTransformBoneCommand {
+  message State {
+    required int32 bone_index = 1;
+    required nanoem.common.Vector3 local_morph_translation = 2;
+    required nanoem.common.Vector3 local_user_translation = 3;
+    required nanoem.common.Quaternion local_morph_orientation = 4;
+    required nanoem.common.Quaternion local_user_orientation = 5;
+    required BoneInterpolation interpolation = 6;
+  };
+  required uint32 model_handle = 1;
+  repeated State last_bone_states = 2;
+  repeated State current_bone_states = 3;
+  repeated int32 dirty_bone_indices = 4;
+};
+message RedoTransformMorphCommand {
+  message State {
+    required int32 morph_index = 1;
+    required float weight = 2;
+  };
+  required uint32 model_handle = 1;
+  repeated State last_bind_pose = 2;
+  repeated State current_bind_pose = 3;
+};
+message RedoAccessoryKeyframeCommand {
+  message State {
+    required nanoem.common.Vector3 translation = 1;
+    required nanoem.common.Quaternion orientation = 2;
+    required float scale_factor = 3;
+    required float opacity = 4;
+    required bool is_shadow_enabled = 5;
+    required bool is_blend_enabled = 6;
+    required bool is_visible = 7;
+    required OutsideParent outside_parent = 8;
+  };
+  message Keyframe {
+    required uint32 accessory_handle = 1;
+    required uint64 frame_index = 2;
+    required State current_state = 3;
+    required State last_state = 4;
+  };
+  required uint32 accessory_handle = 1;
+  repeated Keyframe keyframes = 2;
+};
+message RedoBoneKeyframeCommand {
+  message State {
+    required nanoem.common.Vector3 translation = 1;
+    required nanoem.common.Quaternion orientation = 2;
+    required BoneInterpolation interpolation = 3;
+    required bool is_physics_simulation_enabled = 4;
+  };
+  message Keyframe {
+    required int32 bone_index = 1;
+    required uint64 frame_index = 2;
+    required State current_state = 3;
+    required State last_state = 4;
+    required bool dirty = 5;
+  };
+  required uint32 model_handle = 1;
+  repeated Keyframe keyframes = 2;
+};
+message RedoCameraKeyframeCommand {
+  message State {
+    required nanoem.common.Vector3 look_at = 1;
+    required nanoem.common.Vector3 angle = 2;
+    required float distance = 3;
+    required float fov = 4;
+    required bool perspective = 5;
+    required CameraInterpolation interpolation = 6;
+  };
+  message Keyframe {
+    required uint64 frame_index = 1;
+    required State current_state = 2;
+    required State last_state = 3;
+  };
+  repeated Keyframe keyframes = 1;
+};
+message RedoLightKeyframeCommand {
+  message State {
+    required nanoem.common.Color color = 1;
+    required nanoem.common.Vector3 direction = 2;
+  };
+  message Keyframe {
+    required uint64 frame_index = 1;
+    required State current_state = 2;
+    required State last_state = 3;
+  };
+  repeated Keyframe keyframes = 1;
+};
+message RedoModelKeyframeCommand {
+  message ConstraintState {
+    required int32 bone_index = 1;
+    required bool enabled = 2;
+  };
+  message State {
+    repeated ConstraintState constraint_states = 1;
+    repeated OutsideParent outside_parents = 2;
+    required nanoem.common.Color edge_color = 3;
+    required float edge_size = 4;
+    required bool is_physics_simulation_enabled = 5;
+    required bool is_visible = 6;
+  };
+  message Keyframe {
+    required uint64 frame_index = 1;
+    required State current_state = 2;
+    required State last_state = 3;
+  };
+  required uint32 model_handle = 1;
+  repeated Keyframe keyframes = 2;
+};
+message RedoMorphKeyframeCommand {
+  message State {
+    required float weight = 1;
+  };
+  message Keyframe {
+    required int32 morph_index = 1;
+    required int64 frame_index = 2;
+    required State current_state = 3;
+    required State last_state = 4;
+  };
+  required uint32 model_handle = 1;
+  repeated Keyframe keyframes = 2;
+};
+message RedoSelfShadowKeyframeCommand {
+  message State {
+    required float distance = 1;
+    required int32 mode = 2;
+  };
+  message Keyframe {
+    required int64 frame_index = 1;
+    required State current_state = 2;
+    required State last_state = 3;
+  };
+  repeated Keyframe keyframes = 1;
+};
+message RedoUpdateAccessoryCommand {
+  message State {
+    required nanoem.common.Vector3 translation = 1;
+    required nanoem.common.Vector3 orientation = 2;
+    required float scale_factor = 3;
+    required float opacity = 4;
+    required bool is_shadow_enabled = 5;
+    required bool is_blend_enabled = 6;
+    required bool is_visible = 7;
+    required OutsideParent outside_parent = 8;
+  };
+  required uint32 accessory_handle = 1;
+  required State current_state = 2;
+  required State last_state = 3;
+};
+message RedoUpdateCameraCommand {
+  message State {
+    required nanoem.common.Vector3 look_at = 1;
+    required nanoem.common.Vector3 angle = 2;
+    required float distance = 3;
+    required float fov = 4;
+    required bool perspective = 5;
+  };
+  required State current_state = 1;
+  required State last_state = 2;
+};
+message RedoUpdateLightCommand {
+  message State {
+    required nanoem.common.Color color = 1;
+    required nanoem.common.Vector3 direction = 2;
+  };
+  required State current_state = 1;
+  required State last_state = 2;
+};
+message RedoRemoveTimelineFrameCommand {
+  required uint64 frame_index = 1;
+  required uint32 types = 2;
+  optional uint32 handle = 3;
+};
+message RedoInsertEmptyTimelineFrameCommand {
+  required uint64 frame_index = 1;
+  required uint32 types = 2;
+  optional uint32 handle = 3;
+};
+message RedoSaveMotionSnapshotCommand {
+  required bytes last_motion = 1;
+  required bytes current_motion = 2;
+  required uint32 types = 3;
+  optional uint32 handle = 4;
+};
+message RedoDeleteAccessoryCommand {
+  required uint32 accessory_handle = 1;
+};
+message RedoDeleteModelCommand {
+  required uint32 model_handle = 1;
+};
+message RedoLoadAudioCommand {
+  oneof content {
+    Archive archive = 1;
+    URI file_uri = 2;
+  };
+};
+message RedoLoadVideoCommand {
+  oneof content {
+    Archive archive = 1;
+    URI file_uri = 2;
+  };
+};
+message RedoBatchUndoCommandListCommand {
+  repeated bytes commands = 1;
+  optional uint32 model_handle = 2;
+};
+message RedoSaveModelSnapshotCommand {
+  required bytes last_model = 1;
+  required bytes current_model = 2;
+  required uint32 handle = 4;
+};
+message BaseModelObject {
+  required uint32 index = 1;
+  required uint32 handle = 2;
+};
+message RedoModelHeaderCommand {
+  required uint32 handle = 1;
+  required uint32 version = 2;
+  required uint32 encoding = 3;
+  required uint32 additional_uv = 4;
+  required string name_ja = 5;
+  required string comment_ja = 6;
+  required string name_en = 7;
+  required string comment_en = 8;
+};
+message RedoModelVertexCommand {
+  message Weight {
+    required uint32 bone_index = 1;
+    required float weight = 2;
+  };
+  required BaseModelObject _base = 1;
+  required nanoem.common.Vector3 origin = 2;
+  required nanoem.common.Vector3 normal = 3;
+  required nanoem.common.Vector3 texcoord = 4;
+  repeated nanoem.common.Vector4 uvs = 5;
+  required uint32 type = 6;
+  repeated Weight weights = 7;
+  required float edge = 8;
+  required nanoem.common.Vector3 sdef_c = 9;
+  required nanoem.common.Vector3 sdef_r0 = 10;
+  required nanoem.common.Vector3 sdef_r1 = 11;
+};
+message RedoModelMaterialCommand {
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+  required nanoem.common.Color ambient = 4;
+  required nanoem.common.Color diffuse = 5;
+  required float diffuse_opacity = 6;
+  required nanoem.common.Color specular = 7;
+  required float specular_power = 8;
+  required nanoem.common.Color edge_color = 9;
+  required float edge_opacity = 10;
+  required float edge_size = 11;
+  required string diffuse_texture_path = 12;
+  required string sphere_map_texture_path = 13;
+  required string toon_texture_path = 14;
+  required uint32 sphere_map_texture_type = 15;
+  required bool is_shared_toon_enabled = 16;
+  required uint32 shared_toon_texture_index = 17;
+  required bool is_culling_disabled = 18;
+  required bool is_shadow_enabled = 19;
+  required bool is_shadow_map_enabled = 20;
+  required bool is_casting_shadow_enabled = 21;
+  required bool is_casting_shadow_map_enabled = 22;
+  required bool is_edge_enabled = 23;
+  required bool is_vertex_color_enabled = 24;
+  required bool is_point_draw_enabled = 25;
+  required bool is_line_draw_enabled = 26;
+};
+message RedoModelBoneCommand {
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+};
+message RedoModelConstraintCommand {
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+};
+message RedoModelMorphCommand {
+  message Bone {
+    required nanoem.common.Vector3 translation = 1;
+    required nanoem.common.Quaternion orientation = 2;
+  };
+  message Group {
+    required uint32 morph_index = 1;
+    required float weight = 2;
+  };
+  message Flip {
+    required uint32 morph_index = 1;
+    required float weight = 2;
+  };
+  message Impulse {
+    required uint32 rigid_body_index = 1;
+    required nanoem.common.Vector3 torque = 2;
+    required nanoem.common.Vector3 velocity = 3;
+    required bool is_local = 4;
+  };
+  message Material {
+    required uint32 material_index = 1;
+    required nanoem.common.Color ambient = 2;
+    required nanoem.common.Color diffuse = 3;
+    required nanoem.common.Color specular = 4;
+    required nanoem.common.Color edge_color = 5;
+    required nanoem.common.Vector3 diffuse_texture_blend = 6;
+    required nanoem.common.Vector3 sphere_map_texture_blend = 7;
+    required nanoem.common.Vector3 toon_texture_blend = 8;
+    required float diffuse_opacity = 9;
+    required float edge_opacity = 10;
+    required float edge_size = 11;
+    required float specular_power = 12;
+    required uint32 operation_type = 13;
+  };
+  message UV {
+    required uint32 vertex_index = 1;
+    required nanoem.common.Vector4 position = 2;
+  };
+  message Vertex {
+    required uint32 vertex_index = 1;
+    required nanoem.common.Vector4 position = 2;
+  };
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+  required uint32 category = 4;
+  required uint32 type = 5;
+  repeated Bone bones = 6;
+  repeated Group groups = 7;
+  repeated Flip flips = 8;
+  repeated Impulse impulses = 9;
+  repeated Material materials = 10;
+  repeated UV uvs = 11;
+  repeated Vertex vertices = 12;
+};
+message RedoModelLabelCommand {
+  message Item {
+    oneof type {
+      uint32 bone_index = 1;
+      uint32 morph_index = 2;
+    };
+  };
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+  required bool is_special = 4;
+  repeated Item items = 5;
+};
+message RedoModelRigidBodyCommand {
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+  required uint32 bone_index = 4;
+  required nanoem.common.Vector3 origin = 5;
+  required nanoem.common.Vector3 orientation = 6;
+  required uint32 type = 7;
+  required nanoem.common.Vector3 shape_size = 8;
+  required float mass = 9;
+  required float linear_damping = 10;
+  required float angular_damping = 11;
+  required float friction = 12;
+  required float restitution = 13;
+  required uint32 shape_type = 14;
+  required uint32 object_type = 15;
+  required uint32 collision_group_id = 16;
+  required uint32 collision_mask = 17;
+};
+message RedoModelJointCommand {
+  required BaseModelObject _base = 1;
+  required string name_ja = 2;
+  required string name_en = 3;
+  required uint32 rigid_body_a_index = 4;
+  required uint32 rigid_body_b_index = 5;
+  required nanoem.common.Vector3 origin = 6;
+  required nanoem.common.Vector3 orientation = 7;
+  required uint32 type = 8;
+  required nanoem.common.Vector3 linear_upper_limit = 9;
+  required nanoem.common.Vector3 linear_lower_limit = 10;
+  required nanoem.common.Vector3 linear_stiffness = 11;
+  required nanoem.common.Vector3 angular_upper_limit = 12;
+  required nanoem.common.Vector3 angular_lower_limit = 13;
+  required nanoem.common.Vector3 angular_stiffness = 14;
+};
+message RedoModelFaceCommand {
+  required BaseModelObject _base = 1;
+  required uint32 x = 2;
+  required uint32 y = 3;
+  required uint32 z = 4;
+};
+
+message PingPongCommand {
+};
+message IsProjectDirtyRequestCommand {
+};
+message GetAllModelBonesRequestCommand {
+  required uint32 model_handle = 1;
+};
+message GetAllModelMorphsRequestCommand {
+  required uint32 model_handle = 1;
+};
+message GetProjectFileURIRequestCommand {
+};
+message GetBackgroundImageTextureHandleRequestCommand {
+};
+message GetAllModelsRequestCommand {
+};
+message GetAllAccessoriesRequestCommand {
+};
+message QueryOpenSingleFileDialogCommand {
+  required uint32 type = 1;
+  required URI file_uri = 2;
+};
+message QueryOpenMultipleFilesDialogCommand {
+  required uint32 type = 1;
+  repeated URI file_uri = 2;
+};
+message QuerySaveFileDialogCommand {
+  required uint32 type = 1;
+  required URI file_uri = 2;
+};
+message GetHandleFileURIRequestCommand {
+  required uint32 handle = 1;
+};
+
+message Command {
+  required uint64 timestamp = 1;
+  oneof type {
+    InitializeCommand initialize = 10;
+    RenderFrameCommand render_frame = 11;
+    DestroyCommand destroy = 12;
+    TerminateCommand terminate = 13;
+    ActivateCommand activate = 14;
+    DeactivateCommand deactivate = 15;
+    WindowResizedCommand window_resized = 16;
+    ViewportResizedCommand viewport_resized = 17;
+    CursorPressedCommand cursor_pressed = 18;
+    CursorMovedCommand cursor_moved = 19;
+    CursorReleasedCommand cursor_released = 20;
+    CursorScrolledCommand cursor_scrolled = 21;
+    PointerPressedCommand pointer_pressed = 22;
+    PointerMovedCommand pointer_moved = 23;
+    PointerReleasedCommand pointer_released = 24;
+    PointerScrolledCommand pointer_scrolled = 25;
+    KeyPressedCommand key_pressed = 26;
+    KeyReleasedCommand key_released = 27;
+    UnicodeInputCommand unicode_input = 28;
+    MenuActionCommand menu_action = 29;
+    DropFileCommand drop_file = 30;
+    LoadFileCommand load_file = 31;
+    SaveFileCommand save_file = 32;
+    NewProjectCommand new_project = 33;
+    ConfirmBeforeNewProjectCommand confirm_before_new_project = 34;
+    ConfirmBeforeOpenProjectCommand confirm_before_open_project = 35;
+    ConfirmBeforeExitApplicationCommand confirm_before_exit_application = 36;
+    ChangeDevicePixelRatioCommand change_device_pixel_ratio = 37;
+    /* ExportImageCommand export_image = 38; */
+    /* ExportVideoCommand export_video = 39; */
+    SetActiveAccessoryCommand set_active_accessory = 40;
+    SetActiveModelCommand set_active_model = 41;
+    SetActiveModelBoneCommand set_active_model_bone = 42;
+    SetActiveModelMorphCommand set_active_model_morph = 43;
+    LoadAllDecoderPluginsCommand load_all_decoder_plugins = 44;
+    LoadAllEncoderPluginsCommand load_all_encoder_plugins = 45;
+    /* StartRecordingViewportPassCommand start_recording_viewport_pass = 46; */
+    /* StopRecordingViewportPassCommand stop_recording_viewport_pass = 47; */
+    SeekCommand seek = 48;
+    SetCameraLookAtCommand set_camera_look_at = 49;
+    SetCameraAngleCommand set_camera_angle = 50;
+    SetCameraFovCommand set_camera_fov = 51;
+    SetCameraDistanceCommand set_camera_distance = 52;
+    SetLightColorCommand set_light_color = 53;
+    SetLightDirectionCommand set_light_direction = 54;
+    SetAccessoryTranslationCommand set_accessory_translation = 55;
+    SetAccessoryOrientationCommand set_accessory_orientation = 56;
+    SetAccessoryScaleFactorCommand set_accessory_scale_factor = 57;
+    SetAccessoryOpacityCommand set_accessory_opacity = 58;
+    SetModelMorphWeightCommand set_model_morph_weight = 59;
+    SetModelBoneTranslationCommand set_model_bone_translation = 60;
+    SetModelBoneOrientationCommand set_model_bone_orientation = 61;
+    UpdateModelCommand update_model = 62;
+    RegisterAccessoryKeyframeCommand register_accessory_keyframe = 63;
+    RegisterAllSelectedBoneKeyframesCommand register_all_selected_bone_keyframes = 64;
+    RegisterCameraKeyframeCommand register_camera_keyframe = 65;
+    RegisterLightKeyframeCommand register_light_keyframe = 66;
+    RegisterModelKeyframeCommand register_model_keyframe = 67;
+    RegisterAllSelectedMorphKeyframesCommand register_all_selected_morph_keyframes = 68;
+    RegisterSelfShadowKeyframeCommand register_self_shadow_keyframe = 69;
+    RemoveAccessoryKeyframeCommand remove_accessory_keyframe = 70;
+    RemoveAllSelectedBoneKeyframesCommand remove_all_selected_bone_keyframes = 71;
+    RemoveCameraKeyframeCommand remove_camera_keyframe = 72;
+    RemoveLightKeyframeCommand remove_light_keyframe = 73;
+    RemoveModelKeyframeCommand remove_model_keyframe = 74;
+    RemoveAllSelectedMorphKeyframesCommand remove_all_selected_morph_keyframes = 75;
+    RemoveSelfShadowKeyframeCommand remove_self_shadow_keyframe = 76;
+    SetBoneBezierControlPointCommand set_bone_bezier_control_point = 77;
+    SetCameraBezierControlPointCommand set_camera_bezier_control_point = 78;
+    SelectBoneCommand select_bone = 79;
+    SelectAllBonesCommand select_all_bones = 80;
+    SelectAllDirtyBonesCommand select_all_dirty_bones = 81;
+    SelectAllMovableBonesCommand select_all_movable_bones = 82;
+    ClearSelectBoneCommand clear_select_bone = 83;
+    ClearSelectAllBonesCommand clear_select_all_bones = 84;
+    SelectMotionKeyframeCommand select_motion_keyframe = 85;
+    SelectAllRowMotionKeyframesCommand select_all_row_motion_keyframes = 86;
+    SelectAllColumnMotionKeyframesCommand select_all_column_motion_keyframes = 87;
+    ClearSelectAllMotionKeyframesCommand clear_select_all_motion_keyframes = 88;
+    UpdateCurrentFPSCommand update_current_fps = 89;
+    StartDebugCaptureCommand start_debug_capture = 90;
+    StopDebugCaptureCommand stop_debug_capture = 91;
+    ReloadAccessoryEffectCommand reload_accessory_effect = 92;
+    ReloadModelEffectCommand reload_model_effect = 93;
+    SetModelVisibleCommand set_model_visible = 94;
+    SetModelEdgeColorCommand set_model_edge_color = 95;
+    SetModelEdgeSizeCommand set_model_edge_size = 96;
+    SetModelConstraintStateCommand set_model_constraint_state = 97;
+    SetModelOutsideParentCommand set_model_outside_parent = 98;
+    SetAccessoryOutsideParentCommand set_accessory_outside_parent = 99;
+    RecoveryCommand recovery = 100;
+    SetEffectPluginEnabledCommand set_effect_plugin_enabled = 101;
+    SavePointCommand save_point = 102;
+    SetAccessoryAddBlendEnabledCommand set_accessory_add_blend_enabled = 103;
+    SetAccessoryShadowEnabledCommand set_accessory_shadow_enabled = 104;
+    SetAccessoryVisibleCommand set_accessory_visible = 105;
+    SetModelAddBlendEnabledCommand set_model_add_blend_enabled = 106;
+    SetModelShadowEnabledCommand set_model_shadow_enabled = 107;
+    SetModelShadowMapEnabledCommand set_model_shadow_map_enabled = 108;
+    SetDrawableOrderIndexCommand set_drawable_order_index = 109;
+    SetModelTransformOrderIndexCommand set_model_transform_order_index = 110;
+    SetModelPhysicsSimulationEnabledCommand set_model_physics_simulation_enabled = 111;
+    SetModelBoneKeyframeInterpolationCommand set_model_bone_keyframe_interpolation = 112;
+    SetCameraKeyframeInterpolationCommand set_camera_keyframe_interpolation = 113;
+    UpdatePerformanceMonitorCommand update_performance_monitor = 114;
+    LoadAllModelIOPluginsCommand load_all_model_io_plugins = 115;
+    LoadAllMotionIOPluginsCommand load_all_motion_io_plugins = 116;
+    ExecuteModelIOPluginCommand execute_model_io_plugin = 117;
+    ExecuteMotionIOPluginCommand execute_motion_io_plugin = 118;
+    RequestExportImageConfigurationCommand request_export_image_configuration = 119;
+    RequestExportVideoConfigurationCommand request_export_video_configuration = 120;
+    ExecuteExportingImageCommand execute_exporting_image = 121;
+    ExecuteExportingVideoCommand execute_exporting_video = 122;
+    ScreenCursorPressCommand screen_cursor_press = 123;
+    ScreenCursorMoveCommand screen_cursor_move = 124;
+    ScreenCursorReleaseCommand screen_cursor_release = 125;
+    ConfirmBeforeExportingImageCommand confirm_before_exporting_image = 126;
+    ConfirmBeforeExportingVideoCommand confirm_before_exporting_video = 127;
+    /* request-repsonse */
+    PingPongCommand ping_pong = 1000;
+    IsProjectDirtyRequestCommand is_project_dirty = 1001;
+    GetAllModelBonesRequestCommand get_all_model_bones = 1002;
+    GetAllModelMorphsRequestCommand get_all_model_morphs = 1003;
+    GetProjectFileURIRequestCommand get_project_file_uri = 1004;
+    GetBackgroundImageTextureHandleRequestCommand get_background_image_texture_handle = 1005;
+    GetAllAccessoriesRequestCommand get_all_accessories = 1006;
+    GetAllModelsRequestCommand get_all_models = 1007;
+    QueryOpenSingleFileDialogCommand query_open_single_file_dialog = 1008;
+    QueryOpenMultipleFilesDialogCommand query_open_multiple_files_dialog = 1009;
+    QuerySaveFileDialogCommand query_save_file_dialog = 1010;
+    GetHandleFileURIRequestCommand get_handle_file_uri = 1011;
+    /* redo */
+    UndoCommand undo = 2000;
+    RedoLoadAccessoryCommand redo_load_accessory = 2001;
+    RedoLoadModelCommand redo_load_model = 2002;
+    RedoLoadMotionCommand redo_load_motion = 2003;
+    RedoTransformBoneCommand redo_transform_bone = 2004;
+    RedoTransformMorphCommand redo_transform_morph = 2005;
+    RedoAccessoryKeyframeCommand redo_add_accessory_keyframe = 2006;
+    RedoAccessoryKeyframeCommand redo_remove_accessory_keyframe = 2007;
+    RedoBoneKeyframeCommand redo_add_bone_keyframe = 2008;
+    RedoBoneKeyframeCommand redo_remove_bone_keyframe = 2009;
+    RedoCameraKeyframeCommand redo_add_camera_keyframe = 2010;
+    RedoCameraKeyframeCommand redo_remove_camera_keyframe = 2011;
+    RedoLightKeyframeCommand redo_add_light_keyframe = 2012;
+    RedoLightKeyframeCommand redo_remove_light_keyframe = 2013;
+    RedoModelKeyframeCommand redo_add_model_keyframe = 2014;
+    RedoModelKeyframeCommand redo_remove_model_keyframe = 2015;
+    RedoMorphKeyframeCommand redo_add_morph_keyframe = 2016;
+    RedoMorphKeyframeCommand redo_remove_morph_keyframe = 2017;
+    RedoSelfShadowKeyframeCommand redo_add_self_shadow_keyframe = 2018;
+    RedoSelfShadowKeyframeCommand redo_remove_self_shadow_keyframe = 2019;
+    RedoUpdateAccessoryCommand redo_update_accessory = 2020;
+    RedoUpdateCameraCommand redo_update_camera = 2021;
+    RedoUpdateLightCommand redo_update_light = 2022;
+    RedoInsertEmptyTimelineFrameCommand redo_insert_empty_timeline_frame = 2023;
+    RedoRemoveTimelineFrameCommand redo_remove_timeline_frame = 2024;
+    RedoSaveMotionSnapshotCommand redo_save_motion_snapshot = 2025;
+    RedoDeleteAccessoryCommand redo_delete_accessory = 2026;
+    RedoDeleteModelCommand redo_delete_model = 2027;
+    RedoLoadAudioCommand redo_load_audio = 2028;
+    RedoLoadVideoCommand redo_load_video = 2029;
+    RedoBatchUndoCommandListCommand redo_batch_undo_command_list = 2030;
+    RedoSaveModelSnapshotCommand redo_save_model_snapshot = 2031;
+    RedoModelHeaderCommand redo_model_header = 2032;
+    RedoModelVertexCommand redo_add_vertex = 2033;
+    RedoModelVertexCommand redo_update_vertex = 2034;
+    RedoModelVertexCommand redo_remove_vertex = 2035;
+    RedoModelMaterialCommand redo_add_material = 2036;
+    RedoModelMaterialCommand redo_update_material = 2037;
+    RedoModelMaterialCommand redo_remove_material = 2038;
+    RedoModelBoneCommand redo_add_bone = 2039;
+    RedoModelBoneCommand redo_update_bone = 2040;
+    RedoModelBoneCommand redo_remove_bone = 2041;
+    RedoModelConstraintCommand redo_add_constraint = 2042;
+    RedoModelConstraintCommand redo_update_constraint = 2043;
+    RedoModelConstraintCommand redo_remove_constraint = 2044;
+    RedoModelMorphCommand redo_add_morph = 2045;
+    RedoModelMorphCommand redo_update_morph = 2046;
+    RedoModelMorphCommand redo_remove_morph = 2047;
+    RedoModelLabelCommand redo_add_label = 2048;
+    RedoModelLabelCommand redo_update_label = 2049;
+    RedoModelLabelCommand redo_remove_label = 2050;
+    RedoModelRigidBodyCommand redo_add_rigid_body = 2051;
+    RedoModelRigidBodyCommand redo_update_rigid_body = 2052;
+    RedoModelRigidBodyCommand redo_remove_rigid_body = 2053;
+    RedoModelJointCommand redo_add_joint = 2054;
+    RedoModelJointCommand redo_update_joint = 2055;
+    RedoModelJointCommand redo_remove_joint = 2056;
+    RedoModelFaceCommand redo_add_face = 2057;
+    RedoModelFaceCommand redo_update_face = 2058;
+    RedoModelFaceCommand redo_remove_face = 2059;
+  };
+};
+
+message TrackEvent {
+  required string screen = 1;
+  required string action = 2;
+  required string category = 3;
+  required string label = 4;
+};
+message UndoEvent {
+  required bool can_undo = 1;
+  required bool can_redo = 2;
+};
+message RedoEvent {
+  required bool can_redo = 1;
+  required bool can_undo = 2;
+};
+message UndoChangeEvent {
+};
+message AddModelEvent {
+  required uint32 model_handle = 1;
+  required string name = 2;
+};
+message SetActiveModelEvent {
+  required uint32 model_handle = 1;
+  required string name = 2;
+};
+message SetActiveBoneEvent {
+  required uint32 model_handle = 1;
+  required string model_name = 2;
+  required string bone_name = 3;
+};
+message SetActiveMorphEvent {
+  required uint32 model_handle = 1;
+  required string model_name = 2;
+  required string morph_name = 3;
+};
+message RemoveModelEvent {
+  required uint32 model_handle = 1;
+  required string name = 2;
+};
+message AddAccessoryEvent {
+  required uint32 accessory_handle = 1;
+  required string name = 2;
+};
+message SetActiveAccessoryEvent {
+  required uint32 accessory_handle = 1;
+  required string name = 2;
+};
+message RemoveAccessoryEvent {
+  required uint32 accessory_handle = 1;
+  required string name = 2;
+};
+message AddMotionEvent {
+  required uint32 motion_handle = 1;
+};
+message RemoveMotionEvent {
+  required uint32 motion_handle = 1;
+};
+message PlayEvent {
+  required uint64 duration = 1;
+  required uint64 local_frame_index = 2;
+};
+message StopEvent {
+  required uint64 duration = 1;
+  required uint64 local_frame_index = 2;
+};
+message PauseEvent {
+  required uint64 duration = 1;
+  required uint64 local_frame_index = 2;
+};
+message ResumeEvent {
+  required uint64 duration = 1;
+  required uint64 local_frame_index = 2;
+};
+message SeekEvent {
+  required uint64 duration = 1;
+  required uint64 local_frame_index_from = 2;
+  required uint64 local_frame_index_to = 3;
+};
+message UpdateDurationEvent {
+  required uint64 current_duration = 1;
+  required uint64 last_duration = 2;
+};
+message SaveProjectAfterConfirmEvent {
+};
+message DiscardProjectAfterConfirmEvent {
+};
+message ToggleProjectEffectEnabledEvent {
+  required bool value = 1;
+};
+message ToggleProjectGroundShadowEnabledEvent {
+  required bool value = 1;
+};
+message ToggleProjectVertexShaderSkinningEnabledEvent {
+  required bool value = 1;
+};
+message ToggleProjectComputeShaderSkinningEnabledEvent {
+  required bool value = 1;
+};
+message SetProjectSampleLevelEvent {
+  required uint32 value = 1;
+};
+message ToggleGridEnabledEvent {
+  required bool value = 1;
+};
+message SetGridCellEvent {
+  required float x = 1;
+  required float y = 2;
+};
+message SetGridSizeEvent {
+  required float x = 1;
+  required float y = 2;
+};
+message SetPreferredMotionFPSEvent {
+  required uint32 value = 1;
+  required bool unlimited = 2;
+};
+message SetPreferredEditingFPSEvent {
+  required uint32 value = 1;
+};
+message SetPhysicsSimulationModeEvent {
+  required uint32 value = 1;
+}
+message SetPhysicsSimulationEngineDebugFlagEvent {
+  required uint32 value = 1;
+};
+message ToggleShadowMapEnabledEvent {
+  required bool value = 1;
+}
+message SetShadowMapModeEvent {
+  required uint32 value = 1;
+}
+message SetShadowMapDistanceEvent {
+  required float value = 1;
+};
+message ToggleActiveModelAddBlendEnabledEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelShadowMapEnabledEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelVisibleEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelComputeShaderSkinningEnabledEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelShowAllBonesEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelShowAllRigidBodiesEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelShowAllVertexFacesEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelShowAllVertexPointsEvent {
+  required bool value = 1;
+};
+message ToggleActiveModelVertexShaderSkinningEnabledEvent {
+  required bool value = 1;
+};
+message DisableCursorEvent {
+  required int32 x = 1;
+  required int32 y = 2;
+};
+message EnableCursorEvent {
+  required int32 x = 1;
+  required int32 y = 2;
+};
+message AvailableAllImportingAudioExtensionsEvent {
+  repeated string extensions = 1;
+};
+message AvailableAllImportingVideoExtensionsEvent {
+  repeated string extensions = 1;
+};
+message AvailableAllExportingImageExtensionsEvent {
+  repeated string extensions = 1;
+};
+message AvailableAllExportingVideoExtensionsEvent {
+  repeated string extensions = 1;
+};
+message InitializationCompleteEvent {
+};
+message CompleteDestructionEvent {
+};
+message ErrorEvent {
+  required int32 code = 1;
+  required string reason = 2;
+  optional string recovery_suggestion = 3;
+};
+message StartRecordingViewportPassEvent {
+  required uint32 width = 1;
+  required uint32 height = 2;
+};
+message StopRecordingViewportPassEvent {
+};
+message CompleteLoadingFileEvent {
+  required URI file_uri = 1;
+  required uint32 type = 2;
+  optional uint64 ticks = 3;
+};
+message CompleteSavingFileEvent {
+  required URI file_uri = 1;
+  required uint32 type = 2;
+  optional uint64 ticks = 3;
+};
+message CompleteTerminationEvent {
+};
+message ConsumePassEvent {
+  required uint64 global_frame_index = 1;
+};
+message AddModalDialogEvent {
+};
+message ClearModalDialogEvent {
+};
+message SetLanguageEvent {
+  required uint32 value = 1;
+};
+message ToggleProjectPlayingWithLoopEnabledEvent {
+  required bool value = 1;
+};
+message ToggleActiveAccessoryAddBlendEnabledEvent {
+  required bool value = 1;
+};
+message ToggleActiveAccessoryShadowEnabledEvent {
+  required bool value = 1;
+};
+message ToggleActiveAccessoryVisibleEvent {
+  required bool value = 1;
+};
+message UpdateProgressEvent {
+  required uint32 value = 1;
+  required uint32 total = 2;
+  oneof type {
+    string text = 3;
+    string item = 4;
+  };
+};
+message StartProgressEvent {
+  required uint32 total = 1;
+  required string title = 2;
+  required string text = 3;
+};
+message StopProgressEvent {
+};
+message SetupProjectEvent {
+  required uint32 window_width = 1;
+  required uint32 window_height = 2;
+  required float window_device_pixel_ratio = 3;
+  optional float viewport_device_pixel_ratio = 4;
+};
+message SetEditingModeEvent {
+  required uint32 value = 1;
+};
+message CompleteLoadingAllModelIOPluginsEvent {
+  repeated Plugin items = 1;
+};
+message CompleteLoadingAllMotionIOPluginsEvent {
+  repeated Plugin items = 1;
+};
+message CompleteExportImageConfigurationEvent {
+  repeated string available_extensions = 1;
+};
+message CompleteExportVideoConfigurationEvent {
+  repeated string available_extensions = 1;
+};
+message CanCopyEvent {
+  required bool value = 1;
+};
+message CanPasteEvent {
+  required bool value = 1;
+};
+message SetWindowDevicePixelRatioEvent {
+  required float value = 1;
+};
+message SetViewportDevicePixelRatioEvent {
+  required float value = 1;
+};
+
+message PingPongEvent {
+};
+message IsProjectDirtyResponseEvent {
+  required bool dirty = 1;
+};
+message GetAllModelBonesResponseEvent {
+  required uint32 model_handle = 1;
+  repeated string bones = 2;
+};
+message GetAllModelMorphsResponseEvent {
+  required uint32 model_handle = 1;
+  repeated string eye_morphs = 2;
+  repeated string eyebrow_morphs = 3;
+  repeated string lip_morphs = 4;
+  repeated string other_morphs = 5;
+};
+message GetProjectFileURIResponseEvent {
+  required URI file_uri = 1;
+};
+message GetBackgroundImageTextureHandleResponseEvent {
+  required uint32 handle = 1;
+};
+message GetAllAccessoriesResponseEvent {
+  message Item {
+    required uint32 handle = 1;
+    required string name = 2;
+    required bool is_active = 3;
+  };
+  repeated Item items = 1;
+};
+message GetAllModelsResponseEvent {
+  message Item {
+    required uint32 handle = 1;
+    required string name = 2;
+    required bool is_active = 3;
+  };
+  repeated Item items = 1;
+};
+message QueryOpenSingleFileDialogEvent {
+  required uint32 type = 1;
+  repeated string allowed_extensions = 2;
+};
+message QueryOpenMultipleFilesDialogEvent {
+  required uint32 type = 1;
+  repeated string allowed_extensions = 2;
+};
+message QuerySaveFileDialogEvent {
+  required uint32 type = 1;
+  repeated string allowed_extensions = 2;
+};
+message GetHandleFileURIResponseEvent {
+  required uint32 handle = 1;
+  required URI file_uri = 2;
+}
+
+message Event {
+  required uint64 timestamp = 1;
+  optional uint64 requested_timestamp = 2;
+  oneof type {
+    TrackEvent track = 10;
+    UndoEvent undo = 11;
+    RedoEvent redo = 12;
+    UndoChangeEvent undo_change = 13;
+    AddModelEvent add_model = 14;
+    SetActiveModelEvent set_active_model = 15;
+    SetActiveBoneEvent set_active_bone = 16;
+    SetActiveMorphEvent set_active_morph = 17;
+    RemoveModelEvent remove_model = 18;
+    AddAccessoryEvent add_accessory = 19;
+    SetActiveAccessoryEvent set_active_accessory = 20;
+    RemoveAccessoryEvent remove_accessory = 21;
+    AddMotionEvent add_motion = 22;
+    RemoveMotionEvent remove_motion = 23;
+    PlayEvent play = 24;
+    StopEvent stop = 25;
+    PauseEvent pause = 26;
+    ResumeEvent resume = 27;
+    SeekEvent seek = 28;
+    UpdateDurationEvent update_duration = 29;
+    SaveProjectAfterConfirmEvent save_project_after_confirm = 30;
+    DiscardProjectAfterConfirmEvent discard_project_after_confirm = 31;
+    ToggleProjectEffectEnabledEvent toggle_project_effect_enabled = 32;
+    ToggleProjectGroundShadowEnabledEvent toggle_project_ground_shadow_enabled = 33;
+    ToggleProjectVertexShaderSkinningEnabledEvent toggle_project_vertex_shader_skinning_enabled = 34;
+    ToggleProjectComputeShaderSkinningEnabledEvent toggle_project_compute_shader_skinning_enabled = 35;
+    SetProjectSampleLevelEvent set_project_sample_level = 36;
+    ToggleGridEnabledEvent toggle_grid_enabled = 37;
+    SetGridCellEvent set_grid_cell = 38;
+    SetGridSizeEvent set_grid_size = 39;
+    SetPreferredMotionFPSEvent set_preferred_motion_fps = 40;
+    SetPhysicsSimulationModeEvent set_physics_simulation_mode = 41;
+    SetPhysicsSimulationEngineDebugFlagEvent set_physics_simulation_engine_debug_flag = 42;
+    ToggleShadowMapEnabledEvent toggle_shadow_map_enabled = 43;
+    SetShadowMapModeEvent set_shadow_map_mode = 44;
+    SetShadowMapDistanceEvent set_shadow_map_distance = 45;
+    ToggleActiveModelAddBlendEnabledEvent toggle_active_model_add_blend_enabled = 46;
+    ToggleActiveModelShadowMapEnabledEvent toggle_active_model_shadow_map_enabled = 47;
+    ToggleActiveModelVisibleEvent toggle_active_model_visible = 48;
+    ToggleActiveModelComputeShaderSkinningEnabledEvent toggle_active_model_compute_shader_skinning_enabled = 49;
+    ToggleActiveModelShowAllBonesEvent toggle_active_model_show_all_bones = 50;
+    ToggleActiveModelShowAllRigidBodiesEvent toggle_active_model_show_all_rigid_bodies = 51;
+    ToggleActiveModelShowAllVertexFacesEvent toggle_active_model_show_all_vertex_faces = 52;
+    ToggleActiveModelShowAllVertexPointsEvent toggle_active_model_show_all_vertex_points = 53;
+    ToggleActiveModelVertexShaderSkinningEnabledEvent toggle_active_model_vertex_shader_skinning = 54;
+    DisableCursorEvent disable_cursor = 55;
+    EnableCursorEvent enable_cursor = 56;
+    AvailableAllImportingAudioExtensionsEvent available_all_importing_audio_extensions = 57;
+    AvailableAllImportingVideoExtensionsEvent available_all_importing_video_extensions = 58;
+    AvailableAllExportingImageExtensionsEvent available_all_exporting_image_extensions = 59;
+    AvailableAllExportingVideoExtensionsEvent available_all_exporting_video_extensions = 60;
+    InitializationCompleteEvent initialization_complete = 61;
+    CompleteDestructionEvent complete_destruction = 62;
+    ErrorEvent error = 63;
+    StartRecordingViewportPassEvent start_recording_viewport_pass = 64;
+    StopRecordingViewportPassEvent stop_recording_viewport_pass = 65;
+    CompleteLoadingFileEvent complete_loading_file = 66;
+    CompleteSavingFileEvent complete_saving_file = 67;
+    SetPreferredEditingFPSEvent set_preferred_editing_fps = 68;
+    CompleteTerminationEvent complete_termination = 69;
+    ConsumePassEvent consume_pass = 70;
+    AddModalDialogEvent add_modal_dialog = 71;
+    ClearModalDialogEvent clear_modal_dialog = 72;
+    SetLanguageEvent set_language = 73;
+    ToggleProjectPlayingWithLoopEnabledEvent toggle_project_playing_with_loop_enabled = 74;
+    ToggleActiveAccessoryAddBlendEnabledEvent toggle_active_accessory_add_blend_enabled = 75;
+    ToggleActiveAccessoryShadowEnabledEvent toggle_active_accessory_shadow_enabled = 76;
+    ToggleActiveAccessoryVisibleEvent toggle_active_accessory_visible = 77;
+    UpdateProgressEvent update_progress = 78;
+    StartProgressEvent start_progress = 79;
+    StopProgressEvent stop_progress = 80;
+    SetupProjectEvent setup_project = 81;
+    SetEditingModeEvent set_editing_mode = 82;
+    CompleteLoadingAllModelIOPluginsEvent complete_loading_all_model_io_plugins = 83;
+    CompleteLoadingAllMotionIOPluginsEvent complete_loading_all_motion_io_plugins = 84;
+    CompleteExportImageConfigurationEvent complete_export_image_configuration = 85;
+    CompleteExportVideoConfigurationEvent complete_export_video_configuration = 86;
+    CanCopyEvent can_copy_event = 87;
+    CanPasteEvent can_paste_event = 88;
+    SetWindowDevicePixelRatioEvent set_window_device_pixel_ratio_event = 89;
+    SetViewportDevicePixelRatioEvent set_viewport_device_pixel_ratio_event = 90;
+    PingPongEvent ping_pong = 1000;
+    IsProjectDirtyResponseEvent is_project_dirty = 1001;
+    GetAllModelBonesResponseEvent get_all_model_bones = 1002;
+    GetAllModelMorphsResponseEvent get_all_model_morphs = 1003;
+    GetProjectFileURIResponseEvent get_project_file_uri = 1004;
+    GetBackgroundImageTextureHandleResponseEvent get_background_image_texture_handle = 1005;
+    GetAllAccessoriesResponseEvent get_all_accessories = 1006;
+    GetAllModelsResponseEvent get_all_models = 1007;
+    QueryOpenSingleFileDialogEvent query_open_single_file_dialog = 1008;
+    QueryOpenMultipleFilesDialogEvent query_open_multiple_files_dialog = 1009;
+    QuerySaveFileDialogEvent query_save_file_dialog = 1010;
+    GetHandleFileURIResponseEvent get_handle_file_uri = 1011;
+  };
+};

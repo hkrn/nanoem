@@ -1,0 +1,211 @@
+syntax = "proto2";
+
+package fx9.effect.dx9ms;
+
+enum ParameterClass {
+  PC_SCALAR = 0;
+  PC_VECTOR = 1;
+  PC_MATRIX_ROWS = 2;
+  PC_MATRIX_COLUMNS = 3;
+  PC_OBJECT = 4;
+  PC_STRUCT = 5;
+};
+
+enum ParameterType {
+  PT_VOID = 0;
+  PT_BOOL = 1;
+  PT_INT = 2;
+  PT_FLOAT = 3;
+  PT_STRING = 4;
+  PT_TEXTURE = 5;
+  PT_TEXTURE1D = 6;
+  PT_TEXTURE2D = 7;
+  PT_TEXTURE3D = 8;
+  PT_TEXTURECUBE = 9;
+  PT_SAMPLER = 10;
+  PT_SAMPLER1D = 11;
+  PT_SAMPLER2D = 12;
+  PT_SAMPLER3D = 13;
+  PT_SAMPLERCUBE = 14;
+  PT_PIXELSHADER = 15;
+  PT_VERTEXSHADER = 16;
+  PT_PIXELFRAGMENT = 17;
+  PT_VERTEXFRAGMENT = 18;
+  PT_UNSUPPORTED = 19;
+};
+
+enum ShaderType {
+  ST_PIXEL = 1;
+  ST_VERTEX = 2;
+};
+
+enum UniformType {
+  UT_FLOAT = 0;
+  UT_INT = 1;
+  UT_BOOL = 2;
+};
+
+message Uniform {
+  required UniformType type = 1;
+  required uint32 index = 2;
+  required uint32 num_elements = 3;
+  required uint32 constant_index = 4;
+  required string name = 5;
+};
+
+message Constant {
+  required UniformType type = 1;
+  required uint32 index = 2;
+};
+
+enum SamplerType {
+  SAMPLER_2D = 0;
+  SAMPLER_CUBE = 1;
+  SAMPLER_VOLUME = 2;
+};
+
+message Sampler {
+  required SamplerType type = 1;
+  required uint32 index = 2;
+  required string name = 3;
+};
+
+enum AttributeUsage {
+  AU_POSITION = 0;
+  AU_BLENDWEIGHT = 1;
+  AU_BLENDINDICES = 2;
+  AU_NORMAL = 3;
+  AU_POINTSIZE = 4;
+  AU_TEXCOORD = 5;
+  AU_TANGENT = 6;
+  AU_BINORMAL = 7;
+  AU_TESSFACTOR = 8;
+  AU_POSITIONT = 9;
+  AU_COLOR = 10;
+  AU_FOG = 11;
+  AU_DEPTH = 12;
+  AU_SAMPLE = 13;
+};
+
+message Attribute {
+  required AttributeUsage usage = 1;
+  required uint32 index = 2;
+  required string name = 3;
+};
+
+enum RegisterSet {
+  RS_BOOL = 0;
+  RS_INT4 = 1;
+  RS_FLOAT4 = 2;
+  RS_SAMPLER = 3;
+};
+
+message Symbol {
+  required string name = 1;
+  required RegisterSet register_set = 2;
+  required uint32 register_index = 3;
+  required uint32 register_count = 4;
+};
+
+message SamplerState {
+  required uint32 key = 1;
+  required fixed32 value = 2;
+};
+
+message RenderState {
+  required uint32 key = 1;
+  required fixed32 value = 2;
+};
+
+message Texture {
+  required string name = 1;
+  required uint32 sampler_index = 2;
+  repeated SamplerState sampler_states = 3;
+};
+
+enum OperandType {
+  PSOT_INPUT = 0;
+  PSOT_OUTPUT = 1;
+  PSOT_LITERAL = 2;
+  PSOT_TEMP = 3;
+};
+
+message Operand {
+  required OperandType type = 1;
+  required uint32 index = 2;
+};
+
+enum Opcode {
+  PSO_NOP = 0;
+  PSO_MOV = 1;
+  PSO_NEG = 2;
+  PSO_RCP = 3;
+  PSO_FRC = 4;
+  PSO_EXP = 5;
+  PSO_LOG = 6;
+  PSO_RSQ = 7;
+  PSO_SIN = 8;
+  PSO_COS = 9;
+  PSO_ASIN = 10;
+  PSO_ACOS = 11;
+  PSO_ATAN = 12;
+  PSO_MIN = 13;
+  PSO_MAX = 14;
+  PSO_LT = 15;
+  PSO_GE = 16;
+  PSO_ADD = 17;
+  PSO_MUL = 18;
+  PSO_ATAN2 = 19;
+  PSO_DIV = 20;
+  PSO_CMP = 21;
+  PSO_MOVC = 22;
+  PSO_DOT = 23;
+  PSO_NOISE = 24;
+  PSO_SCALAR_OPS = 25;
+  PSO_MIN_SCALAR = 26;
+  PSO_MAX_SCALAR = 27;
+  PSO_LT_SCALAR = 28;
+  PSO_GE_SCALAR = 29;
+  PSO_ADD_SCALAR = 30;
+  PSO_MUL_SCALAR = 31;
+  PSO_ATAN2_SCALAR = 32;
+  PSO_DIV_SCALAR = 33;
+  PSO_DOT_SCALAR = 34;
+  PSO_NOISE_SCALAR = 35;
+};
+
+message Instruction {
+  required Opcode opcode = 1;
+  required uint32 num_elements = 2;
+  repeated Operand operands = 3;
+};
+
+message Preshader {
+  repeated double literals = 1;
+  required uint32 num_temporary_registers = 2;
+  repeated Symbol symbols = 3;
+  repeated Instruction instructions = 4;
+};
+
+message Shader {
+  required uint32 major_version = 1;
+  required uint32 minor_version = 2;
+  required uint32 num_intructions = 3;
+  required ShaderType type = 4;
+  required string code = 5;
+  repeated Uniform uniforms = 6;
+  repeated Constant constants = 7;
+  repeated Sampler samplers = 8;
+  repeated Attribute attributes = 9;
+  repeated Attribute outputs = 10;
+  repeated Symbol symbols = 11;
+  optional Preshader preshader = 12;
+};
+
+message Pass {
+  required Shader vertex_shader = 2;
+  required Shader pixel_shader = 3;
+  repeated Texture textures = 5;
+  repeated RenderState render_states = 6;
+  repeated Texture vertex_textures = 7;
+};

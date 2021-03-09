@@ -1,0 +1,23 @@
+# lsmash
+option(${PROJECT_NAME_PREFIX}_INSTALL_LSMASH_PLUGIN ON)
+if(${PROJECT_NAME_PREFIX}_INSTALL_LSMASH_PLUGIN)
+  nanoem_emapp_plugin_set_library_type()
+  set(LSMASH_BASE_PATH ${PROJECT_SOURCE_DIR}/dependencies/l-smash)
+  aux_source_directory(${LSMASH_BASE_PATH}/common LSMASH_COMMON_SRC)
+  aux_source_directory(${LSMASH_BASE_PATH}/codecs LSMASH_CODECS_SRC)
+  aux_source_directory(${LSMASH_BASE_PATH}/core LSMASH_CORE_SRC)
+  aux_source_directory(${LSMASH_BASE_PATH}/importer LSMASH_IMPORTER_SRC)
+  add_library(lsmash ${LSMASH_COMMON_SRC} ${LSMASH_CODECS_SRC} ${LSMASH_CORE_SRC} ${LSMASH_IMPORTER_SRC})
+  set_property(TARGET lsmash PROPERTY FOLDER plugins)
+  set_property(TARGET lsmash APPEND PROPERTY INCLUDE_DIRECTORIES ${LSMASH_BASE_PATH})
+  set(_plugin_name plugin_lsmash)
+  add_library(${_plugin_name} ${_library_type}
+              ${CMAKE_CURRENT_SOURCE_DIR}/lsmash.cc
+              ${CMAKE_CURRENT_SOURCE_DIR}/thread.c
+              $<$<BOOL:${WIN32}>:${PROJECT_SOURCE_DIR}/emapp/include/emapp/sdk/win32/Encoder.def>)
+  set_property(TARGET ${_plugin_name} PROPERTY FOLDER plugins)
+  set_property(TARGET ${_plugin_name} APPEND PROPERTY INCLUDE_DIRECTORIES ${LSMASH_BASE_PATH} ${PROJECT_SOURCE_DIR}/emapp/include  ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c)
+  set_target_properties(${_plugin_name} PROPERTIES OUTPUT_NAME ${_plugin_name} PREFIX "" DEFINE_SYMBOL "")
+  target_link_libraries(${_plugin_name} lsmash protobuf-c)
+  nanoem_emapp_plugin_install(${_plugin_name})
+endif()

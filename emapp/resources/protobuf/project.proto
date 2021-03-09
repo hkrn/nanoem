@@ -1,0 +1,211 @@
+syntax = "proto2";
+
+import "common.proto";
+
+package nanoem.project;
+
+message URI {
+  optional string absolute_path = 1;
+  optional string fragment = 2;
+  optional string relative_path = 3;
+};
+
+message Confirmation {
+  required bool enabled_if_dirty_bone_keyframes_found = 1;
+  required bool enabled_if_dirty_camera_keyframes_found = 2;
+  required bool enabled_if_dirty_light_keyframes_found = 3;
+  required bool enabled_if_dirty_model_keyframes_found = 4;
+  required bool enabled_if_dirty_morph_keyframes_found = 5;
+};
+
+message Audio {
+  repeated nanoem.common.Annotation annotations = 1;
+  required float volume = 2;
+  optional URI file_uri = 3;
+  optional bytes file_checksum = 4;
+};
+
+message Video {
+  repeated nanoem.common.Annotation annotations = 1;
+  required nanoem.common.Point offset = 2;
+  required nanoem.common.Size size = 3;
+  required float scale_factor = 4;
+  required URI file_uri = 5;
+  optional bytes file_checksum = 6;
+};
+
+message PhysicSimulation {
+  repeated nanoem.common.Annotation annotations = 1;
+  required bool enabled = 2;
+  required int32 debug = 3;
+  optional float time_step_factor = 4;
+  optional float acceleration = 5;
+  optional nanoem.common.Vector3 direction = 6;
+  optional float noise = 7;
+  optional bool is_noise_enabled = 8;
+  optional bool is_ground_enabled = 9;
+  optional int32 mode = 10;
+};
+
+message ProjectiveShadow {
+  repeated nanoem.common.Annotation annotations = 1;
+  required bool enabled = 2;
+};
+
+message SelfShadow {
+  repeated nanoem.common.Annotation annotations = 1;
+  required bool enabled = 2;
+  required nanoem.common.Size size = 3;
+  required float distance = 4;
+  required int32 mode = 5;
+};
+
+message Grid {
+  repeated nanoem.common.Annotation annotations = 1;
+  required bool visible = 2;
+  required float opacity = 3;
+  required nanoem.common.Size cell = 4;
+};
+
+message Screen {
+  repeated nanoem.common.Annotation annotations = 1;
+  required nanoem.common.Rect viewport = 2;
+  required nanoem.common.Color color = 3;
+  required int32 samples = 4;
+  optional bool is_transparent_enabled = 5;
+};
+
+message Timeline {
+  repeated nanoem.common.Annotation annotations = 1;
+  required double duration = 2;
+  required double current_frame_index = 3;
+  required float fps = 4;
+  required bool is_loop_enabled = 5;
+  optional double frame_index_from = 6;
+  optional double frame_index_to = 7;
+};
+
+message Camera {
+  repeated nanoem.common.Annotation annotations = 1;
+  required nanoem.common.Vector3 angle = 2;
+  required nanoem.common.Vector3 look_at = 3;
+  required float distance = 4;
+  required float fov = 5;
+  required bool is_perspective = 6;
+  required bool is_shared = 7;
+};
+
+message Light {
+  repeated nanoem.common.Annotation annotations = 1;
+  required nanoem.common.Color color = 2;
+  required nanoem.common.Vector3 direction = 3;
+  required string motion_path = 4;
+  required ProjectiveShadow projective_shadow = 5;
+  required SelfShadow self_shadow = 6;
+};
+
+message Motion {
+  message Camera {
+    optional bytes payload = 1;
+  };
+  message Light {
+    optional bytes payload = 1;
+  };
+  message SelfShadow {
+    optional bytes payload = 1;
+  };
+  message Model {
+    required uint32 model_handle = 1;
+    optional bytes payload = 2;
+  };
+  message Accessory {
+    required uint32 accessory_handle = 1;
+    optional bytes payload = 2;
+  };
+  repeated nanoem.common.Annotation annotations = 1;
+  required string target = 2;
+  required string path_for_legacy_compatibility = 3;
+  optional uint32 motion_handle = 4;
+  optional URI file_uri = 5;
+  oneof type {
+    Camera camera = 6;
+    Light light = 7;
+    SelfShadow self_shadow = 8;
+    Model model = 9;
+    Accessory accessory = 10;
+  };
+};
+
+message MaterialEffectAttachment {
+  required uint32 offset = 1;
+  required string path_for_legacy_compatibility = 2;
+  optional URI file_uri = 3;
+  optional bytes file_checksum = 4;
+};
+
+message Accessory {
+  repeated nanoem.common.Annotation annotations = 1;
+  required string name = 2;
+  required string path_for_legacy_compatibility = 3;
+  required bool is_active = 4;
+  required int32 draw_order_index = 5;
+  repeated string include_paths = 6;
+  optional uint32 accessory_handle = 7;
+  repeated MaterialEffectAttachment material_effect_attachments = 8;
+  optional URI file_uri = 9;
+  optional bytes file_checksum = 10;
+};
+
+message Model {
+  repeated nanoem.common.Annotation annotations = 1;
+  required string name = 2;
+  required string path_for_legacy_compatibility = 3;
+  required bool is_active = 4;
+  required int32 draw_order_index = 5;
+  required int32 transform_order_index = 6;
+  repeated string include_paths = 7;
+  optional uint32 model_handle = 8;
+  repeated MaterialEffectAttachment material_effect_attachments = 9;
+  optional URI file_uri = 10;
+  optional bytes file_checksum = 11;
+};
+
+message OffscreenRenderTargetEffect {
+  message Attachment {
+    required uint32 handle = 1;
+    required string path = 2;
+    repeated string include_paths = 3;
+    optional URI file_uri = 4;
+    optional bytes file_checksum = 5;
+  };
+  required string name = 1;
+  optional uint32 owner_handle = 2;
+  repeated Attachment attachments = 3;
+};
+
+message Project {
+  repeated nanoem.common.Annotation annotations = 1;
+  repeated Accessory accessories = 2;
+  repeated Model models = 3;
+  repeated Motion motions = 4;
+  required nanoem.common.Language language = 5;
+  required Screen screen = 6;
+  required Timeline timeline = 7;
+  required Audio audio = 8;
+  required Camera camera = 9;
+  required Grid grid = 10;
+  required Light light = 11;
+  required PhysicSimulation physics_simulation = 12;
+  required Confirmation confirmation = 13;
+  required int32 axis_type = 14;
+  required int32 draw_type = 15;
+  required int32 editing_mode = 16;
+  required int32 transform_type = 17;
+  required bool is_vertex_shader_skinning_enabled = 18;
+  required bool is_compute_shader_skinning_enabled = 19;
+  required bool is_effect_plugin_enabled = 20;
+  required bool is_multiple_bone_selection_enabled = 21;
+  required bool is_motion_merge_enabled = 22;
+  repeated OffscreenRenderTargetEffect offscreen_render_target_effects = 23;
+  optional Video video = 24;
+};

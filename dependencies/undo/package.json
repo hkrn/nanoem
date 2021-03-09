@@ -1,0 +1,16 @@
+{
+  "name": "undo",
+  "version": "0.1.0",
+  "repo": "hkrn/undo",
+  "description": "Tiny undo framework",
+  "keywords": [ "undo", "gui" ],
+  "license": "MIT",
+  "src": [
+    "undo.c",
+    "undo.h"
+  ],
+  "development": {
+    "silentbicycle/greatest": "*"
+  }
+}
+

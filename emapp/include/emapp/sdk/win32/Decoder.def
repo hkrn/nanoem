@@ -1,0 +1,22 @@
+; ag --no-filename --no-number -o "nanoem[A-Z]+\w+" *.h  | sort | pbcopy
+LIBRARY plugin_decoder
+
+EXPORTS
+    nanoemApplicationPluginDecoderClose
+    nanoemApplicationPluginDecoderCreate
+    nanoemApplicationPluginDecoderDecodeAudioFrame
+    nanoemApplicationPluginDecoderDecodeVideoFrame
+    nanoemApplicationPluginDecoderDestroy
+    nanoemApplicationPluginDecoderDestroyAudioFrame
+    nanoemApplicationPluginDecoderDestroyVideoFrame
+    nanoemApplicationPluginDecoderGetABIVersion
+    nanoemApplicationPluginDecoderGetAllAvailableAudioFormatExtensions
+    nanoemApplicationPluginDecoderGetAllAvailableVideoFormatExtensions
+    nanoemApplicationPluginDecoderGetAudioFormatValue
+    nanoemApplicationPluginDecoderGetFailureReason
+    nanoemApplicationPluginDecoderGetRecoverySuggestion
+    nanoemApplicationPluginDecoderGetVideoFormatValue
+    nanoemApplicationPluginDecoderInitialize
+    nanoemApplicationPluginDecoderOpen
+    nanoemApplicationPluginDecoderSetOption
+    nanoemApplicationPluginDecoderTerminate

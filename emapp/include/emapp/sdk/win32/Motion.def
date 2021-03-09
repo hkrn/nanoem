@@ -1,0 +1,38 @@
+; ag --no-filename --no-number -o "nanoem[A-Z]+\w+" *.h  | sort | pbcopy
+LIBRARY plugin_motion
+
+EXPORTS
+    nanoemApplicationPluginMotionIOCountAllFunctions
+    nanoemApplicationPluginMotionIOCreate
+    nanoemApplicationPluginMotionIODestroy
+    nanoemApplicationPluginMotionIOExecute
+    nanoemApplicationPluginMotionIOGetABIVersion
+    nanoemApplicationPluginMotionIOGetDescription
+    nanoemApplicationPluginMotionIOGetFailureReason
+    nanoemApplicationPluginMotionIOGetFunctionName
+    nanoemApplicationPluginMotionIOGetName
+    nanoemApplicationPluginMotionIOGetOutputMotionData
+    nanoemApplicationPluginMotionIOGetOutputMotionDataSize
+    nanoemApplicationPluginMotionIOGetRecoverySuggestion
+    nanoemApplicationPluginMotionIOGetUIWindowLayoutData
+    nanoemApplicationPluginMotionIOGetUIWindowLayoutDataSize
+    nanoemApplicationPluginMotionIOGetVersion
+    nanoemApplicationPluginMotionIOInitialize
+    nanoemApplicationPluginMotionIOLoadUIWindowLayout
+    nanoemApplicationPluginMotionIOSetAllNamedSelectedBoneKeyframes
+    nanoemApplicationPluginMotionIOSetAllNamedSelectedMorphKeyframes
+    nanoemApplicationPluginMotionIOSetAllSelectedAccessoryKeyframes
+    nanoemApplicationPluginMotionIOSetAllSelectedCameraKeyframes
+    nanoemApplicationPluginMotionIOSetAllSelectedLightKeyframes
+    nanoemApplicationPluginMotionIOSetAllSelectedModelKeyframes
+    nanoemApplicationPluginMotionIOSetAllSelectedSelfShadowKeyframes
+    nanoemApplicationPluginMotionIOSetAudioDescription
+    nanoemApplicationPluginMotionIOSetCameraDescription
+    nanoemApplicationPluginMotionIOSetFunction
+    nanoemApplicationPluginMotionIOSetInputActiveModelData
+    nanoemApplicationPluginMotionIOSetInputAudioData
+    nanoemApplicationPluginMotionIOSetInputMotionData
+    nanoemApplicationPluginMotionIOSetLanguage
+    nanoemApplicationPluginMotionIOSetLightDescription
+    nanoemApplicationPluginMotionIOSetUIComponentLayoutData
+    nanoemApplicationPluginMotionIOTerminate

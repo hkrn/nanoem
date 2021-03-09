@@ -1,0 +1,18 @@
+; ag --no-filename --no-number -o "nanoem[A-Z]+\w+" *.h  | sort | pbcopy
+LIBRARY plugin_effect
+
+EXPORTS
+    nanoemApplicationPluginEffectCompilerAddIncludeSource
+    nanoemApplicationPluginEffectCompilerCreate
+    nanoemApplicationPluginEffectCompilerCreateBinaryFromFile
+    nanoemApplicationPluginEffectCompilerCreateBinaryFromMemory
+    nanoemApplicationPluginEffectCompilerDestroy
+    nanoemApplicationPluginEffectCompilerDestroyBinary
+    nanoemApplicationPluginEffectCompilerGetABIVersion
+    nanoemApplicationPluginEffectCompilerGetAvailableExtensions
+    nanoemApplicationPluginEffectCompilerGetFailureReason
+    nanoemApplicationPluginEffectCompilerGetOption
+    nanoemApplicationPluginEffectCompilerGetRecoverySuggestion
+    nanoemApplicationPluginEffectCompilerInitialize
+    nanoemApplicationPluginEffectCompilerSetOption
+    nanoemApplicationPluginEffectCompilerTerminate

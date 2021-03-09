@@ -1,0 +1,228 @@
+syntax = "proto2";
+
+package nanoem.motion;
+
+enum LanguageCode {
+  LC_JAPANESE = 0;
+  LC_ENGLISH = 1;
+};
+
+message Annotation {
+  required string name = 1;
+  required string value = 2;
+};
+
+message Vector3 {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+};
+
+message Vector4 {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  required float w = 4;
+};
+
+message IntegerInterpolation {
+  required uint32 x0 = 1;
+  required uint32 y0 = 2;
+  required uint32 x1 = 3;
+  required uint32 y1 = 4;
+};
+
+message FloatInterpolation {
+  required float x0 = 1;
+  required float y0 = 2;
+  required float x1 = 3;
+  required float y1 = 4;
+};
+
+message InterpolationUnit {
+  oneof unit {
+    IntegerInterpolation integer_type = 1;
+    FloatInterpolation float_type = 2;
+  };
+};
+
+message Track {
+  required uint64 index = 1;
+  required string name = 2;
+  optional LanguageCode language_code = 3;
+};
+
+message KeyframeCommon {
+  repeated Annotation annotations = 1;
+  required uint64 frame_index = 2;
+  optional uint32 layer_index = 3;
+};
+
+message EffectParameter {
+  required uint64 track_index = 1;
+  oneof value {
+    bool b = 2;
+    int32 i = 3;
+    float f = 4;
+    Vector4 fv = 5;
+  };
+};
+
+message ModelBinding {
+  required uint64 global_object_track_index = 2;
+  required uint64 global_bone_track_index = 3;
+  optional uint64 local_bone_track_index = 1;
+};
+
+message AccessoryKeyframe {
+  required KeyframeCommon common = 1;
+  required uint64 track_index = 2;
+  required Vector3 translation = 3;
+  required Vector4 orientation = 4;
+  required float scale_factor = 5;
+  required float opacity = 6;
+  repeated EffectParameter effect_parameters = 7;
+  optional ModelBinding binding = 8;
+  optional bool visible = 9;
+  optional bool is_shadow_enabled = 10;
+  optional bool is_add_blending_enabled = 11;
+};
+
+message AccessoryKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated AccessoryKeyframe keyframes = 2;
+};
+
+message BoneKeyframeInterpolation {
+  optional InterpolationUnit x = 1;
+  optional InterpolationUnit y = 2;
+  optional InterpolationUnit z = 3;
+  optional InterpolationUnit orientation = 4;
+};
+
+message BoneKeyframe {
+  required KeyframeCommon common = 1;
+  required uint64 track_index = 2;
+  required Vector3 local_translation = 3;
+  required Vector4 local_orientation = 4;
+  optional BoneKeyframeInterpolation interpolation = 5;
+  optional uint32 stage_index = 6;
+  optional bool is_physics_simulation_enabled = 7;
+};
+
+message BoneKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated Track local_tracks = 2;
+  repeated BoneKeyframe keyframes = 3;
+};
+
+message CameraKeyframeInterpolation {
+  optional InterpolationUnit x = 1;
+  optional InterpolationUnit y = 2;
+  optional InterpolationUnit z = 3;
+  optional InterpolationUnit angle = 4;
+  optional InterpolationUnit fov = 5;
+  optional InterpolationUnit distance = 6;
+};
+
+message CameraKeyframe {
+  required KeyframeCommon common = 1;
+  required Vector3 look_at = 2;
+  required Vector3 angle = 3;
+  required float fov = 4;
+  required float distance = 5;
+  optional CameraKeyframeInterpolation interpolation = 6;
+  optional uint32 stage_index = 7;
+  optional bool is_perspective_view_enabled = 8;
+};
+
+message CameraKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated CameraKeyframe keyframes = 2;
+};
+
+message LightKeyframe {
+  required KeyframeCommon common = 1;
+  required Vector3 color = 2;
+  required Vector3 direction = 3;
+};
+
+message LightKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated LightKeyframe keyframes = 2;
+};
+
+message ConstraintState {
+  required uint64 track_index = 1;
+  required bool enabled = 2;
+};
+
+message Edge {
+  required Vector4 color = 1;
+  required float scale_factor = 2;
+};
+
+message ModelKeyframe {
+  required KeyframeCommon common = 1;
+  required bool visible = 2;
+  repeated ConstraintState constraint_states = 3;
+  repeated EffectParameter effect_parameters = 4;
+  repeated ModelBinding bindings = 5;
+  optional Edge edge = 6;
+  optional bool is_add_blending_enabled = 7;
+  optional bool is_physics_simulation_enabled = 8;
+};
+
+message ModelKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated ModelKeyframe keyframes = 2;
+};
+
+message MorphKeyframeInterpolation {
+  required InterpolationUnit weight = 1;
+};
+
+message MorphKeyframe {
+  required KeyframeCommon common = 1;
+  required uint64 track_index = 2;
+  required float weight = 3;
+  optional MorphKeyframeInterpolation interpolation = 4;
+};
+
+message MorphKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated Track local_tracks = 2;
+  repeated MorphKeyframe keyframes = 3;
+};
+
+message SelfShadowKeyframe {
+  required KeyframeCommon common = 1;
+  required bool enabled = 2;
+  required int32 mode = 3;
+  required float distance = 4;
+};
+
+message SelfShadowKeyframeBundle {
+  repeated Annotation annotations = 1;
+  repeated SelfShadowKeyframe keyframes = 2;
+};
+
+message KeyframeBundleUnit {
+  oneof unit {
+    AccessoryKeyframeBundle accessory = 1;
+    BoneKeyframeBundle bone = 2;
+    CameraKeyframeBundle camera = 3;
+    LightKeyframeBundle light = 5;
+    ModelKeyframeBundle model = 6;
+    MorphKeyframeBundle morph = 7;
+    SelfShadowKeyframeBundle self_shadow = 9;
+  };
+};
+
+message Motion {
+  repeated Annotation annotations = 1;
+  optional string main_object_name = 2;
+  optional float preferred_fps = 3;
+  repeated Track global_tracks = 4;
+  repeated KeyframeBundleUnit keyframe_bundles = 5;
+};

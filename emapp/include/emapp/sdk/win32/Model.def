@@ -1,0 +1,38 @@
+; ag --no-filename --no-number -o "nanoem[A-Z]+\w+" *.h  | sort | pbcopy
+LIBRARY plugin_model
+
+EXPORTS
+    nanoemApplicationPluginModelIOCountAllFunctions
+    nanoemApplicationPluginModelIOCreate
+    nanoemApplicationPluginModelIODestroy
+    nanoemApplicationPluginModelIOExecute
+    nanoemApplicationPluginModelIOGetABIVersion
+    nanoemApplicationPluginModelIOGetDescription
+    nanoemApplicationPluginModelIOGetFailureReason
+    nanoemApplicationPluginModelIOGetFunctionName
+    nanoemApplicationPluginModelIOGetName
+    nanoemApplicationPluginModelIOGetOutputModelData
+    nanoemApplicationPluginModelIOGetOutputModelDataSize
+    nanoemApplicationPluginModelIOGetRecoverySuggestion
+    nanoemApplicationPluginModelIOGetUIWindowLayoutData
+    nanoemApplicationPluginModelIOGetUIWindowLayoutDataSize
+    nanoemApplicationPluginModelIOGetVersion
+    nanoemApplicationPluginModelIOInitialize
+    nanoemApplicationPluginModelIOLoadUIWindowLayout
+    nanoemApplicationPluginModelIOSetAllSelectedBoneObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedConstraintObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedLabelObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedMaterialObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedMorphObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedRigidBodyObjectIndices
+    nanoemApplicationPluginModelIOSetAllSelectedVertexObjectIndices
+    nanoemApplicationPluginModelIOSetAudioDescription
+    nanoemApplicationPluginModelIOSetCameraDescription
+    nanoemApplicationPluginModelIOSetFunction
+    nanoemApplicationPluginModelIOSetInputAudioData
+    nanoemApplicationPluginModelIOSetInputModelData
+    nanoemApplicationPluginModelIOSetLanguage
+    nanoemApplicationPluginModelIOSetLightDescription
+    nanoemApplicationPluginModelIOSetUIComponentLayoutData
+    nanoemApplicationPluginModelIOTerminate

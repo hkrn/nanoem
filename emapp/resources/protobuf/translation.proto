@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+import "common.proto";
+
+package nanoem.translation;
+
+message Phrase {
+  required string id = 1;
+  required string text = 2;
+};
+
+message Unit {
+  required nanoem.common.Language language = 1;
+  repeated Phrase phrases = 2;
+};
+
+message Bundle {
+  repeated Unit units = 1;
+};

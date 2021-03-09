@@ -1,0 +1,17 @@
+{
+  "name": "nanomq",
+  "version": "0.1.0",
+  "repo": "hkrn/nanomqo",
+  "description": "Tiny Metasequoia file format parser",
+  "keywords": [ "3dcg", "metasequoia" ],
+  "license": "MIT",
+  "src": [
+    "nanomqo.c",
+    "nanomqo.h",
+    "nanomqo_p.h"
+  ],
+  "development": {
+    "stephenmathieson/assertion-macros.h": "0.2.0"
+  }
+}
+

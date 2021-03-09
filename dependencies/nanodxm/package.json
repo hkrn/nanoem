@@ -1,0 +1,17 @@
+{
+  "name": "nanodxm",
+  "version": "0.1.0",
+  "repo": "hkrn/nanodxm",
+  "description": "Tiny DirectX9 mesh file format parser",
+  "keywords": [ "3dcg", "directx" ],
+  "license": "MIT",
+  "src": [
+    "nanodxm.c",
+    "nanodxm.h",
+    "nanodxm_p.h"
+  ],
+  "development": {
+    "stephenmathieson/assertion-macros.h": "0.2.0"
+  }
+}
+

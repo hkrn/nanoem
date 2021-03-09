@@ -1,0 +1,18 @@
+[package]
+name = "nanoem-protobuf"
+version = "0.1.0"
+authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
+edition = "2018"
+build = "build.rs"
+
+[dependencies]
+bytes = { version = "0.4" }
+prost = { version = "0.5" }
+nanoem-core = { path = "../core" }
+
+[build-dependencies]
+prost-build = { version = "0.5" }
+
+[lib]
+name = "nanoem_protobuf"
+path = "src/protobuf/lib.rs"

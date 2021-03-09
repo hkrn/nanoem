@@ -1,0 +1,68 @@
+diff --git a/OGLCompilersDLL/CMakeLists.txt b/OGLCompilersDLL/CMakeLists.txt
+index 8edd143..ddcc536 100644
+--- a/OGLCompilersDLL/CMakeLists.txt
++++ b/OGLCompilersDLL/CMakeLists.txt
+@@ -1,7 +1,8 @@
+ set(SOURCES InitializeDll.cpp InitializeDll.h)
+ 
+ add_library(OGLCompiler STATIC ${SOURCES})
+-set_property(TARGET OGLCompiler PROPERTY FOLDER glslang POSITION_INDEPENDENT_CODE ON)
++set_property(TARGET OGLCompiler PROPERTY FOLDER glslang)
++set_property(TARGET OGLCompiler PROPERTY POSITION_INDEPENDENT_CODE ON)
+ 
+ if(WIN32)
+     source_group("Source" FILES ${SOURCES})
+diff --git a/SPIRV/CMakeLists.txt b/SPIRV/CMakeLists.txt
+index 2ad86d6..c1e99dc 100755
+--- a/SPIRV/CMakeLists.txt
++++ b/SPIRV/CMakeLists.txt
+@@ -40,7 +40,8 @@ if(ENABLE_NV_EXTENSIONS)
+ endif(ENABLE_NV_EXTENSIONS)
+ 
+ add_library(SPIRV STATIC ${SOURCES} ${HEADERS})
+-set_property(TARGET SPIRV PROPERTY FOLDER glslang POSITION_INDEPENDENT_CODE ON)
++set_property(TARGET SPIRV PROPERTY FOLDER glslang)
++set_property(TARGET SPIRV PROPERTY POSITION_INDEPENDENT_CODE ON)
+ target_link_libraries(SPIRV glslang)
+ 
+ add_library(SPVRemapper STATIC ${SPVREMAP_SOURCES} ${SPVREMAP_HEADERS})
+diff --git a/glslang/CMakeLists.txt b/glslang/CMakeLists.txt
+index 8b9c2ad..ef5a332 100644
+--- a/glslang/CMakeLists.txt
++++ b/glslang/CMakeLists.txt
+@@ -81,7 +81,8 @@ set(HEADERS
+ # set(BISON_GLSLParser_OUTPUT_SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/MachineIndependent/glslang_tab.cpp)
+ 
+ add_library(glslang STATIC ${BISON_GLSLParser_OUTPUT_SOURCE} ${SOURCES} ${HEADERS})
+-set_property(TARGET glslang PROPERTY FOLDER glslang POSITION_INDEPENDENT_CODE ON)
++set_property(TARGET glslang PROPERTY FOLDER glslang)
++set_property(TARGET glslang PROPERTY POSITION_INDEPENDENT_CODE ON)
+ target_link_libraries(glslang OGLCompiler OSDependent)
+ if(ENABLE_HLSL)
+     target_link_libraries(glslang HLSL)
+diff --git a/glslang/OSDependent/Unix/CMakeLists.txt b/glslang/OSDependent/Unix/CMakeLists.txt
+index 99e9ce1..dd36644 100644
+--- a/glslang/OSDependent/Unix/CMakeLists.txt
++++ b/glslang/OSDependent/Unix/CMakeLists.txt
+@@ -1,5 +1,6 @@
+ add_library(OSDependent STATIC ossource.cpp ../osinclude.h)
+-set_property(TARGET OSDependent PROPERTY FOLDER glslang POSITION_INDEPENDENT_CODE ON)
++set_property(TARGET OSDependent PROPERTY FOLDER glslang)
++set_property(TARGET OSDependent PROPERTY POSITION_INDEPENDENT_CODE ON)
+ 
+ install(TARGETS OSDependent
+         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+diff --git a/hlsl/CMakeLists.txt b/hlsl/CMakeLists.txt
+index 24f5c9a..9a6de28 100755
+--- a/hlsl/CMakeLists.txt
++++ b/hlsl/CMakeLists.txt
+@@ -18,7 +18,8 @@ set(HEADERS
+     hlslParseables.h)
+ 
+ add_library(HLSL STATIC ${SOURCES} ${HEADERS})
+-set_property(TARGET HLSL PROPERTY FOLDER hlsl POSITION_INDEPENDENT_CODE ON)
++set_property(TARGET HLSL PROPERTY FOLDER hlsl)
++set_property(TARGET HLSL PROPERTY POSITION_INDEPENDENT_CODE ON)
+ 
+ if(WIN32)
+     source_group("Source" FILES ${SOURCES} ${HEADERS})

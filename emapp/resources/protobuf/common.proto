@@ -1,0 +1,71 @@
+syntax = "proto2";
+
+package nanoem.common;
+
+enum Language {
+  LC_UNKNOWN = 0;
+  LC_JAPANESE = 1;
+  LC_ENGLISH = 2;
+  LC_SIMPLIFIED_CHINESE = 3;
+  LC_TRADITIONAL_CHINESE = 4;
+  LC_KOREAN = 5;
+};
+
+message Annotation {
+  required string name = 1;
+  required string value = 2;
+};
+
+message Vector3 {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+};
+
+message Vector4 {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  required float w = 4;
+};
+
+message Color {
+  required float red = 1;
+  required float green = 2;
+  required float blue = 3;
+  required float alpha = 4;
+};
+
+message Quaternion {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  required float w = 4;
+};
+
+message Interpolation {
+  required int32 x0 = 1;
+  required int32 y0 = 2;
+  required int32 x1 = 3;
+  required int32 y1 = 4;
+};
+
+message Point {
+  required float x = 1;
+  required float y = 2;
+};
+
+message Size {
+  required float width = 1;
+  required float height = 2;
+};
+
+message Rect {
+  required Point point = 1;
+  required Size size = 2;
+};
+
+message Rational {
+  required uint32 denominator = 1;
+  required uint64 numerator = 2;
+};

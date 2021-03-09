@@ -1,0 +1,29 @@
+{
+  "name": "nanoem",
+  "version": "0.1.0",
+  "repo": "hkrn/nanoem",
+  "description": "Tiny PMD/PMX/VMD file format parser",
+  "keywords": [ "3dcg" ],
+  "license": "MIT",
+  "src": [
+    "nanoem/nanoem.c",
+    "nanoem/nanoem.h",
+    "nanoem/ext/cfstring.c",
+    "nanoem/ext/cfstring.h",
+    "nanoem/ext/converter.c",
+    "nanoem/ext/converter.h",
+    "nanoem/ext/document.c",
+    "nanoem/ext/document.h",
+    "nanoem/ext/icu.c",
+    "nanoem/ext/icu.h",
+    "nanoem/ext/mbwc.c",
+    "nanoem/ext/mbwc.h",
+    "nanoem/ext/mutable.c",
+    "nanoem/ext/mutable.h",
+    "nanoem/private/khash.h",
+    "nanoem/private/document_p.h",
+    "nanoem/private/mutable_p.h",
+    "nanoem/private/nanoem_p.h"
+  ]
+}
+

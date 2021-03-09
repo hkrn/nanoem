@@ -1,0 +1,211 @@
+syntax = "proto2";
+
+package fx9.effect;
+
+import "effect_dx9ms.proto";
+
+message Uniform {
+  enum Type {
+    UT_FLOAT = 0;
+    UT_INT = 1;
+    UT_BOOL = 2;
+  };
+  required Type type = 1;
+  required uint32 index = 2;
+  required uint32 num_elements = 3;
+  required uint32 constant_index = 4;
+  required string name = 5;
+};
+
+message SamplerState {
+  required uint32 key = 1;
+  required fixed32 value = 2;
+};
+
+message Sampler {
+  enum Type {
+    SAMPLER_2D = 0;
+    SAMPLER_CUBE = 1;
+    SAMPLER_VOLUME = 2;
+  };
+  required Type type = 1;
+  required uint32 index = 2;
+  required string sampler_name = 3;
+  required string texture_name = 4;
+  repeated SamplerState sampler_states = 5;
+};
+
+message Attribute {
+  enum Usage {
+    AU_POSITION = 0;
+    AU_BLENDWEIGHT = 1;
+    AU_BLENDINDICES = 2;
+    AU_NORMAL = 3;
+    AU_POINTSIZE = 4;
+    AU_TEXCOORD = 5;
+    AU_TANGENT = 6;
+    AU_BINORMAL = 7;
+    AU_TESSFACTOR = 8;
+    AU_POSITIONT = 9;
+    AU_COLOR = 10;
+    AU_FOG = 11;
+    AU_DEPTH = 12;
+    AU_SAMPLE = 13;
+  };
+  required Usage usage = 1;
+  required uint32 index = 2;
+  required string name = 3;
+};
+
+message Symbol {
+  enum RegisterSet {
+    RS_BOOL = 0;
+    RS_INT4 = 1;
+    RS_FLOAT4 = 2;
+    RS_SAMPLER = 3;
+  };
+  required string name = 1;
+  required RegisterSet register_set = 2;
+  required uint32 register_index = 3;
+  required uint32 register_count = 4;
+};
+
+message RenderState {
+  required uint32 key = 1;
+  required fixed32 value = 2;
+};
+
+message Texture {
+  required uint32 index = 1;
+  required string name = 2;
+};
+
+message Shader {
+  enum Type {
+    ST_PIXEL = 1;
+    ST_VERTEX = 2;
+  };
+  required Type type = 1;
+  repeated Uniform uniforms = 2;
+  repeated Sampler samplers = 3;
+  repeated Texture textures = 4;
+  repeated Attribute inputs = 5;
+  repeated Attribute outputs = 6;
+  repeated Symbol symbols = 7;
+  oneof body {
+    string glsl = 8;
+    string msl = 9;
+    string hlsl = 10;
+    bytes spirv = 11;
+  };
+};
+
+message Metadata {
+  required string name = 1;
+  required string value = 2;
+};
+
+message Vector4i {
+  required int32 x = 1;
+  required int32 y = 2;
+  required int32 z = 3;
+  required int32 w = 4;
+};
+
+message Vector4f {
+  required float x = 1;
+  required float y = 2;
+  required float z = 3;
+  required float w = 4;
+};
+
+message Parameter {
+  enum ClassCommon {
+    PC_SCALAR = 0;
+    PC_VECTOR = 1;
+    PC_MATRIX_ROWS = 2;
+    PC_MATRIX_COLUMNS = 3;
+    PC_OBJECT = 4;
+    PC_STRUCT = 5;
+  };
+  enum TypeCommon {
+    PT_VOID = 0;
+    PT_BOOL = 1;
+    PT_INT = 2;
+    PT_FLOAT = 3;
+    PT_STRING = 4;
+    PT_TEXTURE = 5;
+    PT_TEXTURE1D = 6;
+    PT_TEXTURE2D = 7;
+    PT_TEXTURE3D = 8;
+    PT_TEXTURECUBE = 9;
+    PT_SAMPLER = 10;
+    PT_SAMPLER1D = 11;
+    PT_SAMPLER2D = 12;
+    PT_SAMPLER3D = 13;
+    PT_SAMPLERCUBE = 14;
+    PT_PIXELSHADER = 15;
+    PT_VERTEXSHADER = 16;
+    PT_PIXELFRAGMENT = 17;
+    PT_VERTEXFRAGMENT = 18;
+    PT_UNSUPPORTED = 19;
+  };
+  required string name = 1;
+  required string semantic = 2;
+  required uint32 num_rows = 3;
+  required uint32 num_columns = 4;
+  required uint32 num_elements = 5;
+  repeated Annotation annotations = 6;
+  repeated Parameter struct_members = 7;
+  required uint32 flags = 8;
+  oneof class {
+    dx9ms.ParameterClass class_dx9ms = 9;
+  };
+  oneof type {
+    dx9ms.ParameterType type_dx9ms = 10;
+  };
+  required bytes value = 11;
+  optional ClassCommon class_common = 20;
+  optional TypeCommon type_common = 21;
+};
+
+message Annotation {
+  required string name = 1;
+  oneof value {
+    bool bval = 2;
+    float fval = 3;
+    int32 ival = 4;
+    string sval = 5;
+    Vector4i ival4 = 6;
+    Vector4f fval4 = 7;
+  }
+};
+
+message Pass {
+  required string name = 1;
+  repeated Annotation annotations = 2;
+  oneof implementation {
+    dx9ms.Pass implementation_dx9ms = 3;
+  };
+  optional Shader vertex_shader = 8;
+  optional Shader pixel_shader = 9;
+  repeated RenderState render_states = 10;
+};
+
+message Technique {
+  required string name = 1;
+  repeated Pass passes = 2;
+  repeated Annotation annotations = 3;
+}
+
+message Include {
+  required string location = 1;
+};
+
+message Effect {
+  repeated Metadata metadata = 1;
+  repeated Parameter parameters = 2;
+  repeated Technique techniques = 3;
+  repeated string compat_included_paths = 4;
+  repeated Include includes = 5;
+};
