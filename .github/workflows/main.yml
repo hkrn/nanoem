@@ -28,6 +28,7 @@ jobs:
         run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: build all dependencies of nanoem
         run: |
+          cd $GITHUB_WORKSPACE
           CC="clang-6.0" \
           CXX="clang++-6.0" \
           DEPS_PATH=$PWD/out/dependencies \
@@ -40,6 +41,7 @@ jobs:
           cmake -DCONFIG=release -P $PWD/scripts/build.cmake
       - name: build nanoem itself
         run: |
+          cd $GITHUB_WORKSPACE
           export DEPS_PATH=$PWD/out/dependencies
           mkdir -p $PWD/out/core
           cd $PWD/out/core
@@ -72,5 +74,5 @@ jobs:
           cmake --build . --config release
       - name: test nanoem's unit tests
         run: |
-          cd $PWD/out/core
+          cd $GITHUB_WORKSPACE/out/core
           cmake --build . --target test
