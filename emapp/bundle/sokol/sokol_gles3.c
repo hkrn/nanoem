@@ -30,66 +30,66 @@
 #include "gl3w.c"
 #endif
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_setup(const sg_desc * desc)
 {
     gl3wInit();
     sg_setup(desc);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_shutdown(void)
 {
     sg_shutdown();
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_buffer(sg_buffer buffer, const char *text)
 {
     SOKOL_UNUSED(buffer);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_image(sg_image image, const char *text)
 {
     SOKOL_UNUSED(image);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_shader(sg_shader shader, const char *text)
 {
     SOKOL_UNUSED(shader);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_pass(sg_pass pass, const char *text)
 {
     SOKOL_UNUSED(pass);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_pipeline(sg_pipeline pipeline, const char *text)
 {
     SOKOL_UNUSED(pipeline);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_push_group(const char *text)
 {
     SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_pop_group(void)
 {
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_read_image(sg_image image, void *data, size_t size)
 {
     const _sg_image_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
@@ -106,13 +106,13 @@ sgx_read_image(sg_image image, void *data, size_t size)
     }
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_read_pass(sg_pass pass, void *data, size_t size)
 {
     SOKOL_UNUSED(size);
     _sg_pass_t *ptr = _sg_lookup_pass(&_sg.pools, pass.id);
     if (ptr) {
-        const _sg_attachment_t *attachment = &ptr->cmn.color_atts[0];
+        const _sg_pass_attachment_common_t *attachment = &ptr->cmn.color_atts[0];
         const _sg_image_t *image = _sg_lookup_image(&_sg.pools, attachment->image_id.id);
         const GLuint msaa = image->gl.msaa_render_buffer;
         const GLenum format = _sg_gl_teximage_format(image->cmn.pixel_format),
@@ -123,28 +123,22 @@ sgx_read_pass(sg_pass pass, void *data, size_t size)
     }
 }
 
-SOKOL_API_DECL void * APIENTRY
+SGX_API_DECL void * APIENTRY
 sgx_map_buffer(sg_buffer buffer)
 {
     SOKOL_UNUSED(buffer);
     return NULL;
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_unmap_buffer(sg_buffer buffer, void *address)
 {
     SOKOL_UNUSED(buffer);
     SOKOL_UNUSED(address);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_insert_marker(const char *text)
 {
     SOKOL_UNUSED(text);
-}
-
-SOKOL_API_DECL void APIENTRY
-sgx_bootstrap(void)
-{
-    gl3wInit();
 }

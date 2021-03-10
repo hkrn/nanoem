@@ -18,53 +18,53 @@
 #include <GLES2/gl2.h>
 #include "./sokol_delegate.c"
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_label_buffer(sg_buffer buffer, const char *text)
 {
     SOKOL_UNUSED(buffer);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_label_image(sg_image image, const char *text)
 {
     SOKOL_UNUSED(image);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_label_shader(sg_shader shader, const char *text)
 {
     SOKOL_UNUSED(shader);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_label_pass(sg_pass pass, const char *text)
 {
     SOKOL_UNUSED(pass);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_label_pipeline(sg_pipeline pipeline, const char *text)
 {
     SOKOL_UNUSED(pipeline);
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_push_group(const char *text)
 {
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_pop_group(void)
 {
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_read_image(sg_image image, void *data, size_t size)
 {
     const _sg_image_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
@@ -81,7 +81,7 @@ sgx_read_image(sg_image image, void *data, size_t size)
     }
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_read_pass(sg_pass pass, void *data, size_t size)
 {
     SOKOL_UNUSED(size);
@@ -98,7 +98,7 @@ sgx_read_pass(sg_pass pass, void *data, size_t size)
     }
 }
 
-SOKOL_DECL_API intptr_t
+SGX_API_DECL intptr_t
 sgx_get_native_pass_handle(sg_pass pass)
 {
     intptr_t handle = 0;
@@ -109,27 +109,27 @@ sgx_get_native_pass_handle(sg_pass pass)
     return handle;
 }
 
-SOKOL_DECL_API void *
+SGX_API_DECL void *
 sgx_map_buffer(sg_buffer buffer)
 {
     SOKOL_UNUSED(buffer);
     return NULL;
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_unmap_buffer(sg_buffer buffer, void *address)
 {
     SOKOL_UNUSED(buffer);
     SOKOL_UNUSED(address);
 }
 
-SOKOL_DECL_API void
+SGX_API_DECL void
 sgx_insert_marker(const char *text)
 {
     SOKOL_UNUSED(text);
 }
 
-SOKOL_DECL_API uint32_t
+SGX_API_DECL uint32_t
 sgx_get_renderer_type(void)
 {
     return 'O' << 0 | 'E' << 8 | 'S' << 16 | '2' << 24; /* OES2 */

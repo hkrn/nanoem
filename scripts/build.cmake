@@ -565,7 +565,7 @@ function(compile_all_repositories _generator _toolset_option _compiler _arch _co
   endif()
   compile_spirv_cross(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   # due to compiler error, disable compiling spirv-tools on CI (CircleCI)
-  if(NOT DEFINED ENV{CI} AND NOT DEFINED ENV{NANOEM_DISABLE_BUILD_SPIRV_TOOLS})
+  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_SPIRV_TOOLS})
     compile_spirv_tools(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
   if(NOT DEFINED ENV{NANOEM_DISABLE_ICU4C})
