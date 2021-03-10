@@ -25,7 +25,7 @@ jobs:
             libxi-dev \
             libxcursor-dev
       - name: checkout ffmpeg
-        run: git https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
+        run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: build all dependencies of nanoem
         run: |
           CC="clang-6.0" \
