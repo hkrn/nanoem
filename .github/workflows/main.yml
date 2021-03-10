@@ -28,6 +28,8 @@ jobs:
             libxcursor-dev
       - name: checkout ffmpeg
         run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
+      - name: checkout glfw
+        run: git clone https://github.com/glfw/glfw.git dependencies/glfw
       - name: build all dependencies of nanoem
         run: |
           cd $GITHUB_WORKSPACE
