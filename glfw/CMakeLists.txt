@@ -59,7 +59,7 @@ function(compile_vertex_shader_spirv _source _include_path _intermediate_path _o
   # vertex shader with SPIR-V
   set(intermediate_spirv_vs_filename "${_intermediate_path}/${source_without_extension}_vs.spv")
   set(output_spirv_vs_filename "${_output_path}/${source_without_extension}_vs_spirv.h")
-  if(NANOEM_ENABLE_SHADER_OPTIMIZED)
+  if(NANOEM_ENABLE_SHADER_OPTIMIZED AND SPIRV_OPT_PATH)
     add_custom_command(OUTPUT ${intermediate_spirv_vs_filename}
                        COMMAND ${GLSLANG_PATH}
                          -I${_include_path}
