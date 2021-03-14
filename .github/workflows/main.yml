@@ -9,12 +9,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CC: clang-6.0
+      CXX: clang++-6.0
+      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
     steps:
       - name: checkout
         uses: actions/checkout@v2
         with:
           submodules: recursive
-      - name: setup
+      - name: setup prerequisite packages
         run: |
           sudo apt-get install -y \
             clang-6.0 \
@@ -32,27 +37,16 @@ jobs:
         run: git clone https://github.com/glfw/glfw.git dependencies/glfw
       - name: build all dependencies of nanoem
         run: |
-          cd $GITHUB_WORKSPACE
-          CC="clang-6.0" \
-          CXX="clang++-6.0" \
-          DEPS_PATH=$PWD/out/dependencies \
-          FX9_BUILD_DEPENDENCIES_DIRECTORY=$DEPS_PATH \
-          NANOEM_BUILD_DEPENDENCIES_DIRECTORY=$DEPS_PATH \
           NANOEM_TARGET_ARCHITECTURES="x86_64" \
           NANOEM_TARGET_CONFIGURATIONS="debug;release" \
           NANOEM_TARGET_COMPILER="clang" \
           NANOEM_DISABLE_BUILD_SENTRY_NATIVE="1" \
-          cmake -DCONFIG=release -P $PWD/scripts/build.cmake
+          NANOEM_DISABLE_BUILD_SPIRV_TOOLS="1" \
+          cmake -DCONFIG=release -P $GITHUB_WORKSPACE/scripts/build.cmake
       - name: build nanoem itself
         run: |
-          cd $GITHUB_WORKSPACE
-          export DEPS_PATH=$PWD/out/dependencies
-          mkdir -p $PWD/out/core
-          cd $PWD/out/core
-          CC="clang-6.0" \
-          CXX="clang++-6.0" \
-          FX9_BUILD_DEPENDENCIES_DIRECTORY=$DEPS_PATH \
-          NANOEM_BUILD_DEPENDENCIES_DIRECTORY=$DEPS_PATH \
+          mkdir -p $GITHUB_WORKSPACE/out/core
+          cd $GITHUB_WORKSPACE/out/core
           cmake \
             -DCMAKE_INSTALL_PREFIX=$PWD/install-root \
             -DCPACK_PACKAGING_INSTALL_PREFIX=$CIRCLE_ARTIFACTS \
@@ -61,9 +55,8 @@ jobs:
             -DNANOEM_ENABLE_GLFW=ON \
             -DNANOEM_ENABLE_ICU=ON \
             -DNANOEM_ENABLE_NMD=ON \
-            -DNANOEM_ENABLE_SHADER_OPTIMIZED=ON \
-            -DNANOEM_ENABLE_UPDATE_CREDITS=ON \
             -DNANOEM_ENABLE_TEST=ON \
+            -DNANOEM_ENABLE_UPDATE_CREDITS=ON \
             -DNANOEM_INSTALL_EFFECT_PLUGIN=ON \
             -DNANOEM_INSTALL_FFMPEG_PLUGIN=ON \
             -DNANOEM_INSTALL_GIF_PLUGIN=OFF \
@@ -80,3 +73,44 @@ jobs:
         run: |
           cd $GITHUB_WORKSPACE/out/core
           cmake --build . --target test
+  codeql:
+    runs-on: ubuntu-latest
+    env:
+      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: initialize CodeQL
+        uses: github/codeql-action/init@v1
+        with:
+          languages: cpp
+          config-file: ${{ github.workspace }}/.github/codeql/codeql-config.yml
+      - name: setup prerequisite packages
+        run: |
+          sudo apt-get install -y \
+            cmake \
+            libicu-dev \
+            libgtk-3-dev \
+            libglu1-mesa-dev \
+            ninja-build \
+            xorg-dev \
+            libxi-dev \
+            libxcursor-dev
+      - name: checkout glfw
+        run: git clone https://github.com/glfw/glfw.git dependencies/glfw
+      - name: build all dependencies of nanoem
+        run: |
+          cd $GITHUB_WORKSPACE
+          NANOEM_TARGET_ARCHITECTURES="x86_64" \
+          NANOEM_TARGET_CONFIGURATIONS="debug;release" \
+          NANOEM_TARGET_COMPILER="gcc" \
+          NANOEM_DISABLE_BUILD_SENTRY_NATIVE="1" \
+          NANOEM_DISABLE_BUILD_SPIRV_TOOLS="1" \
+          cmake -DCONFIG=release -P $PWD/scripts/build.cmake
+      - name: autobuild
+        uses: github/codeql-action/autobuild@v1
+      - name: perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v1

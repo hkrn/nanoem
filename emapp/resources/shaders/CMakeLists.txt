@@ -91,7 +91,7 @@ function(nanoem_emapp_shader_compile_vertex_shader_spirv _source _include_path _
   # vertex shader with SPIR-V
   set(intermediate_spirv_vs_filename "${_intermediate_path}/${source_without_extension}_vs.spv")
   set(output_spirv_vs_filename "${_output_path}/${source_without_extension}_vs_spirv.h")
-  if(NANOEM_ENABLE_SHADER_OPTIMIZED)
+  if(NANOEM_ENABLE_SHADER_OPTIMIZED AND SPIRV_OPT_PATH)
     add_custom_command(OUTPUT ${intermediate_spirv_vs_filename}
                        COMMAND ${GLSLANG_PATH} ARGS
                          -I${_include_path}
@@ -236,7 +236,7 @@ function(nanoem_emapp_shader_compile_pixel_shader_spirv _source _include_path _i
   # pixel shader with SPIR-V
   set(intermediate_spirv_fs_filename "${_intermediate_path}/${source_without_extension}_fs.spv")
   set(output_spirv_fs_filename "${_output_path}/${source_without_extension}_fs_spirv.h")
-  if(NANOEM_ENABLE_SHADER_OPTIMIZED)
+  if(NANOEM_ENABLE_SHADER_OPTIMIZED AND SPIRV_OPT_PATH)
     add_custom_command(OUTPUT ${intermediate_spirv_fs_filename}
                        COMMAND ${GLSLANG_PATH} ARGS
                          -I${_include_path}
@@ -365,7 +365,7 @@ function(nanoem_emapp_shader_compile_compute_shader_spirv _source _include_path 
   # vertex shader with SPIR-V
   set(intermediate_spirv_cs_filename "${_intermediate_path}/${source_without_extension}_cs.spv")
   set(output_spirv_cs_filename "${_output_path}/${source_without_extension}_cs_spirv.h")
-  if(NANOEM_ENABLE_SHADER_OPTIMIZED)
+  if(NANOEM_ENABLE_SHADER_OPTIMIZED AND SPIRV_OPT_PATH)
     add_custom_command(OUTPUT ${intermediate_spirv_cs_filename}
                        COMMAND ${GLSLANG_PATH} ARGS
                          -I${_include_path}
