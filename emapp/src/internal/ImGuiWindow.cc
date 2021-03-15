@@ -743,7 +743,7 @@ ImGuiWindow::setFontPointSize(nanoem_f32_t pointSize)
     id.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     sg_range &content = id.data.subimage[0][0];
     content.ptr = pixels;
-    content.size = width * height * 4;
+    content.size = nanoem_rsize_t(4) * width * height;
     sg::destroy_image(m_atlasImage);
     m_atlasImage = sg::make_image(&id);
     nanoem_assert(sg::query_image_state(m_atlasImage) == SG_RESOURCESTATE_VALID, "font atlas must be valid");

@@ -423,7 +423,7 @@ ImageLoader::decodeAnimatedPNG(IFileReader *reader, Error &error)
             ByteArray compositionImageData, buffer;
             MemoryWriter writer(&buffer);
             const nanoem_u32_t width = animation->m_header.m_width, height = animation->m_header.m_height;
-            compositionImageData.resize(width * height * 4);
+            compositionImageData.resize(nanoem_rsize_t(4) * width * height);
             for (APNGImage::FrameSequenceList::const_iterator it = animation->m_frames.begin(),
                                                               end = animation->m_frames.end();
                  it != end; ++it) {
@@ -788,7 +788,7 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         desc.wrap_u = desc.wrap_v = container.m_wrap;
         sg_range &content = desc.data.subimage[0][0];
         content.ptr = data;
-        content.size = width * height * 4;
+        content.size = nanoem_rsize_t(4) * width * height;
         textureHandle = drawable->uploadImage(container.m_name, desc);
         stbi_image_free(data);
     }

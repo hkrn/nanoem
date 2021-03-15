@@ -110,7 +110,7 @@ DecoderPluginBasedBackgroundVideoRenderer::flush()
         ByteArray bytes;
         Error error;
         if (!proxy.decodeVideoFrame(m_offset.second * kBaseFPS, bytes, error) || bytes.empty()) {
-            bytes.resize(proxy.width() * proxy.height() * 4);
+            bytes.resize(nanoem_rsize_t(4) * proxy.width() * proxy.height());
             memset(bytes.data(), 0xff, bytes.size());
         }
         sg_image_data content;
