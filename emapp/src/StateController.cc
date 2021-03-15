@@ -166,12 +166,6 @@ protected:
                 draggingState = createCameraZoomState(logicalScalePosition, project);
             }
         }
-        else if (rectangleType == Project::kRectangleEffect) {
-            m_stateControllerPtr->toggleEditingMode(Project::kEditingModeEffect);
-        }
-        else if (rectangleType == Project::kRectangleModelEditing) {
-            m_stateControllerPtr->toggleEditingMode(Project::kEditingModeModel);
-        }
         return draggingState;
     }
     void
@@ -1254,7 +1248,7 @@ StateController::setPrimaryDraggingState(Project *project, const Vector2SI32 &lo
         IState *state = nullptr;
         if (const Model *model = project->activeModel()) {
             const IModelObjectSelection *selection = model->selection();
-            if (!project->isModelEditing()) {
+            if (!project->isModelEditingEnabled()) {
                 if (selection->isBoxSelectedBoneModeEnabled()) {
                     state = nanoem_new(DraggingBoxSelectedBoneState(this, m_applicationPtr));
                 }
@@ -1283,6 +1277,7 @@ StateController::setPrimaryDraggingState(Project *project, const Vector2SI32 &lo
                 case IModelObjectSelection::kEditingTypeMorph:
                 case IModelObjectSelection::kEditingTypeNone:
                 default:
+                    state = nanoem_new(DraggingCameraState(this, m_applicationPtr, true));
                     break;
                 }
             }

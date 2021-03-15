@@ -589,6 +589,7 @@ function(compile_all_repositories _generator _toolset_option _compiler _arch _co
       set(_path "${_item}/out/${_platform}/${_compiler}")
       if(EXISTS ${_path})
         file(CREATE_LINK ${_path}/ub ${_path}/arm64 SYMBOLIC)
+        file(CREATE_LINK ${_path}/ub ${_path}/x86_64 SYMBOLIC)
       endif()
     endforeach()
   endif()

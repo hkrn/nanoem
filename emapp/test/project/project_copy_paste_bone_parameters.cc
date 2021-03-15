@@ -45,8 +45,7 @@ TEST_CASE("project_copy_paste_bone_parameters", "[emapp][project]")
     activeModel->selection()->addAllBones();
     SECTION("apply only on select mode")
     {
-        const Project::EditingMode modes[] = { Project::kEditingModeRotate, Project::kEditingModeMove,
-            Project::kEditingModeEffect };
+        const Project::EditingMode modes[] = { Project::kEditingModeRotate, Project::kEditingModeMove };
         for (auto it : modes) {
             project->setEditingMode(it);
             project->handleCopyAction(error);

@@ -327,6 +327,7 @@ ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
     , m_requestedScrollHereTrack(nullptr)
     , m_context(nullptr)
     , m_debugger(nullptr)
+    , m_pivotMatrix(Constants::kIdentity)
     , m_draggingMarkerPanelRect(Constants::kZeroV4)
     , m_elapsedTime(0)
     , m_currentMemoryBytes(0)
@@ -1709,14 +1710,15 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     if (m_menu) {
         m_menu->draw(m_debugger);
     }
-    {
+    
+    if (!project->isModelEditingEnabled()) {
         const ImGuiStyle &style = ImGui::GetStyle();
         const nanoem_f32_t panelHeight =
             (ImGui::GetFrameHeightWithSpacing() * 8 + style.ItemSpacing.y * 6 + style.WindowPadding.y * 2) *
             (1.0f / deviceScaleRatio);
         const ImVec2 &size = ImGui::GetContentRegionAvail();
         const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
-                           viewportHeight = size.y - panelHeight * deviceScaleRatio;
+                           viewportHeight = size.y - (panelHeight * deviceScaleRatio);
         drawTimeline(timelineWidth, viewportHeight, project);
         ImGui::SameLine();
         ImVec2 posFrom(ImGui::GetCursorScreenPos());
@@ -1724,8 +1726,6 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
             handleVerticalSplitter(posFrom, size, viewportHeight, deviceScaleRatio);
         }
-    }
-    {
         Model *activeModel = project->activeModel();
         ImGui::BeginChild("panel", ImGui::GetContentRegionAvail(), true);
         const ImVec2 &innerSize = ImGui::GetContentRegionAvail();
@@ -1750,6 +1750,10 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         ImGui::SameLine();
         drawPlayPanel(panelSize, project);
         ImGui::EndChild();
+    }
+    else {
+        const ImVec2 &size = ImGui::GetContentRegionAvail();
+        drawViewport(size.y, project);
     }
     ImGui::PopStyleVar();
     ImGui::End();
@@ -2693,8 +2697,8 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     ImVec2 offset = ImGui::GetCursorScreenPos(), size = ImGui::GetContentRegionAvail();
     size.y -= ImGui::GetFrameHeightWithSpacing();
     const Vector4 viewportLayout(offset.x, offset.y, size.x, size.y);
+    bool hovered = ImGui::IsWindowHovered();
     project->resizeUniformedViewportLayout(viewportLayout / deviceScaleRatio);
-    project->setViewportHovered(ImGui::IsWindowHovered());
     const Vector4 viewportImageRect(createViewportImageRect(project, viewportLayout));
     const sg_image viewportImageHandle = project->viewportPrimaryImage();
     ImGui::Dummy(size);
@@ -2716,15 +2720,20 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     }
     drawList->AddImage(
         reinterpret_cast<ImTextureID>(viewportImageHandle.id), viewportImageFrom, viewportImageTo, uv0, uv1);
-    if (project->isModelEditing()) {
-        Matrix4x4 view, projection, matrix(1);
+    if (project->isModelEditingEnabled()) {
+        Matrix4x4 view, projection, delta;
         ImGuizmo::SetDrawlist(drawList);
         ImGuizmo::SetRect(offset.x, offset.y, size.x, size.y);
         project->globalCamera()->getViewTransform(view, projection);
-        ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(matrix), 1);
         ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
         ImGuizmo::MODE mode = ImGuizmo::LOCAL;
-        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode, glm::value_ptr(matrix));
+        ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(m_pivotMatrix), 1);
+        if (ImGuizmo::IsOver()) {
+            hovered = false;
+        }
+        if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode, glm::value_ptr(m_pivotMatrix), glm::value_ptr(delta))) {
+            m_pivotMatrix *= delta;
+        }
     }
     if (m_viewportOverlayPtr) {
         m_primitive2D.setBaseOffset(offset);
@@ -2743,6 +2752,7 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     }
     drawList->PopClipRect();
     drawViewportParameterBox(project);
+    project->setViewportHovered(hovered);
     ImGui::EndChild();
 }
 

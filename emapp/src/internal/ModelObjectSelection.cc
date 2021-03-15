@@ -514,7 +514,7 @@ ModelObjectSelection::areAllBonesMovable() const NANOEM_DECL_NOEXCEPT
     else {
         movable = nanoemModelBoneIsMovable(activeBone) != 0;
     }
-    return movable && !m_parent->project()->isModelEditing();
+    return movable && !m_parent->project()->isModelEditingEnabled();
 }
 
 bool
@@ -535,7 +535,7 @@ ModelObjectSelection::areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT
     else {
         rotateable = nanoemModelBoneIsRotateable(activeBone) != 0;
     }
-    return rotateable && !m_parent->project()->isModelEditing();
+    return rotateable && !m_parent->project()->isModelEditingEnabled();
 }
 
 bool

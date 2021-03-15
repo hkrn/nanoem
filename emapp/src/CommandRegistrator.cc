@@ -1539,7 +1539,7 @@ CommandRegistrator::internalMoveAllSelectedSelfShadowKeyframes(
 bool
 CommandRegistrator::canRegisterMotionCommand() const NANOEM_DECL_NOEXCEPT
 {
-    return !(m_project->isPlaying() || m_project->isModelEditing());
+    return !(m_project->isPlaying() || m_project->isModelEditingEnabled());
 }
 
 } /* namespace nanoem */

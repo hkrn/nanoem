@@ -131,8 +131,6 @@ public:
         kEditingModeSelect,
         kEditingModeMove,
         kEditingModeRotate,
-        kEditingModeModel,
-        kEditingModeEffect,
         kEditingModeMaxEnum
     };
     enum FilePathMode {
@@ -152,8 +150,6 @@ public:
         kRectangleTransformCoordinateType,
         kRectangleCameraLookAt,
         kRectangleCameraZoom,
-        kRectangleEffect,
-        kRectangleModelEditing,
         kRectangleActualFPS,
         kRectangleTypeMaxEnum,
     };
@@ -651,7 +647,6 @@ public:
     ITrack *selectedTrack() NANOEM_DECL_NOEXCEPT;
     void setSelectedTrack(ITrack *value);
     EditingMode editingMode() const NANOEM_DECL_NOEXCEPT;
-    bool isModelEditing() const NANOEM_DECL_NOEXCEPT;
     void setEditingMode(EditingMode value);
     FilePathMode filePathMode() const NANOEM_DECL_NOEXCEPT;
     void setFilePathMode(FilePathMode value);
@@ -743,6 +738,8 @@ public:
     void setMipmapEnabled(bool value);
     bool isPowerSavingEnabled() const NANOEM_DECL_NOEXCEPT;
     void setPowerSavingEnabled(bool value);
+    bool isModelEditingEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setModelEditingEnabled(bool value);
     bool isActive() const NANOEM_DECL_NOEXCEPT;
     void setActive(bool value);
 

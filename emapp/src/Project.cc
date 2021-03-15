@@ -100,6 +100,7 @@ static const nanoem_u64_t kEnablePhysicsSimulationForBoneKeyframe = 1ull << 26;
 static const nanoem_u64_t kEnableImageAnisotropy = 1ull << 27;
 static const nanoem_u64_t kEnableImageMipmap = 1ull << 28;
 static const nanoem_u64_t kEnablePowerSaving = 1ull << 29;
+static const nanoem_u64_t kEnableModelEditing = 1ull << 30;
 
 static const nanoem_u64_t kPrivateStateInitialValue = kDisplayTransformHandle | kDisplayUserInterface |
     kEnableMotionMerge | kEnableUniformedViewportImageSize | kEnableFPSCounter | kEnablePerformanceMonitor |
@@ -5197,12 +5198,6 @@ Project::editingMode() const NANOEM_DECL_NOEXCEPT
     return m_editingMode;
 }
 
-bool
-Project::isModelEditing() const NANOEM_DECL_NOEXCEPT
-{
-    return m_editingMode == Project::kEditingModeModel;
-}
-
 void
 Project::setEditingMode(EditingMode value)
 {
@@ -5917,6 +5912,18 @@ Project::setPowerSavingEnabled(bool value)
 }
 
 bool
+Project::isModelEditingEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kEnableModelEditing, m_stateFlags);
+}
+
+void
+Project::setModelEditingEnabled(bool value)
+{
+    EnumUtils::setEnabled(kEnableModelEditing, m_stateFlags, value);
+}
+
+bool
 Project::isActive() const NANOEM_DECL_NOEXCEPT
 {
     return m_active;
@@ -5964,14 +5971,6 @@ Project::internalQueryRectangle(RectangleType type, const Vector4UI16 &viewportR
     }
     case kRectangleCameraZoom: {
         rect = Vector4UI16(offsetX + shift * 1, offsetCameraY, width, width);
-        break;
-    }
-    case kRectangleEffect: {
-        rect = Vector4UI16(offset.x + margin * 2, offset.y + margin * 2, width, width);
-        break;
-    }
-    case kRectangleModelEditing: {
-        rect = Vector4UI16(offset.x + shift * 1 + margin * 2, offset.y + margin * 2, width, width);
         break;
     }
     case kRectangleOrientateX: {

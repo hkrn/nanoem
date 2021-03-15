@@ -400,6 +400,7 @@ private:
     void *m_debugger;
     BufferMap m_buffers;
     PipelineMap m_pipelines;
+    Matrix4x4 m_pivotMatrix;
     Vector4 m_draggingMarkerPanelRect;
     sg_bindings m_bindings;
     sg_pipeline_desc m_basePipelineDescription;
