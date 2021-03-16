@@ -1087,7 +1087,7 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
         renderDrawList(project, ImGui::GetDrawData(), sampleCount, buffer, m_bindings, pb);
         m_applicationPtr->endDefaultPass();
         batchLazySetAllObjects(project, seekable);
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
         if (EnumUtils::isEnabledT<ImGuiConfigFlags>(ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault(nullptr, this);
@@ -1100,7 +1100,7 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
 void
 ImGuiWindow::drawWindow(Project *project, ImDrawData *drawData, bool load)
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     SG_PUSH_GROUPF("ImGuiWindow::drawWindow(ID=%u, x=%.1f, y=%.1f, width=%.1f, height=%.1f)",
         drawData->OwnerViewport->ID, drawData->OwnerViewport->Pos.x, drawData->OwnerViewport->Pos.y,
         drawData->OwnerViewport->Size.x, drawData->OwnerViewport->Size.y);
@@ -1108,10 +1108,10 @@ ImGuiWindow::drawWindow(Project *project, ImDrawData *drawData, bool load)
     sg::PassBlock pb;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = load ? SG_ACTION_LOAD : SG_ACTION_CLEAR;
-    pa.colors[0].val[0] = 0.0f;
-    pa.colors[0].val[1] = 0.5f;
-    pa.colors[0].val[2] = 0.7f;
-    pa.colors[0].val[3] = 1.0f;
+    pa.colors[0].value.r = 0.0f;
+    pa.colors[0].value.g = 0.5f;
+    pa.colors[0].value.b = 0.7f;
+    pa.colors[0].value.a = 1.0f;
     ImGuiID id = drawData->OwnerViewport->ID;
     int sampleCount;
     m_applicationPtr->beginDefaultPass(id, pa, drawData->DisplaySize.x, drawData->DisplaySize.y, sampleCount);
@@ -1686,7 +1686,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
     saveDefaultStyle(deviceScaleRatio);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     if (EnumUtils::isEnabledT<ImGuiConfigFlags>(ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
         ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowViewport(viewport->ID);
@@ -3856,7 +3856,7 @@ ImGuiWindow::setupDeviceInput(Project *project)
     io.MouseWheelH = static_cast<nanoem_f32_t>(delta.x);
     io.MouseWheel = static_cast<nanoem_f32_t>(delta.y);
     io.DeltaTime = static_cast<nanoem_f32_t>(stm_sec(stm_laptime(&m_elapsedTime)));
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     if (EnumUtils::isEnabledT<ImGuiConfigFlags>(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
         io.MousePos.x = m_screenCursor.m_x;
         io.MousePos.y = m_screenCursor.m_y;
@@ -3981,7 +3981,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
     const Vector4 desiredWindowSize(dialog->desiredWindowSize(deviceScaleWindowSize, deviceScaleRatio));
     ImVec2 actualWindowPos(desiredWindowSize.x, desiredWindowSize.y),
         actualWindowSize(desiredWindowSize.z, desiredWindowSize.w);
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     const ImVec2 &viewportPosition = ImGui::GetMainViewport()->Pos;
     actualWindowPos.x += viewportPosition.x;
     actualWindowPos.y += viewportPosition.y;
@@ -4096,7 +4096,7 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
         m_pipelines.insert(tinystl::make_pair(hash, pipeline));
     }
     if (drawData->CmdListsCount > 0) {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
         const ImVec2 &displayPos = drawData->DisplayPos, &displaySize = drawData->DisplaySize;
         const nanoem_f32_t normalizedWidth = 1.0f / displaySize.x, normalizedHeight = 1.0f / displaySize.y;
         const ImVec4 viewportRect(

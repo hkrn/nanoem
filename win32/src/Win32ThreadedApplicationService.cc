@@ -200,7 +200,7 @@ RenderDocDebugCapture::stop()
 const nanoem_f32_t Win32ThreadedApplicationService::kStandardDPIValue = 96.0f;
 const wchar_t Win32ThreadedApplicationService::kRegisterClassName[] = L"nanoem";
 
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
 
 Win32ThreadedApplicationService::ViewportData::ViewportData()
 {
@@ -625,7 +625,7 @@ Win32ThreadedApplicationService::handleInitializeApplication()
     setupNewProject();
     HWND window = (HWND) m_nativeView;
     ImGuiIO &io = ImGui::GetIO();
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
     ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
     platformIO.Platform_CreateWindow = [](ImGuiViewport *viewport) {
@@ -935,7 +935,7 @@ Win32ThreadedApplicationService::presentDefaultPass(const Project * /* project *
         updateAllMonitors();
         m_requestUpdatingAllMonitors = false;
     }
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     if (HWND window = m_requestWindowClose.exchange(nullptr)) {
         if (ImGuiViewport *viewport = ImGui::FindViewportByPlatformHandle(window)) {
             viewport->PlatformRequestClose = true;
@@ -1060,7 +1060,7 @@ Win32ThreadedApplicationService::setupNewProject()
 void
 Win32ThreadedApplicationService::updateAllMonitors()
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     ImGui::GetPlatformIO().Monitors.resize(0);
     EnumDisplayMonitors(
         nullptr, nullptr,

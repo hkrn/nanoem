@@ -25,7 +25,7 @@ namespace nanoem {
 namespace glfw {
 namespace {
 
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
 struct ViewportWindow {
     ViewportWindow(GLFWApplicationService *parent, GLFWApplicationClient::Bridge *bridge);
     ~ViewportWindow();
@@ -434,7 +434,7 @@ GLFWApplicationService::handleInitializeApplication()
         auto window = static_cast<GLFWwindow *>(userData);
         glfwSetClipboardString(window, value);
     };
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
     ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
     platformIO.Platform_CreateWindow = [](ImGuiViewport *viewport) {
@@ -538,7 +538,7 @@ GLFWApplicationService::handleInitializeApplication()
 void
 GLFWApplicationService::updateAllMonitors()
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     int numMonitors;
     GLFWmonitor **monitors = glfwGetMonitors(&numMonitors);
     ImGuiPlatformIO &io = ImGui::GetPlatformIO();

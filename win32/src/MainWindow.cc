@@ -539,7 +539,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         }
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     case Win32ThreadedApplicationService::ViewportData::kMessageTypeCreateWindow: {
         auto viewport = reinterpret_cast<const ImGuiViewport *>(wparam);
         if (auto userData = static_cast<Win32ThreadedApplicationService::ViewportData *>(viewport->PlatformUserData)) {

@@ -24,7 +24,7 @@ namespace win32 {
 
 class Win32ThreadedApplicationService final : public ThreadedApplicationService {
 public:
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     struct ViewportData {
         enum MessageType {
             kMessageTypeCreateWindow = WM_USER,
