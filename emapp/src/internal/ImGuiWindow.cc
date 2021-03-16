@@ -4312,7 +4312,7 @@ ImGuiWindow::PrimitiveContext::strokeRect(
 {
     const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
     const ImVec2 a(m_offset.x + rect.x, m_offset.y + rect.y), b(a.x + rect.z, a.y + rect.w);
-    ImGui::GetWindowDrawList()->AddRect(a, b, col, roundness, ImDrawCornerFlags_All, thickness * m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddRect(a, b, col, roundness, ImDrawFlags_RoundCornersAll, thickness * m_scaleFactor);
 }
 
 void
@@ -4320,7 +4320,7 @@ ImGuiWindow::PrimitiveContext::fillRect(const Vector4 &rect, const Vector4 &colo
 {
     const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
     const ImVec2 a(m_offset.x + rect.x, m_offset.y + rect.y), b(a.x + rect.z, a.y + rect.w);
-    ImGui::GetWindowDrawList()->AddRectFilled(a, b, col, roundness, ImDrawCornerFlags_All);
+    ImGui::GetWindowDrawList()->AddRectFilled(a, b, col, roundness, ImDrawFlags_RoundCornersAll);
 }
 
 void
