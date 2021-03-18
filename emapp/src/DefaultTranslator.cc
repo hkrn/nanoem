@@ -33,6 +33,8 @@ bool
 DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
 {
     if (Nanoem__Translation__Bundle *bundle = nanoem__translation__bundle__unpack(g_protobufc_allocator, length, ptr)) {
+        bx::MutexScope scope(m_mutex);
+        BX_UNUSED_1(scope);
         m_phrases.clear();
         for (size_t i = 0, numUnits = bundle->n_units; i < numUnits; i++) {
             const Nanoem__Translation__Unit *unit = bundle->units[i];
@@ -54,6 +56,8 @@ DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
 const char *
 DefaultTranslator::findPhrase(const char *text) const NANOEM_DECL_NOEXCEPT
 {
+    bx::MutexScope scope(m_mutex);
+    BX_UNUSED_1(scope);
     StringMap::const_iterator it = m_phrases.find(text);
     return it != m_phrases.end() ? it->second.c_str() : text;
 }
@@ -73,6 +77,8 @@ DefaultTranslator::translate(const char *text) const NANOEM_DECL_NOEXCEPT
 bool
 DefaultTranslator::isTranslatable(const char *text) const NANOEM_DECL_NOEXCEPT
 {
+    bx::MutexScope scope(m_mutex);
+    BX_UNUSED_1(scope);
     return m_phrases.find(text) != m_phrases.end();
 }
 
