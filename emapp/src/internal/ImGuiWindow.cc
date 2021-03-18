@@ -1710,7 +1710,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     if (m_menu) {
         m_menu->draw(m_debugger);
     }
-    
+
     if (!project->isModelEditingEnabled()) {
         const ImGuiStyle &style = ImGui::GetStyle();
         const nanoem_f32_t panelHeight =
@@ -2731,7 +2731,8 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         if (ImGuizmo::IsOver()) {
             hovered = false;
         }
-        if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode, glm::value_ptr(m_pivotMatrix), glm::value_ptr(delta))) {
+        if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode,
+                glm::value_ptr(m_pivotMatrix), glm::value_ptr(delta))) {
             m_pivotMatrix *= delta;
         }
     }

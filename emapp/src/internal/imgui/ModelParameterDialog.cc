@@ -614,7 +614,8 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                 ScopedMutableMaterial material(m_materials[m_materialIndex], activeModel);
                 ScopedMutableModel model(activeModel);
                 nanoem_rsize_t numMaterials, offset = 0, size = 0;
-                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(nanoemMutableModelGetOriginObject(model), &numMaterials);
+                nanoem_model_material_t *const *materials =
+                    nanoemModelGetAllMaterialObjects(nanoemMutableModelGetOriginObject(model), &numMaterials);
                 for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
                     const nanoem_model_material_t *currentMaterialPtr = materials[i];
                     const size_t innerSize = nanoemModelMaterialGetNumVertexIndices(currentMaterialPtr);
@@ -625,11 +626,13 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     offset += innerSize;
                 }
                 nanoem_rsize_t numIndices, rest;
-                const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
+                const nanoem_u32_t *indices =
+                    nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
                 tinystl::vector<nanoem_u32_t, TinySTLAllocator> workingBuffer(numIndices);
                 rest = numIndices - offset - size;
                 memcpy(workingBuffer.data(), indices, numIndices * sizeof(workingBuffer[0]));
-                memmove(workingBuffer.data() + offset, workingBuffer.data() + offset + size, rest * sizeof(workingBuffer[0]));
+                memmove(workingBuffer.data() + offset, workingBuffer.data() + offset + size,
+                    rest * sizeof(workingBuffer[0]));
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices - size, &status);
                 nanoemMutableModelRemoveMaterialObject(model, material, &status);
@@ -657,7 +660,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(DeleteMaterialCommand(materials, m_materialIndex)));
     }
     ImGui::SameLine();
-    struct BaseMoveMaterialCommand :  ImGuiWindow::ILazyExecutionCommand {
+    struct BaseMoveMaterialCommand : ImGuiWindow::ILazyExecutionCommand {
         struct LayoutPosition {
             size_t m_offset;
             size_t m_size;
@@ -667,17 +670,21 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             , m_materialIndex(materialIndex)
         {
         }
-        void move(int destination, const LayoutPosition &from, const LayoutPosition &to, Model *activeModel) {
+        void
+        move(int destination, const LayoutPosition &from, const LayoutPosition &to, Model *activeModel)
+        {
             ScopedMutableMaterial material(m_materials[m_materialIndex], activeModel);
             ScopedMutableModel model(activeModel);
             nanoem_rsize_t numIndices;
-            const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
+            const nanoem_u32_t *indices =
+                nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
             tinystl::vector<nanoem_u32_t, TinySTLAllocator> tempFromBuffer(from.m_size), tempToBuffer(to.m_size);
             memcpy(tempFromBuffer.data(), indices + from.m_offset, from.m_size * sizeof(tempToBuffer[0]));
             memcpy(tempToBuffer.data(), indices + to.m_offset, to.m_size * sizeof(tempToBuffer[0]));
             tinystl::vector<nanoem_u32_t, TinySTLAllocator> workingBuffer(numIndices);
             memcpy(workingBuffer.data(), indices, numIndices * sizeof(workingBuffer[0]));
-            memcpy(workingBuffer.data() + from.m_offset, tempFromBuffer.data(), from.m_size * sizeof(tempFromBuffer[0]));
+            memcpy(
+                workingBuffer.data() + from.m_offset, tempFromBuffer.data(), from.m_size * sizeof(tempFromBuffer[0]));
             memcpy(workingBuffer.data() + to.m_offset, tempToBuffer.data(), to.m_size * sizeof(tempToBuffer[0]));
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
             nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices, &status);
@@ -699,7 +706,8 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                 const nanoem_model_material_t *activeMaterial = m_materials[m_materialIndex];
                 Model *activeModel = project->activeModel();
                 nanoem_rsize_t numMaterials, offset = 0;
-                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
+                nanoem_model_material_t *const *materials =
+                    nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
                 LayoutPosition from, to;
                 int destination = 0;
                 for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
@@ -735,7 +743,8 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                 const nanoem_model_material_t *activeMaterial = m_materials[m_materialIndex];
                 Model *activeModel = project->activeModel();
                 nanoem_rsize_t numMaterials, offset = 0;
-                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
+                nanoem_model_material_t *const *materials =
+                    nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
                 LayoutPosition from, to;
                 int destination = 0;
                 for (nanoem_rsize_t i = 0; i < numMaterials; i++) {

@@ -2152,8 +2152,8 @@ MainWindow::registerAllPrerequisiteEventListeners()
                     StringUtils::getMultiBytesString(userProfilePath, userProfileString);
                     std::string maskedPathString(value, StringUtils::length(value));
                     size_t startPos = 0, len = userProfileString.size() - 1;
-                    while ((startPos = maskedPathString.find(userProfileString.data(), startPos)) !=
-                        std::string::npos) {
+                    while (
+                        (startPos = maskedPathString.find(userProfileString.data(), startPos)) != std::string::npos) {
                         maskedPathString.replace(startPos, len, "{HOME}");
                         startPos += len;
                     }

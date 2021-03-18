@@ -159,7 +159,7 @@ MainWindow::initialize()
                 desc.m_handlerFilePath = json_object_dotget_string(config, "glfw.sentry.handler.path");
                 desc.m_isModelEditingEnabled = preference.isModelEditingEnabled();
                 desc.m_localeName = json_object_dotget_string(config, "project.locale");
-                desc.m_maskString = [](const char* value) { return sentry_value_new_string(value); };
+                desc.m_maskString = [](const char *value) { return sentry_value_new_string(value); };
                 desc.m_rendererName = nullptr;
                 desc.m_transportSendEnvelope = nullptr;
                 desc.m_transportUserData = nullptr;
