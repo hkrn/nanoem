@@ -73,6 +73,7 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 
 @interface MainWindowOpenGLView : NSOpenGLView {
     macos::MainWindow *m_window;
+    NSTrackingArea *m_trackingArea;
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect
@@ -85,6 +86,7 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 
 @interface MainWindowMetalView : MTKView <NSTextInputClient> {
     macos::MainWindow *m_window;
+    NSTrackingArea *m_trackingArea;
 }
 
 - (instancetype)initWithFrame:(CGRect)frameRect device:(id<MTLDevice>)device mainWindow:(macos::MainWindow *)window;
@@ -103,6 +105,18 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
         m_window = window;
     }
     return self;
+}
+
+- (void)updateTrackingAreas
+{
+    if (m_trackingArea != nil) {
+        [self removeTrackingArea:m_trackingArea];
+    }
+    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow |
+        NSTrackingEnabledDuringMouseDrag | NSTrackingCursorUpdate | NSTrackingInVisibleRect | NSTrackingAssumeInside;
+    m_trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds options:options owner:self userInfo:nil];
+    [self addTrackingArea:m_trackingArea];
+    [super updateTrackingAreas];
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
@@ -140,6 +154,11 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 - (void)mouseUp:(NSEvent *)event
 {
     m_window->handleMouseUp(event);
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    m_window->handleMouseExit(event);
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -272,6 +291,18 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
     return self;
 }
 
+- (void)updateTrackingAreas
+{
+    if (m_trackingArea != nil) {
+        [self removeTrackingArea:m_trackingArea];
+    }
+    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow |
+        NSTrackingEnabledDuringMouseDrag | NSTrackingCursorUpdate | NSTrackingInVisibleRect | NSTrackingAssumeInside;
+    m_trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds options:options owner:self userInfo:nil];
+    [self addTrackingArea:m_trackingArea];
+    [super updateTrackingAreas];
+}
+
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
     return handleDraggingEntered(sender);
@@ -307,6 +338,11 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 - (void)mouseUp:(NSEvent *)event
 {
     m_window->handleMouseUp(event);
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    m_window->handleMouseExit(event);
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -747,6 +783,12 @@ MainWindow::handleMouseUp(const NSEvent *event)
         }
         setLastCursorPosition(Vector2());
     }
+}
+
+void
+MainWindow::handleMouseExit(const NSEvent *event)
+{
+    handleMouseUp(event);
 }
 
 void
@@ -1589,7 +1631,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                 BaseApplicationService::SentryDescription desc;
                 NSString *clientUUID = self->m_preference->clientUUID();
                 desc.m_clientUUID = clientUUID.UTF8String;
-                desc.m_databaseDirectoryPath =json_object_dotget_string(config, "macos.sentry.database.path");
+                desc.m_databaseDirectoryPath = json_object_dotget_string(config, "macos.sentry.database.path");
                 desc.m_deviceModelName = hardwareModelName;
                 desc.m_dllFilePath = libSentryDllURL.path.UTF8String;
                 desc.m_dsn = sentryDSN;

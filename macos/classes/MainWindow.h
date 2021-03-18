@@ -71,6 +71,7 @@ public:
     void handleMouseMoved(const NSEvent *event);
     void handleMouseDragged(const NSEvent *event);
     void handleMouseUp(const NSEvent *event);
+    void handleMouseExit(const NSEvent *event);
     void handleRightMouseDown(const NSEvent *event);
     void handleRightMouseDragged(const NSEvent *event);
     void handleRightMouseUp(const NSEvent *event);
