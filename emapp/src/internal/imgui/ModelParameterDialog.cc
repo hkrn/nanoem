@@ -4295,80 +4295,99 @@ void
 ModelParameterDialog::toggleTab(TabType value, Project *project)
 {
     if (value != m_tabType) {
-        switch (m_tabType) {
-        case kTabTypeVertex: {
-            m_activeModel->setShowAllVertexPoints(false);
-            break;
-        }
-        case kTabTypeFace: {
-            m_activeModel->setShowAllVertexFaces(false);
-            break;
-        }
-        case kTabTypeBone: {
-            m_activeModel->setShowAllBones(false);
-            break;
-        }
-        case kTabTypeMorph: {
-            if (Motion *motion = project->resolveMotion(m_activeModel)) {
-                m_activeModel->synchronizeMotion(
-                    motion, project->currentLocalFrameIndex(), 0, PhysicsEngine::kSimulationTimingBefore);
-                m_activeModel->resetAllVertices();
-                m_activeModel->deformAllMorphs(false);
-                m_activeModel->markStagingVertexBufferDirty();
-            }
-            break;
-        }
-        case kTabTypeRigidBody: {
-            m_activeModel->setShowAllRigidBodies(false);
-            break;
-        }
-        case kTabTypeJoint: {
-            m_activeModel->setShowAllJoints(false);
-            break;
-        }
-        case kTabTypeSoftBody: {
-            break;
-        }
-        default:
-            break;
-        }
+        beforeToggleTab(project);
         m_tabType = value;
-        switch (value) {
-        case kTabTypeVertex: {
-            m_activeModel->setShowAllVertexPoints(true);
-            project->setEditingMode(Project::kEditingModeNone);
-            break;
+        afterToggleTab(value, project);
+    }
+}
+
+void
+ModelParameterDialog::beforeToggleTab(Project *project)
+{
+    switch (m_tabType) {
+    case kTabTypeVertex: {
+        m_activeModel->setShowAllVertexPoints(false);
+        break;
+    }
+    case kTabTypeFace: {
+        m_activeModel->setShowAllVertexFaces(false);
+        break;
+    }
+    case kTabTypeBone: {
+        m_activeModel->setShowAllBones(false);
+        break;
+    }
+    case kTabTypeMorph: {
+        if (Motion *motion = project->resolveMotion(m_activeModel)) {
+            m_activeModel->synchronizeMotion(
+                motion, project->currentLocalFrameIndex(), 0, PhysicsEngine::kSimulationTimingBefore);
+            m_activeModel->resetAllVertices();
+            m_activeModel->deformAllMorphs(false);
+            m_activeModel->markStagingVertexBufferDirty();
         }
-        case kTabTypeFace: {
-            m_activeModel->setShowAllVertexFaces(true);
-            project->setEditingMode(Project::kEditingModeNone);
-            break;
-        }
-        case kTabTypeMaterial: {
-            project->setEditingMode(Project::kEditingModeNone);
-            break;
-        }
-        case kTabTypeBone: {
-            m_activeModel->setShowAllBones(true);
-            break;
-        }
-        case kTabTypeRigidBody: {
-            m_activeModel->setShowAllRigidBodies(true);
-            project->setEditingMode(Project::kEditingModeNone);
-            break;
-        }
-        case kTabTypeJoint: {
-            m_activeModel->setShowAllJoints(true);
-            project->setEditingMode(Project::kEditingModeNone);
-            break;
-        }
-        case kTabTypeSoftBody: {
-            project->setEditingMode(Project::kEditingModeNone);
-            break;
-        }
-        default:
-            break;
-        }
+        break;
+    }
+    case kTabTypeRigidBody: {
+        m_activeModel->setShowAllRigidBodies(false);
+        break;
+    }
+    case kTabTypeJoint: {
+        m_activeModel->setShowAllJoints(false);
+        break;
+    }
+    case kTabTypeSoftBody: {
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void
+ModelParameterDialog::afterToggleTab(TabType value, Project *project)
+{
+    switch (value) {
+    case kTabTypeVertex: {
+        m_activeModel->setShowAllVertexPoints(true);
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeVertex);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
+    case kTabTypeFace: {
+        m_activeModel->setShowAllVertexFaces(true);
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeFace);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
+    case kTabTypeMaterial: {
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeMaterial);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
+    case kTabTypeBone: {
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeBone);
+        m_activeModel->setShowAllBones(true);
+        break;
+    }
+    case kTabTypeRigidBody: {
+        m_activeModel->setShowAllRigidBodies(true);
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeRigidBody);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
+    case kTabTypeJoint: {
+        m_activeModel->setShowAllJoints(true);
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeJoint);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
+    case kTabTypeSoftBody: {
+        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeSoftBody);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
+    default:
+        break;
     }
 }
 

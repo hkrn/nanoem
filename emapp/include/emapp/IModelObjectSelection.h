@@ -45,6 +45,7 @@ public:
         kSelectTargetModeTypeCircle,
         kSelectTargetModeTypeMaxEnum
     };
+    
     virtual ~IModelObjectSelection() NANOEM_DECL_NOEXCEPT
     {
     }
@@ -57,6 +58,7 @@ public:
     virtual void addRigidBody(const nanoem_model_rigid_body_t *value) = 0;
     virtual void addJoint(const nanoem_model_joint_t *value) = 0;
     virtual void addSoftBody(const nanoem_model_soft_body_t *value) = 0;
+    virtual void addFace(const Vector3UI32 &value) = 0;
     virtual void addAllBones() = 0;
     virtual void addAllDirtyBones() = 0;
     virtual void addAllMovableBones() = 0;
@@ -69,6 +71,7 @@ public:
     virtual void removeRigidBody(const nanoem_model_rigid_body_t *value) = 0;
     virtual void removeJoint(const nanoem_model_joint_t *value) = 0;
     virtual void removeSoftBody(const nanoem_model_soft_body_t *value) = 0;
+    virtual void removeFace(const Vector3UI32 &value) = 0;
     virtual void removeAllVertices() = 0;
     virtual void removeAllBones() = 0;
     virtual void removeAllMaterials() = 0;
@@ -77,6 +80,7 @@ public:
     virtual void removeAllRigidBodies() = 0;
     virtual void removeAllJoints() = 0;
     virtual void removeAllSoftBodies() = 0;
+    virtual void removeAllFaces() = 0;
     virtual void clearAll() = 0;
     virtual void toggleSelectAndActiveBone(const nanoem_model_bone_t *bone, bool isMultipleSelection) = 0;
 

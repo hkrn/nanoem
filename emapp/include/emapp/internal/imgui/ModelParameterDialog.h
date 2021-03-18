@@ -463,6 +463,8 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softBodyPtr, Project *project);
     bool layoutName(const nanoem_unicode_string_t *namePtr, Project *project, StringUtils::UnicodeStringScope &scope);
     void toggleTab(TabType value, Project *project);
+    void beforeToggleTab(Project *project);
+    void afterToggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
 
     const char *selectedCodecType(const nanoem_codec_type_t type) const NANOEM_DECL_NOEXCEPT;

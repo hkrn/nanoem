@@ -9,6 +9,8 @@
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 
+#include "glm/gtx/hash.hpp"
+
 namespace nanoem {
 namespace internal {
 
@@ -79,6 +81,12 @@ void
 ModelObjectSelection::addSoftBody(const nanoem_model_soft_body_t *value)
 {
     m_selectedSoftBodySet.insert(value);
+}
+
+void 
+ModelObjectSelection::addFace(const Vector3UI32 &value)
+{
+    m_selectedFaceSet.insert(value);
 }
 
 void
@@ -203,6 +211,12 @@ ModelObjectSelection::removeSoftBody(const nanoem_model_soft_body_t *value)
     m_selectedSoftBodySet.erase(value);
 }
 
+void 
+ModelObjectSelection::removeFace(const Vector3UI32 &value)
+{
+    m_selectedFaceSet.erase(value);
+}
+
 void
 ModelObjectSelection::removeAllVertices()
 {
@@ -253,6 +267,12 @@ ModelObjectSelection::removeAllSoftBodies()
     m_selectedSoftBodySet.clear();
 }
 
+void 
+ModelObjectSelection::removeAllFaces()
+{
+    m_selectedFaceSet.clear();
+}
+
 void
 ModelObjectSelection::clearAll()
 {
@@ -264,6 +284,7 @@ ModelObjectSelection::clearAll()
     removeAllMaterials();
     removeAllRigidBodies();
     removeAllSoftBodies();
+    removeAllFaces();
     m_hoveredBone = nullptr;
     m_hoveredJoint = nullptr;
     m_hoveredLabel = nullptr;
@@ -582,3 +603,12 @@ ModelObjectSelection::setTargetMode(SelectTargetModeType value)
 
 } /* namespace internal */
 } /* namespace nanoem */
+
+namespace tinystl {
+
+template<>
+inline size_t hash(const nanoem::Vector3UI32 &value) {
+    return std::hash<nanoem::Vector3UI32>()(value);
+}
+
+} /* namespace tinystl */

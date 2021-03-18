@@ -26,6 +26,7 @@ public:
     void addRigidBody(const nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
     void addJoint(const nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
     void addSoftBody(const nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
+    void addFace(const Vector3UI32 &value) NANOEM_DECL_OVERRIDE;
     void addAllBones() NANOEM_DECL_OVERRIDE;
     void addAllDirtyBones() NANOEM_DECL_OVERRIDE;
     void addAllMovableBones() NANOEM_DECL_OVERRIDE;
@@ -38,6 +39,7 @@ public:
     void removeRigidBody(const nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
     void removeJoint(const nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
     void removeSoftBody(const nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
+    void removeFace(const Vector3UI32 &value) NANOEM_DECL_OVERRIDE;
     void removeAllVertices() NANOEM_DECL_OVERRIDE;
     void removeAllBones() NANOEM_DECL_OVERRIDE;
     void removeAllMaterials() NANOEM_DECL_OVERRIDE;
@@ -46,6 +48,7 @@ public:
     void removeAllRigidBodies() NANOEM_DECL_OVERRIDE;
     void removeAllJoints() NANOEM_DECL_OVERRIDE;
     void removeAllSoftBodies() NANOEM_DECL_OVERRIDE;
+    void removeAllFaces() NANOEM_DECL_OVERRIDE;
     void clearAll() NANOEM_DECL_OVERRIDE;
     void toggleSelectAndActiveBone(const nanoem_model_bone_t *bone, bool isMultipleSelection) NANOEM_DECL_OVERRIDE;
 
@@ -95,6 +98,8 @@ public:
     void setTargetMode(SelectTargetModeType value) NANOEM_DECL_OVERRIDE;
 
 private:
+    typedef tinystl::unordered_set<Vector3UI32, TinySTLAllocator> FaceSet;
+    
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;
     model::Bone::Set m_selectedBoneSet;
@@ -104,6 +109,7 @@ private:
     model::RigidBody::Set m_selectedRigidBodySet;
     model::Joint::Set m_selectedJointSet;
     model::SoftBody::Set m_selectedSoftBodySet;
+    FaceSet m_selectedFaceSet;
     nanoem_model_vertex_t *m_hoveredVertex;
     nanoem_model_material_t *m_hoveredMaterial;
     nanoem_model_bone_t *m_hoveredBone;
