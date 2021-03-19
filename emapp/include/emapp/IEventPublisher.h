@@ -73,6 +73,7 @@ public:
     virtual void publishToggleActiveAccessoryAddBlendEnabledEvent(bool value) = 0;
     virtual void publishToggleActiveAccessoryGroundShadowEnabledEvent(bool value) = 0;
     virtual void publishToggleActiveAccessoryVisibleEvent(bool value) = 0;
+    virtual void publishToggleModelEditingEnabledEvent(bool value) = 0;
     virtual void publishConsumePassEvent(nanoem_u64_t globalFrameIndex) = 0;
     virtual void publishAddModalDialogEvent() = 0;
     virtual void publishClearModalDialogEvent() = 0;

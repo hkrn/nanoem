@@ -2355,12 +2355,15 @@ Project::clearBackgroundVideo()
 void
 Project::play()
 {
-    const nanoem_frame_index_t durationAt = duration(), localFrameIndexAt = currentLocalFrameIndex();
-    preparePlaying();
-    synchronizeAllMotions(playingSegment().frameIndexFrom(), 0, PhysicsEngine::kSimulationTimingBefore);
-    resetPhysicsSimulation();
-    m_audioPlayer->play();
-    eventPublisher()->publishPlayEvent(durationAt, localFrameIndexAt);
+    const bool playable = !isModelEditingEnabled();
+    if (playable) {
+        const nanoem_frame_index_t durationAt = duration(), localFrameIndexAt = currentLocalFrameIndex();
+        preparePlaying();
+        synchronizeAllMotions(playingSegment().frameIndexFrom(), 0, PhysicsEngine::kSimulationTimingBefore);
+        resetPhysicsSimulation();
+        m_audioPlayer->play();
+        eventPublisher()->publishPlayEvent(durationAt, localFrameIndexAt);
+    }
 }
 
 void
@@ -2394,7 +2397,8 @@ Project::pause(bool force)
 void
 Project::resume(bool force)
 {
-    if (force || m_audioPlayer->wasPlaying()) {
+    const bool resumeable = (force || m_audioPlayer->wasPlaying()) && !isModelEditingEnabled();
+    if (resumeable) {
         const nanoem_frame_index_t lastDuration = duration(), lastLocalFrameIndex = currentLocalFrameIndex();
         preparePlaying();
         m_audioPlayer->resume();
@@ -2574,7 +2578,7 @@ Project::pushUndo(undo_command_t *command)
 bool
 Project::canSeek() const NANOEM_DECL_NOEXCEPT
 {
-    bool seekable = true;
+    bool seekable = isModelEditingEnabled();
     if (const Model *model = activeModel()) {
         seekable &= !(model->hasAnyDirtyBone() && isConfirmSeekEnabled(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_BONE));
         seekable &= !(model->hasAnyDirtyMorph() && isConfirmSeekEnabled(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MORPH));
@@ -5920,7 +5924,10 @@ Project::isModelEditingEnabled() const NANOEM_DECL_NOEXCEPT
 void
 Project::setModelEditingEnabled(bool value)
 {
-    EnumUtils::setEnabled(kEnableModelEditing, m_stateFlags, value);
+    if (isModelEditingEnabled() != value) {
+        EnumUtils::setEnabled(kEnableModelEditing, m_stateFlags, value);
+        eventPublisher()->publishToggleModelEditingEnabledEvent(value);
+    }
 }
 
 bool

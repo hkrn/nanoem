@@ -302,6 +302,11 @@ public:
         BX_UNUSED_1(value);
     }
     void
+    publishToggleModelEditingEnabledEvent(bool value) NANOEM_DECL_OVERRIDE
+    {
+        BX_UNUSED_1(value);
+    }
+    void
     publishUpdateProgressEvent(
         nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text) NANOEM_DECL_OVERRIDE
     {

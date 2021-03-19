@@ -837,6 +837,7 @@ ApplicationMenuBuilder::build()
     m_client->addCanPasteEventListener(handleCanPasteEvent, this, false);
     m_client->addSetWindowDevicePixelRatioEventListener(handleSetWindowPixelRatioEvent, this, false);
     m_client->addSetViewportDevicePixelRatioEventListener(handleSetViewportPixelRatioEvent, this, false);
+    m_client->addToggleModelEditingEnabledEventListener(handleToggleModelEditingEnabledEvent, this, false);
 }
 
 void
@@ -1800,6 +1801,31 @@ ApplicationMenuBuilder::handleSetViewportPixelRatioEvent(void *userData, nanoem_
 {
     ApplicationMenuBuilder *self = static_cast<ApplicationMenuBuilder *>(userData);
     self->setMenuItemChecked(kMenuItemTypeProjectEnableHighResolutionViewport, value > 1.0f);
+}
+
+void 
+ApplicationMenuBuilder::handleToggleModelEditingEnabledEvent(void *userData, bool value)
+{
+    ApplicationMenuBuilder *self = static_cast<ApplicationMenuBuilder *>(userData);
+    const bool invert = value ? false : true;
+    self->setMenuItemEnable(kMenuItemTypeProjectPlay, invert);
+    self->setMenuItemEnable(kMenuItemTypeFileImportCameraMotion, invert);
+    self->setMenuItemEnable(kMenuItemTypeFileImportLightMotion, invert);
+    self->setMenuItemEnable(kMenuItemTypeFileImportModelMotion, invert);
+    self->setMenuItemEnable(kMenuItemTypeModelRegisterKeyframe, invert);
+    self->setMenuItemEnable(kMenuItemTypeMotionInsertEmptyTimelineFrame, invert);
+    self->setMenuItemEnable(kMenuItemTypeMotionRemoveTimelineFrame, invert);
+    self->setMenuItemEnable(kMenuItemTypeMotionReset, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditSelectAll, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRegisterAllMorphs, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllEyeKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllEyebrowKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllLipKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeModelRemoveAllSelectedKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeCameraRegisterKeyframe, invert);
+    self->setMenuItemEnable(kMenuItemTypeCameraRemoveAllSelectedKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeLightRegisterKeyframe, invert);
+    self->setMenuItemEnable(kMenuItemTypeLightRemoveAllSelectedKeyframes, invert);
 }
 
 void

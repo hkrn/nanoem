@@ -2499,6 +2499,15 @@ BaseApplicationClient::addToggleActiveAccessoryVisibleEventListener(
     m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_ACTIVE_ACCESSORY_VISIBLE].push_back(l);
 }
 
+void 
+BaseApplicationClient::addToggleModelEditingEnabledEventListener(
+    pfn_handleToggleModelEditingEnabledEvent listener, void *userData, bool once)
+{
+    EventListener l = { userData, once, { nullptr } };
+    l.u.handleToggleModelEditingEnabledEvent = listener;
+    m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED].push_back(l);
+}
+
 void
 BaseApplicationClient::addUpdateProgressEventListener(pfn_handleUpdateProgressEvent listener, void *userData, bool once)
 {
@@ -3996,6 +4005,21 @@ BaseApplicationClient::dispatchEventMessage(const nanoem_u8_t *data, size_t size
                     c.u.getHandleFileURI(c.userData, event->get_handle_file_uri->handle, fileURI);
                 }
                 m_requestCallbacks.erase(it);
+            }
+            break;
+        }
+        case NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED: {
+            EventListenerListMap::iterator it = m_eventListeners.find(event->type_case);
+            if (it != m_eventListeners.end()) {
+                EventListenerList &listeners = it->second;
+                const Nanoem__Application__ToggleModelEditingEnabledEvent *e =
+                    event->toggle_model_editing_enabled;
+                bool enabled = e->value != 0;
+                for (EventListenerList::iterator it2 = listeners.begin(); it2 != listeners.end();) {
+                    const EventListener &listener = *it2;
+                    listener.u.handleToggleModelEditingEnabledEvent(listener.userData, enabled);
+                    it2 = listener.once ? listeners.erase(it2) : it2 + 1;
+                }
             }
             break;
         }

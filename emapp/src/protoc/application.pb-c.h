@@ -302,6 +302,7 @@ typedef struct _Nanoem__Application__CanCopyEvent Nanoem__Application__CanCopyEv
 typedef struct _Nanoem__Application__CanPasteEvent Nanoem__Application__CanPasteEvent;
 typedef struct _Nanoem__Application__SetWindowDevicePixelRatioEvent Nanoem__Application__SetWindowDevicePixelRatioEvent;
 typedef struct _Nanoem__Application__SetViewportDevicePixelRatioEvent Nanoem__Application__SetViewportDevicePixelRatioEvent;
+typedef struct _Nanoem__Application__ToggleModelEditingEnabledEvent Nanoem__Application__ToggleModelEditingEnabledEvent;
 typedef struct _Nanoem__Application__PingPongEvent Nanoem__Application__PingPongEvent;
 typedef struct _Nanoem__Application__IsProjectDirtyResponseEvent Nanoem__Application__IsProjectDirtyResponseEvent;
 typedef struct _Nanoem__Application__GetAllModelBonesResponseEvent Nanoem__Application__GetAllModelBonesResponseEvent;
@@ -4154,6 +4155,16 @@ struct  _Nanoem__Application__SetViewportDevicePixelRatioEvent
     , 0 }
 
 
+struct  _Nanoem__Application__ToggleModelEditingEnabledEvent
+{
+  ProtobufCMessage base;
+  protobuf_c_boolean value;
+};
+#define NANOEM__APPLICATION__TOGGLE_MODEL_EDITING_ENABLED_EVENT__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_model_editing_enabled_event__descriptor) \
+    , 0 }
+
+
 struct  _Nanoem__Application__PingPongEvent
 {
   ProtobufCMessage base;
@@ -4399,6 +4410,7 @@ typedef enum {
   NANOEM__APPLICATION__EVENT__TYPE_CAN_PASTE_EVENT = 88,
   NANOEM__APPLICATION__EVENT__TYPE_SET_WINDOW_DEVICE_PIXEL_RATIO_EVENT = 89,
   NANOEM__APPLICATION__EVENT__TYPE_SET_VIEWPORT_DEVICE_PIXEL_RATIO_EVENT = 90,
+  NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED = 91,
   NANOEM__APPLICATION__EVENT__TYPE_PING_PONG = 1000,
   NANOEM__APPLICATION__EVENT__TYPE_IS_PROJECT_DIRTY = 1001,
   NANOEM__APPLICATION__EVENT__TYPE_GET_ALL_MODEL_BONES = 1002,
@@ -4503,6 +4515,7 @@ struct  _Nanoem__Application__Event
     Nanoem__Application__CanPasteEvent *can_paste_event;
     Nanoem__Application__SetWindowDevicePixelRatioEvent *set_window_device_pixel_ratio_event;
     Nanoem__Application__SetViewportDevicePixelRatioEvent *set_viewport_device_pixel_ratio_event;
+    Nanoem__Application__ToggleModelEditingEnabledEvent *toggle_model_editing_enabled;
     Nanoem__Application__PingPongEvent *ping_pong;
     Nanoem__Application__IsProjectDirtyResponseEvent *is_project_dirty;
     Nanoem__Application__GetAllModelBonesResponseEvent *get_all_model_bones;
@@ -9476,6 +9489,25 @@ Nanoem__Application__SetViewportDevicePixelRatioEvent *
 void   nanoem__application__set_viewport_device_pixel_ratio_event__free_unpacked
                      (Nanoem__Application__SetViewportDevicePixelRatioEvent *message,
                       ProtobufCAllocator *allocator);
+/* Nanoem__Application__ToggleModelEditingEnabledEvent methods */
+void   nanoem__application__toggle_model_editing_enabled_event__init
+                     (Nanoem__Application__ToggleModelEditingEnabledEvent         *message);
+size_t nanoem__application__toggle_model_editing_enabled_event__get_packed_size
+                     (const Nanoem__Application__ToggleModelEditingEnabledEvent   *message);
+size_t nanoem__application__toggle_model_editing_enabled_event__pack
+                     (const Nanoem__Application__ToggleModelEditingEnabledEvent   *message,
+                      uint8_t             *out);
+size_t nanoem__application__toggle_model_editing_enabled_event__pack_to_buffer
+                     (const Nanoem__Application__ToggleModelEditingEnabledEvent   *message,
+                      ProtobufCBuffer     *buffer);
+Nanoem__Application__ToggleModelEditingEnabledEvent *
+       nanoem__application__toggle_model_editing_enabled_event__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   nanoem__application__toggle_model_editing_enabled_event__free_unpacked
+                     (Nanoem__Application__ToggleModelEditingEnabledEvent *message,
+                      ProtobufCAllocator *allocator);
 /* Nanoem__Application__PingPongEvent methods */
 void   nanoem__application__ping_pong_event__init
                      (Nanoem__Application__PingPongEvent         *message);
@@ -10589,6 +10621,9 @@ typedef void (*Nanoem__Application__SetWindowDevicePixelRatioEvent_Closure)
 typedef void (*Nanoem__Application__SetViewportDevicePixelRatioEvent_Closure)
                  (const Nanoem__Application__SetViewportDevicePixelRatioEvent *message,
                   void *closure_data);
+typedef void (*Nanoem__Application__ToggleModelEditingEnabledEvent_Closure)
+                 (const Nanoem__Application__ToggleModelEditingEnabledEvent *message,
+                  void *closure_data);
 typedef void (*Nanoem__Application__PingPongEvent_Closure)
                  (const Nanoem__Application__PingPongEvent *message,
                   void *closure_data);
@@ -10927,6 +10962,7 @@ extern const ProtobufCMessageDescriptor nanoem__application__can_copy_event__des
 extern const ProtobufCMessageDescriptor nanoem__application__can_paste_event__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__set_window_device_pixel_ratio_event__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__set_viewport_device_pixel_ratio_event__descriptor;
+extern const ProtobufCMessageDescriptor nanoem__application__toggle_model_editing_enabled_event__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__ping_pong_event__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__is_project_dirty_response_event__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__get_all_model_bones_response_event__descriptor;

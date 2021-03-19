@@ -121,6 +121,7 @@ public:
     typedef void (*pfn_handleToggleActiveAccessoryAddBlendEnabledEvent)(void *userData, bool value);
     typedef void (*pfn_handleToggleActiveAccessoryShadowEnabledEvent)(void *userData, bool value);
     typedef void (*pfn_handleToggleActiveAccessoryVisibleEvent)(void *userData, bool value);
+    typedef void (*pfn_handleToggleModelEditingEnabledEvent)(void *userData, bool value);
     typedef void (*pfn_handleUpdateProgressEvent)(
         void *userData, nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text);
     typedef void (*pfn_handleStartProgressEvent)(
@@ -379,6 +380,8 @@ public:
         pfn_handleToggleActiveAccessoryShadowEnabledEvent listener, void *userData, bool once);
     void addToggleActiveAccessoryVisibleEventListener(
         pfn_handleToggleActiveAccessoryVisibleEvent listener, void *userData, bool once);
+    void addToggleModelEditingEnabledEventListener(
+        pfn_handleToggleModelEditingEnabledEvent listener, void *userData, bool once);
     void addUpdateProgressEventListener(pfn_handleUpdateProgressEvent listener, void *userData, bool once);
     void addStartProgressEventListener(pfn_handleStartProgressEvent listener, void *userData, bool once);
     void addStopProgressEventListener(pfn_handleStopProgressEvent listener, void *userData, bool once);
@@ -484,6 +487,7 @@ private:
             pfn_handleToggleActiveAccessoryAddBlendEnabledEvent handleToggleActiveAccessoryAddBlendEnabledEvent;
             pfn_handleToggleActiveAccessoryShadowEnabledEvent handleToggleActiveAccessoryShadowEnabledEvent;
             pfn_handleToggleActiveAccessoryVisibleEvent handleToggleActiveAccessoryVisibleEvent;
+            pfn_handleToggleModelEditingEnabledEvent handleToggleModelEditingEnabledEvent;
             pfn_handleUpdateProgressEvent handleUpdateProgressEvent;
             pfn_handleStartProgressEvent handleStartProgressEvent;
             pfn_handleStopProgressEvent handleStopProgressEvent;

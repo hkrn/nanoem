@@ -378,6 +378,7 @@ private:
     static void handleCanPasteEvent(void *userData, bool value);
     static void handleSetWindowPixelRatioEvent(void *userData, nanoem_f32_t value);
     static void handleSetViewportPixelRatioEvent(void *userData, nanoem_f32_t value);
+    static void handleToggleModelEditingEnabledEvent(void *userData, bool value);
 
     void addMorphMenuItems(const StringList &morphs, nanoem_model_morph_category_t category);
     void togglAllMutatingActionMenuItems(bool value);

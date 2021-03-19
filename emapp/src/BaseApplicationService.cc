@@ -342,6 +342,7 @@ public:
     void publishToggleActiveAccessoryAddBlendEnabledEvent(bool value) NANOEM_DECL_OVERRIDE;
     void publishToggleActiveAccessoryGroundShadowEnabledEvent(bool value) NANOEM_DECL_OVERRIDE;
     void publishToggleActiveAccessoryVisibleEvent(bool value) NANOEM_DECL_OVERRIDE;
+    void publishToggleModelEditingEnabledEvent(bool value) NANOEM_DECL_OVERRIDE;
     void publishUpdateProgressEvent(
         nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text) NANOEM_DECL_OVERRIDE;
     void publishStartProgressEvent(const char *title, const char *text, nanoem_u32_t total) NANOEM_DECL_OVERRIDE;
@@ -1283,6 +1284,19 @@ BaseApplicationService::EventPublisher::publishToggleActiveAccessoryVisibleEvent
     event.timestamp = internal::ApplicationUtils::timestamp();
     event.type_case = NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_ACTIVE_ACCESSORY_VISIBLE;
     event.toggle_active_accessory_visible = &base;
+    sendEventMessage(event);
+}
+
+void
+BaseApplicationService::EventPublisher::publishToggleModelEditingEnabledEvent(bool value)
+{
+    Nanoem__Application__ToggleModelEditingEnabledEvent base =
+        NANOEM__APPLICATION__TOGGLE_MODEL_EDITING_ENABLED_EVENT__INIT;
+    base.value = value;
+    Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
+    event.timestamp = internal::ApplicationUtils::timestamp();
+    event.type_case = NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED;
+    event.toggle_model_editing_enabled = &base;
     sendEventMessage(event);
 }
 
