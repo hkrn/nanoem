@@ -603,7 +603,10 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_screenImage(nullptr)
     , m_sharedFallbackBone(nullptr)
     , m_userData(nullptr, nullptr)
+    , m_pivotMatrix(0)
     , m_edgeColor(0, 0, 0, 1)
+    , m_gizmoOperationType(kGizmoOperationTypeTranslate)
+    , m_gizmoTransformCoordinateType(kTransformCoordinateTypeLocal)
     , m_transformAxisType(kAxisTypeMaxEnum)
     , m_transformCoordinateType(kTransformCoordinateTypeLocal)
     , m_states(kPrivateStateInitialValue)
@@ -4715,6 +4718,30 @@ Model::setTransformAxisType(AxisType value)
     }
 }
 
+Model::TransformCoordinateType 
+Model::gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT
+{
+    return m_gizmoTransformCoordinateType;
+}
+
+void 
+Model::setGizmoTransformCoordinateType(TransformCoordinateType value)
+{
+    m_gizmoTransformCoordinateType = value;
+}
+
+Model::GizmoOperationType 
+Model::gizmoOperationType() const NANOEM_DECL_NOEXCEPT
+{
+    return m_gizmoOperationType;
+}
+
+void 
+Model::setGizmoOperationType(GizmoOperationType value)
+{
+    m_gizmoOperationType = value;
+}
+
 Model::TransformCoordinateType
 Model::transformCoordinateType() const NANOEM_DECL_NOEXCEPT
 {
@@ -4746,6 +4773,18 @@ Model::toggleTransformCoordinateType()
         setTransformCoordinateType(kTransformCoordinateTypeGlobal);
         break;
     }
+}
+
+Matrix4x4 
+Model::pivotMatrix() const NANOEM_DECL_NOEXCEPT
+{
+    return m_pivotMatrix;
+}
+
+void 
+Model::setPivotMatrix(const Matrix4x4 &value)
+{
+    m_pivotMatrix = value;
 }
 
 Vector4

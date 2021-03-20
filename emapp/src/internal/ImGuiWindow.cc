@@ -88,6 +88,8 @@
 
 #include "imguizmo/ImGuizmo.h"
 
+#include "glm/gtx/matrix_query.hpp"
+
 namespace nanoem {
 namespace internal {
 namespace {
@@ -328,7 +330,6 @@ ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
     , m_requestedScrollHereTrack(nullptr)
     , m_context(nullptr)
     , m_debugger(nullptr)
-    , m_pivotMatrix(Constants::kIdentity)
     , m_draggingMarkerPanelRect(Constants::kZeroV4)
     , m_elapsedTime(0)
     , m_currentMemoryBytes(0)
@@ -2724,15 +2725,40 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         ImGuizmo::SetDrawlist(drawList);
         ImGuizmo::SetRect(offset.x, offset.y, size.x, size.y);
         project->globalCamera()->getViewTransform(view, projection);
-        ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
-        ImGuizmo::MODE mode = ImGuizmo::LOCAL;
-        ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(m_pivotMatrix), 1);
-        if (ImGuizmo::IsOver()) {
-            hovered = false;
-        }
-        if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode,
-                glm::value_ptr(m_pivotMatrix), glm::value_ptr(delta))) {
-            m_pivotMatrix *= delta;
+        Model *activeModel = project->activeModel();
+        Matrix4x4 pivotMatrix(activeModel->pivotMatrix());
+        if (!glm::isNull(pivotMatrix, Constants::kEpsilon)) {
+            ImGuizmo::OPERATION op;
+            switch (activeModel->gizmoOperationType()) {
+            case Model::kGizmoOperationTypeTranslate:
+            default:
+                op = ImGuizmo::TRANSLATE;
+                break;
+            case Model::kGizmoOperationTypeRotate:
+                op = ImGuizmo::ROTATE;
+                break;
+            case Model::kGizmoOperationTypeScale:
+                op = ImGuizmo::SCALE;
+                break;
+            }
+            ImGuizmo::MODE mode;
+            switch (activeModel->gizmoTransformCoordinateType()) {
+            case Model::kTransformCoordinateTypeGlobal:
+                mode = ImGuizmo::WORLD;
+                break;
+            case Model::kTransformCoordinateTypeLocal:
+            default:
+                mode = ImGuizmo::LOCAL;
+                break;
+            }
+            ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(pivotMatrix), 1);
+            if (ImGuizmo::IsOver()) {
+                hovered = false;
+            }
+            if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode,
+                    glm::value_ptr(pivotMatrix), glm::value_ptr(delta))) {
+                activeModel->setPivotMatrix(delta * pivotMatrix);
+            }
         }
     }
     if (m_viewportOverlayPtr) {

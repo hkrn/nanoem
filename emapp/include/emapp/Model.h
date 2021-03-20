@@ -54,6 +54,13 @@ class ISkinDeformer;
 class Model NANOEM_DECL_SEALED : public IDrawable, private NonCopyable {
 public:
     enum AxisType { kAxisTypeFirstEnum, kAxisCenter = kAxisTypeFirstEnum, kAxisX, kAxisY, kAxisZ, kAxisTypeMaxEnum };
+    enum GizmoOperationType {
+        kGizmoOperationTypeFirstEnum,
+        kGizmoOperationTypeTranslate = kGizmoOperationTypeFirstEnum,
+        kGizmoOperationTypeRotate,
+        kGizmoOperationTypeScale,
+        kGizmoOperationTypeMaxEnum
+    };
     enum TransformCoordinateType {
         kTransformCoordinateTypeFirstEnum,
         kTransformCoordinateTypeGlobal = kTransformCoordinateTypeFirstEnum,
@@ -327,11 +334,17 @@ public:
     void setPassiveEffect(IEffect *value) NANOEM_DECL_OVERRIDE;
     UserData userData() const;
     void setUserData(const UserData &value);
-    TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     AxisType transformAxisType() const NANOEM_DECL_NOEXCEPT;
     void setTransformAxisType(AxisType value);
+    TransformCoordinateType gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT;
+    void setGizmoTransformCoordinateType(TransformCoordinateType value);
+    GizmoOperationType gizmoOperationType() const NANOEM_DECL_NOEXCEPT;
+    void setGizmoOperationType(GizmoOperationType value);
+    TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     void setTransformCoordinateType(TransformCoordinateType value);
     void toggleTransformCoordinateType();
+    Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT;
+    void setPivotMatrix(const Matrix4x4 &value);
     Vector4 edgeColor() const NANOEM_DECL_NOEXCEPT;
     void setEdgeColor(const Vector4 &value);
     nanoem_f32_t edgeSize() const NANOEM_DECL_NOEXCEPT;
@@ -518,7 +531,10 @@ private:
     StringMap m_annotations;
     sg_buffer m_vertexBuffers[2];
     sg_buffer m_indexBuffer;
+    Matrix4x4 m_pivotMatrix;
     Vector4 m_edgeColor;
+    GizmoOperationType m_gizmoOperationType;
+    TransformCoordinateType m_gizmoTransformCoordinateType;
     AxisType m_transformAxisType;
     TransformCoordinateType m_transformCoordinateType;
     URI m_fileURI;

@@ -9,6 +9,7 @@
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 
+#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/hash.hpp"
 
 namespace nanoem {
@@ -576,6 +577,120 @@ bool
 ModelObjectSelection::containsAnyBone() const NANOEM_DECL_NOEXCEPT
 {
     return !m_selectedBoneSet.empty();
+}
+
+Matrix4x4 
+ModelObjectSelection::pivotMatrix() const NANOEM_DECL_NOEXCEPT
+{
+    typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
+    Matrix4x4 matrix(0);
+    Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+    switch (editingType()) {
+    case kEditingTypeBone: {
+        if (!m_selectedBoneSet.empty()) {
+            for (model::Bone::Set::const_iterator it = m_selectedBoneSet.begin(), end = m_selectedBoneSet.end(); it != end; ++it) {
+                const nanoem_model_bone_t *bonePtr = *it;
+                const Vector3 origin(model::Bone::origin(bonePtr));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case kEditingTypeFace: {
+        if (!m_vertexIndexSet.empty()) {
+            nanoem_rsize_t numVertices;
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_parent->data(), &numVertices);
+            for (VertexIndexSet::const_iterator it = m_vertexIndexSet.begin(), end = m_vertexIndexSet.end(); it != end; ++it) {
+                const nanoem_u32_t vertexIndex = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case kEditingTypeJoint: {
+        if (!m_selectedJointSet.empty()) {
+            for (model::Joint::Set::const_iterator it = m_selectedJointSet.begin(), end = m_selectedJointSet.end(); it != end; ++it) {
+                const nanoem_model_joint_t *jointPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case kEditingTypeMaterial: {
+        if (!m_selectedMaterialSet.empty()) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_parent->data(), &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_parent->data(), &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_parent->data(), &numVertexIndices);
+            MaterialOffsetMap materialOffsets;
+            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *material = materials[i];
+                materialOffsets.insert(tinystl::make_pair(material, offset));
+                offset += nanoemModelMaterialGetNumVertexIndices(material);
+            }
+            for (model::Material::Set::const_iterator it = m_selectedMaterialSet.begin(), end = m_selectedMaterialSet.end(); it != end; ++it) {
+                const nanoem_model_material_t *materialPtr = *it;
+                nanoem_rsize_t offset = 0;
+                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                if (it2 != materialOffsets.end()) {
+                    nanoem_rsize_t indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    for (nanoem_rsize_t i = 0; i < indices; i++) {
+                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                        aabbMin = glm::min(aabbMin, origin);
+                        aabbMax = glm::max(aabbMax, origin);    
+                    }
+                }
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case kEditingTypeRigidBody: {
+        if (!m_selectedRigidBodySet.empty()) {
+            for (model::RigidBody::Set::const_iterator it = m_selectedRigidBodySet.begin(), end = m_selectedRigidBodySet.end(); it != end; ++it) {
+                const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case kEditingTypeSoftBody: {
+        if (!m_selectedSoftBodySet.empty()) {
+            for (model::SoftBody::Set::const_iterator it = m_selectedSoftBodySet.begin(), end = m_selectedSoftBodySet.end(); it != end; ++it) {
+                const nanoem_model_soft_body_t *softBodyPtr = *it;
+                nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
+            }
+        }
+        break;
+    }
+    case kEditingTypeVertex: {
+        if (!m_selectedVertexSet.empty()) {
+            for (model::Vertex::Set::const_iterator it = m_selectedVertexSet.begin(), end = m_selectedVertexSet.end(); it != end; ++it) {
+                const nanoem_model_vertex_t *vertexPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return matrix;
 }
 
 bool

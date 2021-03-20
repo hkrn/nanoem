@@ -90,7 +90,8 @@ public:
     bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsAnyBone() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-
+    
+    Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setBoxSelectedBoneModeEnabled(bool value) NANOEM_DECL_OVERRIDE;
     EditingType editingType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;

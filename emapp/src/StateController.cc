@@ -518,6 +518,7 @@ private:
         updateRegion(Vector4SI32(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition));
         if (Model *model = project->activeModel()) {
             commitSelection(model, project, removeAll);
+            model->setPivotMatrix(model->selection()->pivotMatrix());
         }
         m_lastPosition = Vector2();
     }
@@ -729,6 +730,7 @@ private:
                 selection->addMaterial(materialPtr);
             }
         }
+        model->setPivotMatrix(selection->pivotMatrix());
     }
 };
 

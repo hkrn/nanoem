@@ -123,6 +123,7 @@ public:
     virtual bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT = 0;
 
+    virtual Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBoxSelectedBoneModeEnabled(bool value) = 0;
     virtual EditingType editingType() const NANOEM_DECL_NOEXCEPT = 0;
