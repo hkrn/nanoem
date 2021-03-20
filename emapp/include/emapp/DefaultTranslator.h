@@ -35,7 +35,6 @@ private:
     StringMap m_phrases;
     String m_message;
     LanguageType m_language;
-    mutable bx::Mutex m_mutex;
 };
 
 } /* namespace nanoem */

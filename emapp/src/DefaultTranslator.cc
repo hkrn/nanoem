@@ -33,9 +33,7 @@ bool
 DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
 {
     if (Nanoem__Translation__Bundle *bundle = nanoem__translation__bundle__unpack(g_protobufc_allocator, length, ptr)) {
-        bx::MutexScope scope(m_mutex);
-        BX_UNUSED_1(scope);
-        m_phrases.clear();
+        StringMap phrases;
         for (size_t i = 0, numUnits = bundle->n_units; i < numUnits; i++) {
             const Nanoem__Translation__Unit *unit = bundle->units[i];
             const bool match =
@@ -44,11 +42,12 @@ DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
             if (match) {
                 for (size_t j = 0, numPhrases = unit->n_phrases; j < numPhrases; j++) {
                     const Nanoem__Translation__Phrase *phrase = unit->phrases[j];
-                    m_phrases.insert(tinystl::make_pair(String(phrase->id), String(phrase->text)));
+                    phrases.insert(tinystl::make_pair(String(phrase->id), String(phrase->text)));
                 }
             }
         }
         nanoem__translation__bundle__free_unpacked(bundle, g_protobufc_allocator);
+        m_phrases = phrases;
     }
     return m_message.empty();
 }
@@ -56,8 +55,6 @@ DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
 const char *
 DefaultTranslator::findPhrase(const char *text) const NANOEM_DECL_NOEXCEPT
 {
-    bx::MutexScope scope(m_mutex);
-    BX_UNUSED_1(scope);
     StringMap::const_iterator it = m_phrases.find(text);
     return it != m_phrases.end() ? it->second.c_str() : text;
 }
@@ -77,8 +74,6 @@ DefaultTranslator::translate(const char *text) const NANOEM_DECL_NOEXCEPT
 bool
 DefaultTranslator::isTranslatable(const char *text) const NANOEM_DECL_NOEXCEPT
 {
-    bx::MutexScope scope(m_mutex);
-    BX_UNUSED_1(scope);
     return m_phrases.find(text) != m_phrases.end();
 }
 
