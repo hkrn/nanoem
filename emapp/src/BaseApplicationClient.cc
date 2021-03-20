@@ -2499,7 +2499,7 @@ BaseApplicationClient::addToggleActiveAccessoryVisibleEventListener(
     m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_ACTIVE_ACCESSORY_VISIBLE].push_back(l);
 }
 
-void 
+void
 BaseApplicationClient::addToggleModelEditingEnabledEventListener(
     pfn_handleToggleModelEditingEnabledEvent listener, void *userData, bool once)
 {
@@ -4012,8 +4012,7 @@ BaseApplicationClient::dispatchEventMessage(const nanoem_u8_t *data, size_t size
             EventListenerListMap::iterator it = m_eventListeners.find(event->type_case);
             if (it != m_eventListeners.end()) {
                 EventListenerList &listeners = it->second;
-                const Nanoem__Application__ToggleModelEditingEnabledEvent *e =
-                    event->toggle_model_editing_enabled;
+                const Nanoem__Application__ToggleModelEditingEnabledEvent *e = event->toggle_model_editing_enabled;
                 bool enabled = e->value != 0;
                 for (EventListenerList::iterator it2 = listeners.begin(); it2 != listeners.end();) {
                     const EventListener &listener = *it2;

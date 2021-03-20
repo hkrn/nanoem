@@ -83,7 +83,7 @@ ModelObjectSelection::addSoftBody(const nanoem_model_soft_body_t *value)
     m_selectedSoftBodySet.insert(value);
 }
 
-void 
+void
 ModelObjectSelection::addFace(const Vector3UI32 &value)
 {
     m_selectedFaceSet.insert(value);
@@ -214,7 +214,7 @@ ModelObjectSelection::removeSoftBody(const nanoem_model_soft_body_t *value)
     m_selectedSoftBodySet.erase(value);
 }
 
-void 
+void
 ModelObjectSelection::removeFace(const Vector3UI32 &value)
 {
     m_selectedFaceSet.erase(value);
@@ -273,7 +273,7 @@ ModelObjectSelection::removeAllSoftBodies()
     m_selectedSoftBodySet.clear();
 }
 
-void 
+void
 ModelObjectSelection::removeAllFaces()
 {
     m_selectedFaceSet.clear();
@@ -525,7 +525,7 @@ ModelObjectSelection::containsSoftBody(const nanoem_model_soft_body_t *value) co
     return m_selectedSoftBodySet.find(value) != m_selectedSoftBodySet.end();
 }
 
-bool 
+bool
 ModelObjectSelection::containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT
 {
     return m_vertexIndexSet.find(value) != m_vertexIndexSet.end();
@@ -619,8 +619,10 @@ ModelObjectSelection::setTargetMode(SelectTargetModeType value)
 
 namespace tinystl {
 
-template<>
-inline size_t hash(const nanoem::Vector3UI32 &value) {
+template <>
+inline size_t
+hash(const nanoem::Vector3UI32 &value)
+{
     return std::hash<nanoem::Vector3UI32>()(value);
 }
 

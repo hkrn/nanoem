@@ -45,7 +45,7 @@ public:
         kSelectTargetModeTypeCircle,
         kSelectTargetModeTypeMaxEnum
     };
-    
+
     virtual ~IModelObjectSelection() NANOEM_DECL_NOEXCEPT
     {
     }

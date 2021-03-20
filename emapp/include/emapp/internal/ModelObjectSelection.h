@@ -101,7 +101,7 @@ public:
 private:
     typedef tinystl::unordered_set<Vector3UI32, TinySTLAllocator> FaceSet;
     typedef tinystl::unordered_set<nanoem_u32_t, TinySTLAllocator> VertexIndexSet;
-    
+
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;
     model::Bone::Set m_selectedBoneSet;

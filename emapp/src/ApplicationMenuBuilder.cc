@@ -1803,7 +1803,7 @@ ApplicationMenuBuilder::handleSetViewportPixelRatioEvent(void *userData, nanoem_
     self->setMenuItemChecked(kMenuItemTypeProjectEnableHighResolutionViewport, value > 1.0f);
 }
 
-void 
+void
 ApplicationMenuBuilder::handleToggleModelEditingEnabledEvent(void *userData, bool value)
 {
     ApplicationMenuBuilder *self = static_cast<ApplicationMenuBuilder *>(userData);
