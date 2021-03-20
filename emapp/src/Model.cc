@@ -3731,7 +3731,7 @@ Model::drawAllVertexFaces()
         else {
             Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
         }
-        vertexUnit.m_color = glm::u8vec4(0, 0, 0, 0x7f);
+        vertexUnit.m_color = m_selection->containsVertexIndex(i) ? glm::u8vec4(0xff, 0, 0, 0x7f) : glm::u8vec4(0, 0, 0, 0x7f);
     }
     internal::LineDrawer *drawer = lineDrawer();
     sg::update_buffer(m_drawAllLines.m_vertexBuffer, m_drawAllLines.m_vertices.data(),

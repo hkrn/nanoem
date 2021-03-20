@@ -87,6 +87,9 @@ void
 ModelObjectSelection::addFace(const Vector3UI32 &value)
 {
     m_selectedFaceSet.insert(value);
+    m_vertexIndexSet.insert(value.x);
+    m_vertexIndexSet.insert(value.y);
+    m_vertexIndexSet.insert(value.z);
 }
 
 void
@@ -215,6 +218,9 @@ void
 ModelObjectSelection::removeFace(const Vector3UI32 &value)
 {
     m_selectedFaceSet.erase(value);
+    m_vertexIndexSet.erase(value.x);
+    m_vertexIndexSet.erase(value.y);
+    m_vertexIndexSet.erase(value.z);
 }
 
 void
@@ -271,6 +277,7 @@ void
 ModelObjectSelection::removeAllFaces()
 {
     m_selectedFaceSet.clear();
+    m_vertexIndexSet.clear();
 }
 
 void
@@ -516,6 +523,12 @@ bool
 ModelObjectSelection::containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT
 {
     return m_selectedSoftBodySet.find(value) != m_selectedSoftBodySet.end();
+}
+
+bool 
+ModelObjectSelection::containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT
+{
+    return m_vertexIndexSet.find(value) != m_vertexIndexSet.end();
 }
 
 bool

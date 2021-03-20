@@ -654,7 +654,7 @@ private:
         const ICamera *camera = project->activeCamera();
         IModelObjectSelection *selection = model->selection();
         if (removeAll) {
-            selection->removeAllVertices();
+            selection->removeAllFaces();
         }
         for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
             const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materials[i]);

@@ -86,6 +86,7 @@ public:
     bool containsRigidBody(const nanoem_model_rigid_body_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsJoint(const nanoem_model_joint_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    bool containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsAnyBone() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -99,6 +100,7 @@ public:
 
 private:
     typedef tinystl::unordered_set<Vector3UI32, TinySTLAllocator> FaceSet;
+    typedef tinystl::unordered_set<nanoem_u32_t, TinySTLAllocator> VertexIndexSet;
     
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;
@@ -110,6 +112,7 @@ private:
     model::Joint::Set m_selectedJointSet;
     model::SoftBody::Set m_selectedSoftBodySet;
     FaceSet m_selectedFaceSet;
+    VertexIndexSet m_vertexIndexSet;
     nanoem_model_vertex_t *m_hoveredVertex;
     nanoem_model_material_t *m_hoveredMaterial;
     nanoem_model_bone_t *m_hoveredBone;
