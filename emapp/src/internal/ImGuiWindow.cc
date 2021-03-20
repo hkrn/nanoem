@@ -118,6 +118,7 @@ using namespace imgui;
 
 const Vector2UI16 ImGuiWindow::kMinimumWindowSize = Vector2UI16(1080, 700);
 const nanoem_f32_t ImGuiWindow::kFontSize = 16.0f;
+const nanoem_f32_t ImGuiWindow::kWindowRounding = 4.0f;
 const nanoem_f32_t ImGuiWindow::kLeftPaneWidth = 150.0f;
 const nanoem_f32_t ImGuiWindow::kTranslationStepFactor = 0.1f;
 const nanoem_f32_t ImGuiWindow::kOrientationStepFactor = 0.1f;
@@ -1685,7 +1686,6 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
 {
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
     saveDefaultStyle(deviceScaleRatio);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 #if defined(IMGUI_HAS_VIEWPORT)
     if (EnumUtils::isEnabledT<ImGuiConfigFlags>(ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
         ImGuiViewport *viewport = ImGui::GetMainViewport();
@@ -1755,7 +1755,6 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         const ImVec2 &size = ImGui::GetContentRegionAvail();
         drawViewport(size.y, project);
     }
-    ImGui::PopStyleVar();
     ImGui::End();
     restoreDefaultStyle();
 }
@@ -3989,6 +3988,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
 #endif
     ImGui::SetNextWindowPos(actualWindowPos);
     ImGui::SetNextWindowSize(actualWindowSize);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding);
     if (ImGui::BeginPopupModal(dialog->title(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         const nanoem_u64_t buttons = dialog->buttons();
         dialog->draw(project);
@@ -4040,6 +4040,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
         }
         ImGui::EndPopup();
     }
+    ImGui::PopStyleVar();
     restoreDefaultStyle();
 }
 

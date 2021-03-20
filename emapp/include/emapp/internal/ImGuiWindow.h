@@ -40,6 +40,7 @@ class ImGuiWindow NANOEM_DECL_SEALED : public IUIWindow, private NonCopyable {
 public:
     static const Vector2UI16 kMinimumWindowSize;
     static const nanoem_f32_t kFontSize;
+    static const nanoem_f32_t kWindowRounding;
     static const nanoem_f32_t kLeftPaneWidth;
     static const nanoem_f32_t kTranslationStepFactor;
     static const nanoem_f32_t kOrientationStepFactor;
