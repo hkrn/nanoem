@@ -44,8 +44,8 @@ shrink3x3(const bx::float4x4_t *m, bx::float4x4_t *o) NANOEM_DECL_NOEXCEPT
 
 } /* anonymous */
 
-const glm::u8vec4 Bone::kDefaultBezierControlPoint = glm::u8vec4(20, 20, 107, 107);
-const glm::u8vec4 Bone::kDefaultAutomaticBezierControlPoint = glm::u8vec4(64, 0, 64, 127);
+const Vector4U8 Bone::kDefaultBezierControlPoint = Vector4U8(20, 20, 107, 107);
+const Vector4U8 Bone::kDefaultAutomaticBezierControlPoint = Vector4U8(64, 0, 64, 127);
 
 const Bone::FrameTransform Bone::FrameTransform::kInitialFrameTransform = FrameTransform();
 
@@ -608,14 +608,14 @@ Bone::setLocalMorphTranslation(const Vector3 &value)
     m_localMorphTranslation = value;
 }
 
-glm::u8vec4
+Vector4U8
 Bone::bezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {
     return m_bezierControlPoints[index];
 }
 
 void
-Bone::setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index, const glm::u8vec4 &value)
+Bone::setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index, const Vector4U8 &value)
 {
     m_bezierControlPoints[index] = value;
 }
@@ -874,7 +874,7 @@ Bone::Bone(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_localOrien
     identify(&m_matrices.m_skinningTransform);
     identify(&m_matrices.m_worldTransform);
     for (size_t i = 0; i < BX_COUNTOF(m_isLinearInterpolation); i++) {
-        m_bezierControlPoints[i] = glm::u8vec4(0);
+        m_bezierControlPoints[i] = Vector4U8(0);
         m_isLinearInterpolation[i] = true;
     }
 }

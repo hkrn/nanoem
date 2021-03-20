@@ -17,15 +17,15 @@ public:
     typedef tinystl::unordered_map<nanoem_u64_t, BezierCurve *, TinySTLAllocator> Map;
     typedef tinystl::pair<BezierCurve *, BezierCurve *> Pair;
 
-    BezierCurve(const glm::u8vec2 &c0, const glm::u8vec2 &c1, nanoem_frame_index_t interval);
+    BezierCurve(const Vector2U8 &c0, const Vector2U8 &c1, nanoem_frame_index_t interval);
     ~BezierCurve() NANOEM_DECL_NOEXCEPT;
 
     nanoem_f32_t value(nanoem_f32_t value) const NANOEM_DECL_NOEXCEPT;
     nanoem_frame_index_t length() const NANOEM_DECL_NOEXCEPT;
     Pair split(const nanoem_f32_t t) const;
-    glm::u8vec4 toParameters() const NANOEM_DECL_NOEXCEPT;
-    glm::u8vec2 c0() const NANOEM_DECL_NOEXCEPT;
-    glm::u8vec2 c1() const NANOEM_DECL_NOEXCEPT;
+    Vector4U8 toParameters() const NANOEM_DECL_NOEXCEPT;
+    Vector2U8 c0() const NANOEM_DECL_NOEXCEPT;
+    Vector2U8 c1() const NANOEM_DECL_NOEXCEPT;
 
     static nanoem_u64_t toHash(const nanoem_u8_t *parameters, nanoem_frame_index_t interval) NANOEM_DECL_NOEXCEPT;
 
@@ -45,8 +45,8 @@ private:
     static const Vector2 kP0;
     static const Vector2 kP1;
     PointList m_parameters;
-    glm::u8vec2 m_c0;
-    glm::u8vec2 m_c1;
+    Vector2U8 m_c0;
+    Vector2U8 m_c1;
     nanoem_frame_index_t m_interval;
 };
 

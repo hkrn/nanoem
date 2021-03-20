@@ -3964,7 +3964,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
                                                     : project->activeModel();
         if (model && commandPtr->bone_name) {
             if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
-                const glm::u8vec4 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
+                const Vector4U8 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
                 model::Bone *bone = model::Bone::cast(bonePtr);
                 bone->setBezierControlPoints(
                     static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(commandPtr->type), value);
@@ -3975,7 +3975,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_BEZIER_CONTROL_POINT: {
         const Nanoem__Application__SetCameraBezierControlPointCommand *commandPtr =
             command->set_camera_bezier_control_point;
-        const glm::u8vec4 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
+        const Vector4U8 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
         project->globalCamera()->setBezierControlPoints(
             static_cast<nanoem_motion_camera_keyframe_interpolation_type_t>(commandPtr->type), value);
         break;

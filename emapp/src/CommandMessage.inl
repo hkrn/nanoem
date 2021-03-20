@@ -105,7 +105,7 @@ public:
         nanoem_delete(q);
     }
     static inline void
-    setInterpolation(const glm::u8vec4 &v, Nanoem__Common__Interpolation *&i)
+    setInterpolation(const Vector4U8 &v, Nanoem__Common__Interpolation *&i)
     {
         i = nanoem_new(Nanoem__Common__Interpolation);
         nanoem__common__interpolation__init(i);
@@ -115,7 +115,7 @@ public:
         i->y1 = v.w;
     }
     static inline void
-    getInterpolation(const Nanoem__Common__Interpolation *i, glm::u8vec4 &v)
+    getInterpolation(const Nanoem__Common__Interpolation *i, Vector4U8 &v)
     {
         v.x = i->x0;
         v.y = i->y0;

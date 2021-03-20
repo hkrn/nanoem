@@ -496,7 +496,7 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
     if (!sg::is_valid(m_vertexBuffer)) {
         size_t size = sizeof(m_vertices[0]) * numVertices;
         m_vertices.resize(numVertices);
-        const glm::u8vec4 &normalizedColor = color * Vector4(0xff);
+        const Vector4U8 &normalizedColor = color * Vector4(0xff);
         for (nanoem_u32_t i = 0; i < numVertices; i++) {
             sg::LineVertexUnit &unit = m_vertices[i];
             unit.m_position = Vector4(glm::make_vec3(&shape->points[i * 3]), 1);
@@ -3642,7 +3642,7 @@ Model::drawAllVertexPoints()
             Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
         }
         vertexUnit.m_color =
-            m_selection->containsVertex(vertexPtr) ? glm::u8vec4(0xff, 0, 0, 0xff) : glm::u8vec4(0, 0, 0xff, 0xff);
+            m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, 0xff) : Vector4U8(0, 0, 0xff, 0xff);
     }
     const nanoem_rsize_t size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
@@ -3731,7 +3731,8 @@ Model::drawAllVertexFaces()
         else {
             Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
         }
-        vertexUnit.m_color = m_selection->containsVertexIndex(i) ? glm::u8vec4(0xff, 0, 0, 0x7f) : glm::u8vec4(0, 0, 0, 0x7f);
+        vertexUnit.m_color =
+            m_selection->containsVertexIndex(i) ? Vector4U8(0xff, 0, 0, 0x7f) : Vector4U8(0, 0, 0, 0x7f);
     }
     internal::LineDrawer *drawer = lineDrawer();
     sg::update_buffer(m_drawAllLines.m_vertexBuffer, m_drawAllLines.m_vertices.data(),

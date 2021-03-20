@@ -78,7 +78,7 @@ EqualsVec4::describe() const
     return "== " + glm::to_string(m_data);
 }
 
-EqualsU8Vec4::EqualsU8Vec4(const glm::u8vec4 &v)
+EqualsU8Vec4::EqualsU8Vec4(const Vector4U8 &v)
     : m_data(v)
 {
 }
@@ -89,7 +89,7 @@ EqualsU8Vec4::EqualsU8Vec4(const EqualsU8Vec4 &v)
 }
 
 bool
-EqualsU8Vec4::match(const glm::u8vec4 &v) const
+EqualsU8Vec4::match(const Vector4U8 &v) const
 {
     return m_data == v;
 }

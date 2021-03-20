@@ -2871,13 +2871,13 @@ ImGuiWindow::drawCommonInterpolationControls(Project *project)
 void
 ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project)
 {
-    static const glm::u8vec4 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
+    static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
     ImGui::BeginChild("interpolation", panelSize, true);
     ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
-    glm::u8vec4 controlPoint(20, 20, 107, 107);
+    Vector4U8 controlPoint(20, 20, 107, 107);
     nanoem_motion_bone_keyframe_interpolation_type_t type = project->boneKeyframeInterpolationType();
     model::Bone *bone = nullptr;
     if (Motion *activeMotion = project->resolveMotion(activeModel)) {
@@ -2955,13 +2955,13 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
 void
 ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *project)
 {
-    static const glm::u8vec4 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
+    static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
     ImGui::BeginChild("interpolation", panelSize, true);
     ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
-    glm::u8vec4 controlPoint(20, 20, 107, 107);
+    Vector4U8 controlPoint(20, 20, 107, 107);
     nanoem_motion_camera_keyframe_interpolation_type_t type = project->cameraKeyframeInterpolationType();
     controlPoint = project->globalCamera()->bezierControlPoints(type);
     if (handleButton(reinterpret_cast<const char *>(kFACogs))) {

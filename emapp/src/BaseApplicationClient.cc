@@ -1049,7 +1049,7 @@ BaseApplicationClient::sendRemoveSelfShadowKeyframeMessage()
 
 void
 BaseApplicationClient::sendBoneBezierControlPointMessage(
-    nanoem_u16_t handle, const String &name, const glm::u8vec4 &value, nanoem_u32_t type)
+    nanoem_u16_t handle, const String &name, const Vector4U8 &value, nanoem_u32_t type)
 {
     Nanoem__Application__SetBoneBezierControlPointCommand action =
         NANOEM__APPLICATION__SET_BONE_BEZIER_CONTROL_POINT_COMMAND__INIT;
@@ -1073,7 +1073,7 @@ BaseApplicationClient::sendBoneBezierControlPointMessage(
 }
 
 void
-BaseApplicationClient::sendCameraBezierControlPointMessage(const glm::u8vec4 &value, nanoem_u32_t type)
+BaseApplicationClient::sendCameraBezierControlPointMessage(const Vector4U8 &value, nanoem_u32_t type)
 {
     Nanoem__Application__SetCameraBezierControlPointCommand action =
         NANOEM__APPLICATION__SET_CAMERA_BEZIER_CONTROL_POINT_COMMAND__INIT;
@@ -1514,7 +1514,7 @@ BaseApplicationClient::sendSetModelTransformOrderIndexMessage(nanoem_u16_t handl
 }
 
 void
-BaseApplicationClient::sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const glm::u8vec4 *values)
+BaseApplicationClient::sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const Vector4U8 *values)
 {
     Nanoem__Application__SetModelBoneKeyframeInterpolationCommand action =
         NANOEM__APPLICATION__SET_MODEL_BONE_KEYFRAME_INTERPOLATION_COMMAND__INIT;
@@ -1717,7 +1717,7 @@ BaseApplicationClient::sendScreenCursorReleaseMessage(const Vector2SI32 &coord, 
 }
 
 void
-BaseApplicationClient::sendSetCameraKeyframeInterpolationMessage(const glm::u8vec4 *values)
+BaseApplicationClient::sendSetCameraKeyframeInterpolationMessage(const Vector4U8 *values)
 {
     Nanoem__Application__SetCameraKeyframeInterpolationCommand action =
         NANOEM__APPLICATION__SET_CAMERA_KEYFRAME_INTERPOLATION_COMMAND__INIT;

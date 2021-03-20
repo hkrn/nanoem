@@ -43,8 +43,8 @@ template <> struct StringMaker<nanoem::Vector3> {
 template <> struct StringMaker<nanoem::Vector4> {
     static std::string convert(const nanoem::Vector4 &value);
 };
-template <> struct StringMaker<glm::u8vec4> {
-    static std::string convert(const glm::u8vec4 &value);
+template <> struct StringMaker<nanoem::Vector4U8> {
+    static std::string convert(const nanoem::Vector4U8 &value);
 };
 template <> struct StringMaker<const nanoem_motion_outside_parent_t *> {
     static std::string convert(const nanoem_motion_outside_parent_t *const &value);
@@ -101,12 +101,12 @@ struct EqualsVec4 : Catch::Matchers::Impl::MatcherBase<nanoem::Vector4> {
     nanoem::Vector4 m_data;
 };
 
-struct EqualsU8Vec4 : Catch::Matchers::Impl::MatcherBase<glm::u8vec4> {
-    EqualsU8Vec4(const glm::u8vec4 &v);
+struct EqualsU8Vec4 : Catch::Matchers::Impl::MatcherBase<nanoem::Vector4U8> {
+    EqualsU8Vec4(const nanoem::Vector4U8 &v);
     EqualsU8Vec4(const EqualsU8Vec4 &v);
-    bool match(const glm::u8vec4 &v) const override;
+    bool match(const nanoem::Vector4U8 &v) const override;
     std::string describe() const override;
-    glm::u8vec4 m_data;
+    nanoem::Vector4U8 m_data;
 };
 
 struct EqualsQuat : Catch::Matchers::Impl::MatcherBase<nanoem::Quaternion> {
@@ -144,7 +144,7 @@ Equals(const nanoem::Vector4 &v)
 }
 
 static inline matcher::EqualsU8Vec4
-Equals(const glm::u8vec4 &v)
+Equals(const nanoem::Vector4U8 &v)
 {
     return matcher::EqualsU8Vec4(v);
 }

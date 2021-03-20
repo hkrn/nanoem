@@ -88,10 +88,10 @@ ApplicationUtils::freeStringList(char **&output) NANOEM_DECL_NOEXCEPT
     delete[] output;
 }
 
-glm::u8vec4
+Vector4U8
 ApplicationUtils::toU8V(const Nanoem__Common__Interpolation *i) NANOEM_DECL_NOEXCEPT
 {
-    return glm::u8vec4(i->x0, i->y0, i->x1, i->y1);
+    return Vector4U8(i->x0, i->y0, i->x1, i->y1);
 }
 
 void
@@ -122,7 +122,7 @@ ApplicationUtils::freeURIList(Nanoem__Application__URI **uris, size_t numURIs) N
 }
 
 Nanoem__Common__Interpolation *
-ApplicationUtils::assignInteprolation(Nanoem__Common__Interpolation &i, const glm::u8vec4 &value) NANOEM_DECL_NOEXCEPT
+ApplicationUtils::assignInteprolation(Nanoem__Common__Interpolation &i, const Vector4U8 &value) NANOEM_DECL_NOEXCEPT
 {
     i = NANOEM__COMMON__INTERPOLATION__INIT;
     i.x0 = value.x;

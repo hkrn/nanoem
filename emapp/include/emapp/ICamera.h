@@ -66,11 +66,11 @@ public:
     virtual void setFov(int value) = 0;
     virtual nanoem_f32_t fovRadians() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setFovRadians(nanoem_f32_t value) = 0;
-    virtual glm::u8vec4 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual glm::u8vec4 bezierControlPoints(
+    virtual Vector4U8 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector4U8 bezierControlPoints(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBezierControlPoints(
-        nanoem_motion_camera_keyframe_interpolation_type_t index, const glm::u8vec4 &value) = 0;
+        nanoem_motion_camera_keyframe_interpolation_type_t index, const Vector4U8 &value) = 0;
     virtual bool isLinearInterpolation(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool isPerspective() const NANOEM_DECL_NOEXCEPT = 0;

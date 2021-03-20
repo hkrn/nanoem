@@ -40,8 +40,8 @@ const nanoem_f32_t PerspectiveCamera::kInitialFovRadian = glm::radians(nanoem_f3
 const int PerspectiveCamera::kMaxFov = 135;
 const int PerspectiveCamera::kMinFov = 1;
 const int PerspectiveCamera::kInitialFov = 30;
-const glm::u8vec4 PerspectiveCamera::kDefaultBezierControlPoint = glm::u8vec4(20, 20, 107, 107);
-const glm::u8vec4 PerspectiveCamera::kDefaultAutomaticBezierControlPoint = glm::u8vec4(64, 0, 64, 127);
+const Vector4U8 PerspectiveCamera::kDefaultBezierControlPoint = Vector4U8(20, 20, 107, 107);
+const Vector4U8 PerspectiveCamera::kDefaultAutomaticBezierControlPoint = Vector4U8(64, 0, 64, 127);
 
 PerspectiveCamera::PerspectiveCamera(Project *project)
     : m_project(project)
@@ -505,13 +505,13 @@ PerspectiveCamera::setFovRadians(nanoem_f32_t value)
     }
 }
 
-glm::u8vec4
+Vector4U8
 PerspectiveCamera::automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT
 {
     return m_automaticBezierControlPoint;
 }
 
-glm::u8vec4
+Vector4U8
 PerspectiveCamera::bezierControlPoints(
     nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {
@@ -520,7 +520,7 @@ PerspectiveCamera::bezierControlPoints(
 
 void
 PerspectiveCamera::setBezierControlPoints(
-    nanoem_motion_camera_keyframe_interpolation_type_t index, const glm::u8vec4 &value)
+    nanoem_motion_camera_keyframe_interpolation_type_t index, const Vector4U8 &value)
 {
     m_bezierControlPoints[index] = value;
 }

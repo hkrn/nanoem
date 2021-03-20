@@ -29,8 +29,8 @@ public:
     typedef tinystl::unordered_map<const nanoem_model_bone_t *, StringPair, TinySTLAllocator> OutsideParentMap;
     typedef tinystl::vector<nanoem_model_bone_t *, TinySTLAllocator> MutableList;
     typedef tinystl::unordered_set<nanoem_model_bone_t *, TinySTLAllocator> MutableSet;
-    static const glm::u8vec4 kDefaultBezierControlPoint;
-    static const glm::u8vec4 kDefaultAutomaticBezierControlPoint;
+    static const Vector4U8 kDefaultBezierControlPoint;
+    static const Vector4U8 kDefaultAutomaticBezierControlPoint;
 
     typedef tinystl::pair<int, int> IndexPair;
     typedef tinystl::vector<IndexPair, TinySTLAllocator> IndexSet;
@@ -96,8 +96,8 @@ public:
     void setLocalMorphTranslation(const Vector3 &value);
     Vector3 localUserTranslation() const NANOEM_DECL_NOEXCEPT;
     void setLocalUserTranslation(const Vector3 &value);
-    glm::u8vec4 bezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT;
-    void setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index, const glm::u8vec4 &value);
+    Vector4U8 bezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT;
+    void setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index, const Vector4U8 &value);
     bool isLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT;
     void setLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index, bool value);
 
@@ -117,7 +117,7 @@ private:
         ~FrameTransform() NANOEM_DECL_NOEXCEPT;
         Vector3 m_translation;
         Quaternion m_orientation;
-        glm::u8vec4 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
+        Vector4U8 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
         bool m_enableLinearInterpolation[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     };
     static void destroy(void *opaque, nanoem_model_object_t *object) NANOEM_DECL_NOEXCEPT;
@@ -146,7 +146,7 @@ private:
     Vector3 m_localInherentTranslation;
     Vector3 m_localMorphTranslation;
     Vector3 m_localUserTranslation;
-    glm::u8vec4 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
+    Vector4U8 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     bool m_isLinearInterpolation[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     bool m_dirty;
 };

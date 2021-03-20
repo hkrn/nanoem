@@ -145,7 +145,7 @@ Grid::numVertices() const
 void
 Grid::generateXGrid(sg::LineVertexUnit *vertices, int &index)
 {
-    const glm::u8vec4 color(m_lineColor * Vector3(0xff), m_opacity * 0xff);
+    const Vector4U8 color(m_lineColor * Vector3(0xff), m_opacity * 0xff);
     for (int i = -int(m_size.x); i <= int(m_size.x); i++) {
         nanoem_f32_t height = m_size.y * m_cell.y;
         nanoem_f32_t x = i * m_cell.x;
@@ -163,7 +163,7 @@ Grid::generateXGrid(sg::LineVertexUnit *vertices, int &index)
 void
 Grid::generateYGrid(sg::LineVertexUnit *vertices, int &index)
 {
-    const glm::u8vec4 color(m_lineColor * Vector3(0xff), m_opacity * 0xff);
+    const Vector4U8 color(m_lineColor * Vector3(0xff), m_opacity * 0xff);
     for (int i = -int(m_size.y); i <= int(m_size.y); i++) {
         nanoem_f32_t width = m_size.x * m_cell.x;
         nanoem_f32_t z = i * m_cell.y;
@@ -181,7 +181,7 @@ Grid::generateYGrid(sg::LineVertexUnit *vertices, int &index)
 void
 Grid::generateUnit(sg::LineVertexUnit *vertices, const Vector3 &color, int &index)
 {
-    const glm::u8vec4 c(color * Vector3(0xff), m_opacity * 0xff);
+    const Vector4U8 c(color * Vector3(0xff), m_opacity * 0xff);
     nanoem_f32_t width = m_size.x * m_cell.x;
     sg::LineVertexUnit &from = vertices[index];
     from.m_position = Vector3(0, 0, 0);

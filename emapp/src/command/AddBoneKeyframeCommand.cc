@@ -147,7 +147,7 @@ AddBoneKeyframeCommand::toKeyframe(const nanoem_model_bone_t *bonePtr, const Mot
             for (nanoem_rsize_t i = 0; i < BX_COUNTOF(p.first.m_value); i++) {
                 nanoem_motion_bone_keyframe_interpolation_type_t type =
                     nanoem_motion_bone_keyframe_interpolation_type_t(i);
-                const glm::u8vec4 &prevKeyframeInterpolationParameter =
+                const Vector4U8 &prevKeyframeInterpolationParameter =
                     glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(prevKeyframe, type));
                 newState.m_parameter.m_value[i] = bone->bezierControlPoints(type);
                 if (enableBezierCurveAdjustment && movable) {

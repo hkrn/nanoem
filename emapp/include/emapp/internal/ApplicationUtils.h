@@ -38,12 +38,12 @@ public:
     static void allocateStringList(
         const StringList &input, char **&output, size_t &length, MutableStringList &stringList);
     static void freeStringList(char **&output) NANOEM_DECL_NOEXCEPT;
-    static glm::u8vec4 toU8V(const Nanoem__Common__Interpolation *i) NANOEM_DECL_NOEXCEPT;
+    static Vector4U8 toU8V(const Nanoem__Common__Interpolation *i) NANOEM_DECL_NOEXCEPT;
     static void allocateURIList(const URIList &values, Nanoem__Application__URI **&uris, size_t &numURIs,
         MutableStringList &absolutePathList, MutableStringList &fragmentList);
     static void freeURIList(Nanoem__Application__URI **uris, size_t numURIs) NANOEM_DECL_NOEXCEPT;
     static Nanoem__Common__Interpolation *assignInteprolation(
-        Nanoem__Common__Interpolation &i, const glm::u8vec4 &value) NANOEM_DECL_NOEXCEPT;
+        Nanoem__Common__Interpolation &i, const Vector4U8 &value) NANOEM_DECL_NOEXCEPT;
     static void constructPluginList(const Nanoem__Application__Plugin *const *items, nanoem_rsize_t numItems,
         BaseApplicationClient::PluginItemList &plugins);
 };

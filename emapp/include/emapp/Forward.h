@@ -971,6 +971,9 @@ typedef glm::vec<4, nanoem_f32_t, glm::packed_highp> Vector4;
 typedef glm::vec<2, nanoem_i32_t, glm::packed_highp> Vector2SI32;
 typedef glm::vec<3, nanoem_i32_t, glm::packed_highp> Vector3SI32;
 typedef glm::vec<4, nanoem_i32_t, glm::packed_highp> Vector4SI32;
+typedef glm::vec<2, nanoem_u8_t, glm::packed_highp> Vector2U8;
+typedef glm::vec<3, nanoem_u8_t, glm::packed_highp> Vector3U8;
+typedef glm::vec<4, nanoem_u8_t, glm::packed_highp> Vector4U8;
 typedef glm::vec<2, nanoem_u16_t, glm::packed_highp> Vector2UI16;
 typedef glm::vec<3, nanoem_u16_t, glm::packed_highp> Vector3UI16;
 typedef glm::vec<4, nanoem_u16_t, glm::packed_highp> Vector4UI16;
@@ -1225,7 +1228,7 @@ BX_ALIGN_DECL_16(struct)
 LineVertexUnit
 {
     Vector3 m_position;
-    glm::u8vec4 m_color;
+    Vector4U8 m_color;
 };
 
 BX_ALIGN_DECL_16(struct)

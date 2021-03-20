@@ -225,8 +225,8 @@ public:
     void sendRemoveAllSelectedMorphKeyframesMessage(nanoem_u16_t handle, const StringList &names);
     void sendRemoveSelfShadowKeyframeMessage();
     void sendBoneBezierControlPointMessage(
-        nanoem_u16_t handle, const String &name, const glm::u8vec4 &value, nanoem_u32_t type);
-    void sendCameraBezierControlPointMessage(const glm::u8vec4 &value, nanoem_u32_t type);
+        nanoem_u16_t handle, const String &name, const Vector4U8 &value, nanoem_u32_t type);
+    void sendCameraBezierControlPointMessage(const Vector4U8 &value, nanoem_u32_t type);
     void sendSelectBoneMessage(nanoem_u16_t handle, const String &name);
     void sendSelectAllBonesMessage(nanoem_u16_t handle);
     void sendSelectAllDirtyBonesMessage(nanoem_u16_t handle);
@@ -257,7 +257,7 @@ public:
     void sendSetModelShadowMapEnabledMessage(nanoem_u16_t handle, bool value);
     void sendSetDrawableOrderIndexMessage(nanoem_u16_t handle, int value);
     void sendSetModelTransformOrderIndexMessage(nanoem_u16_t handle, int value);
-    void sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const glm::u8vec4 *values);
+    void sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const Vector4U8 *values);
     void sendUpdatePerformanceMonitorMessage(
         nanoem_f32_t cpu, nanoem_u64_t currentMemorySize, nanoem_u64_t maxMemorySize);
     void sendLoadAllModelPluginsMessage(const URIList &values);
@@ -271,7 +271,7 @@ public:
     void sendScreenCursorPressMessage(const Vector2SI32 &coord, int type, int modifiers);
     void sendScreenCursorMoveMessage(const Vector2SI32 &coord, int type, int modifiers);
     void sendScreenCursorReleaseMessage(const Vector2SI32 &coord, int type, int modifiers);
-    void sendSetCameraKeyframeInterpolationMessage(const glm::u8vec4 *values);
+    void sendSetCameraKeyframeInterpolationMessage(const Vector4U8 *values);
     void sendIsProjectDirtyRequestMessage(pfn_isProjectDirtyCallback callback, void *userData);
     void sendGetProjectFileURIRequestMessage(pfn_getProjectFileURICallback callback, void *userData);
     void sendGetAllModelBonesRequestMessage(nanoem_u16_t handle, pfn_getAllModelBonesCallback callback, void *userData);

@@ -60,7 +60,7 @@ StringMaker<Vector4>::convert(const Vector4 &value)
 }
 
 std::string
-StringMaker<glm::u8vec4>::convert(const glm::u8vec4 &value)
+StringMaker<Vector4U8>::convert(const Vector4U8 &value)
 {
     return glm::to_string(value);
 }

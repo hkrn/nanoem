@@ -46,7 +46,7 @@ struct BindPose {
         Vector3 m_localUserTranslation;
         Quaternion m_localMorphOrientation;
         Quaternion m_localUserOrientation;
-        glm::u8vec4 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
+        Vector4U8 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     };
     tinystl::vector<Parameter, TinySTLAllocator> m_parameters;
 };

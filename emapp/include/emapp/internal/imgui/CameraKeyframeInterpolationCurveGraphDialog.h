@@ -21,7 +21,7 @@ struct CameraKeyframeInterpolationCurveGraphDialog : BaseKeyframeInterpolationCu
     bool draw(Project *project);
 
     nanoem_motion_camera_keyframe_interpolation_type_t m_type;
-    glm::u8vec4 m_controlPoint;
+    Vector4U8 m_controlPoint;
 };
 
 } /* namespace imgui */

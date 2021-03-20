@@ -205,7 +205,7 @@ private:
     {
         Vector4 m_position;
         Vector3 m_uv;
-        glm::u8vec4 m_color;
+        Vector4U8 m_color;
     };
     struct Buffer {
         Buffer();

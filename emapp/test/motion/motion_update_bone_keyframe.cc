@@ -32,13 +32,13 @@ TEST_CASE("motion_update_bone_keyframe", "[emapp][motion]")
             bone->setLocalUserTranslation(Vector3(0.1, 0.2, 0.3));
             bone->setLocalUserOrientation(Quaternion(0.9f, 0.1f, 0.2f, 0.3f));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X, glm::u8vec4(2, 4, 6, 8));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X, Vector4U8(2, 4, 6, 8));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y, glm::u8vec4(3, 5, 7, 9));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y, Vector4U8(3, 5, 7, 9));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z, glm::u8vec4(11, 13, 15, 17));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z, Vector4U8(11, 13, 15, 17));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION, glm::u8vec4(12, 14, 16, 18));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION, Vector4U8(12, 14, 16, 18));
             bone->setDirty(true);
             activeModel->performAllBonesTransform();
         }
@@ -49,13 +49,13 @@ TEST_CASE("motion_update_bone_keyframe", "[emapp][motion]")
             bone->setLocalUserTranslation(Vector3(0.3, 0.2, 0.1));
             bone->setLocalUserOrientation(Quaternion(0.9f, 0.3f, 0.2f, 0.1f));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X, glm::u8vec4(8, 6, 4, 2));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X, Vector4U8(8, 6, 4, 2));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y, glm::u8vec4(9, 7, 5, 3));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y, Vector4U8(9, 7, 5, 3));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z, glm::u8vec4(17, 15, 13, 11));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z, Vector4U8(17, 15, 13, 11));
             bone->setBezierControlPoints(
-                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION, glm::u8vec4(18, 16, 14, 12));
+                NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION, Vector4U8(18, 16, 14, 12));
             bone->setDirty(true);
             activeModel->performAllBonesTransform();
         }
@@ -76,13 +76,13 @@ TEST_CASE("motion_update_bone_keyframe", "[emapp][motion]")
             CHECK(
                 glm::make_quat(nanoemMotionBoneKeyframeGetOrientation(keyframe)) == Quaternion(0.9f, 0.3f, 0.2f, 0.1f));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == glm::u8vec4(8, 6, 4, 2));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == Vector4U8(8, 6, 4, 2));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == glm::u8vec4(9, 7, 5, 3));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == Vector4U8(9, 7, 5, 3));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == glm::u8vec4(17, 15, 13, 11));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == Vector4U8(17, 15, 13, 11));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == glm::u8vec4(18, 16, 14, 12));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == Vector4U8(18, 16, 14, 12));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
@@ -109,13 +109,13 @@ TEST_CASE("motion_update_bone_keyframe", "[emapp][motion]")
             CHECK_THAT(glm::make_quat(nanoemMotionBoneKeyframeGetOrientation(keyframe)),
                 Equals(Quaternion(0.9f, 0.1f, 0.2f, 0.3f)));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == glm::u8vec4(2, 4, 6, 8));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == Vector4U8(2, 4, 6, 8));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == glm::u8vec4(3, 5, 7, 9));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == Vector4U8(3, 5, 7, 9));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == glm::u8vec4(11, 13, 15, 17));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == Vector4U8(11, 13, 15, 17));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == glm::u8vec4(12, 14, 16, 18));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == Vector4U8(12, 14, 16, 18));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
@@ -139,13 +139,13 @@ TEST_CASE("motion_update_bone_keyframe", "[emapp][motion]")
             CHECK(
                 glm::make_quat(nanoemMotionBoneKeyframeGetOrientation(keyframe)) == Quaternion(0.9f, 0.3f, 0.2f, 0.1f));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == glm::u8vec4(8, 6, 4, 2));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == Vector4U8(8, 6, 4, 2));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == glm::u8vec4(9, 7, 5, 3));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == Vector4U8(9, 7, 5, 3));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == glm::u8vec4(17, 15, 13, 11));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == Vector4U8(17, 15, 13, 11));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == glm::u8vec4(18, 16, 14, 12));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == Vector4U8(18, 16, 14, 12));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
@@ -168,13 +168,13 @@ TEST_CASE("motion_update_bone_keyframe", "[emapp][motion]")
             CHECK(
                 glm::make_quat(nanoemMotionBoneKeyframeGetOrientation(keyframe)) == Quaternion(0.9f, 0.3f, 0.2f, 0.1f));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == glm::u8vec4(8, 6, 4, 2));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X)) == Vector4U8(8, 6, 4, 2));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == glm::u8vec4(9, 7, 5, 3));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y)) == Vector4U8(9, 7, 5, 3));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == glm::u8vec4(17, 15, 13, 11));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == Vector4U8(17, 15, 13, 11));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == glm::u8vec4(18, 16, 14, 12));
+                      NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == Vector4U8(18, 16, 14, 12));
             CHECK(project2->duration() == 1337);
             CHECK(second->motionDuration(activeModel2) == 1337);
             CHECK_FALSE(scope.hasAnyError());

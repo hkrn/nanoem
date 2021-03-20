@@ -26,8 +26,8 @@ public:
     static const int kMaxFov;
     static const int kMinFov;
     static const int kInitialFov;
-    static const glm::u8vec4 kDefaultBezierControlPoint;
-    static const glm::u8vec4 kDefaultAutomaticBezierControlPoint;
+    static const Vector4U8 kDefaultBezierControlPoint;
+    static const Vector4U8 kDefaultAutomaticBezierControlPoint;
 
     PerspectiveCamera(Project *project);
     ~PerspectiveCamera() NANOEM_DECL_NOEXCEPT;
@@ -64,11 +64,11 @@ public:
     void setFov(int value) NANOEM_DECL_OVERRIDE;
     nanoem_f32_t fovRadians() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setFovRadians(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
-    glm::u8vec4 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    glm::u8vec4 bezierControlPoints(
+    Vector4U8 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    Vector4U8 bezierControlPoints(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setBezierControlPoints(
-        nanoem_motion_camera_keyframe_interpolation_type_t index, const glm::u8vec4 &value) NANOEM_DECL_OVERRIDE;
+        nanoem_motion_camera_keyframe_interpolation_type_t index, const Vector4U8 &value) NANOEM_DECL_OVERRIDE;
     bool isLinearInterpolation(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool isPerspective() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -106,8 +106,8 @@ private:
     Vector3 m_angle;
     nanoem_f32_t m_distance;
     tinystl::pair<int, nanoem_f32_t> m_fov;
-    glm::u8vec4 m_bezierControlPoints[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
-    glm::u8vec4 m_automaticBezierControlPoint;
+    Vector4U8 m_bezierControlPoints[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
+    Vector4U8 m_automaticBezierControlPoint;
     FollowingType m_followingType;
     bool m_isLinearInterpolation[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     bool m_perspective;
