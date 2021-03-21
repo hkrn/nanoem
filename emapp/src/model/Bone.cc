@@ -425,7 +425,7 @@ Bone::index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 Matrix3x3
 Bone::localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    nanoem_parameter_assert(bone, "must not be nullptr");
+    nanoem_parameter_assert(bonePtr, "must not be nullptr");
     if (nanoemModelBoneHasLocalAxes(bonePtr)) {
         const Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr)));
         const Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr)));
