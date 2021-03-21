@@ -170,7 +170,7 @@ Joint::getWorldTransformB(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT
 }
 
 const par_shapes_mesh_s *
-Joint::generateShapeMesh(const nanoem_model_joint_t * /* joint */)
+Joint::sharedShapeMesh(const nanoem_model_joint_t * /* joint */)
 {
     if (!m_shape) {
         m_shape = par_shapes_create_cube();

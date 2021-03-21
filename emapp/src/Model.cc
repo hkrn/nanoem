@@ -3797,7 +3797,7 @@ void
 Model::drawJointShape(const nanoem_model_joint_t *jointPtr)
 {
     model::Joint *joint = model::Joint::cast(jointPtr);
-    if (const par_shapes_mesh_s *shape = joint->generateShapeMesh(jointPtr)) {
+    if (const par_shapes_mesh_s *shape = joint->sharedShapeMesh(jointPtr)) {
         DrawIndexedBuffer &buffer = m_drawJoint[shape];
         const Vector3 color(m_selection->containsJoint(jointPtr) ? Vector3(1, 0, 0) : Vector3(1, 1, 0));
         nanoem_u32_t numVertices = buffer.fillShape(shape, Vector4(color, 0.25f));
@@ -3818,7 +3818,7 @@ void
 Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
 {
     model::RigidBody *rigidBody = model::RigidBody::cast(bodyPtr);
-    if (const par_shapes_mesh_s *shape = rigidBody->generateShapeMesh(bodyPtr)) {
+    if (const par_shapes_mesh_s *shape = rigidBody->sharedShapeMesh(bodyPtr)) {
         DrawIndexedBuffer &buffer = m_drawRigidBody[shape];
         Vector3 color;
         if (m_selection->containsRigidBody(bodyPtr)) {

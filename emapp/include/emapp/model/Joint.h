@@ -42,7 +42,7 @@ public:
     void getWorldTransformA(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
     void getWorldTransformB(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
 
-    const par_shapes_mesh_s *generateShapeMesh(const nanoem_model_joint_t *joint);
+    const par_shapes_mesh_s *sharedShapeMesh(const nanoem_model_joint_t *joint);
     void enable();
     void disable();
 

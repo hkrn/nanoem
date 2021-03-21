@@ -80,7 +80,7 @@ public:
     Matrix4x4 initialTransform() const NANOEM_DECL_NOEXCEPT;
     bool isKinematic() const NANOEM_DECL_NOEXCEPT;
 
-    const par_shapes_mesh *generateShapeMesh(const nanoem_model_rigid_body_t *body);
+    const par_shapes_mesh *sharedShapeMesh(const nanoem_model_rigid_body_t *body);
 
 private:
     struct PlaceHolder {

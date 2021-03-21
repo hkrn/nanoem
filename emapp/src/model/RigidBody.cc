@@ -424,7 +424,7 @@ RigidBody::isKinematic() const NANOEM_DECL_NOEXCEPT
 }
 
 const par_shapes_mesh *
-RigidBody::generateShapeMesh(const nanoem_model_rigid_body_t *body)
+RigidBody::sharedShapeMesh(const nanoem_model_rigid_body_t *body)
 {
     if (!m_shape) {
         const nanoem_f32_t *size = nanoemModelRigidBodyGetShapeSize(body);
