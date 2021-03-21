@@ -78,6 +78,7 @@ public:
     model::RigidBody::Set allRigidBodySet() const NANOEM_DECL_OVERRIDE;
     model::Joint::Set allJointSet() const NANOEM_DECL_OVERRIDE;
     model::SoftBody::Set allSoftBodySet() const NANOEM_DECL_OVERRIDE;
+    VertexIndexSet allVertexIndexSet() const NANOEM_DECL_OVERRIDE;
     bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -90,8 +91,7 @@ public:
     bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsAnyBone() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    
-    Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
     bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setBoxSelectedBoneModeEnabled(bool value) NANOEM_DECL_OVERRIDE;
     EditingType editingType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -101,7 +101,6 @@ public:
 
 private:
     typedef tinystl::unordered_set<Vector3UI32, TinySTLAllocator> FaceSet;
-    typedef tinystl::unordered_set<nanoem_u32_t, TinySTLAllocator> VertexIndexSet;
 
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;

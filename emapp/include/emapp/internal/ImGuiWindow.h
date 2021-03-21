@@ -371,6 +371,7 @@ private:
     void renderDrawList(const Project *project, const ImDrawData *drawData, int sampleCount, Buffer *bufferPtr,
         sg_bindings &bindingsRef, sg::PassBlock &pb);
     void internalFillRect(const Vector4 &devicePixelRect, nanoem_f32_t devicePixelRatio);
+    void applyDeltaTransform(const Matrix4x4 &delta, Model *activeModel);
 
     BaseApplicationService *m_applicationPtr;
     ImGuiApplicationMenuBuilder *m_menu;

@@ -23,6 +23,7 @@ namespace nanoem {
 
 class IModelObjectSelection {
 public:
+    typedef tinystl::unordered_set<nanoem_u32_t, TinySTLAllocator> VertexIndexSet;
     enum EditingType {
         kEditingTypeFirstEnum,
         kEditingTypeNone = kEditingTypeFirstEnum,
@@ -110,6 +111,7 @@ public:
     virtual model::RigidBody::Set allRigidBodySet() const = 0;
     virtual model::Joint::Set allJointSet() const = 0;
     virtual model::SoftBody::Set allSoftBodySet() const = 0;
+    virtual VertexIndexSet allVertexIndexSet() const = 0;
     virtual bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT = 0;
@@ -123,7 +125,6 @@ public:
     virtual bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT = 0;
 
-    virtual Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBoxSelectedBoneModeEnabled(bool value) = 0;
     virtual EditingType editingType() const NANOEM_DECL_NOEXCEPT = 0;

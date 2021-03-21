@@ -478,11 +478,168 @@ protected:
         BX_UNUSED_2(logicalScalePosition, project);
         return nullptr;
     }
-
     Vector4
     deviceScaleRect(const Project *project) const
     {
         return Vector4(m_rect) * project->windowDevicePixelRatio();
+    }
+    Matrix4x4
+    pivotMatrix(const Model *activeModel) const
+    {
+        typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator>
+            MaterialOffsetMap;
+        const IModelObjectSelection *selection = activeModel->selection();
+        Matrix4x4 matrix(0);
+        Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+        switch (selection->editingType()) {
+        case IModelObjectSelection::kEditingTypeBone: {
+            const model::Bone::Set selectedBoneSet(selection->allBoneSet());
+            if (!selectedBoneSet.empty()) {
+                for (model::Bone::Set::const_iterator it = selectedBoneSet.begin(), end = selectedBoneSet.end();
+                     it != end; ++it) {
+                    const nanoem_model_bone_t *bonePtr = *it;
+                    const Vector3 origin(model::Bone::origin(bonePtr));
+                    aabbMin = glm::min(aabbMin, origin);
+                    aabbMax = glm::max(aabbMax, origin);
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        case IModelObjectSelection::kEditingTypeFace: {
+            const IModelObjectSelection::VertexIndexSet selectedBoneSet(selection->allVertexIndexSet());
+            if (!selectedBoneSet.empty()) {
+                nanoem_rsize_t numVertices;
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
+                for (IModelObjectSelection::VertexIndexSet::const_iterator it = selectedBoneSet.begin(),
+                                                                           end = selectedBoneSet.end();
+                     it != end; ++it) {
+                    const nanoem_u32_t vertexIndex = *it;
+                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                    aabbMin = glm::min(aabbMin, origin);
+                    aabbMax = glm::max(aabbMax, origin);
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        case IModelObjectSelection::kEditingTypeJoint: {
+            const model::Joint::Set selectedJointSet(selection->allJointSet());
+            if (!selectedJointSet.empty()) {
+                for (model::Joint::Set::const_iterator it = selectedJointSet.begin(), end = selectedJointSet.end();
+                     it != end; ++it) {
+                    const nanoem_model_joint_t *jointPtr = *it;
+                    const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
+                    aabbMin = glm::min(aabbMin, origin);
+                    aabbMax = glm::max(aabbMax, origin);
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        case IModelObjectSelection::kEditingTypeMaterial: {
+            const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
+            if (!selectedMaterialSet.empty()) {
+                nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+                const nanoem_model_t *opaque = activeModel->data();
+                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+                MaterialOffsetMap materialOffsets;
+                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *material = materials[i];
+                    materialOffsets.insert(tinystl::make_pair(material, offset));
+                    offset += nanoemModelMaterialGetNumVertexIndices(material);
+                }
+                for (model::Material::Set::const_iterator it = selectedMaterialSet.begin(),
+                                                          end = selectedMaterialSet.end();
+                     it != end; ++it) {
+                    const nanoem_model_material_t *materialPtr = *it;
+                    MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                    if (it2 != materialOffsets.end()) {
+                        nanoem_rsize_t offset = it2->second,
+                                       indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                        for (nanoem_rsize_t i = 0; i < indices; i++) {
+                            const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                            const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                            aabbMin = glm::min(aabbMin, origin);
+                            aabbMax = glm::max(aabbMax, origin);
+                        }
+                    }
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        case IModelObjectSelection::kEditingTypeRigidBody: {
+            const model::RigidBody::Set selectedRigidBodySet(selection->allRigidBodySet());
+            if (!selectedRigidBodySet.empty()) {
+                for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet.begin(),
+                                                           end = selectedRigidBodySet.end();
+                     it != end; ++it) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                    const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
+                    aabbMin = glm::min(aabbMin, origin);
+                    aabbMax = glm::max(aabbMax, origin);
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        case IModelObjectSelection::kEditingTypeSoftBody: {
+            const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
+            if (!selectedSoftBodySet.empty()) {
+                nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+                const nanoem_model_t *opaque = activeModel->data();
+                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+                MaterialOffsetMap materialOffsets;
+                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *material = materials[i];
+                    materialOffsets.insert(tinystl::make_pair(material, offset));
+                    offset += nanoemModelMaterialGetNumVertexIndices(material);
+                }
+                for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet.begin(),
+                                                          end = selectedSoftBodySet.end();
+                     it != end; ++it) {
+                    const nanoem_model_soft_body_t *softBodyPtr = *it;
+                    const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
+                    MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                    if (it2 != materialOffsets.end()) {
+                        nanoem_rsize_t offset = it2->second,
+                                       indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                        for (nanoem_rsize_t i = 0; i < indices; i++) {
+                            const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                            const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                            aabbMin = glm::min(aabbMin, origin);
+                            aabbMax = glm::max(aabbMax, origin);
+                        }
+                    }
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        case IModelObjectSelection::kEditingTypeVertex: {
+            const model::Vertex::Set selectedVertexSet(selection->allVertexSet());
+            if (!selectedVertexSet.empty()) {
+                for (model::Vertex::Set::const_iterator it = selectedVertexSet.begin(), end = selectedVertexSet.end();
+                     it != end; ++it) {
+                    const nanoem_model_vertex_t *vertexPtr = *it;
+                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+                    aabbMin = glm::min(aabbMin, origin);
+                    aabbMax = glm::max(aabbMax, origin);
+                }
+                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        return matrix;
     }
 
 private:
@@ -518,7 +675,7 @@ private:
         updateRegion(Vector4SI32(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition));
         if (Model *model = project->activeModel()) {
             commitSelection(model, project, removeAll);
-            model->setPivotMatrix(model->selection()->pivotMatrix());
+            model->setPivotMatrix(pivotMatrix(model));
         }
         m_lastPosition = Vector2();
     }
@@ -730,7 +887,6 @@ private:
                 selection->addMaterial(materialPtr);
             }
         }
-        model->setPivotMatrix(selection->pivotMatrix());
     }
 };
 
