@@ -176,7 +176,9 @@ nanoem_u32_t
 D3D11RendererCapability::suggestedSampleLevel(nanoem_u32_t value) const noexcept
 {
     uint32_t sampleCount = 1 << value, numQualityLevels;
-    while (FAILED(m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, sampleCount, &numQualityLevels)) || numQualityLevels == 0) {
+    while (
+        FAILED(m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, sampleCount, &numQualityLevels)) ||
+        numQualityLevels == 0) {
         value--;
         sampleCount = 1 << value;
     }
@@ -187,7 +189,8 @@ bool
 D3D11RendererCapability::supportsSampleLevel(nanoem_u32_t value) const noexcept
 {
     uint32_t sampleCount = 1 << value, numQualityLevels;
-    HRESULT result = m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, sampleCount, &numQualityLevels);
+    HRESULT result =
+        m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, sampleCount, &numQualityLevels);
     return !FAILED(result) && numQualityLevels > 0;
 }
 
@@ -567,8 +570,8 @@ Project::IRendererCapability *
 Win32ThreadedApplicationService::createRendererCapability()
 {
     const sg_backend backend = sg::query_backend();
-    return backend == SG_BACKEND_D3D11 ? nanoem_new(D3D11RendererCapability((ID3D11Device *)m_nativeDevice))
-        : ThreadedApplicationService::createRendererCapability();
+    return backend == SG_BACKEND_D3D11 ? nanoem_new(D3D11RendererCapability((ID3D11Device *) m_nativeDevice))
+                                       : ThreadedApplicationService::createRendererCapability();
 }
 
 Project::ISkinDeformerFactory *

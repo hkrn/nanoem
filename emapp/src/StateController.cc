@@ -1030,7 +1030,7 @@ public:
 
 private:
     typedef tinystl::unordered_map<const nanoem_model_material_t *, Vector3, TinySTLAllocator> MaterialBaryCenterMap;
-    
+
     const char *
     name() const NANOEM_DECL_OVERRIDE
     {
