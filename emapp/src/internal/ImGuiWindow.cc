@@ -2683,7 +2683,8 @@ void
 ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
 {
     ImGui::BeginChild("viewport", ImVec2(ImGui::GetContentRegionAvail().x, viewportHeight), false);
-    const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
+    const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio(),
+                       invertDeviceScaleRatio = 1.0f / deviceScaleRatio;
     if (const Model *activeModel = project->activeModel()) {
         const model::Bone *activeBone = model::Bone::cast(activeModel->activeBone());
         ImGui::Text("%s: %s", activeModel->nameConstString(), activeBone ? activeBone->nameConstString() : nullptr);
@@ -2701,7 +2702,7 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     }
     const Vector4 viewportLayout(offset.x, offset.y, size.x, size.y);
     bool hovered = ImGui::IsWindowHovered();
-    project->resizeUniformedViewportLayout(viewportLayout / deviceScaleRatio);
+    project->resizeUniformedViewportLayout(viewportLayout * invertDeviceScaleRatio);
     const Vector4 viewportImageRect(createViewportImageRect(project, viewportLayout));
     const sg_image viewportImageHandle = project->viewportPrimaryImage();
     ImGui::Dummy(size);
@@ -2710,8 +2711,9 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         viewportImageFrom(viewportImageRect.x, viewportImageRect.y),
         viewportImageTo(viewportImageRect.x + viewportImageRect.z, viewportImageRect.y + viewportImageRect.w);
     const nanoem_f32_t tileSizeRatio = 1.0f / (16.0f * deviceScaleRatio);
-    project->setViewportMargin(Vector2UI16(viewportImageFrom.x > a.y ? viewportImageFrom.x - a.x : 0,
-        viewportImageFrom.y > a.y ? viewportImageFrom.y - a.y : 0));
+    project->setViewportMargin(
+        Vector2UI16(viewportImageFrom.x > a.y ? (viewportImageFrom.x - a.x) * invertDeviceScaleRatio : 0,
+            viewportImageFrom.y > a.y ? (viewportImageFrom.y - a.y) * invertDeviceScaleRatio : 0));
     drawList->PushClipRect(a, b);
     drawList->AddImage(reinterpret_cast<ImTextureID>(m_transparentTileImage.id), viewportImageFrom, viewportImageTo,
         ImVec2(0, 0), ImVec2(viewportImageRect.z * tileSizeRatio, viewportImageRect.w * tileSizeRatio));
