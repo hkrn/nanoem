@@ -807,10 +807,10 @@ private:
     commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
     {
         const Vector4SI32 rect(deviceScaleRect(project));
-        nanoem_rsize_t numVertices, numMaterials, numIndices;
+        nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
         nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
         nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numIndices);
+        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
         const ICamera *camera = project->activeCamera();
         IModelObjectSelection *selection = model->selection();
         if (removeAll) {
@@ -856,10 +856,10 @@ private:
     commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
     {
         const Vector4SI32 rect(deviceScaleRect(project));
-        nanoem_rsize_t numVertices, numMaterials, numIndices;
+        nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
         nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
         nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numIndices);
+        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
         const ICamera *camera = project->activeCamera();
         IModelObjectSelection *selection = model->selection();
         if (removeAll) {
@@ -1014,6 +1014,81 @@ private:
             if (Inline::intersectsRectPoint(rect, coordB)) {
                 selection->addJoint(jointPtr);
             }
+        }
+    }
+};
+
+class DraggingSoftBodySelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
+public:
+    DraggingSoftBodySelectionState(StateController *stateController, BaseApplicationService *application)
+        : BaseSelectionState(stateController, application)
+    {
+    }
+    ~DraggingSoftBodySelectionState() NANOEM_DECL_NOEXCEPT
+    {
+    }
+
+private:
+    typedef tinystl::unordered_map<const nanoem_model_material_t *, Vector3, TinySTLAllocator> MaterialBaryCenterMap;
+    
+    const char *
+    name() const NANOEM_DECL_OVERRIDE
+    {
+        return "nanoem.gui.viewport.select.soft-body";
+    }
+    void
+    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
+    {
+        const Vector4SI32 rect(deviceScaleRect(project));
+        nanoem_rsize_t numSoftBodies;
+        nanoem_model_soft_body_t *const *bodies = nanoemModelGetAllSoftBodyObjects(model->data(), &numSoftBodies);
+        const ICamera *camera = project->activeCamera();
+        IModelObjectSelection *selection = model->selection();
+        if (removeAll) {
+            selection->removeAllSoftBodies();
+        }
+        MaterialBaryCenterMap baryCenters;
+        getMaterialMap(model, baryCenters);
+        for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+            const nanoem_model_soft_body_t *bodyPtr = bodies[i];
+            const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(bodyPtr);
+            MaterialBaryCenterMap::const_iterator it = baryCenters.find(materialPtr);
+            if (it != baryCenters.end()) {
+                const Vector3 position(it->second);
+                const Vector2 coord(camera->toDeviceScreenCoordinateInViewport(position));
+                if (Inline::intersectsRectPoint(rect, coord)) {
+                    selection->addSoftBody(bodyPtr);
+                }
+            }
+        }
+    }
+    void
+    getMaterialMap(Model *model, MaterialBaryCenterMap &baryCenters)
+    {
+        nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
+        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
+        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
+        for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+            const nanoem_model_material_t *materialPtr = materials[i];
+            const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+            Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+            for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
+                const nanoem_rsize_t o = offset + j;
+                const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
+                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
+                    o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+                aabbMin = glm::min(aabbMin, o0);
+                aabbMin = glm::min(aabbMin, o1);
+                aabbMin = glm::min(aabbMin, o2);
+                aabbMax = glm::max(aabbMax, o0);
+                aabbMax = glm::max(aabbMax, o1);
+                aabbMax = glm::max(aabbMax, o2);
+            }
+            const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
+            baryCenters.insert(tinystl::make_pair(materialPtr, baryCenter));
         }
     }
 };
@@ -1542,13 +1617,15 @@ StateController::setPrimaryDraggingState(Project *project, const Vector2SI32 &lo
                 case IModelObjectSelection::kEditingTypeRigidBody:
                     state = nanoem_new(DraggingRigidBodySelectionState(this, m_applicationPtr));
                     break;
+                case IModelObjectSelection::kEditingTypeSoftBody:
+                    state = nanoem_new(DraggingSoftBodySelectionState(this, m_applicationPtr));
+                    break;
                 case IModelObjectSelection::kEditingTypeVertex:
                     state = nanoem_new(DraggingVertexSelectionState(this, m_applicationPtr));
                     break;
                 case IModelObjectSelection::kEditingTypeInfo:
                 case IModelObjectSelection::kEditingTypeLabel:
                 case IModelObjectSelection::kEditingTypeMorph:
-                case IModelObjectSelection::kEditingTypeSoftBody:
                 case IModelObjectSelection::kEditingTypeNone:
                 default:
                     state = nanoem_new(DraggingCameraState(this, m_applicationPtr, true));
