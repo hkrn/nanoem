@@ -4655,6 +4655,18 @@ Project::deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT
     return Vector2(m_uniformViewportImageSize.first) * viewportDevicePixelRatio();
 }
 
+Vector2UI16
+Project::viewportMargin() const NANOEM_DECL_NOEXCEPT
+{
+    return m_viewportMargin;
+}
+
+void
+Project::setViewportMargin(const Vector2UI16 value)
+{
+    m_viewportMargin = value;
+}
+
 Vector4
 Project::viewportBackgroundColor() const NANOEM_DECL_NOEXCEPT
 {
@@ -6036,7 +6048,7 @@ Project::adjustViewportImageRect(
         viewportImageRect.z = viewportImageSize.x;
     }
     if (viewportLayoutRect.w > viewportImageSize.y) {
-        viewportImageRect.y += (viewportLayoutRect.w - viewportImageSize.y) * 0.5f;
+        viewportImageRect.y += ((viewportLayoutRect.w - viewportImageSize.y) * 0.5f);
         viewportImageRect.w = viewportImageSize.y;
     }
 }
