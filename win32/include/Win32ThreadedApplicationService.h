@@ -90,6 +90,7 @@ private:
     IAudioPlayer *createAudioPlayer() override;
     IBackgroundVideoRenderer *createBackgroundVideoRenderer() override;
     IDebugCapture *createDebugCapture() override;
+    Project::IRendererCapability *createRendererCapability() override;
     Project::ISkinDeformerFactory *createSkinDeformerFactory() override;
     IVideoRecorder *createVideoRecorder() override;
     bool hasVideoRecorder() const noexcept override;
