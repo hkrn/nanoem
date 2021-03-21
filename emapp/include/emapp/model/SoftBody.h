@@ -25,6 +25,7 @@ public:
     typedef tinystl::unordered_set<const nanoem_model_soft_body_t *, TinySTLAllocator> Set;
     typedef tinystl::unordered_set<nanoem_model_soft_body_t *, TinySTLAllocator> MutableSet;
 
+    static int index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT;
     static SoftBody *cast(const nanoem_model_soft_body_t *softBodyPtr);
     static SoftBody *create();
 

@@ -128,7 +128,7 @@ TransformMorphCommand::write(void *messagePtr)
         Nanoem__Application__RedoTransformMorphCommand__State *state =
             nanoem_new(Nanoem__Application__RedoTransformMorphCommand__State);
         nanoem__application__redo_transform_morph_command__state__init(state);
-        state->morph_index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(it->first));
+        state->morph_index = model::Morph::index(it->first);
         state->weight = it->second.first;
         command->current_bind_pose[offset++] = state;
     }
@@ -139,7 +139,7 @@ TransformMorphCommand::write(void *messagePtr)
         Nanoem__Application__RedoTransformMorphCommand__State *state =
             nanoem_new(Nanoem__Application__RedoTransformMorphCommand__State);
         nanoem__application__redo_transform_morph_command__state__init(state);
-        state->morph_index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(it->first));
+        state->morph_index = model::Morph::index(it->first);
         state->weight = it->second.second;
         command->last_bind_pose[offset++] = state;
     }

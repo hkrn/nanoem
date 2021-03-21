@@ -70,10 +70,16 @@ Morph::synchronizeMotion(
     }
 }
 
-Morph *
-Morph::cast(const nanoem_model_morph_t *morph) NANOEM_DECL_NOEXCEPT
+int
+Morph::index(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelMorphGetModelObject(morph);
+    return nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morphPtr));
+}
+
+Morph *
+Morph::cast(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelMorphGetModelObject(morphPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Morph *>(nanoemUserDataGetOpaqueData(userData));
 }

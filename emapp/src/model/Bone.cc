@@ -90,8 +90,7 @@ Bone::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Bone%d", nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bone)));
+            StringUtils::format(m_canonicalName, "Bone%d", index(bone));
         }
     }
     if (m_name.empty()) {
@@ -399,31 +398,37 @@ Bone::constrainOrientation(
 }
 
 bool
-Bone::isSelectable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::isSelectable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelBoneIsVisible(bone) && nanoemModelBoneIsUserHandleable(bone) &&
-        (nanoemModelBoneIsMovable(bone) || nanoemModelBoneIsRotateable(bone));
+    return nanoemModelBoneIsVisible(bonePtr) && nanoemModelBoneIsUserHandleable(bonePtr) &&
+        (nanoemModelBoneIsMovable(bonePtr) || nanoemModelBoneIsRotateable(bonePtr));
 }
 
 bool
-Bone::isMovable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::isMovable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelBoneIsUserHandleable(bone) && nanoemModelBoneIsMovable(bone);
+    return nanoemModelBoneIsUserHandleable(bonePtr) && nanoemModelBoneIsMovable(bonePtr);
 }
 
 bool
-Bone::isRotateable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::isRotateable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelBoneIsUserHandleable(bone) && nanoemModelBoneIsRotateable(bone);
+    return nanoemModelBoneIsUserHandleable(bonePtr) && nanoemModelBoneIsRotateable(bonePtr);
+}
+
+int
+Bone::index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
 }
 
 Matrix3x3
-Bone::localAxes(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(bone, "must not be nullptr");
-    if (nanoemModelBoneHasLocalAxes(bone)) {
-        const Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bone)));
-        const Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bone)));
+    if (nanoemModelBoneHasLocalAxes(bonePtr)) {
+        const Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr)));
+        const Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr)));
         const Vector3 axisY(glm::cross(axisZ, axisX));
         const Vector3 newAxisZ(glm::cross(axisX, axisY));
         const Matrix3x3 matrix(axisX, axisY, newAxisZ);
@@ -436,9 +441,9 @@ Bone::localAxes(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
 }
 
 Vector3
-Bone::origin(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::origin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return glm::make_vec3(nanoemModelBoneGetOrigin(bone)) * Constants::kTranslateDirection;
+    return glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr)) * Constants::kTranslateDirection;
 }
 
 Vector3
@@ -456,9 +461,9 @@ Bone::toQuaternion(const nanoem_motion_bone_keyframe_t *keyframe) NANOEM_DECL_NO
 }
 
 Bone *
-Bone::cast(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::cast(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelBoneGetModelObject(bone);
+    const nanoem_model_object_t *object = nanoemModelBoneGetModelObject(bonePtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Bone *>(nanoemUserDataGetOpaqueData(userData));
 }

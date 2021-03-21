@@ -40,6 +40,7 @@ public:
         nanoem_model_rigid_body_transform_type_t transformType;
     };
 
+    static int index(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT;
     static Vector3 colorByShapeType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT;
     static Vector3 colorByObjectType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT;
     static RigidBody *cast(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT;

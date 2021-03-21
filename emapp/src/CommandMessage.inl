@@ -137,7 +137,7 @@ public:
             op->parent_model_handle = model->handle();
             if (const nanoem_model_bone_t *bonePtr = model->findBone(parent.second)) {
                 op->has_parent_model_bone_index = 1;
-                op->parent_model_bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+                op->parent_model_bone_index = model::Bone::index(bonePtr);
             }
         }
     }
@@ -147,13 +147,13 @@ public:
         op = nanoem_new(Nanoem__Application__OutsideParent);
         nanoem__application__outside_parent__init(op);
         op->has_bone_index = 1;
-        op->bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+        op->bone_index = model::Bone::index(bonePtr);
         if (const Model *model = project->findModelByName(parent.first)) {
             op->has_parent_model_handle = 1;
             op->parent_model_handle = model->handle();
             if (const nanoem_model_bone_t *bonePtr = model->findBone(parent.second)) {
                 op->has_parent_model_bone_index = 1;
-                op->parent_model_bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+                op->parent_model_bone_index = model::Bone::index(bonePtr);
             }
         }
     }

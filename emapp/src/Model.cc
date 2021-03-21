@@ -1257,7 +1257,7 @@ Model::writeLoadCommandMessage(Error &error)
         Nanoem__Application__Bone *b = nanoem_new(Nanoem__Application__Bone);
         nanoem__application__bone__init(b);
         const nanoem_model_bone_t *bone = bones[i];
-        b->index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bone));
+        b->index = model::Bone::index(bone);
         b->name = reinterpret_cast<char *>(nanoemUnicodeStringFactoryGetByteArrayEncoding(factory,
             nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8, &status));
         command.bones[i] = b;
@@ -1269,7 +1269,7 @@ Model::writeLoadCommandMessage(Error &error)
         Nanoem__Application__Morph *m = nanoem_new(Nanoem__Application__Morph);
         nanoem__application__morph__init(m);
         const nanoem_model_morph_t *morph = morphs[i];
-        m->index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morph));
+        m->index = model::Morph::index(morph);
         m->name = reinterpret_cast<char *>(nanoemUnicodeStringFactoryGetByteArrayEncoding(factory,
             nanoemModelMorphGetName(morph, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8, &status));
         command.morphs[i] = m;
@@ -2550,7 +2550,7 @@ Model::splitBonesPerMaterial(model::Material::BoneIndexHashMap &boneIndexHash) c
             const nanoem_model_vertex_t *vertex = vertices[vertexIndex];
             for (nanoem_rsize_t k = 0; k < 4; k++) {
                 const nanoem_model_bone_t *bone = nanoemModelVertexGetBoneObject(vertex, k);
-                int boneIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bone));
+                int boneIndex = model::Bone::index(bone);
                 if (boneIndex >= 0) {
                     if (indexHash.insert(tinystl::make_pair(boneIndex, uniqueBoneIndexPerMaterial)).second) {
                         uniqueBoneIndexPerMaterial++;
@@ -3632,7 +3632,7 @@ Model::drawAllVertexPoints()
     sg::LineVertexUnit *vertexUnits = m_drawAllPoints.m_vertices.data();
     for (size_t i = 0; i < numNewVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = newVertices[i];
-        const int index = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
+        const int index = model::Vertex::index(vertexPtr);
         const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
         sg::LineVertexUnit &vertexUnit = vertexUnits[index];
         bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
@@ -4718,25 +4718,25 @@ Model::setTransformAxisType(AxisType value)
     }
 }
 
-Model::TransformCoordinateType 
+Model::TransformCoordinateType
 Model::gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT
 {
     return m_gizmoTransformCoordinateType;
 }
 
-void 
+void
 Model::setGizmoTransformCoordinateType(TransformCoordinateType value)
 {
     m_gizmoTransformCoordinateType = value;
 }
 
-Model::GizmoOperationType 
+Model::GizmoOperationType
 Model::gizmoOperationType() const NANOEM_DECL_NOEXCEPT
 {
     return m_gizmoOperationType;
 }
 
-void 
+void
 Model::setGizmoOperationType(GizmoOperationType value)
 {
     m_gizmoOperationType = value;
@@ -4775,13 +4775,13 @@ Model::toggleTransformCoordinateType()
     }
 }
 
-Matrix4x4 
+Matrix4x4
 Model::pivotMatrix() const NANOEM_DECL_NOEXCEPT
 {
     return m_pivotMatrix;
 }
 
-void 
+void
 Model::setPivotMatrix(const Matrix4x4 &value)
 {
     m_pivotMatrix = value;

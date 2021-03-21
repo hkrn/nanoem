@@ -17,10 +17,16 @@
 namespace nanoem {
 namespace model {
 
-Joint *
-Joint::cast(const nanoem_model_joint_t *joint) NANOEM_DECL_NOEXCEPT
+int
+Joint::index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelJointGetModelObject(joint);
+    return nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(jointPtr));
+}
+
+Joint *
+Joint::cast(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelJointGetModelObject(jointPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Joint *>(nanoemUserDataGetOpaqueData(userData));
 }
@@ -93,8 +99,7 @@ Joint::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelJointGetName(joint, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Joint%d", nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(joint)));
+            StringUtils::format(m_canonicalName, "Joint%d", index(joint));
         }
     }
     if (m_name.empty()) {

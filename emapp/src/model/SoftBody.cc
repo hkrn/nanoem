@@ -15,6 +15,12 @@
 namespace nanoem {
 namespace model {
 
+int
+SoftBody::index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(softBodyPtr));
+}
+
 SoftBody *
 SoftBody::cast(const nanoem_model_soft_body_t *softBodyPtr)
 {
@@ -72,8 +78,7 @@ SoftBody::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelSoftBodyGetName(body, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "SoftBody%d", nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(body)));
+            StringUtils::format(m_canonicalName, "SoftBody%d", index(body));
         }
     }
     if (m_name.empty()) {
@@ -112,8 +117,7 @@ SoftBody::synchronizeTransformFeedbackFromSimulation(
     int numSoftBodyVertices = m_physicsEngine->numSoftBodyVertices(m_physicsSoftBody);
     for (int i = 0; i < numSoftBodyVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = m_physicsEngine->resolveSoftBodyVertexObject(m_physicsSoftBody, i);
-        nanoem_rsize_t vertexIndex =
-            static_cast<nanoem_rsize_t>(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr)));
+        nanoem_rsize_t vertexIndex = static_cast<nanoem_rsize_t>(model::Vertex::index(vertexPtr));
         if (nanoem_likely(vertexIndex < numVertices)) {
             Model::VertexUnit &vertexUnit = vertexUnits[vertexIndex];
             getVertexPosition(i, &vertexUnit.m_position);
@@ -131,8 +135,7 @@ SoftBody::synchronizeTransformFeedbackToSimulation(
     for (nanoem_rsize_t i = 0; i < numIndices; i++) {
         const nanoem_u32_t index = indices[i];
         const nanoem_model_vertex_t *vertexPtr = m_physicsEngine->resolveSoftBodyVertexObject(m_physicsSoftBody, index);
-        nanoem_rsize_t vertexIndex =
-            static_cast<nanoem_rsize_t>(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr)));
+        nanoem_rsize_t vertexIndex = static_cast<nanoem_rsize_t>(model::Vertex::index(vertexPtr));
         if (nanoem_likely(vertexIndex < numVertices)) {
             const Model::VertexUnit &vertexUnit = vertexUnits[vertexIndex];
             setVertexPosition(index, &vertexUnit.m_position);

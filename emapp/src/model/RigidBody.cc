@@ -306,6 +306,12 @@ RigidBody::forceActive()
     m_physicsEngine->setActive(m_physicsRigidBody);
 }
 
+int
+RigidBody::index(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(bodyPtr));
+}
+
 Vector3
 RigidBody::colorByShapeType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT
 {

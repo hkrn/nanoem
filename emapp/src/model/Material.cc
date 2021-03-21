@@ -58,8 +58,7 @@ Material::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelMaterialGetName(material, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Material%d", nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(material)));
+            StringUtils::format(m_canonicalName, "Material%d", index(material));
         }
     }
     if (m_name.empty()) {
@@ -218,10 +217,16 @@ Material::edge() const NANOEM_DECL_NOEXCEPT
     return e;
 }
 
-Material *
-Material::cast(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT
+int
+Material::index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelMaterialGetModelObject(material);
+    return nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
+}
+
+Material *
+Material::cast(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelMaterialGetModelObject(materialPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Material *>(nanoemUserDataGetOpaqueData(userData));
 }

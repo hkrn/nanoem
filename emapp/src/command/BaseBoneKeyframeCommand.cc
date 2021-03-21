@@ -205,7 +205,7 @@ BaseBoneKeyframeCommand::writeMessage(void *messagePtr, nanoem_u32_t type)
         Nanoem__Application__RedoBoneKeyframeCommand__Keyframe *k =
             nanoem_new(Nanoem__Application__RedoBoneKeyframeCommand__Keyframe);
         nanoem__application__redo_bone_keyframe_command__keyframe__init(k);
-        k->bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(m_model->findBone(keyframe.m_name)));
+        k->bone_index = model::Bone::index(m_model->findBone(keyframe.m_name));
         k->frame_index = keyframe.m_frameIndex;
         k->dirty = keyframe.wasDirty;
         writeStateMessage(keyframe.m_state.first, &k->current_state);

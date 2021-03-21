@@ -31,6 +31,7 @@ public:
     void bind(nanoem_model_vertex_t *vertexPtr);
     void setupBoneBinding(nanoem_model_vertex_t *vertexPtr, Model *model);
 
+    static int index(const nanoem_model_vertex_t *vertexPtr);
     static Vertex *cast(const nanoem_model_vertex_t *vertexPtr);
     static Vertex *create();
 

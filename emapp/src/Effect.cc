@@ -4450,7 +4450,7 @@ Effect::internalFindTechnique(
     effect::Technique *foundTechnique = nullptr;
     if (it != m_techniqueByPassTypes.end()) {
         tinystl::unordered_set<int, TinySTLAllocator> subset;
-        const int materialIndex = nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(material));
+        const int materialIndex = model::Material::index(material);
         const TechniqueList &techniques = it->second;
         for (TechniqueList::const_iterator it2 = techniques.begin(), end2 = techniques.end(); it2 != end2; ++it2) {
             effect::Technique *technique = *it2;

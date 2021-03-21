@@ -27,7 +27,7 @@ void
 ModelParameterDialog::formatVertexText(char *buffer, nanoem_rsize_t size, const nanoem_model_vertex_t *vertexPtr)
 {
     const nanoem_f32_t *origin = nanoemModelVertexGetOrigin(vertexPtr);
-    int offset = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr)) + 1;
+    int offset = model::Vertex::index(vertexPtr) + 1;
     StringUtils::format(buffer, size, "%d (%.2f, %.2f, %.2f)", offset, origin[0], origin[1], origin[2]);
 }
 
@@ -1113,7 +1113,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
             const int m_offset;
         };
         const nanoem_model_bone_t *selectedBone = numBones > 0 ? bones[m_boneIndex] : nullptr;
-        int selectedBoneIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(selectedBone));
+        int selectedBoneIndex = model::Bone::index(selectedBone);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 m_parent->addLazyExecutionCommand(nanoem_new(CreateBoneCommand(numBones, -1, nullptr)));
@@ -1811,7 +1811,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
             const int m_offset;
         };
         const nanoem_model_morph_t *selectedMorph = numMorphs > 0 ? morphs[m_morphIndex] : nullptr;
-        int selectedMorphIndex = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(selectedMorph));
+        int selectedMorphIndex = model::Morph::index(selectedMorph);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::BeginMenu("Bone Morph")) {
                 const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_BONE;
@@ -2758,7 +2758,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
             const nanoem_rsize_t m_numLabels;
             const int m_offset;
         };
-        int selectedLabelIndex = nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(selectedLabel));
+        int selectedLabelIndex = model::Label::index(selectedLabel);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 m_parent->addLazyExecutionCommand(nanoem_new(CreateLabelCommand(numLabels, -1, nullptr)));
@@ -3098,7 +3098,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         };
         const nanoem_model_rigid_body_t *selectedRigidBody =
             numRigidBodies > 0 ? rigidBodies[m_rigidBodyIndex] : nullptr;
-        int selectedRigidBodyIndex = nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(selectedRigidBody));
+        int selectedRigidBodyIndex = model::RigidBody::index(selectedRigidBody);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 m_parent->addLazyExecutionCommand(nanoem_new(CreateRigidBodyCommand(numRigidBodies, -1, nullptr)));
@@ -3475,7 +3475,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
             const int m_offset;
         };
         const nanoem_model_joint_t *selectedJoint = numJoints > 0 ? joints[m_jointIndex] : nullptr;
-        int selectedJointIndex = nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(selectedJoint));
+        int selectedJointIndex = model::Joint::index(selectedJoint);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 m_parent->addLazyExecutionCommand(nanoem_new(CreateJointCommand(numJoints, -1, nullptr)));
@@ -3812,7 +3812,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
             const int m_offset;
         };
         const nanoem_model_soft_body_t *selectedSoftBody = numSoftBodys > 0 ? soft_bodys[m_softBodyIndex] : nullptr;
-        int selectedSoftBodyIndex = nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(selectedSoftBody));
+        int selectedSoftBodyIndex = model::SoftBody::index(selectedSoftBody);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 m_parent->addLazyExecutionCommand(nanoem_new(CreateSoftBodyCommand(numSoftBodys, -1, nullptr)));

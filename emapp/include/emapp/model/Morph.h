@@ -32,7 +32,8 @@ public:
     void synchronizeMotion(const Motion *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t frameIndex,
         nanoem_f32_t amount);
 
-    static Morph *cast(const nanoem_model_morph_t *morph) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT;
+    static Morph *cast(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT;
     static Morph *create();
 
     String name() const;

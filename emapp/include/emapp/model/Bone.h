@@ -63,14 +63,15 @@ public:
 
     static void constrainOrientation(
         const Vector3 &upperLimit, const Vector3 &lowerLimit, Quaternion &orientation) NANOEM_DECL_NOEXCEPT;
-    static bool isSelectable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT;
-    static bool isMovable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT;
-    static bool isRotateable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT;
-    static Matrix3x3 localAxes(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT;
-    static Vector3 origin(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT;
+    static bool isSelectable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
+    static bool isMovable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
+    static bool isRotateable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
+    static Matrix3x3 localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
+    static Vector3 origin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
     static Vector3 toVector3(const nanoem_motion_bone_keyframe_t *keyframe) NANOEM_DECL_NOEXCEPT;
     static Quaternion toQuaternion(const nanoem_motion_bone_keyframe_t *keyframe) NANOEM_DECL_NOEXCEPT;
-    static Bone *cast(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT;
+    static Bone *cast(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
     static Bone *create();
 
     const bx::float4x4_t worldTransformMatrix() const NANOEM_DECL_NOEXCEPT;

@@ -62,7 +62,8 @@ public:
     Color color() const NANOEM_DECL_NOEXCEPT;
     Edge edge() const NANOEM_DECL_NOEXCEPT;
 
-    static Material *cast(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT;
+    static Material *cast(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT;
     static Material *create(sg_image fallbackTexture);
 
     const IImageView *diffuseImage() const NANOEM_DECL_NOEXCEPT;

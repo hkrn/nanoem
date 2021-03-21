@@ -37,17 +37,12 @@ Vertex::bind(nanoem_model_vertex_t *vertexPtr)
     m_simd.m_normal = bx::simd_mul(bx::simd_ld(nanoemModelVertexGetNormal(vertexPtr)), direction);
     const nanoem_f32_t *texcoord = nanoemModelVertexGetTexCoord(vertexPtr);
     m_simd.m_texcoord = bx::simd_ld(Inline::fract(texcoord[0]), Inline::fract(texcoord[1]), texcoord[2], texcoord[3]);
-    m_simd.m_info =
-        bx::simd_ld(nanoemModelVertexGetEdgeSize(vertexPtr), nanoem_f32_t(nanoemModelVertexGetType(vertexPtr)),
-            nanoem_f32_t(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr))), /* needTransform */ 1);
-    m_simd.m_indices = bx::simd_ld(nanoem_f32_t(nanoemModelObjectGetIndex(
-                                       nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 0)))),
-        nanoem_f32_t(
-            nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 1)))),
-        nanoem_f32_t(
-            nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 2)))),
-        nanoem_f32_t(
-            nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 3)))));
+    m_simd.m_info = bx::simd_ld(nanoemModelVertexGetEdgeSize(vertexPtr),
+        nanoem_f32_t(nanoemModelVertexGetType(vertexPtr)), nanoem_f32_t(index(vertexPtr)), /* needTransform */ 1);
+    m_simd.m_indices = bx::simd_ld(nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 0))),
+        nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 1))),
+        nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 2))),
+        nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 3))));
     m_simd.m_weights =
         bx::simd_ld(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
             nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
@@ -92,6 +87,12 @@ Vertex::setupBoneBinding(nanoem_model_vertex_t *vertexPtr, Model *model)
     default:
         break;
     }
+}
+
+int
+Vertex::index(const nanoem_model_vertex_t *vertexPtr)
+{
+    return nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
 }
 
 Vertex *

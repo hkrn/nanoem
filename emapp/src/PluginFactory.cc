@@ -354,43 +354,43 @@ PluginFactory::ModelIOPluginProxy::setupSelection(const Model *model, Error &err
         IntList indices;
         const model::Vertex::Set vertices(selection->allVertexSet());
         for (model::Vertex::Set::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(*it)));
+            indices.push_back(model::Vertex::index(*it));
         }
         m_plugin->setAllSelectedVertexObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::Material::Set materials(selection->allMaterialSet());
         for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(*it)));
+            indices.push_back(model::Material::index(*it));
         }
         m_plugin->setAllSelectedMaterialObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::Bone::Set bones(selection->allBoneSet());
         for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(*it)));
+            indices.push_back(model::Bone::index(*it));
         }
         m_plugin->setAllSelectedBoneObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::Morph::Set morphs(selection->allMorphSet());
         for (model::Morph::Set::const_iterator it = morphs.begin(), end = morphs.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(*it)));
+            indices.push_back(model::Morph::index(*it));
         }
         m_plugin->setAllSelectedMorphObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::Label::Set labels(selection->allLabelSet());
         for (model::Label::Set::const_iterator it = labels.begin(), end = labels.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(*it)));
+            indices.push_back(model::Label::index(*it));
         }
         m_plugin->setAllSelectedLabelObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::RigidBody::Set rigidBodies(selection->allRigidBodySet());
         for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(*it)));
+            indices.push_back(model::RigidBody::index(*it));
         }
         m_plugin->setAllSelectedRigidBodyObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::Joint::Set joints(selection->allJointSet());
         for (model::Joint::Set::const_iterator it = joints.begin(), end = joints.end(); it != end; ++it) {
-            indices.push_back(nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(*it)));
+            indices.push_back(model::Joint::index(*it));
         }
         m_plugin->setAllSelectedJointObjectIndices(indices.data(), indices.size(), error);
     }

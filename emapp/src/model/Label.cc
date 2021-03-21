@@ -36,8 +36,7 @@ Label::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelLabelGetName(label, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Label%d", nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(label)));
+            StringUtils::format(m_canonicalName, "Label%d", index(label));
         }
     }
     if (m_name.empty()) {
@@ -45,10 +44,16 @@ Label::resetLanguage(
     }
 }
 
-Label *
-Label::cast(const nanoem_model_label_t *label) NANOEM_DECL_NOEXCEPT
+int
+Label::index(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelLabelGetModelObject(label);
+    return nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(labelPtr));
+}
+
+Label *
+Label::cast(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelLabelGetModelObject(labelPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Label *>(nanoemUserDataGetOpaqueData(userData));
 }

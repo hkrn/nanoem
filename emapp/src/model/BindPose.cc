@@ -453,7 +453,7 @@ BindPose::saveAllMessages(void *states, size_t &numStates) const
         Nanoem__Application__RedoTransformBoneCommand__State *state =
             nanoem_new(Nanoem__Application__RedoTransformBoneCommand__State);
         nanoem__application__redo_transform_bone_command__state__init(state);
-        state->bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(p.m_bonePtr));
+        state->bone_index = model::Bone::index(p.m_bonePtr);
         CommandMessageUtil::setVector(p.m_localUserTranslation, state->local_user_translation);
         CommandMessageUtil::setQuaternion(p.m_localUserOrientation, state->local_user_orientation);
         CommandMessageUtil::setVector(p.m_localMorphTranslation, state->local_morph_translation);

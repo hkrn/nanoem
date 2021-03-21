@@ -403,7 +403,7 @@ BaseModelKeyframeCommand::writeStateMessage(const ModelKeyframe::State &s, void 
         Nanoem__Application__RedoModelKeyframeCommand__ConstraintState *cs = state->constraint_states[offset++] =
             nanoem_new(Nanoem__Application__RedoModelKeyframeCommand__ConstraintState);
         nanoem__application__redo_model_keyframe_command__constraint_state__init(cs);
-        cs->bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(it->first));
+        cs->bone_index = model::Bone::index(it->first);
         cs->enabled = it->second;
     }
     nanoem_rsize_t numOutsideParents = s.m_outsideParents.size();
