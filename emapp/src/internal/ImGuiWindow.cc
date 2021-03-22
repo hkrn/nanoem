@@ -2711,9 +2711,10 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         viewportImageFrom(viewportImageRect.x, viewportImageRect.y),
         viewportImageTo(viewportImageRect.x + viewportImageRect.z, viewportImageRect.y + viewportImageRect.w);
     const nanoem_f32_t tileSizeRatio = 1.0f / (16.0f * deviceScaleRatio);
-    project->setViewportMargin(
-        Vector2UI16(viewportImageFrom.x > a.y ? (viewportImageFrom.x - a.x) * invertDeviceScaleRatio : 0,
-            viewportImageFrom.y > a.y ? (viewportImageFrom.y - a.y) * invertDeviceScaleRatio : 0));
+    const Vector2UI16 viewportPadding(
+        viewportImageFrom.x > a.y ? (viewportImageFrom.x - a.x) * invertDeviceScaleRatio : 0,
+        viewportImageFrom.y > a.y ? (viewportImageFrom.y - a.y) * invertDeviceScaleRatio : 0);
+    project->setLogicalViewportPadding(viewportPadding);
     drawList->PushClipRect(a, b);
     drawList->AddImage(reinterpret_cast<ImTextureID>(m_transparentTileImage.id), viewportImageFrom, viewportImageTo,
         ImVec2(0, 0), ImVec2(viewportImageRect.z * tileSizeRatio, viewportImageRect.w * tileSizeRatio));

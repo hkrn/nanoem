@@ -584,8 +584,8 @@ public:
     Vector4UI16 deviceScaleUniformedViewportLayoutRect() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 logicalScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT;
-    Vector2UI16 viewportMargin() const NANOEM_DECL_NOEXCEPT;
-    void setViewportMargin(const Vector2UI16 value);
+    Vector2UI16 logicalViewportPadding() const NANOEM_DECL_NOEXCEPT;
+    void setLogicalViewportPadding(const Vector2UI16 value);
     Vector4 viewportBackgroundColor() const NANOEM_DECL_NOEXCEPT;
     void setViewportBackgroundColor(const Vector4 &value);
     nanoem_f64_t currentUptimeSeconds() const NANOEM_DECL_NOEXCEPT;
@@ -953,7 +953,7 @@ private:
     Vector2SI32 m_scrollDelta;
     Vector2UI16 m_windowSize;
     Vector2UI16 m_viewportImageSize;
-    Vector2UI16 m_viewportMargin;
+    Vector2UI16 m_viewportPadding;
     Vector4 m_viewportBackgroundColor;
     OffscreenRenderTargetConditionListMap m_allOffscreenRenderTargets;
     OffscreenRenderTargetEffectSetMap m_allOffscreenRenderTargetEffectSets;

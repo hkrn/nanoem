@@ -694,7 +694,7 @@ private:
         const Project *project = m_stateControllerPtr->currentProject();
         const Vector4UI16 imageRect(project->logicalScaleUniformedViewportImageRect());
         m_rect = value - Vector4SI32(imageRect.x, imageRect.y, 0, 0);
-        m_rect += Vector4SI32(project->viewportMargin(), 0, 0);
+        m_rect += Vector4SI32(project->logicalViewportPadding(), 0, 0);
         if (value.z < 0) {
             m_rect.z *= -1;
             m_rect.x -= m_rect.z;

@@ -4656,15 +4656,15 @@ Project::deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT
 }
 
 Vector2UI16
-Project::viewportMargin() const NANOEM_DECL_NOEXCEPT
+Project::logicalViewportPadding() const NANOEM_DECL_NOEXCEPT
 {
-    return m_viewportMargin;
+    return m_viewportPadding;
 }
 
 void
-Project::setViewportMargin(const Vector2UI16 value)
+Project::setLogicalViewportPadding(const Vector2UI16 value)
 {
-    m_viewportMargin = value;
+    m_viewportPadding = value;
 }
 
 Vector4
