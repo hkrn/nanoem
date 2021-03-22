@@ -4618,6 +4618,8 @@ Project::logicalScaleUniformedViewportImageRect() const NANOEM_DECL_NOEXCEPT
     const Vector4 viewportLayoutRect(logicalScaleUniformedViewportLayoutRect());
     Vector4 viewportImageRect(viewportLayoutRect);
     adjustViewportImageRect(viewportLayoutRect, logicalScaleUniformedViewportImageSize(), viewportImageRect);
+    viewportImageRect.x -= m_viewportPadding.x;
+    viewportImageRect.y -= m_viewportPadding.y;
     return viewportImageRect;
 }
 
