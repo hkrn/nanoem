@@ -35,6 +35,7 @@ class ISeekableReader;
 class IFileWriter;
 class IWriter;
 class IModelObjectSelection;
+class IPrimitive2D;
 class Image;
 class ImageLoader;
 class ModelProgramBundle;
@@ -245,14 +246,16 @@ public:
     bool isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     bool isMaterialSelected(const nanoem_model_material_t *material) const NANOEM_DECL_NOEXCEPT;
     bool isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DECL_NOEXCEPT;
-    void drawBoneConnections(
-        const nanoem_model_bone_t *bone, const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
-    void drawBoneConnections(const Vector2 &devicePixelCursor);
-    void drawBoneTooltip(const nanoem_model_bone_t *bonePtr);
-    void drawConstraintConnections(const Vector2 &devicePixelCursor, const nanoem_model_constraint_t *constraint);
-    void drawConstraintConnections(const Vector2 &devicePixelCursor);
-    void drawConstraintsHeatMap(const nanoem_model_constraint_t *constraint);
-    void drawConstraintsHeatMap();
+    void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bone,
+        const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
+    void drawBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor);
+    void drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bone, const Vector2 &deviceScaleCursor);
+    void drawBoneTooltip(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
+    void drawConstraintConnections(
+        IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_constraint_t *constraint);
+    void drawConstraintConnections(IPrimitive2D *primitive, const Vector2 &devicePixelCursor);
+    void drawConstraintsHeatMap(IPrimitive2D *primitive, const nanoem_model_constraint_t *constraint);
+    void drawConstraintsHeatMap(IPrimitive2D *primitive);
 
     const Project *project() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     Project *project() NANOEM_DECL_NOEXCEPT;
@@ -483,11 +486,11 @@ private:
     void drawAllVertexFaces();
     void drawJointShape(const nanoem_model_joint_t *jointPtr);
     void drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr);
-    void drawBoneConnection(const nanoem_model_bone_t *from, const Vector3 &destinationPosition, const Vector4 &color,
-        nanoem_f32_t circleRadius, nanoem_f32_t thickness);
-    void drawBonePoint(const Vector2 &devicePixelCursor, const nanoem_model_bone_t *bonePtr, const Vector4 &inactive,
-        const Vector4 &hovered);
-    void drawConstraintPoint(const Vector4 &position, int j, int numIterations);
+    void drawBoneConnection(IPrimitive2D *primitive, const nanoem_model_bone_t *from,
+        const Vector3 &destinationPosition, const Vector4 &color, nanoem_f32_t circleRadius, nanoem_f32_t thickness);
+    void drawBonePoint(IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_bone_t *bonePtr,
+        const Vector4 &inactive, const Vector4 &hovered);
+    void drawConstraintPoint(IPrimitive2D *primitive, const Vector4 &position, int j, int numIterations);
 
     const nanoem_u16_t m_handle;
     Project *m_project;

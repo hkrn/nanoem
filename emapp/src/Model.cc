@@ -91,6 +91,21 @@ enum PrivateStateFlags {
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStatePhysicsSimulation | kPrivateStateEnableGroundShadow;
 
+struct BoneUtils : private NonCopyable {
+    static inline Matrix4x4
+    worldMatrix(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        return bone ? bone->worldTransform() : Constants::kIdentity;
+    }
+    static inline bool
+    isDirty(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        return bone ? bone->isDirty() : false;
+    }
+};
+
 } /* namespace anonymous */
 
 const Matrix4x4 Model::kInitialWorldMatrix = Constants::kIdentity;
@@ -2026,24 +2041,25 @@ Model::isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DE
 }
 
 void
-Model::drawBoneConnections(
-    const nanoem_model_bone_t *bone, const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness)
+Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bone,
+    const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness)
 {
     if (const model::Bone *toBone = model::Bone::cast(parentBone)) {
         const Vector3 destinationPosition(worldTransform(toBone->worldTransform())[3]);
+        const nanoem_f32_t radius = m_project->deviceScaleCircleRadius();
         if (isBoneConnectionDrawable(bone) && isBoneConnectionDrawable(parentBone)) {
             const Vector4 color(connectionBoneColor(bone, Vector4(0, 0, 1, 1), false));
-            drawBoneConnection(bone, destinationPosition, color, m_project->deviceScaleCircleRadius(), thickness);
+            drawBoneConnection(primitive, bone, destinationPosition, color, radius, thickness);
         }
         else if (isShowAllBones()) {
             const Vector4 color(connectionBoneColor(bone, Vector4(0.25f, 0.25f, 0.25f, 1), false));
-            drawBoneConnection(bone, destinationPosition, color, m_project->deviceScaleCircleRadius(), thickness);
+            drawBoneConnection(primitive, bone, destinationPosition, color, radius, thickness);
         }
     }
 }
 
 void
-Model::drawBoneConnections(const Vector2 &deviceScaleCursor)
+Model::drawBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor)
 {
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
@@ -2052,29 +2068,35 @@ Model::drawBoneConnections(const Vector2 &deviceScaleCursor)
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bone = bones[i];
         if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bone)) {
-            drawBoneConnections(bone, targetBone, thickness);
+            drawBoneConnections(primitive, bone, targetBone, thickness);
         }
         else if (isShowAllBones() || isBoneConnectionDrawable(bone)) {
             const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bone);
-            const Matrix4x4 transform(worldTransform(model::Bone::cast(bone)->worldTransform()));
+            const Matrix4x4 transform(worldTransform(BoneUtils::worldMatrix(bone)));
             const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
             const Vector4 color(connectionBoneColor(bone, Vector4(0, 0, 1, 1), false));
-            drawBoneConnection(bone, destinationPositon, color, circleRadius, thickness);
+            drawBoneConnection(primitive, bone, destinationPositon, color, circleRadius, thickness);
         }
     }
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bone = bones[i];
-        const bool selected = m_selection->containsBone(bone);
-        if (isBoneConnectionDrawable(bone)) {
-            const Vector4 inactive(connectionBoneColor(bone, Vector4(0, 0, 1, 1), true));
-            const Vector4 hovered(hoveredBoneColor(inactive, selected));
-            drawBonePoint(deviceScaleCursor, bone, inactive, hovered);
-        }
-        else if (isShowAllBones()) {
-            const Vector4 inactive(connectionBoneColor(bone, Vector4(0.25f, 0.25f, 0.25f, 1), true));
-            const Vector4 hovered(hoveredBoneColor(inactive, selected));
-            drawBonePoint(deviceScaleCursor, bone, inactive, hovered);
-        }
+        drawBonePoint(primitive, bone, deviceScaleCursor);
+    }
+}
+
+void
+Model::drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bone, const Vector2 &deviceScaleCursor)
+{
+    const bool selected = m_selection->containsBone(bone);
+    if (isBoneConnectionDrawable(bone)) {
+        const Vector4 inactive(connectionBoneColor(bone, Vector4(0, 0, 1, 1), true));
+        const Vector4 hovered(hoveredBoneColor(inactive, selected));
+        drawBonePoint(primitive, deviceScaleCursor, bone, inactive, hovered);
+    }
+    else if (isShowAllBones()) {
+        const Vector4 inactive(connectionBoneColor(bone, Vector4(0.25f, 0.25f, 0.25f, 1), true));
+        const Vector4 hovered(hoveredBoneColor(inactive, selected));
+        drawBonePoint(primitive, deviceScaleCursor, bone, inactive, hovered);
     }
 }
 
@@ -3391,7 +3413,7 @@ Model::connectionBoneColor(
     if (m_selection->containsBone(bone)) {
         color = Vector4(1, 0, 0, kOpacity);
     }
-    else if (model::Bone::cast(bone)->isDirty()) {
+    else if (BoneUtils::isDirty(bone)) {
         color = Vector4(0, 1, 0, kOpacity);
     }
     else if (isConstraintJointBone(bone)) {
@@ -3843,8 +3865,8 @@ Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
 }
 
 void
-Model::drawBoneConnection(const nanoem_model_bone_t *from, const Vector3 &destinationPosition, const Vector4 &color,
-    nanoem_f32_t circleRadius, nanoem_f32_t thickness)
+Model::drawBoneConnection(IPrimitive2D *primitive, const nanoem_model_bone_t *from, const Vector3 &destinationPosition,
+    const Vector4 &color, nanoem_f32_t circleRadius, nanoem_f32_t thickness)
 {
     nanoem_parameter_assert(from, "must not be nullptr");
     if (const model::Bone *fromBone = model::Bone::cast(from)) {
@@ -3862,15 +3884,14 @@ Model::drawBoneConnection(const nanoem_model_bone_t *from, const Vector3 &destin
         }
         nanoem_f32_t x = circleRadius * glm::cos(radians);
         nanoem_f32_t y = circleRadius * glm::sin(radians);
-        IPrimitive2D *primitive = m_project->primitive2D();
         primitive->strokeLine(fromCoord + Vector2(x, y), toCoord, color, thickness);
         primitive->strokeLine(fromCoord - Vector2(x, y), toCoord, color, thickness);
     }
 }
 
 void
-Model::drawBonePoint(const Vector2 &deviceScaleCursor, const nanoem_model_bone_t *bonePtr, const Vector4 &inactive,
-    const Vector4 &hovered)
+Model::drawBonePoint(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor, const nanoem_model_bone_t *bonePtr,
+    const Vector4 &inactive, const Vector4 &hovered)
 {
     nanoem_parameter_assert(bonePtr, "must not be nullptr");
     Vector2 coord;
@@ -3878,7 +3899,6 @@ Model::drawBonePoint(const Vector2 &deviceScaleCursor, const nanoem_model_bone_t
         const bool intersected = intersectsBoneInViewport(deviceScaleCursor, bone, coord);
         const Vector4 color(intersected ? hovered : inactive);
         const nanoem_f32_t &circleRadius = m_project->deviceScaleCircleRadius();
-        IPrimitive2D *primitive = m_project->primitive2D();
         if (nanoemModelBoneIsMovable(bonePtr)) {
             const nanoem_f32_t outerOffset = circleRadius, innerOffset = outerOffset * 0.75f,
                                innerWidth = circleRadius * 1.5f, outerWidth = circleRadius * 2.0f;
@@ -3899,17 +3919,18 @@ Model::drawBonePoint(const Vector2 &deviceScaleCursor, const nanoem_model_bone_t
 }
 
 void
-Model::drawBoneTooltip(const nanoem_model_bone_t *bonePtr)
+Model::drawBoneTooltip(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr)
 {
     nanoem_parameter_assert(bonePtr, "must not be nullptr");
     if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
         const char *name = bone->nameConstString();
-        m_project->primitive2D()->drawTooltip(name, StringUtils::length(name));
+        primitive->drawTooltip(name, StringUtils::length(name));
     }
 }
 
 void
-Model::drawConstraintConnections(const Vector2 &deviceScaleCursor, const nanoem_model_constraint_t *constraint)
+Model::drawConstraintConnections(
+    IPrimitive2D *primitive, const Vector2 &deviceScaleCursor, const nanoem_model_constraint_t *constraint)
 {
     nanoem_parameter_assert(constraint, "must not be nullptr");
     nanoem_rsize_t numJoints;
@@ -3919,33 +3940,32 @@ Model::drawConstraintConnections(const Vector2 &deviceScaleCursor, const nanoem_
     for (nanoem_rsize_t j = 0; j < numJoints - 1; j++) {
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[j]);
         const nanoem_model_bone_t *nextJointBone = nanoemModelConstraintJointGetBoneObject(joints[j + 1]);
-        const Vector3 &destinationPosition =
-            Vector3(worldTransform(model::Bone::cast(nextJointBone)->worldTransform())[3]);
+        const Vector3 destinationPosition(worldTransform(BoneUtils::worldMatrix(nextJointBone))[3]);
         const Vector4 color(Color::hotToCold((numJoints - j - 1.5f) / nanoem_f32_t(numJoints)), 1);
-        drawBoneConnection(jointBone, destinationPosition, color, circleRadius, thickness);
+        drawBoneConnection(primitive, jointBone, destinationPosition, color, circleRadius, thickness);
     }
     if (numJoints > 0) {
         const nanoem_model_bone_t *effectorBone = nanoemModelConstraintGetEffectorBoneObject(constraint);
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[0]);
-        const Vector3 destinationPosition(worldTransform(model::Bone::cast(jointBone)->worldTransform())[3]);
+        const Vector3 destinationPosition(worldTransform(BoneUtils::worldMatrix(jointBone))[3]);
         const Vector4 color(Color::hotToCold(1.0f), 1);
-        drawBoneConnection(effectorBone, destinationPosition, color, circleRadius, thickness);
+        drawBoneConnection(primitive, effectorBone, destinationPosition, color, circleRadius, thickness);
     }
     for (nanoem_rsize_t j = 0; j < numJoints; j++) {
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[j]);
-        const Vector3 color(Color::hotToCold((numJoints - j - 1.0f) / nanoem_f32_t(numJoints)));
-        drawBonePoint(deviceScaleCursor, jointBone, Vector4(color.x, color.y, color.z, 1.0f), Vector4(1, 0, 0, 1));
+        const Vector4 color(Color::hotToCold((numJoints - j - 1.0f) / nanoem_f32_t(numJoints)), 1);
+        drawBonePoint(primitive, deviceScaleCursor, jointBone, color, Vector4(1, 0, 0, 1));
     }
     const nanoem_model_bone_t *effectorBone = nanoemModelConstraintGetEffectorBoneObject(constraint);
-    const Vector3 color(Color::hotToCold(1.0f));
-    drawBonePoint(deviceScaleCursor, effectorBone, Vector4(color.x, color.y, color.z, 1.0f), Vector4(1, 0, 0, 1));
+    const Vector4 color(Color::hotToCold(1.0f), 1.0f);
+    drawBonePoint(primitive, deviceScaleCursor, effectorBone, color, Vector4(1, 0, 0, 1));
     const nanoem_model_bone_t *targetBone = nanoemModelConstraintGetTargetBoneObject(constraint);
-    const Vector3 color2(Color::hotToCold(1.0f));
-    drawBonePoint(deviceScaleCursor, targetBone, Vector4(color2.x, color2.y, color2.z, 1.0f), Vector4(1, 0, 0, 1));
+    const Vector4 color2(Color::hotToCold(1.0f), 1.0f);
+    drawBonePoint(primitive, deviceScaleCursor, targetBone, color2, Vector4(1, 0, 0, 1));
 }
 
 void
-Model::drawConstraintConnections(const Vector2 &deviceScaleCursor)
+Model::drawConstraintConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor)
 {
     nanoem_rsize_t numBones, numConstraints;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
@@ -3953,29 +3973,28 @@ Model::drawConstraintConnections(const Vector2 &deviceScaleCursor)
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bone = bones[i];
         if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bone)) {
-            drawConstraintConnections(deviceScaleCursor, constraint);
+            drawConstraintConnections(primitive, deviceScaleCursor, constraint);
         }
     }
     for (nanoem_rsize_t i = 0; i < numConstraints; i++) {
         const nanoem_model_constraint_t *constraint = constraints[i];
-        drawConstraintConnections(deviceScaleCursor, constraint);
+        drawConstraintConnections(primitive, deviceScaleCursor, constraint);
     }
 }
 
 void
-Model::drawConstraintPoint(const Vector4 &position, int j, int numIterations)
+Model::drawConstraintPoint(IPrimitive2D *primitive, const Vector4 &position, int j, int numIterations)
 {
     const ICamera *camera = m_project->activeCamera();
     nanoem_f32_t radius = m_project->deviceScaleCircleRadius();
     const Vector2 coord(camera->toDeviceScreenCoordinateInViewport(Vector3(position)));
     const Vector3 jet(Color::jet((j + 1) / nanoem_f32_t(numIterations)));
     nanoem_f32_t extent = radius * 2;
-    m_project->primitive2D()->fillCircle(
-        Vector4(coord.x - radius, coord.y - radius, extent, extent), Vector4(jet, 1.0f));
+    primitive->fillCircle(Vector4(coord.x - radius, coord.y - radius, extent, extent), Vector4(jet, 1.0f));
 }
 
 void
-Model::drawConstraintsHeatMap(const nanoem_model_constraint_t *constraintPtr)
+Model::drawConstraintsHeatMap(IPrimitive2D *primitive, const nanoem_model_constraint_t *constraintPtr)
 {
     nanoem_parameter_assert(constraintPtr, "must not be nullptr");
     nanoem_rsize_t numJoints;
@@ -3984,7 +4003,6 @@ Model::drawConstraintsHeatMap(const nanoem_model_constraint_t *constraintPtr)
     const nanoem_rsize_t numIterations = nanoem_rsize_t(nanoemModelConstraintGetNumIterations(constraintPtr));
     model::Constraint *constraint = model::Constraint::cast(constraintPtr);
     nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
-    IPrimitive2D *primitive = m_project->primitive2D();
     nanoem_f32_t extent = radius * 2;
     for (nanoem_rsize_t j = 0; j < numJoints; j++) {
         const nanoem_model_constraint_joint_t *joint = joints[j];
@@ -4009,7 +4027,7 @@ Model::drawConstraintsHeatMap(const nanoem_model_constraint_t *constraintPtr)
 }
 
 void
-Model::drawConstraintsHeatMap()
+Model::drawConstraintsHeatMap(IPrimitive2D *primitive)
 {
     nanoem_rsize_t numBones, numConstraints;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
@@ -4017,12 +4035,12 @@ Model::drawConstraintsHeatMap()
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bone = bones[i];
         if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bone)) {
-            drawConstraintsHeatMap(constraint);
+            drawConstraintsHeatMap(primitive, constraint);
         }
     }
     for (nanoem_rsize_t i = 0; i < numConstraints; i++) {
         const nanoem_model_constraint_t *constraint = constraints[i];
-        drawConstraintsHeatMap(constraint);
+        drawConstraintsHeatMap(primitive, constraint);
     }
 }
 
@@ -4807,7 +4825,8 @@ Model::edgeSize() const NANOEM_DECL_NOEXCEPT
     nanoem_f32_t value = 0;
     if (numBones > 1) {
         const ICamera *camera = m_project->activeCamera();
-        const Vector3 bonePosition(model::Bone::cast(bones[1])->worldTransformOrigin());
+        const model::Bone *bone = model::Bone::cast(bones[1]);
+        const Vector3 bonePosition(bone ? bone->worldTransformOrigin() : Constants::kZeroV3);
         value = glm::distance(bonePosition, camera->position()) * glm::clamp(camera->fov() / 30.0f, 0.0f, 1.0f) *
             0.001f * m_edgeSizeScaleFactor;
     }

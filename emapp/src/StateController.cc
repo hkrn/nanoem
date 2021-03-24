@@ -1604,13 +1604,13 @@ StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
                 continue;
             }
             if (EnumUtils::isEnabled(Project::kDrawTypeBoneConnections, flags)) {
-                model->drawBoneConnections(deviceScaleCursor);
+                model->drawBoneConnections(primitive, deviceScaleCursor);
             }
             if (EnumUtils::isEnabled(Project::kDrawTypeConstraintConnections, flags)) {
-                model->drawConstraintConnections(deviceScaleCursor);
+                model->drawConstraintConnections(primitive, deviceScaleCursor);
             }
             if (EnumUtils::isEnabled(Project::kDrawTypeConstraintHeatmaps, flags)) {
-                model->drawConstraintsHeatMap();
+                model->drawConstraintsHeatMap(primitive);
             }
         }
         if (EnumUtils::isEnabled(Project::kDrawTypeBoneMoveHandle, flags)) {
