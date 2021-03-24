@@ -1780,6 +1780,28 @@ Model::resetLanguage()
 }
 
 void
+Model::addBone(const nanoem_model_bone_t *value)
+{
+    if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(value)) {
+        bindConstraint(const_cast<nanoem_model_constraint_t *>(constraint));
+    }
+    if (nanoemModelBoneHasInherentOrientation(value) || nanoemModelBoneHasInherentTranslation(value)) {
+        const nanoem_model_bone_t *parentBone = nanoemModelBoneGetInherentParentBoneObject(value);
+        m_inherentBones[parentBone].insert(value);
+    }
+    nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+    String objectName;
+    for (nanoem_rsize_t j = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; j < NANOEM_LANGUAGE_TYPE_MAX_ENUM; j++) {
+        StringUtils::getUtf8String(
+            nanoemModelBoneGetName(value, static_cast<nanoem_language_type_t>(j)), factory, objectName);
+        m_bones.insert(tinystl::make_pair(objectName, value));
+    }
+    if (m_skinDeformer) {
+        m_skinDeformer->rebuildAllBones();
+    }
+}
+
+void
 Model::removeBone(const nanoem_model_bone_t *value)
 {
     String s;

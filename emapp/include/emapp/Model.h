@@ -195,6 +195,7 @@ public:
     void registerResetActiveBoneTransformCommand(ResetType type);
     void registerResetMorphSetWeightsCommand(const model::Morph::Set &morphSet);
     void registerResetAllMorphWeightsCommand();
+    void addBone(const nanoem_model_bone_t *value);
     void removeBone(const nanoem_model_bone_t *value);
     void removeBone(const String &value);
     void removeMorph(const nanoem_model_morph_t *value);

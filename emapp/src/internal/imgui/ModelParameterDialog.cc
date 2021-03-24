@@ -1105,8 +1105,10 @@ ModelParameterDialog::layoutAllBones(Project *project)
                 }
                 nanoemMutableModelInsertBoneObject(model, bone, m_offset, &status);
                 model::Bone *newBone = model::Bone::create();
-                newBone->bind(nanoemMutableModelBoneGetOriginObject(bone));
+                nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(bone);
+                newBone->bind(bonePtr);
                 newBone->resetLanguage(nanoemMutableModelBoneGetOriginObject(bone), factory, project->castLanguage());
+                activeModel->addBone(bonePtr);
             }
             const nanoem_model_bone_t *m_base;
             const nanoem_rsize_t m_numBones;
