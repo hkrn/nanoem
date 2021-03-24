@@ -36,7 +36,6 @@ public:
     virtual void onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &delta) = 0;
     virtual void onRelease(const Vector3SI32 &logicalScalePosition) = 0;
     virtual void onDrawPrimitive2D(IPrimitive2D *primitive) = 0;
-    virtual void onDrawGizmo3D() = 0;
 };
 
 namespace {
@@ -46,7 +45,6 @@ protected:
     BaseState(StateController *stateController, BaseApplicationService *application);
 
     void onDrawPrimitive2D(IPrimitive2D * /* primitive */) NANOEM_DECL_OVERRIDE;
-    void onDrawGizmo3D() NANOEM_DECL_OVERRIDE;
 
     StateController *m_stateControllerPtr;
     BaseApplicationService *m_applicationPtr;
@@ -64,11 +62,6 @@ BaseState::BaseState(StateController *stateController, BaseApplicationService *a
 
 void
 BaseState::onDrawPrimitive2D(IPrimitive2D *)
-{
-}
-
-void
-BaseState::onDrawGizmo3D()
 {
 }
 
