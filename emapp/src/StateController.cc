@@ -133,8 +133,10 @@ BaseDraggingObjectState::onRelease(const Vector3SI32 &logicalScalePosition)
     if (m_lastDraggingState) {
         m_lastDraggingState->commit(logicalScalePosition);
     }
-    if (Model *model = m_stateControllerPtr->currentProject()->activeModel()) {
-        model->setTransformAxisType(Model::kAxisTypeMaxEnum);
+    else if (Project *project = m_stateControllerPtr->currentProject()) {
+        if (Model *model = project->activeModel()) {
+            model->setTransformAxisType(Model::kAxisTypeMaxEnum);
+        }
     }
     m_lastPosition = Vector2();
 }
@@ -194,16 +196,21 @@ BaseDraggingObjectState::setDraggingState(
 void
 BaseDraggingObjectState::updateCameraAngle(const Vector2SI32 &delta)
 {
-    ICamera *camera = m_stateControllerPtr->currentProject()->activeCamera();
-    camera->setAngle(glm::radians(glm::degrees(camera->angle()) + Vector3(delta.y, delta.x, 0)));
-    camera->update();
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        ICamera *camera = project->activeCamera();
+        camera->setAngle(glm::radians(glm::degrees(camera->angle()) + Vector3(delta.y, delta.x, 0)));
+        camera->update();
+    }
 }
 
 bool
 BaseDraggingObjectState::canUpdateCameraAngle() const NANOEM_DECL_NOEXCEPT
 {
-    const Project *project = m_stateControllerPtr->currentProject();
-    return m_canUpdateAngle && !(m_applicationPtr->hasModalDialog() || project->audioPlayer()->isPlaying());
+    bool canUpdate = m_canUpdateAngle;
+    if (const Project *project = m_stateControllerPtr->currentProject()) {
+        canUpdate &= !(m_applicationPtr->hasModalDialog() || project->audioPlayer()->isPlaying());
+    }
+    return canUpdate;
 }
 
 bool
@@ -306,7 +313,7 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
     internal::IDraggingState *draggingState = nullptr;
     Project *project = m_stateControllerPtr->currentProject();
     Model *model = project->activeModel();
-    if (project->isPlaying()) {
+    if (!project || !model || project->isPlaying()) {
         /* do nothing */
     }
     else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
@@ -334,7 +341,7 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
     if (draggingState) {
         setDraggingState(draggingState, logicalScalePosition);
     }
-    else {
+    else if (project) {
         const nanoem_model_bone_t *bone = nullptr;
         Model::AxisType axisType;
         nanoem_rsize_t boneIndex = m_stateControllerPtr->boneIndex();
@@ -495,7 +502,7 @@ DraggingCameraState::onPress(const Vector3SI32 &logicalScalePosition)
 {
     Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
     Project *project = m_stateControllerPtr->currentProject();
-    if (!project->isPlaying() && project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
+    if (project && !project->isPlaying() && project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
         setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
     }
 }
@@ -863,51 +870,55 @@ BaseSelectionState::currentSelector()
 void
 BaseSelectionState::onPress(const Vector3SI32 &logicalScalePosition)
 {
-    Project *project = m_stateControllerPtr->currentProject();
-    Project::RectangleType rectangleType;
-    if (project->isPlaying()) {
-        /* do nothing */
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        Project::RectangleType rectangleType;
+        if (project->isPlaying()) {
+            /* do nothing */
+        }
+        else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
+            setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
+        }
+        else {
+            const Vector4SI32 rect(logicalScalePosition.x, logicalScalePosition.y, 0, 0);
+            currentSelector()->begin(rect, project);
+        }
+        m_lastPosition = logicalScalePosition;
     }
-    else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
-        setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
-    }
-    else {
-        const Vector4SI32 rect(logicalScalePosition.x, logicalScalePosition.y, 0, 0);
-        currentSelector()->begin(rect, project);
-    }
-    m_lastPosition = logicalScalePosition;
 }
 
 void
 BaseSelectionState::onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &)
 {
-    Project *project = m_stateControllerPtr->currentProject();
-    project->setLogicalPixelMovingCursorPosition(logicalScalePosition);
-    const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
-    currentSelector()->update(rect, project);
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        project->setLogicalPixelMovingCursorPosition(logicalScalePosition);
+        const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
+        currentSelector()->update(rect, project);
+    }
 }
 
 void
 BaseSelectionState::onRelease(const Vector3SI32 &logicalScalePosition)
 {
-    Project *project = m_stateControllerPtr->currentProject();
-    bool removeAll =
-        EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z) ? false : true;
-    const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
-    currentSelector()->end(rect, project);
-    if (Model *model = project->activeModel()) {
-        commitSelection(model, project, removeAll);
-        model->setPivotMatrix(pivotMatrix(model));
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        bool removeAll =
+            EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z) ? false : true;
+        const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
+        currentSelector()->end(rect, project);
+        if (Model *model = project->activeModel()) {
+            commitSelection(model, project, removeAll);
+            model->setPivotMatrix(pivotMatrix(model));
+        }
+        m_lastPosition = Vector2();
     }
-    m_lastPosition = Vector2();
 }
 
 void
 BaseSelectionState::onDrawPrimitive2D(IPrimitive2D *primitive)
 {
-    const Project *project = m_stateControllerPtr->currentProject();
-    nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
-    currentSelector()->draw(primitive, deviceScaleRatio);
+    if (const Project *project = m_stateControllerPtr->currentProject()) {
+        nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
+        currentSelector()->draw(primitive, deviceScaleRatio);
+    }
 }
 
 class DraggingBoxSelectedBoneState NANOEM_DECL_SEALED : public BaseSelectionState {
@@ -1395,10 +1406,11 @@ DraggingMoveCameraLookAtState::~DraggingMoveCameraLookAtState() NANOEM_DECL_NOEX
 void
 DraggingMoveCameraLookAtState::onPress(const Vector3SI32 &logicalScalePosition)
 {
-    Project *project = m_stateControllerPtr->currentProject();
-    m_lastDraggingState =
-        nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScalePosition));
-    m_scaleFactor = m_lastDraggingState->scaleFactor();
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        m_lastDraggingState =
+            nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScalePosition));
+        m_scaleFactor = m_lastDraggingState->scaleFactor();
+    }
 }
 
 void
@@ -1451,7 +1463,9 @@ UndoState::onMove(const Vector3SI32 &, const Vector2SI32 &)
 void
 UndoState::onRelease(const Vector3SI32 &)
 {
-    m_stateControllerPtr->currentProject()->handleUndoAction();
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        project->handleUndoAction();
+    }
 }
 
 class RedoState NANOEM_DECL_SEALED : public BaseState {
@@ -1486,7 +1500,9 @@ RedoState::onMove(const Vector3SI32 &, const Vector2SI32 &)
 void
 RedoState::onRelease(const Vector3SI32 &)
 {
-    m_stateControllerPtr->currentProject()->handleRedoAction();
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        project->handleRedoAction();
+    }
 }
 
 class DrawUtil NANOEM_DECL_SEALED : private NonCopyable {
