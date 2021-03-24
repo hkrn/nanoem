@@ -41,85 +41,47 @@ public:
 
 namespace {
 
-class BaseState : public StateController::IState {
+class BaseState : public StateController::IState, private NonCopyable {
 protected:
-    BaseState(StateController *stateController, BaseApplicationService *application)
-        : m_stateControllerPtr(stateController)
-        , m_applicationPtr(application)
-        , m_lastPosition(0)
-    {
-        nanoem_parameter_assert(m_stateControllerPtr, "must not be nullptr");
-        nanoem_parameter_assert(m_applicationPtr, "must not be nullptr");
-    }
+    BaseState(StateController *stateController, BaseApplicationService *application);
 
-    void
-    onDrawPrimitive2D(IPrimitive2D * /* primitive */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    onDrawGizmo3D() NANOEM_DECL_OVERRIDE
-    {
-    }
+    void onDrawPrimitive2D(IPrimitive2D * /* primitive */) NANOEM_DECL_OVERRIDE;
+    void onDrawGizmo3D() NANOEM_DECL_OVERRIDE;
 
     StateController *m_stateControllerPtr;
     BaseApplicationService *m_applicationPtr;
     Vector2SI32 m_lastPosition;
 };
 
+BaseState::BaseState(StateController *stateController, BaseApplicationService *application)
+    : m_stateControllerPtr(stateController)
+    , m_applicationPtr(application)
+    , m_lastPosition(0)
+{
+    nanoem_parameter_assert(m_stateControllerPtr, "must not be nullptr");
+    nanoem_parameter_assert(m_applicationPtr, "must not be nullptr");
+}
+
+void
+BaseState::onDrawPrimitive2D(IPrimitive2D *)
+{
+}
+
+void
+BaseState::onDrawGizmo3D()
+{
+}
+
 class BaseDraggingObjectState : public BaseState {
 public:
-    static nanoem_f32_t
-    scaleFactor(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_NOEXCEPT
-    {
-        nanoem_f32_t scaleFactor;
-        if (EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeControl, logicalScalePosition.z)) {
-            scaleFactor = 0.1f;
-        }
-        else if (EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z)) {
-            scaleFactor = 10.0f;
-        }
-        else {
-            scaleFactor = 1.0f;
-        }
-        return scaleFactor;
-    }
+    static nanoem_f32_t scaleFactor(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_NOEXCEPT;
 
-    BaseDraggingObjectState(StateController *stateController, BaseApplicationService *application, bool canUpdateAngle)
-        : BaseState(stateController, application)
-        , m_canUpdateAngle(canUpdateAngle)
-        , m_lastDraggingState(nullptr)
-        , m_scaleFactor(0.0f)
-    {
-    }
-    ~BaseDraggingObjectState() NANOEM_DECL_NOEXCEPT
-    {
-        nanoem_delete_safe(m_lastDraggingState);
-    }
+    BaseDraggingObjectState(StateController *stateController, BaseApplicationService *application, bool canUpdateAngle);
+    ~BaseDraggingObjectState() NANOEM_DECL_NOEXCEPT;
 
 protected:
-    void
-    onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE
-    {
-        if (m_lastDraggingState) {
-            m_lastDraggingState->setScaleFactor(m_scaleFactor * scaleFactor(logicalScalePosition));
-            m_lastDraggingState->transform(logicalScalePosition);
-        }
-        else if (canUpdateCameraAngle()) {
-            updateCameraAngle(delta);
-        }
-        m_lastPosition = logicalScalePosition;
-    }
-    void
-    onRelease(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        if (m_lastDraggingState) {
-            m_lastDraggingState->commit(logicalScalePosition);
-        }
-        if (Model *model = m_stateControllerPtr->currentProject()->activeModel()) {
-            model->setTransformAxisType(Model::kAxisTypeMaxEnum);
-        }
-        m_lastPosition = Vector2();
-    }
+    void onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
 
     virtual internal::IDraggingState *createTranslateState(
         int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) = 0;
@@ -130,314 +92,420 @@ protected:
     virtual internal::IDraggingState *createCameraZoomState(
         const Vector3SI32 &logicalScalePosition, Project *project) = 0;
 
-    internal::IDraggingState *
-    createDraggingState(Project::RectangleType rectangleType, const Vector3SI32 &logicalScalePosition, Project *project)
-    {
-        int axisIndex;
-        const bool orientate =
-            rectangleType >= Project::kRectangleOrientateX && rectangleType <= Project::kRectangleOrientateZ;
-        const bool translate =
-            rectangleType >= Project::kRectangleTranslateX && rectangleType <= Project::kRectangleTranslateZ;
-        internal::IDraggingState *draggingState = nullptr;
-        if (orientate) {
-            axisIndex = rectangleType - Project::kRectangleOrientateX;
-            draggingState = createOrientateState(axisIndex, logicalScalePosition, project);
-        }
-        else if (translate) {
-            axisIndex = rectangleType - Project::kRectangleTranslateX;
-            draggingState = createTranslateState(axisIndex, logicalScalePosition, project);
-        }
-        else if (rectangleType == Project::kRectangleTransformCoordinateType) {
-            project->toggleTransformCoordinateType();
-        }
-        else if (rectangleType == Project::kRectangleCameraLookAt) {
-            if (isBackgroundVideoOperation(logicalScalePosition, project)) {
-                draggingState = nanoem_new(internal::MoveBackgroundVideoState(project, logicalScalePosition));
-            }
-            else {
-                draggingState = createCameraLookAtState(logicalScalePosition, project);
-            }
-        }
-        else if (rectangleType == Project::kRectangleCameraZoom) {
-            if (isBackgroundVideoOperation(logicalScalePosition, project)) {
-                draggingState = nanoem_new(internal::ZoomBackgroundVideoState(project, logicalScalePosition));
-            }
-            else {
-                draggingState = createCameraZoomState(logicalScalePosition, project);
-            }
-        }
-        return draggingState;
-    }
-    void
-    setDraggingState(internal::IDraggingState *draggingState, const Vector3SI32 &logicalScalePosition)
-    {
-        if (draggingState) {
-            const nanoem_f32_t sf = draggingState->scaleFactor();
-            draggingState->setScaleFactor(sf * scaleFactor(logicalScalePosition));
-            m_lastDraggingState = draggingState;
-            m_scaleFactor = sf;
-        }
-    }
-    void
-    updateCameraAngle(const Vector2SI32 &delta)
-    {
-        ICamera *camera = m_stateControllerPtr->currentProject()->activeCamera();
-        camera->setAngle(glm::radians(glm::degrees(camera->angle()) + Vector3(delta.y, delta.x, 0)));
-        camera->update();
-    }
-    bool
-    canUpdateCameraAngle() const NANOEM_DECL_NOEXCEPT
-    {
-        const Project *project = m_stateControllerPtr->currentProject();
-        return m_canUpdateAngle && !(m_applicationPtr->hasModalDialog() || project->audioPlayer()->isPlaying());
-    }
+    internal::IDraggingState *createDraggingState(
+        Project::RectangleType rectangleType, const Vector3SI32 &logicalScalePosition, Project *project);
+    void setDraggingState(internal::IDraggingState *draggingState, const Vector3SI32 &logicalScalePosition);
+    void updateCameraAngle(const Vector2SI32 &delta);
+    bool canUpdateCameraAngle() const NANOEM_DECL_NOEXCEPT;
 
 private:
-    static bool
-    isBackgroundVideoOperation(const Vector3SI32 &logicalScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
-    {
-        return project->hasBackgroundImageHandle() &&
-            EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z);
-    }
+    static bool isBackgroundVideoOperation(
+        const Vector3SI32 &logicalScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT;
 
     const bool m_canUpdateAngle;
     internal::IDraggingState *m_lastDraggingState;
     nanoem_f32_t m_scaleFactor;
 };
 
-class DraggingBoneState NANOEM_DECL_SEALED : public BaseDraggingObjectState {
-public:
-    static const nanoem_model_bone_t *
-    findHoverBone(const Vector3SI32 &value, const Project *project, Model::AxisType &axisType)
-    {
-        const nanoem_model_bone_t *bone = nullptr;
-        nanoem_rsize_t boneIndex;
-        DraggingBoneState::handlePointerIntersects(value, project, bone, boneIndex, axisType);
-        return bone;
-    }
+BaseDraggingObjectState::BaseDraggingObjectState(
+    StateController *stateController, BaseApplicationService *application, bool canUpdateAngle)
+    : BaseState(stateController, application)
+    , m_canUpdateAngle(canUpdateAngle)
+    , m_lastDraggingState(nullptr)
+    , m_scaleFactor(0.0f)
+{
+}
 
-    DraggingBoneState(StateController *stateController, BaseApplicationService *application, bool canUpdateAngle)
-        : BaseDraggingObjectState(stateController, application, canUpdateAngle)
-    {
-    }
-    ~DraggingBoneState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+BaseDraggingObjectState::~BaseDraggingObjectState() NANOEM_DECL_NOEXCEPT
+{
+    nanoem_delete_safe(m_lastDraggingState);
+}
 
-    internal::IDraggingState *
-    createTranslateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        internal::IDraggingState *state = nullptr;
-        Model *model = project->activeModel();
-        if (model && model->selection()->areAllBonesMovable()) {
-            state = nanoem_new(
-                internal::AxisAlignedTranslateActiveBoneState(project, model, logicalScalePosition, axisIndex));
-        }
-        return state;
+void
+BaseDraggingObjectState::onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &delta)
+{
+    if (m_lastDraggingState) {
+        m_lastDraggingState->setScaleFactor(m_scaleFactor * scaleFactor(logicalScalePosition));
+        m_lastDraggingState->transform(logicalScalePosition);
     }
-    internal::IDraggingState *
-    createOrientateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        internal::IDraggingState *state = nullptr;
-        Model *model = project->activeModel();
-        if (model && model->selection()->areAllBonesRotateable()) {
-            state = nanoem_new(
-                internal::AxisAlignedOrientateActiveBoneState(project, model, logicalScalePosition, axisIndex));
-        }
-        return state;
+    else if (canUpdateCameraAngle()) {
+        updateCameraAngle(delta);
     }
-    internal::IDraggingState *
-    createCameraLookAtState(const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        return nanoem_new(
-            internal::CameraLookAtState(project, project->activeModel()->localCamera(), logicalScalePosition));
-    }
-    internal::IDraggingState *
-    createCameraZoomState(const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        return nanoem_new(
-            internal::CameraZoomState(project, project->activeModel()->localCamera(), logicalScalePosition));
-    }
+    m_lastPosition = logicalScalePosition;
+}
 
-    void
-    onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
-        internal::IDraggingState *draggingState = nullptr;
-        Project *project = m_stateControllerPtr->currentProject();
-        Model *model = project->activeModel();
-        if (project->isPlaying()) {
-            /* do nothing */
-        }
-        else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
-            draggingState = createDraggingState(rectangleType, logicalScalePosition, project);
-        }
-        else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
-            const ICamera *camera = project->activeCamera();
-            const model::Bone *bone = model::Bone::cast(bonePtr);
-            const Vector2 &lastBoneCursorPosition =
-                camera->toScreenCoordinate(Vector3(model->worldTransform(bone->worldTransform())[3]));
-            if (model->transformAxisType() != Model::kAxisTypeMaxEnum &&
-                !glm::isNull(lastBoneCursorPosition, Constants::kEpsilon)) {
-                const Project::EditingMode editingMode = project->editingMode();
-                const IModelObjectSelection *selection = model->selection();
-                if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
-                    draggingState = nanoem_new(internal::OrientateActiveBoneState(
-                        project, model, logicalScalePosition, lastBoneCursorPosition));
-                }
-                else if (editingMode == Project::kEditingModeMove && selection->areAllBonesMovable()) {
-                    draggingState = nanoem_new(internal::TranslateActiveBoneState(
-                        project, model, logicalScalePosition, lastBoneCursorPosition));
-                }
-            }
-        }
-        if (draggingState) {
-            setDraggingState(draggingState, logicalScalePosition);
+void
+BaseDraggingObjectState::onRelease(const Vector3SI32 &logicalScalePosition)
+{
+    if (m_lastDraggingState) {
+        m_lastDraggingState->commit(logicalScalePosition);
+    }
+    if (Model *model = m_stateControllerPtr->currentProject()->activeModel()) {
+        model->setTransformAxisType(Model::kAxisTypeMaxEnum);
+    }
+    m_lastPosition = Vector2();
+}
+
+internal::IDraggingState *
+BaseDraggingObjectState::createDraggingState(
+    Project::RectangleType rectangleType, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    int axisIndex;
+    const bool orientate =
+        rectangleType >= Project::kRectangleOrientateX && rectangleType <= Project::kRectangleOrientateZ;
+    const bool translate =
+        rectangleType >= Project::kRectangleTranslateX && rectangleType <= Project::kRectangleTranslateZ;
+    internal::IDraggingState *draggingState = nullptr;
+    if (orientate) {
+        axisIndex = rectangleType - Project::kRectangleOrientateX;
+        draggingState = createOrientateState(axisIndex, logicalScalePosition, project);
+    }
+    else if (translate) {
+        axisIndex = rectangleType - Project::kRectangleTranslateX;
+        draggingState = createTranslateState(axisIndex, logicalScalePosition, project);
+    }
+    else if (rectangleType == Project::kRectangleTransformCoordinateType) {
+        project->toggleTransformCoordinateType();
+    }
+    else if (rectangleType == Project::kRectangleCameraLookAt) {
+        if (isBackgroundVideoOperation(logicalScalePosition, project)) {
+            draggingState = nanoem_new(internal::MoveBackgroundVideoState(project, logicalScalePosition));
         }
         else {
-            const nanoem_model_bone_t *bone = nullptr;
-            Model::AxisType axisType;
-            nanoem_rsize_t boneIndex = m_stateControllerPtr->boneIndex();
-            if (handlePointerIntersects(logicalScalePosition, project, bone, boneIndex, axisType)) {
-                m_stateControllerPtr->setBoneIndex(boneIndex);
-                model->selection()->toggleSelectAndActiveBone(bone, project->isMultipleBoneSelectionEnabled());
-            }
+            draggingState = createCameraLookAtState(logicalScalePosition, project);
         }
     }
+    else if (rectangleType == Project::kRectangleCameraZoom) {
+        if (isBackgroundVideoOperation(logicalScalePosition, project)) {
+            draggingState = nanoem_new(internal::ZoomBackgroundVideoState(project, logicalScalePosition));
+        }
+        else {
+            draggingState = createCameraZoomState(logicalScalePosition, project);
+        }
+    }
+    return draggingState;
+}
+
+void
+BaseDraggingObjectState::setDraggingState(
+    internal::IDraggingState *draggingState, const Vector3SI32 &logicalScalePosition)
+{
+    if (draggingState) {
+        const nanoem_f32_t sf = draggingState->scaleFactor();
+        draggingState->setScaleFactor(sf * scaleFactor(logicalScalePosition));
+        m_lastDraggingState = draggingState;
+        m_scaleFactor = sf;
+    }
+}
+
+void
+BaseDraggingObjectState::updateCameraAngle(const Vector2SI32 &delta)
+{
+    ICamera *camera = m_stateControllerPtr->currentProject()->activeCamera();
+    camera->setAngle(glm::radians(glm::degrees(camera->angle()) + Vector3(delta.y, delta.x, 0)));
+    camera->update();
+}
+
+bool
+BaseDraggingObjectState::canUpdateCameraAngle() const NANOEM_DECL_NOEXCEPT
+{
+    const Project *project = m_stateControllerPtr->currentProject();
+    return m_canUpdateAngle && !(m_applicationPtr->hasModalDialog() || project->audioPlayer()->isPlaying());
+}
+
+bool
+BaseDraggingObjectState::isBackgroundVideoOperation(
+    const Vector3SI32 &logicalScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    return project->hasBackgroundImageHandle() &&
+        EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z);
+}
+
+class DraggingBoneState NANOEM_DECL_SEALED : public BaseDraggingObjectState {
+public:
+    static const nanoem_model_bone_t *findHoverBone(
+        const Vector3SI32 &value, const Project *project, Model::AxisType &axisType);
+
+    DraggingBoneState(StateController *stateController, BaseApplicationService *application, bool canUpdateAngle);
+    ~DraggingBoneState() NANOEM_DECL_NOEXCEPT;
+
+    internal::IDraggingState *createTranslateState(
+        int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createOrientateState(
+        int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createCameraLookAtState(
+        const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createCameraZoomState(
+        const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+
+    void onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
 
 private:
-    static Vector2SI32
-    deviceScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT
-    {
-        Vector2SI32 deviceScaleCursor(0);
-        if (const Model *model = project->activeModel()) {
-            if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
-                deviceScaleCursor =
-                    project->activeCamera()->toDeviceScreenCoordinateInWindow(bone->worldTransformOrigin());
-            }
-        }
-        return deviceScaleCursor;
-    }
-    static bool
-    handlePointerIntersects(const Vector2SI32 &logicalScalePosition, const Project *project,
-        const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT
-    {
-        const Vector2SI32 deviceScalePosition(Vector2(logicalScalePosition) * project->windowDevicePixelRatio());
-        bool intersected = false;
-        axisType = Model::kAxisTypeMaxEnum;
-        switch (project->editingMode()) {
-        case Project::kEditingModeSelect: {
-            if (const Model *model = project->activeModel()) {
-                bone = model->intersectsBone(deviceScalePosition, boneIndex);
-                intersected = bone != nullptr;
-            }
-            break;
-        }
-        case Project::kEditingModeMove: {
-            axisType = selectTranslationAxisType(deviceScalePosition, project);
-            intersected = axisType != Model::kAxisTypeMaxEnum;
-            break;
-        }
-        case Project::kEditingModeRotate: {
-            axisType = selectOrientationAxisType(deviceScalePosition, project);
-            intersected = axisType != Model::kAxisTypeMaxEnum;
-            break;
-        }
-        default:
-            break;
-        }
-        return intersected;
-    }
-    static Model::AxisType
-    selectTranslationAxisType(const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
-    {
-        const Vector2SI32 &center = deviceScaleCursorActiveBoneInWindow(project);
-        nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f, width = project->deviceScaleCircleRadius(),
-                     offset = width * 0.5f;
-        const Vector4SI32 rectCenter(center.x - offset, center.y - offset, width, width),
-            rectX(center.x - offset, center.y - offset, length, width),
-            rectY(center.x - offset, center.y - length - offset, width, length);
-        Model::AxisType axisType(Model::kAxisTypeMaxEnum);
-        if (Inline::intersectsRectPoint(rectCenter, deviceScalePosition)) {
-            axisType = Model::kAxisCenter;
-        }
-        else if (Inline::intersectsRectPoint(rectX, deviceScalePosition)) {
-            axisType = Model::kAxisX;
-        }
-        else if (Inline::intersectsRectPoint(rectY, deviceScalePosition)) {
-            axisType = Model::kAxisY;
-        }
-        return axisType;
-    }
-    static Model::AxisType
-    selectOrientationAxisType(const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
-    {
-        const Vector2 center(deviceScaleCursorActiveBoneInWindow(project));
-        nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f, width = project->deviceScaleCircleRadius(),
-                     woffset = width * 0.5f, distance = glm::distance(Vector2(deviceScalePosition), center);
-        const Vector4SI32 rectCenter(center.x - woffset, center.y - woffset, width, width),
-            rectX(center.x - woffset, center.y - radius, width, radius * 2.0f),
-            rectZ(center.x - radius, center.y - woffset, radius * 2.0f, width);
-        Model::AxisType axisType(Model::kAxisTypeMaxEnum);
-        if (distance < radius + woffset && distance > radius - woffset) {
-            axisType = Model::kAxisY;
-        }
-        else if (Inline::intersectsRectPoint(rectCenter, deviceScalePosition)) {
-            axisType = Model::kAxisCenter;
-        }
-        else if (Inline::intersectsRectPoint(rectX, deviceScalePosition)) {
-            axisType = Model::kAxisX;
-        }
-        else if (Inline::intersectsRectPoint(rectZ, deviceScalePosition)) {
-            axisType = Model::kAxisZ;
-        }
-        return axisType;
-    }
+    static Vector2SI32 deviceScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT;
+    static bool handlePointerIntersects(const Vector2SI32 &logicalScalePosition, const Project *project,
+        const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT;
+    static Model::AxisType selectTranslationAxisType(
+        const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT;
+    static Model::AxisType selectOrientationAxisType(
+        const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT;
 };
+
+const nanoem_model_bone_t *
+DraggingBoneState::findHoverBone(const Vector3SI32 &value, const Project *project, Model::AxisType &axisType)
+{
+    const nanoem_model_bone_t *bone = nullptr;
+    nanoem_rsize_t boneIndex;
+    DraggingBoneState::handlePointerIntersects(value, project, bone, boneIndex, axisType);
+    return bone;
+}
+
+DraggingBoneState::DraggingBoneState(
+    StateController *stateController, BaseApplicationService *application, bool canUpdateAngle)
+    : BaseDraggingObjectState(stateController, application, canUpdateAngle)
+{
+}
+
+DraggingBoneState::~DraggingBoneState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+internal::IDraggingState *
+DraggingBoneState::createTranslateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    internal::IDraggingState *state = nullptr;
+    Model *model = project->activeModel();
+    if (model && model->selection()->areAllBonesMovable()) {
+        state =
+            nanoem_new(internal::AxisAlignedTranslateActiveBoneState(project, model, logicalScalePosition, axisIndex));
+    }
+    return state;
+}
+
+internal::IDraggingState *
+DraggingBoneState::createOrientateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    internal::IDraggingState *state = nullptr;
+    Model *model = project->activeModel();
+    if (model && model->selection()->areAllBonesRotateable()) {
+        state =
+            nanoem_new(internal::AxisAlignedOrientateActiveBoneState(project, model, logicalScalePosition, axisIndex));
+    }
+    return state;
+}
+
+internal::IDraggingState *
+DraggingBoneState::createCameraLookAtState(const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    return nanoem_new(
+        internal::CameraLookAtState(project, project->activeModel()->localCamera(), logicalScalePosition));
+}
+
+internal::IDraggingState *
+DraggingBoneState::createCameraZoomState(const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    return nanoem_new(internal::CameraZoomState(project, project->activeModel()->localCamera(), logicalScalePosition));
+}
+
+void
+DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
+{
+    Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
+    internal::IDraggingState *draggingState = nullptr;
+    Project *project = m_stateControllerPtr->currentProject();
+    Model *model = project->activeModel();
+    if (project->isPlaying()) {
+        /* do nothing */
+    }
+    else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
+        draggingState = createDraggingState(rectangleType, logicalScalePosition, project);
+    }
+    else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
+        const ICamera *camera = project->activeCamera();
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        const Vector2 &lastBoneCursorPosition =
+            camera->toScreenCoordinate(Vector3(model->worldTransform(bone->worldTransform())[3]));
+        if (model->transformAxisType() != Model::kAxisTypeMaxEnum &&
+            !glm::isNull(lastBoneCursorPosition, Constants::kEpsilon)) {
+            const Project::EditingMode editingMode = project->editingMode();
+            const IModelObjectSelection *selection = model->selection();
+            if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
+                draggingState = nanoem_new(
+                    internal::OrientateActiveBoneState(project, model, logicalScalePosition, lastBoneCursorPosition));
+            }
+            else if (editingMode == Project::kEditingModeMove && selection->areAllBonesMovable()) {
+                draggingState = nanoem_new(
+                    internal::TranslateActiveBoneState(project, model, logicalScalePosition, lastBoneCursorPosition));
+            }
+        }
+    }
+    if (draggingState) {
+        setDraggingState(draggingState, logicalScalePosition);
+    }
+    else {
+        const nanoem_model_bone_t *bone = nullptr;
+        Model::AxisType axisType;
+        nanoem_rsize_t boneIndex = m_stateControllerPtr->boneIndex();
+        if (handlePointerIntersects(logicalScalePosition, project, bone, boneIndex, axisType)) {
+            m_stateControllerPtr->setBoneIndex(boneIndex);
+            model->selection()->toggleSelectAndActiveBone(bone, project->isMultipleBoneSelectionEnabled());
+        }
+    }
+}
+
+Vector2SI32
+DraggingBoneState::deviceScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    Vector2SI32 deviceScaleCursor(0);
+    if (const Model *model = project->activeModel()) {
+        if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
+            deviceScaleCursor = project->activeCamera()->toDeviceScreenCoordinateInWindow(bone->worldTransformOrigin());
+        }
+    }
+    return deviceScaleCursor;
+}
+
+bool
+DraggingBoneState::handlePointerIntersects(const Vector2SI32 &logicalScalePosition, const Project *project,
+    const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT
+{
+    const Vector2SI32 deviceScalePosition(Vector2(logicalScalePosition) * project->windowDevicePixelRatio());
+    bool intersected = false;
+    axisType = Model::kAxisTypeMaxEnum;
+    switch (project->editingMode()) {
+    case Project::kEditingModeSelect: {
+        if (const Model *model = project->activeModel()) {
+            bone = model->intersectsBone(deviceScalePosition, boneIndex);
+            intersected = bone != nullptr;
+        }
+        break;
+    }
+    case Project::kEditingModeMove: {
+        axisType = selectTranslationAxisType(deviceScalePosition, project);
+        intersected = axisType != Model::kAxisTypeMaxEnum;
+        break;
+    }
+    case Project::kEditingModeRotate: {
+        axisType = selectOrientationAxisType(deviceScalePosition, project);
+        intersected = axisType != Model::kAxisTypeMaxEnum;
+        break;
+    }
+    default:
+        break;
+    }
+    return intersected;
+}
+
+Model::AxisType
+DraggingBoneState::selectTranslationAxisType(
+    const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    const Vector2SI32 &center = deviceScaleCursorActiveBoneInWindow(project);
+    nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f, width = project->deviceScaleCircleRadius(),
+                 offset = width * 0.5f;
+    const Vector4SI32 rectCenter(center.x - offset, center.y - offset, width, width),
+        rectX(center.x - offset, center.y - offset, length, width),
+        rectY(center.x - offset, center.y - length - offset, width, length);
+    Model::AxisType axisType(Model::kAxisTypeMaxEnum);
+    if (Inline::intersectsRectPoint(rectCenter, deviceScalePosition)) {
+        axisType = Model::kAxisCenter;
+    }
+    else if (Inline::intersectsRectPoint(rectX, deviceScalePosition)) {
+        axisType = Model::kAxisX;
+    }
+    else if (Inline::intersectsRectPoint(rectY, deviceScalePosition)) {
+        axisType = Model::kAxisY;
+    }
+    return axisType;
+}
+
+Model::AxisType
+DraggingBoneState::selectOrientationAxisType(
+    const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    const Vector2 center(deviceScaleCursorActiveBoneInWindow(project));
+    nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f, width = project->deviceScaleCircleRadius(),
+                 woffset = width * 0.5f, distance = glm::distance(Vector2(deviceScalePosition), center);
+    const Vector4SI32 rectCenter(center.x - woffset, center.y - woffset, width, width),
+        rectX(center.x - woffset, center.y - radius, width, radius * 2.0f),
+        rectZ(center.x - radius, center.y - woffset, radius * 2.0f, width);
+    Model::AxisType axisType(Model::kAxisTypeMaxEnum);
+    if (distance < radius + woffset && distance > radius - woffset) {
+        axisType = Model::kAxisY;
+    }
+    else if (Inline::intersectsRectPoint(rectCenter, deviceScalePosition)) {
+        axisType = Model::kAxisCenter;
+    }
+    else if (Inline::intersectsRectPoint(rectX, deviceScalePosition)) {
+        axisType = Model::kAxisX;
+    }
+    else if (Inline::intersectsRectPoint(rectZ, deviceScalePosition)) {
+        axisType = Model::kAxisZ;
+    }
+    return axisType;
+}
 
 class DraggingCameraState NANOEM_DECL_SEALED : public BaseDraggingObjectState {
 public:
-    DraggingCameraState(StateController *stateController, BaseApplicationService *application, bool canUpdateAngle)
-        : BaseDraggingObjectState(stateController, application, canUpdateAngle)
-    {
-    }
-    ~DraggingCameraState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingCameraState(StateController *stateController, BaseApplicationService *application, bool canUpdateAngle);
+    ~DraggingCameraState() NANOEM_DECL_NOEXCEPT;
 
-    internal::IDraggingState *
-    createTranslateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        return nanoem_new(internal::AxisAlignedTranslateCameraState(
-            project, project->globalCamera(), logicalScalePosition, axisIndex));
-    }
-    internal::IDraggingState *
-    createOrientateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        return nanoem_new(internal::AxisAlignedOrientateCameraState(
-            project, project->globalCamera(), logicalScalePosition, axisIndex));
-    }
-    internal::IDraggingState *
-    createCameraLookAtState(const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        return nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScalePosition));
-    }
-    internal::IDraggingState *
-    createCameraZoomState(const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        return nanoem_new(internal::CameraZoomState(project, project->globalCamera(), logicalScalePosition));
-    }
+    internal::IDraggingState *createTranslateState(
+        int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createOrientateState(
+        int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createCameraLookAtState(
+        const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createCameraZoomState(
+        const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
 
-    void
-    onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
-        Project *project = m_stateControllerPtr->currentProject();
-        if (!project->isPlaying() && project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
-            setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
-        }
-    }
+    void onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingCameraState::DraggingCameraState(
+    StateController *stateController, BaseApplicationService *application, bool canUpdateAngle)
+    : BaseDraggingObjectState(stateController, application, canUpdateAngle)
+{
+}
+
+DraggingCameraState::~DraggingCameraState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+internal::IDraggingState *
+DraggingCameraState::createTranslateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    return nanoem_new(
+        internal::AxisAlignedTranslateCameraState(project, project->globalCamera(), logicalScalePosition, axisIndex));
+}
+
+internal::IDraggingState *
+DraggingCameraState::createOrientateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    return nanoem_new(
+        internal::AxisAlignedOrientateCameraState(project, project->globalCamera(), logicalScalePosition, axisIndex));
+}
+
+internal::IDraggingState *
+DraggingCameraState::createCameraLookAtState(const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    return nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScalePosition));
+}
+
+internal::IDraggingState *
+DraggingCameraState::createCameraZoomState(const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    return nanoem_new(internal::CameraZoomState(project, project->globalCamera(), logicalScalePosition));
+}
+
+void
+DraggingCameraState::onPress(const Vector3SI32 &logicalScalePosition)
+{
+    Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
+    Project *project = m_stateControllerPtr->currentProject();
+    if (!project->isPlaying() && project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
+        setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
+    }
+}
 
 struct ISelector {
     virtual void begin(const Vector4SI32 &value, const Project *project) = 0;
@@ -447,62 +515,80 @@ struct ISelector {
     virtual bool contains(const Vector2SI32 &coord) const NANOEM_DECL_NOEXCEPT = 0;
 };
 
-struct RectangleSelector : ISelector {
-    RectangleSelector()
-        : m_rect(0)
-    {
-    }
-    ~RectangleSelector()
-    {
-    }
+class RectangleSelector NANOEM_DECL_SEALED : public ISelector, private NonCopyable {
+public:
+    RectangleSelector();
+    ~RectangleSelector();
 
-    void
-    begin(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        updateRectangle(value, project);
-    }
-    void
-    update(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        updateRectangle(value, project);
-    }
-    void
-    end(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        updateRectangle(value, project);
-    }
-    void
-    draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        static const Vector4 kOpaqueRed(1, 0, 0, 1);
-        static const Vector4 kHalfOpacityRed(1, 0, 0, 0.5f);
-        const Vector4SI32 rect(Vector4(m_rect) * devicePixelRatio);
-        primitive->fillRect(rect, kHalfOpacityRed, 0);
-        primitive->strokeRect(rect, kOpaqueRed, 0, devicePixelRatio);
-    }
-    bool
-    contains(const Vector2SI32 &coord) const NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        return Inline::intersectsRectPoint(m_rect, coord);
-    }
-    void
-    updateRectangle(const Vector4SI32 &value, const Project *project)
-    {
-        const Vector4UI16 imageRect(project->logicalScaleUniformedViewportImageRect());
-        m_rect = value - Vector4SI32(imageRect.x, imageRect.y, 0, 0);
-        if (value.z < 0) {
-            m_rect.z *= -1;
-            m_rect.x -= m_rect.z;
-        }
-        if (value.w < 0) {
-            m_rect.w *= -1;
-            m_rect.y -= m_rect.w;
-        }
-        m_rect *= project->windowDevicePixelRatio();
-    }
+    void begin(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void update(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void end(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    bool contains(const Vector2SI32 &coord) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void updateRectangle(const Vector4SI32 &value, const Project *project);
 
+private:
     Vector4SI32 m_rect;
 };
+
+RectangleSelector::RectangleSelector()
+    : m_rect(0)
+{
+}
+
+RectangleSelector::~RectangleSelector()
+{
+}
+
+void
+RectangleSelector::begin(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    updateRectangle(value, project);
+}
+
+void
+RectangleSelector::update(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    updateRectangle(value, project);
+}
+
+void
+RectangleSelector::end(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    updateRectangle(value, project);
+}
+
+void
+RectangleSelector::draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT
+{
+    static const Vector4 kOpaqueRed(1, 0, 0, 1);
+    static const Vector4 kHalfOpacityRed(1, 0, 0, 0.5f);
+    const Vector4SI32 rect(Vector4(m_rect) * devicePixelRatio);
+    primitive->fillRect(rect, kHalfOpacityRed, 0);
+    primitive->strokeRect(rect, kOpaqueRed, 0, devicePixelRatio);
+}
+
+bool
+RectangleSelector::contains(const Vector2SI32 &coord) const NANOEM_DECL_NOEXCEPT
+{
+    return Inline::intersectsRectPoint(m_rect, coord);
+}
+
+void
+RectangleSelector::updateRectangle(const Vector4SI32 &value, const Project *project)
+{
+    const Vector4UI16 imageRect(project->logicalScaleUniformedViewportImageRect());
+    m_rect = value - Vector4SI32(imageRect.x, imageRect.y, 0, 0);
+    if (value.z < 0) {
+        m_rect.z *= -1;
+        m_rect.x -= m_rect.z;
+    }
+    if (value.w < 0) {
+        m_rect.w *= -1;
+        m_rect.y -= m_rect.w;
+    }
+    m_rect *= project->windowDevicePixelRatio();
+}
 
 #if 0
 struct CircleSelector : ISelector {
@@ -551,806 +637,943 @@ struct CircleSelector : ISelector {
 
 class BaseSelectionState : public BaseDraggingObjectState {
 protected:
-    BaseSelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseDraggingObjectState(stateController, application, false)
-    {
-    }
-    ~BaseSelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    BaseSelectionState(StateController *stateController, BaseApplicationService *application);
+    ~BaseSelectionState() NANOEM_DECL_NOEXCEPT;
 
     virtual const char *name() const = 0;
     virtual void commitSelection(Model *model, const Project *project, bool removeAll) = 0;
 
-    internal::IDraggingState *
-    createTranslateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        BX_UNUSED_3(axisIndex, logicalScalePosition, project)
-        return nullptr;
-    }
-    internal::IDraggingState *
-    createOrientateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        BX_UNUSED_3(axisIndex, logicalScalePosition, project)
-        return nullptr;
-    }
-    internal::IDraggingState *
-    createCameraLookAtState(const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        BX_UNUSED_2(logicalScalePosition, project);
-        return nullptr;
-    }
-    internal::IDraggingState *
-    createCameraZoomState(const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE
-    {
-        BX_UNUSED_2(logicalScalePosition, project);
-        return nullptr;
-    }
-    Matrix4x4
-    pivotMatrix(const Model *activeModel) const
-    {
-        typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator>
-            MaterialOffsetMap;
-        const IModelObjectSelection *selection = activeModel->selection();
-        Matrix4x4 matrix(0);
-        Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
-        switch (selection->editingType()) {
-        case IModelObjectSelection::kEditingTypeBone: {
-            const model::Bone::Set selectedBoneSet(selection->allBoneSet());
-            if (!selectedBoneSet.empty()) {
-                for (model::Bone::Set::const_iterator it = selectedBoneSet.begin(), end = selectedBoneSet.end();
-                     it != end; ++it) {
-                    const nanoem_model_bone_t *bonePtr = *it;
-                    const Vector3 origin(model::Bone::origin(bonePtr));
-                    aabbMin = glm::min(aabbMin, origin);
-                    aabbMax = glm::max(aabbMax, origin);
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        case IModelObjectSelection::kEditingTypeFace: {
-            const IModelObjectSelection::VertexIndexSet selectedBoneSet(selection->allVertexIndexSet());
-            if (!selectedBoneSet.empty()) {
-                nanoem_rsize_t numVertices;
-                nanoem_model_vertex_t *const *vertices =
-                    nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-                for (IModelObjectSelection::VertexIndexSet::const_iterator it = selectedBoneSet.begin(),
-                                                                           end = selectedBoneSet.end();
-                     it != end; ++it) {
-                    const nanoem_u32_t vertexIndex = *it;
-                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                    aabbMin = glm::min(aabbMin, origin);
-                    aabbMax = glm::max(aabbMax, origin);
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        case IModelObjectSelection::kEditingTypeJoint: {
-            const model::Joint::Set selectedJointSet(selection->allJointSet());
-            if (!selectedJointSet.empty()) {
-                for (model::Joint::Set::const_iterator it = selectedJointSet.begin(), end = selectedJointSet.end();
-                     it != end; ++it) {
-                    const nanoem_model_joint_t *jointPtr = *it;
-                    const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
-                    aabbMin = glm::min(aabbMin, origin);
-                    aabbMax = glm::max(aabbMax, origin);
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        case IModelObjectSelection::kEditingTypeMaterial: {
-            const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
-            if (!selectedMaterialSet.empty()) {
-                nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
-                const nanoem_model_t *opaque = activeModel->data();
-                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
-                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
-                MaterialOffsetMap materialOffsets;
-                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-                    const nanoem_model_material_t *material = materials[i];
-                    materialOffsets.insert(tinystl::make_pair(material, offset));
-                    offset += nanoemModelMaterialGetNumVertexIndices(material);
-                }
-                for (model::Material::Set::const_iterator it = selectedMaterialSet.begin(),
-                                                          end = selectedMaterialSet.end();
-                     it != end; ++it) {
-                    const nanoem_model_material_t *materialPtr = *it;
-                    MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
-                    if (it2 != materialOffsets.end()) {
-                        nanoem_rsize_t offset = it2->second,
-                                       indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-                        for (nanoem_rsize_t i = 0; i < indices; i++) {
-                            const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
-                            const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                            aabbMin = glm::min(aabbMin, origin);
-                            aabbMax = glm::max(aabbMax, origin);
-                        }
-                    }
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        case IModelObjectSelection::kEditingTypeRigidBody: {
-            const model::RigidBody::Set selectedRigidBodySet(selection->allRigidBodySet());
-            if (!selectedRigidBodySet.empty()) {
-                for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet.begin(),
-                                                           end = selectedRigidBodySet.end();
-                     it != end; ++it) {
-                    const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
-                    const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
-                    aabbMin = glm::min(aabbMin, origin);
-                    aabbMax = glm::max(aabbMax, origin);
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        case IModelObjectSelection::kEditingTypeSoftBody: {
-            const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
-            if (!selectedSoftBodySet.empty()) {
-                nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
-                const nanoem_model_t *opaque = activeModel->data();
-                nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
-                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
-                MaterialOffsetMap materialOffsets;
-                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-                    const nanoem_model_material_t *material = materials[i];
-                    materialOffsets.insert(tinystl::make_pair(material, offset));
-                    offset += nanoemModelMaterialGetNumVertexIndices(material);
-                }
-                for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet.begin(),
-                                                          end = selectedSoftBodySet.end();
-                     it != end; ++it) {
-                    const nanoem_model_soft_body_t *softBodyPtr = *it;
-                    const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
-                    MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
-                    if (it2 != materialOffsets.end()) {
-                        nanoem_rsize_t offset = it2->second,
-                                       indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-                        for (nanoem_rsize_t i = 0; i < indices; i++) {
-                            const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
-                            const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                            aabbMin = glm::min(aabbMin, origin);
-                            aabbMax = glm::max(aabbMax, origin);
-                        }
-                    }
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        case IModelObjectSelection::kEditingTypeVertex: {
-            const model::Vertex::Set selectedVertexSet(selection->allVertexSet());
-            if (!selectedVertexSet.empty()) {
-                for (model::Vertex::Set::const_iterator it = selectedVertexSet.begin(), end = selectedVertexSet.end();
-                     it != end; ++it) {
-                    const nanoem_model_vertex_t *vertexPtr = *it;
-                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
-                    aabbMin = glm::min(aabbMin, origin);
-                    aabbMax = glm::max(aabbMax, origin);
-                }
-                matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-            }
-            break;
-        }
-        default:
-            break;
-        }
-        return matrix;
-    }
+    internal::IDraggingState *createTranslateState(
+        int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createOrientateState(
+        int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createCameraLookAtState(
+        const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    internal::IDraggingState *createCameraZoomState(
+        const Vector3SI32 &logicalScalePosition, Project *project) NANOEM_DECL_OVERRIDE;
+    Matrix4x4 pivotMatrix(const Model *activeModel) const;
 
-    const ISelector *currentSelector() const NANOEM_DECL_NOEXCEPT
-    {
-        return &m_rectangleSelector;
-    }
-    ISelector *currentSelector()
-    {
-        return &m_rectangleSelector;
-    }
+    const ISelector *currentSelector() const NANOEM_DECL_NOEXCEPT;
+    ISelector *currentSelector();
 
     RectangleSelector m_rectangleSelector;
 
 private:
-    void
-    onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        Project *project = m_stateControllerPtr->currentProject();
-        Project::RectangleType rectangleType;
-        if (project->isPlaying()) {
-            /* do nothing */
-        }
-        else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
-            setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
-        }
-        else {
-            const Vector4SI32 rect(logicalScalePosition.x, logicalScalePosition.y, 0, 0);
-            currentSelector()->begin(rect, project);
-        }
-        m_lastPosition = logicalScalePosition;
-    }
-    void
-    onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE
-    {
-        Project *project = m_stateControllerPtr->currentProject();
-        project->setLogicalPixelMovingCursorPosition(logicalScalePosition);
-        const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
-        currentSelector()->update(rect, project);
-    }
-    void
-    onRelease(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        Project *project = m_stateControllerPtr->currentProject();
-        bool removeAll =
-            EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z) ? false : true;
-        const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
-        currentSelector()->end(rect, project);
-        if (Model *model = project->activeModel()) {
-            commitSelection(model, project, removeAll);
-            model->setPivotMatrix(pivotMatrix(model));
-        }
-        m_lastPosition = Vector2();
-    }
-    void
-    onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE
-    {
-        const Project *project = m_stateControllerPtr->currentProject();
-        nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
-        currentSelector()->draw(primitive, deviceScaleRatio);
-    }
+    void onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
+    void onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE;
 };
+
+BaseSelectionState::BaseSelectionState(StateController *stateController, BaseApplicationService *application)
+    : BaseDraggingObjectState(stateController, application, false)
+{
+}
+
+BaseSelectionState::~BaseSelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+internal::IDraggingState *
+BaseSelectionState::createTranslateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    BX_UNUSED_3(axisIndex, logicalScalePosition, project)
+    return nullptr;
+}
+
+internal::IDraggingState *
+BaseSelectionState::createOrientateState(int axisIndex, const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    BX_UNUSED_3(axisIndex, logicalScalePosition, project)
+    return nullptr;
+}
+
+internal::IDraggingState *
+BaseSelectionState::createCameraLookAtState(const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    BX_UNUSED_2(logicalScalePosition, project);
+    return nullptr;
+}
+
+internal::IDraggingState *
+BaseSelectionState::createCameraZoomState(const Vector3SI32 &logicalScalePosition, Project *project)
+{
+    BX_UNUSED_2(logicalScalePosition, project);
+    return nullptr;
+}
+
+Matrix4x4
+BaseSelectionState::pivotMatrix(const Model *activeModel) const
+{
+    typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
+    const IModelObjectSelection *selection = activeModel->selection();
+    Matrix4x4 matrix(0);
+    Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+    switch (selection->editingType()) {
+    case IModelObjectSelection::kEditingTypeBone: {
+        const model::Bone::Set selectedBoneSet(selection->allBoneSet());
+        if (!selectedBoneSet.empty()) {
+            for (model::Bone::Set::const_iterator it = selectedBoneSet.begin(), end = selectedBoneSet.end(); it != end;
+                 ++it) {
+                const nanoem_model_bone_t *bonePtr = *it;
+                const Vector3 origin(model::Bone::origin(bonePtr));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeFace: {
+        const IModelObjectSelection::VertexIndexSet selectedBoneSet(selection->allVertexIndexSet());
+        if (!selectedBoneSet.empty()) {
+            nanoem_rsize_t numVertices;
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
+            for (IModelObjectSelection::VertexIndexSet::const_iterator it = selectedBoneSet.begin(),
+                                                                       end = selectedBoneSet.end();
+                 it != end; ++it) {
+                const nanoem_u32_t vertexIndex = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeJoint: {
+        const model::Joint::Set selectedJointSet(selection->allJointSet());
+        if (!selectedJointSet.empty()) {
+            for (model::Joint::Set::const_iterator it = selectedJointSet.begin(), end = selectedJointSet.end();
+                 it != end; ++it) {
+                const nanoem_model_joint_t *jointPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeMaterial: {
+        const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
+        if (!selectedMaterialSet.empty()) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+            const nanoem_model_t *opaque = activeModel->data();
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+            MaterialOffsetMap materialOffsets;
+            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *material = materials[i];
+                materialOffsets.insert(tinystl::make_pair(material, offset));
+                offset += nanoemModelMaterialGetNumVertexIndices(material);
+            }
+            for (model::Material::Set::const_iterator it = selectedMaterialSet.begin(), end = selectedMaterialSet.end();
+                 it != end; ++it) {
+                const nanoem_model_material_t *materialPtr = *it;
+                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                if (it2 != materialOffsets.end()) {
+                    nanoem_rsize_t offset = it2->second, indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    for (nanoem_rsize_t i = 0; i < indices; i++) {
+                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                        aabbMin = glm::min(aabbMin, origin);
+                        aabbMax = glm::max(aabbMax, origin);
+                    }
+                }
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeRigidBody: {
+        const model::RigidBody::Set selectedRigidBodySet(selection->allRigidBodySet());
+        if (!selectedRigidBodySet.empty()) {
+            for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet.begin(),
+                                                       end = selectedRigidBodySet.end();
+                 it != end; ++it) {
+                const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeSoftBody: {
+        const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
+        if (!selectedSoftBodySet.empty()) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+            const nanoem_model_t *opaque = activeModel->data();
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+            MaterialOffsetMap materialOffsets;
+            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *material = materials[i];
+                materialOffsets.insert(tinystl::make_pair(material, offset));
+                offset += nanoemModelMaterialGetNumVertexIndices(material);
+            }
+            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet.begin(), end = selectedSoftBodySet.end();
+                 it != end; ++it) {
+                const nanoem_model_soft_body_t *softBodyPtr = *it;
+                const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
+                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                if (it2 != materialOffsets.end()) {
+                    nanoem_rsize_t offset = it2->second, indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    for (nanoem_rsize_t i = 0; i < indices; i++) {
+                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                        aabbMin = glm::min(aabbMin, origin);
+                        aabbMax = glm::max(aabbMax, origin);
+                    }
+                }
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeVertex: {
+        const model::Vertex::Set selectedVertexSet(selection->allVertexSet());
+        if (!selectedVertexSet.empty()) {
+            for (model::Vertex::Set::const_iterator it = selectedVertexSet.begin(), end = selectedVertexSet.end();
+                 it != end; ++it) {
+                const nanoem_model_vertex_t *vertexPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return matrix;
+}
+
+const ISelector *
+BaseSelectionState::currentSelector() const NANOEM_DECL_NOEXCEPT
+{
+    return &m_rectangleSelector;
+}
+
+ISelector *
+BaseSelectionState::currentSelector()
+{
+    return &m_rectangleSelector;
+}
+
+void
+BaseSelectionState::onPress(const Vector3SI32 &logicalScalePosition)
+{
+    Project *project = m_stateControllerPtr->currentProject();
+    Project::RectangleType rectangleType;
+    if (project->isPlaying()) {
+        /* do nothing */
+    }
+    else if (project->intersectsTransformHandle(logicalScalePosition, rectangleType)) {
+        setDraggingState(createDraggingState(rectangleType, logicalScalePosition, project), logicalScalePosition);
+    }
+    else {
+        const Vector4SI32 rect(logicalScalePosition.x, logicalScalePosition.y, 0, 0);
+        currentSelector()->begin(rect, project);
+    }
+    m_lastPosition = logicalScalePosition;
+}
+
+void
+BaseSelectionState::onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &)
+{
+    Project *project = m_stateControllerPtr->currentProject();
+    project->setLogicalPixelMovingCursorPosition(logicalScalePosition);
+    const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
+    currentSelector()->update(rect, project);
+}
+
+void
+BaseSelectionState::onRelease(const Vector3SI32 &logicalScalePosition)
+{
+    Project *project = m_stateControllerPtr->currentProject();
+    bool removeAll =
+        EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z) ? false : true;
+    const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
+    currentSelector()->end(rect, project);
+    if (Model *model = project->activeModel()) {
+        commitSelection(model, project, removeAll);
+        model->setPivotMatrix(pivotMatrix(model));
+    }
+    m_lastPosition = Vector2();
+}
+
+void
+BaseSelectionState::onDrawPrimitive2D(IPrimitive2D *primitive)
+{
+    const Project *project = m_stateControllerPtr->currentProject();
+    nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
+    currentSelector()->draw(primitive, deviceScaleRatio);
+}
 
 class DraggingBoxSelectedBoneState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingBoxSelectedBoneState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingBoxSelectedBoneState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingBoxSelectedBoneState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingBoxSelectedBoneState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.box-selection";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numBones;
-        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllBones();
-        }
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0; i < numBones; i++) {
-            const nanoem_model_bone_t *bonePtr = bones[i];
-            const model::Bone *bone = model::Bone::cast(bonePtr);
-            const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-            if (selector->contains(coord)) {
-                selection->addBone(bonePtr);
-            }
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingBoxSelectedBoneState::DraggingBoxSelectedBoneState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingBoxSelectedBoneState::~DraggingBoxSelectedBoneState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingBoxSelectedBoneState::name() const
+{
+    return "nanoem.gui.viewport.box-selection";
+}
+
+void
+DraggingBoxSelectedBoneState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllBones();
+    }
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        const nanoem_model_bone_t *bonePtr = bones[i];
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
+        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+        if (selector->contains(coord)) {
+            selection->addBone(bonePtr);
+        }
+    }
+}
 
 class DraggingVertexSelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingVertexSelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingVertexSelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingVertexSelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingVertexSelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.vertex";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numVertices;
-        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllVertices();
-        }
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
-            const nanoem_model_vertex_t *vertexPtr = vertices[i];
-            const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-            const bx::simd128_t v = vertex->m_simd.m_origin;
-            const Vector3 position(bx::simd_x(v), bx::simd_y(v), bx::simd_z(v));
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-            if (selector->contains(coord)) {
-                selection->addVertex(vertexPtr);
-            }
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingVertexSelectionState::DraggingVertexSelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingVertexSelectionState::~DraggingVertexSelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingVertexSelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.vertex";
+}
+
+void
+DraggingVertexSelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numVertices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllVertices();
+    }
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[i];
+        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        const bx::simd128_t v = vertex->m_simd.m_origin;
+        const Vector3 position(bx::simd_x(v), bx::simd_y(v), bx::simd_z(v));
+        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+        if (selector->contains(coord)) {
+            selection->addVertex(vertexPtr);
+        }
+    }
+}
 
 class DraggingFaceSelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingFaceSelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingFaceSelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingFaceSelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingFaceSelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.face";
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
+};
+
+DraggingFaceSelectionState::DraggingFaceSelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingFaceSelectionState::~DraggingFaceSelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingFaceSelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.face";
+}
+
+void
+DraggingFaceSelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
+    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllFaces();
     }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
-        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
-        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllFaces();
-        }
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-            const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materials[i]);
-            for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
-                const nanoem_rsize_t o = offset + j;
-                const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
-                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
-                    o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
-                    baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
-                const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
-                if (selector->contains(coord)) {
-                    const Vector3UI32 face(i0, i1, i2);
-                    selection->addFace(face);
-                }
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+        const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materials[i]);
+        for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
+            const nanoem_rsize_t o = offset + j;
+            const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
+            const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+            const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
+                baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
+            if (selector->contains(coord)) {
+                const Vector3UI32 face(i0, i1, i2);
+                selection->addFace(face);
             }
         }
     }
-};
+}
 
 class DraggingMaterialSelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingMaterialSelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingMaterialSelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingMaterialSelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingMaterialSelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.material";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
-        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
-        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllMaterials();
-        }
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-            const nanoem_model_material_t *materialPtr = materials[i];
-            const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-            Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
-            for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
-                const nanoem_rsize_t o = offset + j;
-                const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
-                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
-                    o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
-                aabbMin = glm::min(aabbMin, o0);
-                aabbMin = glm::min(aabbMin, o1);
-                aabbMin = glm::min(aabbMin, o2);
-                aabbMax = glm::max(aabbMax, o0);
-                aabbMax = glm::max(aabbMax, o1);
-                aabbMax = glm::max(aabbMax, o2);
-            }
-            const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
-            if (selector->contains(coord)) {
-                selection->addMaterial(materialPtr);
-            }
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingMaterialSelectionState::DraggingMaterialSelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingMaterialSelectionState::~DraggingMaterialSelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingMaterialSelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.material";
+}
+
+void
+DraggingMaterialSelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
+    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllMaterials();
+    }
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+        for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
+            const nanoem_rsize_t o = offset + j;
+            const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
+            const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+            const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+            aabbMin = glm::min(aabbMin, o0);
+            aabbMin = glm::min(aabbMin, o1);
+            aabbMin = glm::min(aabbMin, o2);
+            aabbMax = glm::max(aabbMax, o0);
+            aabbMax = glm::max(aabbMax, o1);
+            aabbMax = glm::max(aabbMax, o2);
+        }
+        const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
+        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
+        if (selector->contains(coord)) {
+            selection->addMaterial(materialPtr);
+        }
+    }
+}
 
 class DraggingBoneSelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingBoneSelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingBoneSelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingBoneSelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingBoneSelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.bone";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numBones;
-        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllBones();
-        }
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0; i < numBones; i++) {
-            const nanoem_model_bone_t *bonePtr = bones[i];
-            const model::Bone *bone = model::Bone::cast(bonePtr);
-            const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-            if (selector->contains(coord)) {
-                selection->addBone(bonePtr);
-            }
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingBoneSelectionState::DraggingBoneSelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingBoneSelectionState::~DraggingBoneSelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingBoneSelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.bone";
+}
+
+void
+DraggingBoneSelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllBones();
+    }
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        const nanoem_model_bone_t *bonePtr = bones[i];
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
+        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+        if (selector->contains(coord)) {
+            selection->addBone(bonePtr);
+        }
+    }
+}
 
 class DraggingRigidBodySelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingRigidBodySelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingRigidBodySelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingRigidBodySelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingRigidBodySelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.rigid-body";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numRigidBodies;
-        nanoem_model_rigid_body_t *const *bodies = nanoemModelGetAllRigidBodyObjects(model->data(), &numRigidBodies);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllRigidBodies();
-        }
-        Matrix4x4 worldTransform;
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
-            const nanoem_model_rigid_body_t *bodyPtr = bodies[i];
-            const model::RigidBody *body = model::RigidBody::cast(bodyPtr);
-            worldTransform = body->worldTransform();
-            const Vector3 position(model->worldTransform(worldTransform)[3]);
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-            if (selector->contains(coord)) {
-                selection->addRigidBody(bodyPtr);
-            }
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingRigidBodySelectionState::DraggingRigidBodySelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingRigidBodySelectionState::~DraggingRigidBodySelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingRigidBodySelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.rigid-body";
+}
+
+void
+DraggingRigidBodySelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numRigidBodies;
+    nanoem_model_rigid_body_t *const *bodies = nanoemModelGetAllRigidBodyObjects(model->data(), &numRigidBodies);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllRigidBodies();
+    }
+    Matrix4x4 worldTransform;
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+        const nanoem_model_rigid_body_t *bodyPtr = bodies[i];
+        const model::RigidBody *body = model::RigidBody::cast(bodyPtr);
+        worldTransform = body->worldTransform();
+        const Vector3 position(model->worldTransform(worldTransform)[3]);
+        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+        if (selector->contains(coord)) {
+            selection->addRigidBody(bodyPtr);
+        }
+    }
+}
 
 class DraggingJointSelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingJointSelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingJointSelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingJointSelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingJointSelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.joint";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numJoints;
-        nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(model->data(), &numJoints);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllJoints();
-        }
-        Matrix4x4 worldTransformA, worldTransformB;
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0; i < numJoints; i++) {
-            const nanoem_model_joint_t *jointPtr = joints[i];
-            const model::Joint *joint = model::Joint::cast(jointPtr);
-            joint->getWorldTransformA(glm::value_ptr(worldTransformA));
-            const Vector3 positionA(model->worldTransform(worldTransformA)[3]);
-            const Vector2SI32 coordA(camera->toDeviceScreenCoordinateInViewport(positionA));
-            if (selector->contains(coordA)) {
-                selection->addJoint(jointPtr);
-            }
-            const Vector3 positionB(model->worldTransform(worldTransformB)[3]);
-            const Vector2SI32 coordB(camera->toDeviceScreenCoordinateInViewport(positionB));
-            if (selector->contains(coordB)) {
-                selection->addJoint(jointPtr);
-            }
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
+
+DraggingJointSelectionState::DraggingJointSelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingJointSelectionState::~DraggingJointSelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingJointSelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.joint";
+}
+
+void
+DraggingJointSelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numJoints;
+    nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(model->data(), &numJoints);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllJoints();
+    }
+    Matrix4x4 worldTransformA, worldTransformB;
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+        const nanoem_model_joint_t *jointPtr = joints[i];
+        const model::Joint *joint = model::Joint::cast(jointPtr);
+        joint->getWorldTransformA(glm::value_ptr(worldTransformA));
+        const Vector3 positionA(model->worldTransform(worldTransformA)[3]);
+        const Vector2SI32 coordA(camera->toDeviceScreenCoordinateInViewport(positionA));
+        if (selector->contains(coordA)) {
+            selection->addJoint(jointPtr);
+        }
+        const Vector3 positionB(model->worldTransform(worldTransformB)[3]);
+        const Vector2SI32 coordB(camera->toDeviceScreenCoordinateInViewport(positionB));
+        if (selector->contains(coordB)) {
+            selection->addJoint(jointPtr);
+        }
+    }
+}
 
 class DraggingSoftBodySelectionState NANOEM_DECL_SEALED : public BaseSelectionState {
 public:
-    DraggingSoftBodySelectionState(StateController *stateController, BaseApplicationService *application)
-        : BaseSelectionState(stateController, application)
-    {
-    }
-    ~DraggingSoftBodySelectionState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingSoftBodySelectionState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingSoftBodySelectionState() NANOEM_DECL_NOEXCEPT;
 
 private:
     typedef tinystl::unordered_map<const nanoem_model_material_t *, Vector3, TinySTLAllocator> MaterialBaryCenterMap;
 
-    const char *
-    name() const NANOEM_DECL_OVERRIDE
-    {
-        return "nanoem.gui.viewport.select.soft-body";
-    }
-    void
-    commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE
-    {
-        nanoem_rsize_t numSoftBodies;
-        nanoem_model_soft_body_t *const *bodies = nanoemModelGetAllSoftBodyObjects(model->data(), &numSoftBodies);
-        const ICamera *camera = project->activeCamera();
-        IModelObjectSelection *selection = model->selection();
-        if (removeAll) {
-            selection->removeAllSoftBodies();
-        }
-        MaterialBaryCenterMap baryCenters;
-        getMaterialMap(model, baryCenters);
-        const ISelector *selector = currentSelector();
-        for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
-            const nanoem_model_soft_body_t *bodyPtr = bodies[i];
-            const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(bodyPtr);
-            MaterialBaryCenterMap::const_iterator it = baryCenters.find(materialPtr);
-            if (it != baryCenters.end()) {
-                const Vector3 position(it->second);
-                const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-                if (selector->contains(coord)) {
-                    selection->addSoftBody(bodyPtr);
-                }
-            }
-        }
-    }
-    void
-    getMaterialMap(Model *model, MaterialBaryCenterMap &baryCenters)
-    {
-        nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
-        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
-        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
-        for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-            const nanoem_model_material_t *materialPtr = materials[i];
-            const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-            Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
-            for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
-                const nanoem_rsize_t o = offset + j;
-                const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
-                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
-                    o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
-                aabbMin = glm::min(aabbMin, o0);
-                aabbMin = glm::min(aabbMin, o1);
-                aabbMin = glm::min(aabbMin, o2);
-                aabbMax = glm::max(aabbMax, o0);
-                aabbMax = glm::max(aabbMax, o1);
-                aabbMax = glm::max(aabbMax, o2);
-            }
-            const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
-            baryCenters.insert(tinystl::make_pair(materialPtr, baryCenter));
-        }
-    }
+    const char *name() const NANOEM_DECL_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
+    void getMaterialMap(Model *model, MaterialBaryCenterMap &baryCenters);
 };
+
+DraggingSoftBodySelectionState::DraggingSoftBodySelectionState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseSelectionState(stateController, application)
+{
+}
+
+DraggingSoftBodySelectionState::~DraggingSoftBodySelectionState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+const char *
+DraggingSoftBodySelectionState::name() const
+{
+    return "nanoem.gui.viewport.select.soft-body";
+}
+
+void
+DraggingSoftBodySelectionState::commitSelection(Model *model, const Project *project, bool removeAll)
+{
+    nanoem_rsize_t numSoftBodies;
+    nanoem_model_soft_body_t *const *bodies = nanoemModelGetAllSoftBodyObjects(model->data(), &numSoftBodies);
+    const ICamera *camera = project->activeCamera();
+    IModelObjectSelection *selection = model->selection();
+    if (removeAll) {
+        selection->removeAllSoftBodies();
+    }
+    MaterialBaryCenterMap baryCenters;
+    getMaterialMap(model, baryCenters);
+    const ISelector *selector = currentSelector();
+    for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+        const nanoem_model_soft_body_t *bodyPtr = bodies[i];
+        const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(bodyPtr);
+        MaterialBaryCenterMap::const_iterator it = baryCenters.find(materialPtr);
+        if (it != baryCenters.end()) {
+            const Vector3 position(it->second);
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+            if (selector->contains(coord)) {
+                selection->addSoftBody(bodyPtr);
+            }
+        }
+    }
+}
+
+void
+DraggingSoftBodySelectionState::getMaterialMap(
+    Model *model, DraggingSoftBodySelectionState::MaterialBaryCenterMap &baryCenters)
+{
+    nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
+    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
+    for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+        for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
+            const nanoem_rsize_t o = offset + j;
+            const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
+            const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+            const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+            aabbMin = glm::min(aabbMin, o0);
+            aabbMin = glm::min(aabbMin, o1);
+            aabbMin = glm::min(aabbMin, o2);
+            aabbMax = glm::max(aabbMax, o0);
+            aabbMax = glm::max(aabbMax, o1);
+            aabbMax = glm::max(aabbMax, o2);
+        }
+        const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
+        baryCenters.insert(tinystl::make_pair(materialPtr, baryCenter));
+    }
+}
 
 class DraggingMoveCameraLookAtState NANOEM_DECL_SEALED : public BaseState {
 public:
-    DraggingMoveCameraLookAtState(StateController *stateController, BaseApplicationService *application)
-        : BaseState(stateController, application)
-        , m_lastDraggingState(nullptr)
-        , m_scaleFactor(0.0f)
-    {
-    }
-    ~DraggingMoveCameraLookAtState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    DraggingMoveCameraLookAtState(StateController *stateController, BaseApplicationService *application);
+    ~DraggingMoveCameraLookAtState() NANOEM_DECL_NOEXCEPT;
 
-    void
-    onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        Project *project = m_stateControllerPtr->currentProject();
-        m_lastDraggingState =
-            nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScalePosition));
-        m_scaleFactor = m_lastDraggingState->scaleFactor();
-    }
-    void
-    onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE
-    {
-        if (m_lastDraggingState) {
-            m_lastDraggingState->setScaleFactor(
-                m_scaleFactor * BaseDraggingObjectState::scaleFactor(logicalScalePosition));
-            m_lastDraggingState->transform(logicalScalePosition);
-        }
-    }
-    void
-    onRelease(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE
-    {
-        if (m_lastDraggingState) {
-            m_lastDraggingState->commit(logicalScalePosition);
-            nanoem_delete_safe(m_lastDraggingState);
-        }
-    }
+    void onPress(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
 
     internal::IDraggingState *m_lastDraggingState;
     nanoem_f32_t m_scaleFactor;
 };
 
+DraggingMoveCameraLookAtState::DraggingMoveCameraLookAtState(
+    StateController *stateController, BaseApplicationService *application)
+    : BaseState(stateController, application)
+    , m_lastDraggingState(nullptr)
+    , m_scaleFactor(0.0f)
+{
+}
+
+DraggingMoveCameraLookAtState::~DraggingMoveCameraLookAtState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+DraggingMoveCameraLookAtState::onPress(const Vector3SI32 &logicalScalePosition)
+{
+    Project *project = m_stateControllerPtr->currentProject();
+    m_lastDraggingState =
+        nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScalePosition));
+    m_scaleFactor = m_lastDraggingState->scaleFactor();
+}
+
+void
+DraggingMoveCameraLookAtState::onMove(const Vector3SI32 &logicalScalePosition, const Vector2SI32 &)
+{
+    if (m_lastDraggingState) {
+        m_lastDraggingState->setScaleFactor(m_scaleFactor * BaseDraggingObjectState::scaleFactor(logicalScalePosition));
+        m_lastDraggingState->transform(logicalScalePosition);
+    }
+}
+
+void
+DraggingMoveCameraLookAtState::onRelease(const Vector3SI32 &logicalScalePosition)
+{
+    if (m_lastDraggingState) {
+        m_lastDraggingState->commit(logicalScalePosition);
+        nanoem_delete_safe(m_lastDraggingState);
+    }
+}
+
 class UndoState NANOEM_DECL_SEALED : public BaseState {
 public:
-    UndoState(StateController *stateController, BaseApplicationService *application)
-        : BaseState(stateController, application)
-    {
-    }
-    ~UndoState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    UndoState(StateController *stateController, BaseApplicationService *application);
+    ~UndoState() NANOEM_DECL_NOEXCEPT;
 
-    void
-    onPress(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    onMove(const Vector3SI32 & /* logicalScalePosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    onRelease(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE
-    {
-        m_stateControllerPtr->currentProject()->handleUndoAction();
-    }
+    void onPress(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 & /* logicalScalePosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE;
 };
+
+UndoState::UndoState(StateController *stateController, BaseApplicationService *application)
+    : BaseState(stateController, application)
+{
+}
+
+UndoState::~UndoState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+UndoState::onPress(const Vector3SI32 &)
+{
+}
+
+void
+UndoState::onMove(const Vector3SI32 &, const Vector2SI32 &)
+{
+}
+
+void
+UndoState::onRelease(const Vector3SI32 &)
+{
+    m_stateControllerPtr->currentProject()->handleUndoAction();
+}
 
 class RedoState NANOEM_DECL_SEALED : public BaseState {
 public:
-    RedoState(StateController *stateController, BaseApplicationService *application)
-        : BaseState(stateController, application)
-    {
-    }
-    ~RedoState() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    RedoState(StateController *stateController, BaseApplicationService *application);
+    ~RedoState() NANOEM_DECL_NOEXCEPT;
 
-    void
-    onPress(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    onMove(const Vector3SI32 & /* logicalScalePosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    onRelease(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE
-    {
-        m_stateControllerPtr->currentProject()->handleRedoAction();
-    }
+    void onPress(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 & /* logicalScalePosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 & /* logicalScalePosition */) NANOEM_DECL_OVERRIDE;
 };
+
+RedoState::RedoState(StateController *stateController, BaseApplicationService *application)
+    : BaseState(stateController, application)
+{
+}
+
+RedoState::~RedoState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+RedoState::onPress(const Vector3SI32 &)
+{
+}
+
+void
+RedoState::onMove(const Vector3SI32 &, const Vector2SI32 &)
+{
+}
+
+void
+RedoState::onRelease(const Vector3SI32 &)
+{
+    m_stateControllerPtr->currentProject()->handleRedoAction();
+}
 
 class DrawUtil NANOEM_DECL_SEALED : private NonCopyable {
 public:
-    static Vector2SI32
-    deviceScaleCursorActiveBoneInViewport(const Project *project)
-    {
-        Vector2SI32 deviceScaleCursor(0);
-        if (const Model *model = project->activeModel()) {
-            if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
-                deviceScaleCursor =
-                    project->activeCamera()->toDeviceScreenCoordinateInViewport(bone->worldTransformOrigin());
-            }
-        }
-        return deviceScaleCursor;
-    }
-    static void
-    drawBoneMoveHandle(IPrimitive2D *primitive, const Project *project)
-    {
-        const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
-        nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
-                     thickness = project->logicalScaleCircleRadius();
-        primitive->strokeLine(center, Vector2(center.x + length, center.y), Vector4(1, 0, 0, 1), thickness);
-        primitive->strokeLine(center, Vector2(center.x, center.y - length), Vector4(0, 1, 0, 1), thickness);
-    }
-    static void
-    drawBoneRotateHandle(IPrimitive2D *primitive, const Project *project)
-    {
-        const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
-        nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
-                     thickness = project->logicalScaleCircleRadius() * 1.5f;
-        const nanoem_f32_t kappa = 0.5522847498307933984022516322796f;
-        const nanoem_f32_t x1 = center.x - radius;
-        const nanoem_f32_t y1 = center.y - radius;
-        const nanoem_f32_t x2 = center.x + radius;
-        const nanoem_f32_t y2 = center.y + radius;
-        primitive->strokeLine(
-            Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y), Vector4(0, 0, 1, 1), thickness);
-        primitive->strokeLine(
-            Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius), Vector4(1, 0, 0, 1), thickness);
-        primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kappa),
-            Vector2(center.x - radius * kappa, y1), Vector2(center.x + 1, y1), Vector4(0, 1, 0, 1), thickness);
-        primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kappa, y1),
-            Vector2(x2, center.y - radius * kappa), Vector2(x2, center.y + 1), Vector4(0, 1, 0, 1), thickness);
-        primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kappa),
-            Vector2(center.x + radius * kappa, y2), Vector2(center.x - 1, y2), Vector4(0, 1, 0, 1), thickness);
-        primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kappa, y2),
-            Vector2(x1, center.y + radius * kappa), Vector2(x1, center.y - 1), Vector4(0, 1, 0, 1), thickness);
-    }
-    static void
-    drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project)
-    {
-        const Vector2SI32 &center = deviceScaleCursorActiveBoneInViewport(project);
-        if (center.x != 0 && center.y != 0) {
-            const nanoem_f32_t radius = project->deviceScaleCircleRadius(), extent = radius * 2;
-            primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), activeBoneColor);
-        }
-    }
-    static void
-    drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project)
-    {
-        const Vector2 center(camera->toDeviceScreenCoordinateInViewport(camera->boundLookAt()));
-        const nanoem_f32_t circleRadius = project->deviceScaleCircleRadius();
-        const nanoem_f32_t innerRadius = circleRadius * 0.65f;
-        primitive->strokeCircle(
-            Vector4(center.x - circleRadius, center.y - circleRadius, circleRadius * 2, circleRadius * 2),
-            Vector4(1, 0, 0, 1), 2.0f);
-        primitive->fillCircle(Vector4(center.x - innerRadius, center.y - innerRadius, innerRadius * 2, innerRadius * 2),
-            Vector4(1, 0, 0, 1));
-    }
+    static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project);
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Project *project);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Project *project);
+    static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
+    static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
 };
+
+Vector2SI32
+DrawUtil::deviceScaleCursorActiveBoneInViewport(const Project *project)
+{
+    Vector2SI32 deviceScaleCursor(0);
+    if (const Model *model = project->activeModel()) {
+        if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
+            deviceScaleCursor =
+                project->activeCamera()->toDeviceScreenCoordinateInViewport(bone->worldTransformOrigin());
+        }
+    }
+    return deviceScaleCursor;
+}
+
+void
+DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Project *project)
+{
+    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
+    nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f, thickness = project->logicalScaleCircleRadius();
+    primitive->strokeLine(center, Vector2(center.x + length, center.y), Vector4(1, 0, 0, 1), thickness);
+    primitive->strokeLine(center, Vector2(center.x, center.y - length), Vector4(0, 1, 0, 1), thickness);
+}
+
+void
+DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Project *project)
+{
+    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
+    nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
+                 thickness = project->logicalScaleCircleRadius() * 1.5f;
+    const nanoem_f32_t kappa = 0.5522847498307933984022516322796f;
+    const nanoem_f32_t x1 = center.x - radius;
+    const nanoem_f32_t y1 = center.y - radius;
+    const nanoem_f32_t x2 = center.x + radius;
+    const nanoem_f32_t y2 = center.y + radius;
+    primitive->strokeLine(
+        Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y), Vector4(0, 0, 1, 1), thickness);
+    primitive->strokeLine(
+        Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius), Vector4(1, 0, 0, 1), thickness);
+    primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kappa),
+        Vector2(center.x - radius * kappa, y1), Vector2(center.x + 1, y1), Vector4(0, 1, 0, 1), thickness);
+    primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kappa, y1),
+        Vector2(x2, center.y - radius * kappa), Vector2(x2, center.y + 1), Vector4(0, 1, 0, 1), thickness);
+    primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kappa),
+        Vector2(center.x + radius * kappa, y2), Vector2(center.x - 1, y2), Vector4(0, 1, 0, 1), thickness);
+    primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kappa, y2),
+        Vector2(x1, center.y + radius * kappa), Vector2(x1, center.y - 1), Vector4(0, 1, 0, 1), thickness);
+}
+
+void
+DrawUtil::drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project)
+{
+    const Vector2SI32 &center = deviceScaleCursorActiveBoneInViewport(project);
+    if (center.x != 0 && center.y != 0) {
+        const nanoem_f32_t radius = project->deviceScaleCircleRadius(), extent = radius * 2;
+        primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), activeBoneColor);
+    }
+}
+
+void
+DrawUtil::drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project)
+{
+    const Vector2 center(camera->toDeviceScreenCoordinateInViewport(camera->boundLookAt()));
+    const nanoem_f32_t circleRadius = project->deviceScaleCircleRadius();
+    const nanoem_f32_t innerRadius = circleRadius * 0.65f;
+    primitive->strokeCircle(
+        Vector4(center.x - circleRadius, center.y - circleRadius, circleRadius * 2, circleRadius * 2),
+        Vector4(1, 0, 0, 1), 2.0f);
+    primitive->fillCircle(
+        Vector4(center.x - innerRadius, center.y - innerRadius, innerRadius * 2, innerRadius * 2), Vector4(1, 0, 0, 1));
+}
 
 } /* namespace anonymous */
 
@@ -1750,6 +1973,22 @@ StateController::setSecondaryDraggingState(Project *project, const Vector2SI32 &
         }
         setState(state);
     }
+}
+
+nanoem_f32_t
+BaseDraggingObjectState::scaleFactor(const Vector3SI32 &logicalScalePosition) NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t scaleFactor;
+    if (EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeControl, logicalScalePosition.z)) {
+        scaleFactor = 0.1f;
+    }
+    else if (EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z)) {
+        scaleFactor = 10.0f;
+    }
+    else {
+        scaleFactor = 1.0f;
+    }
+    return scaleFactor;
 }
 
 } /* namespace nanoem */
