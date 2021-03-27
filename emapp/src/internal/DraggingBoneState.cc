@@ -255,7 +255,7 @@ TranslateActiveBoneState::transform(const Vector2SI32 &logicalPosition)
     Vector3 localTranslation(m_baseLocalTranslation);
     if (glm::any(areAxisTypeSelected)) {
         const Vector2SI32 movingCursorPosition(logicalPosition * Vector2SI32(areAxisTypeSelected)),
-                fixedCursorPosition(lastBoneCursorPosition() * Vector2SI32(glm::not_(areAxisTypeSelected)));
+            fixedCursorPosition(lastBoneCursorPosition() * Vector2SI32(glm::not_(areAxisTypeSelected)));
         localTranslation += cursorMoveDelta(movingCursorPosition + fixedCursorPosition);
     }
     else {

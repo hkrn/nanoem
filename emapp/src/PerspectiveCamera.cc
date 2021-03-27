@@ -288,7 +288,7 @@ Vector2SI32
 PerspectiveCamera::toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
     const Vector4UI16 viewport(m_project->logicalScaleUniformedViewportImageRect()),
-            viewportSize(0, 0, viewport.z, viewport.w);
+        viewportSize(0, 0, viewport.z, viewport.w);
     const Vector3 coordinate(glm::project(value, m_viewMatrix, m_projectionMatrix, viewportSize));
     return Vector2SI32(viewport.x + coordinate.x, viewport.y + viewport.w - coordinate.y);
 }
