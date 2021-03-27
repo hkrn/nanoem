@@ -299,7 +299,7 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalPosition)
         break;
     }
     case Model::kAxisY: {
-        const nanoem_f32_t &angle = angleCursorFromBone(logicalPosition);
+        const nanoem_f32_t angle(angleCursorFromBone(logicalPosition));
         const Vector3 axisY(handleDragAxis(activeBone, 1));
         orientation = glm::angleAxis(angle, axisY);
         break;
@@ -333,7 +333,7 @@ OrientateActiveBoneState::angleCursorFromBone(const Vector2SI32 &value) const
     const Vector2 p1(glm::normalize(Vector2(value - lastBoneCursorPosition())));
     nanoem_f32_t crossProduct = p1.x * p0.y - p1.y * p0.x;
     nanoem_f32_t angle = glm::sign(crossProduct) * glm::acos(glm::dot(p0, p1));
-    return angle;
+    return glm::isnan(angle) ? 0 : angle;
 }
 
 AxisAlignedTranslateActiveBoneState::AxisAlignedTranslateActiveBoneState(
