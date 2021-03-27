@@ -41,11 +41,11 @@ public:
     virtual void update() = 0;
     virtual void synchronizeParameters(const Motion *motion, const nanoem_frame_index_t frameIndex) = 0;
     virtual void getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2 toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Ray createRay(const Vector2 &cursor, nanoem_f32_t zfar = FLT_MAX) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual bool intersectsRay(const Ray &ray, nanoem_f32_t intersectDistance) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector2SI32 toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector2SI32 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector2SI32 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Ray createRay(const Vector2SI32 &cursor) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual bool castRay(const Vector2SI32 &position, Vector3 &intersection) const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_f32_t aspectRatio() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_f32_t zfar() const NANOEM_DECL_NOEXCEPT = 0;
 

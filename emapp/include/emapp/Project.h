@@ -585,7 +585,8 @@ public:
     Vector2UI16 logicalScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 logicalViewportPadding() const NANOEM_DECL_NOEXCEPT;
-    void setLogicalViewportPadding(const Vector2UI16 value);
+    void setLogicalViewportPadding(const Vector2UI16 &value);
+    Vector2SI32 resolveLogicalCursorPositionInViewport(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT;
     Vector4 viewportBackgroundColor() const NANOEM_DECL_NOEXCEPT;
     void setViewportBackgroundColor(const Vector4 &value);
     nanoem_f64_t currentUptimeSeconds() const NANOEM_DECL_NOEXCEPT;

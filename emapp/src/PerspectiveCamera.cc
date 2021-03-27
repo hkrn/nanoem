@@ -277,60 +277,61 @@ PerspectiveCamera::getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) cons
 }
 
 Vector3
-PerspectiveCamera::unprojected(const Vector3 &value, nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
+PerspectiveCamera::unprojected(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector4 viewport(m_project->logicalScaleUniformedViewportImageRect());
-    const Vector3 coordinate(glm::unProject(value, m_viewMatrix, internalPerspective(zfar), viewport));
+    const Vector4 viewport(0, 0, m_project->logicalScaleUniformedViewportImageSize());
+    const Vector3 coordinate(glm::unProject(value, m_viewMatrix, m_projectionMatrix, viewport));
     return coordinate;
 }
 
-Vector2
+Vector2SI32
 PerspectiveCamera::toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector4UI16 viewport(m_project->logicalScaleUniformedViewportImageRect());
-    const Vector3 coordinate(
-        glm::project(value, m_viewMatrix, internalPerspective(FLT_MAX), Vector4(0, 0, viewport.z, viewport.w)));
-    return Vector2(viewport.x + coordinate.x, viewport.y + viewport.w - coordinate.y);
+    const Vector4UI16 viewport(m_project->logicalScaleUniformedViewportImageRect()),
+            viewportSize(0, 0, viewport.z, viewport.w);
+    const Vector3 coordinate(glm::project(value, m_viewMatrix, m_projectionMatrix, viewportSize));
+    return Vector2SI32(viewport.x + coordinate.x, viewport.y + viewport.w - coordinate.y);
 }
 
-Vector2
+Vector2SI32
 PerspectiveCamera::toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
     const nanoem_f32_t scaleFactor = m_project->deviceScaleViewportScaleFactor();
     const Vector4UI16 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
     const Vector2 imageSize(Vector2(m_project->deviceScaleUniformedViewportImageSize()) * scaleFactor);
-    nanoem_f32_t x = (layoutRect.z - imageSize.x) * 0.5f, y = (layoutRect.w - imageSize.y) * 0.5f;
+    const nanoem_f32_t x = (layoutRect.z - imageSize.x) * 0.5f, y = (layoutRect.w - imageSize.y) * 0.5f;
     const Vector2 coordinate(
         glm::project(value, m_viewMatrix, m_projectionMatrix, Vector4(0, 0, imageSize.x, imageSize.y)));
-    return Vector2(x + coordinate.x, layoutRect.w - coordinate.y - y);
+    return Vector2SI32(x + coordinate.x, layoutRect.w - coordinate.y - y);
 }
 
-Vector2
+Vector2SI32
 PerspectiveCamera::toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector4UI16 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
-    return Vector2(layoutRect) + toDeviceScreenCoordinateInViewport(value);
+    const Vector2SI32 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
+    return layoutRect + toDeviceScreenCoordinateInViewport(value);
 }
 
 Ray
-PerspectiveCamera::createRay(const Vector2 &cursor, nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
+PerspectiveCamera::createRay(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT
 {
-    Vector2 coord;
-    coord.x = cursor.x;
-    coord.y = m_project->logicalScaleUniformedViewportImageSize().y - cursor.y;
+    const Vector2SI32 coord(m_project->resolveLogicalCursorPositionInViewport(value));
     Ray ray;
-    ray.from = unprojected(Vector3(coord, -1), zfar);
-    ray.to = unprojected(Vector3(coord, 1), zfar);
+    ray.from = unprojected(Vector3(coord, 0));
+    ray.to = unprojected(Vector3(coord, 1 - Constants::kEpsilon));
     ray.direction =
         glm::abs(glm::distance(ray.to, ray.from)) > 0 ? glm::normalize(ray.to - ray.from) : Constants::kUnitZ;
     return ray;
 }
 
 bool
-PerspectiveCamera::intersectsRay(const Ray &ray, nanoem_f32_t intersectDistance) const NANOEM_DECL_NOEXCEPT
+PerspectiveCamera::castRay(const Vector2SI32 &position, Vector3 &intersection) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector3 normal(glm::normalize(-Constants::kUnitZ * glm::max(m_distance, 1.0f)));
-    return glm::intersectRayPlane(ray.from, ray.direction, Constants::kZeroV3, normal, intersectDistance);
+    const Ray ray(createRay(position));
+    float distance;
+    bool intersected = glm::intersectRayPlane(ray.from, ray.direction, Constants::kZeroV3, -direction(), distance);
+    intersection = ray.from + ray.direction * distance;
+    return intersected;
 }
 
 nanoem_f32_t
@@ -608,22 +609,6 @@ void
 PerspectiveCamera::setDirty(bool value)
 {
     m_dirty = value;
-}
-
-Matrix4x4
-PerspectiveCamera::internalPerspective(nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
-{
-    const Vector2 size(m_project->logicalScaleUniformedViewportImageSize());
-    return size.x > 0 && size.y > 0 ? glm::perspectiveFov(m_fov.second, size.x, size.y, 0.5f, zfar)
-                                    : Constants::kIdentity;
-}
-
-Matrix4x4
-PerspectiveCamera::internalDevicePerspective(nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
-{
-    const Vector2 size(m_project->deviceScaleUniformedViewportImageSize());
-    return size.x > 0 && size.y > 0 ? glm::perspectiveFov(m_fov.second, size.x, size.y, 0.5f, zfar)
-                                    : Constants::kIdentity;
 }
 
 nanoem_f32_t

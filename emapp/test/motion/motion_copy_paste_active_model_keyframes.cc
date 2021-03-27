@@ -64,7 +64,7 @@ TEST_CASE("motion_copy_paste_active_model_keyframes", "[emapp][motion]")
             const nanoem_motion_bone_keyframe_t *boneKeyframe = first->findBoneKeyframe(activeModel, bonePtr, 1337);
             CHECK(boneKeyframe);
             CHECK(glm::all(glm::epsilonEqual(glm::make_vec3(nanoemMotionBoneKeyframeGetTranslation(boneKeyframe)),
-                Vector3(1.004802, 0.995140, -0.000217), Vector3(0.000001f))));
+                Vector3(1.004809, -1.004809, 0), Vector3(0.000001f))));
             CHECK(glm::all(glm::epsilonEqual(glm::make_vec4(nanoemMotionBoneKeyframeGetOrientation(boneKeyframe)),
                 Vector4(0.173648, 0, 0, 0.984808), Vector4(0.000001f))));
             const nanoem_motion_morph_keyframe_t *morphKeyframe = first->findMorphKeyframe(activeModel, morphPtr, 1337);
@@ -89,7 +89,7 @@ TEST_CASE("motion_copy_paste_active_model_keyframes", "[emapp][motion]")
             const nanoem_motion_bone_keyframe_t *boneKeyframe = first->findBoneKeyframe(activeModel, bonePtr, 1337);
             CHECK(boneKeyframe);
             CHECK(glm::all(glm::epsilonEqual(glm::make_vec3(nanoemMotionBoneKeyframeGetTranslation(boneKeyframe)),
-                Vector3(1.004802, 0.995140, -0.000217), Vector3(0.000001f))));
+                Vector3(1.004809, -1.004809, 0), Vector3(0.000001f))));
             CHECK(glm::all(glm::epsilonEqual(glm::make_vec4(nanoemMotionBoneKeyframeGetOrientation(boneKeyframe)),
                 Vector4(0.173648, 0, 0, 0.984808), Vector4(0.000001f))));
             const nanoem_motion_morph_keyframe_t *morphKeyframe = first->findMorphKeyframe(activeModel, morphPtr, 1337);

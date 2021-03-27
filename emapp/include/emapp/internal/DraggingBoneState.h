@@ -43,7 +43,7 @@ protected:
         const nanoem_model_bone_t *bone, const Model *model) const NANOEM_DECL_NOEXCEPT;
     Model *activeModel() const NANOEM_DECL_NOEXCEPT;
     Vector3 accumulatedDeltaPosition() const NANOEM_DECL_NOEXCEPT;
-    Vector3 cursorMoveDelta(const Vector2 &value, const Model *model) const NANOEM_DECL_NOEXCEPT;
+    Vector3 cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT;
     Vector2 cursorDelta(const Vector2 &logicalPosition) const NANOEM_DECL_NOEXCEPT;
     Vector2SI32 pressedCursorPosition() const NANOEM_DECL_NOEXCEPT;
     Vector2SI32 lastBoneCursorPosition() const NANOEM_DECL_NOEXCEPT;
@@ -66,8 +66,12 @@ class TranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     TranslateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
         const Vector2 &lastBoneCursorPosition);
+
     void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Vector3 m_baseLocalTranslation;
 };
 
 class OrientateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
@@ -76,8 +80,10 @@ public:
         const Vector2 &lastBoneCursorPosition);
 
     void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
-    nanoem_f32_t angleCursorFromBone(const Vector2SI32 &value) const;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    nanoem_f32_t angleCursorFromBone(const Vector2SI32 &value) const;
 };
 
 class AxisAlignedTranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {

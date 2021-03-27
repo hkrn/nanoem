@@ -195,17 +195,13 @@ DraggingBoneState::accumulatedDeltaPosition() const NANOEM_DECL_NOEXCEPT
 }
 
 Vector3
-DraggingBoneState::cursorMoveDelta(const Vector2 &value, const Model *model) const NANOEM_DECL_NOEXCEPT
+DraggingBoneState::cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT
 {
+    Vector3 intersection, lastPressedPosition;
     const ICamera *camera = m_project->activeCamera();
-    const Ray &ray = camera->createRay(value, camera->zfar());
-    const nanoem_model_bone_t *bonePtr = model->activeBone();
-    model::Bone *bone = model::Bone::cast(bonePtr);
-    const Vector3 origin(model::Bone::origin(bonePtr));
-    const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
-    const Vector3 closestPoint(glm::closestPointOnLine(position, ray.from, ray.to));
-    const Vector3 delta(closestPoint - origin);
-    return delta;
+    camera->castRay(value, intersection);
+    camera->castRay(m_pressedCursorPosition, lastPressedPosition);
+    return intersection - lastPressedPosition;
 }
 
 Vector2
@@ -243,30 +239,33 @@ DraggingBoneState::setCameraLocked(bool value)
 TranslateActiveBoneState::TranslateActiveBoneState(
     Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2 &lastBoneCursorPosition)
     : DraggingBoneState(project, model, pressedCursorPosition, lastBoneCursorPosition)
+    , m_baseLocalTranslation(0)
 {
+    if (const model::Bone *activeBone = model::Bone::cast(model->activeBone())) {
+        m_baseLocalTranslation = activeBone->localUserTranslation();
+    }
 }
 
 void
 TranslateActiveBoneState::transform(const Vector2SI32 &logicalPosition)
 {
     const Model *model = activeModel();
-    Model::AxisType axis(model->transformAxisType());
-    Vector3 translation;
-    const glm::bvec2 axisType(axis == Model::kAxisX, axis == Model::kAxisY);
-    if (glm::any(axisType)) {
-        const Vector2 &d =
-            ((logicalPosition - pressedCursorPosition()) + lastBoneCursorPosition()) * Vector2SI32(axisType);
-        const Vector2 b(lastBoneCursorPosition() * Vector2SI32(glm::not_(axisType)));
-        translation = cursorMoveDelta(d + b, model);
+    const Model::AxisType axis(model->transformAxisType());
+    const glm::bvec2 areAxisTypeSelected(axis == Model::kAxisX, axis == Model::kAxisY);
+    Vector3 localTranslation(m_baseLocalTranslation);
+    if (glm::any(areAxisTypeSelected)) {
+        const Vector2SI32 movingCursorPosition(logicalPosition * Vector2SI32(areAxisTypeSelected)),
+                fixedCursorPosition(lastBoneCursorPosition() * Vector2SI32(glm::not_(areAxisTypeSelected)));
+        localTranslation += cursorMoveDelta(movingCursorPosition + fixedCursorPosition);
     }
     else {
-        translation = cursorMoveDelta(logicalPosition, model);
+        localTranslation += cursorMoveDelta(logicalPosition);
     }
     const nanoem_model_bone_t *activeBone = model->activeBone();
     const model::Bone::List &bones =
         ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet());
     if (!bones.empty()) {
-        performTranslationTransform(tinystl::make_pair(translation, activeBone), bones);
+        performTranslationTransform(tinystl::make_pair(localTranslation, activeBone), bones);
     }
 }
 
@@ -321,6 +320,12 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalPosition)
     }
 }
 
+const char *
+OrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "nanoem.gui.viewport.bone.orientate-active-bone";
+}
+
 nanoem_f32_t
 OrientateActiveBoneState::angleCursorFromBone(const Vector2SI32 &value) const
 {
@@ -329,12 +334,6 @@ OrientateActiveBoneState::angleCursorFromBone(const Vector2SI32 &value) const
     nanoem_f32_t crossProduct = p1.x * p0.y - p1.y * p0.x;
     nanoem_f32_t angle = glm::sign(crossProduct) * glm::acos(glm::dot(p0, p1));
     return angle;
-}
-
-const char *
-OrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
-{
-    return "nanoem.gui.viewport.bone.orientate-active-bone";
 }
 
 AxisAlignedTranslateActiveBoneState::AxisAlignedTranslateActiveBoneState(
