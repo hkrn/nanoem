@@ -23,7 +23,7 @@ namespace internal {
 class DraggingBoneState : public IDraggingState, private NonCopyable {
 public:
     DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2 &lastBoneCursorPosition);
+        const Vector2SI32 &lastBoneCursorPosition);
     ~DraggingBoneState();
 
     void commit(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
@@ -65,7 +65,7 @@ private:
 class TranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     TranslateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2 &lastBoneCursorPosition);
+        const Vector2SI32 &lastBoneCursorPosition);
 
     void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -77,7 +77,7 @@ private:
 class OrientateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     OrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2 &lastBoneCursorPosition);
+        const Vector2SI32 &lastBoneCursorPosition);
 
     void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;

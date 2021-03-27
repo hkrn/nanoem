@@ -26,7 +26,7 @@ namespace nanoem {
 namespace internal {
 
 DraggingBoneState::DraggingBoneState(
-    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2 &lastBoneCursorPosition)
+    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &lastBoneCursorPosition)
     : m_project(project)
     , m_model(model)
     , m_pressedCursorPosition(pressedCursorPosition)
@@ -237,7 +237,7 @@ DraggingBoneState::setCameraLocked(bool value)
 }
 
 TranslateActiveBoneState::TranslateActiveBoneState(
-    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2 &lastBoneCursorPosition)
+    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &lastBoneCursorPosition)
     : DraggingBoneState(project, model, pressedCursorPosition, lastBoneCursorPosition)
     , m_baseLocalTranslation(0)
 {
@@ -276,7 +276,7 @@ TranslateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
 }
 
 OrientateActiveBoneState::OrientateActiveBoneState(
-    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2 &lastBoneCursorPosition)
+    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &lastBoneCursorPosition)
     : DraggingBoneState(project, model, pressedCursorPosition, lastBoneCursorPosition)
 {
 }

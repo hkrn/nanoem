@@ -322,10 +322,9 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
     else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
         const ICamera *camera = project->activeCamera();
         const model::Bone *bone = model::Bone::cast(bonePtr);
-        const Vector2 &lastBoneCursorPosition =
-            camera->toScreenCoordinate(Vector3(model->worldTransform(bone->worldTransform())[3]));
-        if (model->transformAxisType() != Model::kAxisTypeMaxEnum &&
-            !glm::isNull(lastBoneCursorPosition, Constants::kEpsilon)) {
+        const Vector3 bonePosition(model->worldTransform(bone->worldTransform())[3]);
+        const Vector2SI32 lastBoneCursorPosition(camera->toScreenCoordinate(bonePosition));
+        if (model->transformAxisType() != Model::kAxisTypeMaxEnum) {
             const Project::EditingMode editingMode = project->editingMode();
             const IModelObjectSelection *selection = model->selection();
             if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
