@@ -4673,7 +4673,8 @@ Project::setLogicalViewportPadding(const Vector2UI16 &value)
 Vector2SI32
 Project::resolveLogicalCursorPositionInViewport(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector2UI16 size(m_uniformViewportImageSize.first), offset(m_uniformViewportLayoutRect.first),
+    const Vector2UI16 size(m_uniformViewportImageSize.first),
+        offset(Vector2UI16(m_uniformViewportLayoutRect.first) + m_viewportPadding),
         coord(value.x - offset.x, size.y - (value.y - offset.y));
     return coord;
 }
