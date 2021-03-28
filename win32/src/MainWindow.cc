@@ -2507,7 +2507,8 @@ MainWindow::recenterCursor()
     if (isCursorHidden()) {
         POINT deviceCenterPoint;
         getWindowCenterPoint(&deviceCenterPoint);
-        const Vector2SI32 logicalCenterPoint(Vector2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio());
+        const Vector2SI32 logicalCenterPoint(
+            Vector2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio());
         if (m_lastLogicalCursorPosition != logicalCenterPoint) {
             setCursorPosition(deviceCenterPoint);
             m_lastLogicalCursorPosition = logicalCenterPoint;

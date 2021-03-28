@@ -362,7 +362,7 @@ DraggingBoneState::deviceScaleCursorActiveBoneInWindow(const Project *project) N
 }
 
 Vector2SI32
-DraggingBoneState::logicalScaleCursorActiveBoneInWindow(const Project* project) NANOEM_DECL_NOEXCEPT
+DraggingBoneState::logicalScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT
 {
     return Vector2(deviceScaleCursorActiveBoneInWindow(project)) * (1.0f / project->windowDevicePixelRatio());
 }
@@ -894,7 +894,8 @@ BaseSelectionState::onMove(const Vector3SI32 &logicalScalePosition, const Vector
 {
     if (Project *project = m_stateControllerPtr->currentProject()) {
         project->setLogicalPixelMovingCursorPosition(logicalScalePosition);
-        const Vector4SI32 rect(m_lastLogicalScalePosition, Vector2SI32(logicalScalePosition) - m_lastLogicalScalePosition);
+        const Vector4SI32 rect(
+            m_lastLogicalScalePosition, Vector2SI32(logicalScalePosition) - m_lastLogicalScalePosition);
         currentSelector()->update(rect, project);
     }
 }
@@ -905,7 +906,8 @@ BaseSelectionState::onRelease(const Vector3SI32 &logicalScalePosition)
     if (Project *project = m_stateControllerPtr->currentProject()) {
         bool removeAll =
             EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z) ? false : true;
-        const Vector4SI32 rect(m_lastLogicalScalePosition, Vector2SI32(logicalScalePosition) - m_lastLogicalScalePosition);
+        const Vector4SI32 rect(
+            m_lastLogicalScalePosition, Vector2SI32(logicalScalePosition) - m_lastLogicalScalePosition);
         currentSelector()->end(rect, project);
         if (Model *model = project->activeModel()) {
             commitSelection(model, project, removeAll);
