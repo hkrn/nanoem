@@ -1222,8 +1222,7 @@ ImGuiWindow::setSGXDebbugerEnabled(bool value)
 Vector4
 ImGuiWindow::createViewportImageRect(const Project *project, const Vector4 &viewportLayoutRect) NANOEM_DECL_NOEXCEPT
 {
-    const Vector2 scaleFactor(project->deviceScaleViewportScaleFactor()),
-        viewportImageSize(scaleFactor * Vector2(project->deviceScaleUniformedViewportImageSize()));
+    const Vector2 viewportImageSize(project->deviceScaleUniformedViewportImageSize());
     nanoem_f32_t x = viewportLayoutRect.x, y = viewportLayoutRect.y;
     x += (viewportLayoutRect.z - viewportImageSize.x) * 0.5f;
     y += (viewportLayoutRect.w - viewportImageSize.y) * 0.5f;

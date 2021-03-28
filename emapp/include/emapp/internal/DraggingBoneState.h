@@ -26,7 +26,7 @@ public:
         const Vector2SI32 &lastBoneCursorPosition);
     ~DraggingBoneState();
 
-    void commit(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void commit(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
 
     nanoem_f32_t scaleFactor() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setScaleFactor(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
@@ -44,10 +44,10 @@ protected:
     Model *activeModel() const NANOEM_DECL_NOEXCEPT;
     Vector3 accumulatedDeltaPosition() const NANOEM_DECL_NOEXCEPT;
     Vector3 cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT;
-    Vector2 cursorDelta(const Vector2 &logicalPosition) const NANOEM_DECL_NOEXCEPT;
+    Vector2 cursorDelta(const Vector2 &logicalScalePosition) const NANOEM_DECL_NOEXCEPT;
     Vector2SI32 pressedCursorPosition() const NANOEM_DECL_NOEXCEPT;
     Vector2SI32 lastBoneCursorPosition() const NANOEM_DECL_NOEXCEPT;
-    void updateLastCursorPosition(const Vector2 &logicalPosition, const Vector3 &delta);
+    void updateLastCursorPosition(const Vector2 &logicalScalePosition, const Vector3 &delta);
     bool isShouldSetCursorPosition() const NANOEM_DECL_NOEXCEPT;
     void setShouldSetCursorPosition(bool value);
 
@@ -70,7 +70,7 @@ public:
     TranslateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
         const Vector2SI32 &lastBoneCursorPosition);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
@@ -82,7 +82,7 @@ public:
     OrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
         const Vector2SI32 &lastBoneCursorPosition);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
@@ -94,7 +94,7 @@ public:
     AxisAlignedTranslateActiveBoneState(
         Project *project, Model *model, const Vector2 &pressedCursorPosition, int axisIndex);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
@@ -106,7 +106,7 @@ public:
     AxisAlignedOrientateActiveBoneState(
         Project *project, Model *model, const Vector2 &pressedCursorPosition, int axisIndex);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:

@@ -4655,7 +4655,8 @@ Project::logicalScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT
 Vector2UI16
 Project::deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT
 {
-    return Vector2(m_uniformViewportImageSize.first) * viewportDevicePixelRatio();
+    const nanoem_f32_t dpr = viewportDevicePixelRatio(), s = windowDevicePixelRatio() / dpr;
+    return Vector2(m_uniformViewportImageSize.first) * dpr * s;
 }
 
 Vector2UI16

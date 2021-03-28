@@ -48,13 +48,13 @@ protected:
 
     StateController *m_stateControllerPtr;
     BaseApplicationService *m_applicationPtr;
-    Vector2SI32 m_lastPosition;
+    Vector2SI32 m_lastLogicalScalePosition;
 };
 
 BaseState::BaseState(StateController *stateController, BaseApplicationService *application)
     : m_stateControllerPtr(stateController)
     , m_applicationPtr(application)
-    , m_lastPosition(0)
+    , m_lastLogicalScalePosition(0)
 {
     nanoem_parameter_assert(m_stateControllerPtr, "must not be nullptr");
     nanoem_parameter_assert(m_applicationPtr, "must not be nullptr");
@@ -124,7 +124,7 @@ BaseDraggingObjectState::onMove(const Vector3SI32 &logicalScalePosition, const V
     else if (canUpdateCameraAngle()) {
         updateCameraAngle(delta);
     }
-    m_lastPosition = logicalScalePosition;
+    m_lastLogicalScalePosition = logicalScalePosition;
 }
 
 void
@@ -138,7 +138,7 @@ BaseDraggingObjectState::onRelease(const Vector3SI32 &logicalScalePosition)
             model->setTransformAxisType(Model::kAxisTypeMaxEnum);
         }
     }
-    m_lastPosition = Vector2();
+    m_lastLogicalScalePosition = Vector2();
 }
 
 internal::IDraggingState *
@@ -242,6 +242,7 @@ public:
 
 private:
     static Vector2SI32 deviceScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT;
+    static Vector2SI32 logicalScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT;
     static bool handlePointerIntersects(const Vector2SI32 &logicalScalePosition, const Project *project,
         const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT;
     static Model::AxisType selectTranslationAxisType(
@@ -320,10 +321,7 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
         draggingState = createDraggingState(rectangleType, logicalScalePosition, project);
     }
     else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
-        const ICamera *camera = project->activeCamera();
-        const model::Bone *bone = model::Bone::cast(bonePtr);
-        const Vector3 bonePosition(model->worldTransform(bone->worldTransform())[3]);
-        const Vector2SI32 lastBoneCursorPosition(camera->toDeviceScreenCoordinateInWindow(bonePosition));
+        const Vector2SI32 lastBoneCursorPosition(logicalScaleCursorActiveBoneInWindow(project));
         if (model->transformAxisType() != Model::kAxisTypeMaxEnum) {
             const Project::EditingMode editingMode = project->editingMode();
             const IModelObjectSelection *selection = model->selection();
@@ -363,6 +361,12 @@ DraggingBoneState::deviceScaleCursorActiveBoneInWindow(const Project *project) N
     return deviceScaleCursor;
 }
 
+Vector2SI32
+DraggingBoneState::logicalScaleCursorActiveBoneInWindow(const Project* project) NANOEM_DECL_NOEXCEPT
+{
+    return Vector2(deviceScaleCursorActiveBoneInWindow(project)) * (1.0f / project->windowDevicePixelRatio());
+}
+
 bool
 DraggingBoneState::handlePointerIntersects(const Vector2SI32 &logicalScalePosition, const Project *project,
     const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT
@@ -398,7 +402,7 @@ Model::AxisType
 DraggingBoneState::selectTranslationAxisType(
     const Vector2SI32 &deviceScalePosition, const Project *project) NANOEM_DECL_NOEXCEPT
 {
-    const Vector2SI32 &center = deviceScaleCursorActiveBoneInWindow(project);
+    const Vector2SI32 center(deviceScaleCursorActiveBoneInWindow(project));
     nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f, width = project->deviceScaleCircleRadius(),
                  offset = width * 0.5f;
     const Vector4SI32 rectCenter(center.x - offset, center.y - offset, width, width),
@@ -881,7 +885,7 @@ BaseSelectionState::onPress(const Vector3SI32 &logicalScalePosition)
             const Vector4SI32 rect(logicalScalePosition.x, logicalScalePosition.y, 0, 0);
             currentSelector()->begin(rect, project);
         }
-        m_lastPosition = logicalScalePosition;
+        m_lastLogicalScalePosition = logicalScalePosition;
     }
 }
 
@@ -890,7 +894,7 @@ BaseSelectionState::onMove(const Vector3SI32 &logicalScalePosition, const Vector
 {
     if (Project *project = m_stateControllerPtr->currentProject()) {
         project->setLogicalPixelMovingCursorPosition(logicalScalePosition);
-        const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
+        const Vector4SI32 rect(m_lastLogicalScalePosition, Vector2SI32(logicalScalePosition) - m_lastLogicalScalePosition);
         currentSelector()->update(rect, project);
     }
 }
@@ -901,13 +905,13 @@ BaseSelectionState::onRelease(const Vector3SI32 &logicalScalePosition)
     if (Project *project = m_stateControllerPtr->currentProject()) {
         bool removeAll =
             EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScalePosition.z) ? false : true;
-        const Vector4SI32 rect(m_lastPosition, Vector2SI32(logicalScalePosition) - m_lastPosition);
+        const Vector4SI32 rect(m_lastLogicalScalePosition, Vector2SI32(logicalScalePosition) - m_lastLogicalScalePosition);
         currentSelector()->end(rect, project);
         if (Model *model = project->activeModel()) {
             commitSelection(model, project, removeAll);
             model->setPivotMatrix(pivotMatrix(model));
         }
-        m_lastPosition = Vector2();
+        m_lastLogicalScalePosition = Vector2();
     }
 }
 
