@@ -2444,20 +2444,20 @@ MainWindow::lockCursor(LPPOINT devicePoint)
 }
 
 void
-MainWindow::disableCursor(const Vector2SI32 &position)
+MainWindow::disableCursor(const Vector2SI32 &deviceScalePosition)
 {
     POINT devicePoint;
     lockCursor(&devicePoint);
-    m_virtualLogicalCursorPosition = position;
+    m_virtualLogicalCursorPosition = deviceScalePosition;
     m_lastLogicalCursorPosition = Vector2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio();
-    m_restoreHiddenDeviceCursorPosition = Vector2(position) * m_devicePixelRatio;
+    m_restoreHiddenDeviceCursorPosition = Vector2(deviceScalePosition) * m_devicePixelRatio;
     m_cursorHidden.first = true;
 }
 
 void
-MainWindow::unlockCursor()
+MainWindow::unlockCursor(const Vector2SI32 &deviceScalePosition)
 {
-    POINT devicePoint = { LONG(m_restoreHiddenDeviceCursorPosition.x), LONG(m_restoreHiddenDeviceCursorPosition.y) };
+    POINT devicePoint = { LONG(deviceScalePosition.x), LONG(deviceScalePosition.y) };
     setCursorPosition(devicePoint);
     ClipCursor(nullptr);
     ReleaseCapture();
@@ -2465,15 +2465,17 @@ MainWindow::unlockCursor()
 }
 
 void
-MainWindow::enableCursor(const Vector2SI32 &position)
+MainWindow::enableCursor(const Vector2SI32 &deviceScalePosition)
 {
-    unlockCursor();
-    if (position.x != 0 && position.y != 0) {
-        m_lastLogicalCursorPosition = Vector2(position) * invertedDevicePixelRatio();
+    Vector2SI32 position;
+    if (deviceScalePosition.x != 0 && deviceScalePosition.y != 0) {
+        position = deviceScalePosition;
     }
     else {
-        m_lastLogicalCursorPosition = Vector2(m_restoreHiddenDeviceCursorPosition) * invertedDevicePixelRatio();
+        position = m_restoreHiddenDeviceCursorPosition;
     }
+    unlockCursor(position);
+    m_lastLogicalCursorPosition = Vector2(position) * invertedDevicePixelRatio();
     m_restoreHiddenDeviceCursorPosition = Vector2SI32();
     m_cursorHidden.first = false;
 }
@@ -2493,7 +2495,7 @@ void
 MainWindow::killFocus()
 {
     if (m_cursorHidden.first) {
-        unlockCursor();
+        unlockCursor(Vector2SI32(0));
         m_cursorHidden.first = false;
         m_cursorHidden.second = true;
     }
@@ -2505,7 +2507,7 @@ MainWindow::recenterCursor()
     if (isCursorHidden()) {
         POINT deviceCenterPoint;
         getWindowCenterPoint(&deviceCenterPoint);
-        const Vector2SI32 logicalCenterPoint(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio();
+        const Vector2SI32 logicalCenterPoint(Vector2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio());
         if (m_lastLogicalCursorPosition != logicalCenterPoint) {
             setCursorPosition(deviceCenterPoint);
             m_lastLogicalCursorPosition = logicalCenterPoint;

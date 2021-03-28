@@ -128,9 +128,9 @@ private:
     void centerCursor(LPPOINT devicePoint);
     void updateClipCursorRect();
     void lockCursor(LPPOINT devicePoint);
-    void disableCursor(const Vector2SI32 &position);
-    void unlockCursor();
-    void enableCursor(const Vector2SI32 &position);
+    void disableCursor(const Vector2SI32 &deviceScalePosition);
+    void unlockCursor(const Vector2SI32 &deviceScalePosition);
+    void enableCursor(const Vector2SI32 &deviceScalePosition);
     void setFocus();
     void killFocus();
     void recenterCursor();
