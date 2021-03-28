@@ -1531,7 +1531,12 @@ void
 MainWindow::enableCursor(const glm::i32vec2 &position)
 {
     BX_UNUSED_1(position);
-    internalEnableCursor(m_restoreHiddenCursorPosition);
+    if (position.x != 0 && position.y != 0) {
+        internalEnableCursor(position);
+    }
+    else {
+        internalEnableCursor(m_restoreHiddenCursorPosition);
+    }
     m_restoreHiddenCursorPosition = glm::i32vec2();
     m_cursorHidden.first = false;
 }

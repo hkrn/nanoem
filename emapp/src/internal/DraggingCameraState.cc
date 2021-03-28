@@ -33,13 +33,13 @@ DraggingCameraState::DraggingCameraState(Project *project, ICamera *camera, cons
 }
 
 void
-DraggingCameraState::commit(const Vector2SI32 &logicalPosition)
+DraggingCameraState::commit(const Vector2SI32 & /* logicalPosition */)
 {
     if (m_project->globalCamera() == m_activeCamera) {
         m_project->pushUndo(
             command::UpdateCameraCommand::create(m_project, m_activeCamera, m_lookAt, m_angle, m_distance, m_fov));
     }
-    m_project->eventPublisher()->publishEnableCursorEvent(logicalPosition);
+    m_project->eventPublisher()->publishEnableCursorEvent(Vector2SI32(0));
     m_accumulatedPositionDelta = Vector3(0);
     m_lastPressedCursorPosition = Vector2(0);
 }

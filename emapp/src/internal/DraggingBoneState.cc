@@ -34,6 +34,7 @@ DraggingBoneState::DraggingBoneState(
     , m_accumulatedDeltaPosition(0)
     , m_lastPressedCursorPosition(pressedCursorPosition)
     , m_scaleFactor(1.0f)
+    , m_shouldSetCursorPosition(false)
 {
     nanoem_parameter_assert(m_project, "must NOT be NULL");
     nanoem_parameter_assert(m_model, "must NOT be NULL");
@@ -71,7 +72,7 @@ DraggingBoneState::commit(const Vector2SI32 &logicalPosition)
     }
     m_model->pushUndo(command::TransformBoneCommand::create(
         m_lastBindPose, currentBindPose, ListUtils::toListFromSet(boneSet), m_model, m_project));
-    m_project->eventPublisher()->publishEnableCursorEvent(logicalPosition);
+    m_project->eventPublisher()->publishEnableCursorEvent(logicalPosition * Vector2SI32(m_shouldSetCursorPosition));
     setCameraLocked(false);
 }
 
@@ -229,6 +230,18 @@ DraggingBoneState::updateLastCursorPosition(const Vector2 &logicalPosition, cons
     m_accumulatedDeltaPosition += delta;
 }
 
+bool
+DraggingBoneState::isShouldSetCursorPosition() const NANOEM_DECL_NOEXCEPT
+{
+    return m_shouldSetCursorPosition;
+}
+
+void
+DraggingBoneState::setShouldSetCursorPosition(bool value)
+{
+    m_shouldSetCursorPosition = value;
+}
+
 void
 DraggingBoneState::setCameraLocked(bool value)
 {
@@ -243,6 +256,7 @@ TranslateActiveBoneState::TranslateActiveBoneState(
 {
     if (const model::Bone *activeBone = model::Bone::cast(model->activeBone())) {
         m_baseLocalTranslation = activeBone->localUserTranslation();
+        setShouldSetCursorPosition(true);
     }
 }
 

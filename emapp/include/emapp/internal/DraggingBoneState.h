@@ -48,6 +48,8 @@ protected:
     Vector2SI32 pressedCursorPosition() const NANOEM_DECL_NOEXCEPT;
     Vector2SI32 lastBoneCursorPosition() const NANOEM_DECL_NOEXCEPT;
     void updateLastCursorPosition(const Vector2 &logicalPosition, const Vector3 &delta);
+    bool isShouldSetCursorPosition() const NANOEM_DECL_NOEXCEPT;
+    void setShouldSetCursorPosition(bool value);
 
 private:
     void setCameraLocked(bool value);
@@ -60,6 +62,7 @@ private:
     Vector3 m_accumulatedDeltaPosition;
     Vector2 m_lastPressedCursorPosition;
     nanoem_f32_t m_scaleFactor;
+    bool m_shouldSetCursorPosition;
 };
 
 class TranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {

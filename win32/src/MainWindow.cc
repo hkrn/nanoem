@@ -150,7 +150,7 @@ MainWindow::initialize(HWND windowHandle, Error &error)
     }
     updateDisplayFrequency();
     const Vector2UI16 windowSize(
-        glm::vec2(BaseApplicationService::minimumRequiredWindowSize()) * glm::vec2(m_devicePixelRatio));
+        Vector2(BaseApplicationService::minimumRequiredWindowSize()) * Vector2(m_devicePixelRatio));
     String sokolPath(
         json_object_dotget_string(json_object(m_service->applicationConfiguration()), "win32.plugin.path"));
     const ApplicationPreference preference(m_service);
@@ -171,7 +171,7 @@ MainWindow::initialize(HWND windowHandle, Error &error)
         pixelFormat = SG_PIXELFORMAT_BGRA8;
     }
     if (result) {
-        m_logicalWindowSize = glm::vec2(windowSize) * invertedDevicePixelRatio();
+        m_logicalWindowSize = Vector2(windowSize) * invertedDevicePixelRatio();
         const ApplicationPreference preference(m_service);
         const ApplicationPreference::HighDPIViewportModeType mode = preference.highDPIViewportMode();
         ThreadedApplicationClient::InitializeMessageDescription desc(
@@ -395,7 +395,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
         if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
-            const glm::vec2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+            const Vector2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseDown(hwnd, coord, convertCursorType(msg, wparam));
         }
         break;
@@ -405,7 +405,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_RBUTTONUP:
     case WM_XBUTTONUP: {
         if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
-            const glm::vec2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+            const Vector2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseUp(hwnd, coord, convertCursorType(msg, wparam));
         }
         break;
@@ -2449,8 +2449,8 @@ MainWindow::disableCursor(const Vector2SI32 &position)
     POINT devicePoint;
     lockCursor(&devicePoint);
     m_virtualLogicalCursorPosition = position;
-    m_lastLogicalCursorPosition = glm::vec2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio();
-    m_restoreHiddenDeviceCursorPosition = glm::vec2(position) * m_devicePixelRatio;
+    m_lastLogicalCursorPosition = Vector2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio();
+    m_restoreHiddenDeviceCursorPosition = Vector2(position) * m_devicePixelRatio;
     m_cursorHidden.first = true;
 }
 
@@ -2465,10 +2465,15 @@ MainWindow::unlockCursor()
 }
 
 void
-MainWindow::enableCursor(const Vector2SI32 & /* position */)
+MainWindow::enableCursor(const Vector2SI32 &position)
 {
     unlockCursor();
-    m_lastLogicalCursorPosition = glm::vec2(m_restoreHiddenDeviceCursorPosition) * invertedDevicePixelRatio();
+    if (position.x != 0 && position.y != 0) {
+        m_lastLogicalCursorPosition = Vector2(position) * invertedDevicePixelRatio();
+    }
+    else {
+        m_lastLogicalCursorPosition = Vector2(m_restoreHiddenDeviceCursorPosition) * invertedDevicePixelRatio();
+    }
     m_restoreHiddenDeviceCursorPosition = Vector2SI32();
     m_cursorHidden.first = false;
 }
@@ -2500,8 +2505,7 @@ MainWindow::recenterCursor()
     if (isCursorHidden()) {
         POINT deviceCenterPoint;
         getWindowCenterPoint(&deviceCenterPoint);
-        const Vector2SI32 &logicalCenterPoint =
-            glm::vec2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio();
+        const Vector2SI32 logicalCenterPoint(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio();
         if (m_lastLogicalCursorPosition != logicalCenterPoint) {
             setCursorPosition(deviceCenterPoint);
             m_lastLogicalCursorPosition = logicalCenterPoint;
