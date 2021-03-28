@@ -41,7 +41,6 @@ public:
     virtual void update() = 0;
     virtual void synchronizeParameters(const Motion *motion, const nanoem_frame_index_t frameIndex) = 0;
     virtual void getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2SI32 toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual Vector2SI32 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual Vector2SI32 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual Ray createRay(const Vector2SI32 &cursor) const NANOEM_DECL_NOEXCEPT = 0;

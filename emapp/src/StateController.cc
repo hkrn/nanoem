@@ -323,7 +323,7 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
         const ICamera *camera = project->activeCamera();
         const model::Bone *bone = model::Bone::cast(bonePtr);
         const Vector3 bonePosition(model->worldTransform(bone->worldTransform())[3]);
-        const Vector2SI32 lastBoneCursorPosition(camera->toScreenCoordinate(bonePosition));
+        const Vector2SI32 lastBoneCursorPosition(camera->toDeviceScreenCoordinateInWindow(bonePosition));
         if (model->transformAxisType() != Model::kAxisTypeMaxEnum) {
             const Project::EditingMode editingMode = project->editingMode();
             const IModelObjectSelection *selection = model->selection();

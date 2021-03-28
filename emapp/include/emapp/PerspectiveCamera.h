@@ -39,7 +39,6 @@ public:
     void synchronizeOutsideParent(const nanoem_motion_camera_keyframe_t *keyframe);
     void getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     Vector3 unprojected(const Vector3 &value) const NANOEM_DECL_NOEXCEPT;
-    Vector2SI32 toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     Vector2SI32 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     Vector2SI32 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     Ray createRay(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;

@@ -285,23 +285,13 @@ PerspectiveCamera::unprojected(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 }
 
 Vector2SI32
-PerspectiveCamera::toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
-{
-    const Vector4UI16 viewport(m_project->logicalScaleUniformedViewportImageRect()),
-        viewportSize(0, 0, viewport.z, viewport.w);
-    const Vector3 coordinate(glm::project(value, m_viewMatrix, m_projectionMatrix, viewportSize));
-    return Vector2SI32(viewport.x + coordinate.x, viewport.y + viewport.w - coordinate.y);
-}
-
-Vector2SI32
 PerspectiveCamera::toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_f32_t scaleFactor = m_project->deviceScaleViewportScaleFactor();
     const Vector4UI16 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
-    const Vector2 imageSize(Vector2(m_project->deviceScaleUniformedViewportImageSize()) * scaleFactor);
+    const Vector2 imageSize(m_project->deviceScaleUniformedViewportImageSize());
+    const Vector4 viewportRect(0, 0, imageSize.x, imageSize.y);
     const nanoem_f32_t x = (layoutRect.z - imageSize.x) * 0.5f, y = (layoutRect.w - imageSize.y) * 0.5f;
-    const Vector2 coordinate(
-        glm::project(value, m_viewMatrix, m_projectionMatrix, Vector4(0, 0, imageSize.x, imageSize.y)));
+    const Vector2 coordinate(glm::project(value, m_viewMatrix, m_projectionMatrix, viewportRect));
     return Vector2SI32(x + coordinate.x, layoutRect.w - coordinate.y - y);
 }
 
