@@ -321,17 +321,17 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScalePosition)
         draggingState = createDraggingState(rectangleType, logicalScalePosition, project);
     }
     else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
-        const Vector2SI32 lastBoneCursorPosition(logicalScaleCursorActiveBoneInWindow(project));
+        const Vector2SI32 activeBoneCursorPosition(logicalScaleCursorActiveBoneInWindow(project));
         if (model->transformAxisType() != Model::kAxisTypeMaxEnum) {
             const Project::EditingMode editingMode = project->editingMode();
             const IModelObjectSelection *selection = model->selection();
             if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
                 draggingState = nanoem_new(
-                    internal::OrientateActiveBoneState(project, model, logicalScalePosition, lastBoneCursorPosition));
+                    internal::OrientateActiveBoneState(project, model, logicalScalePosition, activeBoneCursorPosition));
             }
             else if (editingMode == Project::kEditingModeMove && selection->areAllBonesMovable()) {
                 draggingState = nanoem_new(
-                    internal::TranslateActiveBoneState(project, model, logicalScalePosition, lastBoneCursorPosition));
+                    internal::TranslateActiveBoneState(project, model, logicalScalePosition, activeBoneCursorPosition));
             }
         }
     }

@@ -25,12 +25,12 @@
 namespace nanoem {
 namespace internal {
 
-DraggingBoneState::DraggingBoneState(
-    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &lastBoneCursorPosition)
+DraggingBoneState::DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
+    const Vector2SI32 &activeBoneCursorPosition)
     : m_project(project)
     , m_model(model)
     , m_pressedCursorPosition(pressedCursorPosition)
-    , m_lastBoneCursorPosition(lastBoneCursorPosition)
+    , m_activeBoneCursorPosition(activeBoneCursorPosition)
     , m_accumulatedDeltaPosition(0)
     , m_lastPressedCursorPosition(pressedCursorPosition)
     , m_scaleFactor(1.0f)
@@ -220,9 +220,9 @@ DraggingBoneState::pressedCursorPosition() const NANOEM_DECL_NOEXCEPT
 }
 
 Vector2SI32
-DraggingBoneState::lastBoneCursorPosition() const NANOEM_DECL_NOEXCEPT
+DraggingBoneState::activeBoneCursorPosition() const NANOEM_DECL_NOEXCEPT
 {
-    return m_lastBoneCursorPosition;
+    return m_activeBoneCursorPosition;
 }
 
 void
@@ -251,9 +251,9 @@ DraggingBoneState::setCameraLocked(bool value)
     m_model->localCamera()->setLocked(value);
 }
 
-TranslateActiveBoneState::TranslateActiveBoneState(
-    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &lastBoneCursorPosition)
-    : DraggingBoneState(project, model, pressedCursorPosition, lastBoneCursorPosition)
+TranslateActiveBoneState::TranslateActiveBoneState(Project *project, Model *model,
+    const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &activeBoneCursorPosition)
+    : DraggingBoneState(project, model, pressedCursorPosition, activeBoneCursorPosition)
     , m_baseLocalTranslation(0)
 {
     if (const model::Bone *activeBone = model::Bone::cast(model->activeBone())) {
@@ -291,9 +291,9 @@ TranslateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
     return "nanoem.gui.viewport.bone.translate-active-bone";
 }
 
-OrientateActiveBoneState::OrientateActiveBoneState(
-    Project *project, Model *model, const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &lastBoneCursorPosition)
-    : DraggingBoneState(project, model, pressedCursorPosition, lastBoneCursorPosition)
+OrientateActiveBoneState::OrientateActiveBoneState(Project *project, Model *model,
+    const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &activeBoneCursorPosition)
+    : DraggingBoneState(project, model, pressedCursorPosition, activeBoneCursorPosition)
 {
 }
 
@@ -345,8 +345,8 @@ OrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
 nanoem_f32_t
 OrientateActiveBoneState::angleCursorFromBone(const Vector2SI32 &value) const
 {
-    const Vector2 p0(glm::normalize(Vector2(pressedCursorPosition() - lastBoneCursorPosition())));
-    const Vector2 p1(glm::normalize(Vector2(value - lastBoneCursorPosition())));
+    const Vector2 p0(glm::normalize(Vector2(pressedCursorPosition() - activeBoneCursorPosition())));
+    const Vector2 p1(glm::normalize(Vector2(value - activeBoneCursorPosition())));
     nanoem_f32_t crossProduct = p1.x * p0.y - p1.y * p0.x;
     nanoem_f32_t angle = glm::sign(crossProduct) * glm::acos(glm::dot(p0, p1));
     return glm::isnan(angle) ? 0 : angle;

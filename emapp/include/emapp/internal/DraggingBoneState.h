@@ -23,7 +23,7 @@ namespace internal {
 class DraggingBoneState : public IDraggingState, private NonCopyable {
 public:
     DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2SI32 &lastBoneCursorPosition);
+        const Vector2SI32 &activeBoneCursorPosition);
     ~DraggingBoneState();
 
     void commit(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
@@ -46,7 +46,7 @@ protected:
     Vector3 cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT;
     Vector2 cursorDelta(const Vector2 &logicalScalePosition) const NANOEM_DECL_NOEXCEPT;
     Vector2SI32 pressedCursorPosition() const NANOEM_DECL_NOEXCEPT;
-    Vector2SI32 lastBoneCursorPosition() const NANOEM_DECL_NOEXCEPT;
+    Vector2SI32 activeBoneCursorPosition() const NANOEM_DECL_NOEXCEPT;
     void updateLastCursorPosition(const Vector2 &logicalScalePosition, const Vector3 &delta);
     bool isShouldSetCursorPosition() const NANOEM_DECL_NOEXCEPT;
     void setShouldSetCursorPosition(bool value);
@@ -57,7 +57,7 @@ private:
     Project *m_project;
     Model *m_model;
     const Vector2SI32 m_pressedCursorPosition;
-    const Vector2SI32 m_lastBoneCursorPosition;
+    const Vector2SI32 m_activeBoneCursorPosition;
     model::BindPose m_lastBindPose;
     Vector3 m_accumulatedDeltaPosition;
     Vector2 m_lastPressedCursorPosition;
@@ -68,7 +68,7 @@ private:
 class TranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     TranslateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2SI32 &lastBoneCursorPosition);
+        const Vector2SI32 &activeBoneCursorPosition);
 
     void transform(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -80,7 +80,7 @@ private:
 class OrientateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     OrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2SI32 &lastBoneCursorPosition);
+        const Vector2SI32 &activeBoneCursorPosition);
 
     void transform(const Vector2SI32 &logicalScalePosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
