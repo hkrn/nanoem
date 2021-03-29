@@ -33,7 +33,7 @@ DraggingCameraState::DraggingCameraState(Project *project, ICamera *camera, cons
 }
 
 void
-DraggingCameraState::commit(const Vector2SI32 & /* logicalPosition */)
+DraggingCameraState::commit(const Vector2SI32 & /* logicalCursorPosition */)
 {
     if (m_project->globalCamera() == m_activeCamera) {
         m_project->pushUndo(
@@ -87,9 +87,9 @@ DraggingCameraState::accumulatedPositionDelta() const NANOEM_DECL_NOEXCEPT
 }
 
 Vector2
-DraggingCameraState::cursorDelta(const Vector2 &logicalPosition) const NANOEM_DECL_NOEXCEPT
+DraggingCameraState::cursorDelta(const Vector2 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT
 {
-    return (logicalPosition - m_lastPressedCursorPosition) * m_scaleFactor;
+    return (logicalCursorPosition - m_lastPressedCursorPosition) * m_scaleFactor;
 }
 
 nanoem_f32_t
@@ -99,9 +99,9 @@ DraggingCameraState::distance() const NANOEM_DECL_NOEXCEPT
 }
 
 void
-DraggingCameraState::updateLastCursorPosition(const Vector2 &logicalPosition, const Vector3 &delta)
+DraggingCameraState::updateLastCursorPosition(const Vector2 &logicalCursorPosition, const Vector3 &delta)
 {
-    m_lastPressedCursorPosition = logicalPosition;
+    m_lastPressedCursorPosition = logicalCursorPosition;
     m_accumulatedPositionDelta += delta;
 }
 
@@ -114,10 +114,10 @@ AxisAlignedTranslateCameraState::AxisAlignedTranslateCameraState(
 }
 
 void
-AxisAlignedTranslateCameraState::transform(const Vector2SI32 &logicalPosition)
+AxisAlignedTranslateCameraState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Vector3 axis(handleDragAxis(m_axisIndex));
-    const Vector3 delta(cursorDelta(logicalPosition).y * axis);
+    const Vector3 delta(cursorDelta(logicalCursorPosition).y * axis);
     ICamera *camera = activeCamera();
     switch (camera->transformCoordinateType()) {
     case ICamera::kTransformCoordinateTypeGlobal: {
@@ -134,7 +134,7 @@ AxisAlignedTranslateCameraState::transform(const Vector2SI32 &logicalPosition)
     default:
         break;
     }
-    updateLastCursorPosition(logicalPosition, delta);
+    updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
 const char *
@@ -154,10 +154,10 @@ AxisAlignedOrientateCameraState::AxisAlignedOrientateCameraState(
 }
 
 void
-AxisAlignedOrientateCameraState::transform(const Vector2SI32 &logicalPosition)
+AxisAlignedOrientateCameraState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Vector3 axis(handleDragAxis(m_axisIndex));
-    const Vector3 delta(cursorDelta(logicalPosition).y * axis);
+    const Vector3 delta(cursorDelta(logicalCursorPosition).y * axis);
     ICamera *camera = activeCamera();
     switch (camera->transformCoordinateType()) {
     case ICamera::kTransformCoordinateTypeGlobal:
@@ -170,7 +170,7 @@ AxisAlignedOrientateCameraState::transform(const Vector2SI32 &logicalPosition)
     default:
         break;
     }
-    updateLastCursorPosition(logicalPosition, delta);
+    updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
 const char *
@@ -188,13 +188,13 @@ CameraZoomState::CameraZoomState(Project *project, ICamera *camera, const Vector
 }
 
 void
-CameraZoomState::transform(const Vector2SI32 &logicalPosition)
+CameraZoomState::transform(const Vector2SI32 &logicalCursorPosition)
 {
-    const Vector3 delta(cursorDelta(logicalPosition), 0);
+    const Vector3 delta(cursorDelta(logicalCursorPosition), 0);
     ICamera *camera = activeCamera();
     camera->setDistance(distance() + accumulatedPositionDelta().y + delta.y);
     camera->update();
-    updateLastCursorPosition(logicalPosition, delta);
+    updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
 const char *
@@ -212,15 +212,15 @@ CameraLookAtState::CameraLookAtState(Project *project, ICamera *camera, const Ve
 }
 
 void
-CameraLookAtState::transform(const Vector2SI32 &logicalPosition)
+CameraLookAtState::transform(const Vector2SI32 &logicalCursorPosition)
 {
-    const Vector3 delta(cursorDelta(logicalPosition) * Vector2(1, -1), 0);
+    const Vector3 delta(cursorDelta(logicalCursorPosition) * Vector2(1, -1), 0);
     Matrix4x4 viewMatrix, projectionMatrix;
     ICamera *camera = activeCamera();
     camera->getViewTransform(viewMatrix, projectionMatrix);
     camera->setLookAt(lookAt() + glm::inverse(Matrix3x3(viewMatrix)) * accumulatedPositionDelta() + delta);
     camera->update();
-    updateLastCursorPosition(logicalPosition, delta);
+    updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
 const char *

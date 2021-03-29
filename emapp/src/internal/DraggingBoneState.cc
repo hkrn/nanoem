@@ -51,7 +51,7 @@ DraggingBoneState::~DraggingBoneState()
 }
 
 void
-DraggingBoneState::commit(const Vector2SI32 &logicalScalePosition)
+DraggingBoneState::commit(const Vector2SI32 &logicalCursorPosition)
 {
     model::BindPose currentBindPose;
     model::Bone::Set boneSet(m_model->selection()->allBoneSet());
@@ -72,9 +72,9 @@ DraggingBoneState::commit(const Vector2SI32 &logicalScalePosition)
     }
     m_model->pushUndo(command::TransformBoneCommand::create(
         m_lastBindPose, currentBindPose, ListUtils::toListFromSet(boneSet), m_model, m_project));
-    const Vector2 deviceScalePosition(
-        Vector2(logicalScalePosition * Vector2SI32(m_shouldSetCursorPosition)) * m_project->windowDevicePixelRatio());
-    m_project->eventPublisher()->publishEnableCursorEvent(deviceScalePosition);
+    const Vector2 deviceCursorPosition(
+        Vector2(logicalCursorPosition * Vector2SI32(m_shouldSetCursorPosition)) * m_project->windowDevicePixelRatio());
+    m_project->eventPublisher()->publishEnableCursorEvent(deviceCursorPosition);
     setCameraLocked(false);
 }
 
@@ -208,9 +208,9 @@ DraggingBoneState::cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_N
 }
 
 Vector2
-DraggingBoneState::cursorDelta(const Vector2 &logicalScalePosition) const NANOEM_DECL_NOEXCEPT
+DraggingBoneState::cursorDelta(const Vector2 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT
 {
-    return (m_lastPressedCursorPosition - logicalScalePosition) * m_scaleFactor;
+    return (m_lastPressedCursorPosition - logicalCursorPosition) * m_scaleFactor;
 }
 
 Vector2SI32
@@ -226,9 +226,9 @@ DraggingBoneState::activeBoneCursorPosition() const NANOEM_DECL_NOEXCEPT
 }
 
 void
-DraggingBoneState::updateLastCursorPosition(const Vector2 &logicalScalePosition, const Vector3 &delta)
+DraggingBoneState::updateLastCursorPosition(const Vector2 &logicalCursorPosition, const Vector3 &delta)
 {
-    m_lastPressedCursorPosition = logicalScalePosition;
+    m_lastPressedCursorPosition = logicalCursorPosition;
     m_accumulatedDeltaPosition += delta;
 }
 
@@ -263,19 +263,19 @@ TranslateActiveBoneState::TranslateActiveBoneState(Project *project, Model *mode
 }
 
 void
-TranslateActiveBoneState::transform(const Vector2SI32 &logicalScalePosition)
+TranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Model *model = activeModel();
     const Model::AxisType axis(model->transformAxisType());
     const glm::bvec2 areAxisTypeSelected(axis == Model::kAxisX, axis == Model::kAxisY);
     Vector3 localTranslation(m_baseLocalTranslation);
     if (glm::any(areAxisTypeSelected)) {
-        const Vector2SI32 movingCursorPosition(logicalScalePosition * Vector2SI32(areAxisTypeSelected)),
+        const Vector2SI32 movingCursorPosition(logicalCursorPosition * Vector2SI32(areAxisTypeSelected)),
             fixedCursorPosition(pressedCursorPosition() * Vector2SI32(glm::not_(areAxisTypeSelected)));
         localTranslation += cursorMoveDelta(movingCursorPosition + fixedCursorPosition);
     }
     else {
-        localTranslation += cursorMoveDelta(logicalScalePosition);
+        localTranslation += cursorMoveDelta(logicalCursorPosition);
     }
     const nanoem_model_bone_t *activeBone = model->activeBone();
     const model::Bone::List &bones =
@@ -298,7 +298,7 @@ OrientateActiveBoneState::OrientateActiveBoneState(Project *project, Model *mode
 }
 
 void
-OrientateActiveBoneState::transform(const Vector2SI32 &logicalScalePosition)
+OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Model *model = activeModel();
     const nanoem_model_bone_t *activeBone = model->activeBone();
@@ -309,19 +309,19 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalScalePosition)
         break;
     }
     case Model::kAxisX: {
-        const Vector2 delta(logicalScalePosition - pressedCursorPosition());
+        const Vector2 delta(logicalCursorPosition - pressedCursorPosition());
         const Vector3 axisX(handleDragAxis(activeBone, 0));
         orientation = glm::angleAxis(glm::radians(delta).y, axisX);
         break;
     }
     case Model::kAxisY: {
-        const nanoem_f32_t angle(angleCursorFromBone(logicalScalePosition));
+        const nanoem_f32_t angle(angleCursorFromBone(logicalCursorPosition));
         const Vector3 axisY(handleDragAxis(activeBone, 1));
         orientation = glm::angleAxis(angle, axisY);
         break;
     }
     case Model::kAxisZ: {
-        const Vector2 delta(logicalScalePosition - pressedCursorPosition());
+        const Vector2 delta(logicalCursorPosition - pressedCursorPosition());
         const Vector3 axisZ(handleDragAxis(activeBone, 2));
         orientation = glm::angleAxis(-glm::radians(delta).x, axisZ);
         break;
@@ -361,14 +361,14 @@ AxisAlignedTranslateActiveBoneState::AxisAlignedTranslateActiveBoneState(
 }
 
 void
-AxisAlignedTranslateActiveBoneState::transform(const Vector2SI32 &logicalScalePosition)
+AxisAlignedTranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Model *model = activeModel();
     const Model::TransformCoordinateType transformCoordinateType = model->transformCoordinateType();
     const nanoem_model_bone_t *activeBone = model->activeBone();
     const Vector3 axis(handleDragAxis(activeBone, transformCoordinateType, m_axisIndex));
     const model::BindPose::Parameter &parameter = findBindPoseParameter(activeBone, model);
-    const Vector3 delta(cursorDelta(logicalScalePosition).y * axis);
+    const Vector3 delta(cursorDelta(logicalCursorPosition).y * axis);
     switch (transformCoordinateType) {
     case Model::kTransformCoordinateTypeGlobal: {
         const Vector3 translation(accumulatedDeltaPosition() + delta + parameter.m_localUserTranslation);
@@ -387,7 +387,7 @@ AxisAlignedTranslateActiveBoneState::transform(const Vector2SI32 &logicalScalePo
     default:
         break;
     }
-    updateLastCursorPosition(logicalScalePosition, delta);
+    updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
 const char *
@@ -405,17 +405,17 @@ AxisAlignedOrientateActiveBoneState::AxisAlignedOrientateActiveBoneState(
 }
 
 void
-AxisAlignedOrientateActiveBoneState::transform(const Vector2SI32 &logicalScalePosition)
+AxisAlignedOrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Model *model = activeModel();
     const Model::TransformCoordinateType transformCoordinateType = model->transformCoordinateType();
     const nanoem_model_bone_t *activeBone = model->activeBone();
     const Vector3 axis(handleDragAxis(activeBone, transformCoordinateType, m_axisIndex) * Vector3(-1, -1, 1));
-    const Vector3 delta(cursorDelta(logicalScalePosition), 0);
+    const Vector3 delta(cursorDelta(logicalCursorPosition), 0);
     nanoem_f32_t angle = glm::radians(accumulatedDeltaPosition().y + delta.y);
     const Quaternion &orientation = glm::angleAxis(angle, axis);
     performOrientationTransform(tinystl::make_pair(orientation, activeBone), createBoneList(activeBone));
-    updateLastCursorPosition(logicalScalePosition, delta);
+    updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
 const char *
