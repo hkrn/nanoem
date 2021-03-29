@@ -1514,8 +1514,8 @@ RedoState::onRelease(const Vector3SI32 &)
 class DrawUtil NANOEM_DECL_SEALED : private NonCopyable {
 public:
     static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project);
-    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Project *project);
-    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Project *project);
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Model *model, bool movingHandle);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Model *model, bool movingHandle);
     static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
     static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
 };
@@ -1534,17 +1534,26 @@ DrawUtil::deviceScaleCursorActiveBoneInViewport(const Project *project)
 }
 
 void
-DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Project *project)
+DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, bool movingHandle)
 {
+    static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0);
+    const Project *project = activeModel->project();
+    const Model::AxisType type = activeModel->transformAxisType();
     const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
-    nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f, thickness = project->logicalScaleCircleRadius();
-    primitive->strokeLine(center, Vector2(center.x + length, center.y), Vector4(1, 0, 0, 1), thickness);
-    primitive->strokeLine(center, Vector2(center.x, center.y - length), Vector4(0, 1, 0, 1), thickness);
+    const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
+                       thickness = project->logicalScaleCircleRadius();
+    primitive->strokeLine(center, Vector2(center.x + length, center.y),
+        Vector4(kRed, type == Model::kAxisX || !movingHandle ? 1.0 : 0.25), thickness);
+    primitive->strokeLine(center, Vector2(center.x, center.y - length),
+        Vector4(kGreen, type == Model::kAxisY || !movingHandle ? 1.0 : 0.25), thickness);
 }
 
 void
-DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Project *project)
+DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel, bool movingHandle)
 {
+    static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0), kBlue(0, 0, 1);
+    const Project *project = activeModel->project();
+    const Model::AxisType type = activeModel->transformAxisType();
     const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
     nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
                  thickness = project->logicalScaleCircleRadius() * 1.5f;
@@ -1553,24 +1562,25 @@ DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Project *project)
     const nanoem_f32_t y1 = center.y - radius;
     const nanoem_f32_t x2 = center.x + radius;
     const nanoem_f32_t y2 = center.y + radius;
-    primitive->strokeLine(
-        Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y), Vector4(0, 0, 1, 1), thickness);
-    primitive->strokeLine(
-        Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius), Vector4(1, 0, 0, 1), thickness);
+    primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
+        Vector4(kBlue, type == Model::kAxisZ || !movingHandle ? 1.0 : 0.25), thickness);
+    primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
+        Vector4(kRed, type == Model::kAxisX || !movingHandle ? 1.0 : 0.25), thickness);
+    const Vector4 green(kGreen, type == Model::kAxisY || !movingHandle ? 1.0 : 0.25);
     primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kappa),
-        Vector2(center.x - radius * kappa, y1), Vector2(center.x + 1, y1), Vector4(0, 1, 0, 1), thickness);
+        Vector2(center.x - radius * kappa, y1), Vector2(center.x + 1, y1), green, thickness);
     primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kappa, y1),
-        Vector2(x2, center.y - radius * kappa), Vector2(x2, center.y + 1), Vector4(0, 1, 0, 1), thickness);
+        Vector2(x2, center.y - radius * kappa), Vector2(x2, center.y + 1), green, thickness);
     primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kappa),
-        Vector2(center.x + radius * kappa, y2), Vector2(center.x - 1, y2), Vector4(0, 1, 0, 1), thickness);
+        Vector2(center.x + radius * kappa, y2), Vector2(center.x - 1, y2), green, thickness);
     primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kappa, y2),
-        Vector2(x1, center.y + radius * kappa), Vector2(x1, center.y - 1), Vector4(0, 1, 0, 1), thickness);
+        Vector2(x1, center.y + radius * kappa), Vector2(x1, center.y - 1), green, thickness);
 }
 
 void
 DrawUtil::drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project)
 {
-    const Vector2SI32 &center = deviceScaleCursorActiveBoneInViewport(project);
+    const Vector2SI32 center(deviceScaleCursorActiveBoneInViewport(project));
     if (center.x != 0 && center.y != 0) {
         const nanoem_f32_t radius = project->deviceScaleCircleRadius(), extent = radius * 2;
         primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), activeBoneColor);
@@ -1617,34 +1627,32 @@ StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
         if (m_state) {
             m_state->onDrawPrimitive2D(primitive);
         }
-        const Vector2SI32 &deviceScaleCursor = project->deviceScaleMovingCursorPosition();
-        const Project::ModelList &allModels = project->allModels();
-        Vector4 activeBoneColor(1, 0, 0, 1);
-        for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end(); it != end; ++it) {
-            Model *model = *it;
-            if (!model->isVisible() || model != project->activeModel()) {
-                continue;
+        const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
+        if (Model *activeModel = project->activeModel()) {
+            Vector4 activeBoneColor(1, 0, 0, 1);
+            if (activeModel->isVisible()) {
+                if (EnumUtils::isEnabled(Project::kDrawTypeBoneConnections, flags)) {
+                    activeModel->drawBoneConnections(primitive, deviceScaleCursor);
+                }
+                if (EnumUtils::isEnabled(Project::kDrawTypeConstraintConnections, flags)) {
+                    activeModel->drawConstraintConnections(primitive, deviceScaleCursor);
+                }
+                if (EnumUtils::isEnabled(Project::kDrawTypeConstraintHeatmaps, flags)) {
+                    activeModel->drawConstraintsHeatMap(primitive);
+                }
             }
-            if (EnumUtils::isEnabled(Project::kDrawTypeBoneConnections, flags)) {
-                model->drawBoneConnections(primitive, deviceScaleCursor);
+            const bool movingHandle = m_state != nullptr;
+            if (EnumUtils::isEnabled(Project::kDrawTypeBoneMoveHandle, flags)) {
+                activeBoneColor = Vector4(1, 1, 0, 1);
+                DrawUtil::drawBoneMoveHandle(primitive, activeModel, movingHandle);
             }
-            if (EnumUtils::isEnabled(Project::kDrawTypeConstraintConnections, flags)) {
-                model->drawConstraintConnections(primitive, deviceScaleCursor);
+            if (EnumUtils::isEnabled(Project::kDrawTypeBoneRotateHandle, flags)) {
+                activeBoneColor = Vector4(1, 1, 0, 1);
+                DrawUtil::drawBoneRotateHandle(primitive, activeModel, movingHandle);
             }
-            if (EnumUtils::isEnabled(Project::kDrawTypeConstraintHeatmaps, flags)) {
-                model->drawConstraintsHeatMap(primitive);
+            if (EnumUtils::isEnabled(Project::kDrawTypeActiveBone, flags)) {
+                DrawUtil::drawActiveBonePoint(primitive, activeBoneColor, project);
             }
-        }
-        if (EnumUtils::isEnabled(Project::kDrawTypeBoneMoveHandle, flags)) {
-            activeBoneColor = Vector4(1, 1, 0, 1);
-            DrawUtil::drawBoneMoveHandle(primitive, project);
-        }
-        if (EnumUtils::isEnabled(Project::kDrawTypeBoneRotateHandle, flags)) {
-            activeBoneColor = Vector4(1, 1, 0, 1);
-            DrawUtil::drawBoneRotateHandle(primitive, project);
-        }
-        if (EnumUtils::isEnabled(Project::kDrawTypeActiveBone, flags)) {
-            DrawUtil::drawActiveBonePoint(primitive, activeBoneColor, project);
         }
         const ICamera *camera = project->activeCamera();
         if (EnumUtils::isEnabled(Project::kDrawTypeCameraLookAt, flags) && camera) {
@@ -1736,7 +1744,7 @@ StateController::handlePointerScroll(const Vector3SI32 &logicalCursorPosition, c
                 camera->distance() + delta.y * BaseDraggingObjectState::scaleFactor(logicalCursorPosition));
             camera->update();
             if (project->editingMode() != Project::kEditingModeSelect) {
-                const Project::ModelList &allModels = project->allModels();
+                const Project::ModelList allModels(project->allModels());
                 for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end(); it != end;
                      ++it) {
                     Model *model = *it;
