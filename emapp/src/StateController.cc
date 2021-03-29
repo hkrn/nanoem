@@ -921,7 +921,7 @@ void
 BaseSelectionState::onDrawPrimitive2D(IPrimitive2D *primitive)
 {
     if (const Project *project = m_stateControllerPtr->currentProject()) {
-        nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
+        nanoem_f32_t deviceScaleRatio = project->viewportDevicePixelRatio();
         currentSelector()->draw(primitive, deviceScaleRatio);
     }
 }
