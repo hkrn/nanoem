@@ -51,14 +51,14 @@ DraggingBoneState::~DraggingBoneState()
 }
 
 void
-DraggingBoneState::commit(const Vector2SI32 &logicalCursorPosition)
+DraggingBoneState::commit(const Vector2SI32 & /* logicalCursorPosition */)
 {
     model::BindPose currentBindPose;
     model::Bone::Set boneSet(m_model->selection()->allBoneSet());
     m_model->saveBindPose(currentBindPose);
-    const nanoem_model_bone_t *activeBone = m_model->activeBone();
-    boneSet.insert(activeBone);
-    if (const nanoem_model_constraint_t *constraintPtr = m_model->findConstraint(activeBone)) {
+    const nanoem_model_bone_t *activeBonePtr = m_model->activeBone();
+    boneSet.insert(activeBonePtr);
+    if (const nanoem_model_constraint_t *constraintPtr = m_model->findConstraint(activeBonePtr)) {
         const model::Constraint *constraint = model::Constraint::cast(constraintPtr);
         if (constraint->isEnabled()) {
             nanoem_rsize_t numJoints;
@@ -72,9 +72,12 @@ DraggingBoneState::commit(const Vector2SI32 &logicalCursorPosition)
     }
     m_model->pushUndo(command::TransformBoneCommand::create(
         m_lastBindPose, currentBindPose, ListUtils::toListFromSet(boneSet), m_model, m_project));
-    const Vector2 deviceCursorPosition(
-        Vector2(logicalCursorPosition * Vector2SI32(m_shouldSetCursorPosition)) * m_project->windowDevicePixelRatio());
-    m_project->eventPublisher()->publishEnableCursorEvent(deviceCursorPosition);
+    const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+    const ICamera *activeCamera = m_project->activeCamera();
+    const Vector2 deviceBoneCursorPosition(
+        activeCamera->toDeviceScreenCoordinateInWindow(activeBone->worldTransformOrigin())),
+        scaleFactor((1.0f * m_shouldSetCursorPosition) / m_project->windowDevicePixelRatio());
+    m_project->eventPublisher()->publishEnableCursorEvent(deviceBoneCursorPosition * scaleFactor);
     setCameraLocked(false);
 }
 
