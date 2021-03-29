@@ -18,8 +18,8 @@ public:
     {
     }
 
-    virtual void transform(const Vector2SI32 &logicalPosition) = 0;
-    virtual void commit(const Vector2SI32 &logicalPosition) = 0;
+    virtual void transform(const Vector2SI32 &logicalCursorPosition) = 0;
+    virtual void commit(const Vector2SI32 &logicalCursorPosition) = 0;
 
     virtual const char *name() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_f32_t scaleFactor() const NANOEM_DECL_NOEXCEPT = 0;
