@@ -490,7 +490,7 @@ private:
     void drawBoneConnection(IPrimitive2D *primitive, const nanoem_model_bone_t *from,
         const Vector3 &destinationPosition, const Vector4 &color, nanoem_f32_t circleRadius, nanoem_f32_t thickness);
     void drawBonePoint(IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_bone_t *bonePtr,
-        const Vector4 &inactive, const Vector4 &hovered);
+        const Vector4 &inactive, const Vector4 &hovered, nanoem_f32_t circleRadius, nanoem_f32_t thickness);
     void drawConstraintPoint(IPrimitive2D *primitive, const Vector4 &position, int j, int numIterations);
 
     const nanoem_u16_t m_handle;
