@@ -121,7 +121,7 @@ BaseVideoRecorder::start(Error &error)
                         const nanoem_f32_t ratio = glm::max(width / layout.z, height / layout.w);
                         const Vector2 viewportImageSizeF(layout.z * ratio, layout.w * ratio);
                         m_project->resizeUniformedViewportLayout(
-                            glm::u16vec4(0, 0, viewportImageSizeF.x, viewportImageSizeF.y));
+                            Vector4UI16(0, 0, viewportImageSizeF.x, viewportImageSizeF.y));
                         const Vector4 rect((width - viewportImageSizeF.x) / width,
                             (height - viewportImageSizeF.y) / height, (viewportImageSizeF.x / width),
                             (viewportImageSizeF.y / height));
@@ -331,7 +331,7 @@ BaseVideoRecorder::setFileURI(const URI &value)
 }
 
 void
-BaseVideoRecorder::setSize(const glm::u16vec2 &value)
+BaseVideoRecorder::setSize(const Vector2UI16 &value)
 {
     m_outputSize = value;
 }

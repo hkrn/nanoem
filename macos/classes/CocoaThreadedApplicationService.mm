@@ -78,7 +78,7 @@ using namespace nanoem::macos;
                        device:(id<MTLDevice>)device
                        client:(ThreadedApplicationClient *)clien
                  screenHeight:(CGFloat)screenHeight;
-- (glm::i32vec2)devicePixelScreenPosition:(NSEvent *)event;
+- (Vector2SI32)devicePixelScreenPosition:(NSEvent *)event;
 
 @end
 
@@ -99,7 +99,7 @@ using namespace nanoem::macos;
     return self;
 }
 
-- (glm::i32vec2)devicePixelScreenPosition:(NSEvent *)event
+- (Vector2SI32)devicePixelScreenPosition:(NSEvent *)event
 {
     return CocoaThreadedApplicationService::devicePixelScreenPosition(event, self.window, m_screenHeight);
 }
@@ -746,7 +746,7 @@ CocoaThreadedApplicationService::createApplication()
 NSWindow *
 CocoaThreadedApplicationService::createMainWindow()
 {
-    const glm::u16vec2 &minsize = BaseApplicationService::minimumRequiredWindowSize();
+    const Vector2UI16 &minsize = BaseApplicationService::minimumRequiredWindowSize();
     const NSRect rect = NSMakeRect(0, 0, minsize.x, minsize.y);
     NSUInteger style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
         NSWindowStyleMaskResizable;
@@ -829,14 +829,14 @@ CocoaThreadedApplicationService::scrollWheelDelta(const NSEvent *event)
     return scrollDelta;
 }
 
-glm::i32vec2
+Vector2SI32
 CocoaThreadedApplicationService::devicePixelScreenPosition(
     const NSEvent *event, NSWindow *window, nanoem_f32_t screenHeight) noexcept
 {
     const NSPoint point(event.locationInWindow);
     const NSRect rect([window convertRectToScreen:NSMakeRect(point.x, point.y, 0, 0)]);
     nanoem_f32_t devicePixelRatio = window.backingScaleFactor;
-    return glm::i32vec2(rect.origin.x * devicePixelRatio, (screenHeight - rect.origin.y) * devicePixelRatio);
+    return Vector2SI32(rect.origin.x * devicePixelRatio, (screenHeight - rect.origin.y) * devicePixelRatio);
 }
 
 const char *
@@ -1017,7 +1017,7 @@ CocoaThreadedApplicationService::nativeView()
     return (__bridge MTKView *) m_nativeView;
 }
 
-glm::i32vec2
+Vector2SI32
 CocoaThreadedApplicationService::textInputOrigin() const noexcept
 {
     return m_textInputOrigin;
@@ -1333,7 +1333,7 @@ CocoaThreadedApplicationService::handleInitializeApplication()
             const nanoem_f32_t devicePixelRatio = userData->m_window.backingScaleFactor,
                                fx = localPos.x * (1.0f / devicePixelRatio),
                                fy = localPos.y * (1.0f / devicePixelRatio) + ImGui::GetIO().Fonts->Fonts[0]->FontSize;
-            self->m_textInputOrigin = glm::i32vec2(fx, fy);
+            self->m_textInputOrigin = Vector2SI32(fx, fy);
         });
     };
     ImGuiViewport *main = ImGui::GetMainViewport();
@@ -1400,7 +1400,7 @@ CocoaThreadedApplicationService::handleInitializeApplication()
         const nanoem_f32_t fx = x * (1.0f / io.DisplayFramebufferScale.x),
                            fy = y * (1.0f / io.DisplayFramebufferScale.y) + io.Fonts->Fonts[0]->FontSize;
         auto self = static_cast<CocoaThreadedApplicationService *>(io.ImeWindowHandle);
-        self->m_textInputOrigin = glm::i32vec2(fx, fy);
+        self->m_textInputOrigin = Vector2SI32(fx, fy);
     };
 #endif /* IMGUI_HAS_VIEWPORT */
 }

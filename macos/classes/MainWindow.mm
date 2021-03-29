@@ -544,7 +544,9 @@ MainWindow::initialize()
         id<MTLDevice> device = MTLCreateSystemDefaultDevice();
         initializeMetal(device, pixelFormat);
         pluginPath.append("/sokol_metal_macos.dylib");
+#ifdef NDEBUG
         isLowPower = device.lowPower == YES;
+#endif /* NDEBUG */
         m_textInputContext = [[NSTextInputContext alloc] initWithClient:m_nativeWindow.contentView];
     }
     else {
@@ -553,7 +555,7 @@ MainWindow::initialize()
     }
     const ApplicationPreference *preference = m_preference->applicationPreference();
     const CGSize &frameSize = m_nativeWindow.contentView.frame.size;
-    const glm::u16vec2 logicalWindowSize(frameSize.width, frameSize.height);
+    const Vector2UI16 logicalWindowSize(frameSize.width, frameSize.height);
     ThreadedApplicationClient::InitializeMessageDescription desc(
         logicalWindowSize, pixelFormat, m_nativeWindow.backingScaleFactor, pluginPath);
     ApplicationPreference::HighDPIViewportModeType highDPIViewportMode = preference->highDPIViewportMode();
@@ -670,11 +672,11 @@ NSRect
 MainWindow::firstRectForCharacterRange()
 {
 #if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
-    const glm::i32vec2 origin(m_service->textInputOrigin());
+    const Vector2SI32 origin(m_service->textInputOrigin());
     return NSMakeRect(origin.x, m_screenHeight - origin.y, 0, 0);
 #else
     const NSRect rect([m_nativeWindow contentRectForFrameRect:m_nativeWindow.frame]);
-    const glm::i32vec2 origin(m_service->textInputOrigin());
+    const Vector2SI32 origin(m_service->textInputOrigin());
     CGFloat x = rect.origin.x + origin.x, y = rect.origin.y + rect.size.height - origin.y;
     return NSMakeRect(x, y, 0, 0);
 #endif
@@ -696,7 +698,7 @@ void
 MainWindow::handleAssignFocus()
 {
     if (m_cursorHidden.second) {
-        glm::i32vec2 centerPoint;
+        Vector2SI32 centerPoint;
         internalDisableCursor(centerPoint);
         m_cursorHidden.second = false;
         m_cursorHidden.first = true;
@@ -724,7 +726,7 @@ MainWindow::handleWindowResize()
 {
     resizeDrawableSize();
     const NSSize size = m_nativeWindow.contentView.bounds.size;
-    m_client->sendResizeWindowMessage(glm::u32vec2(size.width, size.height));
+    m_client->sendResizeWindowMessage(Vector2UI32(size.width, size.height));
 }
 
 void
@@ -737,7 +739,7 @@ MainWindow::handleWindowChangeDevicePixelRatio()
 void
 MainWindow::handleMouseDown(const NSEvent *event)
 {
-    glm::i32vec2 cursor, delta;
+    Vector2SI32 cursor, delta;
     if (getCursorPosition(event, cursor, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
@@ -752,7 +754,7 @@ MainWindow::handleMouseDown(const NSEvent *event)
 void
 MainWindow::handleMouseMoved(const NSEvent *event)
 {
-    glm::i32vec2 cursor, delta;
+    Vector2SI32 cursor, delta;
     if (getCursorPosition(event, cursor, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
@@ -773,7 +775,7 @@ MainWindow::handleMouseDragged(const NSEvent *event)
 void
 MainWindow::handleMouseUp(const NSEvent *event)
 {
-    glm::i32vec2 cursor, delta;
+    Vector2SI32 cursor, delta;
     if (getCursorPosition(event, cursor, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
@@ -851,7 +853,7 @@ MainWindow::handleKeyUp(NSEvent *event)
 void
 MainWindow::handleScrollWheel(const NSEvent *event)
 {
-    glm::i32vec2 mouseCursor, mouseDelta;
+    Vector2SI32 mouseCursor, mouseDelta;
     if (getCursorPosition(event, mouseCursor, mouseDelta)) {
         const Vector2 scrollDelta(CocoaThreadedApplicationService::scrollWheelDelta(event));
         int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event);
@@ -1361,7 +1363,7 @@ MainWindow::handleRemovingWatchEffectSource(void *userData, uint16_t handle, con
     self->resetWatchEffectSource();
 }
 
-glm::i32vec2
+Vector2SI32
 MainWindow::devicePixelScreenPosition(const NSEvent *event) noexcept
 {
     return CocoaThreadedApplicationService::devicePixelScreenPosition(event, m_nativeWindow, m_screenHeight);
@@ -1451,7 +1453,7 @@ MainWindow::initializeOpenGL()
 }
 
 void
-MainWindow::getWindowCenterPoint(glm::i32vec2 *value)
+MainWindow::getWindowCenterPoint(Vector2SI32 *value)
 {
     const NSRect &rect = m_nativeWindow.contentView.frame;
     value->x = rect.size.width * 0.5f;
@@ -1459,7 +1461,7 @@ MainWindow::getWindowCenterPoint(glm::i32vec2 *value)
 }
 
 bool
-MainWindow::getCursorPosition(const NSEvent *event, glm::i32vec2 &position, glm::i32vec2 &delta)
+MainWindow::getCursorPosition(const NSEvent *event, Vector2SI32 &position, Vector2SI32 &delta)
 {
     bool result = false;
     if (m_cursorHidden.first) {
@@ -1479,7 +1481,7 @@ void
 MainWindow::recenterCursorPosition()
 {
     if (m_cursorHidden.first) {
-        glm::i32vec2 value;
+        Vector2SI32 value;
         getWindowCenterPoint(&value);
         if (m_lastCursorPosition != value) {
             m_lastCursorPosition = value;
@@ -1504,22 +1506,22 @@ MainWindow::lastCursorPosition() const
 }
 
 void
-MainWindow::setLastCursorPosition(const glm::i32vec2 &value)
+MainWindow::setLastCursorPosition(const Vector2SI32 &value)
 {
     m_lastCursorPosition = value;
 }
 
 void
-MainWindow::setLastCursorPosition(const glm::i32vec2 &value, const glm::i32vec2 &delta)
+MainWindow::setLastCursorPosition(const Vector2SI32 &value, const Vector2SI32 &delta)
 {
     m_virtualCursorPosition += delta;
     m_lastCursorPosition = value;
 }
 
 void
-MainWindow::disableCursor(const glm::i32vec2 &position)
+MainWindow::disableCursor(const Vector2SI32 &position)
 {
-    glm::i32vec2 centerPoint;
+    Vector2SI32 centerPoint;
     internalDisableCursor(centerPoint);
     m_virtualCursorPosition = position;
     m_lastCursorPosition = centerPoint;
@@ -1528,7 +1530,7 @@ MainWindow::disableCursor(const glm::i32vec2 &position)
 }
 
 void
-MainWindow::enableCursor(const glm::i32vec2 &position)
+MainWindow::enableCursor(const Vector2SI32 &position)
 {
     BX_UNUSED_1(position);
     if (position.x != 0 && position.y != 0) {
@@ -1537,12 +1539,12 @@ MainWindow::enableCursor(const glm::i32vec2 &position)
     else {
         internalEnableCursor(m_restoreHiddenCursorPosition);
     }
-    m_restoreHiddenCursorPosition = glm::i32vec2();
+    m_restoreHiddenCursorPosition = Vector2SI32();
     m_cursorHidden.first = false;
 }
 
 void
-MainWindow::internalDisableCursor(glm::i32vec2 &centerLocation)
+MainWindow::internalDisableCursor(Vector2SI32 &centerLocation)
 {
     [NSCursor hide];
     getWindowCenterPoint(&centerLocation);
@@ -1550,7 +1552,7 @@ MainWindow::internalDisableCursor(glm::i32vec2 &centerLocation)
 }
 
 void
-MainWindow::internalEnableCursor(const glm::i32vec2 &location)
+MainWindow::internalEnableCursor(const Vector2SI32 &location)
 {
     const CGFloat viewHeight = m_nativeWindow.contentView.frame.size.height,
                   displayHeight = CGDisplayBounds(CGMainDisplayID()).size.height;
@@ -1757,13 +1759,13 @@ MainWindow::registerAllPrerequisiteEventListeners()
         },
         this, false);
     m_client->addDisableCursorEventListener(
-        [](void *userData, const glm::i32vec2 &coord) {
+        [](void *userData, const Vector2SI32 &coord) {
             auto self = static_cast<MainWindow *>(userData);
             self->disableCursor(coord);
         },
         this, false);
     m_client->addEnableCursorEventListener(
-        [](void *userData, const glm::i32vec2 &coord) {
+        [](void *userData, const Vector2SI32 &coord) {
             auto self = static_cast<MainWindow *>(userData);
             self->enableCursor(coord);
         },
