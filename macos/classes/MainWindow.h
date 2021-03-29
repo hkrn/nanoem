@@ -166,16 +166,17 @@ private:
     AnalyticsTracker m_tracker;
     CocoaApplicationMenuBuilder m_menu;
     FileHandleMap m_watchEffectSourceHandles;
-    Vector2SI32 m_lastCursorPosition;
-    Vector2SI32 m_virtualCursorPosition;
-    Vector2SI32 m_restoreHiddenCursorPosition;
-    tinystl::pair<bool, bool> m_cursorHidden = tinystl::make_pair(false, false);
+    Vector2SI32 m_lastCursorPosition = Vector2SI32(0);
+    Vector2SI32 m_virtualCursorPosition = Vector2SI32(0);
+    Vector2SI32 m_restoreHiddenCursorPosition = Vector2SI32(0);
+    nanoem_u32_t m_disabledCursorMoveCount = 0;
     uint64_t m_quitAt = 0;
     uint32_t m_displayFrequency = 0;
     nanoem_f32_t m_screenHeight = 0;
     std::atomic<bool> m_runningMetrics;
     bool m_runningWindow = true;
     bool m_vsyncAtPlaying = true;
+    bool m_disabledCursorResigned = false;
 };
 
 } /* namespace macos */

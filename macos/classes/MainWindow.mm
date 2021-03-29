@@ -697,21 +697,21 @@ MainWindow::hasMarkedText() const noexcept
 void
 MainWindow::handleAssignFocus()
 {
-    if (m_cursorHidden.second) {
+    if (m_disabledCursorResigned) {
         Vector2SI32 centerPoint;
         internalDisableCursor(centerPoint);
-        m_cursorHidden.second = false;
-        m_cursorHidden.first = true;
+        m_disabledCursorResigned = false;
+        m_disabledCursorMoveCount = 1;
     }
 }
 
 void
 MainWindow::handleResignFocus()
 {
-    if (m_cursorHidden.first) {
+    if (m_disabledCursorMoveCount > 0) {
         internalEnableCursor(m_restoreHiddenCursorPosition);
-        m_cursorHidden.first = false;
-        m_cursorHidden.second = true;
+        m_disabledCursorMoveCount = 0;
+        m_disabledCursorResigned = true;
     }
 }
 
@@ -1464,10 +1464,12 @@ bool
 MainWindow::getCursorPosition(const NSEvent *event, Vector2SI32 &position, Vector2SI32 &delta)
 {
     bool result = false;
-    if (m_cursorHidden.first) {
+    if (m_disabledCursorMoveCount > 0) {
         position = m_virtualCursorPosition;
-        delta = Vector2(event.deltaX, event.deltaY);
+        /* prevent generating warped cursor delta values */
+        delta = Vector2SI32(event.deltaX, event.deltaY) * Vector2SI32(m_disabledCursorMoveCount > 1);
         result = true;
+        m_disabledCursorMoveCount++;
     }
     else if ([m_nativeWindow isKeyWindow]) {
         position = cursorLocationInWindow(event);
@@ -1480,7 +1482,7 @@ MainWindow::getCursorPosition(const NSEvent *event, Vector2SI32 &position, Vecto
 void
 MainWindow::recenterCursorPosition()
 {
-    if (m_cursorHidden.first) {
+    if (m_disabledCursorMoveCount > 0) {
         Vector2SI32 value;
         getWindowCenterPoint(&value);
         if (m_lastCursorPosition != value) {
@@ -1526,7 +1528,7 @@ MainWindow::disableCursor(const Vector2SI32 &position)
     m_virtualCursorPosition = position;
     m_lastCursorPosition = centerPoint;
     m_restoreHiddenCursorPosition = position;
-    m_cursorHidden.first = true;
+    m_disabledCursorMoveCount = 1;
 }
 
 void
@@ -1540,7 +1542,7 @@ MainWindow::enableCursor(const Vector2SI32 &position)
         internalEnableCursor(m_restoreHiddenCursorPosition);
     }
     m_restoreHiddenCursorPosition = Vector2SI32();
-    m_cursorHidden.first = false;
+    m_disabledCursorMoveCount = 0;
 }
 
 void
@@ -1554,11 +1556,12 @@ MainWindow::internalDisableCursor(Vector2SI32 &centerLocation)
 void
 MainWindow::internalEnableCursor(const Vector2SI32 &location)
 {
+    const CGDirectDisplayID displayID = CGMainDisplayID();
     const CGFloat viewHeight = m_nativeWindow.contentView.frame.size.height,
-                  displayHeight = CGDisplayBounds(CGMainDisplayID()).size.height;
+                  displayHeight = CGDisplayBounds(displayID).size.height;
     const NSRect &rect = [m_nativeWindow convertRectToScreen:NSMakeRect(location.x, viewHeight - location.y, 0, 0)];
     CGAssociateMouseAndMouseCursorPosition(true);
-    CGWarpMouseCursorPosition(CGPointMake(rect.origin.x, displayHeight - rect.origin.y));
+    CGDisplayMoveCursorToPoint(displayID, CGPointMake(rect.origin.x, displayHeight - rect.origin.y));
     [NSCursor unhide];
 }
 
