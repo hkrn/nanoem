@@ -23,12 +23,32 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/vector_query.hpp"
+
 #include "sokol/sokol_time.h"
 
 namespace nanoem {
 
 class StateController::IState {
 public:
+    enum Type {
+        kTypeFirstEnum,
+        kTypeUndoState,
+        kTypeRedoState,
+        kTypeDraggingBoneState,
+        kTypeDraggingCameraState,
+        kTypeDraggingMoveCameraLookAtState,
+        kTypeDraggingBoxSelectedBoneState,
+        kTypeDraggingBoneSelectionState,
+        kTypeDraggingFaceSelectionState,
+        kTypeDraggingJointSelectionState,
+        kTypeDraggingMaterialSelectionState,
+        kTypeDraggingRigidBodySelectionState,
+        kTypeDraggingSoftBodySelectionState,
+        kTypeDraggingVertexSelectionState,
+        kTypeCreatingParentBoneState,
+        kTypeCreatingChildBoneState,
+        kTypeMaxEnum,
+    };
     virtual ~IState() NANOEM_DECL_NOEXCEPT
     {
     }
@@ -36,6 +56,8 @@ public:
     virtual void onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta) = 0;
     virtual void onRelease(const Vector3SI32 &logicalCursorPosition) = 0;
     virtual void onDrawPrimitive2D(IPrimitive2D *primitive) = 0;
+    virtual Type type() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual bool isGrabbingHandle() const NANOEM_DECL_NOEXCEPT = 0;
 };
 
 namespace {
@@ -45,16 +67,19 @@ protected:
     BaseState(StateController *stateController, BaseApplicationService *application);
 
     void onDrawPrimitive2D(IPrimitive2D * /* primitive */) NANOEM_DECL_OVERRIDE;
+    bool isGrabbingHandle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     StateController *m_stateControllerPtr;
     BaseApplicationService *m_applicationPtr;
     Vector2SI32 m_lastLogicalScalePosition;
+    bool m_isGrabbingHandle;
 };
 
 BaseState::BaseState(StateController *stateController, BaseApplicationService *application)
     : m_stateControllerPtr(stateController)
     , m_applicationPtr(application)
     , m_lastLogicalScalePosition(0)
+    , m_isGrabbingHandle(false)
 {
     nanoem_parameter_assert(m_stateControllerPtr, "must not be nullptr");
     nanoem_parameter_assert(m_applicationPtr, "must not be nullptr");
@@ -63,6 +88,12 @@ BaseState::BaseState(StateController *stateController, BaseApplicationService *a
 void
 BaseState::onDrawPrimitive2D(IPrimitive2D *)
 {
+}
+
+bool
+BaseState::isGrabbingHandle() const NANOEM_DECL_NOEXCEPT
+{
+    return m_isGrabbingHandle;
 }
 
 class BaseDraggingObjectState : public BaseState {
@@ -239,6 +270,7 @@ public:
         const Vector3SI32 &logicalCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
 
     void onPress(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
     static Vector2SI32 deviceScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT;
@@ -328,17 +360,19 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalCursorPosition)
             if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
                 draggingState = nanoem_new(internal::OrientateActiveBoneState(
                     project, model, logicalCursorPosition, activeBoneCursorPosition));
+                m_isGrabbingHandle = true;
             }
             else if (editingMode == Project::kEditingModeMove && selection->areAllBonesMovable()) {
                 draggingState = nanoem_new(internal::TranslateActiveBoneState(
                     project, model, logicalCursorPosition, activeBoneCursorPosition));
+                m_isGrabbingHandle = true;
             }
         }
     }
     if (draggingState) {
         setDraggingState(draggingState, logicalCursorPosition);
     }
-    else if (project) {
+    else if (project && project->editingMode() == Project::kEditingModeSelect) {
         const nanoem_model_bone_t *bone = nullptr;
         Model::AxisType axisType;
         nanoem_rsize_t boneIndex = m_stateControllerPtr->boneIndex();
@@ -347,6 +381,12 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalCursorPosition)
             model->selection()->toggleSelectAndActiveBone(bone, project->isMultipleBoneSelectionEnabled());
         }
     }
+}
+
+StateController::IState::Type
+DraggingBoneState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingBoneState;
 }
 
 Vector2SI32
@@ -462,6 +502,7 @@ public:
         const Vector3SI32 &logicalCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
 
     void onPress(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
 DraggingCameraState::DraggingCameraState(
@@ -510,6 +551,12 @@ DraggingCameraState::onPress(const Vector3SI32 &logicalCursorPosition)
     }
 }
 
+StateController::IState::Type
+DraggingCameraState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingCameraState;
+}
+
 struct ISelector {
     virtual void begin(const Vector4SI32 &value, const Project *project) = 0;
     virtual void update(const Vector4SI32 &value, const Project *project) = 0;
@@ -521,7 +568,7 @@ struct ISelector {
 class RectangleSelector NANOEM_DECL_SEALED : public ISelector, private NonCopyable {
 public:
     RectangleSelector();
-    ~RectangleSelector();
+    ~RectangleSelector() NANOEM_DECL_NOEXCEPT;
 
     void begin(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void update(const Vector4SI32 &value, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -539,7 +586,7 @@ RectangleSelector::RectangleSelector()
 {
 }
 
-RectangleSelector::~RectangleSelector()
+RectangleSelector::~RectangleSelector() NANOEM_DECL_NOEXCEPT
 {
 }
 
@@ -599,7 +646,7 @@ struct CircleSelector : ISelector {
         : m_radius(0)
     {
     }
-    ~CircleSelector()
+    ~CircleSelector() NANOEM_DECL_NOEXCEPT
     {
     }
 
@@ -643,7 +690,7 @@ protected:
     BaseSelectionState(StateController *stateController, BaseApplicationService *application);
     ~BaseSelectionState() NANOEM_DECL_NOEXCEPT;
 
-    virtual const char *name() const = 0;
+    virtual const char *name() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void commitSelection(Model *model, const Project *project, bool removeAll) = 0;
 
     internal::IDraggingState *createTranslateState(
@@ -661,7 +708,7 @@ protected:
 
     RectangleSelector m_rectangleSelector;
 
-private:
+public:
     void onPress(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
     void onRelease(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
@@ -931,8 +978,8 @@ public:
     DraggingBoxSelectedBoneState(StateController *stateController, BaseApplicationService *application);
     ~DraggingBoxSelectedBoneState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -946,8 +993,14 @@ DraggingBoxSelectedBoneState::~DraggingBoxSelectedBoneState() NANOEM_DECL_NOEXCE
 {
 }
 
+StateController::IState::Type
+DraggingBoxSelectedBoneState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingBoxSelectedBoneState;
+}
+
 const char *
-DraggingBoxSelectedBoneState::name() const
+DraggingBoxSelectedBoneState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.box-selection";
 }
@@ -979,8 +1032,8 @@ public:
     DraggingVertexSelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingVertexSelectionState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -994,8 +1047,14 @@ DraggingVertexSelectionState::~DraggingVertexSelectionState() NANOEM_DECL_NOEXCE
 {
 }
 
+StateController::IState::Type
+DraggingVertexSelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingVertexSelectionState;
+}
+
 const char *
-DraggingVertexSelectionState::name() const
+DraggingVertexSelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.vertex";
 }
@@ -1028,8 +1087,8 @@ public:
     DraggingFaceSelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingFaceSelectionState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -1043,8 +1102,14 @@ DraggingFaceSelectionState::~DraggingFaceSelectionState() NANOEM_DECL_NOEXCEPT
 {
 }
 
+StateController::IState::Type
+DraggingFaceSelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingFaceSelectionState;
+}
+
 const char *
-DraggingFaceSelectionState::name() const
+DraggingFaceSelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.face";
 }
@@ -1085,8 +1150,8 @@ public:
     DraggingMaterialSelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingMaterialSelectionState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -1100,8 +1165,14 @@ DraggingMaterialSelectionState::~DraggingMaterialSelectionState() NANOEM_DECL_NO
 {
 }
 
+StateController::IState::Type
+DraggingMaterialSelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingMaterialSelectionState;
+}
+
 const char *
-DraggingMaterialSelectionState::name() const
+DraggingMaterialSelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.material";
 }
@@ -1149,8 +1220,8 @@ public:
     DraggingBoneSelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingBoneSelectionState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -1164,8 +1235,14 @@ DraggingBoneSelectionState::~DraggingBoneSelectionState() NANOEM_DECL_NOEXCEPT
 {
 }
 
+StateController::IState::Type
+DraggingBoneSelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingBoneSelectionState;
+}
+
 const char *
-DraggingBoneSelectionState::name() const
+DraggingBoneSelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.bone";
 }
@@ -1197,8 +1274,8 @@ public:
     DraggingRigidBodySelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingRigidBodySelectionState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -1212,8 +1289,14 @@ DraggingRigidBodySelectionState::~DraggingRigidBodySelectionState() NANOEM_DECL_
 {
 }
 
+StateController::IState::Type
+DraggingRigidBodySelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingRigidBodySelectionState;
+}
+
 const char *
-DraggingRigidBodySelectionState::name() const
+DraggingRigidBodySelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.rigid-body";
 }
@@ -1247,8 +1330,8 @@ public:
     DraggingJointSelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingJointSelectionState() NANOEM_DECL_NOEXCEPT;
 
-private:
-    const char *name() const NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
 };
 
@@ -1262,8 +1345,14 @@ DraggingJointSelectionState::~DraggingJointSelectionState() NANOEM_DECL_NOEXCEPT
 {
 }
 
+StateController::IState::Type
+DraggingJointSelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingJointSelectionState;
+}
+
 const char *
-DraggingJointSelectionState::name() const
+DraggingJointSelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.joint";
 }
@@ -1302,11 +1391,13 @@ public:
     DraggingSoftBodySelectionState(StateController *stateController, BaseApplicationService *application);
     ~DraggingSoftBodySelectionState() NANOEM_DECL_NOEXCEPT;
 
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
+
 private:
     typedef tinystl::unordered_map<const nanoem_model_material_t *, Vector3, TinySTLAllocator> MaterialBaryCenterMap;
 
-    const char *name() const NANOEM_DECL_OVERRIDE;
-    void commitSelection(Model *model, const Project *project, bool removeAll) NANOEM_DECL_OVERRIDE;
     void getMaterialMap(Model *model, MaterialBaryCenterMap &baryCenters);
 };
 
@@ -1320,8 +1411,14 @@ DraggingSoftBodySelectionState::~DraggingSoftBodySelectionState() NANOEM_DECL_NO
 {
 }
 
+StateController::IState::Type
+DraggingSoftBodySelectionState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingSoftBodySelectionState;
+}
+
 const char *
-DraggingSoftBodySelectionState::name() const
+DraggingSoftBodySelectionState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.select.soft-body";
 }
@@ -1391,6 +1488,7 @@ public:
     void onPress(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
     void onRelease(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     internal::IDraggingState *m_lastDraggingState;
     nanoem_f32_t m_scaleFactor;
@@ -1437,6 +1535,12 @@ DraggingMoveCameraLookAtState::onRelease(const Vector3SI32 &logicalCursorPositio
     }
 }
 
+StateController::IState::Type
+DraggingMoveCameraLookAtState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeDraggingMoveCameraLookAtState;
+}
+
 class UndoState NANOEM_DECL_SEALED : public BaseState {
 public:
     UndoState(StateController *stateController, BaseApplicationService *application);
@@ -1445,6 +1549,7 @@ public:
     void onPress(const Vector3SI32 & /* logicalCursorPosition */) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 & /* logicalCursorPosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
     void onRelease(const Vector3SI32 & /* logicalCursorPosition */) NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
 UndoState::UndoState(StateController *stateController, BaseApplicationService *application)
@@ -1474,6 +1579,12 @@ UndoState::onRelease(const Vector3SI32 &)
     }
 }
 
+StateController::IState::Type
+UndoState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeUndoState;
+}
+
 class RedoState NANOEM_DECL_SEALED : public BaseState {
 public:
     RedoState(StateController *stateController, BaseApplicationService *application);
@@ -1482,6 +1593,7 @@ public:
     void onPress(const Vector3SI32 & /* logicalCursorPosition */) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 & /* logicalCursorPosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
     void onRelease(const Vector3SI32 & /* logicalCursorPosition */) NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
 RedoState::RedoState(StateController *stateController, BaseApplicationService *application)
@@ -1511,11 +1623,17 @@ RedoState::onRelease(const Vector3SI32 &)
     }
 }
 
+StateController::IState::Type
+RedoState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeRedoState;
+}
+
 class DrawUtil NANOEM_DECL_SEALED : private NonCopyable {
 public:
     static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project);
-    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Model *model, bool movingHandle);
-    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Model *model, bool movingHandle);
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
     static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
     static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
 };
@@ -1534,7 +1652,7 @@ DrawUtil::deviceScaleCursorActiveBoneInViewport(const Project *project)
 }
 
 void
-DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, bool movingHandle)
+DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
 {
     static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0);
     const Project *project = activeModel->project();
@@ -1543,13 +1661,13 @@ DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, 
     const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
                        thickness = project->logicalScaleCircleRadius();
     primitive->strokeLine(center, Vector2(center.x + length, center.y),
-        Vector4(kRed, type == Model::kAxisX || !movingHandle ? 1.0 : 0.25), thickness);
+        Vector4(kRed, type == Model::kAxisX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(center, Vector2(center.x, center.y - length),
-        Vector4(kGreen, type == Model::kAxisY || !movingHandle ? 1.0 : 0.25), thickness);
+        Vector4(kGreen, type == Model::kAxisY || !isGrabbingHandle ? 1.0 : 0.25), thickness);
 }
 
 void
-DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel, bool movingHandle)
+DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
 {
     static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0), kBlue(0, 0, 1);
     const Project *project = activeModel->project();
@@ -1563,10 +1681,10 @@ DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel
     const nanoem_f32_t x2 = center.x + radius;
     const nanoem_f32_t y2 = center.y + radius;
     primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
-        Vector4(kBlue, type == Model::kAxisZ || !movingHandle ? 1.0 : 0.25), thickness);
+        Vector4(kBlue, type == Model::kAxisZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
-        Vector4(kRed, type == Model::kAxisX || !movingHandle ? 1.0 : 0.25), thickness);
-    const Vector4 green(kGreen, type == Model::kAxisY || !movingHandle ? 1.0 : 0.25);
+        Vector4(kRed, type == Model::kAxisX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    const Vector4 green(kGreen, type == Model::kAxisY || !isGrabbingHandle ? 1.0 : 0.25);
     primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kappa),
         Vector2(center.x - radius * kappa, y1), Vector2(center.x + 1, y1), green, thickness);
     primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kappa, y1),
@@ -1623,13 +1741,14 @@ StateController::~StateController() NANOEM_DECL_NOEXCEPT
 void
 StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
 {
+    static const Vector4 kColorRed(1, 0, 0, 1), kColorYellow(1, 1, 0, 1);
     if (Project *project = currentProject()) {
         if (m_state) {
             m_state->onDrawPrimitive2D(primitive);
         }
         const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
         if (Model *activeModel = project->activeModel()) {
-            Vector4 activeBoneColor(1, 0, 0, 1);
+            Vector4 activeBoneColor(kColorRed);
             if (activeModel->isVisible()) {
                 if (EnumUtils::isEnabled(Project::kDrawTypeBoneConnections, flags)) {
                     activeModel->drawBoneConnections(primitive, deviceScaleCursor);
@@ -1641,14 +1760,17 @@ StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
                     activeModel->drawConstraintsHeatMap(primitive);
                 }
             }
-            const bool movingHandle = m_state != nullptr;
             if (EnumUtils::isEnabled(Project::kDrawTypeBoneMoveHandle, flags)) {
-                activeBoneColor = Vector4(1, 1, 0, 1);
-                DrawUtil::drawBoneMoveHandle(primitive, activeModel, movingHandle);
+                activeBoneColor = kColorYellow;
+                const bool isGrabbingHandle =
+                    m_state ? m_state->isGrabbingHandle() && m_state->type() == IState::kTypeDraggingBoneState : false;
+                DrawUtil::drawBoneMoveHandle(primitive, activeModel, isGrabbingHandle);
             }
             if (EnumUtils::isEnabled(Project::kDrawTypeBoneRotateHandle, flags)) {
-                activeBoneColor = Vector4(1, 1, 0, 1);
-                DrawUtil::drawBoneRotateHandle(primitive, activeModel, movingHandle);
+                activeBoneColor = kColorYellow;
+                const bool isGrabbingHandle =
+                    m_state ? m_state->isGrabbingHandle() && m_state->type() == IState::kTypeDraggingBoneState : false;
+                DrawUtil::drawBoneRotateHandle(primitive, activeModel, isGrabbingHandle);
             }
             if (EnumUtils::isEnabled(Project::kDrawTypeActiveBone, flags)) {
                 DrawUtil::drawActiveBonePoint(primitive, activeBoneColor, project);
