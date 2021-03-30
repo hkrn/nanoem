@@ -25,20 +25,20 @@
 namespace nanoem {
 namespace internal {
 
-DraggingBoneState::DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-    const Vector2SI32 &activeBoneCursorPosition)
+DraggingBoneState::DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
+    const Vector2SI32 &activeBoneLogicalCursorPosition)
     : m_project(project)
     , m_model(model)
-    , m_pressedCursorPosition(pressedCursorPosition)
-    , m_activeBoneCursorPosition(activeBoneCursorPosition)
+    , m_pressedLogicalCursorPosition(pressedLogicalCursorPosition)
+    , m_activeBoneLogicalCursorPosition(activeBoneLogicalCursorPosition)
     , m_accumulatedDeltaPosition(0)
-    , m_lastPressedCursorPosition(pressedCursorPosition)
+    , m_lastPressedCursorPosition(pressedLogicalCursorPosition)
     , m_scaleFactor(1.0f)
     , m_shouldSetCursorPosition(false)
 {
     nanoem_parameter_assert(m_project, "must NOT be NULL");
     nanoem_parameter_assert(m_model, "must NOT be NULL");
-    m_project->eventPublisher()->publishDisableCursorEvent(pressedCursorPosition);
+    m_project->eventPublisher()->publishDisableCursorEvent(pressedLogicalCursorPosition);
     m_model->saveBindPose(m_lastBindPose);
     setCameraLocked(true);
 }
@@ -76,7 +76,7 @@ DraggingBoneState::commit(const Vector2SI32 & /* logicalCursorPosition */)
     const ICamera *activeCamera = m_project->activeCamera();
     const Vector2 deviceBoneCursorPosition(
         activeCamera->toDeviceScreenCoordinateInWindow(activeBone->worldTransformOrigin())),
-        scaleFactor((1.0f * m_shouldSetCursorPosition) / m_project->windowDevicePixelRatio());
+        scaleFactor(m_shouldSetCursorPosition * (1.0f / m_project->windowDevicePixelRatio()));
     m_project->eventPublisher()->publishEnableCursorEvent(deviceBoneCursorPosition * scaleFactor);
     setCameraLocked(false);
 }
@@ -206,7 +206,7 @@ DraggingBoneState::cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_N
     Vector3 intersection, lastPressedPosition;
     const ICamera *camera = m_project->activeCamera();
     camera->castRay(value, intersection);
-    camera->castRay(m_pressedCursorPosition, lastPressedPosition);
+    camera->castRay(m_pressedLogicalCursorPosition, lastPressedPosition);
     return intersection - lastPressedPosition;
 }
 
@@ -217,15 +217,15 @@ DraggingBoneState::cursorDelta(const Vector2 &logicalCursorPosition) const NANOE
 }
 
 Vector2SI32
-DraggingBoneState::pressedCursorPosition() const NANOEM_DECL_NOEXCEPT
+DraggingBoneState::pressedLogicalCursorPosition() const NANOEM_DECL_NOEXCEPT
 {
-    return m_pressedCursorPosition;
+    return m_pressedLogicalCursorPosition;
 }
 
 Vector2SI32
-DraggingBoneState::activeBoneCursorPosition() const NANOEM_DECL_NOEXCEPT
+DraggingBoneState::activeBoneLogicalCursorPosition() const NANOEM_DECL_NOEXCEPT
 {
-    return m_activeBoneCursorPosition;
+    return m_activeBoneLogicalCursorPosition;
 }
 
 void
@@ -255,8 +255,8 @@ DraggingBoneState::setCameraLocked(bool value)
 }
 
 TranslateActiveBoneState::TranslateActiveBoneState(Project *project, Model *model,
-    const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &activeBoneCursorPosition)
-    : DraggingBoneState(project, model, pressedCursorPosition, activeBoneCursorPosition)
+    const Vector2SI32 &pressedLogicalCursorPosition, const Vector2SI32 &activeBoneLogicalCursorPosition)
+    : DraggingBoneState(project, model, pressedLogicalCursorPosition, activeBoneLogicalCursorPosition)
     , m_baseLocalTranslation(0)
 {
     if (const model::Bone *activeBone = model::Bone::cast(model->activeBone())) {
@@ -274,7 +274,7 @@ TranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     Vector3 localTranslation(m_baseLocalTranslation);
     if (glm::any(areAxisTypeSelected)) {
         const Vector2SI32 movingCursorPosition(logicalCursorPosition * Vector2SI32(areAxisTypeSelected)),
-            fixedCursorPosition(pressedCursorPosition() * Vector2SI32(glm::not_(areAxisTypeSelected)));
+            fixedCursorPosition(pressedLogicalCursorPosition() * Vector2SI32(glm::not_(areAxisTypeSelected)));
         localTranslation += cursorMoveDelta(movingCursorPosition + fixedCursorPosition);
     }
     else {
@@ -295,8 +295,8 @@ TranslateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
 }
 
 OrientateActiveBoneState::OrientateActiveBoneState(Project *project, Model *model,
-    const Vector2SI32 &pressedCursorPosition, const Vector2SI32 &activeBoneCursorPosition)
-    : DraggingBoneState(project, model, pressedCursorPosition, activeBoneCursorPosition)
+    const Vector2SI32 &pressedLogicalCursorPosition, const Vector2SI32 &activeBoneLogicalCursorPosition)
+    : DraggingBoneState(project, model, pressedLogicalCursorPosition, activeBoneLogicalCursorPosition)
 {
 }
 
@@ -312,7 +312,7 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
         break;
     }
     case Model::kAxisX: {
-        const Vector2 delta(logicalCursorPosition - pressedCursorPosition());
+        const Vector2 delta(logicalCursorPosition - pressedLogicalCursorPosition());
         const Vector3 axisX(handleDragAxis(activeBone, 0));
         orientation = glm::angleAxis(glm::radians(delta).y, axisX);
         break;
@@ -324,7 +324,7 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
         break;
     }
     case Model::kAxisZ: {
-        const Vector2 delta(logicalCursorPosition - pressedCursorPosition());
+        const Vector2 delta(logicalCursorPosition - pressedLogicalCursorPosition());
         const Vector3 axisZ(handleDragAxis(activeBone, 2));
         orientation = glm::angleAxis(-glm::radians(delta).x, axisZ);
         break;
@@ -348,16 +348,16 @@ OrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
 nanoem_f32_t
 OrientateActiveBoneState::angleCursorFromBone(const Vector2SI32 &value) const
 {
-    const Vector2 p0(glm::normalize(Vector2(pressedCursorPosition() - activeBoneCursorPosition())));
-    const Vector2 p1(glm::normalize(Vector2(value - activeBoneCursorPosition())));
+    const Vector2 p0(glm::normalize(Vector2(pressedLogicalCursorPosition() - activeBoneLogicalCursorPosition())));
+    const Vector2 p1(glm::normalize(Vector2(value - activeBoneLogicalCursorPosition())));
     nanoem_f32_t crossProduct = p1.x * p0.y - p1.y * p0.x;
     nanoem_f32_t angle = glm::sign(crossProduct) * glm::acos(glm::dot(p0, p1));
     return glm::isnan(angle) ? 0 : angle;
 }
 
 AxisAlignedTranslateActiveBoneState::AxisAlignedTranslateActiveBoneState(
-    Project *project, Model *model, const Vector2 &pressedCursorPosition, int axisIndex)
-    : DraggingBoneState(project, model, pressedCursorPosition, Vector2())
+    Project *project, Model *model, const Vector2 &pressedLogicalCursorPosition, int axisIndex)
+    : DraggingBoneState(project, model, pressedLogicalCursorPosition, Vector2())
     , m_axisIndex(axisIndex)
 {
     setScaleFactor(0.05f);
@@ -400,8 +400,8 @@ AxisAlignedTranslateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
 }
 
 AxisAlignedOrientateActiveBoneState::AxisAlignedOrientateActiveBoneState(
-    Project *project, Model *model, const Vector2 &pressedCursorPosition, int axisIndex)
-    : DraggingBoneState(project, model, pressedCursorPosition, Vector2())
+    Project *project, Model *model, const Vector2 &pressedLogicalCursorPosition, int axisIndex)
+    : DraggingBoneState(project, model, pressedLogicalCursorPosition, Vector2())
     , m_axisIndex(axisIndex)
 {
     setScaleFactor(0.25f);

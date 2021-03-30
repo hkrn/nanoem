@@ -22,8 +22,8 @@ namespace internal {
 
 class DraggingBoneState : public IDraggingState, private NonCopyable {
 public:
-    DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2SI32 &activeBoneCursorPosition);
+    DraggingBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
+        const Vector2SI32 &activeBoneLogicalCursorPosition);
     ~DraggingBoneState();
 
     void commit(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
@@ -45,8 +45,8 @@ protected:
     Vector3 accumulatedDeltaPosition() const NANOEM_DECL_NOEXCEPT;
     Vector3 cursorMoveDelta(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT;
     Vector2 cursorDelta(const Vector2 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT;
-    Vector2SI32 pressedCursorPosition() const NANOEM_DECL_NOEXCEPT;
-    Vector2SI32 activeBoneCursorPosition() const NANOEM_DECL_NOEXCEPT;
+    Vector2SI32 pressedLogicalCursorPosition() const NANOEM_DECL_NOEXCEPT;
+    Vector2SI32 activeBoneLogicalCursorPosition() const NANOEM_DECL_NOEXCEPT;
     void updateLastCursorPosition(const Vector2 &logicalCursorPosition, const Vector3 &delta);
     bool isShouldSetCursorPosition() const NANOEM_DECL_NOEXCEPT;
     void setShouldSetCursorPosition(bool value);
@@ -56,8 +56,8 @@ private:
 
     Project *m_project;
     Model *m_model;
-    const Vector2SI32 m_pressedCursorPosition;
-    const Vector2SI32 m_activeBoneCursorPosition;
+    const Vector2SI32 m_pressedLogicalCursorPosition;
+    const Vector2SI32 m_activeBoneLogicalCursorPosition;
     model::BindPose m_lastBindPose;
     Vector3 m_accumulatedDeltaPosition;
     Vector2 m_lastPressedCursorPosition;
@@ -67,8 +67,8 @@ private:
 
 class TranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
-    TranslateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2SI32 &activeBoneCursorPosition);
+    TranslateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
+        const Vector2SI32 &activeBoneLogicalCursorPosition);
 
     void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -79,8 +79,8 @@ private:
 
 class OrientateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
-    OrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedCursorPosition,
-        const Vector2SI32 &activeBoneCursorPosition);
+    OrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
+        const Vector2SI32 &activeBoneLogicalCursorPosition);
 
     void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -92,7 +92,7 @@ private:
 class AxisAlignedTranslateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     AxisAlignedTranslateActiveBoneState(
-        Project *project, Model *model, const Vector2 &pressedCursorPosition, int axisIndex);
+        Project *project, Model *model, const Vector2 &pressedLogicalCursorPosition, int axisIndex);
 
     void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -104,7 +104,7 @@ private:
 class AxisAlignedOrientateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
 public:
     AxisAlignedOrientateActiveBoneState(
-        Project *project, Model *model, const Vector2 &pressedCursorPosition, int axisIndex);
+        Project *project, Model *model, const Vector2 &pressedLogicalCursorPosition, int axisIndex);
 
     void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
