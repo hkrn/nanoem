@@ -1669,12 +1669,6 @@ BaseApplicationService::initialize(nanoem_f32_t devicePixelRatio)
 }
 
 void
-BaseApplicationService::setDevicePixelRatio(nanoem_f32_t devicePixelRatio)
-{
-    m_window->setFontPointSize(internal::ImGuiWindow::kFontSize * devicePixelRatio);
-}
-
-void
 BaseApplicationService::destroy()
 {
     SG_PUSH_GROUP("BaseApplication::destroy");
@@ -3086,12 +3080,12 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_CHANGE_DEVICE_PIXEL_RATIO: {
         nanoem_f32_t devicePixelRatio = command->change_device_pixel_ratio->value;
-        setDevicePixelRatio(devicePixelRatio);
         if (nanoem_likely(project)) {
             const Vector2 devicePixelWindowSize(Vector2(project->windowSize()) * devicePixelRatio);
             resizeDefaultRenderTarget(devicePixelWindowSize, project);
             project->setWindowDevicePixelRatio(devicePixelRatio);
             project->setViewportDevicePixelRatio(devicePixelRatio);
+            m_window->setFontPointSize(internal::ImGuiWindow::kFontSize * devicePixelRatio);
             m_window->setDevicePixelRatio(devicePixelRatio);
             m_window->resizeDevicePixelWindowSize(devicePixelWindowSize);
         }

@@ -238,7 +238,6 @@ public:
     virtual ~BaseApplicationService() NANOEM_DECL_NOEXCEPT;
 
     void initialize(nanoem_f32_t devicePixelRatio);
-    void setDevicePixelRatio(nanoem_f32_t devicePixelRatio);
     void destroy();
 
     Project *createProject(const Vector2UI16 &logicalPixelWindowSize, sg_pixel_format pixelFormat,
