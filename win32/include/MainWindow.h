@@ -49,6 +49,11 @@ public:
     void setTitle(const URI &fileURI);
 
 private:
+    enum DisabledCursorState {
+        kDisabledCursorStateNone,
+        kDisabledCursorStateInitial,
+        kDisabledCursorStateMoving,
+    };
     struct FPSThresholder {
         FPSThresholder(uint32_t value, bool enabled)
             : m_value(value)
@@ -128,9 +133,9 @@ private:
     void centerCursor(LPPOINT devicePoint);
     void updateClipCursorRect();
     void lockCursor(LPPOINT devicePoint);
-    void disableCursor(const Vector2SI32 &deviceScalePosition);
-    void unlockCursor(const Vector2SI32 &deviceScalePosition);
-    void enableCursor(const Vector2SI32 &deviceScalePosition);
+    void disableCursor(const Vector2SI32 &logicalCursorPosition);
+    void unlockCursor(const Vector2SI32 &logicalCursorPosition);
+    void enableCursor(const Vector2SI32 &logicalCursorPosition);
     void setFocus();
     void killFocus();
     void recenterCursor();
@@ -173,13 +178,14 @@ private:
     FileHandleListMap m_watchEffectSourceHandles;
     Vector2SI32 m_lastLogicalCursorPosition;
     Vector2SI32 m_virtualLogicalCursorPosition;
-    Vector2SI32 m_restoreHiddenDeviceCursorPosition;
-    tinystl::pair<bool, bool> m_cursorHidden = tinystl::make_pair(false, false);
+    Vector2SI32 m_restoreHiddenLogicalCursorPosition;
+    DisabledCursorState m_disabledCursorState = kDisabledCursorStateNone;
     FPSThresholder m_playingThresholder;
     FPSThresholder m_editingThresholder;
     Vector2UI32 m_logicalWindowSize;
     nanoem_f32_t m_devicePixelRatio = 1.0f;
     uint32_t m_displayFrequency = 0;
+    bool m_disabledCursorResigned = false;
     bool m_vsyncAtPlaying = true;
     bool m_initialized = false;
     bool m_isFullScreen = false;

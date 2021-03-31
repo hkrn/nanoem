@@ -1432,10 +1432,16 @@ MainWindow::handleMouseDown(HWND hwnd, const Vector2SI32 &coord, int type)
 void
 MainWindow::handleMouseMove(HWND hwnd, const Vector2SI32 &coord, int type)
 {
-    const Vector2SI32 logicalPosition(Vector2(coord) * invertedDevicePixelRatio()),
-        delta = logicalPosition - m_lastLogicalCursorPosition;
+    const Vector2SI32 logicalPosition(Vector2(coord) * invertedDevicePixelRatio());
     const int modifiers = cursorModifiers();
+    Vector2SI32 delta(0);
     m_client->sendScreenCursorMoveMessage(devicePixelScreenPosition(hwnd, coord), type, modifiers);
+    if (m_disabledCursorState == kDisabledCursorStateInitial) {
+        m_disabledCursorState = kDisabledCursorStateMoving;
+    }
+    else {
+        delta = logicalPosition - lastLogicalCursorPosition();
+    }
     if (m_windowHandle == hwnd) {
         const Vector2SI32 virtualPosition(virtualLogicalCursorPosition(logicalPosition));
         m_client->sendCursorMoveMessage(virtualPosition, delta, 0, modifiers);
@@ -2197,15 +2203,15 @@ MainWindow::registerAllPrerequisiteEventListeners()
         },
         this, false);
     m_client->addDisableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
+        [](void *userData, const Vector2SI32 &logicalCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            self->disableCursor(coord);
+            self->disableCursor(logicalCursorPosition);
         },
         this, false);
     m_client->addEnableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
+        [](void *userData, const Vector2SI32 &logicalCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            self->enableCursor(coord);
+            self->enableCursor(logicalCursorPosition);
         },
         this, false);
     m_client->addErrorEventListener(
@@ -2374,7 +2380,7 @@ MainWindow::closeProgressDialog()
 Vector2SI32
 MainWindow::virtualLogicalCursorPosition(const Vector2SI32 &value) const
 {
-    return m_cursorHidden.first ? m_virtualLogicalCursorPosition : value;
+    return isCursorHidden() ? m_virtualLogicalCursorPosition : value;
 }
 
 Vector2SI32
@@ -2386,7 +2392,7 @@ MainWindow::lastLogicalCursorPosition() const
 bool
 MainWindow::isCursorHidden() const
 {
-    return m_cursorHidden.first;
+    return m_disabledCursorState != kDisabledCursorStateNone;
 }
 
 void
@@ -2444,20 +2450,21 @@ MainWindow::lockCursor(LPPOINT devicePoint)
 }
 
 void
-MainWindow::disableCursor(const Vector2SI32 &deviceScalePosition)
+MainWindow::disableCursor(const Vector2SI32 &logicalCursorPosition)
 {
     POINT devicePoint;
     lockCursor(&devicePoint);
-    m_virtualLogicalCursorPosition = deviceScalePosition;
-    m_lastLogicalCursorPosition = Vector2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio();
-    m_restoreHiddenDeviceCursorPosition = Vector2(deviceScalePosition) * m_devicePixelRatio;
-    m_cursorHidden.first = true;
+    setLastLogicalCursorPosition(Vector2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio());
+    m_virtualLogicalCursorPosition = logicalCursorPosition;
+    m_restoreHiddenLogicalCursorPosition = logicalCursorPosition;
+    m_disabledCursorState = kDisabledCursorStateInitial;
 }
 
 void
-MainWindow::unlockCursor(const Vector2SI32 &deviceScalePosition)
+MainWindow::unlockCursor(const Vector2SI32 &logicalCursorPosition)
 {
-    POINT devicePoint = { LONG(deviceScalePosition.x), LONG(deviceScalePosition.y) };
+    const Vector2 deviceCursorPosition(Vector2(logicalCursorPosition) * m_devicePixelRatio);
+    POINT devicePoint = { LONG(deviceCursorPosition.x), LONG(deviceCursorPosition.y) };
     setCursorPosition(devicePoint);
     ClipCursor(nullptr);
     ReleaseCapture();
@@ -2465,39 +2472,39 @@ MainWindow::unlockCursor(const Vector2SI32 &deviceScalePosition)
 }
 
 void
-MainWindow::enableCursor(const Vector2SI32 &deviceScalePosition)
+MainWindow::enableCursor(const Vector2SI32 &logicalCursorPosition)
 {
     Vector2SI32 position;
-    if (deviceScalePosition.x != 0 && deviceScalePosition.y != 0) {
-        position = deviceScalePosition;
+    if (logicalCursorPosition.x != 0 && logicalCursorPosition.y != 0) {
+        position = logicalCursorPosition;
     }
     else {
-        position = m_restoreHiddenDeviceCursorPosition;
+        position = m_restoreHiddenLogicalCursorPosition;
     }
     unlockCursor(position);
-    m_lastLogicalCursorPosition = Vector2(position) * invertedDevicePixelRatio();
-    m_restoreHiddenDeviceCursorPosition = Vector2SI32();
-    m_cursorHidden.first = false;
+    setLastLogicalCursorPosition(position);
+    m_restoreHiddenLogicalCursorPosition = Vector2SI32();
+    m_disabledCursorState = kDisabledCursorStateNone;
 }
 
 void
 MainWindow::setFocus()
 {
-    if (m_cursorHidden.second) {
+    if (m_disabledCursorResigned) {
         POINT devicePoint;
         lockCursor(&devicePoint);
-        m_cursorHidden.second = false;
-        m_cursorHidden.first = true;
+        m_disabledCursorState = kDisabledCursorStateInitial;
+        m_disabledCursorResigned = false;
     }
 }
 
 void
 MainWindow::killFocus()
 {
-    if (m_cursorHidden.first) {
+    if (isCursorHidden()) {
         unlockCursor(Vector2SI32(0));
-        m_cursorHidden.first = false;
-        m_cursorHidden.second = true;
+        m_disabledCursorState = kDisabledCursorStateNone;
+        m_disabledCursorResigned = true;
     }
 }
 
@@ -2509,9 +2516,9 @@ MainWindow::recenterCursor()
         getWindowCenterPoint(&deviceCenterPoint);
         const Vector2SI32 logicalCenterPoint(
             Vector2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio());
-        if (m_lastLogicalCursorPosition != logicalCenterPoint) {
+        if (lastLogicalCursorPosition() != logicalCenterPoint) {
             setCursorPosition(deviceCenterPoint);
-            m_lastLogicalCursorPosition = logicalCenterPoint;
+            setLastLogicalCursorPosition(logicalCenterPoint);
         }
     }
 }
