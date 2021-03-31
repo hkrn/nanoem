@@ -2528,7 +2528,7 @@ bool
 Project::resetAllPasses()
 {
     bool performed = false;
-    if (EnumUtils::isEnabled(kResetAllPasses, m_stateFlags)) {
+    if (isResetAllPassesPending()) {
         const Vector2UI16 layoutSize(
             Vector2(m_uniformViewportLayoutRect.second.z, m_uniformViewportLayoutRect.second.w) *
             m_viewportDevicePixelRatio.second);
@@ -4723,6 +4723,12 @@ Project::windowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT
     return m_windowDevicePixelRatio.first;
 }
 
+nanoem_f32_t
+Project::pendingWindowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT
+{
+    return m_windowDevicePixelRatio.second;
+}
+
 void
 Project::setWindowDevicePixelRatio(nanoem_f32_t value)
 {
@@ -5552,6 +5558,12 @@ Project::setSampleLevel(nanoem_u32_t value)
         EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
         eventPublisher()->publishSetProjectSampleLevelEvent(value);
     }
+}
+
+bool
+Project::isResetAllPassesPending() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kResetAllPasses, m_stateFlags);
 }
 
 bool

@@ -493,9 +493,13 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
             auto rect = reinterpret_cast<const RECT *>(lparam);
             const LONG width = rect->right - rect->left, height = rect->bottom - rect->top;
-            nanoem_f32_t devicePixelRatio = LOWORD(wparam) / Win32ThreadedApplicationService::kStandardDPIValue;
+            const nanoem_f32_t devicePixelRatio = LOWORD(wparam) / Win32ThreadedApplicationService::kStandardDPIValue,
+                invertDevicePixelRatio = 1.0f / devicePixelRatio;
+            const Vector2UI32 newSize(width * invertDevicePixelRatio, height * invertDevicePixelRatio);
             self->m_devicePixelRatio = devicePixelRatio;
             self->m_client->sendChangeDevicePixelRatioMessage(devicePixelRatio);
+            self->m_client->sendResizeWindowMessage(newSize);
+            self->m_logicalWindowSize = newSize;
             SetWindowPos(hwnd, NULL, rect->left, rect->top, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
         }
         break;
@@ -2541,19 +2545,19 @@ MainWindow::resizeWindow()
     RECT rect;
     GetClientRect(m_windowHandle, &rect);
     const nanoem_f32_t dpr = invertedDevicePixelRatio();
-    const Vector2UI32 windowSize((rect.right - rect.left) * dpr, (rect.bottom - rect.top) * dpr);
-    resizeWindow(windowSize);
+    const Vector2UI32 logicalWindowSize((rect.right - rect.left) * dpr, (rect.bottom - rect.top) * dpr);
+    resizeWindow(logicalWindowSize);
 }
 
 void
-MainWindow::resizeWindow(const Vector2UI32 &windowSize)
+MainWindow::resizeWindow(const Vector2UI32 &logicalWindowSize)
 {
-    if (m_logicalWindowSize != windowSize) {
-        m_client->sendResizeWindowMessage(windowSize);
+    if (m_logicalWindowSize != logicalWindowSize) {
+        m_client->sendResizeWindowMessage(logicalWindowSize);
         if (isCursorHidden()) {
             updateClipCursorRect();
         }
-        m_logicalWindowSize = windowSize;
+        m_logicalWindowSize = logicalWindowSize;
         DrawMenuBar(m_windowHandle);
     }
 }

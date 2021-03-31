@@ -2858,9 +2858,10 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_VIEWPORT_RESIZED: {
         if (nanoem_likely(project)) {
+            const nanoem_f32_t devicePixelRatio = project->isResetAllPassesPending() ? project->pendingWindowDevicePixelRatio() : project->windowDevicePixelRatio();
             const Nanoem__Application__ViewportResizedCommand *commandPtr = command->viewport_resized;
             const Vector2UI16 logicalPixelWindowSize(commandPtr->width, commandPtr->height),
-                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * project->windowDevicePixelRatio());
+                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * devicePixelRatio);
             resizeDefaultRenderTarget(devicePixelWindowSize, project);
             project->resizeWindowSize(logicalPixelWindowSize);
             m_window->resizeDevicePixelWindowSize(devicePixelWindowSize);
@@ -2869,9 +2870,10 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_WINDOW_RESIZED: {
         if (nanoem_likely(project)) {
+            const nanoem_f32_t devicePixelRatio = project->isResetAllPassesPending() ? project->pendingWindowDevicePixelRatio() : project->windowDevicePixelRatio();
             const Nanoem__Application__WindowResizedCommand *commandPtr = command->window_resized;
             const Vector2UI16 logicalPixelWindowSize(commandPtr->width, commandPtr->height),
-                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * project->windowDevicePixelRatio());
+                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * devicePixelRatio);
             resizeDefaultRenderTarget(devicePixelWindowSize, project);
             project->resizeWindowSize(logicalPixelWindowSize);
             m_window->resizeDevicePixelWindowSize(devicePixelWindowSize);

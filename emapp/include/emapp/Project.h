@@ -594,6 +594,7 @@ public:
     void setUptimeSeconds(nanoem_f64_t value);
     nanoem_f32_t deviceScaleViewportScaleFactor() const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t windowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT;
+    nanoem_f32_t pendingWindowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT;
     void setWindowDevicePixelRatio(nanoem_f32_t value);
     nanoem_f32_t viewportDevicePixelRatio() const NANOEM_DECL_NOEXCEPT;
     void setViewportDevicePixelRatio(nanoem_f32_t value);
@@ -688,6 +689,7 @@ public:
     int sampleCount() const NANOEM_DECL_NOEXCEPT;
     nanoem_u32_t sampleLevel() const NANOEM_DECL_NOEXCEPT;
     void setSampleLevel(nanoem_u32_t value);
+    bool isResetAllPassesPending() const NANOEM_DECL_NOEXCEPT;
     bool isDisplaySyncDisabled() const NANOEM_DECL_NOEXCEPT;
     bool isHiddenBoneBoundsRigidBodyDisabled() const NANOEM_DECL_NOEXCEPT;
     void setHiddenBoneBoundsRigidBodyDisabled(bool value);
