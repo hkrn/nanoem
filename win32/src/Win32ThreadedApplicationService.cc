@@ -237,7 +237,7 @@ RenderDocDebugCapture::stop()
 
 } /* namespace anonymous */
 
-const nanoem_f32_t Win32ThreadedApplicationService::kStandardDPIValue = USER_DEFAULT_SCREEN_DPI;
+const nanoem_f32_t Win32ThreadedApplicationService::kStandardDPIValue = 96.0f;
 const wchar_t Win32ThreadedApplicationService::kRegisterClassName[] = L"nanoem";
 
 #if defined(IMGUI_HAS_VIEWPORT)
