@@ -2694,12 +2694,18 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
             activeAccessory ? activeAccessory->nameConstString() : nullptr);
     }
     // ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-    ImVec2 offset = ImGui::GetCursorScreenPos(), size = ImGui::GetContentRegionAvail();
+    const ImVec2 offset = ImGui::GetCursorScreenPos();
+    ImVec2 size = ImGui::GetContentRegionAvail(), innerOffset(offset), basePos;
+#if defined(IMGUI_HAS_VIEWPORT)
+    basePos = ImGui::GetMainViewport()->Pos;
+#endif /* IMGUI_HAS_VIEWPORT */
+    innerOffset.x -= basePos.x;
+    innerOffset.y -= basePos.y;
     const bool isModelEditingEnabled = project->isModelEditingEnabled();
     if (!isModelEditingEnabled) {
         size.y -= ImGui::GetFrameHeightWithSpacing();
     }
-    const Vector4 viewportLayout(offset.x, offset.y, size.x, size.y);
+    const Vector4 viewportLayout(innerOffset.x, innerOffset.y, size.x, size.y);
     bool hovered = ImGui::IsWindowHovered();
     project->resizeUniformedViewportLayout(viewportLayout * invertDeviceScaleRatio);
     const Vector4 viewportImageRect(createViewportImageRect(project, viewportLayout));
@@ -2707,8 +2713,8 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     ImGui::Dummy(size);
     ImDrawList *drawList = ImGui::GetWindowDrawList();
     const ImVec2 a(offset.x, offset.y), b(offset.x + size.x, offset.y + size.y),
-        viewportImageFrom(viewportImageRect.x, viewportImageRect.y),
-        viewportImageTo(viewportImageRect.x + viewportImageRect.z, viewportImageRect.y + viewportImageRect.w);
+        viewportImageFrom(basePos.x + viewportImageRect.x, basePos.y + viewportImageRect.y),
+        viewportImageTo(viewportImageFrom.x + viewportImageRect.z, viewportImageFrom.y + viewportImageRect.w);
     const nanoem_f32_t tileSizeRatio = 1.0f / (16.0f * deviceScaleRatio);
     const Vector2UI16 viewportPadding(
         viewportImageFrom.x > a.y ? (viewportImageFrom.x - a.x) * invertDeviceScaleRatio : 0,
