@@ -48,6 +48,7 @@ public:
     static const nanoem_f32_t kTimelineMinWidthRatio;
     static const nanoem_f32_t kTimelineMaxWidthRatio;
     static const nanoem_f32_t kTimelineSnapGridRatio;
+    static const nanoem_f32_t kDrawCircleSegmentCount;
     static const ImGuiDataType kFrameIndexDataType;
     static const ImU32 kMainWindowFlags;
     static const ImU32 kColorWindowBg;

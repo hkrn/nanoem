@@ -128,6 +128,7 @@ const nanoem_f32_t ImGuiWindow::kTimelineDefaultWidthRatio = 0.3f;
 const nanoem_f32_t ImGuiWindow::kTimelineMinWidthRatio = 0.25f;
 const nanoem_f32_t ImGuiWindow::kTimelineMaxWidthRatio = 0.75f;
 const nanoem_f32_t ImGuiWindow::kTimelineSnapGridRatio = 0.02f;
+const nanoem_f32_t ImGuiWindow::kDrawCircleSegmentCount = 24.0f;
 const ImGuiDataType ImGuiWindow::kFrameIndexDataType = ImGuiDataType_U32;
 const ImU32 ImGuiWindow::kMainWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
 const ImU32 ImGuiWindow::kColorWindowBg = IM_COL32(45, 45, 45, 255);
@@ -4531,7 +4532,7 @@ ImGuiWindow::PrimitiveContext::strokeCircle(const Vector4 &rect, const Vector4 &
     const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
-    ImGui::GetWindowDrawList()->AddCircle(center, radius, col, int(16.0f * m_scaleFactor), thickness *m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddCircle(center, radius, col, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
 }
 
 void
@@ -4541,7 +4542,7 @@ ImGuiWindow::PrimitiveContext::fillCircle(const Vector4 &rect, const Vector4 &co
     const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
-    ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, col, int(16.0f * m_scaleFactor));
+    ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, col, int(kDrawCircleSegmentCount * m_scaleFactor));
 }
 
 void
