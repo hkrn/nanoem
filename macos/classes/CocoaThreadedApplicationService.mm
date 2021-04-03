@@ -723,6 +723,8 @@ struct MetalRendererData {
 
 } /* namespace anonymous */
 
+NSString *CocoaThreadedApplicationService::kDefaultWindowTitle = @"nanoem";
+
 NSApplication *
 CocoaThreadedApplicationService::createApplication()
 {
@@ -763,7 +765,7 @@ CocoaThreadedApplicationService::createMainWindow()
     window.restorable = NO;
     window.movableByWindowBackground = NO;
     window.opaque = NO;
-    window.title = [[NSProcessInfo processInfo] processName];
+    window.title = kDefaultWindowTitle;
     return window;
 }
 

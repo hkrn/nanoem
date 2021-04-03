@@ -976,7 +976,7 @@ MainWindow::confirmBeforeClose()
 void
 MainWindow::clearTitle()
 {
-    m_nativeWindow.title = @"nanoem";
+    m_nativeWindow.title = CocoaThreadedApplicationService::kDefaultWindowTitle;
 }
 
 void
@@ -988,7 +988,8 @@ MainWindow::setTitle(NSURL *fileURL)
 void
 MainWindow::setTitle(NSString *lastPathComponent)
 {
-    NSString *title = [[NSString alloc] initWithFormat:@"%@ - nanoem", lastPathComponent];
+    NSString *title = [[NSString alloc]
+        initWithFormat:@"%@ - %@", lastPathComponent, CocoaThreadedApplicationService::kDefaultWindowTitle];
     m_nativeWindow.title = title;
 }
 

@@ -43,6 +43,8 @@ class IBackgroundRenderer;
 
 class CocoaThreadedApplicationService final : public ThreadedApplicationService {
 public:
+    static NSString *kDefaultWindowTitle;
+
     static NSApplication *createApplication();
     static NSWindow *createMainWindow();
     static NSString *maskUserString(const char *value);
