@@ -4532,7 +4532,8 @@ ImGuiWindow::PrimitiveContext::strokeCircle(const Vector4 &rect, const Vector4 &
     const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
-    ImGui::GetWindowDrawList()->AddCircle(center, radius, col, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddCircle(
+        center, radius, col, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
 }
 
 void

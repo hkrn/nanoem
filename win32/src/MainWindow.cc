@@ -494,7 +494,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
             auto rect = reinterpret_cast<const RECT *>(lparam);
             const LONG width = rect->right - rect->left, height = rect->bottom - rect->top;
             const nanoem_f32_t devicePixelRatio = LOWORD(wparam) / Win32ThreadedApplicationService::kStandardDPIValue,
-                invertDevicePixelRatio = 1.0f / devicePixelRatio;
+                               invertDevicePixelRatio = 1.0f / devicePixelRatio;
             const Vector2UI32 newSize(width * invertDevicePixelRatio, height * invertDevicePixelRatio);
             self->m_devicePixelRatio = devicePixelRatio;
             self->m_client->sendChangeDevicePixelRatioMessage(devicePixelRatio);
