@@ -4643,7 +4643,7 @@ Vector4UI16
 Project::deviceScaleUniformedViewportLayoutRect() const NANOEM_DECL_NOEXCEPT
 {
     const nanoem_f32_t dpr = viewportDevicePixelRatio(), s = windowDevicePixelRatio() / dpr;
-    return Vector4(m_uniformViewportLayoutRect.first) * dpr * s;
+    return Vector4(logicalScaleUniformedViewportLayoutRect()) * dpr * s;
 }
 
 Vector2UI16
