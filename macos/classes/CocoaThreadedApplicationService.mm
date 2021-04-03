@@ -747,23 +747,22 @@ NSWindow *
 CocoaThreadedApplicationService::createMainWindow()
 {
     const Vector2UI16 &minsize = BaseApplicationService::minimumRequiredWindowSize();
-    const NSRect rect = NSMakeRect(0, 0, minsize.x, minsize.y);
-    NSUInteger style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
+    const NSRect minSizeRect = NSMakeRect(0, 0, minsize.x, minsize.y);
+    const NSUInteger style = NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable |
         NSWindowStyleMaskResizable;
-    const NSRect frameRect = [NSWindow frameRectForContentRect:rect styleMask:style];
-    CGFloat deltaWidth = frameRect.size.width - minsize.x, deltaHeight = frameRect.size.height - minsize.y;
-    NSWindow *window = [[NSWindow alloc] initWithContentRect:rect
+    const NSRect frameRect = [NSWindow frameRectForContentRect:minSizeRect styleMask:style];
+    NSWindow *window = [[NSWindow alloc] initWithContentRect:frameRect
                                                    styleMask:style
                                                      backing:NSBackingStoreBuffered
                                                        defer:NO];
-    window.minSize = NSMakeSize(minsize.x + deltaWidth, minsize.y + deltaHeight);
+    window.minSize = frameRect.size;
     window.acceptsMouseMovedEvents = YES;
     window.backgroundColor = [NSColor blackColor];
     window.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary;
     window.releasedWhenClosed = NO;
     window.restorable = NO;
     window.movableByWindowBackground = NO;
-    window.opaque = YES;
+    window.opaque = NO;
     window.title = [[NSProcessInfo processInfo] processName];
     return window;
 }
