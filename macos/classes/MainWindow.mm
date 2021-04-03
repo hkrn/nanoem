@@ -673,13 +673,13 @@ MainWindow::firstRectForCharacterRange()
 {
 #if defined(IMGUI_HAS_VIEWPORT)
     const Vector2SI32 origin(m_service->textInputOrigin());
-    return NSMakeRect(origin.x, m_deviceScaleScreenHeight - origin.y, 0, 0);
+    return NSMakeRect(origin.x, origin.y, 0, 0);
 #else
     const NSRect rect([m_nativeWindow contentRectForFrameRect:m_nativeWindow.frame]);
     const Vector2SI32 origin(m_service->textInputOrigin());
     CGFloat x = rect.origin.x + origin.x, y = rect.origin.y + rect.size.height - origin.y;
     return NSMakeRect(x, y, 0, 0);
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
 }
 
 bool
@@ -713,13 +713,6 @@ MainWindow::handleResignFocus()
         m_disabledCursorState = kDisabledCursorStateNone;
         m_disabledCursorResigned = true;
     }
-}
-
-void
-MainWindow::handleScreenChange()
-{
-    const NSScreen *screen = [NSScreen mainScreen];
-    m_deviceScaleScreenHeight = screen.frame.size.height * screen.backingScaleFactor;
 }
 
 void
@@ -1368,7 +1361,7 @@ MainWindow::handleRemovingWatchEffectSource(void *userData, uint16_t handle, con
 Vector2SI32
 MainWindow::deviceScaleScreenPosition(const NSEvent *event) noexcept
 {
-    return CocoaThreadedApplicationService::deviceScaleScreenPosition(event, m_nativeWindow, m_deviceScaleScreenHeight);
+    return CocoaThreadedApplicationService::deviceScaleScreenPosition(event, m_nativeWindow);
 }
 
 float
@@ -1578,7 +1571,6 @@ MainWindow::registerAllPrerequisiteEventListeners()
     m_client->addInitializationCompleteEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
-            self->handleScreenChange();
             dispatch_async(self->m_metricsQueue, ^() {
                 self->sendPerformanceMonitorPeriodically();
             });

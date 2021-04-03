@@ -71,27 +71,19 @@ using namespace nanoem::macos;
     NSTextInputContext *m_textInputContext;
     NSMutableAttributedString *m_markedString;
     NSRange m_selectedRange;
-    CGFloat m_deviceScaleScreenHeight;
 }
 
-- (instancetype)initWithFrame:(CGRect)frameRect
-                       device:(id<MTLDevice>)device
-                       client:(ThreadedApplicationClient *)clien
-                 screenHeight:(CGFloat)screenHeight;
+- (instancetype)initWithFrame:(CGRect)frameRect device:(id<MTLDevice>)device client:(ThreadedApplicationClient *)client;
 - (Vector2SI32)devicePixelScreenPosition:(NSEvent *)event;
 
 @end
 
 @implementation ViewportWindowMetalView
 
-- (instancetype)initWithFrame:(CGRect)frameRect
-                       device:(id<MTLDevice>)device
-                       client:(ThreadedApplicationClient *)client
-                 screenHeight:(CGFloat)screenHeight
+- (instancetype)initWithFrame:(CGRect)frameRect device:(id<MTLDevice>)device client:(ThreadedApplicationClient *)client
 {
     if (self = [super initWithFrame:frameRect device:device]) {
         m_client = client;
-        m_deviceScaleScreenHeight = screenHeight;
         m_textInputContext = [[NSTextInputContext alloc] initWithClient:self];
         m_markedString = nil;
         m_selectedRange = NSMakeRange(NSNotFound, 0);
@@ -101,7 +93,7 @@ using namespace nanoem::macos;
 
 - (Vector2SI32)devicePixelScreenPosition:(NSEvent *)event
 {
-    return CocoaThreadedApplicationService::deviceScaleScreenPosition(event, self.window, m_deviceScaleScreenHeight);
+    return CocoaThreadedApplicationService::deviceScaleScreenPosition(event, self.window);
 }
 
 /* NSResponder */
@@ -581,12 +573,21 @@ ViewportWindow::createWindow(const ImGuiViewport *viewport)
             NSWindowStyleMaskResizable;
     }
     NSWindow *window;
-    NSRect rect = NSMakeRect(viewport->Pos.x, viewport->Pos.y, viewport->Size.x, viewport->Size.y);
+    const nanoem_f32_t invertDevicePixelRatio = parentWindow ? (1.0f / parentWindow.backingScaleFactor) : 1.0f;
+    const NSRect rect = NSMakeRect(viewport->Pos.x * invertDevicePixelRatio, viewport->Pos.y * invertDevicePixelRatio,
+                     viewport->Size.x * invertDevicePixelRatio, viewport->Size.y * invertDevicePixelRatio),
+                 frameRect = [NSWindow frameRectForContentRect:rect styleMask:style];
     if (EnumUtils::isEnabledT<ImGuiViewportFlags>(flags, ImGuiViewportFlags_NoTaskBarIcon)) {
-        window = [[NSPanel alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO];
+        window = [[NSPanel alloc] initWithContentRect:frameRect
+                                            styleMask:style
+                                              backing:NSBackingStoreBuffered
+                                                defer:NO];
     }
     else {
-        window = [[NSWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO];
+        window = [[NSWindow alloc] initWithContentRect:frameRect
+                                             styleMask:style
+                                               backing:NSBackingStoreBuffered
+                                                 defer:NO];
     }
     window.acceptsMouseMovedEvents = YES;
     window.backgroundColor = [NSColor blackColor];
@@ -598,12 +599,9 @@ ViewportWindow::createWindow(const ImGuiViewport *viewport)
         static_cast<CocoaThreadedApplicationService *>(ImGui::GetIO().BackendRendererUserData);
     id<MTLDevice> device = service->metalDevice();
     MTKView *parentView = service->nativeView();
-    const NSScreen *screen = window.screen;
-    const nanoem_f32_t screenHeight = screen.frame.size.height * screen.backingScaleFactor;
     MTKView *contentView = [[ViewportWindowMetalView alloc] initWithFrame:window.contentView.bounds
                                                                    device:device
-                                                                   client:&m_client
-                                                             screenHeight:screenHeight];
+                                                                   client:&m_client];
     contentView.colorPixelFormat = parentView.colorPixelFormat;
     contentView.depthStencilPixelFormat = parentView.depthStencilPixelFormat;
     contentView.enableSetNeedsDisplay = NO;
@@ -617,13 +615,13 @@ ViewportWindow::createWindow(const ImGuiViewport *viewport)
 void
 ViewportWindow::destroyWindow()
 {
-    auto window = (__bridge NSWindow *) ImGui::GetMainViewport()->PlatformHandleRaw;
-    if (window != m_window) {
-        [window removeChildWindow:m_window];
+    auto mainWindow = (__bridge NSWindow *) ImGui::GetMainViewport()->PlatformHandleRaw;
+    if (mainWindow != m_window) {
+        [mainWindow removeChildWindow:m_window];
         [m_window close];
         m_window = nil;
     }
-    [window makeKeyWindow];
+    [mainWindow makeKeyWindow];
 }
 
 void
@@ -635,35 +633,38 @@ ViewportWindow::showWindow()
 ImVec2
 ViewportWindow::windowPos() const noexcept
 {
-    const NSRect contentRect([m_window contentRectForFrameRect:m_window.frame]);
-    const float devicePixelRatio = m_window.backingScaleFactor;
-    return ImVec2(contentRect.origin.x * devicePixelRatio, flipY(contentRect.origin.y, contentRect) * devicePixelRatio);
+    const NSScreen *screen = m_window.screen;
+    const NSRect frameRect = [m_window convertRectToBacking:m_window.frame],
+                 screenFrameRect = [m_window convertRectToBacking:screen.frame],
+                 screenVisibleFrameRect = [m_window convertRectToBacking:screen.visibleFrame];
+    const CGFloat offset = screenFrameRect.size.height - screenVisibleFrameRect.size.height;
+    CGPoint origin = frameRect.origin;
+    origin.y = screenFrameRect.size.height - (frameRect.size.height + origin.y) + offset;
+    return ImVec2(origin.x, origin.y);
 }
 
 void
 ViewportWindow::setWindowPos(const ImVec2 &value)
 {
-    const float invertDevicePixelRatio = 1.0f / m_window.backingScaleFactor;
-    const NSRect windowFrame(m_window.frame);
-    const NSRect contentRect(
-        NSMakeRect(value.x * invertDevicePixelRatio, flipY(value.y * invertDevicePixelRatio, windowFrame), 0, 0));
-    const NSRect frameRect([m_window frameRectForContentRect:contentRect]);
+    const CGPoint point = [m_window convertPointFromBacking:CGPointMake(value.x, value.y)];
+    const CGFloat y = m_window.contentView.frame.size.height + point.y;
+    const NSRect frameRect =
+        [m_window frameRectForContentRect:NSMakeRect(point.x, m_window.screen.frame.size.height - y, 0, 0)];
     [m_window setFrameOrigin:frameRect.origin];
 }
 
 ImVec2
 ViewportWindow::windowSize() const noexcept
 {
-    const NSSize &size = m_window.frame.size;
-    return ImVec2(size.width, size.height);
+    const NSSize frameSize = [m_window convertRectToBacking:m_window.frame].size;
+    return ImVec2(frameSize.width, frameSize.height);
 }
 
 void
 ViewportWindow::setWindowSize(const ImVec2 &value)
 {
-    NSRect rect = m_window.frame;
-    rect.size.width = value.x;
-    rect.size.height = value.y;
+    NSRect rect = [m_window convertRectFromBacking:NSMakeRect(0, 0, value.x, value.y)];
+    rect.origin = m_window.frame.origin;
     [m_window setFrame:rect display:YES];
 }
 
@@ -701,7 +702,7 @@ bool
 ViewportWindow::updateWindow()
 {
     [m_window update];
-    return true;
+    return false;
 }
 
 float
@@ -721,7 +722,7 @@ struct MetalRendererData {
     id<MTLTexture> m_texture;
 };
 
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
 
 } /* namespace anonymous */
 
@@ -833,12 +834,12 @@ CocoaThreadedApplicationService::scrollWheelDelta(const NSEvent *event)
 }
 
 Vector2SI32
-CocoaThreadedApplicationService::deviceScaleScreenPosition(
-    const NSEvent *event, NSWindow *window, nanoem_f32_t screenHeight) noexcept
+CocoaThreadedApplicationService::deviceScaleScreenPosition(const NSEvent *event, NSWindow *window) noexcept
 {
     const NSPoint screenCursorPoint([window convertPointToScreen:event.locationInWindow]),
         deviceCursorPoint([window convertPointToBacking:screenCursorPoint]);
-    return Vector2SI32(deviceCursorPoint.x, (screenHeight - deviceCursorPoint.y));
+    const NSRect deviceScaleFrameRect = [window convertRectToBacking:window.screen.frame];
+    return Vector2SI32(deviceCursorPoint.x, deviceScaleFrameRect.size.height - deviceCursorPoint.y);
 }
 
 const char *
@@ -1055,7 +1056,7 @@ CocoaThreadedApplicationService::createDebugCapture()
     if (sg::query_backend() == SG_BACKEND_METAL_MACOS) {
         capture = nanoem_new(MetalDebugCapture(metalDevice()));
     }
-#endif
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
     return capture;
 }
 
@@ -1118,7 +1119,7 @@ CocoaThreadedApplicationService::menubarApplicationClient()
         m_menuClient = nanoem_new(ThreadedApplicationClient);
         m_menuClient->connect();
     }
-#endif
+#endif /* NDEBUG */
     return m_menuClient;
 }
 
@@ -1319,8 +1320,10 @@ CocoaThreadedApplicationService::handleInitializeApplication()
     };
     platformIO.Platform_GetWindowDpiScale = [](ImGuiViewport *viewport) {
         auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
-        BX_UNUSED_1(userData);
-        float dpiScale = 1.0f;
+        __block float dpiScale = 1.0f;
+        userData->runBlockOnMainQueue(^(ViewportWindow *userData) {
+            dpiScale = userData->m_window.backingScaleFactor;
+        });
         return dpiScale;
     };
     platformIO.Platform_OnChangedViewport = [](ImGuiViewport *viewport) {
@@ -1332,10 +1335,12 @@ CocoaThreadedApplicationService::handleInitializeApplication()
         __block const ImVec2 localPos(pos);
         userData->runBlockOnMainQueue(^(ViewportWindow *userData) {
             auto self = static_cast<CocoaThreadedApplicationService *>(viewport->PlatformHandle);
-            const nanoem_f32_t devicePixelRatio = userData->m_window.backingScaleFactor,
-                               fx = localPos.x * (1.0f / devicePixelRatio),
-                               fy = localPos.y * (1.0f / devicePixelRatio) + ImGui::GetIO().Fonts->Fonts[0]->FontSize;
-            self->m_textInputOrigin = Vector2SI32(fx, fy);
+            const NSWindow *window = userData->m_window;
+            const ImFont *font = ImGui::GetIO().Fonts->Fonts[0];
+            const nanoem_f32_t invertDevicePixelRatio = 1.0f / window.backingScaleFactor,
+                               x = localPos.x * invertDevicePixelRatio,
+                               y = localPos.y * invertDevicePixelRatio + font->FontSize;
+            self->m_textInputOrigin = Vector2SI32(x, window.screen.frame.size.height - y);
         });
     };
     ImGuiViewport *main = ImGui::GetMainViewport();
@@ -1713,7 +1718,7 @@ CocoaThreadedApplicationService::setupNewProject()
         [m_devices addObject:device];
     }
     CFRelease(deviceSet);
-#endif
+#endif /* NANOEM_ENABLE_HIDMANAGER_MONITORING */
     project->setPrimaryCursorTypeLeft(isTrackpadOnly());
     const sg_backend backend = sg::query_backend();
     if (backend == SG_BACKEND_METAL_MACOS) {
@@ -1795,7 +1800,7 @@ CocoaThreadedApplicationService::initializeInputDevices()
         IOHIDManagerOpen(manager, kIOHIDOptionsTypeNone);
         m_hidManager = manager;
     }
-#else
+#else /* NANOEM_ENABLE_HIDMANAGER_MONITORING */
     if (!m_hidManager) {
         NSDictionary *dict = @{
             @kIOHIDDeviceUsagePageKey : @(kHIDPage_GenericDesktop),
@@ -1805,7 +1810,7 @@ CocoaThreadedApplicationService::initializeInputDevices()
         IOHIDManagerSetDeviceMatching(manager, (__bridge CFDictionaryRef) dict);
         m_hidManager = manager;
     }
-#endif
+#endif /* NANOEM_ENABLE_HIDMANAGER_MONITORING */
 }
 
 void
@@ -1818,12 +1823,14 @@ CocoaThreadedApplicationService::updateAllMonitors()
         const NSScreen *mainScreen = [NSScreen mainScreen];
         for (NSScreen *screen : [NSScreen screens]) {
             ImGuiPlatformMonitor monitor;
-            const NSRect &rect = screen.frame, &visibleRect = screen.visibleFrame;
+            const NSRect rect = [screen convertRectToBacking:screen.frame],
+                         visibleRect = [screen convertRectToBacking:screen.visibleFrame];
             monitor.MainPos = ImVec2(rect.origin.x, rect.origin.y);
             monitor.MainSize = ImVec2(rect.size.width, rect.size.height);
             monitor.WorkPos =
                 ImVec2(visibleRect.origin.x, visibleRect.origin.y + rect.size.height - visibleRect.size.height);
             monitor.WorkSize = ImVec2(visibleRect.size.width, visibleRect.size.height);
+            monitor.DpiScale = screen.backingScaleFactor;
             if (screen == mainScreen) {
                 io.Monitors.push_front(monitor);
             }
@@ -1832,7 +1839,7 @@ CocoaThreadedApplicationService::updateAllMonitors()
             }
         }
     });
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
 }
 
 } /* namespace macos */
