@@ -122,7 +122,7 @@ private:
     static void handleAddingWatchEffectSource(void *userData, nanoem_u16_t handle, const URI &fileURI);
     static void handleRemovingWatchEffectSource(void *userData, uint16_t handle, const char *name);
 
-    Vector2SI32 devicePixelScreenPosition(const NSEvent *event) noexcept;
+    Vector2SI32 deviceScaleScreenPosition(const NSEvent *event) noexcept;
     float invertedDevicePixelRatio() const noexcept;
 
     void initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat);
@@ -177,7 +177,7 @@ private:
     DisabledCursorState m_disabledCursorState = kDisabledCursorStateNone;
     uint64_t m_quitAt = 0;
     uint32_t m_displayFrequency = 0;
-    nanoem_f32_t m_screenHeight = 0;
+    nanoem_f32_t m_deviceScaleScreenHeight = 0;
     std::atomic<bool> m_runningMetrics;
     bool m_runningWindow = true;
     bool m_vsyncAtPlaying = true;

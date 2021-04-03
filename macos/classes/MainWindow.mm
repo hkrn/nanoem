@@ -673,7 +673,7 @@ MainWindow::firstRectForCharacterRange()
 {
 #if defined(IMGUI_HAS_VIEWPORT)
     const Vector2SI32 origin(m_service->textInputOrigin());
-    return NSMakeRect(origin.x, m_screenHeight - origin.y, 0, 0);
+    return NSMakeRect(origin.x, m_deviceScaleScreenHeight - origin.y, 0, 0);
 #else
     const NSRect rect([m_nativeWindow contentRectForFrameRect:m_nativeWindow.frame]);
     const Vector2SI32 origin(m_service->textInputOrigin());
@@ -718,7 +718,8 @@ MainWindow::handleResignFocus()
 void
 MainWindow::handleScreenChange()
 {
-    m_screenHeight = [NSScreen mainScreen].frame.size.height;
+    const NSScreen *screen = [NSScreen mainScreen];
+    m_deviceScaleScreenHeight = screen.frame.size.height * screen.backingScaleFactor;
 }
 
 void
@@ -743,7 +744,7 @@ MainWindow::handleMouseDown(const NSEvent *event)
     if (getLogicalCursorPosition(event, position, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
-        m_client->sendScreenCursorPressMessage(devicePixelScreenPosition(event), button, modifiers);
+        m_client->sendScreenCursorPressMessage(deviceScaleScreenPosition(event), button, modifiers);
         if (event.window == m_nativeWindow) {
             m_client->sendCursorPressMessage(position, button, modifiers);
         }
@@ -758,7 +759,7 @@ MainWindow::handleMouseMoved(const NSEvent *event)
     if (getLogicalCursorPosition(event, position, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
-        m_client->sendScreenCursorMoveMessage(devicePixelScreenPosition(event), button, modifiers);
+        m_client->sendScreenCursorMoveMessage(deviceScaleScreenPosition(event), button, modifiers);
         if (event.window == m_nativeWindow) {
             m_client->sendCursorMoveMessage(position, delta, button, modifiers);
         }
@@ -779,7 +780,7 @@ MainWindow::handleMouseUp(const NSEvent *event)
     if (getLogicalCursorPosition(event, position, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
-        m_client->sendScreenCursorReleaseMessage(devicePixelScreenPosition(event), button, modifiers);
+        m_client->sendScreenCursorReleaseMessage(deviceScaleScreenPosition(event), button, modifiers);
         if (event.window == m_nativeWindow) {
             m_client->sendCursorReleaseMessage(position, button, modifiers);
         }
@@ -1365,9 +1366,9 @@ MainWindow::handleRemovingWatchEffectSource(void *userData, uint16_t handle, con
 }
 
 Vector2SI32
-MainWindow::devicePixelScreenPosition(const NSEvent *event) noexcept
+MainWindow::deviceScaleScreenPosition(const NSEvent *event) noexcept
 {
-    return CocoaThreadedApplicationService::devicePixelScreenPosition(event, m_nativeWindow, m_screenHeight);
+    return CocoaThreadedApplicationService::deviceScaleScreenPosition(event, m_nativeWindow, m_deviceScaleScreenHeight);
 }
 
 float
@@ -1577,7 +1578,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
     m_client->addInitializationCompleteEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
-            self->m_screenHeight = [NSScreen mainScreen].frame.size.height;
+            self->handleScreenChange();
             dispatch_async(self->m_metricsQueue, ^() {
                 self->sendPerformanceMonitorPeriodically();
             });
