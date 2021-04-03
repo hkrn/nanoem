@@ -671,7 +671,7 @@ MainWindow::markedRange() const noexcept
 NSRect
 MainWindow::firstRectForCharacterRange()
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     const Vector2SI32 origin(m_service->textInputOrigin());
     return NSMakeRect(origin.x, m_screenHeight - origin.y, 0, 0);
 #else

@@ -519,7 +519,7 @@ MetalDebugCapture::stop()
     }
 }
 
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
 struct ViewportWindow {
     using BlockFunc = void (^)(ViewportWindow *);
 
@@ -596,7 +596,7 @@ ViewportWindow::createWindow(const ImGuiViewport *viewport)
     window.opaque = NO;
     CocoaThreadedApplicationService *service =
         static_cast<CocoaThreadedApplicationService *>(ImGui::GetIO().BackendRendererUserData);
-    id<MTLDevice> device = service->nativeDevice();
+    id<MTLDevice> device = service->metalDevice();
     MTKView *parentView = service->nativeView();
     MTKView *contentView = [[ViewportWindowMetalView alloc] initWithFrame:window.contentView.bounds
                                                                    device:device
@@ -1213,7 +1213,7 @@ CocoaThreadedApplicationService::handleInitializeApplication()
         [pasteboard declareTypes:@[ NSPasteboardTypeString ] owner:nil];
         [pasteboard setString:data forType:NSPasteboardTypeString];
     };
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
     ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
     platformIO.Platform_CreateWindow = [](ImGuiViewport *viewport) {
@@ -1563,7 +1563,7 @@ CocoaThreadedApplicationService::presentDefaultPass(const Project *project)
         m_texture = nil;
         MTKView *contentView = nativeView();
         [contentView draw];
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
         for (auto viewport : ImGui::GetPlatformIO().Viewports) {
             if (auto userData = static_cast<MetalRendererData *>(viewport->RendererUserData)) {
                 MTKView *viewportView = userData->m_view;
@@ -1809,7 +1809,7 @@ CocoaThreadedApplicationService::initializeInputDevices()
 void
 CocoaThreadedApplicationService::updateAllMonitors()
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     ImGuiPlatformIO &io = ImGui::GetPlatformIO();
     io.Monitors.resize(0);
     dispatch_sync(dispatch_get_main_queue(), ^() {
