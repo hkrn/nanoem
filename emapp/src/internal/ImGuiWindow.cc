@@ -1090,13 +1090,13 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
         renderDrawList(project, ImGui::GetDrawData(), sampleCount, buffer, m_bindings, pb);
         m_applicationPtr->endDefaultPass();
         batchLazySetAllObjects(project, seekable);
+        SG_POP_GROUP();
 #if defined(IMGUI_HAS_VIEWPORT)
         if (EnumUtils::isEnabledT<ImGuiConfigFlags>(ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault(nullptr, this);
         }
 #endif /* IMGUI_HAS_VIEWPORT */
-        SG_POP_GROUP();
     }
 }
 
