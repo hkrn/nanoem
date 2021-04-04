@@ -278,9 +278,9 @@ private:
     static bool handlePointerIntersects(const Vector2SI32 &logicalScaleCursorPosition, const Project *project,
         const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT;
     static Model::AxisType selectTranslationAxisType(
-        const Vector2SI32 &deviceCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT;
+        const Vector2SI32 &deviceScaleCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT;
     static Model::AxisType selectOrientationAxisType(
-        const Vector2SI32 &deviceCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT;
+        const Vector2SI32 &deviceScaleCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT;
 };
 
 const nanoem_model_bone_t *
@@ -411,24 +411,24 @@ bool
 DraggingBoneState::handlePointerIntersects(const Vector2SI32 &logicalScaleCursorPosition, const Project *project,
     const nanoem_model_bone_t *&bone, nanoem_rsize_t &boneIndex, Model::AxisType &axisType) NANOEM_DECL_NOEXCEPT
 {
-    const Vector2SI32 deviceCursorPosition(Vector2(logicalScaleCursorPosition) * project->windowDevicePixelRatio());
+    const Vector2SI32 deviceScaleCursorPosition(Vector2(logicalScaleCursorPosition) * project->windowDevicePixelRatio());
     bool intersected = false;
     axisType = Model::kAxisTypeMaxEnum;
     switch (project->editingMode()) {
     case Project::kEditingModeSelect: {
         if (const Model *model = project->activeModel()) {
-            bone = model->intersectsBone(deviceCursorPosition, boneIndex);
+            bone = model->intersectsBone(deviceScaleCursorPosition, boneIndex);
             intersected = bone != nullptr;
         }
         break;
     }
     case Project::kEditingModeMove: {
-        axisType = selectTranslationAxisType(deviceCursorPosition, project);
+        axisType = selectTranslationAxisType(deviceScaleCursorPosition, project);
         intersected = axisType != Model::kAxisTypeMaxEnum;
         break;
     }
     case Project::kEditingModeRotate: {
-        axisType = selectOrientationAxisType(deviceCursorPosition, project);
+        axisType = selectOrientationAxisType(deviceScaleCursorPosition, project);
         intersected = axisType != Model::kAxisTypeMaxEnum;
         break;
     }
@@ -440,7 +440,7 @@ DraggingBoneState::handlePointerIntersects(const Vector2SI32 &logicalScaleCursor
 
 Model::AxisType
 DraggingBoneState::selectTranslationAxisType(
-    const Vector2SI32 &deviceCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT
+    const Vector2SI32 &deviceScaleCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT
 {
     const Vector2SI32 center(deviceScaleCursorActiveBoneInWindow(project));
     nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f, width = project->deviceScaleCircleRadius(),
@@ -449,13 +449,13 @@ DraggingBoneState::selectTranslationAxisType(
         rectX(center.x - offset, center.y - offset, length, width),
         rectY(center.x - offset, center.y - length - offset, width, length);
     Model::AxisType axisType(Model::kAxisTypeMaxEnum);
-    if (Inline::intersectsRectPoint(rectCenter, deviceCursorPosition)) {
+    if (Inline::intersectsRectPoint(rectCenter, deviceScaleCursorPosition)) {
         axisType = Model::kAxisCenter;
     }
-    else if (Inline::intersectsRectPoint(rectX, deviceCursorPosition)) {
+    else if (Inline::intersectsRectPoint(rectX, deviceScaleCursorPosition)) {
         axisType = Model::kAxisX;
     }
-    else if (Inline::intersectsRectPoint(rectY, deviceCursorPosition)) {
+    else if (Inline::intersectsRectPoint(rectY, deviceScaleCursorPosition)) {
         axisType = Model::kAxisY;
     }
     return axisType;
@@ -463,11 +463,11 @@ DraggingBoneState::selectTranslationAxisType(
 
 Model::AxisType
 DraggingBoneState::selectOrientationAxisType(
-    const Vector2SI32 &deviceCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT
+    const Vector2SI32 &deviceScaleCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT
 {
     const Vector2 center(deviceScaleCursorActiveBoneInWindow(project));
     nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f, width = project->deviceScaleCircleRadius(),
-                 woffset = width * 0.5f, distance = glm::distance(Vector2(deviceCursorPosition), center);
+                 woffset = width * 0.5f, distance = glm::distance(Vector2(deviceScaleCursorPosition), center);
     const Vector4SI32 rectCenter(center.x - woffset, center.y - woffset, width, width),
         rectX(center.x - woffset, center.y - radius, width, radius * 2.0f),
         rectZ(center.x - radius, center.y - woffset, radius * 2.0f, width);
@@ -475,13 +475,13 @@ DraggingBoneState::selectOrientationAxisType(
     if (distance < radius + woffset && distance > radius - woffset) {
         axisType = Model::kAxisY;
     }
-    else if (Inline::intersectsRectPoint(rectCenter, deviceCursorPosition)) {
+    else if (Inline::intersectsRectPoint(rectCenter, deviceScaleCursorPosition)) {
         axisType = Model::kAxisCenter;
     }
-    else if (Inline::intersectsRectPoint(rectX, deviceCursorPosition)) {
+    else if (Inline::intersectsRectPoint(rectX, deviceScaleCursorPosition)) {
         axisType = Model::kAxisX;
     }
-    else if (Inline::intersectsRectPoint(rectZ, deviceCursorPosition)) {
+    else if (Inline::intersectsRectPoint(rectZ, deviceScaleCursorPosition)) {
         axisType = Model::kAxisZ;
     }
     return axisType;
