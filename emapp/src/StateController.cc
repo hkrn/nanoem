@@ -688,6 +688,9 @@ struct CircleSelector : ISelector {
 
 class BaseSelectionState : public BaseDraggingObjectState {
 protected:
+    static void assignAxisAlignedBoundingBox(const Vector3 &value, Vector3 &aabbMin, Vector3 &aabbMax);
+    static void assignPivotMatrixFromAABB(const Vector3 &aabbMin, const Vector3 &aabbMax, Matrix4x4 &matrix);
+
     BaseSelectionState(StateController *stateController, BaseApplicationService *application);
     ~BaseSelectionState() NANOEM_DECL_NOEXCEPT;
 
@@ -715,6 +718,19 @@ public:
     void onRelease(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
     void onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE;
 };
+
+void
+BaseSelectionState::assignAxisAlignedBoundingBox(const Vector3 &value, Vector3 &aabbMin, Vector3 &aabbMax)
+{
+    aabbMin = glm::min(aabbMin, value);
+    aabbMax = glm::max(aabbMax, value);
+}
+
+void
+BaseSelectionState::assignPivotMatrixFromAABB(const Vector3 &aabbMin, const Vector3 &aabbMax, Matrix4x4 &matrix)
+{
+    matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+}
 
 BaseSelectionState::BaseSelectionState(StateController *stateController, BaseApplicationService *application)
     : BaseDraggingObjectState(stateController, application, false)
@@ -759,7 +775,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
     typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
     const IModelObjectSelection *selection = activeModel->selection();
     Matrix4x4 matrix(0);
-    Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+    Vector3 aabbMin(FLT_MAX), aabbMax(-FLT_MAX);
     switch (selection->editingType()) {
     case IModelObjectSelection::kEditingTypeBone: {
         const model::Bone::Set selectedBoneSet(selection->allBoneSet());
@@ -768,10 +784,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                  ++it) {
                 const nanoem_model_bone_t *bonePtr = *it;
                 const Vector3 origin(model::Bone::origin(bonePtr));
-                aabbMin = glm::min(aabbMin, origin);
-                aabbMax = glm::max(aabbMax, origin);
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
@@ -785,10 +800,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                  it != end; ++it) {
                 const nanoem_u32_t vertexIndex = *it;
                 const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                aabbMin = glm::min(aabbMin, origin);
-                aabbMax = glm::max(aabbMax, origin);
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
@@ -799,10 +813,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                  it != end; ++it) {
                 const nanoem_model_joint_t *jointPtr = *it;
                 const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
-                aabbMin = glm::min(aabbMin, origin);
-                aabbMax = glm::max(aabbMax, origin);
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
@@ -829,12 +842,11 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                     for (nanoem_rsize_t i = 0; i < indices; i++) {
                         const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
                         const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                        aabbMin = glm::min(aabbMin, origin);
-                        aabbMax = glm::max(aabbMax, origin);
+                        assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
                     }
                 }
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
@@ -846,10 +858,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                  it != end; ++it) {
                 const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                 const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
-                aabbMin = glm::min(aabbMin, origin);
-                aabbMax = glm::max(aabbMax, origin);
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
@@ -877,12 +888,11 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                     for (nanoem_rsize_t i = 0; i < indices; i++) {
                         const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
                         const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                        aabbMin = glm::min(aabbMin, origin);
-                        aabbMax = glm::max(aabbMax, origin);
+                        assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
                     }
                 }
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
@@ -896,7 +906,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                 aabbMin = glm::min(aabbMin, origin);
                 aabbMax = glm::max(aabbMax, origin);
             }
-            matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
         break;
     }
