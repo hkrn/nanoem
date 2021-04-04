@@ -102,17 +102,23 @@ MainWindow::MainWindow(GLFWApplicationService *service, GLFWApplicationClient *c
         },
         this, false);
     m_client->addDisableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
-            BX_UNUSED_1(coord);
+        [](void *userData, const Vector2SI32 &logicalScaleCursorPosition) {
+            BX_UNUSED_1(logicalScaleCursorPosition);
             auto self = static_cast<MainWindow *>(userData);
             glfwSetInputMode(self->m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         },
         this, false);
     m_client->addEnableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
-            BX_UNUSED_1(coord);
+        [](void *userData, const Vector2SI32 &logicalScaleCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            glfwSetInputMode(self->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            GLFWwindow *window = self->m_window;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            if (logicalScaleCursorPosition.x != 0 && logicalScaleCursorPosition.y != 0) {
+                Vector2 contentScale;
+                glfwGetWindowContentScale(window, &contentScale.x, &contentScale.y);
+                const Vector2 deviceScaleCursorPosition(Vector2(logicalScaleCursorPosition) * contentScale);
+                glfwSetCursorPos(window, deviceScaleCursorPosition.x, deviceScaleCursorPosition.y);
+            }
         },
         this, false);
 }
