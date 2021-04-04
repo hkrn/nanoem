@@ -21,6 +21,8 @@
 #include "GLFW/glfw3.h"
 #include "imgui/imgui.h"
 
+#include "glm/gtx/string_cast.hpp"
+
 namespace nanoem {
 namespace glfw {
 namespace {
@@ -83,14 +85,14 @@ ViewportWindow::createWindow(ImGuiViewport *viewport)
 #endif
     const Vector2SI32 windowSize(size.x, size.y);
     if (GLFWwindow *window = glfwCreateWindow(windowSize.x, windowSize.y, "Untitled", nullptr, parentWindow)) {
-        glfwSetWindowUserPointer(window, viewport);
         const Vector2SI32 windowPos(viewport->Pos.x, viewport->Pos.y);
         glfwSetWindowPos(window, windowPos.x, windowPos.y);
+        glfwSetWindowUserPointer(window, viewport);
         glfwSetCursorPosCallback(window, [](GLFWwindow *window, double xpos, double ypos) {
             auto viewport = static_cast<ImGuiViewport *>(glfwGetWindowUserPointer(window));
             auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
             const Vector2SI32 position(xpos, ypos),
-                screenPosition(GLFWApplicationService::devicePixelScreenPosition(window, position));
+                screenPosition(GLFWApplicationService::deviceScaleCursorPosition(xpos, ypos, window));
             userData->m_client.sendScreenCursorMoveMessage(
                 screenPosition, userData->m_pressedCursorType, userData->m_pressedCursorModifiers);
         });
@@ -108,7 +110,7 @@ ViewportWindow::createWindow(ImGuiViewport *viewport)
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
             const Vector2SI32 position(xpos, ypos),
-                screenPosition(GLFWApplicationService::devicePixelScreenPosition(window, position));
+                screenPosition(GLFWApplicationService::deviceScaleCursorPosition(xpos, ypos, window));
             int cursorModifiers = GLFWApplicationService::convertCursorModifier(mods),
                 cursorType = GLFWApplicationService::convertCursorType(button);
             switch (action) {
@@ -173,14 +175,13 @@ ViewportWindow::showWindow()
 ImVec2
 ViewportWindow::windowPos() const
 {
-    ImVec2 pos;
+    Vector2 pos(0);
     if (m_window) {
-        int x, y;
-        glfwGetWindowPos(m_window, &x, &y);
-        pos.x = static_cast<float>(x);
-        pos.y = static_cast<float>(y);
+        Vector2SI32 windowPos;
+        glfwGetWindowPos(m_window, &windowPos.x, &windowPos.y);
+        pos = Vector2(windowPos);
     }
-    return pos;
+    return ImVec2(pos.x, pos.y);
 }
 
 void
@@ -194,14 +195,13 @@ ViewportWindow::setWindowPos(const ImVec2 &value)
 ImVec2
 ViewportWindow::windowSize() const
 {
-    ImVec2 size;
+    Vector2 size(1);
     if (m_window) {
-        int width, height;
-        glfwGetWindowSize(m_window, &width, &height);
-        size.x = static_cast<float>(width);
-        size.y = static_cast<float>(height);
+        Vector2SI32 windowSize;
+        glfwGetWindowSize(m_window, &windowSize.x, &windowSize.y);
+        size = windowSize;
     }
-    return size;
+    return ImVec2(size.x, size.y);
 }
 
 void
@@ -239,9 +239,8 @@ ViewportWindow::isWindowMinimized() const
 void
 ViewportWindow::setWindowTitle(const char *value)
 {
-    const String title(value);
     if (m_window) {
-        glfwSetWindowTitle(m_window, title.c_str());
+        glfwSetWindowTitle(m_window, value);
     }
 }
 
@@ -258,17 +257,15 @@ ViewportWindow::setWindowAlpha(float value)
 } /* namespace anonymous */
 
 Vector2SI32
-GLFWApplicationService::devicePixelScreenPosition(GLFWwindow *window, const Vector2SI32 &value) noexcept
+GLFWApplicationService::deviceScaleCursorPosition(double x, double y, GLFWwindow *window) noexcept
 {
-    Vector2SI32 windowPosition;
-    Vector2 contentScale;
-    glfwGetWindowPos(window, &windowPosition.x, &windowPosition.y);
-    glfwGetWindowContentScale(window, &contentScale.x, &contentScale.y);
-    return Vector2(value + windowPosition) * contentScale;
+    Vector2SI32 windowPos;
+    glfwGetWindowPos(window, &windowPos.x, &windowPos.y);
+    return Vector2SI32(x, y) + windowPos;
 }
 
 Vector2
-GLFWApplicationService::scaleCursorCoordinate(double x, double y, GLFWwindow *window) noexcept
+GLFWApplicationService::logicalScaleCursorPosition(double x, double y, GLFWwindow *window) noexcept
 {
 #if defined(__APPLE__)
     BX_UNUSED_1(window);
@@ -346,20 +343,16 @@ GLFWApplicationService::~GLFWApplicationService()
 }
 
 void
+GLFWApplicationService::draw()
+{
+    drawDefaultPass();
+}
+
+
+void
 GLFWApplicationService::setNativeView(GLFWwindow *window)
 {
     m_nativeView = window;
-}
-
-void
-GLFWApplicationService::draw()
-{
-    glfwMakeContextCurrent(m_nativeView);
-    drawDefaultPass();
-    glfwSwapBuffers(m_nativeView);
-    if (Project *project = projectHolder()->currentProject()) {
-        project->resetAllPasses();
-    }
 }
 
 void
@@ -466,7 +459,7 @@ GLFWApplicationService::handleInitializeApplication()
     };
     platformIO.Platform_SetWindowSize = [](ImGuiViewport *viewport, ImVec2 size) {
         auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
-        userData->setWindowPos(size);
+        userData->setWindowSize(size);
     };
     platformIO.Platform_GetWindowSize = [](ImGuiViewport *viewport) {
         auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
@@ -503,17 +496,16 @@ GLFWApplicationService::handleInitializeApplication()
     if (backend == SG_BACKEND_GLCORE33) {
         io.BackendRendererUserData = this;
         platformIO.Renderer_RenderWindow = [](ImGuiViewport *viewport, void *opaque) {
-            auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
-            if (userData && userData->m_window) {
+            if (auto userData = static_cast<ViewportWindow*>(viewport->PlatformUserData)) {
                 auto self = static_cast<GLFWApplicationService *>(ImGui::GetIO().BackendRendererUserData);
                 if (Project *project = self->projectHolder()->currentProject()) {
                     auto window = static_cast<internal::ImGuiWindow *>(opaque);
                     bool load =
                         EnumUtils::isEnabledT<ImGuiViewportFlags>(viewport->Flags, ImGuiViewportFlags_NoRendererClear);
+                    glfwMakeContextCurrent(userData->m_window);
                     sg::activate_context(userData->m_context);
                     window->drawWindow(project, viewport->DrawData, load);
                 }
-                BX_UNUSED_1(opaque);
             }
         };
         platformIO.Renderer_SwapBuffers = [](ImGuiViewport *viewport, void *) {
@@ -570,6 +562,13 @@ GLFWApplicationService::sendEventMessage(const Nanoem__Application__Event *event
     ByteArray bytes(sizeofEventMessage(event));
     packEventMessage(event, bytes.data());
     m_bridge->m_events.push_back(bytes);
+}
+
+void
+GLFWApplicationService::presentDefaultPass(const Project *project)
+{
+    glfwMakeContextCurrent(m_nativeView);
+    glfwSwapBuffers(m_nativeView);
 }
 
 } /* namespace glfw */

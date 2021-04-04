@@ -258,9 +258,9 @@ void
 MainWindow::handleCursorCallback(GLFWwindow *window, double xpos, double ypos)
 {
     auto self = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
-    const Vector2SI32 position(GLFWApplicationService::scaleCursorCoordinate(xpos, ypos, window)),
+    const Vector2SI32 position(GLFWApplicationService::logicalScaleCursorPosition(xpos, ypos, window)),
         delta(position - self->m_lastCursorPosition),
-        screenPosition(GLFWApplicationService::devicePixelScreenPosition(window, position));
+        screenPosition(GLFWApplicationService::deviceScaleCursorPosition(xpos, ypos, window));
     self->m_client->sendScreenCursorMoveMessage(
         screenPosition, self->m_pressedCursorType, self->m_pressedCursorModifiers);
     self->m_client->sendCursorMoveMessage(position, delta, self->m_pressedCursorType, self->m_pressedCursorModifiers);
@@ -273,8 +273,8 @@ MainWindow::handleMouseButtonCallback(GLFWwindow *window, int button, int action
     auto self = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    const Vector2SI32 position(GLFWApplicationService::scaleCursorCoordinate(xpos, ypos, window)),
-        screenPosition(GLFWApplicationService::devicePixelScreenPosition(window, position));
+    const Vector2SI32 position(GLFWApplicationService::logicalScaleCursorPosition(xpos, ypos, window)),
+        screenPosition(GLFWApplicationService::deviceScaleCursorPosition(xpos, ypos, window));
     int cursorModifiers = GLFWApplicationService::convertCursorModifier(mods),
         cursorType = GLFWApplicationService::convertCursorType(button);
     switch (action) {
@@ -304,7 +304,7 @@ MainWindow::handleScrollCallback(GLFWwindow *window, double x, double y)
     auto self = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    const Vector2SI32 position(GLFWApplicationService::scaleCursorCoordinate(xpos, ypos, window)), delta(x, y);
+    const Vector2SI32 position(GLFWApplicationService::logicalScaleCursorPosition(xpos, ypos, window)), delta(x, y);
     self->m_client->sendCursorScrollMessage(position, delta, 0);
 }
 

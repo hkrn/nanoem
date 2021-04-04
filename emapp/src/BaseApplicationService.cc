@@ -5077,8 +5077,6 @@ BaseApplicationService::drawDefaultPass()
             if (m_stateController->globalFrameIndex() % 2 == 0) {
                 postEmptyApplicationEvent();
             }
-        }
-        if (active) {
             m_stateController->consumeDefaultPass();
             endDrawContext();
         }
