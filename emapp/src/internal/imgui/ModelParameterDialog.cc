@@ -862,8 +862,9 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         }
     }
     addSeparator();
-    if (ImGui::TreeNode("properties", "%s", tr("nanoem.gui.model.edit.bone.properties"))) {
-        ImGui::Unindent();
+    char buffer[Inline::kNameStackBufferSize];
+    StringUtils::format(buffer, sizeof(buffer), "%s##properties", tr("nanoem.gui.model.edit.bone.properties"));
+    if (ImGui::CollapsingHeader(buffer)) {
         {
             bool value = nanoemModelMaterialIsToonShared(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.shared-toon"), &value)) {
@@ -913,8 +914,6 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 nanoemMutableModelMaterialSetVertexColorEnabled(scoped, value);
             }
         }
-        ImGui::Indent();
-        ImGui::TreePop();
     }
     ImGui::TextUnformatted("Textures");
     const model::Material *material = model::Material::cast(materialPtr);
@@ -995,6 +994,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
 {
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+#if 0
     {
         ImGui::SetNextWindowSize(
             ImVec2(kMinimumWindowWidth * 0.5f * project->windowDevicePixelRatio(), 0), ImGuiCond_FirstUseEver);
@@ -1020,6 +1020,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
         constructTree(boneTree, nullptr);
         ImGui::End();
     }
+#endif
     nanoem_model_bone_t *hoveredBonePtr = nullptr;
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
@@ -1310,8 +1311,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
     addSeparator();
     char buffer[Inline::kNameStackBufferSize];
     StringUtils::format(buffer, sizeof(buffer), "%s##properties", tr("nanoem.gui.model.edit.bone.properties"));
-    if (ImGui::TreeNode(buffer)) {
-        ImGui::Unindent();
+    if (ImGui::CollapsingHeader(buffer)) {
         {
             bool value = nanoemModelBoneIsVisible(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.visible"), &value)) {
@@ -1441,12 +1441,9 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 }
             }
         }
-        ImGui::Indent();
-        ImGui::TreePop();
     }
     layoutBoneConstraintPanel(bonePtr, project);
-    if (ImGui::TreeNode("Internal Parameters")) {
-        ImGui::Unindent();
+    if (ImGui::CollapsingHeader("Internal Parameters##properties.internal")) {
         model::Bone *bone = model::Bone::cast(bonePtr);
         {
             Vector3 worldTransformOrigin(bone->worldTransformOrigin());
@@ -1520,8 +1517,6 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
             ImGui::InputFloat3("##orientation.inherent", glm::value_ptr(localInherentOrientation), "%.3f",
                 ImGuiInputTextFlags_ReadOnly);
         }
-        ImGui::Indent();
-        ImGui::TreePop();
     }
     ImGui::PopItemWidth();
 }
