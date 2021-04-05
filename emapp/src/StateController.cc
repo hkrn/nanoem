@@ -1559,6 +1559,167 @@ DraggingMoveCameraLookAtState::type() const NANOEM_DECL_NOEXCEPT
     return kTypeDraggingMoveCameraLookAtState;
 }
 
+class BaseCreatingBoneState : public StateController::IState {
+public:
+    void onPress(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE;
+    bool isGrabbingHandle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+protected:
+    BaseCreatingBoneState(StateController *stateController);
+    ~BaseCreatingBoneState() NANOEM_DECL_NOEXCEPT;
+
+private:
+    StateController *m_stateControllerPtr;
+    const nanoem_model_bone_t *m_sourceBone;
+    nanoem_mutable_model_bone_t *m_destinationBone;
+};
+
+BaseCreatingBoneState::BaseCreatingBoneState(StateController *stateController)
+    : m_stateControllerPtr(stateController)
+    , m_sourceBone(nullptr)
+    , m_destinationBone(nullptr)
+{
+}
+
+BaseCreatingBoneState::~BaseCreatingBoneState() NANOEM_DECL_NOEXCEPT
+{
+    nanoemMutableModelBoneDestroy(m_destinationBone);
+    m_destinationBone = nullptr;
+    m_sourceBone = nullptr;
+}
+
+void
+BaseCreatingBoneState::onPress(const Vector3SI32 &logicalCursorPosition)
+{
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        nanoem_rsize_t boneIndex = 0;
+        if (Model *activeModel = project->activeModel()) {
+            const Vector2 cursorPosition(Vector2(logicalCursorPosition) * project->windowDevicePixelRatio());
+            if (const nanoem_model_bone_t *sourceBonePtr = activeModel->intersectsBone(cursorPosition, boneIndex)) {
+                m_destinationBone = nanoemMutableModelBoneCreate(activeModel->data(), &status);
+                nanoemMutableModelBoneSetParentBoneObject(m_destinationBone, sourceBonePtr);
+                nanoemMutableModelBoneSetTargetBoneObject(m_destinationBone, sourceBonePtr);
+                nanoemMutableModelBoneSetOrigin(m_destinationBone, nanoemModelBoneGetOrigin(sourceBonePtr));
+                nanoemMutableModelBoneSetRotateable(m_destinationBone, true);
+                nanoemMutableModelBoneSetVisible(m_destinationBone, true);
+                nanoemMutableModelBoneSetUserHandleable(m_destinationBone, true);
+                nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone);
+                model::Bone *destinationBone = model::Bone::create();
+                destinationBone->bind(destinationBonePtr);
+                destinationBone->updateLocalTransform(destinationBonePtr);
+                m_sourceBone = sourceBonePtr;
+            }
+        }
+    }
+}
+
+void
+BaseCreatingBoneState::onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 & /* delta */)
+{
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        if (const Model *activeModel = project->activeModel()) {
+            if (nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone)) {
+                const ICamera *camera = project->activeCamera();
+                Vector3 cursorPosition;
+                camera->castRay(logicalCursorPosition, cursorPosition);
+                nanoemMutableModelBoneSetOrigin(m_destinationBone, glm::value_ptr(Vector4(cursorPosition, 1)));
+                model::Bone *destinationBone = model::Bone::cast(destinationBonePtr);
+                destinationBone->updateLocalTransform(destinationBonePtr);
+            }
+        }
+    }
+}
+
+void
+BaseCreatingBoneState::onRelease(const Vector3SI32 & /* logicalCursorPosition */)
+{
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        if (Model *activeModel = project->activeModel()) {
+            nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone);
+            if (model::Bone *destinationBone = model::Bone::cast(destinationBonePtr)) {
+                destinationBone->resetLanguage(
+                    destinationBonePtr, project->unicodeStringFactory(), project->castLanguage());
+                nanoem_mutable_model_t *mutableModel =
+                    nanoemMutableModelCreateAsReference(activeModel->data(), &status);
+                nanoemMutableModelInsertBoneObject(mutableModel, m_destinationBone, -1, &status);
+                nanoemMutableModelDestroy(mutableModel);
+                activeModel->addBone(destinationBonePtr);
+            }
+        }
+    }
+}
+
+void
+BaseCreatingBoneState::onDrawPrimitive2D(IPrimitive2D *primitive)
+{
+    if (Project *project = m_stateControllerPtr->currentProject()) {
+        if (Model *activeModel = project->activeModel()) {
+            if (const nanoem_model_bone_t *destinationBonePtr =
+                    nanoemMutableModelBoneGetOriginObject(m_destinationBone)) {
+                activeModel->drawBoneConnections(primitive, destinationBonePtr, m_sourceBone, 1.0f);
+                activeModel->drawBonePoint(primitive, destinationBonePtr, Vector2(0));
+            }
+        }
+    }
+}
+
+bool
+BaseCreatingBoneState::isGrabbingHandle() const NANOEM_DECL_NOEXCEPT
+{
+    return false;
+}
+
+class CreatingParentBoneState NANOEM_DECL_SEALED : public BaseCreatingBoneState {
+public:
+    CreatingParentBoneState(StateController *stateController);
+    ~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT;
+
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+};
+
+CreatingParentBoneState::CreatingParentBoneState(StateController *stateController)
+    : BaseCreatingBoneState(stateController)
+{
+}
+
+CreatingParentBoneState::~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+StateController::IState::Type
+CreatingParentBoneState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeCreatingParentBoneState;
+}
+
+class CreatingChildBoneState NANOEM_DECL_SEALED : public BaseCreatingBoneState {
+public:
+    CreatingChildBoneState(StateController *stateController);
+    ~CreatingChildBoneState() NANOEM_DECL_NOEXCEPT;
+
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+};
+
+CreatingChildBoneState::CreatingChildBoneState(StateController *stateController)
+    : BaseCreatingBoneState(stateController)
+{
+}
+
+CreatingChildBoneState::~CreatingChildBoneState() NANOEM_DECL_NOEXCEPT
+{
+}
+
+StateController::IState::Type
+CreatingChildBoneState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeCreatingChildBoneState;
+}
+
 class UndoState NANOEM_DECL_SEALED : public BaseState {
 public:
     UndoState(StateController *stateController, BaseApplicationService *application);
