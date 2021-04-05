@@ -64,6 +64,7 @@
 #include "emapp/internal/imgui/LazySetFrameIndexCommand.h"
 #include "emapp/internal/imgui/ModelDrawOrderDialog.h"
 #include "emapp/internal/imgui/ModelEdgeDialog.h"
+#include "emapp/internal/imgui/ModelEditCommandDialog.h"
 #include "emapp/internal/imgui/ModelIOPluginDialog.h"
 #include "emapp/internal/imgui/ModelKeyframeSelector.h"
 #include "emapp/internal/imgui/ModelOutsideParentDialog.h"
@@ -184,6 +185,48 @@ const nanoem_u8_t ImGuiWindow::kFAArrowDown[] = { 0xef, 0x81, 0xa3, 0x0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderOpen[] = { 0xef, 0x84, 0xba, 0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderClose[] = { 0xef, 0x84, 0xb8, 0 };
 const nanoem_u8_t ImGuiWindow::kFACircle[] = { 0xef, 0x84, 0x91, 0 };
+
+struct GizmoUtils : private NonCopyable {
+    static ImGuizmo::OPERATION operation(const Model *activeModel) NANOEM_DECL_NOEXCEPT;
+    static ImGuizmo::MODE mode(const Model *activeModel) NANOEM_DECL_NOEXCEPT;
+};
+
+ImGuizmo::OPERATION
+GizmoUtils::operation(const Model *activeModel) NANOEM_DECL_NOEXCEPT
+{
+    nanoem_parameter_assert(activeModel, "model must NOT be null");
+    ImGuizmo::OPERATION op;
+    switch (activeModel->gizmoOperationType()) {
+    case Model::kGizmoOperationTypeTranslate:
+    default:
+        op = ImGuizmo::TRANSLATE;
+        break;
+    case Model::kGizmoOperationTypeRotate:
+        op = ImGuizmo::ROTATE;
+        break;
+    case Model::kGizmoOperationTypeScale:
+        op = ImGuizmo::SCALE;
+        break;
+    }
+    return op;
+}
+
+ImGuizmo::MODE
+GizmoUtils::mode(const Model *activeModel) NANOEM_DECL_NOEXCEPT
+{
+    nanoem_parameter_assert(activeModel, "model must NOT be null");
+    ImGuizmo::MODE mode;
+    switch (activeModel->gizmoTransformCoordinateType()) {
+    case Model::kTransformCoordinateTypeGlobal:
+        mode = ImGuizmo::WORLD;
+        break;
+    case Model::kTransformCoordinateTypeLocal:
+    default:
+        mode = ImGuizmo::LOCAL;
+        break;
+    }
+    return mode;
+}
 
 bool
 ImGuiWindow::handleButton(const char *label)
@@ -952,6 +995,13 @@ ImGuiWindow::openModelParameterDialog(Project *project)
             INoModalDialogWindow *dialog =
                 nanoem_new(ModelParameterDialog(activeModel, project, m_applicationPtr, this));
             m_dialogWindows.insert(tinystl::make_pair(ModelParameterDialog::kIdentifier, dialog));
+        }
+    }
+    if (m_dialogWindows.find(ModelEditCommandDialog::kIdentifier) == m_dialogWindows.end()) {
+        if (Model *activeModel = project->activeModel()) {
+            INoModalDialogWindow *dialog =
+                nanoem_new(ModelEditCommandDialog(activeModel, m_applicationPtr));
+            m_dialogWindows.insert(tinystl::make_pair(ModelEditCommandDialog::kIdentifier, dialog));
         }
     }
 }
@@ -2742,35 +2792,12 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         Model *activeModel = project->activeModel();
         Matrix4x4 pivotMatrix(activeModel->pivotMatrix());
         if (!glm::isNull(pivotMatrix, Constants::kEpsilon)) {
-            ImGuizmo::OPERATION op;
-            switch (activeModel->gizmoOperationType()) {
-            case Model::kGizmoOperationTypeTranslate:
-            default:
-                op = ImGuizmo::TRANSLATE;
-                break;
-            case Model::kGizmoOperationTypeRotate:
-                op = ImGuizmo::ROTATE;
-                break;
-            case Model::kGizmoOperationTypeScale:
-                op = ImGuizmo::SCALE;
-                break;
-            }
-            ImGuizmo::MODE mode;
-            switch (activeModel->gizmoTransformCoordinateType()) {
-            case Model::kTransformCoordinateTypeGlobal:
-                mode = ImGuizmo::WORLD;
-                break;
-            case Model::kTransformCoordinateTypeLocal:
-            default:
-                mode = ImGuizmo::LOCAL;
-                break;
-            }
             ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(pivotMatrix), 1);
             if (ImGuizmo::IsOver()) {
                 hovered = false;
             }
-            if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode,
-                    glm::value_ptr(pivotMatrix), glm::value_ptr(delta))) {
+            if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), GizmoUtils::operation(activeModel),
+                    GizmoUtils::mode(activeModel), glm::value_ptr(pivotMatrix), glm::value_ptr(delta))) {
                 activeModel->setPivotMatrix(pivotMatrix);
                 applyDeltaTransform(delta, activeModel);
             }
