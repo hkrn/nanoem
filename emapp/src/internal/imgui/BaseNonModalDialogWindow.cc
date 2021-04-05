@@ -83,7 +83,7 @@ BaseNonModalDialogWindow::BaseNonModalDialogWindow(BaseApplicationService *appli
 {
 }
 
-BaseNonModalDialogWindow::~BaseNonModalDialogWindow()
+BaseNonModalDialogWindow::~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT
 {
 }
 

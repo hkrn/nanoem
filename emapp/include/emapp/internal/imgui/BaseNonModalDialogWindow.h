@@ -29,7 +29,7 @@ struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
     static void addSeparator();
 
     BaseNonModalDialogWindow(BaseApplicationService *applicationPtr);
-    ~BaseNonModalDialogWindow();
+    ~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT;
 
     bool open(const char *title, const char *id, bool *visible, const ImVec2 size, ImGuiWindowFlags flags);
     bool open(const char *title, const char *id, bool *visible, nanoem_f32_t height = 0, ImGuiWindowFlags flags = 0);

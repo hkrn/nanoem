@@ -348,7 +348,6 @@ GLFWApplicationService::draw()
     drawDefaultPass();
 }
 
-
 void
 GLFWApplicationService::setNativeView(GLFWwindow *window)
 {
@@ -496,7 +495,7 @@ GLFWApplicationService::handleInitializeApplication()
     if (backend == SG_BACKEND_GLCORE33) {
         io.BackendRendererUserData = this;
         platformIO.Renderer_RenderWindow = [](ImGuiViewport *viewport, void *opaque) {
-            if (auto userData = static_cast<ViewportWindow*>(viewport->PlatformUserData)) {
+            if (auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData)) {
                 auto self = static_cast<GLFWApplicationService *>(ImGui::GetIO().BackendRendererUserData);
                 if (Project *project = self->projectHolder()->currentProject()) {
                     auto window = static_cast<internal::ImGuiWindow *>(opaque);
