@@ -8,8 +8,8 @@
 
 #include "emapp/Error.h"
 #include "emapp/IImageView.h"
-#include "emapp/IModelObjectSelection.h"
 #include "emapp/Progress.h"
+#include "emapp/internal/imgui/ModelEditCommandDialog.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
@@ -22,6 +22,33 @@ const char *const ModelParameterDialog::kIdentifier = "dialog.project.model";
 const nanoem_f32_t ModelParameterDialog::kMinimumWindowWidth = 600;
 const int ModelParameterDialog::kWindowFrameHeightRowCount = 17;
 const int ModelParameterDialog::kInnerItemListFrameHeightRowCount = 10;
+
+IModelObjectSelection::EditingType
+ModelParameterDialog::convertToEditingType(TabType tab) NANOEM_DECL_NOEXCEPT
+{
+    switch (tab) {
+    case kTabTypeBone:
+        return IModelObjectSelection::kEditingTypeBone;
+    case kTabTypeFace:
+        return IModelObjectSelection::kEditingTypeFace;
+    case kTabTypeJoint:
+        return IModelObjectSelection::kEditingTypeJoint;
+    case kTabTypeLabel:
+        return IModelObjectSelection::kEditingTypeLabel;
+    case kTabTypeMaterial:
+        return IModelObjectSelection::kEditingTypeMaterial;
+    case kTabTypeMorph:
+        return IModelObjectSelection::kEditingTypeMorph;
+    case kTabTypeRigidBody:
+        return IModelObjectSelection::kEditingTypeRigidBody;
+    case kTabTypeSoftBody:
+        return IModelObjectSelection::kEditingTypeSoftBody;
+    case kTabTypeVertex:
+        return IModelObjectSelection::kEditingTypeVertex;
+    default:
+        return IModelObjectSelection::kEditingTypeNone;
+    }
+}
 
 void
 ModelParameterDialog::formatVertexText(char *buffer, nanoem_rsize_t size, const nanoem_model_vertex_t *vertexPtr)
@@ -137,7 +164,7 @@ ModelParameterDialog::draw(Project *project)
         }
         ImGui::EndTabBar();
     }
-    else if (m_activeModel) {
+    else if (!visible && m_activeModel) {
         project->setEditingMode(m_editingMode);
         m_activeModel->setShowAllVertexPoints(m_showAllVertexPoints);
         m_activeModel->setShowAllVertexFaces(m_showAllVertexFaces);
@@ -4292,99 +4319,9 @@ void
 ModelParameterDialog::toggleTab(TabType value, Project *project)
 {
     if (value != m_tabType) {
-        beforeToggleTab(project);
+        ModelEditCommandDialog::beforeToggleEditingMode(convertToEditingType(m_tabType), m_activeModel, project);
         m_tabType = value;
-        afterToggleTab(value, project);
-    }
-}
-
-void
-ModelParameterDialog::beforeToggleTab(Project *project)
-{
-    switch (m_tabType) {
-    case kTabTypeVertex: {
-        m_activeModel->setShowAllVertexPoints(false);
-        break;
-    }
-    case kTabTypeFace: {
-        m_activeModel->setShowAllVertexFaces(false);
-        break;
-    }
-    case kTabTypeBone: {
-        m_activeModel->setShowAllBones(false);
-        break;
-    }
-    case kTabTypeMorph: {
-        if (Motion *motion = project->resolveMotion(m_activeModel)) {
-            m_activeModel->synchronizeMotion(
-                motion, project->currentLocalFrameIndex(), 0, PhysicsEngine::kSimulationTimingBefore);
-            m_activeModel->resetAllVertices();
-            m_activeModel->deformAllMorphs(false);
-            m_activeModel->markStagingVertexBufferDirty();
-        }
-        break;
-    }
-    case kTabTypeRigidBody: {
-        m_activeModel->setShowAllRigidBodies(false);
-        break;
-    }
-    case kTabTypeJoint: {
-        m_activeModel->setShowAllJoints(false);
-        break;
-    }
-    case kTabTypeSoftBody: {
-        break;
-    }
-    default:
-        break;
-    }
-}
-
-void
-ModelParameterDialog::afterToggleTab(TabType value, Project *project)
-{
-    switch (value) {
-    case kTabTypeVertex: {
-        m_activeModel->setShowAllVertexPoints(true);
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeVertex);
-        project->setEditingMode(Project::kEditingModeNone);
-        break;
-    }
-    case kTabTypeFace: {
-        m_activeModel->setShowAllVertexFaces(true);
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeFace);
-        project->setEditingMode(Project::kEditingModeNone);
-        break;
-    }
-    case kTabTypeMaterial: {
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeMaterial);
-        project->setEditingMode(Project::kEditingModeNone);
-        break;
-    }
-    case kTabTypeBone: {
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeBone);
-        m_activeModel->setShowAllBones(true);
-        break;
-    }
-    case kTabTypeRigidBody: {
-        m_activeModel->setShowAllRigidBodies(true);
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeRigidBody);
-        project->setEditingMode(Project::kEditingModeNone);
-        break;
-    }
-    case kTabTypeJoint: {
-        m_activeModel->setShowAllJoints(true);
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeJoint);
-        project->setEditingMode(Project::kEditingModeNone);
-        break;
-    }
-    case kTabTypeSoftBody: {
-        m_activeModel->selection()->setEditingType(IModelObjectSelection::kEditingTypeSoftBody);
-        project->setEditingMode(Project::kEditingModeNone);
-        break;
-    }
-    default:
-        break;
+        ModelEditCommandDialog::afterToggleEditingMode(convertToEditingType(value), m_activeModel, project);
     }
 }
 
