@@ -36,6 +36,10 @@ class ImGuiApplicationMenuBuilder;
 class LightColorVectorValueState;
 class LightDirectionVectorValueState;
 
+namespace imgui {
+class GizmoController;
+} /* namespace imgui */
+
 class ImGuiWindow NANOEM_DECL_SEALED : public IUIWindow, private NonCopyable {
 public:
     static const Vector2UI16 kMinimumWindowSize;
@@ -377,6 +381,7 @@ private:
     BaseApplicationService *m_applicationPtr;
     ImGuiApplicationMenuBuilder *m_menu;
     Project::IViewportOverlay *m_viewportOverlayPtr;
+    imgui::GizmoController *m_gizmoController;
     CameraLookAtVectorValueState *m_cameraLookAtVectorValueState;
     CameraAngleVectorValueState *m_cameraAngleVectorValueState;
     CameraDistanceVectorValueState *m_cameraDistanceVectorValueState;

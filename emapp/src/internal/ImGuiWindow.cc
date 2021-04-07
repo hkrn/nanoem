@@ -53,6 +53,7 @@
 #include "emapp/internal/imgui/CameraParentModelSelector.h"
 #include "emapp/internal/imgui/ConstraintSelector.h"
 #include "emapp/internal/imgui/EffectParameterDialog.h"
+#include "emapp/internal/imgui/GizmoController.h"
 #include "emapp/internal/imgui/LazyPublishCanCopyEventCommand.h"
 #include "emapp/internal/imgui/LazyPublishCanPasteEventCommand.h"
 #include "emapp/internal/imgui/LazyReloadEffectCommand.h"
@@ -312,6 +313,7 @@ ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
     : m_applicationPtr(application)
     , m_menu(nullptr)
     , m_viewportOverlayPtr(nullptr)
+    , m_gizmoController(nullptr)
     , m_cameraLookAtVectorValueState(nullptr)
     , m_cameraAngleVectorValueState(nullptr)
     , m_cameraDistanceVectorValueState(nullptr)
@@ -379,6 +381,7 @@ ImGuiWindow::~ImGuiWindow()
     }
     m_allModalDialogs.clear();
     nanoem_delete_safe(m_menu);
+    nanoem_delete_safe(m_gizmoController);
     reset();
 }
 
@@ -953,8 +956,7 @@ ImGuiWindow::openModelParameterDialog(Project *project)
     }
     if (m_dialogWindows.find(ModelEditCommandDialog::kIdentifier) == m_dialogWindows.end()) {
         if (Model *activeModel = project->activeModel()) {
-            INoModalDialogWindow *dialog =
-                nanoem_new(ModelEditCommandDialog(activeModel, m_applicationPtr));
+            INoModalDialogWindow *dialog = nanoem_new(ModelEditCommandDialog(activeModel, m_applicationPtr));
             m_dialogWindows.insert(tinystl::make_pair(ModelEditCommandDialog::kIdentifier, dialog));
         }
     }
@@ -1078,7 +1080,9 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
         m_applicationPtr->beginDefaultPass(0, pa, deviceScaleWindowSize.x, deviceScaleWindowSize.y, sampleCount);
         setupDeviceInput(project);
         ImGui::NewFrame();
-        ModelEditCommandDialog::beginGizmo();
+        if (m_gizmoController) {
+            m_gizmoController->begin();
+        }
         bool seekable = false;
         drawMainWindow(deviceScaleWindowSize, project, seekable);
         drawAllNonModalWindows(project);
@@ -2737,7 +2741,12 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     drawList->AddImage(
         reinterpret_cast<ImTextureID>(viewportImageHandle.id), viewportImageFrom, viewportImageTo, uv0, uv1);
     if (isModelEditingEnabled) {
-        hovered &= ModelEditCommandDialog::drawGizmo(drawList, offset, size, project);
+        if (m_gizmoController) {
+            hovered &= m_gizmoController->draw(drawList, offset, size, project);
+        }
+        else {
+            m_gizmoController = nanoem_new(GizmoController);
+        }
     }
     if (m_viewportOverlayPtr) {
         m_primitive2D.setBaseOffset(offset);
