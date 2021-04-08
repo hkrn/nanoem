@@ -942,19 +942,30 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
             }
         }
     }
-    ImGui::TextUnformatted("Textures");
     const model::Material *material = model::Material::cast(materialPtr);
-    String filename;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    StringUtils::getUtf8String(
-        nanoemModelTextureGetPath(nanoemModelMaterialGetDiffuseTextureObject(materialPtr)), factory, filename);
-    layoutMaterialImage(material->diffuseImage(), tr("nanoem.gui.model.edit.material.texture.diffuse"), filename);
-    StringUtils::getUtf8String(
-        nanoemModelTextureGetPath(nanoemModelMaterialGetSphereMapTextureObject(materialPtr)), factory, filename);
-    layoutMaterialImage(material->sphereMapImage(), tr("nanoem.gui.model.edit.material.texture.sphere"), filename);
-    StringUtils::getUtf8String(
-        nanoemModelTextureGetPath(nanoemModelMaterialGetToonTextureObject(materialPtr)), factory, filename);
-    layoutMaterialImage(material->toonImage(), tr("nanoem.gui.model.edit.material.texture.toon"), filename);
+    const IImageView *diffuseImage = material->diffuseImage(),
+            *sphereMapImage = material->sphereMapImage(),
+            *toonImage = material->toonImage();
+    if (diffuseImage || (toonImage && !nanoemModelMaterialIsToonShared(materialPtr)) || sphereMapImage) {
+        ImGui::TextUnformatted("Textures");
+        String filename;
+        if (diffuseImage) {
+            StringUtils::getUtf8String(
+                nanoemModelTextureGetPath(nanoemModelMaterialGetDiffuseTextureObject(materialPtr)), factory, filename);
+            layoutMaterialDiffuseImage(diffuseImage, filename, materialPtr);
+        }
+        if (sphereMapImage) {
+            StringUtils::getUtf8String(
+                nanoemModelTextureGetPath(nanoemModelMaterialGetSphereMapTextureObject(materialPtr)), factory, filename);
+            layoutMaterialSphereMapImage(sphereMapImage, filename, materialPtr);
+        }
+        if (toonImage && !nanoemModelMaterialIsToonShared(materialPtr)) {
+            StringUtils::getUtf8String(
+                nanoemModelTextureGetPath(nanoemModelMaterialGetToonTextureObject(materialPtr)), factory, filename);
+            layoutMaterialToonImage(toonImage, filename);
+        }
+    }
     {
         ImGui::TextUnformatted("Arbitrary Area");
         String clob;
@@ -976,14 +987,113 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
 }
 
 void
-ModelParameterDialog::layoutMaterialImage(const IImageView *image, const char *label, const String &filename)
+ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
 {
-    if (image && ImGui::TreeNode(label)) {
+    static const char id[] = "nanoem.gui.model.edit.material.texture.diffuse";
+    char label[Inline::kLongNameStackBufferSize];
+    StringUtils::format(label, sizeof(label), "%s (%s)##%s/%s", tr(id), filename.c_str(), id, filename.c_str());
+    if (ImGui::CollapsingHeader(label)) {
         const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
-        ImGui::TextUnformatted(filename.c_str());
+        model::Material *material = model::Material::cast(activeMaterialPtr);
+        bool displayUVMeshEnabled = material->isDisplayDiffuseTextureUVMeshEnabled();
+        if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
+            material->setDisplayDiffuseTextureUVMeshEnabled(displayUVMeshEnabled);
+        }
+        const ImVec2 itemOffset(ImGui::GetCursorScreenPos());
         ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
-        ImGui::TreePop();
+        if (displayUVMeshEnabled) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices, offset = 0;
+            const nanoem_model_t *opaque = m_activeModel->data();
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *material = materials[i];
+                if (material == activeMaterialPtr) {
+                    break;
+                }
+                offset += nanoemModelMaterialGetNumVertexIndices(material);
+            }
+            const ImVec2 itemSize(ImGui::GetItemRectSize());
+            const nanoem_rsize_t offsetTo = offset + nanoemModelMaterialGetNumVertexIndices(activeMaterialPtr);
+            ImDrawList *drawList = ImGui::GetWindowDrawList();
+            drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
+            for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
+                const nanoem_f32_t *t0 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i]]),
+                        *t1 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 1]]),
+                        *t2 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 2]]);
+                const ImVec2 v0Pos(itemOffset.x + itemSize.x * t0[0], itemOffset.y + itemSize.y * t0[1]),
+                        v1Pos(itemOffset.x + itemSize.x * t1[0], itemOffset.y + itemSize.y * t1[1]),
+                        v2Pos(itemOffset.x + itemSize.x * t2[0], itemOffset.y + itemSize.y * t2[1]);
+                drawList->AddLine(v0Pos, v1Pos, IM_COL32(0xff, 0, 0, 0xff));
+                drawList->AddLine(v1Pos, v2Pos, IM_COL32(0xff, 0, 0, 0xff));
+                drawList->AddLine(v2Pos, v0Pos, IM_COL32(0xff, 0, 0, 0xff));
+            }
+            drawList->PopClipRect();
+        }
+    }
+}
+
+void
+ModelParameterDialog::layoutMaterialSphereMapImage(const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
+{
+    static const char id[] = "nanoem.gui.model.edit.material.texture.sphere";
+    char label[Inline::kLongNameStackBufferSize];
+    StringUtils::format(label, sizeof(label), "%s (%s)##%s/%s", tr(id), filename.c_str(), id, filename.c_str());
+    if (ImGui::CollapsingHeader(label)) {
+        const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
+        model::Material *material = model::Material::cast(activeMaterialPtr);
+        bool displayUVMeshEnabled = material->isDisplaySphereMapTextureUVMeshEnabled();
+        if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
+            material->setDisplaySphereMapTextureUVMeshEnabled(displayUVMeshEnabled);
+        }
+        const ImVec2 itemOffset(ImGui::GetCursorScreenPos());
+        ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
+            ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
+        if (displayUVMeshEnabled) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices, offset = 0;
+            const nanoem_model_t *opaque = m_activeModel->data();
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *material = materials[i];
+                if (material == activeMaterialPtr) {
+                    break;
+                }
+                offset += nanoemModelMaterialGetNumVertexIndices(material);
+            }
+            const ImVec2 itemSize(ImGui::GetItemRectSize());
+            const nanoem_rsize_t offsetTo = offset + nanoemModelMaterialGetNumVertexIndices(activeMaterialPtr);
+            ImDrawList *drawList = ImGui::GetWindowDrawList();
+            drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
+            for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
+                const Vector3 n0(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i]]))) * Vector3(0.5f) + Vector3(0.5f)),
+                        n1(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 1]]))) * Vector3(0.5f) + Vector3(0.5f)),
+                        n2(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 2]]))) * Vector3(0.5f) + Vector3(0.5f));
+                const ImVec2 n0Pos(itemOffset.x + itemSize.x * n0.x, itemOffset.y + itemSize.y * n0.y),
+                        n1Pos(itemOffset.x + itemSize.x * n1.x, itemOffset.y + itemSize.y * n1.y),
+                        n2Pos(itemOffset.x + itemSize.x * n2.x, itemOffset.y + itemSize.y * n2.y);
+                drawList->AddLine(n0Pos, n1Pos, IM_COL32(0xff, 0, 0, 0xff));
+                drawList->AddLine(n1Pos, n2Pos, IM_COL32(0xff, 0, 0, 0xff));
+                drawList->AddLine(n2Pos, n0Pos, IM_COL32(0xff, 0, 0, 0xff));
+            }
+            drawList->PopClipRect();
+        }
+    }
+}
+
+void
+ModelParameterDialog::layoutMaterialToonImage(const IImageView *image, const String &filename)
+{
+    static const char id[] = "nanoem.gui.model.edit.material.texture.toon";
+    char label[Inline::kLongNameStackBufferSize];
+    StringUtils::format(label, sizeof(label), "%s (%s)##%s/%s", tr(id), filename.c_str(), id, filename.c_str());
+    if (ImGui::CollapsingHeader(label)) {
+        const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
+        ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
+            ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
     }
 }
 

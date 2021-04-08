@@ -6,14 +6,24 @@
 
 #include "emapp/model/Material.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace model {
+namespace {
 
+enum PrivateStateFlags {
+    kPrivateStateVisible = 1 << 1,
+    kPrivateStateDisplayDiffuseTextureUVMeshEnabled = 1 << 2,
+    kPrivateStateDisplaySphereMapTextureUVMeshEnabled = 1 << 3,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStateVisible | kPrivateStateDisplayDiffuseTextureUVMeshEnabled;
 static const nanoem_f32_t kMiniumSpecularPower = 0.1f;
+
+} /* namespace anonymous */
 
 void
 Material::Color::reset(nanoem_f32_t v)
@@ -316,15 +326,39 @@ Material::setToonColor(const Vector4 &value)
 }
 
 bool
+Material::isDisplayDiffuseTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateDisplayDiffuseTextureUVMeshEnabled, m_states);
+}
+
+void
+Material::setDisplayDiffuseTextureUVMeshEnabled(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateDisplayDiffuseTextureUVMeshEnabled, m_states, value);
+}
+
+bool
+Material::isDisplaySphereMapTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateDisplaySphereMapTextureUVMeshEnabled, m_states);
+}
+
+void
+Material::setDisplaySphereMapTextureUVMeshEnabled(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateDisplaySphereMapTextureUVMeshEnabled, m_states, value);
+}
+
+bool
 Material::isVisible() const NANOEM_DECL_NOEXCEPT
 {
-    return m_visible;
+    return EnumUtils::isEnabled(kPrivateStateVisible, m_states);
 }
 
 void
 Material::setVisible(bool value)
 {
-    m_visible = value;
+    EnumUtils::setEnabled(kPrivateStateVisible, m_states, value);
 }
 
 void
@@ -340,7 +374,7 @@ Material::Material(sg_image fallbackImage) NANOEM_DECL_NOEXCEPT : m_effect(nullp
                                                                   m_sphereMapImagePtr(nullptr),
                                                                   m_toonImagePtr(nullptr),
                                                                   m_toonColor(1),
-                                                                  m_visible(true)
+                                                                  m_states(kPrivateStateInitialValue)
 {
     m_fallbackImage = fallbackImage;
 }

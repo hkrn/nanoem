@@ -79,6 +79,10 @@ public:
     void setIndexHash(const UInt32HashMap &value);
     Vector4 toonColor() const NANOEM_DECL_NOEXCEPT;
     void setToonColor(const Vector4 &value);
+    bool isDisplayDiffuseTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setDisplayDiffuseTextureUVMeshEnabled(bool value);
+    bool isDisplaySphereMapTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setDisplaySphereMapTextureUVMeshEnabled(bool value);
     bool isVisible() const NANOEM_DECL_NOEXCEPT;
     void setVisible(bool value);
 
@@ -105,7 +109,7 @@ private:
     sg_image m_fallbackImage;
     UInt32HashMap m_indexHash;
     Vector4 m_toonColor;
-    bool m_visible;
+    uint32_t m_states;
 };
 
 } /* namespace model */
