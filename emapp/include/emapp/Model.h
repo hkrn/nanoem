@@ -96,7 +96,7 @@ public:
         ~VertexUnit() NANOEM_DECL_NOEXCEPT;
         void setUVA(const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
         void performSkinning(nanoem_f32_t edgeSize, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
-        void setWeightColor(const model::Bone *bone, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
+        void setWeightColor(const model::Bone *bonePtr, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
         void prepareSkinning(const model::Material::BoneIndexHashMap *indexHashMap, const model::Vertex *vertex)
             NANOEM_DECL_NOEXCEPT;
         static bx::simd128_t swizzleWeight(const model::Vertex *vertex, nanoem_rsize_t index) NANOEM_DECL_NOEXCEPT;
@@ -216,9 +216,9 @@ public:
     void clearAllBoneBoundsRigidBodies();
     void createAllBoneBoundsRigidBodies();
     bool intersectsBoneInWindow(
-        const Vector2 &devicePixelCursor, const model::Bone *bone, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
+        const Vector2 &devicePixelCursor, const model::Bone *bonePtr, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
     bool intersectsBoneInViewport(
-        const Vector2 &devicePixelCursor, const model::Bone *bone, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
+        const Vector2 &devicePixelCursor, const model::Bone *bonePtr, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
 
     void saveBindPose(model::BindPose &value) const;
     void restoreBindPose(const model::BindPose &value);
@@ -247,10 +247,11 @@ public:
     bool isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     bool isMaterialSelected(const nanoem_model_material_t *material) const NANOEM_DECL_NOEXCEPT;
     bool isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DECL_NOEXCEPT;
-    void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bone,
+    void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr,
         const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
-    void drawBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor);
-    void drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bone, const Vector2 &deviceScaleCursor);
+    void drawAllBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor);
+    void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
+    void drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t * bonePtr, const Vector2 &deviceScaleCursor);
     void drawBoneTooltip(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
     void drawConstraintConnections(
         IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_constraint_t *constraint);
@@ -475,7 +476,7 @@ private:
     bool getVertexIndexBuffer(const model::Material *material, IPass::Buffer &buffer) const NANOEM_DECL_NOEXCEPT;
     bool getEdgeIndexBuffer(const model::Material *material, IPass::Buffer &buffer) const NANOEM_DECL_NOEXCEPT;
     Vector4 connectionBoneColor(
-        const nanoem_model_bone_t *bone, const Vector4 &base, bool enableFixedAxis) const NANOEM_DECL_NOEXCEPT;
+        const nanoem_model_bone_t *bonePtr, const Vector4 &base, bool enableFixedAxis) const NANOEM_DECL_NOEXCEPT;
     Vector4 hoveredBoneColor(const Vector4 &inactive, bool selected) const NANOEM_DECL_NOEXCEPT;
     void drawColor(bool scriptExternalColor);
     void drawEdge(nanoem_f32_t edgeSizeScaleFactor);

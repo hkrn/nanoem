@@ -1813,8 +1813,8 @@ RedoState::type() const NANOEM_DECL_NOEXCEPT
 class DrawUtil NANOEM_DECL_SEALED : private NonCopyable {
 public:
     static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project);
-    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
-    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
     static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
     static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
 };
@@ -1833,7 +1833,7 @@ DrawUtil::deviceScaleCursorActiveBoneInViewport(const Project *project)
 }
 
 void
-DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
+DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
 {
     static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0);
     const Project *project = activeModel->project();
@@ -1841,6 +1841,8 @@ DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, 
     const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
     const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
                        thickness = project->logicalScaleCircleRadius();
+    const nanoem_model_bone_t *activeBone = activeModel->activeBone();
+    activeModel->drawBoneConnections(primitive, activeBone);
     primitive->strokeLine(center, Vector2(center.x + length, center.y),
         Vector4(kRed, type == Model::kAxisX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(center, Vector2(center.x, center.y - length),
@@ -1848,7 +1850,7 @@ DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, 
 }
 
 void
-DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
+DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
 {
     static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0), kBlue(0, 0, 1);
     const Project *project = activeModel->project();
@@ -1861,6 +1863,7 @@ DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel
     const nanoem_f32_t y1 = center.y - radius;
     const nanoem_f32_t x2 = center.x + radius;
     const nanoem_f32_t y2 = center.y + radius;
+    activeModel->drawBoneConnections(primitive, activeModel->activeBone());
     primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
         Vector4(kBlue, type == Model::kAxisZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
@@ -1932,7 +1935,7 @@ StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
             Vector4 activeBoneColor(kColorRed);
             if (activeModel->isVisible()) {
                 if (EnumUtils::isEnabled(Project::kDrawTypeBoneConnections, flags)) {
-                    activeModel->drawBoneConnections(primitive, deviceScaleCursor);
+                    activeModel->drawAllBoneConnections(primitive, deviceScaleCursor);
                 }
                 if (EnumUtils::isEnabled(Project::kDrawTypeConstraintConnections, flags)) {
                     activeModel->drawConstraintConnections(primitive, deviceScaleCursor);
