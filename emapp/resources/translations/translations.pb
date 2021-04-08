@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -275,7 +275,8 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
 (nanoem.gui.model.edit.material.edge.sizeエッジ幅J
 .nanoem.gui.model.edit.material.texture.diffuse拡散光テクスチャU
 -nanoem.gui.model.edit.material.texture.sphere$スフィアマップテクスチャJ
-+nanoem.gui.model.edit.material.texture.toonトゥーンテクスチャX
++nanoem.gui.model.edit.material.texture.toonトゥーンテクスチャ<
+)nanoem.gui.model.edit.material.propertiesプロパティX
 3nanoem.gui.model.edit.material.property.shared-toon!共有トゥーンテクスチャ_
 7nanoem.gui.model.edit.material.property.disable-culling$カリング無効（両面描画）R
 6nanoem.gui.model.edit.material.property.casting-shadow地面影の投影対象c
@@ -300,7 +301,8 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
 !nanoem.gui.model.edit.bone.origin原点座標1
 !nanoem.gui.model.edit.bone.parent親ボーン7
 !nanoem.gui.model.edit.bone.target接続先ボーンF
--nanoem.gui.model.edit.bone.destination-origin接続先原点座標8
+-nanoem.gui.model.edit.bone.destination-origin接続先原点座標0
+ nanoem.gui.model.edit.bone.stage変形階層8
 %nanoem.gui.model.edit.bone.propertiesプロパティ2
 "nanoem.gui.model.edit.bone.movable移動可能5
 %nanoem.gui.model.edit.bone.rotateable回転可能,
@@ -310,7 +312,12 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
 .nanoem.gui.model.edit.bone.constraint.effector'エフェクター（作用）ボーンT
 ,nanoem.gui.model.edit.bone.constraint.target$ターゲット（終点）ボーン5
 +nanoem.gui.model.edit.bone.constraint.angle角度E
-,nanoem.gui.model.edit.bone.constraint.jointsIK リンクボーン?
+,nanoem.gui.model.edit.bone.constraint.jointsIK リンクボーン:
+0nanoem.gui.model.edit.bone.constraint.joints.add追加=
+3nanoem.gui.model.edit.bone.constraint.joints.remove削除Y
+7nanoem.gui.model.edit.bone.constraint.joint.angle-limit角度制限を有効にするM
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower角度下限M
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper角度上限?
 /nanoem.gui.model.edit.bone.constraint.iteration試行回数?
 /nanoem.gui.model.edit.bone.inherent.translation移動付与?
 /nanoem.gui.model.edit.bone.inherent.orientation回転付与E
@@ -347,7 +354,36 @@ $nanoem.gui.model.edit.morph.categoryカテゴリ*
 %nanoem.gui.model.edit.morph.type.uva4
 拡張 UV41
 'nanoem.gui.model.edit.morph.type.vertex頂点2
-(nanoem.gui.model.edit.morph.type.unknown不明B
+(nanoem.gui.model.edit.morph.type.unknown不明9
+,nanoem.gui.model.edit.morph.bone.translation	移動量9
+,nanoem.gui.model.edit.morph.bone.orientation	回転量.
+$nanoem.gui.model.edit.morph.bone.add追加1
+'nanoem.gui.model.edit.morph.bone.remove削除7
+'nanoem.gui.model.edit.morph.flip.weightウェイト.
+$nanoem.gui.model.edit.morph.flip.add追加1
+'nanoem.gui.model.edit.morph.flip.remove削除8
+(nanoem.gui.model.edit.morph.group.weightウェイト/
+%nanoem.gui.model.edit.morph.group.add追加2
+(nanoem.gui.model.edit.morph.group.remove削除@
+*nanoem.gui.model.edit.morph.impulse.torqueトルク（力）K
+,nanoem.gui.model.edit.morph.impulse.velocityベロシティ（速度）N
+)nanoem.gui.model.edit.morph.impulse.local!ローカル軸を有効にする1
+'nanoem.gui.model.edit.morph.impulse.add追加4
+*nanoem.gui.model.edit.morph.impulse.remove削除>
+.nanoem.gui.model.edit.morph.material.operation動作種別B
+2nanoem.gui.model.edit.morph.material.ambient.color環境光色B
+2nanoem.gui.model.edit.morph.material.diffuse.color拡散光色C
+3nanoem.gui.model.edit.morph.material.specular.color鏡面光色C
+3nanoem.gui.model.edit.morph.material.specular.power鏡面強度?
+/nanoem.gui.model.edit.morph.material.edge.colorエッジ色>
+.nanoem.gui.model.edit.morph.material.edge.sizeエッジ幅Z
+2nanoem.gui.model.edit.morph.material.blend.diffuse$拡散光テクスチャブレンドi
+5nanoem.gui.model.edit.morph.material.blend.sphere-map0スフィアマップテクスチャブレンドZ
+/nanoem.gui.model.edit.morph.material.blend.toon'トゥーンテクスチャブレンド2
+(nanoem.gui.model.edit.morph.material.add追加5
++nanoem.gui.model.edit.morph.material.remove削除4
+'nanoem.gui.model.edit.morph.uv.position	UV 座標5
++nanoem.gui.model.edit.morph.vertex.position位置B
 )nanoem.gui.model.edit.label.name.japanese名称（日本語）>
 (nanoem.gui.model.edit.label.name.english名称（英語）0
 #nanoem.gui.model.edit.label.special	特殊枠G
@@ -360,8 +396,8 @@ $nanoem.gui.model.edit.morph.categoryカテゴリ*
 ,nanoem.gui.model.edit.rigid-body.orientation回転A
 +nanoem.gui.model.edit.rigid-body.shape.size形状の大きさ/
 %nanoem.gui.model.edit.rigid-body.mass質量?
-/nanoem.gui.model.edit.rigid-body.linear-damping線形減衰@
-0nanoem.gui.model.edit.rigid-body.angular-damping傾斜減衰9
+/nanoem.gui.model.edit.rigid-body.linear-damping移動減衰@
+0nanoem.gui.model.edit.rigid-body.angular-damping回転減衰9
 )nanoem.gui.model.edit.rigid-body.friction摩擦係数<
 ,nanoem.gui.model.edit.rigid-body.restitution反発係数S
 4nanoem.gui.model.edit.rigid-body.object-type.dynamic演算結果を全て反映L
@@ -932,7 +968,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1215,7 +1251,9 @@ Edge Color;
 Edge WidthA
 .nanoem.gui.model.edit.material.texture.diffuseDiffuse TextureC
 -nanoem.gui.model.edit.material.texture.sphereSphere Map Texture;
-+nanoem.gui.model.edit.material.texture.toonToon TextureQ
++nanoem.gui.model.edit.material.texture.toonToon Texture7
+)nanoem.gui.model.edit.material.properties
+PropertiesQ
 3nanoem.gui.model.edit.material.property.shared-toonEnable Shared Toon TextureJ
 7nanoem.gui.model.edit.material.property.disable-cullingDisable CullingV
 6nanoem.gui.model.edit.material.property.casting-shadowEnable Casting Ground ShadowY
@@ -1241,6 +1279,7 @@ Edge WidthA
 !nanoem.gui.model.edit.bone.parentParent Bone0
 !nanoem.gui.model.edit.bone.targetTarget BoneC
 -nanoem.gui.model.edit.bone.destination-originDestination Origin3
+ nanoem.gui.model.edit.bone.stageTransform Stage3
 %nanoem.gui.model.edit.bone.properties
 Properties-
 "nanoem.gui.model.edit.bone.movableMovable3
@@ -1252,7 +1291,12 @@ Rotateable-
 .nanoem.gui.model.edit.bone.constraint.effectorEffector Bone;
 ,nanoem.gui.model.edit.bone.constraint.targetTarget Bone4
 +nanoem.gui.model.edit.bone.constraint.angleAngle=
-,nanoem.gui.model.edit.bone.constraint.jointsIK Link Bones<
+,nanoem.gui.model.edit.bone.constraint.jointsIK Link Bones7
+0nanoem.gui.model.edit.bone.constraint.joints.addAdd=
+3nanoem.gui.model.edit.bone.constraint.joints.removeRemoveM
+7nanoem.gui.model.edit.bone.constraint.joint.angle-limitEnable Angle LimitL
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lowerLower LimitL
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upperUpper Limit<
 /nanoem.gui.model.edit.bone.constraint.iteration	IterationG
 /nanoem.gui.model.edit.bone.inherent.translationInherent TranslationG
 /nanoem.gui.model.edit.bone.inherent.orientationInherent OrientationG
@@ -1288,7 +1332,37 @@ $nanoem.gui.model.edit.morph.categoryCategory(
 %nanoem.gui.model.edit.morph.type.uva3Additional UV37
 %nanoem.gui.model.edit.morph.type.uva4Additional UV41
 'nanoem.gui.model.edit.morph.type.vertexVertex3
-(nanoem.gui.model.edit.morph.type.unknownUnknown<
+(nanoem.gui.model.edit.morph.type.unknownUnknown;
+,nanoem.gui.model.edit.morph.bone.translationTranslation;
+,nanoem.gui.model.edit.morph.bone.orientationOrientation+
+$nanoem.gui.model.edit.morph.bone.addAdd1
+'nanoem.gui.model.edit.morph.bone.removeRemove1
+'nanoem.gui.model.edit.morph.flip.weightWeight+
+$nanoem.gui.model.edit.morph.flip.addAdd1
+'nanoem.gui.model.edit.morph.flip.removeRemove2
+(nanoem.gui.model.edit.morph.group.weightWeight,
+%nanoem.gui.model.edit.morph.group.addAdd2
+(nanoem.gui.model.edit.morph.group.removeRemove4
+*nanoem.gui.model.edit.morph.impulse.torqueTorque8
+,nanoem.gui.model.edit.morph.impulse.velocityVelocity>
+)nanoem.gui.model.edit.morph.impulse.localEnable Local Axis.
+'nanoem.gui.model.edit.morph.impulse.addAdd4
+*nanoem.gui.model.edit.morph.impulse.removeRemove;
+.nanoem.gui.model.edit.morph.material.operation	OperationC
+2nanoem.gui.model.edit.morph.material.ambient.colorAmbient ColorC
+2nanoem.gui.model.edit.morph.material.diffuse.colorDiffuse ColorE
+3nanoem.gui.model.edit.morph.material.specular.colorSpecular ColorE
+3nanoem.gui.model.edit.morph.material.specular.powerSpecular Power=
+/nanoem.gui.model.edit.morph.material.edge.color
+Edge Color;
+.nanoem.gui.model.edit.morph.material.edge.size	Edge SizeK
+2nanoem.gui.model.edit.morph.material.blend.diffuseDiffuse Texture BlendQ
+5nanoem.gui.model.edit.morph.material.blend.sphere-mapSphere Map Texture BlendE
+/nanoem.gui.model.edit.morph.material.blend.toonToon Texture Blend/
+(nanoem.gui.model.edit.morph.material.addAdd5
++nanoem.gui.model.edit.morph.material.removeRemove8
+'nanoem.gui.model.edit.morph.uv.positionUV Coordinate7
++nanoem.gui.model.edit.morph.vertex.positionPosition<
 )nanoem.gui.model.edit.label.name.japaneseName (Japanese):
 (nanoem.gui.model.edit.label.name.englishName (English).
 #nanoem.gui.model.edit.label.specialSpecialA

@@ -1103,6 +1103,10 @@
   phrase:
     en_US: 'Toon Texture'
     ja_JP: 'トゥーンテクスチャ'
+- key: nanoem.gui.model.edit.material.properties
+  phrase:
+    en_US: 'Properties'
+    ja_JP: 'プロパティ'
 - key: nanoem.gui.model.edit.material.property.shared-toon
   phrase:
     en_US: 'Enable Shared Toon Texture'
@@ -1203,6 +1207,10 @@
   phrase:
     en_US: 'Destination Origin'
     ja_JP: '接続先原点座標'
+- key: nanoem.gui.model.edit.bone.stage
+  phrase:
+    en_US: 'Transform Stage'
+    ja_JP: '変形階層'
 - key: nanoem.gui.model.edit.bone.properties
   phrase:
     en_US: 'Properties'
@@ -1243,6 +1251,26 @@
   phrase:
     en_US: 'IK Link Bones'
     ja_JP: 'IK リンクボーン'
+- key: nanoem.gui.model.edit.bone.constraint.joints.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.bone.constraint.joints.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.bone.constraint.joint.angle-limit
+  phrase:
+    en_US: 'Enable Angle Limit'
+    ja_JP: '角度制限を有効にする'
+- key: nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower
+  phrase:
+    en_US: 'Lower Limit'
+    ja_JP: '角度下限'
+- key: nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper
+  phrase:
+    en_US: 'Upper Limit'
+    ja_JP: '角度上限'
 - key: nanoem.gui.model.edit.bone.constraint.iteration
   phrase:
     en_US: 'Iteration'
@@ -1375,6 +1403,122 @@
   phrase:
     en_US: 'Unknown'
     ja_JP: '不明'
+- key: nanoem.gui.model.edit.morph.bone.translation
+  phrase:
+    en_US: 'Translation'
+    ja_JP: '移動量'
+- key: nanoem.gui.model.edit.morph.bone.orientation
+  phrase:
+    en_US: 'Orientation'
+    ja_JP: '回転量'
+- key: nanoem.gui.model.edit.morph.bone.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.bone.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.flip.weight
+  phrase:
+    en_US: 'Weight'
+    ja_JP: 'ウェイト'
+- key: nanoem.gui.model.edit.morph.flip.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.flip.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.group.weight
+  phrase:
+    en_US: 'Weight'
+    ja_JP: 'ウェイト'
+- key: nanoem.gui.model.edit.morph.group.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.group.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.impulse.torque
+  phrase:
+    en_US: 'Torque'
+    ja_JP: 'トルク（力）'
+- key: nanoem.gui.model.edit.morph.impulse.velocity
+  phrase:
+    en_US: 'Velocity'
+    ja_JP: 'ベロシティ（速度）'
+- key: nanoem.gui.model.edit.morph.impulse.local
+  phrase:
+    en_US: 'Enable Local Axis'
+    ja_JP: 'ローカル軸を有効にする'
+- key: nanoem.gui.model.edit.morph.impulse.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.impulse.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.material.operation
+  phrase:
+    en_US: 'Operation'
+    ja_JP: '動作種別'
+- key: nanoem.gui.model.edit.morph.material.ambient.color
+  phrase:
+    en_US: 'Ambient Color'
+    ja_JP: '環境光色'
+- key: nanoem.gui.model.edit.morph.material.diffuse.color
+  phrase:
+    en_US: 'Diffuse Color'
+    ja_JP: '拡散光色'
+- key: nanoem.gui.model.edit.morph.material.specular.color
+  phrase:
+    en_US: 'Specular Color'
+    ja_JP: '鏡面光色'
+- key: nanoem.gui.model.edit.morph.material.specular.power
+  phrase:
+    en_US: 'Specular Power'
+    ja_JP: '鏡面強度'
+- key: nanoem.gui.model.edit.morph.material.edge.color
+  phrase:
+    en_US: 'Edge Color'
+    ja_JP: 'エッジ色'
+- key: nanoem.gui.model.edit.morph.material.edge.size
+  phrase:
+    en_US: 'Edge Size'
+    ja_JP: 'エッジ幅'
+- key: nanoem.gui.model.edit.morph.material.blend.diffuse
+  phrase:
+    en_US: 'Diffuse Texture Blend'
+    ja_JP: '拡散光テクスチャブレンド'
+- key: nanoem.gui.model.edit.morph.material.blend.sphere-map
+  phrase:
+    en_US: 'Sphere Map Texture Blend'
+    ja_JP: 'スフィアマップテクスチャブレンド'
+- key: nanoem.gui.model.edit.morph.material.blend.toon
+  phrase:
+    en_US: 'Toon Texture Blend'
+    ja_JP: 'トゥーンテクスチャブレンド'
+- key: nanoem.gui.model.edit.morph.material.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.material.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.uv.position
+  phrase:
+    en_US: 'UV Coordinate'
+    ja_JP: 'UV 座標'
+- key: nanoem.gui.model.edit.morph.vertex.position
+  phrase:
+    en_US: 'Position'
+    ja_JP: '位置'
 - key: nanoem.gui.model.edit.label.name.japanese
   phrase:
     en_US: 'Name (Japanese)'
@@ -1426,11 +1570,11 @@
 - key: nanoem.gui.model.edit.rigid-body.linear-damping
   phrase:
     en_US: 'Linear Damping'
-    ja_JP: '線形減衰'
+    ja_JP: '移動減衰'
 - key: nanoem.gui.model.edit.rigid-body.angular-damping
   phrase:
     en_US: 'Angular Damping'
-    ja_JP: '傾斜減衰'
+    ja_JP: '回転減衰'
 - key: nanoem.gui.model.edit.rigid-body.friction
   phrase:
     en_US: 'Friction'

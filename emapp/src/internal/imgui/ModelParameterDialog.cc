@@ -890,7 +890,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     }
     addSeparator();
     char buffer[Inline::kNameStackBufferSize];
-    StringUtils::format(buffer, sizeof(buffer), "%s##properties", tr("nanoem.gui.model.edit.bone.properties"));
+    StringUtils::format(buffer, sizeof(buffer), "%s##properties", tr("nanoem.gui.model.edit.material.properties"));
     if (ImGui::CollapsingHeader(buffer)) {
         {
             bool value = nanoemModelMaterialIsToonShared(materialPtr) != 0;
@@ -1774,11 +1774,10 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             ImGui::PopItemWidth();
             if (m_constraintJointCandidateIndex < numBones) {
                 if (const model::Bone *bone = model::Bone::cast(bones[m_constraintJointCandidateIndex])) {
-                    name = bone->nameConstString();
                     manipulatable = true;
                 }
             }
-            if (ImGuiWindow::handleButton("Add", ImGui::GetContentRegionAvail().x * 0.5f, manipulatable)) {
+            if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.bone.constraint.joints.add"), ImGui::GetContentRegionAvail().x * 0.5f, manipulatable)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
                 nanoem_mutable_model_constraint_joint_t *joint =
@@ -1791,7 +1790,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             }
             ImGui::SameLine();
             if (ImGuiWindow::handleButton(
-                    "Remove", ImGui::GetContentRegionAvail().x, m_constraintJointIndex < numJoints)) {
+                    tr("nanoem.gui.model.edit.bone.constraint.joints.remove"), ImGui::GetContentRegionAvail().x, m_constraintJointIndex < numJoints)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
                 nanoem_mutable_model_constraint_joint_t *joint =
@@ -1806,14 +1805,14 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             m_constraintJointIndex < numJoints ? joints[m_constraintJointIndex] : nullptr;
         {
             bool value = nanoemModelConstraintJointHasAngleLimit(jointPtr);
-            if (ImGui::Checkbox("Enable Angle Limit", &value)) {
+            if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.constraint.joint.angle-limit"), &value)) {
                 ScopedMutableConstraintJoint scoped(jointPtr, m_activeModel);
                 nanoemMutableModelConstraintJointSetAngleLimitEnabled(scoped, value ? 1 : 0);
             }
         }
         {
             Vector3 lowerLimit(glm::degrees(glm::make_vec3(nanoemModelConstraintJointGetLowerLimit(jointPtr))));
-            ImGui::TextUnformatted("Lower Limit");
+            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower"));
             if (ImGui::DragFloat3("##joint.upper", glm::value_ptr(lowerLimit), 1.0f, 0.0f, 180.0f)) {
                 ScopedMutableConstraintJoint scoped(jointPtr, m_activeModel);
                 nanoemMutableModelConstraintJointSetLowerLimit(scoped, glm::value_ptr(glm::radians(lowerLimit)));
@@ -1821,7 +1820,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
         }
         {
             Vector3 upperLimit(glm::degrees(glm::make_vec3(nanoemModelConstraintJointGetUpperLimit(jointPtr))));
-            ImGui::TextUnformatted("Upper Limit");
+            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper"));
             if (ImGui::DragFloat3("##joint.lower", glm::value_ptr(upperLimit), 1.0f, 0.0f, 180.0f)) {
                 ScopedMutableConstraintJoint scoped(jointPtr, m_activeModel);
                 nanoemMutableModelConstraintJointSetUpperLimit(scoped, glm::value_ptr(glm::radians(upperLimit)));
@@ -2232,7 +2231,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     ImGui::EndCombo();
                 }
                 if (ImGuiWindow::handleButton(
-                        "Add", ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateBoneIndex < numBones)) {
+                        tr("nanoem.gui.model.edit.morph.bone.add"), ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateBoneIndex < numBones)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_bone_t *item = nanoemMutableModelMorphBoneCreate(scoped, &status);
@@ -2244,7 +2243,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 ImGui::SameLine();
                 if (ImGuiWindow::handleButton(
-                        "Remove", ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                        tr("nanoem.gui.model.edit.morph.bone.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_bone_t *item =
@@ -2256,7 +2255,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 nanoem_model_morph_bone_t *bonePtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
                 {
                     Vector4 translation(glm::make_vec4(nanoemModelMorphBoneGetTranslation(bonePtr)));
-                    ImGui::TextUnformatted("Translation");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.translation"));
                     if (ImGui::DragFloat3("##bone.translation", glm::value_ptr(translation), 1.0f, 0.0f, 0.0f)) {
                         ScopedMutableMorphBone scoped(bonePtr, m_activeModel);
                         nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(translation));
@@ -2265,7 +2264,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 {
                     const Quaternion orientation(glm::make_quat(nanoemModelMorphBoneGetOrientation(bonePtr)));
                     Vector3 angles(glm::degrees(glm::eulerAngles(orientation)));
-                    ImGui::TextUnformatted("Orientation");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.orientation"));
                     if (ImGui::DragFloat3("##bone.orientation", glm::value_ptr(angles), 1.0f, 0.0f, 0.0f)) {
                         ScopedMutableMorphBone scoped(bonePtr, m_activeModel);
                         nanoemMutableModelMorphBoneSetOrientation(
@@ -2323,7 +2322,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     ImGui::EndCombo();
                 }
                 if (ImGuiWindow::handleButton(
-                        "Add", ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMorphIndex < numMorphs)) {
+                        tr("nanoem.gui.model.edit.morph.flip.add"), ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMorphIndex < numMorphs)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_flip_t *item = nanoemMutableModelMorphFlipCreate(scoped, &status);
@@ -2335,7 +2334,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 ImGui::SameLine();
                 if (ImGuiWindow::handleButton(
-                        "Remove", ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                        tr("nanoem.gui.model.edit.morph.flip.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_flip_t *item =
@@ -2347,7 +2346,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 nanoem_model_morph_flip_t *flipPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
                 {
                     nanoem_f32_t weight = nanoemModelMorphFlipGetWeight(flipPtr);
-                    ImGui::TextUnformatted("Weight");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.flip.weight"));
                     if (ImGui::SliderFloat("##flip.weight", &weight, 0.0f, 0.0f)) {
                         ScopedMutableMorphFlip scoped(flipPtr, m_activeModel);
                         nanoemMutableModelMorphFlipSetWeight(scoped, weight);
@@ -2403,7 +2402,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton("Add", ImGui::GetContentRegionAvail().x * 0.5f, true)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.group.add"), ImGui::GetContentRegionAvail().x * 0.5f, true)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(scoped, &status);
@@ -2415,7 +2414,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 ImGui::SameLine();
                 if (ImGuiWindow::handleButton(
-                        "Remove", ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                        tr("nanoem.gui.model.edit.morph.group.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_group_t *item =
@@ -2427,7 +2426,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 nanoem_model_morph_group_t *groupPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
                 {
                     nanoem_f32_t weight = nanoemModelMorphGroupGetWeight(groupPtr);
-                    ImGui::TextUnformatted("Weight");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.group.weight"));
                     if (ImGui::SliderFloat("##group.weight", &weight, 0.0f, 0.0f)) {
                         ScopedMutableMorphGroup scoped(groupPtr, m_activeModel);
                         nanoemMutableModelMorphGroupSetWeight(scoped, weight);
@@ -2487,7 +2486,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton("Add", ImGui::GetContentRegionAvail().x * 0.5f,
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.add"), ImGui::GetContentRegionAvail().x * 0.5f,
                         m_morphItemCandidateRigidBodyIndex < numRigidBodies)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
@@ -2501,7 +2500,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 ImGui::SameLine();
                 if (ImGuiWindow::handleButton(
-                        "Remove", ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                        tr("nanoem.gui.model.edit.morph.impulse.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_impulse_t *item =
@@ -2514,7 +2513,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
                 {
                     Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetTorque(impulsePtr)));
-                    ImGui::TextUnformatted("Torque");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.torque"));
                     if (ImGui::DragFloat3("##impulse.torque", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
                         ScopedMutableMorphImpulse scoped(impulsePtr, m_activeModel);
                         nanoemMutableModelMorphImpulseSetTorque(scoped, glm::value_ptr(torque));
@@ -2522,7 +2521,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetVelocity(impulsePtr)));
-                    ImGui::TextUnformatted("Velocity");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.velocity"));
                     if (ImGui::DragFloat3("##impulse.velocity", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
                         ScopedMutableMorphImpulse scoped(impulsePtr, m_activeModel);
                         nanoemMutableModelMorphImpulseSetVelocity(scoped, glm::value_ptr(torque));
@@ -2530,7 +2529,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     bool isLocal = nanoemModelMorphImpulseIsLocal(impulsePtr) != 0;
-                    ImGui::TextUnformatted("Local");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.local"));
                     if (ImGui::Checkbox("##impuluse.local", &isLocal)) {
                         ScopedMutableMorphImpulse scoped(impulsePtr, m_activeModel);
                         nanoemMutableModelMorphImpulseSetLocal(scoped, isLocal ? 1 : 0);
@@ -2590,7 +2589,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton("Add", ImGui::GetContentRegionAvail().x * 0.5f,
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.add"), ImGui::GetContentRegionAvail().x * 0.5f,
                         m_morphItemCandidateMaterialIndex < numMaterials)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
@@ -2605,7 +2604,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 ImGui::SameLine();
                 if (ImGuiWindow::handleButton(
-                        "Remove", ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                        tr("nanoem.gui.model.edit.morph.material.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_material_t *item =
@@ -2619,7 +2618,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 {
                     nanoem_model_morph_material_operation_type_t value =
                         nanoemModelMorphMaterialGetOperationType(materialPtr);
-                    ImGui::TextUnformatted("Operation Type");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.operation"));
                     if (ImGui::BeginCombo("##operation", selectedMorphMaterialOperationType(value))) {
                         for (int i = NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_FIRST_ENUM;
                              i < NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_MAX_ENUM; i++) {
@@ -2635,7 +2634,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     Vector4 ambientColor(glm::make_vec4(nanoemModelMorphMaterialGetAmbientColor(materialPtr)));
-                    ImGui::TextUnformatted("Ambient Color");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.ambient.color"));
                     if (ImGui::ColorEdit3("##material.ambient.color", glm::value_ptr(ambientColor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetAmbientColor(scoped, glm::value_ptr(ambientColor));
@@ -2644,7 +2643,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 {
                     Vector4 diffuseColor(glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(materialPtr)),
                         nanoemModelMorphMaterialGetDiffuseOpacity(materialPtr));
-                    ImGui::TextUnformatted("Diffuse Color");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.diffuse.color"));
                     if (ImGui::ColorEdit4("##material.diffuse.color", glm::value_ptr(diffuseColor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetDiffuseColor(scoped, glm::value_ptr(diffuseColor));
@@ -2653,7 +2652,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     Vector4 specularColor(glm::make_vec4(nanoemModelMorphMaterialGetSpecularColor(materialPtr)));
-                    ImGui::TextUnformatted("Specular Color");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.color"));
                     if (ImGui::ColorEdit3("##material.specular.color", glm::value_ptr(specularColor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetSpecularColor(scoped, glm::value_ptr(specularColor));
@@ -2661,7 +2660,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     nanoem_f32_t specularPower = nanoemModelMorphMaterialGetSpecularPower(materialPtr);
-                    ImGui::TextUnformatted("Specular Color");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.power"));
                     if (ImGui::DragFloat("##material.specular.power", &specularPower)) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetSpecularPower(scoped, specularPower);
@@ -2671,7 +2670,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 {
                     Vector4 edgeColor(glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(materialPtr)),
                         nanoemModelMorphMaterialGetEdgeOpacity(materialPtr));
-                    ImGui::TextUnformatted("Edge Color");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.color"));
                     if (ImGui::ColorEdit4("##material.edge.color", glm::value_ptr(edgeColor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetEdgeColor(scoped, glm::value_ptr(edgeColor));
@@ -2680,7 +2679,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     nanoem_f32_t edgeSize = nanoemModelMorphMaterialGetEdgeSize(materialPtr);
-                    ImGui::TextUnformatted("Edge Size");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.size"));
                     if (ImGui::DragFloat("##material.edge.size", &edgeSize)) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetEdgeSize(scoped, edgeSize);
@@ -2689,7 +2688,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 addSeparator();
                 {
                     Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetDiffuseTextureBlend(materialPtr)));
-                    ImGui::TextUnformatted("Diffuse Texture Blend");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.diffuse"));
                     if (ImGui::ColorEdit4("##material.blend.diffuse", glm::value_ptr(blendFactor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetDiffuseTextureBlend(scoped, glm::value_ptr(blendFactor));
@@ -2697,7 +2696,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(materialPtr)));
-                    ImGui::TextUnformatted("SphereMap Texture Blend");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.sphere-map"));
                     if (ImGui::ColorEdit4("##material.blend.sphere-map", glm::value_ptr(blendFactor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetSphereMapTextureBlend(scoped, glm::value_ptr(blendFactor));
@@ -2705,7 +2704,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 }
                 {
                     Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetToonTextureBlend(materialPtr)));
-                    ImGui::TextUnformatted("Toon Texture Blend");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.toon"));
                     if (ImGui::ColorEdit4("##material.blend.toon", glm::value_ptr(blendFactor))) {
                         ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
                         nanoemMutableModelMorphMaterialSetToonTextureBlend(scoped, glm::value_ptr(blendFactor));
@@ -2738,8 +2737,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 nanoem_model_morph_uv_t *vertexPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
                 {
                     Vector4 position(glm::make_vec4(nanoemModelMorphUVGetPosition(vertexPtr)));
-                    ImGui::TextUnformatted("Position");
-                    if (ImGui::DragFloat4("##vertex.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.uv.position"));
+                    if (ImGui::DragFloat4("##uv.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
                         ScopedMutableMorphUV scoped(vertexPtr, m_activeModel);
                         nanoemMutableModelMorphUVSetPosition(scoped, glm::value_ptr(position));
                     }
@@ -2769,7 +2768,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
                 {
                     Vector4 position(glm::make_vec4(nanoemModelMorphVertexGetPosition(vertexPtr)));
-                    ImGui::TextUnformatted("Position");
+                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.vertex.position"));
                     if (ImGui::DragFloat3("##vertex.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
                         ScopedMutableMorphVertex scoped(vertexPtr, m_activeModel);
                         nanoemMutableModelMorphVertexSetPosition(scoped, glm::value_ptr(position));
