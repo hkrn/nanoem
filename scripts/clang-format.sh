@@ -20,8 +20,9 @@ fd --glob "*.{cc,h,m,mm}" \
   -E "scripts" \
   -E "khash.h" \
   -E "*.pb-c.*" \
+  -E "out" \
   $PWD \
-  -x ${CLANG_FORMAT_PATH} -i
+  -X clang-format -i
 
 # fx9
 fd --glob "*.{cc,h}" \
