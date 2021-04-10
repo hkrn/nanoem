@@ -187,7 +187,7 @@ public:
     void setDevicePixelRatio(float value) NANOEM_DECL_OVERRIDE;
     void drawAll2DPrimitives(
         Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
-    void drawAllWindows(Project *project, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
+    void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     void drawWindow(Project *project, ImDrawData *drawData, bool load);
 
     const IModalDialog *currentModalDialog() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -328,7 +328,7 @@ private:
     void handleDraggingMorphSliderState();
     void setEditingMode(Project *project, Project::EditingMode mode);
     void toggleEditingMode(Project *project, Project::EditingMode mode);
-    void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, bool &seekable);
+    void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, const IState *state, bool &seekable);
     void drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project);
     void drawSeekerPanel(
         Project *project, nanoem_frame_index_t &frameIndex, bool &frameIndexChanged, bool &forward, bool &backward);
@@ -344,7 +344,7 @@ private:
     void drawKeyframeActionPanel(Project *project);
     void drawKeyframeSelectionPanel(Project *project);
     void drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t padding, Project *project);
-    void drawViewport(nanoem_f32_t viewportHeight, Project *project);
+    void drawViewport(nanoem_f32_t viewportHeight, Project *project, const IState *state);
     void drawViewportParameterBox(Project *project);
     void drawCommonInterpolationControls(Project *project);
     void drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
@@ -360,7 +360,7 @@ private:
     void drawAllNonModalWindows(Project *project);
     void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
         int baseRectType, int intercectedRectType, bool handleable);
-    void drawTransformHandleSet(const Project *project, const ImVec2 &offset);
+    void drawTransformHandleSet(const Project *project, const IState *state, const ImVec2 &offset);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawHardwareMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);

@@ -1772,7 +1772,7 @@ BaseApplicationService::draw(Project *project, Project::IViewportOverlay *overla
             }
         }
         m_window->drawAll2DPrimitives(project, overlay, m_defaultAuxFlags);
-        m_window->drawAllWindows(project, m_defaultAuxFlags);
+        m_window->drawAllWindows(project, m_stateController->state(), m_defaultAuxFlags);
     }
 }
 

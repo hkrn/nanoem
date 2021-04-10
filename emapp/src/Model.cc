@@ -620,7 +620,6 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_userData(nullptr, nullptr)
     , m_pivotMatrix(0)
     , m_edgeColor(0, 0, 0, 1)
-    , m_draggingStateType(kDraggingStateTypeNone)
     , m_gizmoOperationType(kGizmoOperationTypeTranslate)
     , m_gizmoTransformCoordinateType(kTransformCoordinateTypeLocal)
     , m_transformAxisType(kAxisTypeMaxEnum)
@@ -4775,18 +4774,6 @@ void
 Model::setGizmoTransformCoordinateType(TransformCoordinateType value)
 {
     m_gizmoTransformCoordinateType = value;
-}
-
-Model::DraggingStateType
-Model::draggingStateType() const NANOEM_DECL_NOEXCEPT
-{
-    return m_draggingStateType;
-}
-
-void
-Model::setDraggingStateType(DraggingStateType value)
-{
-    m_draggingStateType = value;
 }
 
 Model::GizmoOperationType

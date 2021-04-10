@@ -21,6 +21,7 @@
 #include "emapp/IModalDialog.h"
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/IMotionKeyframeSelection.h"
+#include "emapp/IState.h"
 #include "emapp/ITrack.h"
 #include "emapp/ListUtils.h"
 #include "emapp/ModalDialogFactory.h"
@@ -120,6 +121,29 @@ static const Vector4 kColorTranslucentRed(1, 0, 0, 0.5f);
 static const Vector4 kColorTranslucentGreen(0, 1, 0, 0.5f);
 static const Vector4 kColorTranslucentBlue(0, 0, 1, 0.5f);
 static const Vector4 kColorGray(0.5f, 0.5f, 0.5f, 1);
+
+static bool
+isSelectingBoneHandle(const IModelObjectSelection *selection, Project::RectangleType type) NANOEM_DECL_NOEXCEPT
+{
+    const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable();
+    return (movable && type >= Project::kRectangleTranslateX && type <= Project::kRectangleTranslateZ) ||
+        (rotateable && type >= Project::kRectangleOrientateX && type <= Project::kRectangleOrientateZ);
+}
+
+static bool
+isDraggingBoneHandle(const IState *state) NANOEM_DECL_NOEXCEPT
+{
+    bool result = false;
+    if (state && state->isGrabbingHandle()) {
+        switch (state->type()) {
+        case IState::kTypeDraggingBoneAxisAlignedOrientateActiveBoneState:
+        case IState::kTypeDraggingBoneAxisAlignedTranslateActiveBoneState:
+            result = true;
+            break;
+        }
+    }
+    return result;
+}
 
 } /* namespace anonymous */
 
@@ -1070,7 +1094,7 @@ ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *ov
 }
 
 void
-ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
+ImGuiWindow::drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags)
 {
     BX_UNUSED_2(project, flags);
     sg_pass_action pa;
@@ -1093,7 +1117,7 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
             m_gizmoController->begin();
         }
         bool seekable = false;
-        drawMainWindow(deviceScaleWindowSize, project, seekable);
+        drawMainWindow(deviceScaleWindowSize, project, state, seekable);
         drawAllNonModalWindows(project);
         handleModalDialogWindow(deviceScaleWindowSize, project);
 #if !defined(NDEBUG)
@@ -1700,7 +1724,7 @@ ImGuiWindow::toggleEditingMode(Project *project, Project::EditingMode mode)
 }
 
 void
-ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *project, bool &seekable)
+ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *project, const IState *state, bool &seekable)
 {
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
     saveDefaultStyle(deviceScaleRatio);
@@ -1740,7 +1764,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         drawTimeline(timelineWidth, viewportHeight, project);
         ImGui::SameLine();
         ImVec2 posFrom(ImGui::GetCursorScreenPos());
-        drawViewport(viewportHeight, project);
+        drawViewport(viewportHeight, project, state);
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
             handleVerticalSplitter(posFrom, size, viewportHeight, deviceScaleRatio);
         }
@@ -1771,7 +1795,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     }
     else {
         const ImVec2 &size = ImGui::GetContentRegionAvail();
-        drawViewport(size.y, project);
+        drawViewport(size.y, project, state);
     }
     ImGui::End();
     restoreDefaultStyle();
@@ -2697,7 +2721,7 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
 }
 
 void
-ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
+ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project, const IState *state)
 {
     ImGui::BeginChild("viewport", ImVec2(ImGui::GetContentRegionAvail().x, viewportHeight), false);
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio(),
@@ -2761,7 +2785,7 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         m_primitive2D.setBaseOffset(offset);
         m_primitive2D.setScaleFactor(deviceScaleRatio);
         m_viewportOverlayPtr->drawPrimitive2D(&m_primitive2D, m_viewportOverlayFlags);
-        drawTransformHandleSet(project, offset);
+        drawTransformHandleSet(project, state, offset);
         if (project->isFPSCounterEnabled()) {
             drawFPSCounter(project, offset);
         }
@@ -3708,7 +3732,7 @@ ImGuiWindow::drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offs
 }
 
 void
-ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset)
+ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state, const ImVec2 &offset)
 {
     nanoem_parameter_assert(project, "must not be nullptr");
     if (project->isTransformHandleVisible()) {
@@ -3733,16 +3757,8 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             const IModelObjectSelection *selection = activeModel->selection();
             const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
             const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
-            const Model::DraggingStateType draggingStateType = activeModel->draggingStateType();
-            const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable(),
-                       isSelecting = intersected &&
-                    (movable && intersectedRectangleType >= Project::kRectangleTranslateX &&
-                        intersectedRectangleType <= Project::kRectangleTranslateZ) ||
-                (rotateable && intersectedRectangleType >= Project::kRectangleOrientateX &&
-                    intersectedRectangleType <= Project::kRectangleOrientateZ),
-                       isDragging = draggingStateType == Model::kDraggingStateTypeAxisAlignedTranslateActiveBone ||
-                draggingStateType == Model::kDraggingStateTypeAxisAlignedOrientateActiveBone;
-            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) && (isSelecting || isDragging)) {
+            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
+                ((intersected && isSelectingBoneHandle(selection, intersectedRectangleType)) || isDraggingBoneHandle(state))) {
                 Quaternion orientation(Constants::kZeroQ);
                 if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
                     orientation =
@@ -3772,6 +3788,7 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
                     }
                 }
             }
+            const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable();
             drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX,
                 intersectedRectangleType, rotateable);
             drawTransformHandleSet(

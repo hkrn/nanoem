@@ -17,13 +17,12 @@ namespace nanoem {
 
 class BaseApplicationService;
 class IFileManager;
+class IState;
 
 class StateController NANOEM_DECL_SEALED : public IProjectHolder,
                                            public Project::IViewportOverlay,
                                            private NonCopyable {
 public:
-    class IState;
-
     StateController(BaseApplicationService *application, IFileManager *delegate);
     ~StateController() NANOEM_DECL_NOEXCEPT;
 
