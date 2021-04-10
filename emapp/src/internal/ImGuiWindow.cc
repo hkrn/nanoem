@@ -2762,8 +2762,6 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
         m_primitive2D.setScaleFactor(deviceScaleRatio);
         m_viewportOverlayPtr->drawPrimitive2D(&m_primitive2D, m_viewportOverlayFlags);
         drawTransformHandleSet(project, offset);
-        drawEffectIcon(project, offset);
-        drawModelEditingIcon(project);
         if (project->isFPSCounterEnabled()) {
             drawFPSCounter(project, offset);
         }
@@ -3817,49 +3815,6 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             drawTextCentered(offset, rect, reinterpret_cast<const char *>(kFAZoom), sizeof(kFAZoom) - 1);
         }
     }
-}
-
-void
-ImGuiWindow::drawModelEditingIcon(const Project *project)
-{
-#if 0
-    if (project->activeModel() && m_applicationPtr->isModelEditingEnabled()) {
-        struct nk_command_buffer *buffer = nk_window_get_canvas(&m_globalPrimitive);
-        const nanoem_f32_t rounding = 4.0f * project->windowDevicePixelRatio();
-        const struct nk_rect rect =
-            nk_rectv(glm::value_ptr(Vector4(project->queryDevicePixelRectangle(Project::kRectangleModelEditing, Vector2UI16())) *
-                project->deviceScaleViewportRatio()));
-        nk_fill_rect(buffer, rect, rounding, nk_rgba(0, 0, 0, 0xcf));
-        drawTextCentered(buffer, &m_iconFont, rect, reinterpret_cast<const char *>(kFAPencil), sizeof(kFAPencil) - 1);
-    }
-#else
-    BX_UNUSED_1(project);
-#endif
-}
-
-void
-ImGuiWindow::drawEffectIcon(const Project *project, const ImVec2 &offset)
-{
-#if 0
-    if (project->isEffectPluginEnabled() && hasAnyActiveEffect(project)) {
-        struct nk_command_buffer *buffer = nk_window_get_canvas(&m_globalPrimitive);
-        const nanoem_f32_t rounding = 4.0f * project->windowDevicePixelRatio();
-        const struct nk_rect rect =
-            nk_rectv(glm::value_ptr(Vector4(project->queryDevicePixelRectangle(Project::kRectangleEffect, Vector2UI16())) *
-                project->deviceScaleViewportRatio()));
-        nk_fill_rect(buffer, rect, rounding, nk_rgba(0, 0, 0, 0xcf));
-        if (project->editingMode() == Project::kEditingModeEffect) {
-            drawTextCentered(
-                buffer, &m_iconFont, rect, reinterpret_cast<const char *>(kFATHList), sizeof(kFATHList) - 1);
-        }
-        else {
-            drawTextCentered(
-                buffer, &m_iconFont, rect, reinterpret_cast<const char *>(kFAMagicWand), sizeof(kFAMagicWand) - 1);
-        }
-    }
-#else
-    BX_UNUSED_2(project, offset);
-#endif
 }
 
 void

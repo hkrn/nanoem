@@ -361,8 +361,6 @@ private:
     void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
         int baseRectType, int intercectedRectType, bool handleable);
     void drawTransformHandleSet(const Project *project, const ImVec2 &offset);
-    void drawModelEditingIcon(const Project *project);
-    void drawEffectIcon(const Project *project, const ImVec2 &offset);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawHardwareMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);
