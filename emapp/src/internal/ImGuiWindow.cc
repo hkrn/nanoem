@@ -112,6 +112,15 @@ UniformBlock
     ImVec4 m_add;
 };
 
+static const Vector4 kColorRed(1, 0, 0, 1);
+static const Vector4 kColorGreen(0, 1, 0, 1);
+static const Vector4 kColorBlue(0, 0, 1, 1);
+static const Vector4 kColorYellow(1, 1, 0, 1);
+static const Vector4 kColorTranslucentRed(1, 0, 0, 0.5f);
+static const Vector4 kColorTranslucentGreen(0, 1, 0, 0.5f);
+static const Vector4 kColorTranslucentBlue(0, 0, 1, 0.5f);
+static const Vector4 kColorGray(0.5f, 0.5f, 0.5f, 1);
+
 } /* namespace anonymous */
 
 using namespace imgui;
@@ -3669,20 +3678,20 @@ ImGuiWindow::drawAllNonModalWindows(Project *project)
 
 void
 ImGuiWindow::drawTransformHandleSet(
-    const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int rectType, bool handleable)
+    const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int baseRectType, int intercectedRectType, bool handleable)
 {
-    static const Vector4 kRed(1, 0, 0, 1);
-    static const Vector4 kGreen(0, 1, 0, 1);
-    static const Vector4 kBlue(0, 0, 1, 1);
-    static const Vector4 kGray(0.5f, 0.5f, 0.5f, 1);
-    Vector4 x(rects[rectType + 0]), y(rects[rectType + 1]), z(rects[rectType + 2]);
-    m_primitive2D.fillCircle(x, handleable ? kRed : kGray);
-    m_primitive2D.fillCircle(y, handleable ? kGreen : kGray);
-    m_primitive2D.fillCircle(z, handleable ? kBlue : kGray);
+    const Vector4 x(rects[baseRectType + 0]), y(rects[baseRectType + 1]), z(rects[baseRectType + 2]);
+    const bool intersectsX = baseRectType == intercectedRectType;
+    m_primitive2D.fillCircle(x, handleable ? (intersectsX ? kColorRed : kColorTranslucentRed) : kColorGray);
+    const bool intersectsY = baseRectType + 1 == intercectedRectType;
+    m_primitive2D.fillCircle(y, handleable ? (intersectsY ? kColorGreen : kColorTranslucentGreen) : kColorGray);
+    const bool intersectsZ = baseRectType + 2 == intercectedRectType;
+    m_primitive2D.fillCircle(z, handleable ? (intersectsZ ? kColorBlue : kColorTranslucentBlue) : kColorGray);
     const char *p = reinterpret_cast<const char *>(icon);
-    drawTextCentered(offset, x, p, Inline::saturateInt32(StringUtils::length(p)));
-    drawTextCentered(offset, y, p, Inline::saturateInt32(StringUtils::length(p)));
-    drawTextCentered(offset, z, p, Inline::saturateInt32(StringUtils::length(p)));
+    size_t length = StringUtils::length(p);
+    drawTextCentered(offset, x, p, length);
+    drawTextCentered(offset, y, p, length);
+    drawTextCentered(offset, z, p, length);
 }
 
 void
@@ -3696,12 +3705,47 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             deviceScaleRects[i] =
                 project->queryDevicePixelRectangle(static_cast<Project::RectangleType>(i), Vector2UI16());
         }
+        Project::RectangleType intersectedRectangleType;
+        const ImGuiIO &io = ImGui::GetIO();
+        ImVec2 mousePos(io.MousePos);
+#if defined(IMGUI_HAS_VIEWPORT)
+        const ImVec2 basePos(ImGui::GetMainViewport()->Pos);
+        mousePos.x -= basePos.x;
+        mousePos.y -= basePos.y;
+#endif /* IMGUI_HAS_VIEWPORT */
+        const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
+        const bool intersected = project->intersectsTransformHandle(Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
         if (const Model *activeModel = project->activeModel()) {
             const IModelObjectSelection *selection = activeModel->selection();
-            const bool movable = selection->areAllBonesMovable();
-            const bool rotateable = selection->areAllBonesRotateable();
-            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, rotateable);
-            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, movable);
+            const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
+            const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+            const bool movable = selection->areAllBonesMovable(),
+                rotateable = selection->areAllBonesRotateable(),
+                selecting = intersected &&
+                (movable && intersectedRectangleType >= Project::kRectangleTranslateX && intersectedRectangleType <= Project::kRectangleTranslateZ) ||
+                (rotateable && intersectedRectangleType >= Project::kRectangleOrientateX && intersectedRectangleType <= Project::kRectangleOrientateZ);
+            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) && (selecting || activeModel->localCamera()->isLocked())) {
+                Quaternion orientation(Constants::kZeroQ);
+                if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
+                    orientation = activeBone->localOrientation() * glm::quat_cast(model::Bone::localAxes(activeBonePtr));
+                }
+                const Vector3 base(activeBone->worldTransformOrigin()),
+                    scaleFactor(3),
+                    unitX(orientation * Constants::kUnitX * scaleFactor),
+                    unitY(orientation * Constants::kUnitY * scaleFactor),
+                    unitZ(orientation * Constants::kUnitZ * -scaleFactor);
+                const ICamera *camera = project->activeCamera();
+                const Vector2UI32 p(camera->toDeviceScreenCoordinateInViewport(base)),
+                    x(camera->toDeviceScreenCoordinateInViewport(base + unitX)),
+                    y(camera->toDeviceScreenCoordinateInViewport(base + unitY)),
+                    z(camera->toDeviceScreenCoordinateInViewport(base + unitZ));
+                const nanoem_f32_t thickness = 3.0f;
+                m_primitive2D.strokeLine(p, x, kColorRed, thickness);
+                m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
+                m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
+            }
+            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, intersectedRectangleType, rotateable);
+            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, movable);
             const Vector4 rect(deviceScaleRects[Project::kRectangleTransformCoordinateType]);
             internalFillRect(rect, deviceScaleRatio);
             switch (activeModel->transformCoordinateType()) {
@@ -3723,8 +3767,8 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             }
         }
         else if (const ICamera *activeCamera = project->activeCamera()) {
-            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, true);
-            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, true);
+            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, intersectedRectangleType, true);
+            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, true);
             const Vector4 rect(deviceScaleRects[Project::kRectangleTransformCoordinateType]);
             internalFillRect(rect, deviceScaleRatio);
             switch (activeCamera->transformCoordinateType()) {
@@ -3843,12 +3887,12 @@ ImGuiWindow::drawHardwareMonitor(const Project *project, const ImVec2 &offset)
 }
 
 void
-ImGuiWindow::drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, int length)
+ImGuiWindow::drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, size_t length, ImU32 color)
 {
     ImDrawList *drawList = ImGui::GetWindowDrawList();
     ImVec2 t(ImGui::CalcTextSize(text)),
         c(offset.x + rect.x + (rect.z - t.x) * 0.5f, offset.y + rect.y + (rect.w - t.y) * 0.5f);
-    drawList->AddText(c, IM_COL32_WHITE, text, text + length);
+    drawList->AddText(c, color, text, text + length);
 }
 
 void

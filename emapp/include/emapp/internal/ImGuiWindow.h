@@ -359,14 +359,14 @@ private:
     void drawPlayPanel(const ImVec2 &panelSize, Project *project);
     void drawAllNonModalWindows(Project *project);
     void drawTransformHandleSet(
-        const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int rectType, bool handleable);
+        const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int baseRectType, int intercectedRectType, bool handleable);
     void drawTransformHandleSet(const Project *project, const ImVec2 &offset);
     void drawModelEditingIcon(const Project *project);
     void drawEffectIcon(const Project *project, const ImVec2 &offset);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawHardwareMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);
-    void drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, int length);
+    void drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, size_t length, ImU32 color = IM_COL32_WHITE);
     void setupDeviceInput(Project *project);
     void handleVerticalSplitter(
         const ImVec2 &pos, const ImVec2 &size, nanoem_f32_t viewportHeight, nanoem_f32_t devicePixelRatio);
