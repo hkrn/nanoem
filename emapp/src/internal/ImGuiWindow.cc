@@ -3707,12 +3707,12 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
         }
         Project::RectangleType intersectedRectangleType;
         const ImGuiIO &io = ImGui::GetIO();
-        ImVec2 mousePos(io.MousePos);
+        ImVec2 mousePos(io.MousePos), basePos;
 #if defined(IMGUI_HAS_VIEWPORT)
-        const ImVec2 basePos(ImGui::GetMainViewport()->Pos);
+        basePos = ImGui::GetMainViewport()->Pos;
+#endif /* IMGUI_HAS_VIEWPORT */
         mousePos.x -= basePos.x;
         mousePos.y -= basePos.y;
-#endif /* IMGUI_HAS_VIEWPORT */
         const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
         const bool intersected = project->intersectsTransformHandle(
             Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
@@ -3738,14 +3738,24 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
                     unitY(orientation * Constants::kUnitY * scaleFactor),
                     unitZ(orientation * Constants::kUnitZ * -scaleFactor);
                 const ICamera *camera = project->activeCamera();
-                const Vector2UI32 p(camera->toDeviceScreenCoordinateInViewport(base)),
+                const Vector2SI32 p(camera->toDeviceScreenCoordinateInViewport(base)),
                     x(camera->toDeviceScreenCoordinateInViewport(base + unitX)),
                     y(camera->toDeviceScreenCoordinateInViewport(base + unitY)),
-                    z(camera->toDeviceScreenCoordinateInViewport(base + unitZ));
-                const nanoem_f32_t thickness = 3.0f;
-                m_primitive2D.strokeLine(p, x, kColorRed, thickness);
-                m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
-                m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
+                    z(camera->toDeviceScreenCoordinateInViewport(base + unitZ)),
+                    windowSize(Vector2(project->windowSize()) * project->windowDevicePixelRatio());
+                const Vector4SI32 rect(-windowSize, windowSize * 2);
+                if (Inline::intersectsRectPoint(rect, p)) {
+                    const nanoem_f32_t thickness = 3.0f;
+                    if (Inline::intersectsRectPoint(rect, x)) {
+                        m_primitive2D.strokeLine(p, x, kColorRed, thickness);
+                    }
+                    if (Inline::intersectsRectPoint(rect, y)) {
+                        m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
+                    }
+                    if (Inline::intersectsRectPoint(rect, z)) {
+                        m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
+                    }
+                }
             }
             drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX,
                 intersectedRectangleType, rotateable);
