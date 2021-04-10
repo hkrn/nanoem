@@ -251,7 +251,7 @@ public:
         const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
     void drawAllBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor);
     void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
-    void drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t * bonePtr, const Vector2 &deviceScaleCursor);
+    void drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr, const Vector2 &deviceScaleCursor);
     void drawBoneTooltip(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
     void drawConstraintConnections(
         IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_constraint_t *constraint);

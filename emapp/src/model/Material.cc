@@ -20,7 +20,8 @@ enum PrivateStateFlags {
     kPrivateStateDisplayDiffuseTextureUVMeshEnabled = 1 << 2,
     kPrivateStateDisplaySphereMapTextureUVMeshEnabled = 1 << 3,
 };
-static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStateVisible | kPrivateStateDisplayDiffuseTextureUVMeshEnabled;
+static const nanoem_u32_t kPrivateStateInitialValue =
+    kPrivateStateVisible | kPrivateStateDisplayDiffuseTextureUVMeshEnabled;
 static const nanoem_f32_t kMiniumSpecularPower = 0.1f;
 
 } /* namespace anonymous */

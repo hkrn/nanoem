@@ -3677,8 +3677,8 @@ ImGuiWindow::drawAllNonModalWindows(Project *project)
 }
 
 void
-ImGuiWindow::drawTransformHandleSet(
-    const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int baseRectType, int intercectedRectType, bool handleable)
+ImGuiWindow::drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
+    int baseRectType, int intercectedRectType, bool handleable)
 {
     const Vector4 x(rects[baseRectType + 0]), y(rects[baseRectType + 1]), z(rects[baseRectType + 2]);
     const bool intersectsX = baseRectType == intercectedRectType;
@@ -3714,23 +3714,26 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
         mousePos.y -= basePos.y;
 #endif /* IMGUI_HAS_VIEWPORT */
         const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
-        const bool intersected = project->intersectsTransformHandle(Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
+        const bool intersected = project->intersectsTransformHandle(
+            Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
         if (const Model *activeModel = project->activeModel()) {
             const IModelObjectSelection *selection = activeModel->selection();
             const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
             const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
-            const bool movable = selection->areAllBonesMovable(),
-                rotateable = selection->areAllBonesRotateable(),
-                selecting = intersected &&
-                (movable && intersectedRectangleType >= Project::kRectangleTranslateX && intersectedRectangleType <= Project::kRectangleTranslateZ) ||
-                (rotateable && intersectedRectangleType >= Project::kRectangleOrientateX && intersectedRectangleType <= Project::kRectangleOrientateZ);
-            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) && (selecting || activeModel->localCamera()->isLocked())) {
+            const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable(),
+                       selecting = intersected &&
+                    (movable && intersectedRectangleType >= Project::kRectangleTranslateX &&
+                        intersectedRectangleType <= Project::kRectangleTranslateZ) ||
+                (rotateable && intersectedRectangleType >= Project::kRectangleOrientateX &&
+                    intersectedRectangleType <= Project::kRectangleOrientateZ);
+            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
+                (selecting || activeModel->localCamera()->isLocked())) {
                 Quaternion orientation(Constants::kZeroQ);
                 if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
-                    orientation = activeBone->localOrientation() * glm::quat_cast(model::Bone::localAxes(activeBonePtr));
+                    orientation =
+                        activeBone->localOrientation() * glm::quat_cast(model::Bone::localAxes(activeBonePtr));
                 }
-                const Vector3 base(activeBone->worldTransformOrigin()),
-                    scaleFactor(3),
+                const Vector3 base(activeBone->worldTransformOrigin()), scaleFactor(3),
                     unitX(orientation * Constants::kUnitX * scaleFactor),
                     unitY(orientation * Constants::kUnitY * scaleFactor),
                     unitZ(orientation * Constants::kUnitZ * -scaleFactor);
@@ -3744,8 +3747,10 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
                 m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
                 m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
             }
-            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, intersectedRectangleType, rotateable);
-            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, movable);
+            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX,
+                intersectedRectangleType, rotateable);
+            drawTransformHandleSet(
+                deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, movable);
             const Vector4 rect(deviceScaleRects[Project::kRectangleTransformCoordinateType]);
             internalFillRect(rect, deviceScaleRatio);
             switch (activeModel->transformCoordinateType()) {
@@ -3767,8 +3772,10 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             }
         }
         else if (const ICamera *activeCamera = project->activeCamera()) {
-            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, intersectedRectangleType, true);
-            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, true);
+            drawTransformHandleSet(
+                deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, intersectedRectangleType, true);
+            drawTransformHandleSet(
+                deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, true);
             const Vector4 rect(deviceScaleRects[Project::kRectangleTransformCoordinateType]);
             internalFillRect(rect, deviceScaleRatio);
             switch (activeCamera->transformCoordinateType()) {

@@ -449,8 +449,10 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutAllFaces(Project *project);
     void layoutAllMaterials(Project *project);
     void layoutMaterialPropertyPane(nanoem_model_material_t *materialPtr, Project *project);
-    void layoutMaterialDiffuseImage(const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr);
-    void layoutMaterialSphereMapImage(const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr);
+    void layoutMaterialDiffuseImage(
+        const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr);
+    void layoutMaterialSphereMapImage(
+        const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr);
     void layoutMaterialToonImage(const IImageView *image, const String &filename);
     void layoutAllBones(Project *project);
     void layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Project *project);

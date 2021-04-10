@@ -438,19 +438,20 @@ Bone::localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     }
     else {
         static const nanoem_u8_t kLeftArmNameInJapanese[] = { 0xe5, 0xb7, 0xa6, 0xe8, 0x85, 0x95, 0x0 },
-            kRightArmNameInJapanese[] = { 0xe5, 0x8f, 0xb3, 0xe8, 0x85, 0x95, 0x0 };
+                                 kRightArmNameInJapanese[] = { 0xe5, 0x8f, 0xb3, 0xe8, 0x85, 0x95, 0x0 };
         static const nanoem_u8_t kMaxDiggingDepth = 128;
-        const nanoem_model_bone_t* diggingBonePtr = bonePtr;
+        const nanoem_model_bone_t *diggingBonePtr = bonePtr;
         Quaternion orientation(Constants::kZeroQ);
         nanoem_u8_t depth = 0;
         while (diggingBonePtr && depth < kMaxDiggingDepth) {
             const model::Bone *diggingBone = model::Bone::cast(diggingBonePtr);
             const char *boneName = diggingBone->canonicalNameConstString();
-            if (StringUtils::equals(boneName, reinterpret_cast<const char*>(kRightArmNameInJapanese)) ||
-                StringUtils::equals(boneName, reinterpret_cast<const char*>(kLeftArmNameInJapanese))) {
+            if (StringUtils::equals(boneName, reinterpret_cast<const char *>(kRightArmNameInJapanese)) ||
+                StringUtils::equals(boneName, reinterpret_cast<const char *>(kLeftArmNameInJapanese))) {
                 const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
                 const Vector3 parentOrigin(model::Bone::origin(bonePtr)),
-                    baseOrigin(targetBonePtr ? model::Bone::origin(targetBonePtr) : glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr))),
+                    baseOrigin(targetBonePtr ? model::Bone::origin(targetBonePtr)
+                                             : glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr))),
                     directionAxis(glm::normalize(baseOrigin - parentOrigin));
                 const model::Bone *bone = model::Bone::cast(bonePtr);
                 float angle = glm::angle(Constants::kUnitX, directionAxis);

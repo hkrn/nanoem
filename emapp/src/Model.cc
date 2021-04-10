@@ -1274,7 +1274,8 @@ Model::writeLoadCommandMessage(Error &error)
         const nanoem_model_bone_t *bonePtr = bones[i];
         b->index = model::Bone::index(bonePtr);
         b->name = reinterpret_cast<char *>(nanoemUnicodeStringFactoryGetByteArrayEncoding(factory,
-            nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8, &status));
+            nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8,
+            &status));
         command.bones[i] = b;
     }
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_opaque, &numMorphs);

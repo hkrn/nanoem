@@ -944,9 +944,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     }
     const model::Material *material = model::Material::cast(materialPtr);
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    const IImageView *diffuseImage = material->diffuseImage(),
-            *sphereMapImage = material->sphereMapImage(),
-            *toonImage = material->toonImage();
+    const IImageView *diffuseImage = material->diffuseImage(), *sphereMapImage = material->sphereMapImage(),
+                     *toonImage = material->toonImage();
     if (diffuseImage || (toonImage && !nanoemModelMaterialIsToonShared(materialPtr)) || sphereMapImage) {
         ImGui::TextUnformatted("Textures");
         String filename;
@@ -957,7 +956,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         }
         if (sphereMapImage) {
             StringUtils::getUtf8String(
-                nanoemModelTextureGetPath(nanoemModelMaterialGetSphereMapTextureObject(materialPtr)), factory, filename);
+                nanoemModelTextureGetPath(nanoemModelMaterialGetSphereMapTextureObject(materialPtr)), factory,
+                filename);
             layoutMaterialSphereMapImage(sphereMapImage, filename, materialPtr);
         }
         if (toonImage && !nanoemModelMaterialIsToonShared(materialPtr)) {
@@ -987,7 +987,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
 }
 
 void
-ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
+ModelParameterDialog::layoutMaterialDiffuseImage(
+    const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
 {
     static const char id[] = "nanoem.gui.model.edit.material.texture.diffuse";
     char label[Inline::kLongNameStackBufferSize];
@@ -1021,11 +1022,11 @@ ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const 
             drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
             for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
                 const nanoem_f32_t *t0 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i]]),
-                        *t1 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 1]]),
-                        *t2 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 2]]);
+                                   *t1 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 1]]),
+                                   *t2 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 2]]);
                 const ImVec2 v0Pos(itemOffset.x + itemSize.x * t0[0], itemOffset.y + itemSize.y * t0[1]),
-                        v1Pos(itemOffset.x + itemSize.x * t1[0], itemOffset.y + itemSize.y * t1[1]),
-                        v2Pos(itemOffset.x + itemSize.x * t2[0], itemOffset.y + itemSize.y * t2[1]);
+                    v1Pos(itemOffset.x + itemSize.x * t1[0], itemOffset.y + itemSize.y * t1[1]),
+                    v2Pos(itemOffset.x + itemSize.x * t2[0], itemOffset.y + itemSize.y * t2[1]);
                 drawList->AddLine(v0Pos, v1Pos, IM_COL32(0xff, 0, 0, 0xff));
                 drawList->AddLine(v1Pos, v2Pos, IM_COL32(0xff, 0, 0, 0xff));
                 drawList->AddLine(v2Pos, v0Pos, IM_COL32(0xff, 0, 0, 0xff));
@@ -1036,7 +1037,8 @@ ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const 
 }
 
 void
-ModelParameterDialog::layoutMaterialSphereMapImage(const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
+ModelParameterDialog::layoutMaterialSphereMapImage(
+    const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
 {
     static const char id[] = "nanoem.gui.model.edit.material.texture.sphere";
     char label[Inline::kLongNameStackBufferSize];
@@ -1069,12 +1071,19 @@ ModelParameterDialog::layoutMaterialSphereMapImage(const IImageView *image, cons
             ImDrawList *drawList = ImGui::GetWindowDrawList();
             drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
             for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
-                const Vector3 n0(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i]]))) * Vector3(0.5f) + Vector3(0.5f)),
-                        n1(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 1]]))) * Vector3(0.5f) + Vector3(0.5f)),
-                        n2(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 2]]))) * Vector3(0.5f) + Vector3(0.5f));
+                const Vector3 n0(
+                    glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i]]))) *
+                        Vector3(0.5f) +
+                    Vector3(0.5f)),
+                    n1(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 1]]))) *
+                            Vector3(0.5f) +
+                        Vector3(0.5f)),
+                    n2(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 2]]))) *
+                            Vector3(0.5f) +
+                        Vector3(0.5f));
                 const ImVec2 n0Pos(itemOffset.x + itemSize.x * n0.x, itemOffset.y + itemSize.y * n0.y),
-                        n1Pos(itemOffset.x + itemSize.x * n1.x, itemOffset.y + itemSize.y * n1.y),
-                        n2Pos(itemOffset.x + itemSize.x * n2.x, itemOffset.y + itemSize.y * n2.y);
+                    n1Pos(itemOffset.x + itemSize.x * n1.x, itemOffset.y + itemSize.y * n1.y),
+                    n2Pos(itemOffset.x + itemSize.x * n2.x, itemOffset.y + itemSize.y * n2.y);
                 drawList->AddLine(n0Pos, n1Pos, IM_COL32(0xff, 0, 0, 0xff));
                 drawList->AddLine(n1Pos, n2Pos, IM_COL32(0xff, 0, 0, 0xff));
                 drawList->AddLine(n2Pos, n0Pos, IM_COL32(0xff, 0, 0, 0xff));
@@ -1777,7 +1786,8 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
                     manipulatable = true;
                 }
             }
-            if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.bone.constraint.joints.add"), ImGui::GetContentRegionAvail().x * 0.5f, manipulatable)) {
+            if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.bone.constraint.joints.add"),
+                    ImGui::GetContentRegionAvail().x * 0.5f, manipulatable)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
                 nanoem_mutable_model_constraint_joint_t *joint =
@@ -1789,8 +1799,8 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
                 m_constraintJointCandidateIndex = NANOEM_RSIZE_MAX;
             }
             ImGui::SameLine();
-            if (ImGuiWindow::handleButton(
-                    tr("nanoem.gui.model.edit.bone.constraint.joints.remove"), ImGui::GetContentRegionAvail().x, m_constraintJointIndex < numJoints)) {
+            if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.bone.constraint.joints.remove"),
+                    ImGui::GetContentRegionAvail().x, m_constraintJointIndex < numJoints)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
                 nanoem_mutable_model_constraint_joint_t *joint =
@@ -2230,8 +2240,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.bone.add"), ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateBoneIndex < numBones)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.add"),
+                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateBoneIndex < numBones)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_bone_t *item = nanoemMutableModelMorphBoneCreate(scoped, &status);
@@ -2242,8 +2252,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemCandidateBoneIndex = NANOEM_RSIZE_MAX;
                 }
                 ImGui::SameLine();
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.bone.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.remove"),
+                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_bone_t *item =
@@ -2321,8 +2331,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.flip.add"), ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMorphIndex < numMorphs)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.add"),
+                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMorphIndex < numMorphs)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_flip_t *item = nanoemMutableModelMorphFlipCreate(scoped, &status);
@@ -2333,8 +2343,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemCandidateMorphIndex = NANOEM_RSIZE_MAX;
                 }
                 ImGui::SameLine();
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.flip.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.remove"),
+                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_flip_t *item =
@@ -2402,7 +2412,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.group.add"), ImGui::GetContentRegionAvail().x * 0.5f, true)) {
+                if (ImGuiWindow::handleButton(
+                        tr("nanoem.gui.model.edit.morph.group.add"), ImGui::GetContentRegionAvail().x * 0.5f, true)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(scoped, &status);
@@ -2413,8 +2424,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemCandidateMorphIndex = NANOEM_RSIZE_MAX;
                 }
                 ImGui::SameLine();
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.group.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.group.remove"),
+                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_group_t *item =
@@ -2486,8 +2497,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.add"), ImGui::GetContentRegionAvail().x * 0.5f,
-                        m_morphItemCandidateRigidBodyIndex < numRigidBodies)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.add"),
+                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateRigidBodyIndex < numRigidBodies)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_impulse_t *item = nanoemMutableModelMorphImpulseCreate(scoped, &status);
@@ -2499,8 +2510,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemCandidateRigidBodyIndex = NANOEM_RSIZE_MAX;
                 }
                 ImGui::SameLine();
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.impulse.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.remove"),
+                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_impulse_t *item =
@@ -2589,8 +2600,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     }
                     ImGui::EndCombo();
                 }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.add"), ImGui::GetContentRegionAvail().x * 0.5f,
-                        m_morphItemCandidateMaterialIndex < numMaterials)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.add"),
+                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMaterialIndex < numMaterials)) {
                     nanoem_status_t status;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_material_t *item =
@@ -2603,8 +2614,8 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     m_morphItemCandidateMaterialIndex = NANOEM_RSIZE_MAX;
                 }
                 ImGui::SameLine();
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.material.remove"), ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
+                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.remove"),
+                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     ScopedMutableMorph scoped(morphPtr, m_activeModel);
                     nanoem_mutable_model_morph_material_t *item =
