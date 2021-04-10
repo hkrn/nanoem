@@ -3718,14 +3718,16 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             const IModelObjectSelection *selection = activeModel->selection();
             const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
             const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+            const Model::DraggingStateType draggingStateType = activeModel->draggingStateType();
             const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable(),
-                       selecting = intersected &&
+                       isSelecting = intersected &&
                     (movable && intersectedRectangleType >= Project::kRectangleTranslateX &&
                         intersectedRectangleType <= Project::kRectangleTranslateZ) ||
                 (rotateable && intersectedRectangleType >= Project::kRectangleOrientateX &&
-                    intersectedRectangleType <= Project::kRectangleOrientateZ);
-            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
-                (selecting || activeModel->localCamera()->isLocked())) {
+                    intersectedRectangleType <= Project::kRectangleOrientateZ),
+                       isDragging = draggingStateType == Model::kDraggingStateTypeAxisAlignedTranslateActiveBone ||
+                draggingStateType == Model::kDraggingStateTypeAxisAlignedOrientateActiveBone;
+            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) && (isSelecting || isDragging)) {
                 Quaternion orientation(Constants::kZeroQ);
                 if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
                     orientation =

@@ -46,6 +46,7 @@ DraggingBoneState::DraggingBoneState(Project *project, Model *model, const Vecto
 DraggingBoneState::~DraggingBoneState()
 {
     setCameraLocked(false);
+    m_model->setDraggingStateType(Model::kDraggingStateTypeNone);
     m_model = nullptr;
     m_project = nullptr;
 }
@@ -263,6 +264,7 @@ TranslateActiveBoneState::TranslateActiveBoneState(Project *project, Model *mode
         m_baseLocalTranslation = activeBone->localUserTranslation();
         setShouldSetCursorPosition(true);
     }
+    model->setDraggingStateType(Model::kDraggingStateTypeTranslateActiveBone);
 }
 
 void
@@ -298,6 +300,7 @@ OrientateActiveBoneState::OrientateActiveBoneState(Project *project, Model *mode
     const Vector2SI32 &pressedLogicalCursorPosition, const Vector2SI32 &activeBoneLogicalCursorPosition)
     : DraggingBoneState(project, model, pressedLogicalCursorPosition, activeBoneLogicalCursorPosition)
 {
+    model->setDraggingStateType(Model::kDraggingStateTypeOrientateActiveBone);
 }
 
 void
@@ -361,6 +364,7 @@ AxisAlignedTranslateActiveBoneState::AxisAlignedTranslateActiveBoneState(
     , m_axisIndex(axisIndex)
 {
     setScaleFactor(0.05f);
+    model->setDraggingStateType(Model::kDraggingStateTypeAxisAlignedTranslateActiveBone);
 }
 
 void
@@ -405,6 +409,7 @@ AxisAlignedOrientateActiveBoneState::AxisAlignedOrientateActiveBoneState(
     , m_axisIndex(axisIndex)
 {
     setScaleFactor(0.25f);
+    model->setDraggingStateType(Model::kDraggingStateTypeAxisAlignedOrientateActiveBone);
 }
 
 void

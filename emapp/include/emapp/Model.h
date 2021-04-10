@@ -55,6 +55,15 @@ class ISkinDeformer;
 class Model NANOEM_DECL_SEALED : public IDrawable, private NonCopyable {
 public:
     enum AxisType { kAxisTypeFirstEnum, kAxisCenter = kAxisTypeFirstEnum, kAxisX, kAxisY, kAxisZ, kAxisTypeMaxEnum };
+    enum DraggingStateType {
+        kDraggingStateTypeFirstEnum,
+        kDraggingStateTypeNone = kDraggingStateTypeFirstEnum,
+        kDraggingStateTypeTranslateActiveBone,
+        kDraggingStateTypeOrientateActiveBone,
+        kDraggingStateTypeAxisAlignedTranslateActiveBone,
+        kDraggingStateTypeAxisAlignedOrientateActiveBone,
+        kDraggingStateTypeMaxEnum,
+    };
     enum GizmoOperationType {
         kGizmoOperationTypeFirstEnum,
         kGizmoOperationTypeTranslate = kGizmoOperationTypeFirstEnum,
@@ -343,6 +352,8 @@ public:
     void setTransformAxisType(AxisType value);
     TransformCoordinateType gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     void setGizmoTransformCoordinateType(TransformCoordinateType value);
+    DraggingStateType draggingStateType() const NANOEM_DECL_NOEXCEPT;
+    void setDraggingStateType(DraggingStateType value);
     GizmoOperationType gizmoOperationType() const NANOEM_DECL_NOEXCEPT;
     void setGizmoOperationType(GizmoOperationType value);
     TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT;
@@ -538,6 +549,7 @@ private:
     sg_buffer m_indexBuffer;
     Matrix4x4 m_pivotMatrix;
     Vector4 m_edgeColor;
+    DraggingStateType m_draggingStateType;
     GizmoOperationType m_gizmoOperationType;
     TransformCoordinateType m_gizmoTransformCoordinateType;
     AxisType m_transformAxisType;
