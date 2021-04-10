@@ -104,7 +104,7 @@ DraggingBoneState::handleDragAxis(const nanoem_model_bone_t *bone, Model::Transf
         axis = model::Bone::localAxes(bone)[glm::clamp(index, 0, 2)];
     }
     else {
-        axis = Matrix3x3(1)[glm::clamp(index, 0, 2)];
+        axis = Constants::kIdentity[glm::clamp(index, 0, 2)];
     }
     return axis;
 }
