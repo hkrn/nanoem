@@ -4369,24 +4369,24 @@ void
 ImGuiWindow::PrimitiveContext::strokeLine(
     const Vector2 &from, const Vector2 &to, const Vector4 &color, nanoem_f32_t thickness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 a(m_offset.x + from.x, m_offset.y + from.y), b(m_offset.x + to.x, m_offset.y + to.y);
-    ImGui::GetWindowDrawList()->AddLine(a, b, col, thickness * m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddLine(a, b, c, thickness * m_scaleFactor);
 }
 
 void
 ImGuiWindow::PrimitiveContext::strokeRect(
     const Vector4 &rect, const Vector4 &color, nanoem_f32_t roundness, nanoem_f32_t thickness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 a(m_offset.x + rect.x, m_offset.y + rect.y), b(a.x + rect.z, a.y + rect.w);
-    ImGui::GetWindowDrawList()->AddRect(a, b, col, roundness, ImDrawFlags_RoundCornersAll, thickness * m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddRect(a, b, c, roundness, ImDrawFlags_RoundCornersAll, thickness * m_scaleFactor);
 }
 
 void
 ImGuiWindow::PrimitiveContext::fillRect(const Vector4 &rect, const Vector4 &color, nanoem_f32_t roundness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 col(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 a(m_offset.x + rect.x, m_offset.y + rect.y), b(a.x + rect.z, a.y + rect.w);
     ImGui::GetWindowDrawList()->AddRectFilled(a, b, col, roundness, ImDrawFlags_RoundCornersAll);
 }
@@ -4395,31 +4395,31 @@ void
 ImGuiWindow::PrimitiveContext::strokeCircle(const Vector4 &rect, const Vector4 &color, nanoem_f32_t thickness)
 {
     static const nanoem_f32_t kScaleFactor = 0.5f / glm::sqrt(2.0f);
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
     ImGui::GetWindowDrawList()->AddCircle(
-        center, radius, col, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
+        center, radius, c, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
 }
 
 void
 ImGuiWindow::PrimitiveContext::fillCircle(const Vector4 &rect, const Vector4 &color)
 {
     static const nanoem_f32_t kScaleFactor = 0.5f / glm::sqrt(2.0f);
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
-    ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, col, int(kDrawCircleSegmentCount * m_scaleFactor));
+    ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, c, int(kDrawCircleSegmentCount * m_scaleFactor));
 }
 
 void
 ImGuiWindow::PrimitiveContext::strokeCurve(const Vector2 &a, const Vector2 &c0, const Vector2 &c1, const Vector2 &b,
     const Vector4 &color, nanoem_f32_t thickness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     ImGui::GetWindowDrawList()->AddBezierCubic(ImVec2(m_offset.x + a.x, m_offset.y + a.y),
         ImVec2(m_offset.x + c0.x, m_offset.y + c0.y), ImVec2(m_offset.x + c1.x, m_offset.y + c1.y),
-        ImVec2(m_offset.x + b.x, m_offset.y + b.y), col, thickness * m_scaleFactor);
+        ImVec2(m_offset.x + b.x, m_offset.y + b.y), c, thickness * m_scaleFactor);
 }
 
 void
