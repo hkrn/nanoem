@@ -2783,21 +2783,28 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
 {
     const nanoem_f32_t width = ImGui::GetContentRegionAvail().x;
     if (Model *activeModel = project->activeModel()) {
-        const nanoem_model_bone_t *activeBoenPtr = activeModel->activeBone();
-        model::Bone *activeBone = model::Bone::cast(activeBoenPtr);
+        const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
+        model::Bone *activeBone = model::Bone::cast(activeBonePtr);
         ImGui::PushItemWidth(width * 0.2f);
         ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.model.translation"));
         ImGui::PopItemWidth();
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 translation(activeBone ? activeBone->localUserTranslation() : Constants::kZeroV3);
-        if (ImGui::DragFloat3(
-                "##viewport.bone.translation", glm::value_ptr(translation), kTranslationStepFactor, 0, 0, "%.2f") &&
-            activeBone) {
-            setModelBoneTranslation(translation, activeBoenPtr, activeModel, project);
+        if (model::Bone::isMovable(activeBonePtr)) {
+            if (ImGui::DragFloat3(
+                    "##viewport.bone.translation", glm::value_ptr(translation), kTranslationStepFactor, 0, 0, "%.2f") &&
+                activeBone) {
+                setModelBoneTranslation(translation, activeBonePtr, activeModel, project);
+            }
+            if (handleVectorValueState(m_boneTranslationValueState)) {
+                nanoem_delete_safe(m_boneTranslationValueState);
+            }
         }
-        if (handleVectorValueState(m_boneTranslationValueState)) {
-            nanoem_delete_safe(m_boneTranslationValueState);
+        else {
+            ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
+            ImGui::InputFloat3("##viewport.bone.translation", glm::value_ptr(translation), "%.2f", ImGuiInputTextFlags_ReadOnly);
+            ImGui::PopStyleColor();
         }
         ImGui::PopItemWidth();
         ImGui::SameLine();
@@ -2808,13 +2815,21 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 orientation(
             activeBone ? glm::degrees(glm::eulerAngles(activeBone->localUserOrientation())) : Constants::kZeroV3);
-        if (ImGui::DragFloat3("##viewport.bone.orientation", glm::value_ptr(orientation), kOrientationStepFactor, -180,
-                180, "%.1f") &&
-            activeBone) {
-            setModelBoneOrientation(glm::radians(orientation), activeBoenPtr, activeModel, project);
+        if (model::Bone::isRotateable(activeBonePtr)) {
+            if (ImGui::DragFloat3("##viewport.bone.orientation", glm::value_ptr(orientation), kOrientationStepFactor,
+                    -180, 180, "%.1f") &&
+                activeBone) {
+                setModelBoneOrientation(glm::radians(orientation), activeBonePtr, activeModel, project);
+            }
+            if (handleVectorValueState(m_boneOrientationValueState)) {
+                nanoem_delete_safe(m_boneOrientationValueState);
+            }
         }
-        if (handleVectorValueState(m_boneOrientationValueState)) {
-            nanoem_delete_safe(m_boneOrientationValueState);
+        else {
+            ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
+            ImGui::InputFloat3(
+                "##viewport.bone.orientation", glm::value_ptr(orientation), "%.1f", ImGuiInputTextFlags_ReadOnly);
+            ImGui::PopStyleColor();
         }
         ImGui::PopItemWidth();
     }
