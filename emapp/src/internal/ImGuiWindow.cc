@@ -3742,7 +3742,7 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state,
             deviceScaleRects[i] =
                 project->queryDevicePixelRectangle(static_cast<Project::RectangleType>(i), Vector2UI16());
         }
-        Project::RectangleType intersectedRectangleType;
+        Project::RectangleType intersectedRectangleType = Project::kRectangleTypeMaxEnum;
         const ImGuiIO &io = ImGui::GetIO();
         ImVec2 mousePos(io.MousePos), basePos;
 #if defined(IMGUI_HAS_VIEWPORT)
