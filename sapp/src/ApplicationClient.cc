@@ -31,6 +31,8 @@ ApplicationClient::dispatchAllEventMessages()
     for (ByteArrayList::const_iterator it = m_bridge->m_events.begin(), end = m_bridge->m_events.end(); it != end;
          ++it) {
         dispatchEventMessage(it->data(), it->size());
+        /* update end iterator for added event */
+        end = m_bridge->m_events.end();
     }
 }
 
