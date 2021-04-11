@@ -87,11 +87,7 @@ struct ImGuiApplicationMenuBuilder::NewProjectEventHandler {
     static void
     saveProject(ImGuiApplicationMenuBuilder *self)
     {
-        StringList extensions;
-        extensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
-        extensions.push_back(Project::kPolygonMovieMakerFileExtension);
-        extensions.push_back(Project::kArchivedNativeFormatFileExtension);
-        self->m_eventPublisher->publishQuerySaveFileDialogEvent(IFileManager::kDialogTypeSaveProjectFile, extensions);
+        self->m_eventPublisher->publishQuerySaveFileDialogEvent(IFileManager::kDialogTypeSaveProjectFile, Project::loadableExtensions());
     }
     static void
     handleCompleteSavingFile(
@@ -135,11 +131,8 @@ struct ImGuiApplicationMenuBuilder::OpenProjectEventHandler {
     openProject(ImGuiApplicationMenuBuilder *self)
     {
         IEventPublisher *eventPublisher = self->m_eventPublisher;
-        StringList extensions;
-        extensions.push_back(Project::kArchivedNativeFormatFileExtension);
-        extensions.push_back(Project::kPolygonMovieMakerFileExtension);
-        extensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
-        eventPublisher->publishQueryOpenSingleFileDialogEvent(IFileManager::kDialogTypeOpenProject, extensions);
+        eventPublisher->publishQueryOpenSingleFileDialogEvent(
+            IFileManager::kDialogTypeOpenProject, Project::loadableExtensions());
     }
     static void
     handleCompleteSavingFile(
@@ -694,11 +687,8 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
                 case kMenuItemTypeFileSaveProject:
                 case kMenuItemTypeFileSaveAsProject: {
                     IEventPublisher *eventPublisher = builder->m_eventPublisher;
-                    StringList extensions;
-                    extensions.push_back(Project::kArchivedNativeFormatFileExtension);
-                    extensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
                     eventPublisher->publishQuerySaveFileDialogEvent(
-                        IFileManager::kDialogTypeSaveProjectFile, extensions);
+                        IFileManager::kDialogTypeSaveProjectFile, Project::loadableExtensions());
                     break;
                 }
                 case kMenuItemTypeFileExportModelPose: {

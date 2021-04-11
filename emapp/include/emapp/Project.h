@@ -245,7 +245,10 @@ public:
     static String resolveNameConfliction(const IDrawable *drawable, StringSet &reservedNameSet);
     static String resolveNameConfliction(const String &name, StringSet &reservedNameSet);
     static int countColorAttachments(const sg_pass_desc &pd) NANOEM_DECL_NOEXCEPT;
+    static StringList loadableExtensions();
+    static StringSet loadableExtensionsSet();
     static bool isArchiveURI(const URI &fileURI);
+    static bool isLoadableExtension(const String &extension);
     static bool isLoadableExtension(const URI &fileURI);
     static void setAlphaBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT;
     static void setAddBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT;

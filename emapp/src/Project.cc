@@ -1060,6 +1060,21 @@ Project::countColorAttachments(const sg_pass_desc &pd) NANOEM_DECL_NOEXCEPT
     return numAttachments;
 }
 
+StringList
+Project::loadableExtensions()
+{
+    static const String kLoadableMotionExtensions[] = { kFileSystemBasedNativeFormatFileExtension,
+        kPolygonMovieMakerFileExtension, kArchivedNativeFormatFileExtension, String() };
+    return StringList(
+        &kLoadableMotionExtensions[0], &kLoadableMotionExtensions[BX_COUNTOF(kLoadableMotionExtensions) - 1]);
+}
+
+StringSet
+Project::loadableExtensionsSet()
+{
+    return ListUtils::toSetFromList<String>(loadableExtensions());
+}
+
 bool
 Project::isArchiveURI(const URI &fileURI)
 {
@@ -1069,12 +1084,15 @@ Project::isArchiveURI(const URI &fileURI)
 }
 
 bool
+Project::isLoadableExtension(const String &extension)
+{
+    return FileUtils::isLoadableExtension(extension, loadableExtensionsSet());
+}
+
+bool
 Project::isLoadableExtension(const URI &fileURI)
 {
-    const String pathExtension(fileURI.pathExtension());
-    return StringUtils::equalsIgnoreCase(pathExtension.c_str(), Project::kFileSystemBasedNativeFormatFileExtension) ||
-        StringUtils::equalsIgnoreCase(pathExtension.c_str(), Project::kArchivedNativeFormatFileExtension) ||
-        StringUtils::equalsIgnoreCase(pathExtension.c_str(), Project::kPolygonMovieMakerFileExtension);
+    return isLoadableExtension(fileURI.pathExtension());
 }
 
 void

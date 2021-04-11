@@ -83,9 +83,7 @@ CocoaApplicationMenuBuilder::aggregateAllPlugins(URIList &plugins)
 void
 CocoaApplicationMenuBuilder::getAllowedProjectExtensions(StringList &extensions)
 {
-    extensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
-    extensions.push_back(Project::kArchivedNativeFormatFileExtension);
-    extensions.push_back(Project::kPolygonMovieMakerFileExtension);
+    extensions = Project::loadableExtensions();
     extensions.push_back("nanoem");
 }
 
