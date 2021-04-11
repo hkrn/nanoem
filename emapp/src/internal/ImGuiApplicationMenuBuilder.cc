@@ -22,6 +22,64 @@
 #define SOKOL_GFX_INCLUDED /* stub */
 #include "sokol/util/sokol_gfx_imgui.h"
 
+#if defined(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
+#include "imguifiledialog/ImGuiFileDialog.h"
+#else
+#define IMGUIFILEDIALOG_API extern
+struct ImGuiFileDialog;
+typedef int ImGuiFileDialogFlags;
+extern "C" {
+IMGUIFILEDIALOG_API ImGuiFileDialog *
+IGFD_Create(void)
+{
+    return nullptr;
+}
+IMGUIFILEDIALOG_API void
+IGFD_Destroy(ImGuiFileDialog *vContext)
+{
+    BX_UNUSED_1(vContext);
+}
+IMGUIFILEDIALOG_API bool
+IGFD_DisplayDialog(
+    ImGuiFileDialog *vContext, const char *vKey, ImGuiWindowFlags vFlags, ImVec2 vMinSize, ImVec2 vMaxSize)
+{
+    BX_UNUSED_5(vContext, vKey, vFlags, vMinSize, vMaxSize);
+    return false;
+}
+IMGUIFILEDIALOG_API bool
+IGFD_IsOk(ImGuiFileDialog *vContext)
+{
+    BX_UNUSED_1(vContext);
+    return false;
+}
+IMGUIFILEDIALOG_API char *
+IGFD_GetCurrentFileName(ImGuiFileDialog *vContext)
+{
+    BX_UNUSED_1(vContext);
+    return nullptr;
+}
+IMGUIFILEDIALOG_API char *
+IGFD_GetCurrentPath(ImGuiFileDialog *vContext)
+{
+    BX_UNUSED_1(vContext);
+    return nullptr;
+}
+IMGUIFILEDIALOG_API void
+IGFD_OpenDialog(ImGuiFileDialog *vContext, const char *vKey, const char *vTitle, const char *vFilters,
+    const char *vPath, const char *vFileName, const int vCountSelectionMax, void *vUserDatas,
+    ImGuiFileDialogFlags vFlags)
+{
+    BX_UNUSED_8(vContext, vKey, vTitle, vFilters, vFileName, vCountSelectionMax, vUserDatas, vFlags);
+}
+IMGUIFILEDIALOG_API void
+IGFD_CloseDialog(ImGuiFileDialog *vContext)
+{
+    BX_UNUSED_1(vContext);
+}
+
+} /* extern "C" */
+#endif
+
 namespace nanoem {
 namespace internal {
 
@@ -120,6 +178,94 @@ struct ImGuiApplicationMenuBuilder::OpenProjectEventHandler {
     }
 };
 
+struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
+    static void
+    handleTransientQueryFileDialog(const URI &fileURI, Project * /* project */, void *userData)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        builder->m_client->sendExecuteExportingImageMessage(fileURI);
+    }
+    static void
+    handleCompleteExportImageConfiguration(void *userData, const StringList &availableExtensions)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        if (!availableExtensions.empty()) {
+            builder->m_fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
+            builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
+                IFileManager::kDialogTypeUserCallback, availableExtensions);
+        }
+        else {
+            builder->m_client->sendExecuteExportingImageMessage(URI());
+        }
+    }
+    static void
+    handleSaveProjectAfterConfirm(void *userData)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        builder->m_client->addCompleteSavingFileEventListener(handleCompleteSavingFile, builder, true);
+        NewProjectEventHandler::saveProject(builder);
+    }
+    static void
+    handleCompleteSavingFile(
+        void *userData, const URI & /* fileURI */, nanoem_u32_t /* type */, nanoem_u64_t /* ticks */)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        handleDiscardProjectAfterConfirm(builder);
+    }
+    static void
+    handleDiscardProjectAfterConfirm(void *userData)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        builder->m_client->addCompleteExportImageConfigurationEventListener(
+            handleCompleteExportImageConfiguration, builder, true);
+        builder->m_client->sendRequestExportImageConfigurationMessage();
+    }
+};
+
+struct ImGuiApplicationMenuBuilder::ExportVideoCallbackHandler {
+    static void
+    handleTransientQueryFileDialog(const URI &fileURI, Project * /* project */, void *userData)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        builder->m_client->sendExecuteExportingVideoMessage(fileURI);
+    }
+    static void
+    handleCompleteExportVideoConfiguration(void *userData, const StringList &availableExtensions)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        if (!availableExtensions.empty()) {
+            builder->m_fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
+            builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
+                IFileManager::kDialogTypeUserCallback, availableExtensions);
+        }
+        else {
+            builder->m_client->sendExecuteExportingVideoMessage(URI());
+        }
+    }
+    static void
+    handleSaveProjectAfterConfirm(void *userData)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        builder->m_client->addCompleteSavingFileEventListener(handleCompleteSavingFile, builder, true);
+        NewProjectEventHandler::saveProject(builder);
+    }
+    static void
+    handleCompleteSavingFile(
+        void *userData, const URI & /* fileURI */, nanoem_u32_t /* type */, nanoem_u64_t /* ticks */)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        handleDiscardProjectAfterConfirm(builder);
+    }
+    static void
+    handleDiscardProjectAfterConfirm(void *userData)
+    {
+        ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+        builder->m_client->addCompleteExportVideoConfigurationEventListener(
+            handleCompleteExportVideoConfiguration, builder, true);
+        builder->m_client->sendRequestExportVideoConfigurationMessage();
+    }
+};
+
 ImGuiApplicationMenuBuilder::ImGuiApplicationMenuBuilder(BaseApplicationClient *client, IEventPublisher *eventPublisher,
     IFileManager *fileManager, const ITranslator *translator, bool enableModelEditing)
     : ApplicationMenuBuilder(client, enableModelEditing)
@@ -130,6 +276,18 @@ ImGuiApplicationMenuBuilder::ImGuiApplicationMenuBuilder(BaseApplicationClient *
     , m_rootMenu(this)
     , m_rootMenuItem(&m_rootMenu)
 {
+    m_client->addQueryOpenSingleFileDialogEventListener(
+        [](void *userData, nanoem_u32_t value, const StringList &allowedExtensions) {
+            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+            builder->m_openFileDialogState.initialize(allowedExtensions, value);
+        },
+        this, false);
+    m_client->addQuerySaveFileDialogEventListener(
+        [](void *userData, nanoem_u32_t value, const StringList &allowedExtensions) {
+            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
+            builder->m_saveFileDialogState.initialize(allowedExtensions, value);
+        },
+        this, false);
 }
 
 ImGuiApplicationMenuBuilder::~ImGuiApplicationMenuBuilder()
@@ -155,6 +313,12 @@ ImGuiApplicationMenuBuilder::draw(void *debugger)
             }
         }
         ImGui::EndMainMenuBar();
+    }
+    if (m_openFileDialogState.hasAllowedExtensions()) {
+        m_openFileDialogState.draw(m_client);
+    }
+    else if (m_saveFileDialogState.hasAllowedExtensions()) {
+        m_saveFileDialogState.draw(m_client);
     }
 }
 
@@ -568,51 +732,6 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
                     break;
                 }
                 case kMenuItemTypeFileExportImage: {
-                    struct ExportImageCallbackHandler {
-                        static void
-                        handleTransientQueryFileDialog(const URI &fileURI, Project * /* project */, void *userData)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            builder->m_client->sendExecuteExportingImageMessage(fileURI);
-                        }
-                        static void
-                        handleCompleteExportImageConfiguration(void *userData, const StringList &availableExtensions)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            if (!availableExtensions.empty()) {
-                                builder->m_fileManager->setTransientQueryFileDialogCallback(
-                                    handleTransientQueryFileDialog, builder);
-                                builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
-                                    IFileManager::kDialogTypeUserCallback, availableExtensions);
-                            }
-                            else {
-                                builder->m_client->sendExecuteExportingImageMessage(URI());
-                            }
-                        }
-                        static void
-                        handleSaveProjectAfterConfirm(void *userData)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            builder->m_client->addCompleteSavingFileEventListener(
-                                handleCompleteSavingFile, builder, true);
-                            NewProjectEventHandler::saveProject(builder);
-                        }
-                        static void
-                        handleCompleteSavingFile(void *userData, const URI & /* fileURI */, nanoem_u32_t /* type */,
-                            nanoem_u64_t /* ticks */)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            handleDiscardProjectAfterConfirm(builder);
-                        }
-                        static void
-                        handleDiscardProjectAfterConfirm(void *userData)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            builder->m_client->addCompleteExportImageConfigurationEventListener(
-                                handleCompleteExportImageConfiguration, builder, true);
-                            builder->m_client->sendRequestExportImageConfigurationMessage();
-                        }
-                    };
                     ImGuiApplicationMenuBuilder *builder = m_parent->m_parent;
                     BaseApplicationClient *client = builder->m_client;
                     client->addSaveProjectAfterConfirmEventListener(
@@ -623,51 +742,6 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
                     break;
                 }
                 case kMenuItemTypeFileExportVideo: {
-                    struct ExportVideoCallbackHandler {
-                        static void
-                        handleTransientQueryFileDialog(const URI &fileURI, Project * /* project */, void *userData)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            builder->m_client->sendExecuteExportingVideoMessage(fileURI);
-                        }
-                        static void
-                        handleCompleteExportVideoConfiguration(void *userData, const StringList &availableExtensions)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            if (!availableExtensions.empty()) {
-                                builder->m_fileManager->setTransientQueryFileDialogCallback(
-                                    handleTransientQueryFileDialog, builder);
-                                builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
-                                    IFileManager::kDialogTypeUserCallback, availableExtensions);
-                            }
-                            else {
-                                builder->m_client->sendExecuteExportingVideoMessage(URI());
-                            }
-                        }
-                        static void
-                        handleSaveProjectAfterConfirm(void *userData)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            builder->m_client->addCompleteSavingFileEventListener(
-                                handleCompleteSavingFile, builder, true);
-                            NewProjectEventHandler::saveProject(builder);
-                        }
-                        static void
-                        handleCompleteSavingFile(void *userData, const URI & /* fileURI */, nanoem_u32_t /* type */,
-                            nanoem_u64_t /* ticks */)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            handleDiscardProjectAfterConfirm(builder);
-                        }
-                        static void
-                        handleDiscardProjectAfterConfirm(void *userData)
-                        {
-                            ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
-                            builder->m_client->addCompleteExportVideoConfigurationEventListener(
-                                handleCompleteExportVideoConfiguration, builder, true);
-                            builder->m_client->sendRequestExportVideoConfigurationMessage();
-                        }
-                    };
                     ImGuiApplicationMenuBuilder *builder = m_parent->m_parent;
                     BaseApplicationClient *client = builder->m_client;
                     client->addSaveProjectAfterConfirmEventListener(
@@ -734,6 +808,114 @@ ImGuiApplicationMenuBuilder::ImGuiMenuBar::drawAllMenuItems()
         ImGuiMenuItem *item = *it;
         item->draw();
     }
+}
+
+ImGuiApplicationMenuBuilder::FileDialogState::FileDialogState()
+    : m_instance(nullptr)
+    , m_type(0)
+    , m_opened(false)
+{
+}
+
+ImGuiApplicationMenuBuilder::FileDialogState::~FileDialogState() NANOEM_DECL_NOEXCEPT
+{
+    if (ImGuiFileDialog *instance = static_cast<ImGuiFileDialog *>(m_instance)) {
+        IGFD_Destroy(instance);
+    }
+}
+
+void
+ImGuiApplicationMenuBuilder::FileDialogState::initialize(const StringList &extensions, nanoem_u32_t type)
+{
+    if (m_allowedExtensions.empty()) {
+        if (!m_instance) {
+            m_instance = IGFD_Create();
+        }
+        m_allowedExtensions = extensions;
+        m_type = type;
+        m_opened = false;
+    }
+}
+
+void
+ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client)
+{
+    ImGuiFileDialog *instance = static_cast<ImGuiFileDialog *>(m_instance);
+    if (IGFD_DisplayDialog(instance, windowID(), 0, ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX))) {
+        if (IGFD_IsOk(instance)) {
+            char *filePathPtr = IGFD_GetCurrentPath(instance), *currentFileNamePtr = IGFD_GetCurrentFileName(instance);
+            String filePath(filePathPtr), canonicalizedFilePath;
+            filePath.append("/");
+            filePath.append(currentFileNamePtr);
+            if (filePathPtr) {
+                free(filePathPtr);
+            }
+            if (currentFileNamePtr) {
+                free(currentFileNamePtr);
+            }
+            FileUtils::canonicalizePathSeparator(filePath, canonicalizedFilePath);
+            const URI fileURI(URI::createFromFilePath(canonicalizedFilePath.c_str()));
+            execute(fileURI, client);
+        }
+        IGFD_CloseDialog(instance);
+        m_opened = false;
+        m_allowedExtensions.clear();
+    }
+    else if (!m_opened) {
+        String extension;
+        for (StringList::const_iterator it = m_allowedExtensions.begin(), end = m_allowedExtensions.end();
+             it != end; ++it) {
+            extension.append(".");
+            extension.append(it->c_str());
+            if (it != end - 1) {
+                extension.append(",");
+            }
+        }
+        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), ".", "", 1, nullptr, 0);
+        m_opened = true;
+    }
+}
+
+bool
+ImGuiApplicationMenuBuilder::FileDialogState::hasAllowedExtensions() const NANOEM_DECL_NOEXCEPT
+{
+    return !m_allowedExtensions.empty();
+}
+
+void
+ImGuiApplicationMenuBuilder::OpenFileDialogState::execute(const URI &fileURI, BaseApplicationClient *client)
+{
+    client->sendLoadFileMessage(fileURI, m_type);
+}
+
+const char *
+ImGuiApplicationMenuBuilder::OpenFileDialogState::windowID() const NANOEM_DECL_NOEXCEPT
+{
+    return "menu.dialog.open";
+}
+
+const char *
+ImGuiApplicationMenuBuilder::OpenFileDialogState::windowTitle() const NANOEM_DECL_NOEXCEPT
+{
+    return "Open File Dialog";
+}
+
+void
+ImGuiApplicationMenuBuilder::SaveFileDialogState::execute(const URI &fileURI, BaseApplicationClient *client)
+{
+    client->sendSaveFileMessage(fileURI, m_type);
+}
+
+const char *
+ImGuiApplicationMenuBuilder::SaveFileDialogState::windowID() const NANOEM_DECL_NOEXCEPT
+{
+    return "menu.dialog.save";
+}
+
+const char *
+ImGuiApplicationMenuBuilder::SaveFileDialogState::windowTitle() const NANOEM_DECL_NOEXCEPT
+{
+    return "Open Save Dialog";
 }
 
 } /* namespace internal */

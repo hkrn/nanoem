@@ -15,6 +15,11 @@
 #include "imgui/imgui_tables.cpp"
 #include "imgui/imgui_widgets.cpp"
 
+/* ImGuiFileDialog */
+#if defined(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
+#include "imguifiledialog/ImGuiFileDialog.cpp"
+#endif
+
 /* ImGuizmo */
 /* workaround of near/far keywords on win32 */
 #undef near

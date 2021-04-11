@@ -33,6 +33,8 @@ public:
 private:
     struct NewProjectEventHandler;
     struct OpenProjectEventHandler;
+    struct ExportImageCallbackHandler;
+    struct ExportVideoCallbackHandler;
 
     void createAllMenus() NANOEM_DECL_OVERRIDE;
     MenuBarHandle createMenuBar() NANOEM_DECL_OVERRIDE;
@@ -94,6 +96,33 @@ private:
         MenuItemType m_type;
         nanoem_u16_t m_handle;
     };
+    struct FileDialogState {
+        FileDialogState();
+        ~FileDialogState() NANOEM_DECL_NOEXCEPT;
+
+        virtual void execute(const URI &fileURI, BaseApplicationClient *client) = 0;
+        virtual const char *windowID() const NANOEM_DECL_NOEXCEPT = 0;
+        virtual const char *windowTitle() const NANOEM_DECL_NOEXCEPT = 0;
+
+        void initialize(const StringList &extensions, nanoem_u32_t type);
+        void draw(BaseApplicationClient *client);
+        bool hasAllowedExtensions() const NANOEM_DECL_NOEXCEPT;
+
+        void *m_instance;
+        StringList m_allowedExtensions;
+        nanoem_u32_t m_type;
+        bool m_opened;
+    };
+    struct OpenFileDialogState : FileDialogState {
+        void execute(const URI &fileURI, BaseApplicationClient *client) NANOEM_DECL_OVERRIDE;
+        const char *windowID() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+        const char *windowTitle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    };
+    struct SaveFileDialogState : FileDialogState {
+        void execute(const URI &fileURI, BaseApplicationClient *client) NANOEM_DECL_OVERRIDE;
+        const char *windowID() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+        const char *windowTitle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    };
 
     typedef tinystl::vector<ImGuiMenuObject *, TinySTLAllocator> ImGuiMenuObjectList;
     const ITranslator *m_translator;
@@ -104,6 +133,8 @@ private:
     ImGuiMenuBar m_rootMenu;
     ImGuiMenuItem m_rootMenuItem;
     ImGuiMenuBarList m_menus;
+    OpenFileDialogState m_openFileDialogState;
+    SaveFileDialogState m_saveFileDialogState;
 };
 
 } /* namespace internal */
