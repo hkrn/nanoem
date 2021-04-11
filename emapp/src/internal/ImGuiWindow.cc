@@ -149,7 +149,8 @@ isDraggingBoneHandle(const IState *state) NANOEM_DECL_NOEXCEPT
 
 using namespace imgui;
 
-const Vector2UI16 ImGuiWindow::kMinimumWindowSize = Vector2UI16(1080, 700);
+const Vector2UI16 ImGuiWindow::kMinimumMainWindowSize = Vector2UI16(1080, 700);
+const Vector2UI16 ImGuiWindow::kMinimumViewportWindowSize = Vector2UI16(720, 480);
 const nanoem_f32_t ImGuiWindow::kFontSize = 16.0f;
 const nanoem_f32_t ImGuiWindow::kWindowRounding = 4.0f;
 const nanoem_f32_t ImGuiWindow::kLeftPaneWidth = 150.0f;
@@ -1760,7 +1761,8 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
             (1.0f / deviceScaleRatio);
         bool detached = false;
         if (detached) {
-            const ImVec2 minimumViewportSize(720 * deviceScaleRatio, 480 * deviceScaleRatio);
+            const ImVec2 minimumViewportSize(
+                kMinimumViewportWindowSize.x * deviceScaleRatio, kMinimumViewportWindowSize.y * deviceScaleRatio);
             const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
                                viewportHeight = size.y - (panelHeight * deviceScaleRatio);
             drawTimeline(timelineWidth, viewportHeight, project);

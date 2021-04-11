@@ -1521,7 +1521,7 @@ BaseApplicationService::EventPublisher::sendEventMessage(const Nanoem__Applicati
 Vector2UI16
 BaseApplicationService::minimumRequiredWindowSize() NANOEM_DECL_NOEXCEPT
 {
-    return internal::ImGuiWindow::kMinimumWindowSize;
+    return internal::ImGuiWindow::kMinimumMainWindowSize;
 }
 
 void
