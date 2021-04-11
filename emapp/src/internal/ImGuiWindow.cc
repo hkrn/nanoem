@@ -1752,21 +1752,34 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     if (m_menu) {
         m_menu->draw(m_debugger);
     }
-
     if (!project->isModelEditingEnabled()) {
         const ImGuiStyle &style = ImGui::GetStyle();
+        const ImVec2 size(ImGui::GetContentRegionAvail());
         const nanoem_f32_t panelHeight =
             (ImGui::GetFrameHeightWithSpacing() * 8 + style.ItemSpacing.y * 6 + style.WindowPadding.y * 2) *
             (1.0f / deviceScaleRatio);
-        const ImVec2 &size = ImGui::GetContentRegionAvail();
-        const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
-                           viewportHeight = size.y - (panelHeight * deviceScaleRatio);
-        drawTimeline(timelineWidth, viewportHeight, project);
-        ImGui::SameLine();
-        ImVec2 posFrom(ImGui::GetCursorScreenPos());
-        drawViewport(viewportHeight, project, state);
-        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
-            handleVerticalSplitter(posFrom, size, viewportHeight, deviceScaleRatio);
+        bool detached = false;
+        if (detached) {
+            const ImVec2 minimumViewportSize(720 * deviceScaleRatio, 480 * deviceScaleRatio);
+            const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
+                               viewportHeight = size.y - (panelHeight * deviceScaleRatio);
+            drawTimeline(timelineWidth, viewportHeight, project);
+            ImGui::SetNextWindowSizeConstraints(minimumViewportSize, ImVec2(FLT_MAX, FLT_MAX));
+            if (ImGui::Begin("viewport")) {
+                drawViewport(ImGui::GetContentRegionAvail().y, project, state);
+            }
+            ImGui::End();
+        }
+        else {
+            const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
+                               viewportHeight = size.y - (panelHeight * deviceScaleRatio);
+            drawTimeline(timelineWidth, viewportHeight, project);
+            ImGui::SameLine();
+            const ImVec2 viewportFrom(ImGui::GetCursorScreenPos());
+            drawViewport(viewportHeight, project, state);
+            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
+                handleVerticalSplitter(viewportFrom, size, viewportHeight, deviceScaleRatio);
+            }
         }
         Model *activeModel = project->activeModel();
         ImGui::BeginChild("panel", ImGui::GetContentRegionAvail(), true);
@@ -1794,8 +1807,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         ImGui::EndChild();
     }
     else {
-        const ImVec2 &size = ImGui::GetContentRegionAvail();
-        drawViewport(size.y, project, state);
+        drawViewport(ImGui::GetContentRegionAvail().y, project, state);
     }
     ImGui::End();
     restoreDefaultStyle();
@@ -2734,10 +2746,10 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project, const I
         ImGui::Text("%s: %s", tr("nanoem.gui.panel.model.default"), activeAccessory->nameConstString());
     }
     // ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-    const ImVec2 offset = ImGui::GetCursorScreenPos();
-    ImVec2 size = ImGui::GetContentRegionAvail(), innerOffset(offset), basePos;
+    const ImVec2 offset(ImGui::GetCursorScreenPos());
+    ImVec2 size(ImGui::GetContentRegionAvail()), innerOffset(offset), basePos;
 #if defined(IMGUI_HAS_VIEWPORT)
-    basePos = ImGui::GetMainViewport()->Pos;
+    basePos = ImGui::GetWindowViewport()->Pos;
 #endif /* IMGUI_HAS_VIEWPORT */
     innerOffset.x -= basePos.x;
     innerOffset.y -= basePos.y;

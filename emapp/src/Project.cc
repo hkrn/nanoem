@@ -2090,14 +2090,17 @@ Project::resizeWindowSize(const Vector2UI16 &value)
 void
 Project::resizeUniformedViewportLayout(const Vector4UI16 &value)
 {
-    const Vector2UI16 previousSize(m_uniformViewportLayoutRect.first.z, m_uniformViewportLayoutRect.first.w),
+    const Vector2UI16 previousOffset(m_uniformViewportLayoutRect.first), currentOffset(value),
+        previousSize(m_uniformViewportLayoutRect.first.z, m_uniformViewportLayoutRect.first.w),
         currentSize(value.z, value.w);
-    const bool sizeChanged = previousSize != currentSize && currentSize.x * currentSize.y > 0;
-    if ((EnumUtils::isEnabled(kViewportImageSizeChanged, m_stateFlags) || sizeChanged) && !isViewportCaptured()) {
+    const bool offsetChanged = previousOffset != currentOffset,
+               sizeChanged = previousSize != currentSize && currentSize.x * currentSize.y > 0;
+    if ((EnumUtils::isEnabled(kViewportImageSizeChanged, m_stateFlags) || offsetChanged || sizeChanged) &&
+        !isViewportCaptured()) {
         m_uniformViewportLayoutRect.second = value;
         if (isUniformedViewportImageSizeEnabled()) {
-            internalResizeUniformedViewportImage(
-                uniformedViewportImageSize(currentSize, m_uniformViewportImageSize.first));
+            const Vector2UI16 imageSize(uniformedViewportImageSize(currentSize, m_uniformViewportImageSize.first));
+            internalResizeUniformedViewportImage(imageSize);
         }
     }
     EnumUtils::setEnabled(kViewportImageSizeChanged, m_stateFlags, false);
