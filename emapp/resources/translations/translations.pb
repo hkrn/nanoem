@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -827,7 +827,12 @@ $nanoem.menu.accessory.enable.visible表示を有効にする+
 nanoem.project.track.camera	カメラ$
 nanoem.project.track.light照明'
 nanoem.project.track.model	モデル9
- nanoem.project.track.self-shadowセルフシャドウW
+ nanoem.project.track.self-shadowセルフシャドウ>
+nanoem.project.track.select-all全てのキーフレーム6
+#nanoem.project.track.selected-bones選択ボーン7
+$nanoem.project.track.selected-morphs選択モーフ5
+nanoem.project.track.all-morphs全てのモーフ)
+nanoem.project.track.none（なし）W
 "nanoem.error.convert-to-nmm.reason1nmm 形式への変換は対応していません�
 /nanoem.error.convert-to-nmm.recovery-suggestion�メニューの「ヘルプ」にある「nanoem Online Manual」から「アプリケーションのメニュー」の「保存」の項目を参照してください�
  nanoem.error.project.load.reason]データが破損しているため、プロジェクトの読み込みに失敗しました{
@@ -968,7 +973,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1817,7 +1822,13 @@ Fullscreen"
 nanoem.project.track.cameraCamera#
 nanoem.project.track.lightLight#
 nanoem.project.track.modelModel/
- nanoem.project.track.self-shadowSelf ShadowZ
+ nanoem.project.track.self-shadowSelf Shadow0
+nanoem.project.track.select-allAll Keyframes5
+#nanoem.project.track.selected-bonesSelected Bones7
+$nanoem.project.track.selected-morphsSelected Morphs-
+nanoem.project.track.all-morphs
+All Morphs#
+nanoem.project.track.none(none)Z
 "nanoem.error.convert-to-nmm.reason4Converting the file to "nmm" format is not supported{
 /nanoem.error.convert-to-nmm.recovery-suggestionHSee "Application Menu" > "Save" in "nanoem Online Manual" from Help MenuU
  nanoem.error.project.load.reason1Failed to load the project due to data corruption`

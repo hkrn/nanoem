@@ -3612,6 +3612,26 @@
   phrase:
     en_US: 'Self Shadow'
     ja_JP: 'セルフシャドウ'
+- key: nanoem.project.track.select-all
+  phrase:
+    en_US: 'All Keyframes'
+    ja_JP: '全てのキーフレーム'
+- key: nanoem.project.track.selected-bones
+  phrase:
+    en_US: 'Selected Bones'
+    ja_JP: '選択ボーン'
+- key: nanoem.project.track.selected-morphs
+  phrase:
+    en_US: 'Selected Morphs'
+    ja_JP: '選択モーフ'
+- key: nanoem.project.track.all-morphs
+  phrase:
+    en_US: 'All Morphs'
+    ja_JP: '全てのモーフ'
+- key: nanoem.project.track.none
+  phrase:
+    en_US: '(none)'
+    ja_JP: '（なし）'
 
 - key: nanoem.error.convert-to-nmm.reason
   phrase:
