@@ -562,7 +562,7 @@ Model::DrawIndexedBuffer::destroy()
 StringList
 Model::loadableExtensions()
 {
-    static const String kLoadableModelExtensions[] = { String("pmd"), String("pmx"), String() };
+    static const String kLoadableModelExtensions[] = { String("pmx"), String("pmd"), String() };
     return StringList(
         &kLoadableModelExtensions[0], &kLoadableModelExtensions[BX_COUNTOF(kLoadableModelExtensions) - 1]);
 }

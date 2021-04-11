@@ -88,9 +88,9 @@ struct ImGuiApplicationMenuBuilder::NewProjectEventHandler {
     saveProject(ImGuiApplicationMenuBuilder *self)
     {
         StringList extensions;
-        extensions.push_back(Project::kArchivedNativeFormatFileExtension);
-        extensions.push_back(Project::kPolygonMovieMakerFileExtension);
         extensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
+        extensions.push_back(Project::kPolygonMovieMakerFileExtension);
+        extensions.push_back(Project::kArchivedNativeFormatFileExtension);
         self->m_eventPublisher->publishQuerySaveFileDialogEvent(IFileManager::kDialogTypeSaveProjectFile, extensions);
     }
     static void
