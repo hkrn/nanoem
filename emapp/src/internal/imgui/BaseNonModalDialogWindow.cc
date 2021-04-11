@@ -92,9 +92,10 @@ BaseNonModalDialogWindow::open(
     const char *title, const char *id, bool *visible, const ImVec2 size, ImGuiWindowFlags flags)
 {
     char buffer[Inline::kNameStackBufferSize];
+    const float scaleFactor = ImGui::GetIO().DisplayFramebufferScale.x;
     StringUtils::format(buffer, sizeof(buffer), "%s##%s", title, id);
     ImGui::SetNextWindowSizeConstraints(size, ImVec2(FLT_MAX, FLT_MAX));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, ImGuiWindow::kWindowRounding);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, ImGuiWindow::kWindowRounding * scaleFactor);
     return ImGui::Begin(buffer, visible, flags) && *visible;
 }
 

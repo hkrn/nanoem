@@ -4067,7 +4067,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
 #endif /* IMGUI_HAS_VIEWPORT */
     ImGui::SetNextWindowPos(actualWindowPos);
     ImGui::SetNextWindowSize(actualWindowSize);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);
     if (ImGui::BeginPopupModal(dialog->title(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         const nanoem_u64_t buttons = dialog->buttons();
         dialog->draw(project);

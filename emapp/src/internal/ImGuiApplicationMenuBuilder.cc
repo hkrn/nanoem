@@ -14,6 +14,7 @@
 #include "emapp/ITranslator.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
+#include "emapp/internal/ImGuiWindow.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "bx/handlealloc.h"
@@ -831,7 +832,10 @@ void
 ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client)
 {
     ImGuiFileDialog *instance = static_cast<ImGuiFileDialog *>(m_instance);
-    if (IGFD_DisplayDialog(instance, windowID(), 0, ImVec2(0, 0), ImVec2(FLT_MAX, FLT_MAX))) {
+    const ImVec2 scale(ImGui::GetIO().DisplayFramebufferScale), minimumSize(540 * scale.x, 360 * scale.y),
+        maximumSize(FLT_MAX, FLT_MAX);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, ImGuiWindow::kWindowRounding * scale.x);
+    if (IGFD_DisplayDialog(instance, windowID(), 0, minimumSize, maximumSize)) {
         if (IGFD_IsOk(instance)) {
             char *filePathPtr = IGFD_GetCurrentPath(instance), *currentFileNamePtr = IGFD_GetCurrentFileName(instance);
             String filePath(filePathPtr), canonicalizedFilePath;
@@ -864,6 +868,7 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
         IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), ".", "", 1, nullptr, 0);
         m_opened = true;
     }
+    ImGui::PopStyleVar();
 }
 
 bool
