@@ -9,6 +9,8 @@
 #define NANOEM_EMAPP_INTERNAL_IMGUI_GIZMOCONTROLLER_H_
 
 #include "emapp/Forward.h"
+#include "emapp/command/MoveAllSelectedModelObjectsCommand.h"
+
 #include "imgui/imgui.h"
 
 namespace nanoem {
@@ -28,7 +30,9 @@ public:
     bool draw(ImDrawList *drawList, const ImVec2 &offset, const ImVec2 &size, Project *project);
 
 private:
-    void applyDeltaTransform(const Matrix4x4 &delta, Model *activeModel);
+    command::MoveAllSelectedModelObjectsCommand::State *m_state;
+    Matrix4x4 m_transformMatrix;
+    Matrix4x4 m_initialPivotMatrix;
 };
 
 } /* namespace imgui */
