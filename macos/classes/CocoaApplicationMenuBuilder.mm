@@ -16,6 +16,7 @@
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/ThreadedApplicationClient.h"
+#include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace macos {
@@ -187,9 +188,10 @@ CocoaApplicationMenuBuilder::appendMenuItem(MenuItemCollection *menu, MenuItemTy
 NSString *
 CocoaApplicationMenuBuilder::translatedString(MenuItemType type) const
 {
-    const char *translated = m_translator->translate(menuItemString(type));
+    char buffer[Inline::kLongNameStackBufferSize];
+    const char *translated = stripMnemonic(buffer, sizeof(buffer), m_translator->translate(menuItemString(type)));
     NSString *title = [[NSString alloc] initWithUTF8String:translated];
-    return [title stringByReplacingOccurrencesOfString:@"&" withString:@""];
+    return title;
 }
 
 ApplicationMenuBuilder::MenuItemHandle
@@ -870,12 +872,15 @@ CocoaApplicationMenuBuilder::createWindowMenu(NSMenu *bar, NSApplication *app)
 void
 CocoaApplicationMenuBuilder::createHelpMenu(NSMenu *bar, NSApplication *app)
 {
+    char buffer[Inline::kLongNameStackBufferSize];
     NSString *appName = [[NSProcessInfo processInfo] processName];
     NSMenuItem *helpMenuItem = [bar addItemWithTitle:@"" action:nil keyEquivalent:@""];
     m_helpMenu = [[MenuItemCollection alloc] initWithTitle:translatedString(kMenuItemTypeHelpTitle)];
     [m_helpMenu setParentMenu:helpMenuItem];
+    const char *translated = stripMnemonic(buffer, sizeof(buffer), m_translator->translate("nanoem.menu.help.online"));
+    NSString *title = [[NSString alloc] initWithUTF8String:translated];
     [m_helpMenu
-        addItemWithTitle:[[NSString alloc] initWithUTF8String:m_translator->translate("nanoem.menu.help.online")]
+        addItemWithTitle:title
                   action:^() {
                       NSString *format = [NSString
                           stringWithFormat:
