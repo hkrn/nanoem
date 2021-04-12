@@ -1662,10 +1662,10 @@ BaseApplicationService::~BaseApplicationService() NANOEM_DECL_NOEXCEPT
 }
 
 void
-BaseApplicationService::initialize(nanoem_f32_t devicePixelRatio)
+BaseApplicationService::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio)
 {
     m_window = nanoem_new(internal::ImGuiWindow(this));
-    m_window->initialize(devicePixelRatio);
+    m_window->initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
 }
 
 void
@@ -1943,29 +1943,35 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableHighResolutionViewport: {
-        const nanoem_f32_t dpr = project->windowDevicePixelRatio();
-        bool enabled = dpr == project->viewportDevicePixelRatio();
-        project->setViewportDevicePixelRatio(enabled ? 1.0f : dpr);
+        const nanoem_f32_t windowDevicePixelRatio = project->windowDevicePixelRatio();
+        const bool enabled = windowDevicePixelRatio > project->viewportDevicePixelRatio();
+        project->setViewportDevicePixelRatio(enabled ? windowDevicePixelRatio : 1.0f);
+        m_window->setAntiAliasEnabled(enabled || project->sampleLevel() > 0);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx16: {
         project->setSampleLevel(4);
+        m_window->setAntiAliasEnabled(true);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx8: {
         project->setSampleLevel(3);
+        m_window->setAntiAliasEnabled(true);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx4: {
         project->setSampleLevel(2);
+        m_window->setAntiAliasEnabled(true);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx2: {
         project->setSampleLevel(1);
+        m_window->setAntiAliasEnabled(true);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectDisableMSAA: {
         project->setSampleLevel(0);
+        m_window->setAntiAliasEnabled(project->viewportDevicePixelRatio() > 1.0f);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime: {
@@ -2816,7 +2822,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         }
         const nanoem_f32_t windowDevicePixelRatio = glm::max(commandPtr->window_device_pixel_ratio, 1.0f);
         const nanoem_f32_t viewportDevicePixelRatio = glm::max(commandPtr->viewport_viewport_pixel_ratio, 1.0f);
-        initialize(windowDevicePixelRatio);
+        initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
         const Vector2UI16 viewportSize(commandPtr->window_width, commandPtr->window_height);
         createDefaultRenderTarget(Vector2(viewportSize) * windowDevicePixelRatio);
         sg_pixel_format pixelFormat = SG_PIXELFORMAT_RGBA8;

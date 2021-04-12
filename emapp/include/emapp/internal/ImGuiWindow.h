@@ -149,7 +149,7 @@ public:
     void openAccessoryOutsideParentDialog(Project *project);
     void openSelfShadowConfigurationDialog(Project *project);
 
-    void initialize(nanoem_f32_t devicePixelRatio) NANOEM_DECL_OVERRIDE;
+    void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) NANOEM_DECL_OVERRIDE;
     void reset() NANOEM_DECL_OVERRIDE;
     void destroy() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setFontPointSize(nanoem_f32_t pointSize) NANOEM_DECL_OVERRIDE;
@@ -186,6 +186,7 @@ public:
 
     void resizeDevicePixelWindowSize(const Vector2UI16 &value) NANOEM_DECL_OVERRIDE;
     void setDevicePixelRatio(float value) NANOEM_DECL_OVERRIDE;
+    void setAntiAliasEnabled(bool value) NANOEM_DECL_OVERRIDE;
     void drawAll2DPrimitives(
         Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;

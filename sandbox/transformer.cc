@@ -53,7 +53,7 @@ run(const bx::CommandLine &command)
     internal::StubEventPublisher publisher;
     Error error;
     service.setEventPublisher(&publisher);
-    service.initialize(1.0f);
+    service.initialize(1.0f, 1.0f);
     Project *project = service.createProject(glm::vec2(1), SG_PIXELFORMAT_RGBA8, 1.0f, 1.0f, 0);
     project->setLanguage(ITranslator::kLanguageTypeJapanese);
     if (command.hasArg("model")) {

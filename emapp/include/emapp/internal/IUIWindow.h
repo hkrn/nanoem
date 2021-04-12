@@ -31,7 +31,7 @@ public:
     {
     }
 
-    virtual void initialize(nanoem_f32_t devicePixelRatio) = 0;
+    virtual void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) = 0;
     virtual void reset() = 0;
     virtual void destroy() NANOEM_DECL_NOEXCEPT = 0;
     virtual void setFontPointSize(nanoem_f32_t pointSize) = 0;
@@ -68,6 +68,7 @@ public:
 
     virtual void resizeDevicePixelWindowSize(const Vector2UI16 &value) = 0;
     virtual void setDevicePixelRatio(float value) = 0;
+    virtual void setAntiAliasEnabled(bool value) = 0;
     virtual void drawAll2DPrimitives(Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) = 0;
     virtual void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) = 0;
 

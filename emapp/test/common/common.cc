@@ -490,7 +490,7 @@ TestScope::TestScope()
 {
     m_config = json_value_init_object();
     m_application = new Application(m_config);
-    m_application->initialize(1.0f);
+    m_application->initialize(1.0f, 1.0f);
 }
 
 TestScope::~TestScope()

@@ -126,7 +126,7 @@ run(const bx::CommandLine &command)
         ThreadedApplicationService service(root);
         internal::StubEventPublisher publisher;
         service.setEventPublisher(&publisher);
-        service.initialize(1.0f);
+        service.initialize(1.0f, 1.0f);
         Project *project = service.createProject(glm::vec2(1), SG_PIXELFORMAT_RGBA8, 1.0f, 1.0f, "");
         project->setFileURI(fileURI);
         internal::project::PMM pmm(project);

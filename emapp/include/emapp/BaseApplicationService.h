@@ -237,7 +237,7 @@ public:
     BaseApplicationService(const JSON_Value *root);
     virtual ~BaseApplicationService() NANOEM_DECL_NOEXCEPT;
 
-    void initialize(nanoem_f32_t devicePixelRatio);
+    void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio);
     void destroy();
 
     Project *createProject(const Vector2UI16 &logicalPixelWindowSize, sg_pixel_format pixelFormat,

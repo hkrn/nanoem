@@ -152,7 +152,7 @@ using namespace imgui;
 const Vector2UI16 ImGuiWindow::kMinimumMainWindowSize = Vector2UI16(1080, 700);
 const Vector2UI16 ImGuiWindow::kMinimumViewportWindowSize = Vector2UI16(720, 480);
 const nanoem_f32_t ImGuiWindow::kFontSize = 16.0f;
-const nanoem_f32_t ImGuiWindow::kWindowRounding = 4.0f;
+const nanoem_f32_t ImGuiWindow::kWindowRounding = 5.0f;
 const nanoem_f32_t ImGuiWindow::kLeftPaneWidth = 150.0f;
 const nanoem_f32_t ImGuiWindow::kTranslationStepFactor = 0.1f;
 const nanoem_f32_t ImGuiWindow::kOrientationStepFactor = 0.1f;
@@ -534,7 +534,7 @@ ImGuiWindow::openSelfShadowConfigurationDialog(Project *project)
 }
 
 void
-ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
+ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio)
 {
     SG_PUSH_GROUP("ImGuiWindow::initialize()");
     ImGuiContext *context = m_context = ImGui::CreateContext(&m_atlas);
@@ -542,8 +542,8 @@ ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
-    io.FontGlobalScale = deviceScaleRatio;
-    io.DisplayFramebufferScale = ImVec2(deviceScaleRatio, deviceScaleRatio);
+    io.FontGlobalScale = windowDevicePixelRatio;
+    io.DisplayFramebufferScale = ImVec2(windowDevicePixelRatio, windowDevicePixelRatio);
     io.KeyMap[ImGuiKey_Tab] = BaseApplicationService::kKeyType_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = BaseApplicationService::kKeyType_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = BaseApplicationService::kKeyType_RIGHT;
@@ -565,9 +565,9 @@ ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
     io.KeyMap[ImGuiKey_Y] = BaseApplicationService::kKeyType_Y;
     io.KeyMap[ImGuiKey_Z] = BaseApplicationService::kKeyType_Z;
     ImGui::StyleColorsDark(&m_style);
-    m_style.AntiAliasedFill = m_style.AntiAliasedLines = false;
+    m_style.AntiAliasedFill = m_style.AntiAliasedLines = viewportDevicePixelRatio > 1.0f;
     ImGui::GetStyle() = m_style;
-    ImGui::GetStyle().ScaleAllSizes(deviceScaleRatio);
+    ImGui::GetStyle().ScaleAllSizes(windowDevicePixelRatio);
     sg_shader_desc sd;
     Inline::clearZeroMemory(sd);
     const sg_backend backend = sg::query_backend();
@@ -1057,11 +1057,19 @@ ImGuiWindow::resizeDevicePixelWindowSize(const Vector2UI16 &value)
 void
 ImGuiWindow::setDevicePixelRatio(float value)
 {
+    float devicePixelRatio = glm::max(value, 1.0f);
     ImGuiIO &io = ImGui::GetIO();
-    io.DisplayFramebufferScale = ImVec2(value, value);
+    io.DisplayFramebufferScale = ImVec2(devicePixelRatio, devicePixelRatio);
     io.FontGlobalScale = 1.0f;
     ImGui::GetStyle() = m_style;
-    ImGui::GetStyle().ScaleAllSizes(value);
+    ImGui::GetStyle().ScaleAllSizes(devicePixelRatio);
+}
+
+void
+ImGuiWindow::setAntiAliasEnabled(bool value)
+{
+    ImGuiStyle &style = ImGui::GetStyle();
+    style.AntiAliasedFill = style.AntiAliasedLines = value;
 }
 
 void
