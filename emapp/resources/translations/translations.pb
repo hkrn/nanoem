@@ -1,5 +1,5 @@
 
-��@
+Ɋ@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -597,73 +597,61 @@ $nanoem.window.progress.capture-video$%s に動画を出力中... (%u FPS)/
 nanoem.window.title.undoアンドゥ+
 nanoem.window.title.unknown（不明）$
 nanoem.window.title.vertex頂点#
-nanoem.window.title.video動画&
-nanoem.menu.file.titleファイル0
-nanoem.menu.file.title.win32ファイル(&F)0
-nanoem.menu.file.new新規プロジェクト:
-nanoem.menu.file.new.win32新規プロジェクト(&N)4
-nanoem.menu.file.openプロジェクトを開く>
-nanoem.menu.file.open.win32プロジェクトを開く(&O)*
-nanoem.menu.file.import.model	モデル4
-!nanoem.menu.file.import.accessoryアクセサリ2
-nanoem.menu.file.import.poseモデルポーズ@
-$nanoem.menu.file.import.motion.modelモデルモーションA
-%nanoem.menu.file.import.motion.cameraカメラモーション=
-$nanoem.menu.file.import.motion.light照明モーション7
-$nanoem.menu.file.import.motion.titleモーション'
-nanoem.menu.file.import.audio音源-
-nanoem.menu.file.import.video背景動画'
-nanoem.menu.file.import.title開く4
-nanoem.menu.file.saveプロジェクトを保存>
-nanoem.menu.file.save.win32プロジェクトを保存(&S)4
-nanoem.menu.file.save-as名前をつけて保存2
-nanoem.menu.file.export.poseモデルポーズ@
-$nanoem.menu.file.export.motion.modelモデルモーションA
-%nanoem.menu.file.export.motion.cameraカメラモーション=
-$nanoem.menu.file.export.motion.light照明モーション*
-nanoem.menu.file.export.model	モデル'
-nanoem.menu.file.export.image画像'
-nanoem.menu.file.export.video動画-
-nanoem.menu.file.export.title書き出し
-nanoem.menu.file.exit終了)
-nanoem.menu.file.exit.win32
-終了(&X)%
-nanoem.menu.edit.undo元に戻す/
-nanoem.menu.edit.undo.win32元に戻す(&U)%
-nanoem.menu.edit.redoやり直し/
-nanoem.menu.edit.redo.win32やり直し(&R)$
-nanoem.menu.edit.cut切り取り"
-nanoem.menu.edit.copy	コピー,
-nanoem.menu.edit.copy.win32コピー(&C)&
-nanoem.menu.edit.paste貼り付け0
-nanoem.menu.edit.paste.win32貼り付け(&P)9
+nanoem.window.title.video動画*
+nanoem.menu.file.titleファイル(&F)4
+nanoem.menu.file.new新規プロジェクト(&N)8
+nanoem.menu.file.openプロジェクトを開く(&O).
+nanoem.menu.file.import.modelモデル(&M)8
+!nanoem.menu.file.import.accessoryアクセサリ(&A)6
+nanoem.menu.file.import.poseモデルポーズ(&P)D
+$nanoem.menu.file.import.motion.modelモデルモーション(&O)E
+%nanoem.menu.file.import.motion.cameraカメラモーション(&C)A
+$nanoem.menu.file.import.motion.light照明モーション(&L);
+$nanoem.menu.file.import.motion.titleモーション(&M)+
+nanoem.menu.file.import.audio
+音源(&U)1
+nanoem.menu.file.import.video背景動画(&V)+
+nanoem.menu.file.import.title
+開く(&I)8
+nanoem.menu.file.saveプロジェクトを保存(&S)4
+nanoem.menu.file.save-as名前をつけて保存6
+nanoem.menu.file.export.poseモデルポーズ(&P)D
+$nanoem.menu.file.export.motion.modelモデルモーション(&O)E
+%nanoem.menu.file.export.motion.cameraカメラモーション(&C)A
+$nanoem.menu.file.export.motion.light照明モーション(&L)*
+nanoem.menu.file.export.model	モデル+
+nanoem.menu.file.export.image
+画像(&I)+
+nanoem.menu.file.export.video
+動画(&V)1
+nanoem.menu.file.export.title書き出し(&E)#
+nanoem.menu.file.exit
+終了(&X))
+nanoem.menu.edit.undo元に戻す(&U))
+nanoem.menu.edit.redoやり直し(&R)$
+nanoem.menu.edit.cut切り取り&
+nanoem.menu.edit.copyコピー(&C)*
+nanoem.menu.edit.paste貼り付け(&P)9
 nanoem.menu.edit.plugin.modelモデルプラグイン@
 nanoem.menu.edit.plugin.motionモーションプラグインO
 nanoem.menu.edit.window.effect-エフェクト設定ウィンドウを開くH
-nanoem.menu.edit.window.model'モデル編集ウィンドウを開くM
-%nanoem.menu.edit.select-all-keyframes$全てのキーフレームを選択W
-+nanoem.menu.edit.select-all-keyframes.win32(全てのキーフレームを選択(&A)%
-nanoem.menu.edit.preference設定/
-!nanoem.menu.edit.preference.win32
-設定(&P) 
-nanoem.menu.edit.title編集*
-nanoem.menu.edit.title.win32
-編集(&E)"
-nanoem.menu.project.play再生,
-nanoem.menu.project.play.win32
-再生(&P)"
-nanoem.menu.project.stop停止,
-nanoem.menu.project.stop.win32
+nanoem.menu.edit.window.model'モデル編集ウィンドウを開くQ
+%nanoem.menu.edit.select-all-keyframes(全てのキーフレームを選択(&A)%
+nanoem.menu.edit.preference設定$
+nanoem.menu.edit.title
+編集(&E)&
+nanoem.menu.project.play
+再生(&P)&
+nanoem.menu.project.stop
 停止(&S)P
 nanoem.menu.project.viewport0ビューポート設定ダイアログを開くC
 nanoem.menu.project.order.draw!描画順ダイアログを開くH
-#nanoem.menu.project.order.transform!変形順ダイアログを開くD
-nanoem.menu.project.enable.loop!ループ再生を有効にする>
+#nanoem.menu.project.order.transform!変形順ダイアログを開くH
+nanoem.menu.project.enable.loop%ループ再生を有効にする(&L)>
 nanoem.menu.project.enable.grid地面軸を有効にするG
-(nanoem.menu.project.enable.ground-shadow地面影を有効にするF
-!nanoem.menu.project.enable.effect!エフェクトを有効にするP
-'nanoem.menu.project.enable.effect.win32%エフェクトを有効にする(&E)g
-3nanoem.menu.project.enable.high-resolution-viewport0高解像度ビューポートを有効にする~
+(nanoem.menu.project.enable.ground-shadow地面影を有効にするJ
+!nanoem.menu.project.enable.effect%エフェクトを有効にする(&E)k
+3nanoem.menu.project.enable.high-resolution-viewport4高解像度ビューポートを有効にする(&H)~
 2nanoem.menu.project.enable.compute-shader-skinningHコンピュートシェーダによるスキニングを有効にするq
 1nanoem.menu.project.enable.vertex-shader-skinning<頂点シェーダによるスキニングを有効にする0
 nanoem.menu.project.msaa.x16最高 (MSAAx16)+
@@ -701,34 +689,27 @@ Fnanoem.menu.project.physics-simulation.enable.drawing.constraint-limit制約�
  nanoem.menu.camera.preset.bottom底面)
 nanoem.menu.camera.preset.front前面(
 nanoem.menu.camera.preset.back背面>
-nanoem.menu.camera.preset.titleプリセットから選択C
-$nanoem.menu.camera.register-keyframeキーフレームを登録M
-*nanoem.menu.camera.register-keyframe.win32キーフレームを登録(&R)A
-"nanoem.menu.camera.remove-keyframeキーフレームを削除%
-nanoem.menu.camera.reset	初期化/
-nanoem.menu.camera.reset.win32初期化(&I)%
-nanoem.menu.camera.title	カメラ/
-nanoem.menu.camera.title.win32カメラ(&C).
-nanoem.menu.light.toggleモードを切替B
-#nanoem.menu.light.register-keyframeキーフレームを登録L
-)nanoem.menu.light.register-keyframe.win32キーフレームを登録(&R)@
-!nanoem.menu.light.remove-keyframeキーフレームを削除$
-nanoem.menu.light.reset	初期化.
-nanoem.menu.light.reset.win32初期化(&I)!
-nanoem.menu.light.title照明+
-nanoem.menu.light.title.win32
-照明(&L)<
-#nanoem.menu.light.self-shadow.titleセルフシャドウ/
+nanoem.menu.camera.preset.titleプリセットから選択G
+$nanoem.menu.camera.register-keyframeキーフレームを登録(&R)A
+"nanoem.menu.camera.remove-keyframeキーフレームを削除)
+nanoem.menu.camera.reset初期化(&I))
+nanoem.menu.camera.titleカメラ(&C).
+nanoem.menu.light.toggleモードを切替F
+#nanoem.menu.light.register-keyframeキーフレームを登録(&R)@
+!nanoem.menu.light.remove-keyframeキーフレームを削除(
+nanoem.menu.light.reset初期化(&I)%
+nanoem.menu.light.title
+照明(&L)@
+#nanoem.menu.light.self-shadow.titleセルフシャドウ(&S)/
 %nanoem.menu.light.self-shadow.disable無効O
 *nanoem.menu.light.self-shadow.enable.mode1!モード１（バランス型）O
-*nanoem.menu.light.self-shadow.enable.mode2!モード２（近接重視型）K
-/nanoem.menu.light.self-shadow.register-keyframeキーフレーム登録I
--nanoem.menu.light.self-shadow.remove-keyframeキーフレーム削除0
-#nanoem.menu.light.self-shadow.reset	初期化:
-)nanoem.menu.light.self-shadow.reset.win32初期化(&I)4
-nanoem.menu.model.select.titleモデルを選択9
-#nanoem.menu.model.select.bone.titleボーンを選択:
-$nanoem.menu.model.select.morph.titleモーフを選択m
+*nanoem.menu.light.self-shadow.enable.mode2!モード２（近接重視型）O
+/nanoem.menu.light.self-shadow.register-keyframeキーフレーム登録(&R)I
+-nanoem.menu.light.self-shadow.remove-keyframeキーフレーム削除4
+#nanoem.menu.light.self-shadow.reset初期化(&I)8
+nanoem.menu.model.select.titleモデルを選択(&M)=
+#nanoem.menu.model.select.bone.titleボーンを選択(&B)>
+$nanoem.menu.model.select.morph.titleモーフを選択(&O)m
 'nanoem.menu.model.select.bone.keyframesB選択ボーンから該当ボーンのキーフレームを選択/
 (nanoem.menu.model.select.morph.eye.title目9
 ,nanoem.menu.model.select.morph.eyebrow.title	まゆ毛5
@@ -746,12 +727,11 @@ $nanoem.menu.model.select.morph.title	モーフL
 (nanoem.menu.model.reset.bone.orientation回転量をリセットJ
  nanoem.menu.model.set-morph.zero&モーフウェイトを 0.0 にするJ
  nanoem.menu.model.set-morph.half&モーフウェイトを 0.5 にするI
-nanoem.menu.model.set-morph.one&モーフウェイトを 1.0 にするJ
-"nanoem.menu.model.enable.add-blend$加算ブレンドを有効にするN
-#nanoem.menu.model.enable.shadow-map'シャドウマップを有効にする<
- nanoem.menu.model.enable.visible表示を有効にするB
-#nanoem.menu.model.register-keyframeキーフレームを登録L
-)nanoem.menu.model.register-keyframe.win32キーフレームを登録(&R)O
+nanoem.menu.model.set-morph.one&モーフウェイトを 1.0 にするN
+"nanoem.menu.model.enable.add-blend(加算ブレンドを有効にする(&A)R
+#nanoem.menu.model.enable.shadow-map+シャドウマップを有効にする(&S)@
+ nanoem.menu.model.enable.visible表示を有効にする(&V)F
+#nanoem.menu.model.register-keyframeキーフレームを登録(&R)O
 !nanoem.menu.model.remove-keyframe*選択されたキーフレームを削除5
 "nanoem.menu.model.preference.titleモデル設定�
 ;nanoem.menu.model.preference.enable.compute-shader-skinningHコンピュートシェーダによるスキニングを有効にするW
@@ -762,46 +742,35 @@ $nanoem.menu.model.select.morph.title	モーフL
 6nanoem.menu.model.preference.enable.show-vertex-points頂点の点を表示するz
 :nanoem.menu.model.preference.enable.vertex-shader-skinning<頂点シェーダによるスキニングを有効にする)
 nanoem.menu.model.edgeエッジ設定'
-nanoem.menu.model.resetリセットJ
-nanoem.menu.model.delete-active'選択されているモデルを削除T
-%nanoem.menu.model.delete-active.win32+選択されているモデルを削除(&D)$
-nanoem.menu.model.title	モデル.
-nanoem.menu.model.title.win32モデル(&M)L
+nanoem.menu.model.resetリセットN
+nanoem.menu.model.delete-active+選択されているモデルを削除(&D)(
+nanoem.menu.model.titleモデル(&M)L
 'nanoem.menu.accessory.draw-order-dialog!描画順ダイアログを開く>
-"nanoem.menu.accessory.select.titleアクセサリを選択F
-'nanoem.menu.accessory.register-keyframeキーフレームを登録P
--nanoem.menu.accessory.register-keyframe.win32キーフレームを登録(&R)S
-%nanoem.menu.accessory.remove-keyframe*選択されたキーフレームを削除N
-&nanoem.menu.accessory.enable.add-blend$加算ブレンドを有効にするB
-#nanoem.menu.accessory.enable.shadow地面影を有効にする@
-$nanoem.menu.accessory.enable.visible表示を有効にする+
-nanoem.menu.accessory.resetリセットT
-#nanoem.menu.accessory.delete-active-選択されているアクセサリを削除^
-)nanoem.menu.accessory.delete-active.win321選択されているアクセサリを削除(&D).
-nanoem.menu.accessory.titleアクセサリ8
-!nanoem.menu.accessory.title.win32アクセサリ(&A)T
+"nanoem.menu.accessory.select.titleアクセサリを選択J
+'nanoem.menu.accessory.register-keyframeキーフレームを登録(&R)S
+%nanoem.menu.accessory.remove-keyframe*選択されたキーフレームを削除R
+&nanoem.menu.accessory.enable.add-blend(加算ブレンドを有効にする(&A)F
+#nanoem.menu.accessory.enable.shadow地面影を有効にする(&S)D
+$nanoem.menu.accessory.enable.visible表示を有効にする(&V)+
+nanoem.menu.accessory.resetリセットX
+#nanoem.menu.accessory.delete-active1選択されているアクセサリを削除(&D)2
+nanoem.menu.accessory.titleアクセサリ(&A)T
 2nanoem.menu.project.motion.shift-keyframes-forward現在のフレームを削除O
-3nanoem.menu.project.motion.shift-keyframes-backward空フレームを挿入-
- nanoem.menu.project.motion.reset	初期化7
-&nanoem.menu.project.motion.reset.win32初期化(&I)3
- nanoem.menu.project.motion.titleモーション/
-nanoem.menu.project.titleプロジェクト9
-nanoem.menu.project.title.win32プロジェクト(&P)(
+3nanoem.menu.project.motion.shift-keyframes-backward空フレームを挿入1
+ nanoem.menu.project.motion.reset初期化(&I)3
+ nanoem.menu.project.motion.titleモーション3
+nanoem.menu.project.titleプロジェクト(&P)(
 nanoem.menu.window.maximize	最大化(
 nanoem.menu.window.minimize	最小化$
 nanoem.menu.window.restore復元?
-nanoem.menu.window.fullscreenフルスクリーンにする+
-nanoem.menu.window.titleウィンドウ5
-nanoem.menu.window.title.win32ウィンドウ(&W)3
-nanoem.menu.help.onlineオンラインヘルプ=
-nanoem.menu.help.online.win32オンラインヘルプ(&O)-
-nanoem.menu.help.aboutnanoem について7
-nanoem.menu.help.about.win32nanoem について(&A)#
-nanoem.menu.help.title	ヘルプ-
-nanoem.menu.help.title.win32ヘルプ(&H)(
-nanoem.menu.edit.bone.title	ボーン*
-nanoem.menu.edit.camera.title	カメラ)
-nanoem.menu.edit.morph.title	モーフG
+nanoem.menu.window.fullscreenフルスクリーンにする/
+nanoem.menu.window.titleウィンドウ(&W)7
+nanoem.menu.help.onlineオンラインヘルプ(&O)1
+nanoem.menu.help.aboutnanoem について(&A)'
+nanoem.menu.help.titleヘルプ(&H),
+nanoem.menu.edit.bone.titleボーン(&B)*
+nanoem.menu.edit.camera.title	カメラ-
+nanoem.menu.edit.morph.titleモーフ(&O)G
 nanoem.menu.edit.bone.parameter$数値入力ダイアログを開く@
 'nanoem.menu.edit.bone.reset-orientation角度をリセットB
  nanoem.menu.edit.bone.correction補正ダイアログを開くH
@@ -973,7 +942,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1590,70 +1559,56 @@ Rigid Body
 nanoem.window.title.undoUndo(
 nanoem.window.title.unknown	(Unknown)$
 nanoem.window.title.vertexVertex"
-nanoem.window.title.videoVideo
-nanoem.menu.file.titleFile%
-nanoem.menu.file.title.win32&File#
-nanoem.menu.file.newNew Project*
-nanoem.menu.file.new.win32&New Project%
-nanoem.menu.file.openOpen Project,
-nanoem.menu.file.open.win32&Open Project&
-nanoem.menu.file.import.modelModel.
-!nanoem.menu.file.import.accessory	Accessory*
-nanoem.menu.file.import.pose
-Model Pose4
-$nanoem.menu.file.import.motion.modelModel Motion6
-%nanoem.menu.file.import.motion.cameraCamera Motion4
-$nanoem.menu.file.import.motion.lightLight Motion.
-$nanoem.menu.file.import.motion.titleMotion-
-nanoem.menu.file.import.audioAudio Source1
-nanoem.menu.file.import.videoBackground Video*
-nanoem.menu.file.import.title	Import...%
-nanoem.menu.file.saveSave Project,
-nanoem.menu.file.save.win32&Save Project+
-nanoem.menu.file.save-asSave Project As*
-nanoem.menu.file.export.pose
-Model Pose4
-$nanoem.menu.file.export.motion.modelModel Motion6
-%nanoem.menu.file.export.motion.cameraCamera Motion4
-$nanoem.menu.file.export.motion.lightLight Motion&
-nanoem.menu.file.export.modelModel&
-nanoem.menu.file.export.imageImage&
-nanoem.menu.file.export.videoVideo*
-nanoem.menu.file.export.title	Export...
-nanoem.menu.file.exitExit$
-nanoem.menu.file.exit.win32E&xit
-nanoem.menu.edit.undoUndo$
-nanoem.menu.edit.undo.win32&Undo
-nanoem.menu.edit.redoRedo$
-nanoem.menu.edit.redo.win32&Redo
-nanoem.menu.edit.cutCut
-nanoem.menu.edit.copyCopy$
-nanoem.menu.edit.copy.win32&Copy
-nanoem.menu.edit.pastePaste&
-nanoem.menu.edit.paste.win32&Paste-
+nanoem.window.title.videoVideo
+nanoem.menu.file.title&File$
+nanoem.menu.file.new&New Project&
+nanoem.menu.file.open&Open Project'
+nanoem.menu.file.import.model&Model/
+!nanoem.menu.file.import.accessory
+&Accessory+
+nanoem.menu.file.import.poseModel &Pose5
+$nanoem.menu.file.import.motion.modelM&odel Motion7
+%nanoem.menu.file.import.motion.camera&Camera Motion5
+$nanoem.menu.file.import.motion.light&Light Motion/
+$nanoem.menu.file.import.motion.title&Motion.
+nanoem.menu.file.import.audioA&udio Source2
+nanoem.menu.file.import.videoBackground &Video+
+nanoem.menu.file.import.title
+&Import...&
+nanoem.menu.file.save&Save Project+
+nanoem.menu.file.save-asSave Project As+
+nanoem.menu.file.export.poseModel &Pose5
+$nanoem.menu.file.export.motion.modelM&odel Motion7
+%nanoem.menu.file.export.motion.camera&Camera Motion5
+$nanoem.menu.file.export.motion.light&Light Motion&
+nanoem.menu.file.export.modelModel'
+nanoem.menu.file.export.image&Image'
+nanoem.menu.file.export.video&Video+
+nanoem.menu.file.export.title
+&Export...
+nanoem.menu.file.exitE&xit
+nanoem.menu.edit.undo&Undo
+nanoem.menu.edit.redo&Redo
+nanoem.menu.edit.cutCut
+nanoem.menu.edit.copy&Copy 
+nanoem.menu.edit.paste&Paste-
 nanoem.menu.edit.plugin.modelModel Plugin/
 nanoem.menu.edit.plugin.motionMotion Plugin4
 nanoem.menu.edit.window.effectOpen Effect Window2
-nanoem.menu.edit.window.modelOpen Model Window=
-%nanoem.menu.edit.select-all-keyframesSelect All KeyframesD
-+nanoem.menu.edit.select-all-keyframes.win32Select &All Keyframes*
-nanoem.menu.edit.preferencePreferences1
-!nanoem.menu.edit.preference.win32&Preferences
-nanoem.menu.edit.titleEdit%
-nanoem.menu.edit.title.win32&Edit 
-nanoem.menu.project.playPlay'
-nanoem.menu.project.play.win32&Play 
-nanoem.menu.project.stopStop'
-nanoem.menu.project.stop.win32&Stop<
+nanoem.menu.edit.window.modelOpen Model Window>
+%nanoem.menu.edit.select-all-keyframesSelect &All Keyframes*
+nanoem.menu.edit.preferencePreferences
+nanoem.menu.edit.title&Edit!
+nanoem.menu.project.play&Play!
+nanoem.menu.project.stop&Stop<
 nanoem.menu.project.viewportOpen Viewport Setting Dialog8
 nanoem.menu.project.order.drawOpen Draw Order DialogB
-#nanoem.menu.project.order.transformOpen Transform Order Dialog;
-nanoem.menu.project.enable.loopEnable Playing with Loop.
+#nanoem.menu.project.order.transformOpen Transform Order Dialog<
+nanoem.menu.project.enable.loopEnable Playing with &Loop.
 nanoem.menu.project.enable.gridEnable Grid@
-(nanoem.menu.project.enable.ground-shadowEnable Ground Shadow2
-!nanoem.menu.project.enable.effectEnable Effect9
-'nanoem.menu.project.enable.effect.win32Enable &EffectV
-3nanoem.menu.project.enable.high-resolution-viewportEnable High Resolution ViewportT
+(nanoem.menu.project.enable.ground-shadowEnable Ground Shadow3
+!nanoem.menu.project.enable.effectEnable &EffectW
+3nanoem.menu.project.enable.high-resolution-viewport Enable &High Resolution ViewportT
 2nanoem.menu.project.enable.compute-shader-skinningEnable Compute Shader SkinningR
 1nanoem.menu.project.enable.vertex-shader-skinningEnable Vertex Shader Skinning.
 nanoem.menu.project.msaa.x16Best (MSAAx16),
@@ -1691,36 +1646,26 @@ Fnanoem.menu.project.physics-simulation.enable.drawing.constraint-limitConstra
  nanoem.menu.camera.preset.bottomBottom(
 nanoem.menu.camera.preset.frontFront&
 nanoem.menu.camera.preset.backBack1
-nanoem.menu.camera.preset.titlePreset From...J
-$nanoem.menu.camera.register-keyframe"Register Keyframe at Current FrameQ
-*nanoem.menu.camera.register-keyframe.win32#&Register Keyframe at Current FrameA
-"nanoem.menu.camera.remove-keyframeRemove Selected Keyframe(s)&
-nanoem.menu.camera.reset
-Initialize-
-nanoem.menu.camera.reset.win32&Initialize"
-nanoem.menu.camera.titleCamera)
-nanoem.menu.camera.title.win32&Camera-
-nanoem.menu.light.toggleToggle Light ModeI
-#nanoem.menu.light.register-keyframe"Register Keyframe at Current FrameP
-)nanoem.menu.light.register-keyframe.win32#&Register Keyframe at Current Frame@
-!nanoem.menu.light.remove-keyframeRemove Selected Keyframe(s)%
-nanoem.menu.light.reset
-Initialize,
-nanoem.menu.light.reset.win32&Initialize 
-nanoem.menu.light.titleLight'
-nanoem.menu.light.title.win32&Light2
-#nanoem.menu.light.self-shadow.titleSelf Shadow0
+nanoem.menu.camera.preset.titlePreset From...K
+$nanoem.menu.camera.register-keyframe#&Register Keyframe at Current FrameA
+"nanoem.menu.camera.remove-keyframeRemove Selected Keyframe(s)'
+nanoem.menu.camera.reset&Initialize#
+nanoem.menu.camera.title&Camera-
+nanoem.menu.light.toggleToggle Light ModeJ
+#nanoem.menu.light.register-keyframe#&Register Keyframe at Current Frame@
+!nanoem.menu.light.remove-keyframeRemove Selected Keyframe(s)&
+nanoem.menu.light.reset&Initialize!
+nanoem.menu.light.title&Light3
+#nanoem.menu.light.self-shadow.title&Self Shadow0
 %nanoem.menu.light.self-shadow.disableDisable?
 *nanoem.menu.light.self-shadow.enable.mode1Mode 1 (Balanced)N
-*nanoem.menu.light.self-shadow.enable.mode2 Mode 2 (Better for Near Objects)U
-/nanoem.menu.light.self-shadow.register-keyframe"Register Keyframe at Current FrameL
--nanoem.menu.light.self-shadow.remove-keyframeRemove Selected Keyframe(s)1
-#nanoem.menu.light.self-shadow.reset
-Initialize8
-)nanoem.menu.light.self-shadow.reset.win32&Initialize6
-nanoem.menu.model.select.titleSelect Model from...:
-#nanoem.menu.model.select.bone.titleSelect Bone from...<
-$nanoem.menu.model.select.morph.titleSelect Morph from...X
+*nanoem.menu.light.self-shadow.enable.mode2 Mode 2 (Better for Near Objects)V
+/nanoem.menu.light.self-shadow.register-keyframe#&Register Keyframe at Current FrameL
+-nanoem.menu.light.self-shadow.remove-keyframeRemove Selected Keyframe(s)2
+#nanoem.menu.light.self-shadow.reset&Initialize7
+nanoem.menu.model.select.titleSelect &Model from...;
+#nanoem.menu.model.select.bone.titleSelect &Bone from...=
+$nanoem.menu.model.select.morph.titleSelect M&orph from...X
 'nanoem.menu.model.select.bone.keyframes-Select All Bone Keyframes from Selected Bones/
 (nanoem.menu.model.select.morph.eye.titleEye7
 ,nanoem.menu.model.select.morph.eyebrow.titleEyebrow/
@@ -1738,12 +1683,11 @@ $nanoem.menu.model.select.morph.titleMorph?
 (nanoem.menu.model.reset.bone.orientationReset Orientation8
  nanoem.menu.model.set-morph.zeroSet Morph Weight 0.08
  nanoem.menu.model.set-morph.halfSet Morph Weight 0.57
-nanoem.menu.model.set-morph.oneSet Morph Weight 1.06
-"nanoem.menu.model.enable.add-blendEnable Add Blend8
-#nanoem.menu.model.enable.shadow-mapEnable Shadow Map2
- nanoem.menu.model.enable.visibleEnable VisibleI
-#nanoem.menu.model.register-keyframe"Register Keyframe at Current FrameP
-)nanoem.menu.model.register-keyframe.win32#&Register Keyframe at Current Frame@
+nanoem.menu.model.set-morph.oneSet Morph Weight 1.07
+"nanoem.menu.model.enable.add-blendEnable &Add Blend9
+#nanoem.menu.model.enable.shadow-mapEnable &Shadow Map3
+ nanoem.menu.model.enable.visibleEnable &VisibleJ
+#nanoem.menu.model.register-keyframe#&Register Keyframe at Current Frame@
 !nanoem.menu.model.remove-keyframeRemove Selected Keyframe(s)4
 "nanoem.menu.model.preference.titleModel Settings]
 ;nanoem.menu.model.preference.enable.compute-shader-skinningEnable Compute Shader SkinningD
@@ -1754,49 +1698,37 @@ $nanoem.menu.model.select.morph.titleMorph?
 6nanoem.menu.model.preference.enable.show-vertex-pointsShow Vertex Points[
 :nanoem.menu.model.preference.enable.vertex-shader-skinningEnable Vertex Shader Skinning,
 nanoem.menu.model.edgeEdge Configuration 
-nanoem.menu.model.resetReset6
-nanoem.menu.model.delete-activeDelete Active Model=
-%nanoem.menu.model.delete-active.win32&Delete Active Model 
-nanoem.menu.model.titleModel'
-nanoem.menu.model.title.win32&ModelA
+nanoem.menu.model.resetReset7
+nanoem.menu.model.delete-active&Delete Active Model!
+nanoem.menu.model.title&ModelA
 'nanoem.menu.accessory.draw-order-dialogOpen Draw Order Dialog>
-"nanoem.menu.accessory.select.titleSelect Accessory from...M
-'nanoem.menu.accessory.register-keyframe"Register Keyframe at Current FrameT
--nanoem.menu.accessory.register-keyframe.win32#&Register Keyframe at Current FrameD
-%nanoem.menu.accessory.remove-keyframeRemove Selected Keyframe(s):
-&nanoem.menu.accessory.enable.add-blendEnable Add Blend;
-#nanoem.menu.accessory.enable.shadowEnable Ground Shadow6
-$nanoem.menu.accessory.enable.visibleEnable Visible$
-nanoem.menu.accessory.resetReset>
-#nanoem.menu.accessory.delete-activeDelete Active AccesosryE
-)nanoem.menu.accessory.delete-active.win32&Delete Active Accessory(
-nanoem.menu.accessory.title	Accessory/
-!nanoem.menu.accessory.title.win32
+"nanoem.menu.accessory.select.titleSelect Accessory from...N
+'nanoem.menu.accessory.register-keyframe#&Register Keyframe at Current FrameD
+%nanoem.menu.accessory.remove-keyframeRemove Selected Keyframe(s);
+&nanoem.menu.accessory.enable.add-blendEnable &Add Blend<
+#nanoem.menu.accessory.enable.shadowEnable Ground &Shadow7
+$nanoem.menu.accessory.enable.visibleEnable &Visible$
+nanoem.menu.accessory.resetReset?
+#nanoem.menu.accessory.delete-active&Delete Active Accessory)
+nanoem.menu.accessory.title
 &AccessoryJ
 2nanoem.menu.project.motion.shift-keyframes-forwardRemove Current FrameI
-3nanoem.menu.project.motion.shift-keyframes-backwardInsert Empty Frame.
- nanoem.menu.project.motion.reset
-Initialize5
-&nanoem.menu.project.motion.reset.win32&Initialize*
- nanoem.menu.project.motion.titleMotion$
-nanoem.menu.project.titleProject+
-nanoem.menu.project.title.win32&Project'
+3nanoem.menu.project.motion.shift-keyframes-backwardInsert Empty Frame/
+ nanoem.menu.project.motion.reset&Initialize*
+ nanoem.menu.project.motion.titleMotion%
+nanoem.menu.project.title&Project'
 nanoem.menu.window.maximizeMaximize'
 nanoem.menu.window.minimizeMinimize%
 nanoem.menu.window.restoreRestore+
 nanoem.menu.window.fullscreen
-Fullscreen"
-nanoem.menu.window.titleWindow)
-nanoem.menu.window.title.win32&Window&
-nanoem.menu.help.onlineOnline Help-
-nanoem.menu.help.online.win32&Online Help
-nanoem.menu.help.aboutAbout&
-nanoem.menu.help.about.win32&About
-nanoem.menu.help.titleHelp%
-nanoem.menu.help.title.win32&Help#
-nanoem.menu.edit.bone.titleBone'
-nanoem.menu.edit.camera.titleCamera%
-nanoem.menu.edit.morph.titleMorph<
+Fullscreen#
+nanoem.menu.window.title&Window'
+nanoem.menu.help.online&Online Help 
+nanoem.menu.help.about&About
+nanoem.menu.help.title&Help$
+nanoem.menu.edit.bone.title&Bone'
+nanoem.menu.edit.camera.titleCamera&
+nanoem.menu.edit.morph.titleM&orph<
 nanoem.menu.edit.bone.parameterOpen Numeric Input Dialog<
 'nanoem.menu.edit.bone.reset-orientationReset Orientation:
  nanoem.menu.edit.bone.correctionOpen Correction Dialog.

@@ -558,6 +558,7 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
 {
     if (!m_children.empty()) {
         if (m_type != kMenuItemTypeMaxEnum) {
+            char buffer[Inline::kLongNameStackBufferSize];
             const char *text = nullptr;
             if (!m_name.empty()) {
                 text = m_name.c_str();
@@ -565,7 +566,7 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
             else {
                 ImGuiApplicationMenuBuilder *builder = m_parent->m_parent;
                 const ITranslator *translator = builder->m_translator;
-                text = translator->translate(menuItemString(m_type));
+                text = stripMnemonic(buffer, sizeof(buffer), translator->translate(menuItemString(m_type)));
             }
             if (ImGui::BeginMenu(text, m_enabled)) {
                 drawAllMenus();
@@ -625,8 +626,9 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
             break;
         }
         default: {
+            char buffer[Inline::kLongNameStackBufferSize];
             const ITranslator *translator = builder->m_translator;
-            const char *text = translator->translate(menuItemString(m_type));
+            const char *text = stripMnemonic(buffer, sizeof(buffer), translator->translate(menuItemString(m_type)));
             if (ImGui::MenuItem(text, nullptr, m_checked, m_enabled)) {
                 switch (m_type) {
                 case kMenuItemTypeFileNewProject: {
@@ -780,8 +782,9 @@ void
 ImGuiApplicationMenuBuilder::ImGuiMenuBar::draw()
 {
     if (m_type != kMenuItemTypeMaxEnum) {
+        char buffer[Inline::kLongNameStackBufferSize];
         const ITranslator *translator = m_parent->m_translator;
-        const char *text = translator->translate(menuItemString(m_type));
+        const char *text = stripMnemonic(buffer, sizeof(buffer), translator->translate(menuItemString(m_type)));
         if (ImGui::BeginMenu(text)) {
             drawAllMenuItems();
             ImGui::EndMenu();

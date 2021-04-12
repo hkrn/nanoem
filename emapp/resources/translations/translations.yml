@@ -2501,90 +2501,70 @@
   description: ''
 - key: nanoem.menu.file.title
   phrase:
-    en_US: 'File'
-    ja_JP: 'ファイル'
-  description: ''
-- key: nanoem.menu.file.title.win32
-  phrase:
     en_US: '&File'
     ja_JP: 'ファイル(&F)'
   description: ''
 - key: nanoem.menu.file.new
-  phrase:
-    en_US: 'New Project'
-    ja_JP: '新規プロジェクト'
-  description: ''
-- key: nanoem.menu.file.new.win32
   phrase:
     en_US: '&New Project'
     ja_JP: '新規プロジェクト(&N)'
   description: ''
 - key: nanoem.menu.file.open
   phrase:
-    en_US: 'Open Project'
-    ja_JP: 'プロジェクトを開く'
-  description: ''
-- key: nanoem.menu.file.open.win32
-  phrase:
     en_US: '&Open Project'
     ja_JP: 'プロジェクトを開く(&O)'
   description: ''
 - key: nanoem.menu.file.import.model
   phrase:
-    en_US: 'Model'
-    ja_JP: 'モデル'
+    en_US: '&Model'
+    ja_JP: 'モデル(&M)'
   description: ''
 - key: nanoem.menu.file.import.accessory
   phrase:
-    en_US: 'Accessory'
-    ja_JP: 'アクセサリ'
+    en_US: '&Accessory'
+    ja_JP: 'アクセサリ(&A)'
   description: ''
 - key: nanoem.menu.file.import.pose
   phrase:
-    en_US: 'Model Pose'
-    ja_JP: 'モデルポーズ'
+    en_US: 'Model &Pose'
+    ja_JP: 'モデルポーズ(&P)'
   description: ''
 - key: nanoem.menu.file.import.motion.model
   phrase:
-    en_US: 'Model Motion'
-    ja_JP: 'モデルモーション'
+    en_US: 'M&odel Motion'
+    ja_JP: 'モデルモーション(&O)'
   description: ''
 - key: nanoem.menu.file.import.motion.camera
   phrase:
-    en_US: 'Camera Motion'
-    ja_JP: 'カメラモーション'
+    en_US: '&Camera Motion'
+    ja_JP: 'カメラモーション(&C)'
   description: ''
 - key: nanoem.menu.file.import.motion.light
   phrase:
-    en_US: 'Light Motion'
-    ja_JP: '照明モーション'
+    en_US: '&Light Motion'
+    ja_JP: '照明モーション(&L)'
   description: ''
 - key: nanoem.menu.file.import.motion.title
   phrase:
-    en_US: 'Motion'
-    ja_JP: 'モーション'
+    en_US: '&Motion'
+    ja_JP: 'モーション(&M)'
   description: ''
 - key: nanoem.menu.file.import.audio
   phrase:
-    en_US: 'Audio Source'
-    ja_JP: '音源'
+    en_US: 'A&udio Source'
+    ja_JP: '音源(&U)'
   description: ''
 - key: nanoem.menu.file.import.video
   phrase:
-    en_US: 'Background Video'
-    ja_JP: '背景動画'
+    en_US: 'Background &Video'
+    ja_JP: '背景動画(&V)'
   description: ''
 - key: nanoem.menu.file.import.title
   phrase:
-    en_US: 'Import...'
-    ja_JP: '開く'
+    en_US: '&Import...'
+    ja_JP: '開く(&I)'
   description: ''
 - key: nanoem.menu.file.save
-  phrase:
-    en_US: 'Save Project'
-    ja_JP: 'プロジェクトを保存'
-  description: ''
-- key: nanoem.menu.file.save.win32
   phrase:
     en_US: '&Save Project'
     ja_JP: 'プロジェクトを保存(&S)'
@@ -2596,23 +2576,23 @@
   description: ''
 - key: nanoem.menu.file.export.pose
   phrase:
-    en_US: 'Model Pose'
-    ja_JP: 'モデルポーズ'
+    en_US: 'Model &Pose'
+    ja_JP: 'モデルポーズ(&P)'
   description: ''
 - key: nanoem.menu.file.export.motion.model
   phrase:
-    en_US: 'Model Motion'
-    ja_JP: 'モデルモーション'
+    en_US: 'M&odel Motion'
+    ja_JP: 'モデルモーション(&O)'
   description: ''
 - key: nanoem.menu.file.export.motion.camera
   phrase:
-    en_US: 'Camera Motion'
-    ja_JP: 'カメラモーション'
+    en_US: '&Camera Motion'
+    ja_JP: 'カメラモーション(&C)'
   description: ''
 - key: nanoem.menu.file.export.motion.light
   phrase:
-    en_US: 'Light Motion'
-    ja_JP: '照明モーション'
+    en_US: '&Light Motion'
+    ja_JP: '照明モーション(&L)'
   description: ''
 - key: nanoem.menu.file.export.model
   phrase:
@@ -2621,45 +2601,30 @@
   description: ''
 - key: nanoem.menu.file.export.image
   phrase:
-    en_US: 'Image'
-    ja_JP: '画像'
+    en_US: '&Image'
+    ja_JP: '画像(&I)'
   description: ''
 - key: nanoem.menu.file.export.video
   phrase:
-    en_US: 'Video'
-    ja_JP: '動画'
+    en_US: '&Video'
+    ja_JP: '動画(&V)'
   description: ''
 - key: nanoem.menu.file.export.title
   phrase:
-    en_US: 'Export...'
-    ja_JP: '書き出し'
+    en_US: '&Export...'
+    ja_JP: '書き出し(&E)'
   description: ''
 - key: nanoem.menu.file.exit
-  phrase:
-    en_US: 'Exit'
-    ja_JP: '終了'
-  description: ''
-- key: nanoem.menu.file.exit.win32
   phrase:
     en_US: 'E&xit'
     ja_JP: '終了(&X)'
   description: ''
 - key: nanoem.menu.edit.undo
   phrase:
-    en_US: 'Undo'
-    ja_JP: '元に戻す'
-  description: ''
-- key: nanoem.menu.edit.undo.win32
-  phrase:
     en_US: '&Undo'
     ja_JP: '元に戻す(&U)'
   description: ''
 - key: nanoem.menu.edit.redo
-  phrase:
-    en_US: 'Redo'
-    ja_JP: 'やり直し'
-  description: ''
-- key: nanoem.menu.edit.redo.win32
   phrase:
     en_US: '&Redo'
     ja_JP: 'やり直し(&R)'
@@ -2671,20 +2636,10 @@
   description: ''
 - key: nanoem.menu.edit.copy
   phrase:
-    en_US: 'Copy'
-    ja_JP: 'コピー'
-  description: ''
-- key: nanoem.menu.edit.copy.win32
-  phrase:
     en_US: '&Copy'
     ja_JP: 'コピー(&C)'
   description: ''
 - key: nanoem.menu.edit.paste
-  phrase:
-    en_US: 'Paste'
-    ja_JP: '貼り付け'
-  description: ''
-- key: nanoem.menu.edit.paste.win32
   phrase:
     en_US: '&Paste'
     ja_JP: '貼り付け(&P)'
@@ -2709,11 +2664,6 @@
   description: ''
 - key: nanoem.menu.edit.select-all-keyframes
   phrase:
-    en_US: 'Select All Keyframes'
-    ja_JP: '全てのキーフレームを選択'
-  description: ''
-- key: nanoem.menu.edit.select-all-keyframes.win32
-  phrase:
     en_US: 'Select &All Keyframes'
     ja_JP: '全てのキーフレームを選択(&A)'
   description: ''
@@ -2722,37 +2672,17 @@
     en_US: 'Preferences'
     ja_JP: '設定'
   description: ''
-- key: nanoem.menu.edit.preference.win32
-  phrase:
-    en_US: '&Preferences'
-    ja_JP: '設定(&P)'
-  description: ''
 - key: nanoem.menu.edit.title
-  phrase:
-    en_US: 'Edit'
-    ja_JP: '編集'
-  description: ''
-- key: nanoem.menu.edit.title.win32
   phrase:
     en_US: '&Edit'
     ja_JP: '編集(&E)'
   description: ''
 - key: nanoem.menu.project.play
   phrase:
-    en_US: 'Play'
-    ja_JP: '再生'
-  description: ''
-- key: nanoem.menu.project.play.win32
-  phrase:
     en_US: '&Play'
     ja_JP: '再生(&P)'
   description: ''
 - key: nanoem.menu.project.stop
-  phrase:
-    en_US: 'Stop'
-    ja_JP: '停止'
-  description: ''
-- key: nanoem.menu.project.stop.win32
   phrase:
     en_US: '&Stop'
     ja_JP: '停止(&S)'
@@ -2774,8 +2704,8 @@
   description: ''
 - key: nanoem.menu.project.enable.loop
   phrase:
-    en_US: 'Enable Playing with Loop'
-    ja_JP: 'ループ再生を有効にする'
+    en_US: 'Enable Playing with &Loop'
+    ja_JP: 'ループ再生を有効にする(&L)'
   description: ''
 - key: nanoem.menu.project.enable.grid
   phrase:
@@ -2789,18 +2719,13 @@
   description: ''
 - key: nanoem.menu.project.enable.effect
   phrase:
-    en_US: 'Enable Effect'
-    ja_JP: 'エフェクトを有効にする'
-  description: ''
-- key: nanoem.menu.project.enable.effect.win32
-  phrase:
     en_US: 'Enable &Effect'
     ja_JP: 'エフェクトを有効にする(&E)'
   description: ''
 - key: nanoem.menu.project.enable.high-resolution-viewport
   phrase:
-    en_US: 'Enable High Resolution Viewport'
-    ja_JP: '高解像度ビューポートを有効にする'
+    en_US: 'Enable &High Resolution Viewport'
+    ja_JP: '高解像度ビューポートを有効にする(&H)'
   description: ''
 - key: nanoem.menu.project.enable.compute-shader-skinning
   phrase:
@@ -2994,11 +2919,6 @@
   description: ''
 - key: nanoem.menu.camera.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.camera.register-keyframe.win32
-  phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
   description: ''
@@ -3009,20 +2929,10 @@
   description: ''
 - key: nanoem.menu.camera.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-  description: ''
-- key: nanoem.menu.camera.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
 - key: nanoem.menu.camera.title
-  phrase:
-    en_US: 'Camera'
-    ja_JP: 'カメラ'
-  description: ''
-- key: nanoem.menu.camera.title.win32
   phrase:
     en_US: '&Camera'
     ja_JP: 'カメラ(&C)'
@@ -3034,11 +2944,6 @@
   description: ''
 - key: nanoem.menu.light.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.light.register-keyframe.win32
-  phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
   description: ''
@@ -3049,28 +2954,18 @@
   description: ''
 - key: nanoem.menu.light.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-  description: ''
-- key: nanoem.menu.light.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
 - key: nanoem.menu.light.title
-  phrase:
-    en_US: 'Light'
-    ja_JP: '照明'
-  description: ''
-- key: nanoem.menu.light.title.win32
   phrase:
     en_US: '&Light'
     ja_JP: '照明(&L)'
   description: ''
 - key: nanoem.menu.light.self-shadow.title
   phrase:
-    en_US: 'Self Shadow'
-    ja_JP: 'セルフシャドウ'
+    en_US: '&Self Shadow'
+    ja_JP: 'セルフシャドウ(&S)'
   description: ''
 - key: nanoem.menu.light.self-shadow.disable
   phrase:
@@ -3089,8 +2984,8 @@
   description: ''
 - key: nanoem.menu.light.self-shadow.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレーム登録'
+    en_US: '&Register Keyframe at Current Frame'
+    ja_JP: 'キーフレーム登録(&R)'
   description: ''
 - key: nanoem.menu.light.self-shadow.remove-keyframe
   phrase:
@@ -3099,27 +2994,23 @@
   description: ''
 - key: nanoem.menu.light.self-shadow.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-- key: nanoem.menu.light.self-shadow.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
 - key: nanoem.menu.model.select.title
   phrase:
-    en_US: 'Select Model from...'
-    ja_JP: 'モデルを選択'
+    en_US: 'Select &Model from...'
+    ja_JP: 'モデルを選択(&M)'
   description: ''
 - key: nanoem.menu.model.select.bone.title
   phrase:
-    en_US: 'Select Bone from...'
-    ja_JP: 'ボーンを選択'
+    en_US: 'Select &Bone from...'
+    ja_JP: 'ボーンを選択(&B)'
   description: ''
 - key: nanoem.menu.model.select.morph.title
   phrase:
-    en_US: 'Select Morph from...'
-    ja_JP: 'モーフを選択'
+    en_US: 'Select M&orph from...'
+    ja_JP: 'モーフを選択(&O)'
   description: ''
 - key: nanoem.menu.model.select.bone.keyframes
   phrase:
@@ -3213,25 +3104,20 @@
   description: ''
 - key: nanoem.menu.model.enable.add-blend
   phrase:
-    en_US: 'Enable Add Blend'
-    ja_JP: '加算ブレンドを有効にする'
+    en_US: 'Enable &Add Blend'
+    ja_JP: '加算ブレンドを有効にする(&A)'
   description: ''
 - key: nanoem.menu.model.enable.shadow-map
   phrase:
-    en_US: 'Enable Shadow Map'
-    ja_JP: 'シャドウマップを有効にする'
+    en_US: 'Enable &Shadow Map'
+    ja_JP: 'シャドウマップを有効にする(&S)'
   description: ''
 - key: nanoem.menu.model.enable.visible
   phrase:
-    en_US: 'Enable Visible'
-    ja_JP: '表示を有効にする'
+    en_US: 'Enable &Visible'
+    ja_JP: '表示を有効にする(&V)'
   description: ''
 - key: nanoem.menu.model.register-keyframe
-  phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.model.register-keyframe.win32
   phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
@@ -3293,20 +3179,10 @@
   description: ''
 - key: nanoem.menu.model.delete-active
   phrase:
-    en_US: 'Delete Active Model'
-    ja_JP: '選択されているモデルを削除'
-  description: ''
-- key: nanoem.menu.model.delete-active.win32
-  phrase:
     en_US: '&Delete Active Model'
     ja_JP: '選択されているモデルを削除(&D)'
   description: ''
 - key: nanoem.menu.model.title
-  phrase:
-    en_US: 'Model'
-    ja_JP: 'モデル'
-  description: ''
-- key: nanoem.menu.model.title.win32
   phrase:
     en_US: '&Model'
     ja_JP: 'モデル(&M)'
@@ -3323,11 +3199,6 @@
   description: ''
 - key: nanoem.menu.accessory.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.accessory.register-keyframe.win32
-  phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
   description: ''
@@ -3338,18 +3209,18 @@
   description: ''
 - key: nanoem.menu.accessory.enable.add-blend
   phrase:
-    en_US: 'Enable Add Blend'
-    ja_JP: '加算ブレンドを有効にする'
+    en_US: 'Enable &Add Blend'
+    ja_JP: '加算ブレンドを有効にする(&A)'
   description: ''
 - key: nanoem.menu.accessory.enable.shadow
   phrase:
-    en_US: 'Enable Ground Shadow'
-    ja_JP: '地面影を有効にする'
+    en_US: 'Enable Ground &Shadow'
+    ja_JP: '地面影を有効にする(&S)'
   description: ''
 - key: nanoem.menu.accessory.enable.visible
   phrase:
-    en_US: 'Enable Visible'
-    ja_JP: '表示を有効にする'
+    en_US: 'Enable &Visible'
+    ja_JP: '表示を有効にする(&V)'
   description: ''
 - key: nanoem.menu.accessory.reset
   phrase:
@@ -3358,20 +3229,10 @@
   description: ''
 - key: nanoem.menu.accessory.delete-active
   phrase:
-    en_US: 'Delete Active Accesosry'
-    ja_JP: '選択されているアクセサリを削除'
-  description: ''
-- key: nanoem.menu.accessory.delete-active.win32
-  phrase:
     en_US: '&Delete Active Accessory'
     ja_JP: '選択されているアクセサリを削除(&D)'
   description: ''
 - key: nanoem.menu.accessory.title
-  phrase:
-    en_US: 'Accessory'
-    ja_JP: 'アクセサリ'
-  description: ''
-- key: nanoem.menu.accessory.title.win32
   phrase:
     en_US: '&Accessory'
     ja_JP: 'アクセサリ(&A)'
@@ -3388,11 +3249,6 @@
   description: ''
 - key: nanoem.menu.project.motion.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-  description: ''
-- key: nanoem.menu.project.motion.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
@@ -3402,11 +3258,6 @@
     ja_JP: 'モーション'
   description: ''
 - key: nanoem.menu.project.title
-  phrase:
-    en_US: 'Project'
-    ja_JP: 'プロジェクト'
-  description: ''
-- key: nanoem.menu.project.title.win32
   phrase:
     en_US: '&Project'
     ja_JP: 'プロジェクト(&P)'
@@ -3433,48 +3284,28 @@
   description: ''
 - key: nanoem.menu.window.title
   phrase:
-    en_US: 'Window'
-    ja_JP: 'ウィンドウ'
-  description: ''
-- key: nanoem.menu.window.title.win32
-  phrase:
     en_US: '&Window'
     ja_JP: 'ウィンドウ(&W)'
   description: ''
 - key: nanoem.menu.help.online
-  phrase:
-    en_US: 'Online Help'
-    ja_JP: 'オンラインヘルプ'
-  description: ''
-- key: nanoem.menu.help.online.win32
   phrase:
     en_US: '&Online Help'
     ja_JP: 'オンラインヘルプ(&O)'
   description: ''
 - key: nanoem.menu.help.about
   phrase:
-    en_US: 'About'
-    ja_JP: 'nanoem について'
-  description: ''
-- key: nanoem.menu.help.about.win32
-  phrase:
     en_US: '&About'
     ja_JP: 'nanoem について(&A)'
   description: ''
 - key: nanoem.menu.help.title
-  phrase:
-    en_US: 'Help'
-    ja_JP: 'ヘルプ'
-  description: ''
-- key: nanoem.menu.help.title.win32
   phrase:
     en_US: '&Help'
     ja_JP: 'ヘルプ(&H)'
   description: ''
 - key: nanoem.menu.edit.bone.title
   phrase:
-    en_US: 'Bone'
-    ja_JP: 'ボーン'
+    en_US: '&Bone'
+    ja_JP: 'ボーン(&B)'
   description: ''
 - key: nanoem.menu.edit.camera.title
   phrase:
@@ -3483,8 +3314,8 @@
   description: ''
 - key: nanoem.menu.edit.morph.title
   phrase:
-    en_US: 'Morph'
-    ja_JP: 'モーフ'
+    en_US: 'M&orph'
+    ja_JP: 'モーフ(&O)'
   description: ''
 - key: nanoem.menu.edit.bone.parameter
   phrase:

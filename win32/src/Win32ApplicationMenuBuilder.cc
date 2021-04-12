@@ -480,10 +480,7 @@ Win32ApplicationMenuBuilder::fillDynamicMenuItem(const Lambda &lambda, MENUITEMI
 const char *
 Win32ApplicationMenuBuilder::translateMenuItemWin32(MenuItemType type) const
 {
-    char name[128];
-    const char *id = menuItemString(type);
-    bx::snprintf(name, sizeof(name), "%s.win32", id);
-    return m_translator->translate(m_translator->isTranslatable(name) ? name : id);
+    return m_translator->translate(menuItemString(type));
 }
 
 const wchar_t *

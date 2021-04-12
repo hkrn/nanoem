@@ -12,6 +12,7 @@
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/ShadowCamera.h"
+#include "emapp/StringUtils.h"
 #include "emapp/ThreadedApplicationClient.h"
 #include "emapp/private/CommonInclude.h"
 
@@ -551,6 +552,28 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
         break;
     }
     return text;
+}
+
+const char *
+ApplicationMenuBuilder::stripMnemonic(char *buffer, size_t size, const char *text)
+{
+    const char *p = text;
+    size_t q = 0;
+    for (size_t i = 0; i < size && *p; i++) {
+        char c = *p;
+        if (size - i >= 4 && c == '(' && *(p + 1) == '&' && bx::isAlpha(*(p + 2)) && *(p + 3) == ')') {
+            p += 4;
+        }
+        else if (c == '&') {
+            p++;
+        }
+        else {
+            buffer[q++] = c;
+            p++;
+        }
+    }
+    buffer[glm::min(q, size - 1)] = 0;
+    return buffer;
 }
 
 bool

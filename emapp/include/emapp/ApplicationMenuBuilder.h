@@ -223,6 +223,7 @@ public:
         kMenuItemCheckedStateTrue,
     };
     static const char *menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT;
+    static const char *stripMnemonic(char *buffer, size_t size, const char *text);
     static bool validateMenuItem(const Project *project, MenuItemType type, MenuItemCheckedState &state);
 
     ApplicationMenuBuilder(BaseApplicationClient *client, bool enableModelEditing);
