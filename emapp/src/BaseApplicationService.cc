@@ -1949,23 +1949,12 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         m_window->setAntiAliasEnabled(enabled || project->sampleLevel() > 0);
         break;
     }
-    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx16: {
-        project->setSampleLevel(4);
-        m_window->setAntiAliasEnabled(true);
-        break;
-    }
-    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx8: {
-        project->setSampleLevel(3);
-        m_window->setAntiAliasEnabled(true);
-        break;
-    }
-    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx4: {
-        project->setSampleLevel(2);
-        m_window->setAntiAliasEnabled(true);
-        break;
-    }
+    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx16:
+    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx8:
+    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx4:
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx2: {
-        project->setSampleLevel(1);
+        const uint32_t level = ApplicationMenuBuilder::kMenuItemTypeProjectDisableMSAA - (type + 1);
+        project->setSampleLevel(level);
         m_window->setAntiAliasEnabled(true);
         break;
     }
