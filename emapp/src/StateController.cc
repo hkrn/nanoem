@@ -531,7 +531,8 @@ DraggingCameraState::createTranslateState(
     int axisIndex, const Vector3SI32 &logicalScaleCursorPosition, Project *project)
 {
     ICamera *camera = project->globalCamera();
-    internal::IDraggingState *state = nanoem_new(internal::AxisAlignedTranslateCameraState(project, camera, logicalScaleCursorPosition, axisIndex));
+    internal::IDraggingState *state =
+        nanoem_new(internal::AxisAlignedTranslateCameraState(project, camera, logicalScaleCursorPosition, axisIndex));
     setType(IState::kTypeDraggingCameraAxisAlignedTranslateCameraState);
     return state;
 }

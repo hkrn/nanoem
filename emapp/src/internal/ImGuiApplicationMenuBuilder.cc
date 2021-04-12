@@ -88,7 +88,8 @@ struct ImGuiApplicationMenuBuilder::NewProjectEventHandler {
     static void
     saveProject(ImGuiApplicationMenuBuilder *self)
     {
-        self->m_eventPublisher->publishQuerySaveFileDialogEvent(IFileManager::kDialogTypeSaveProjectFile, Project::loadableExtensions());
+        self->m_eventPublisher->publishQuerySaveFileDialogEvent(
+            IFileManager::kDialogTypeSaveProjectFile, Project::loadableExtensions());
     }
     static void
     handleCompleteSavingFile(
@@ -860,8 +861,8 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
     }
     else if (!m_opened) {
         String extension;
-        for (StringList::const_iterator it = m_allowedExtensions.begin(), end = m_allowedExtensions.end();
-             it != end; ++it) {
+        for (StringList::const_iterator it = m_allowedExtensions.begin(), end = m_allowedExtensions.end(); it != end;
+             ++it) {
             extension.append(".");
             extension.append(it->c_str());
             if (it != end - 1) {

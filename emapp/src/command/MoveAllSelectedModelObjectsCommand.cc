@@ -173,7 +173,8 @@ MoveAllSelectedModelObjectsCommand::State::~State() NANOEM_DECL_NOEXCEPT
         nanoemMutableModelJointDestroy(it->first);
     }
     m_joints.clear();
-    for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end(); it != end; ++it) {
+    for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end(); it != end;
+         ++it) {
         nanoemMutableModelRigidBodyDestroy(it->first);
     }
     m_rigidBodies.clear();
@@ -207,7 +208,8 @@ MoveAllSelectedModelObjectsCommand::State::transform(const Matrix4x4 &delta)
         break;
     }
     case IModelObjectSelection::kEditingTypeRigidBody: {
-        for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end(); it != end; ++it) {
+        for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end();
+             it != end; ++it) {
             const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(it->first);
             const Vector4 newOrigin(delta * Vector4(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)), 1));
             nanoemMutableModelRigidBodySetOrigin(it->first, glm::value_ptr(newOrigin));

@@ -2849,7 +2849,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         }
         else {
             ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
-            ImGui::InputFloat3("##viewport.bone.translation", glm::value_ptr(translation), "%.2f", ImGuiInputTextFlags_ReadOnly);
+            ImGui::InputFloat3(
+                "##viewport.bone.translation", glm::value_ptr(translation), "%.2f", ImGuiInputTextFlags_ReadOnly);
             ImGui::PopStyleColor();
         }
         ImGui::PopItemWidth();
@@ -3780,7 +3781,8 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state,
             const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
             const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
             if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
-                ((intersected && isSelectingBoneHandle(selection, intersectedRectangleType)) || isDraggingBoneHandle(state))) {
+                ((intersected && isSelectingBoneHandle(selection, intersectedRectangleType)) ||
+                    isDraggingBoneHandle(state))) {
                 Quaternion orientation(Constants::kZeroQ);
                 if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
                     orientation =
