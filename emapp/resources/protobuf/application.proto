@@ -538,6 +538,8 @@ message ConfirmBeforeExportingImageCommand {
 };
 message ConfirmBeforeExportingVideoCommand {
 };
+message SaveProjectCommand {
+};
 
 message UndoCommand {
   optional uint32 model_handle = 1;
@@ -1120,6 +1122,7 @@ message Command {
     ScreenCursorReleaseCommand screen_cursor_release = 125;
     ConfirmBeforeExportingImageCommand confirm_before_exporting_image = 126;
     ConfirmBeforeExportingVideoCommand confirm_before_exporting_video = 127;
+    SaveProjectCommand save_project = 128;
     /* request-repsonse */
     PingPongCommand ping_pong = 1000;
     IsProjectDirtyRequestCommand is_project_dirty = 1001;
