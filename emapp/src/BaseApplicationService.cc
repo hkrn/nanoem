@@ -3065,6 +3065,9 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         handleNewProject();
         break;
     }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT: {
+        break;
+    }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_PROJECT_FILE_URI: {
         if (nanoem_likely(project)) {
             Nanoem__Application__GetProjectFileURIResponseEvent base =

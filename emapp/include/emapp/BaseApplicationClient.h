@@ -181,6 +181,7 @@ public:
     void sendSaveFileMessage(const URI &fileURI, nanoem_u32_t type);
     void sendDropFileMessage(const URI &fileURI);
     void sendNewProjectMessage();
+    void sendSaveProjectMessage();
     void sendConfirmBeforeNewProjectMessage();
     void sendConfirmBeforeOpenProjectMessage();
     void sendConfirmBeforeExitApplicationMessage();

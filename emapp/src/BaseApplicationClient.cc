@@ -375,6 +375,17 @@ BaseApplicationClient::sendNewProjectMessage()
 }
 
 void
+BaseApplicationClient::sendSaveProjectMessage()
+{
+    Nanoem__Application__SaveProjectCommand action = NANOEM__APPLICATION__SAVE_PROJECT_COMMAND__INIT;
+    Nanoem__Application__Command command = NANOEM__APPLICATION__COMMAND__INIT;
+    command.timestamp = internal::ApplicationUtils::timestamp();
+    command.type_case = NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT;
+    command.save_project = &action;
+    sendCommandMessage(&command);
+}
+
+void
 BaseApplicationClient::sendConfirmBeforeNewProjectMessage()
 {
     Nanoem__Application__ConfirmBeforeNewProjectCommand action =

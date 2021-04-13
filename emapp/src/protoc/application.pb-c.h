@@ -143,6 +143,7 @@ typedef struct _Nanoem__Application__ScreenCursorMoveCommand Nanoem__Application
 typedef struct _Nanoem__Application__ScreenCursorReleaseCommand Nanoem__Application__ScreenCursorReleaseCommand;
 typedef struct _Nanoem__Application__ConfirmBeforeExportingImageCommand Nanoem__Application__ConfirmBeforeExportingImageCommand;
 typedef struct _Nanoem__Application__ConfirmBeforeExportingVideoCommand Nanoem__Application__ConfirmBeforeExportingVideoCommand;
+typedef struct _Nanoem__Application__SaveProjectCommand Nanoem__Application__SaveProjectCommand;
 typedef struct _Nanoem__Application__UndoCommand Nanoem__Application__UndoCommand;
 typedef struct _Nanoem__Application__RedoLoadAccessoryCommand Nanoem__Application__RedoLoadAccessoryCommand;
 typedef struct _Nanoem__Application__RedoLoadModelCommand Nanoem__Application__RedoLoadModelCommand;
@@ -1812,6 +1813,15 @@ struct  _Nanoem__Application__ConfirmBeforeExportingVideoCommand
      }
 
 
+struct  _Nanoem__Application__SaveProjectCommand
+{
+  ProtobufCMessage base;
+};
+#define NANOEM__APPLICATION__SAVE_PROJECT_COMMAND__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__save_project_command__descriptor) \
+     }
+
+
 struct  _Nanoem__Application__UndoCommand
 {
   ProtobufCMessage base;
@@ -3000,6 +3010,7 @@ typedef enum {
   NANOEM__APPLICATION__COMMAND__TYPE_SCREEN_CURSOR_RELEASE = 125,
   NANOEM__APPLICATION__COMMAND__TYPE_CONFIRM_BEFORE_EXPORTING_IMAGE = 126,
   NANOEM__APPLICATION__COMMAND__TYPE_CONFIRM_BEFORE_EXPORTING_VIDEO = 127,
+  NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT = 128,
   NANOEM__APPLICATION__COMMAND__TYPE_PING_PONG = 1000,
   NANOEM__APPLICATION__COMMAND__TYPE_IS_PROJECT_DIRTY = 1001,
   NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_MODEL_BONES = 1002,
@@ -3207,6 +3218,7 @@ struct  _Nanoem__Application__Command
     Nanoem__Application__ScreenCursorReleaseCommand *screen_cursor_release;
     Nanoem__Application__ConfirmBeforeExportingImageCommand *confirm_before_exporting_image;
     Nanoem__Application__ConfirmBeforeExportingVideoCommand *confirm_before_exporting_video;
+    Nanoem__Application__SaveProjectCommand *save_project;
     /*
      * request-repsonse 
      */
@@ -6932,6 +6944,25 @@ Nanoem__Application__ConfirmBeforeExportingVideoCommand *
 void   nanoem__application__confirm_before_exporting_video_command__free_unpacked
                      (Nanoem__Application__ConfirmBeforeExportingVideoCommand *message,
                       ProtobufCAllocator *allocator);
+/* Nanoem__Application__SaveProjectCommand methods */
+void   nanoem__application__save_project_command__init
+                     (Nanoem__Application__SaveProjectCommand         *message);
+size_t nanoem__application__save_project_command__get_packed_size
+                     (const Nanoem__Application__SaveProjectCommand   *message);
+size_t nanoem__application__save_project_command__pack
+                     (const Nanoem__Application__SaveProjectCommand   *message,
+                      uint8_t             *out);
+size_t nanoem__application__save_project_command__pack_to_buffer
+                     (const Nanoem__Application__SaveProjectCommand   *message,
+                      ProtobufCBuffer     *buffer);
+Nanoem__Application__SaveProjectCommand *
+       nanoem__application__save_project_command__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   nanoem__application__save_project_command__free_unpacked
+                     (Nanoem__Application__SaveProjectCommand *message,
+                      ProtobufCAllocator *allocator);
 /* Nanoem__Application__UndoCommand methods */
 void   nanoem__application__undo_command__init
                      (Nanoem__Application__UndoCommand         *message);
@@ -10144,6 +10175,9 @@ typedef void (*Nanoem__Application__ConfirmBeforeExportingImageCommand_Closure)
 typedef void (*Nanoem__Application__ConfirmBeforeExportingVideoCommand_Closure)
                  (const Nanoem__Application__ConfirmBeforeExportingVideoCommand *message,
                   void *closure_data);
+typedef void (*Nanoem__Application__SaveProjectCommand_Closure)
+                 (const Nanoem__Application__SaveProjectCommand *message,
+                  void *closure_data);
 typedef void (*Nanoem__Application__UndoCommand_Closure)
                  (const Nanoem__Application__UndoCommand *message,
                   void *closure_data);
@@ -10802,6 +10836,7 @@ extern const ProtobufCMessageDescriptor nanoem__application__screen_cursor_move_
 extern const ProtobufCMessageDescriptor nanoem__application__screen_cursor_release_command__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__confirm_before_exporting_image_command__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__confirm_before_exporting_video_command__descriptor;
+extern const ProtobufCMessageDescriptor nanoem__application__save_project_command__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__undo_command__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__redo_load_accessory_command__descriptor;
 extern const ProtobufCMessageDescriptor nanoem__application__redo_load_model_command__descriptor;
