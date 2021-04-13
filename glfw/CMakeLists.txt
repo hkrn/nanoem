@@ -1,16 +1,3 @@
-option(NANOEM_ENABLE_GLFW_MT "Enable multi-threaded GLFW application." OFF)
-
-# NFD (native file dialog)
-set(NFD_BASE_PATH ${PROJECT_SOURCE_DIR}/dependencies/nativefiledialog)
-set(NFD_SOURCES ${NFD_BASE_PATH}/src/nfd_common.c)
-if(WIN32)
-  list(APPEND NFD_SOURCES ${NFD_BASE_PATH}/src/nfd_win.cpp)
-elseif(APPLE)
-  list(APPEND NFD_SOURCES ${NFD_BASE_PATH}/src/nfd_cocoa.m)
-else()
-  list(APPEND NFD_SOURCES ${NFD_BASE_PATH}/src/nfd_zenity.c)
-endif()
-
 set(COMMON_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/common/include)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/common/src COMMON_SOURCES)
 

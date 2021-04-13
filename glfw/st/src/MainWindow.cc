@@ -17,7 +17,6 @@
 #include "GLFW/glfw3.h"
 
 #include "bx/os.h"
-#include "nfd.h"
 
 namespace nanoem {
 namespace glfw {
@@ -50,57 +49,6 @@ MainWindow::MainWindow(GLFWApplicationService *service, GLFWApplicationClient *c
     : m_service(service)
     , m_client(client)
 {
-    m_client->addQueryOpenSingleFileDialogEventListener(
-        [](void *userData, nanoem_u32_t types, const StringList &allowedExtensions) {
-            auto self = static_cast<MainWindow *>(userData);
-            nfdchar_t *outPath = nullptr;
-            String filter;
-            buildFileFilter(allowedExtensions, filter);
-            if (NFD_OpenDialog(filter.c_str(), nullptr, &outPath) == NFD_OKAY) {
-                String canonicalizedPath;
-                FileUtils::canonicalizePathSeparator(outPath, canonicalizedPath);
-                const URI &fileURI = URI::createFromFilePath(canonicalizedPath);
-                self->setTitle(fileURI);
-                self->m_client->sendLoadFileMessage(fileURI, types);
-            }
-            free(outPath);
-        },
-        this, false);
-    m_client->addQueryOpenMultipleFilesDialogEventListener(
-        [](void *userData, nanoem_u32_t types, const StringList &allowedExtensions) {
-            auto self = static_cast<MainWindow *>(userData);
-            nfdpathset_t outPaths;
-            String filter;
-            buildFileFilter(allowedExtensions, filter);
-            if (NFD_OpenDialogMultiple(filter.c_str(), nullptr, &outPaths) == NFD_OKAY) {
-                String canonicalizedPath;
-                for (size_t i = 0, count = NFD_PathSet_GetCount(&outPaths); i < count; i++) {
-                    nfdchar_t *path = NFD_PathSet_GetPath(&outPaths, i);
-                    FileUtils::canonicalizePathSeparator(path, canonicalizedPath);
-                    const URI &fileURI = URI::createFromFilePath(canonicalizedPath);
-                    self->setTitle(fileURI);
-                    self->m_client->sendLoadFileMessage(fileURI, types);
-                }
-                NFD_PathSet_Free(&outPaths);
-            }
-        },
-        this, false);
-    m_client->addQuerySaveFileDialogEventListener(
-        [](void *userData, nanoem_u32_t types, const StringList &allowedExtensions) {
-            auto self = static_cast<MainWindow *>(userData);
-            nfdchar_t *outPath = nullptr;
-            String filter;
-            buildFileFilter(allowedExtensions, filter);
-            if (NFD_SaveDialog(filter.c_str(), nullptr, &outPath) == NFD_OKAY) {
-                String canonicalizedPath;
-                FileUtils::canonicalizePathSeparator(outPath, canonicalizedPath);
-                const URI &fileURI = URI::createFromFilePath(canonicalizedPath);
-                self->setTitle(fileURI);
-                self->m_client->sendSaveFileMessage(fileURI, types);
-            }
-            free(outPath);
-        },
-        this, false);
     m_client->addDisableCursorEventListener(
         [](void *userData, const Vector2SI32 &logicalScaleCursorPosition) {
             BX_UNUSED_1(logicalScaleCursorPosition);
@@ -229,7 +177,6 @@ MainWindow::handleCloseCallback(GLFWwindow *window)
                                 self->destroyWindow();
                             },
                             self, true);
-                        self->saveProject();
                     },
                     self, true);
                 client->addDiscardProjectAfterConfirmEventListener(
@@ -421,51 +368,6 @@ MainWindow::setupWindow(String &pluginPath)
         gl3wInit();
     }
     return m_window != nullptr;
-}
-
-void
-MainWindow::saveProject()
-{
-    m_client->sendGetProjectFileURIRequestMessage(
-        [](void *userData, const URI &fileURI) {
-            auto self = static_cast<MainWindow *>(userData);
-            const String &pathExtension = fileURI.pathExtension();
-            if (!fileURI.isEmpty() &&
-                (pathExtension == String(Project::kArchivedNativeFormatFileExtension) ||
-                    pathExtension == String(Project::kFileSystemBasedNativeFormatFileExtension))) {
-                self->saveFile(fileURI, IFileManager::kDialogTypeSaveProjectFile);
-            }
-            else {
-                self->saveProjectAs();
-            }
-        },
-        this);
-}
-
-void
-MainWindow::saveProjectAs()
-{
-    StringList allowedExtensions;
-    allowedExtensions.push_back(Project::kArchivedNativeFormatFileExtension);
-    allowedExtensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
-    String filter;
-    buildFileFilter(allowedExtensions, filter);
-    nfdchar_t *outPath = nullptr;
-    if (NFD_SaveDialog(filter.c_str(), nullptr, &outPath) == NFD_OKAY) {
-        const URI fileURI(URI::createFromFilePath(outPath));
-        setTitle(fileURI);
-        saveFile(fileURI, IFileManager::kDialogTypeSaveProjectFile);
-    }
-    else {
-        m_client->clearAllCompleteSavingFileOnceEventListeners();
-    }
-    free(outPath);
-}
-
-void
-MainWindow::saveFile(const URI &fileURI, IFileManager::DialogType type)
-{
-    m_client->sendSaveFileMessage(fileURI, type);
 }
 
 void

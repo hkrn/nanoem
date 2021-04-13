@@ -67,9 +67,9 @@
 [submodule "dependencies/libsoundio"]
 	path = dependencies/libsoundio
 	url = https://github.com/andrewrk/libsoundio
-[submodule "dependencies/nativefiledialog"]
-	path = dependencies/nativefiledialog
-	url = https://github.com/mlabbe/nativefiledialog
 [submodule "dependencies/tbb"]
 	path = dependencies/tbb
 	url = https://github.com/wjakob/tbb.git
+[submodule "dependencies/imguifiledialog"]
+	path = dependencies/imguifiledialog
+	url = https://github.com/aiekick/ImGuiFileDialog

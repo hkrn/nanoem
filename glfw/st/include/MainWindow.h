@@ -48,9 +48,6 @@ private:
     static void handleDropCallback(GLFWwindow *window, int count, const char **filenames);
 
     bool setupWindow(String &pluginPath);
-    void saveProject();
-    void saveProjectAs();
-    void saveFile(const URI &fileURI, IFileManager::DialogType type);
     void setTitle(const URI &fileURI);
     void destroyWindow();
 
