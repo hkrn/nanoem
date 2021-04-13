@@ -65,6 +65,12 @@ ModelEditCommandDialog::afterToggleEditingMode(
     IModelObjectSelection::EditingType editingType, Model *activeModel, Project *project)
 {
     switch (editingType) {
+    case IModelObjectSelection::kEditingTypeNone: {
+        activeModel->setPivotMatrix(Matrix4x4(0));
+        activeModel->selection()->setEditingType(editingType);
+        project->setEditingMode(Project::kEditingModeNone);
+        break;
+    }
     case IModelObjectSelection::kEditingTypeVertex: {
         activeModel->setShowAllVertexPoints(true);
         activeModel->selection()->setEditingType(editingType);
@@ -127,61 +133,62 @@ ModelEditCommandDialog::draw(Project *project)
         m_activeModel = currentActiveModel;
         visible = currentActiveModel != nullptr;
     }
-    if (open(tr("nanoem.gui.window.model.edit.command.title"), kIdentifier, &visible)) {
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 3;
+    if (open(tr("Model Commands"), kIdentifier, &visible, height)) {
         if (ImGui::CollapsingHeader("Gizmo")) {
-            Model::GizmoOperationType op = m_activeModel->gizmoOperationType();
-            if (ImGui::RadioButton("Translate", op == Model::kGizmoOperationTypeTranslate)) {
-                m_activeModel->setGizmoOperationType(Model::kGizmoOperationTypeTranslate);
-            }
+            ImGui::Text("Operation Type");
+            addGizmoOperationButton("Translate", Model::kGizmoOperationTypeTranslate);
             ImGui::SameLine();
-            if (ImGui::RadioButton("Rotate", op == Model::kGizmoOperationTypeRotate)) {
-                m_activeModel->setGizmoOperationType(Model::kGizmoOperationTypeRotate);
-            }
+            addGizmoOperationButton("Rotate", Model::kGizmoOperationTypeRotate);
             ImGui::SameLine();
-            if (ImGui::RadioButton("Scale", op == Model::kGizmoOperationTypeScale)) {
-                m_activeModel->setGizmoOperationType(Model::kGizmoOperationTypeScale);
-            }
-            ImGui::Separator();
-            Model::TransformCoordinateType coord = m_activeModel->gizmoTransformCoordinateType();
-            if (ImGui::RadioButton("Global", coord == Model::kTransformCoordinateTypeGlobal)) {
-                m_activeModel->setGizmoTransformCoordinateType(Model::kTransformCoordinateTypeGlobal);
-            }
+            addGizmoOperationButton("Scale", Model::kGizmoOperationTypeScale);
+            addSeparator();
+            ImGui::Text("Coordinate Type");
+            addGizmoCoordinationButton("Global", Model::kTransformCoordinateTypeGlobal);
             ImGui::SameLine();
-            if (ImGui::RadioButton("Local", coord == Model::kTransformCoordinateTypeLocal)) {
-                m_activeModel->setGizmoTransformCoordinateType(Model::kTransformCoordinateTypeLocal);
-            }
+            addGizmoCoordinationButton("Local", Model::kTransformCoordinateTypeLocal);
         }
         if (ImGui::CollapsingHeader("Selection")) {
-            IModelObjectSelection *selection = m_activeModel->selection();
-            IModelObjectSelection::EditingType editingType = selection->editingType();
-            if (ImGui::RadioButton("Vertex", editingType == IModelObjectSelection::kEditingTypeVertex)) {
-                beforeToggleEditingMode(editingType, m_activeModel, project);
-                afterToggleEditingMode(IModelObjectSelection::kEditingTypeVertex, m_activeModel, project);
-            }
-            if (ImGui::RadioButton("Face", editingType == IModelObjectSelection::kEditingTypeFace)) {
-                beforeToggleEditingMode(editingType, m_activeModel, project);
-                afterToggleEditingMode(IModelObjectSelection::kEditingTypeFace, m_activeModel, project);
-            }
-            if (ImGui::RadioButton("Material", editingType == IModelObjectSelection::kEditingTypeMaterial)) {
-                beforeToggleEditingMode(editingType, m_activeModel, project);
-                afterToggleEditingMode(IModelObjectSelection::kEditingTypeMaterial, m_activeModel, project);
-            }
-            if (ImGui::RadioButton("Bone", editingType == IModelObjectSelection::kEditingTypeBone)) {
-                beforeToggleEditingMode(editingType, m_activeModel, project);
-                afterToggleEditingMode(IModelObjectSelection::kEditingTypeBone, m_activeModel, project);
-            }
-            if (ImGui::RadioButton("RigidBody", editingType == IModelObjectSelection::kEditingTypeRigidBody)) {
-                beforeToggleEditingMode(editingType, m_activeModel, project);
-                afterToggleEditingMode(IModelObjectSelection::kEditingTypeRigidBody, m_activeModel, project);
-            }
-            if (ImGui::RadioButton("Joint", editingType == IModelObjectSelection::kEditingTypeJoint)) {
-                beforeToggleEditingMode(editingType, m_activeModel, project);
-                afterToggleEditingMode(IModelObjectSelection::kEditingTypeJoint, m_activeModel, project);
-            }
+            addSelectionButton("(none)", IModelObjectSelection::kEditingTypeNone, project);
+            addSelectionButton("Vertex", IModelObjectSelection::kEditingTypeVertex, project);
+            addSelectionButton("Face", IModelObjectSelection::kEditingTypeFace, project);
+            addSelectionButton("Material", IModelObjectSelection::kEditingTypeMaterial, project);
+            addSelectionButton("Bone", IModelObjectSelection::kEditingTypeBone, project);
+            addSelectionButton("Rigid Body", IModelObjectSelection::kEditingTypeRigidBody, project);
+            addSelectionButton("Joint", IModelObjectSelection::kEditingTypeJoint, project);
         }
     }
     close();
     return visible;
+}
+
+void
+ModelEditCommandDialog::addGizmoOperationButton(const char *text, Model::GizmoOperationType type)
+{
+    Model::GizmoOperationType op = m_activeModel->gizmoOperationType();
+    if (ImGui::RadioButton(text, op == type)) {
+        m_activeModel->setGizmoOperationType(type);
+    }
+}
+
+void
+ModelEditCommandDialog::addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type)
+{
+    Model::TransformCoordinateType coord = m_activeModel->gizmoTransformCoordinateType();
+    if (ImGui::RadioButton(text, coord == type)) {
+        m_activeModel->setGizmoTransformCoordinateType(type);
+    }
+}
+
+void
+ModelEditCommandDialog::addSelectionButton(const char *text, IModelObjectSelection::EditingType type, Project *project)
+{
+    const IModelObjectSelection *selection = m_activeModel->selection();
+    const IModelObjectSelection::EditingType editingType = selection->editingType();
+    if (ImGui::RadioButton(text, editingType == type)) {
+        beforeToggleEditingMode(editingType, m_activeModel, project);
+        afterToggleEditingMode(type, m_activeModel, project);
+    }
 }
 
 } /* namespace imgui */

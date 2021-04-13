@@ -92,6 +92,7 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllJoints(model->isShowAllJoints())
     , m_showAllSoftBodies(false)
 {
+    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kEditingTypeNone, m_activeModel, project);
 }
 
 bool

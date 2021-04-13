@@ -8,13 +8,11 @@
 #ifndef NANOEM_EMAPP_INTERNAL_IMGUI_MODELEDITCOMMANDDIALOG_H_
 #define NANOEM_EMAPP_INTERNAL_IMGUI_MODELEDITCOMMANDDIALOG_H_
 
+#include "emapp/Model.h"
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/internal/imgui/BaseNonModalDialogWindow.h"
 
 namespace nanoem {
-
-class Model;
-
 namespace internal {
 namespace imgui {
 
@@ -29,6 +27,9 @@ struct ModelEditCommandDialog : BaseNonModalDialogWindow {
     ModelEditCommandDialog(Model *model, BaseApplicationService *applicationPtr);
 
     bool draw(Project *project);
+    void addGizmoOperationButton(const char *text, Model::GizmoOperationType type);
+    void addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type);
+    void addSelectionButton(const char *text, IModelObjectSelection::EditingType type, Project *project);
 
     Model *m_activeModel;
 };
