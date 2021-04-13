@@ -177,6 +177,7 @@ MainWindow::handleCloseCallback(GLFWwindow *window)
                                 self->destroyWindow();
                             },
                             self, true);
+                        self->m_client->sendSaveProjectMessage();
                     },
                     self, true);
                 client->addDiscardProjectAfterConfirmEventListener(

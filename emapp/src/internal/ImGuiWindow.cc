@@ -1046,6 +1046,14 @@ ImGuiWindow::openMotionIOPluginDialog(Project *project, plugin::MotionIOPlugin *
 }
 
 void
+ImGuiWindow::openSaveProjectDialog(Project *project)
+{
+    if (m_menu) {
+        m_menu->openSaveProjectDialog(project);
+    }
+}
+
+void
 ImGuiWindow::resizeDevicePixelWindowSize(const Vector2UI16 &value)
 {
     ImGuiIO &io = ImGui::GetIO();

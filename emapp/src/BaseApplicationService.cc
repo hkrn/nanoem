@@ -2961,26 +2961,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         const nanoem_u64_t startedAt = stm_now();
         succeeded = saveAsFile(fileURI, project, type, error);
         const nanoem_u64_t interval = stm_since(startedAt);
-        Nanoem__Application__CompleteSavingFileEvent base = NANOEM__APPLICATION__COMPLETE_SAVING_FILE_EVENT__INIT;
-        Nanoem__Application__URI uri2;
-        MutableString absolutePath, fragment;
-        base.file_uri = internal::ApplicationUtils::assignURI(&uri2, absolutePath, fragment, fileURI);
-        base.type = commandPtr->type;
-        base.ticks = interval;
-        base.has_ticks = 1;
-        Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
-        event.type_case = NANOEM__APPLICATION__EVENT__TYPE_COMPLETE_SAVING_FILE;
-        event.complete_saving_file = &base;
-        sendEventMessage(&event);
-        if (g_sentryAvailable && succeeded) {
-            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-            sentry_value_t data = sentry_value_new_object();
-            sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
-            sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
-            sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("saved"));
-            sentry_value_set_by_key(breadcrumb, "data", data);
-            sentry_add_breadcrumb(breadcrumb);
-        }
+        sendSaveFileMessage(fileURI, commandPtr->type, interval, succeeded);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_MODEL_BONES: {
@@ -3066,6 +3047,18 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT: {
+        if (nanoem_likely(project)) {
+            const URI fileURI(project->fileURI());
+            if (fileURI.isEmpty()) {
+                m_window->openSaveProjectDialog(project);
+            }
+            else {
+                const nanoem_u64_t startedAt = stm_now();
+                succeeded = saveAsFile(fileURI, project, IFileManager::kDialogTypeSaveProjectFile, error);
+                const nanoem_u64_t interval = stm_since(startedAt);
+                sendSaveFileMessage(fileURI, IFileManager::kDialogTypeSaveProjectFile, interval, succeeded);
+            }
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_PROJECT_FILE_URI: {
@@ -5625,6 +5618,31 @@ BaseApplicationService::performRedo(undo_command_t *commandPtr, undo_stack_t *st
     undoStackPushCommand(stack, commandPtr);
     undoCommandSetOnPersistRedoCallback(commandPtr, cb);
     commandPtrRef = commandPtr;
+}
+
+void
+BaseApplicationService::sendSaveFileMessage(const URI &fileURI, uint32_t type, uint64_t interval, bool succeeded)
+{
+    Nanoem__Application__CompleteSavingFileEvent base = NANOEM__APPLICATION__COMPLETE_SAVING_FILE_EVENT__INIT;
+    Nanoem__Application__URI uri2;
+    MutableString absolutePath, fragment;
+    base.file_uri = internal::ApplicationUtils::assignURI(&uri2, absolutePath, fragment, fileURI);
+    base.type = type;
+    base.ticks = interval;
+    base.has_ticks = 1;
+    Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
+    event.type_case = NANOEM__APPLICATION__EVENT__TYPE_COMPLETE_SAVING_FILE;
+    event.complete_saving_file = &base;
+    sendEventMessage(&event);
+    if (g_sentryAvailable && succeeded) {
+        sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+        sentry_value_t data = sentry_value_new_object();
+        sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
+        sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("saved"));
+        sentry_value_set_by_key(breadcrumb, "data", data);
+        sentry_add_breadcrumb(breadcrumb);
+    }
 }
 
 void

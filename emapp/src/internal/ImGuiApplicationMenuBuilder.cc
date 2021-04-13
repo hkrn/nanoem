@@ -318,6 +318,12 @@ ImGuiApplicationMenuBuilder::draw(void *debugger)
 }
 
 void
+ImGuiApplicationMenuBuilder::openSaveProjectDialog(Project *project)
+{
+    m_saveFileDialogState.initialize(Project::loadableExtensions(), IFileManager::kDialogTypeSaveProjectFile);
+}
+
+void
 ImGuiApplicationMenuBuilder::createAllMenus()
 {
     clearAllMenuItems();

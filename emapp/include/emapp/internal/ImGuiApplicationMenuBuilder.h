@@ -29,6 +29,7 @@ public:
     ~ImGuiApplicationMenuBuilder();
 
     void draw(void *debugger);
+    void openSaveProjectDialog(Project *project);
 
 private:
     struct NewProjectEventHandler;

@@ -183,10 +183,12 @@ public:
         const ByteArray &layout, int functionIndex) NANOEM_DECL_OVERRIDE;
     bool openMotionIOPluginDialog(Project *project, plugin::MotionIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) NANOEM_DECL_OVERRIDE;
+    void openSaveProjectDialog(Project *project) NANOEM_DECL_OVERRIDE;
 
     void resizeDevicePixelWindowSize(const Vector2UI16 &value) NANOEM_DECL_OVERRIDE;
     void setDevicePixelRatio(float value) NANOEM_DECL_OVERRIDE;
     void setAntiAliasEnabled(bool value) NANOEM_DECL_OVERRIDE;
+    void saveProject(Project *project) NANOEM_DECL_OVERRIDE;
     void drawAll2DPrimitives(
         Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;

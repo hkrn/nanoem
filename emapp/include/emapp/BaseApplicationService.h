@@ -415,6 +415,7 @@ private:
     static void writeRedoMessage(Nanoem__Application__Command *command, Project *project, Error &error);
     static void performRedo(undo_command_t *commandPtr, undo_stack_t *stack, undo_command_t *&commandPtrRef);
 
+    void sendSaveFileMessage(const URI &fileURI, uint32_t type, uint64_t interval, bool succeeded);
     void sendQueryEventMessage(Nanoem__Application__Event *event, const Nanoem__Application__Command *command);
     void sendSaveAfterConfirmEventMessage();
     void sendDiscardAfterConfirmEventMessage();
