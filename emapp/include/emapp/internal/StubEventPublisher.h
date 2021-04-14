@@ -373,6 +373,10 @@ public:
         BX_UNUSED_1(value);
     }
     void
+    publishQuitApplicationEvent() NANOEM_DECL_OVERRIDE
+    {
+    }
+    void
     publishErrorEvent(const Error &error) NANOEM_DECL_OVERRIDE
     {
         if (error.hasReason()) {

@@ -11797,6 +11797,51 @@ void   nanoem__application__toggle_model_editing_enabled_event__free_unpacked
   assert(message->base.descriptor == &nanoem__application__toggle_model_editing_enabled_event__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   nanoem__application__quit_application_event__init
+                     (Nanoem__Application__QuitApplicationEvent         *message)
+{
+  static const Nanoem__Application__QuitApplicationEvent init_value = NANOEM__APPLICATION__QUIT_APPLICATION_EVENT__INIT;
+  *message = init_value;
+}
+size_t nanoem__application__quit_application_event__get_packed_size
+                     (const Nanoem__Application__QuitApplicationEvent *message)
+{
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t nanoem__application__quit_application_event__pack
+                     (const Nanoem__Application__QuitApplicationEvent *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t nanoem__application__quit_application_event__pack_to_buffer
+                     (const Nanoem__Application__QuitApplicationEvent *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Nanoem__Application__QuitApplicationEvent *
+       nanoem__application__quit_application_event__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Nanoem__Application__QuitApplicationEvent *)
+     protobuf_c_message_unpack (&nanoem__application__quit_application_event__descriptor,
+                                allocator, len, data);
+}
+void   nanoem__application__quit_application_event__free_unpacked
+                     (Nanoem__Application__QuitApplicationEvent *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   nanoem__application__ping_pong_event__init
                      (Nanoem__Application__PingPongEvent         *message)
 {
@@ -30521,6 +30566,24 @@ const ProtobufCMessageDescriptor nanoem__application__toggle_model_editing_enabl
   (ProtobufCMessageInit) nanoem__application__toggle_model_editing_enabled_event__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+#define nanoem__application__quit_application_event__field_descriptors NULL
+#define nanoem__application__quit_application_event__field_indices_by_name NULL
+#define nanoem__application__quit_application_event__number_ranges NULL
+const ProtobufCMessageDescriptor nanoem__application__quit_application_event__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "nanoem.application.QuitApplicationEvent",
+  "QuitApplicationEvent",
+  "Nanoem__Application__QuitApplicationEvent",
+  "nanoem.application",
+  sizeof(Nanoem__Application__QuitApplicationEvent),
+  0,
+  nanoem__application__quit_application_event__field_descriptors,
+  nanoem__application__quit_application_event__field_indices_by_name,
+  0,  nanoem__application__quit_application_event__number_ranges,
+  (ProtobufCMessageInit) nanoem__application__quit_application_event__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 #define nanoem__application__ping_pong_event__field_descriptors NULL
 #define nanoem__application__ping_pong_event__field_indices_by_name NULL
 #define nanoem__application__ping_pong_event__number_ranges NULL
@@ -31202,7 +31265,7 @@ const ProtobufCMessageDescriptor nanoem__application__get_handle_file_urirespons
   (ProtobufCMessageInit) nanoem__application__get_handle_file_uriresponse_event__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__application__event__field_descriptors[96] =
+static const ProtobufCFieldDescriptor nanoem__application__event__field_descriptors[97] =
 {
   {
     "timestamp",
@@ -32213,6 +32276,18 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
+    "quit_application",
+    92,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Nanoem__Application__Event, type_case),
+    offsetof(Nanoem__Application__Event, quit_application),
+    &nanoem__application__quit_application_event__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
     "ping_pong",
     1000,
     PROTOBUF_C_LABEL_OPTIONAL,
@@ -32382,21 +32457,22 @@ static const unsigned nanoem__application__event__field_indices_by_name[] = {
   23,   /* field[23] = discard_project_after_confirm */
   48,   /* field[48] = enable_cursor */
   55,   /* field[55] = error */
-  90,   /* field[90] = get_all_accessories */
-  86,   /* field[86] = get_all_model_bones */
-  87,   /* field[87] = get_all_model_morphs */
-  91,   /* field[91] = get_all_models */
-  89,   /* field[89] = get_background_image_texture_handle */
-  95,   /* field[95] = get_handle_file_uri */
-  88,   /* field[88] = get_project_file_uri */
+  91,   /* field[91] = get_all_accessories */
+  87,   /* field[87] = get_all_model_bones */
+  88,   /* field[88] = get_all_model_morphs */
+  92,   /* field[92] = get_all_models */
+  90,   /* field[90] = get_background_image_texture_handle */
+  96,   /* field[96] = get_handle_file_uri */
+  89,   /* field[89] = get_project_file_uri */
   53,   /* field[53] = initialization_complete */
-  85,   /* field[85] = is_project_dirty */
+  86,   /* field[86] = is_project_dirty */
   18,   /* field[18] = pause */
-  84,   /* field[84] = ping_pong */
+  85,   /* field[85] = ping_pong */
   16,   /* field[16] = play */
-  93,   /* field[93] = query_open_multiple_files_dialog */
-  92,   /* field[92] = query_open_single_file_dialog */
-  94,   /* field[94] = query_save_file_dialog */
+  94,   /* field[94] = query_open_multiple_files_dialog */
+  93,   /* field[93] = query_open_single_file_dialog */
+  95,   /* field[95] = query_save_file_dialog */
+  84,   /* field[84] = quit_application */
   4,   /* field[4] = redo */
   13,   /* field[13] = remove_accessory */
   10,   /* field[10] = remove_model */
@@ -32459,8 +32535,8 @@ static const ProtobufCIntRange nanoem__application__event__number_ranges[3 + 1] 
 {
   { 1, 0 },
   { 10, 2 },
-  { 1000, 84 },
-  { 0, 96 }
+  { 1000, 85 },
+  { 0, 97 }
 };
 const ProtobufCMessageDescriptor nanoem__application__event__descriptor =
 {
@@ -32470,7 +32546,7 @@ const ProtobufCMessageDescriptor nanoem__application__event__descriptor =
   "Nanoem__Application__Event",
   "nanoem.application",
   sizeof(Nanoem__Application__Event),
-  96,
+  97,
   nanoem__application__event__field_descriptors,
   nanoem__application__event__field_indices_by_name,
   3,  nanoem__application__event__number_ranges,

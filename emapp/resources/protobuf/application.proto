@@ -1480,6 +1480,8 @@ message SetViewportDevicePixelRatioEvent {
 message ToggleModelEditingEnabledEvent {
   required bool value = 1;
 }
+message QuitApplicationEvent {
+};
 
 message PingPongEvent {
 };
@@ -1622,6 +1624,7 @@ message Event {
     SetWindowDevicePixelRatioEvent set_window_device_pixel_ratio_event = 89;
     SetViewportDevicePixelRatioEvent set_viewport_device_pixel_ratio_event = 90;
     ToggleModelEditingEnabledEvent toggle_model_editing_enabled = 91;
+    QuitApplicationEvent quit_application = 92;
     PingPongEvent ping_pong = 1000;
     IsProjectDirtyResponseEvent is_project_dirty = 1001;
     GetAllModelBonesResponseEvent get_all_model_bones = 1002;

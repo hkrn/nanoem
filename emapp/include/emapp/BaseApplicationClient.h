@@ -146,6 +146,7 @@ public:
     typedef void (*pfn_handleCanPasteEvent)(void *userData, bool value);
     typedef void (*pfn_handleSetWindowDevicePixelRatioEvent)(void *userData, nanoem_f32_t value);
     typedef void (*pfn_handleSetViewportDevicePixelRatioEvent)(void *userData, nanoem_f32_t value);
+    typedef void (*pfn_handleQuitApplicationEvent)(void *userData);
     typedef void (*pfn_isProjectDirtyCallback)(void *userData, bool value);
     typedef void (*pfn_getProjectFileURICallback)(void *userData, const URI &value);
     typedef void (*pfn_getAllModelBonesCallback)(void *userData, nanoem_u16_t handle, const StringList &values);
@@ -407,6 +408,7 @@ public:
         pfn_handleSetWindowDevicePixelRatioEvent listener, void *userData, bool once);
     void addSetViewportDevicePixelRatioEventListener(
         pfn_handleSetViewportDevicePixelRatioEvent listener, void *userData, bool once);
+    void addQuitApplicationEventListener(pfn_handleQuitApplicationEvent listener, void *userData, bool once);
     void clearAllProjectAfterConfirmOnceEventListeners();
     void clearAllCompleteLoadingFileOnceEventListeners();
     void clearAllCompleteSavingFileOnceEventListeners();
@@ -505,6 +507,7 @@ private:
             pfn_handleCanPasteEvent handleCanPasteEvent;
             pfn_handleSetWindowDevicePixelRatioEvent handleSetWindowDevicePixelRatioEvent;
             pfn_handleSetViewportDevicePixelRatioEvent handleSetViewportDevicePixelRatioEvent;
+            pfn_handleQuitApplicationEvent handleQuitApplicationEvent;
         } u;
     };
     typedef tinystl::vector<EventListener, TinySTLAllocator> EventListenerList;

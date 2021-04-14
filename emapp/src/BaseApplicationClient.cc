@@ -2684,6 +2684,15 @@ BaseApplicationClient::addSetViewportDevicePixelRatioEventListener(
 }
 
 void
+BaseApplicationClient::addQuitApplicationEventListener(
+    pfn_handleQuitApplicationEvent listener, void *userData, bool once)
+{
+    EventListener l = { userData, once, { nullptr } };
+    l.u.handleQuitApplicationEvent = listener;
+    m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_QUIT_APPLICATION].push_back(l);
+}
+
+void
 BaseApplicationClient::clearAllProjectAfterConfirmOnceEventListeners()
 {
     clearAllOnceEventListeners(NANOEM__APPLICATION__EVENT__TYPE_SAVE_PROJECT_AFTER_CONFIRM);
@@ -4028,6 +4037,18 @@ BaseApplicationClient::dispatchEventMessage(const nanoem_u8_t *data, size_t size
                 for (EventListenerList::iterator it2 = listeners.begin(); it2 != listeners.end();) {
                     const EventListener &listener = *it2;
                     listener.u.handleToggleModelEditingEnabledEvent(listener.userData, enabled);
+                    it2 = listener.once ? listeners.erase(it2) : it2 + 1;
+                }
+            }
+            break;
+        }
+        case NANOEM__APPLICATION__EVENT__TYPE_QUIT_APPLICATION: {
+            EventListenerListMap::iterator it = m_eventListeners.find(event->type_case);
+            if (it != m_eventListeners.end()) {
+                EventListenerList &listeners = it->second;
+                for (EventListenerList::iterator it2 = listeners.begin(); it2 != listeners.end();) {
+                    const EventListener &listener = *it2;
+                    listener.u.handleQuitApplicationEvent(listener.userData);
                     it2 = listener.once ? listeners.erase(it2) : it2 + 1;
                 }
             }

@@ -751,6 +751,10 @@ ImGuiApplicationMenuBuilder::ImGuiMenuItem::draw()
                     client->sendConfirmBeforeExportingVideoMessage();
                     break;
                 }
+                case kMenuItemTypeFileExit: {
+                    builder->m_eventPublisher->publishQuitApplicationEvent();
+                    break;
+                }
                 default:
                     builder->m_client->sendMenuActionMessage(m_type);
                     break;

@@ -47,6 +47,12 @@ MainWindow::initialize()
             self->m_client.sendActivateMessage();
         },
         this, true);
+    m_client.addQuitApplicationEventListener(
+        [](void *userData) {
+            auto self = static_cast<MainWindow *>(userData);
+            self->handleQuitRequest();
+        },
+        this, false);
     const Vector2UI32 logicalWindowSize(Vector2(sapp_width(), sapp_height()) / Vector2(sapp_dpi_scale()));
     const BaseApplicationClient::InitializeMessageDescription desc(
         logicalWindowSize, colorFormat, sapp_dpi_scale(), pluginPath);

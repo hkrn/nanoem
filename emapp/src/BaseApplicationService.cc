@@ -358,6 +358,7 @@ public:
     void publishSetViewportDevicePixelRatioEvent(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
     void publishDisableCursorEvent(const Vector2 &value) NANOEM_DECL_OVERRIDE;
     void publishEnableCursorEvent(const Vector2 &value) NANOEM_DECL_OVERRIDE;
+    void publishQuitApplicationEvent() NANOEM_DECL_OVERRIDE;
     void publishErrorEvent(const Error &error) NANOEM_DECL_OVERRIDE;
 
 private:
@@ -1481,6 +1482,17 @@ BaseApplicationService::EventPublisher::publishEnableCursorEvent(const Vector2 &
     event.timestamp = internal::ApplicationUtils::timestamp();
     event.type_case = NANOEM__APPLICATION__EVENT__TYPE_ENABLE_CURSOR;
     event.enable_cursor = &base;
+    sendEventMessage(event);
+}
+
+void
+BaseApplicationService::EventPublisher::publishQuitApplicationEvent()
+{
+    Nanoem__Application__QuitApplicationEvent base = NANOEM__APPLICATION__QUIT_APPLICATION_EVENT__INIT;
+    Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
+    event.timestamp = internal::ApplicationUtils::timestamp();
+    event.type_case = NANOEM__APPLICATION__EVENT__TYPE_QUIT_APPLICATION;
+    event.quit_application = &base;
     sendEventMessage(event);
 }
 

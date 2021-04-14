@@ -96,6 +96,7 @@ public:
     virtual void publishSetViewportDevicePixelRatioEvent(nanoem_f32_t value) = 0;
     virtual void publishDisableCursorEvent(const Vector2 &value) = 0;
     virtual void publishEnableCursorEvent(const Vector2 &value) = 0;
+    virtual void publishQuitApplicationEvent() = 0;
     virtual void publishErrorEvent(const Error &error) = 0;
 };
 
