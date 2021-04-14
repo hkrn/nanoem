@@ -60,6 +60,8 @@ public:
     const char *canonicalNameConstString() const NANOEM_DECL_NOEXCEPT;
     bool isDirty() const NANOEM_DECL_NOEXCEPT;
     void setDirty(bool value);
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
     static void constrainOrientation(
         const Vector3 &upperLimit, const Vector3 &lowerLimit, Quaternion &orientation) NANOEM_DECL_NOEXCEPT;
@@ -148,8 +150,7 @@ private:
     Vector3 m_localMorphTranslation;
     Vector3 m_localUserTranslation;
     Vector4U8 m_bezierControlPoints[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
-    bool m_isLinearInterpolation[NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
-    bool m_dirty;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

@@ -14,6 +14,14 @@
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateEditingMasked = 1 << 1,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespace anonymous */
 
 int
 SoftBody::index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT

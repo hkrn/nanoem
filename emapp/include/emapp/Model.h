@@ -245,8 +245,9 @@ public:
     void removeOutsideParent(const nanoem_model_bone_t *key);
     sg_image *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
     bool isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
-    bool isMaterialSelected(const nanoem_model_material_t *material) const NANOEM_DECL_NOEXCEPT;
-    bool isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DECL_NOEXCEPT;
+    bool isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT;
+    bool isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
+    bool isBoneConnectionVisible(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr,
         const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
     void drawAllBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor);

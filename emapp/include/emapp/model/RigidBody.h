@@ -79,6 +79,8 @@ public:
     Matrix4x4 worldTransform() const NANOEM_DECL_NOEXCEPT;
     Matrix4x4 initialTransform() const NANOEM_DECL_NOEXCEPT;
     bool isKinematic() const NANOEM_DECL_NOEXCEPT;
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
     const par_shapes_mesh *sharedShapeMesh(const nanoem_model_rigid_body_t *body);
 
@@ -99,7 +101,7 @@ private:
     tinystl::pair<Vector3, bool> m_localVelocityForce;
     String m_name;
     String m_canonicalName;
-    bool m_allForcesShouldReset;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

@@ -6,6 +6,7 @@
 
 #include "emapp/model/Bone.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Motion.h"
 #include "emapp/Project.h"
@@ -19,6 +20,18 @@
 namespace nanoem {
 namespace model {
 namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateLinearInterpolationTranslationX = 1 << 1,
+    kPrivateStateLinearInterpolationTranslationY = 1 << 2,
+    kPrivateStateLinearInterpolationTranslationZ = 1 << 3,
+    kPrivateStateLinearInterpolationOrientation = 1 << 4,
+    kPrivateStateDirty = 1 << 5,
+    kPrivateStateEditingMasked = 1 << 6,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStateLinearInterpolationTranslationX |
+    kPrivateStateLinearInterpolationTranslationY | kPrivateStateLinearInterpolationTranslationZ |
+    kPrivateStateLinearInterpolationOrientation;
 
 static inline void
 identify(bx::float4x4_t *o) NANOEM_DECL_NOEXCEPT
@@ -44,7 +57,7 @@ shrink3x3(const bx::float4x4_t *m, bx::float4x4_t *o) NANOEM_DECL_NOEXCEPT
     o->col[3] = bx::simd_ld(0, 0, 0, 1);
 }
 
-} /* anonymous */
+} /* namespade anonymous */
 
 const Vector4U8 Bone::kDefaultBezierControlPoint = Vector4U8(20, 20, 107, 107);
 const Vector4U8 Bone::kDefaultAutomaticBezierControlPoint = Vector4U8(64, 0, 64, 127);
@@ -107,6 +120,7 @@ Bone::resetLocalTransform() NANOEM_DECL_NOEXCEPT
     m_localTranslation = m_localInherentTranslation = Constants::kZeroV3;
     for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
         m_bezierControlPoints[i] = kDefaultBezierControlPoint;
+        setLinearInterpolation(i, true);
     }
 }
 
@@ -115,7 +129,7 @@ Bone::resetUserTransform() NANOEM_DECL_NOEXCEPT
 {
     m_localUserOrientation = Constants::kZeroQ;
     m_localUserTranslation = Constants::kZeroV3;
-    m_dirty = false;
+    setDirty(false);
 }
 
 void
@@ -138,7 +152,7 @@ Bone::synchronizeMotion(const Motion *motion, const nanoem_model_bone_t *bone,
         setLocalUserOrientation(glm::slerp(t0.m_orientation, t1.m_orientation, amount));
         for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
             m_bezierControlPoints[i] = glm::mix(t0.m_bezierControlPoints[i], t1.m_bezierControlPoints[i], amount);
-            m_isLinearInterpolation[i] = t0.m_enableLinearInterpolation[i];
+            setLinearInterpolation(i, t0.m_enableLinearInterpolation[i]);
         }
     }
     else {
@@ -146,7 +160,7 @@ Bone::synchronizeMotion(const Motion *motion, const nanoem_model_bone_t *bone,
         setLocalUserOrientation(t0.m_orientation);
         for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
             m_bezierControlPoints[i] = t0.m_bezierControlPoints[i];
-            m_isLinearInterpolation[i] = t0.m_enableLinearInterpolation[i];
+            setLinearInterpolation(i, t0.m_enableLinearInterpolation[i]);
         }
     }
 }
@@ -359,13 +373,25 @@ Bone::canonicalNameConstString() const NANOEM_DECL_NOEXCEPT
 bool
 Bone::isDirty() const NANOEM_DECL_NOEXCEPT
 {
-    return m_dirty;
+    return EnumUtils::isEnabled(kPrivateStateDirty, m_states);
 }
 
 void
 Bone::setDirty(bool value)
 {
-    m_dirty = value;
+    EnumUtils::setEnabled(kPrivateStateDirty, m_states, value);
+}
+
+bool
+Bone::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+Bone::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
 }
 
 void
@@ -654,13 +680,53 @@ Bone::setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t in
 bool
 Bone::isLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {
-    return m_isLinearInterpolation[index];
+    bool result = false;
+    switch (index) {
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationTranslationX, m_states);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationTranslationY, m_states);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationTranslationZ, m_states);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationOrientation, m_states);
+        break;
+    }
+    default:
+        break;
+    }
+    return result;
 }
 
 void
 Bone::setLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index, bool value)
 {
-    m_isLinearInterpolation[index] = value;
+    switch (index) {
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationTranslationX, m_states, value);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationTranslationY, m_states, value);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationTranslationZ, m_states, value);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationOrientation, m_states, value);
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void
@@ -896,17 +962,15 @@ Bone::Bone(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_localOrien
                                                                     m_localInherentTranslation(Constants::kZeroV3),
                                                                     m_localMorphTranslation(Constants::kZeroV3),
                                                                     m_localUserTranslation(Constants::kZeroV3),
-                                                                    m_dirty(false)
+                                                                    m_states(kPrivateStateInitialValue)
 {
     Inline::clearZeroMemory(m_bezierControlPoints);
-    Inline::clearZeroMemory(m_isLinearInterpolation);
     identify(&m_matrices.m_localTransform);
     identify(&m_matrices.m_normalTransform);
     identify(&m_matrices.m_skinningTransform);
     identify(&m_matrices.m_worldTransform);
-    for (size_t i = 0; i < BX_COUNTOF(m_isLinearInterpolation); i++) {
+    for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
         m_bezierControlPoints[i] = Vector4U8(0);
-        m_isLinearInterpolation[i] = true;
     }
 }
 

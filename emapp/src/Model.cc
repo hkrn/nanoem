@@ -105,6 +105,12 @@ struct BoneUtils : private NonCopyable {
         const model::Bone *bone = model::Bone::cast(bonePtr);
         return bone ? bone->isDirty() : false;
     }
+    static inline bool
+    isEditingVisible(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        return bone ? !bone->isEditingMasked() : false;
+    }
 };
 
 } /* namespace anonymous */
@@ -2049,19 +2055,26 @@ Model::setOffscreenPassiveRenderTargetEffectEnabled(const String &ownerName, boo
 bool
 Model::isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return isShowAllBones() || model::Bone::isSelectable(value);
+    return isBoneConnectionVisible(value) || model::Bone::isSelectable(value);
 }
 
 bool
-Model::isMaterialSelected(const nanoem_model_material_t *material) const NANOEM_DECL_NOEXCEPT
+Model::isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return !m_activeMaterialPtr || m_activeMaterialPtr == material || m_selection->containsMaterial(material);
+    return !m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value);
 }
 
 bool
-Model::isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DECL_NOEXCEPT
+Model::isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return model::Bone::isSelectable(bone) && !isRigidBodyBound(bone);
+    return !(isShowAllBones() && !BoneUtils::isEditingVisible(value)) && model::Bone::isSelectable(value) &&
+        !isRigidBodyBound(value);
+}
+
+bool
+Model::isBoneConnectionVisible(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
+{
+    return isShowAllBones() && BoneUtils::isEditingVisible(value);
 }
 
 void
@@ -2075,7 +2088,7 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
             const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
             drawBoneConnection(primitive, bonePtr, destinationPosition, color, radius, thickness);
         }
-        else if (isShowAllBones()) {
+        else if (isBoneConnectionVisible(bonePtr)) {
             const Vector4 color(connectionBoneColor(bonePtr, Vector4(0.25f, 0.25f, 0.25f, 1), false));
             drawBoneConnection(primitive, bonePtr, destinationPosition, color, radius, thickness);
         }
@@ -2104,7 +2117,7 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
     if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bonePtr)) {
         drawBoneConnections(primitive, bonePtr, targetBone, kDrawBoneConnectionThickness);
     }
-    else if (isShowAllBones() || isBoneConnectionDrawable(bonePtr)) {
+    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) && BoneUtils::isEditingVisible(bonePtr)) {
         const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bonePtr);
         const Matrix4x4 transform(worldTransform(BoneUtils::worldMatrix(bonePtr)));
         const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
@@ -2124,7 +2137,7 @@ Model::drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr
         drawBonePoint(
             primitive, deviceScaleCursor, bonePtr, inactive, hovered, circleRadius, kDrawBoneConnectionThickness);
     }
-    else if (isShowAllBones()) {
+    else if (isBoneConnectionVisible(bonePtr)) {
         const Vector4 inactive(connectionBoneColor(bonePtr, Vector4(0.25f, 0.25f, 0.25f, 1), true));
         const Vector4 hovered(hoveredBoneColor(inactive, selected));
         drawBonePoint(
@@ -3853,7 +3866,10 @@ void
 Model::drawJointShape(const nanoem_model_joint_t *jointPtr)
 {
     model::Joint *joint = model::Joint::cast(jointPtr);
-    if (const par_shapes_mesh_s *shape = joint->sharedShapeMesh(jointPtr)) {
+    if (joint->isEditingMasked()) {
+        /* do nothing */
+    }
+    else if (const par_shapes_mesh_s *shape = joint->sharedShapeMesh(jointPtr)) {
         DrawIndexedBuffer &buffer = m_drawJoint[shape];
         const Vector3 color(m_selection->containsJoint(jointPtr) ? Vector3(1, 0, 0) : Vector3(1, 1, 0));
         nanoem_u32_t numVertices = buffer.fillShape(shape, Vector4(color, 0.25f));
@@ -3874,7 +3890,10 @@ void
 Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
 {
     model::RigidBody *rigidBody = model::RigidBody::cast(bodyPtr);
-    if (const par_shapes_mesh_s *shape = rigidBody->sharedShapeMesh(bodyPtr)) {
+    if (rigidBody->isEditingMasked()) {
+        /* do nothing */
+    }
+    else if (const par_shapes_mesh_s *shape = rigidBody->sharedShapeMesh(bodyPtr)) {
         DrawIndexedBuffer &buffer = m_drawRigidBody[shape];
         Vector3 color;
         if (m_selection->containsRigidBody(bodyPtr)) {
@@ -4484,11 +4503,10 @@ Model::intersectsBone(const Vector2 &deviceScaleCursor, nanoem_rsize_t &candidat
     Vector2 coord;
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
-    const bool showAllBones = isShowAllBones();
     model::Bone::List candidateBones;
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
-        if (isBoneSelectable(bonePtr) && (showAllBones || !isRigidBodyBound(bonePtr))) {
+        if (isBoneSelectable(bonePtr) && !isRigidBodyBound(bonePtr)) {
             const model::Bone *bone = model::Bone::cast(bonePtr);
             if (intersectsBoneInWindow(deviceScaleCursor, bone, coord)) {
                 candidateBones.push_back(bonePtr);

@@ -70,6 +70,7 @@ private:
     nanoem_physics_soft_body_t *m_physicsSoftBody;
     String m_name;
     String m_canonicalName;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

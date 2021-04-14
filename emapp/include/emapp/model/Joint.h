@@ -41,6 +41,8 @@ public:
     nanoem_physics_joint_t *physicsJoint() const NANOEM_DECL_NOEXCEPT;
     void getWorldTransformA(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
     void getWorldTransformB(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
     const par_shapes_mesh_s *sharedShapeMesh(const nanoem_model_joint_t *joint);
     void enable();
@@ -57,6 +59,7 @@ private:
     par_shapes_mesh_s *m_shape;
     String m_name;
     String m_canonicalName;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

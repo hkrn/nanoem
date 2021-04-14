@@ -1191,7 +1191,13 @@ ModelParameterDialog::layoutAllBones(Project *project)
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_model_bone_t *bonePtr = bones[i];
-            const model::Bone *bone = model::Bone::cast(bonePtr);
+            model::Bone *bone = model::Bone::cast(bonePtr);
+            StringUtils::format(buffer, sizeof(buffer), "##material[%d].visible", i);
+            bool visible = bone->isEditingMasked() ? false : true;
+            if (ImGui::Checkbox(buffer, &visible)) {
+                bone->setEditingMasked(visible ? false : true);
+            }
+            ImGui::SameLine();
             const bool selected = selection->containsBone(bonePtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##bone[%d].name", bone->nameConstString(), i);
             if (ImGui::Selectable(buffer, selected)) {
@@ -3170,9 +3176,18 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
-            const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
+            model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
+            StringUtils::format(buffer, sizeof(buffer), "##rigidBody[%d].visible", i);
+            bool visible = rigidBody->isEditingMasked() ? false : true;
+            if (ImGui::Checkbox(buffer, &visible)) {
+                rigidBody->setEditingMasked(visible ? false : true);
+            }
+            else if (ImGui::IsItemHovered()) {
+                hoveredRigidBodyPtr = rigidBodies[i];
+            }
+            ImGui::SameLine();
             const bool selected = selection->containsRigidBody(rigidBodyPtr);
-            StringUtils::format(buffer, sizeof(buffer), "%s##body[%d].name", rigidBody->nameConstString(), i);
+            StringUtils::format(buffer, sizeof(buffer), "%s##rigidBody[%d].name", rigidBody->nameConstString(), i);
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
                 if (ImGui::GetIO().KeyCtrl) {
@@ -3196,8 +3211,14 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             }
         }
     }
-    selection->setHoveredRigidBody(hoveredRigidBodyPtr);
     ImGui::EndChild();
+    bool hovered = ImGui::IsItemHovered();
+    if (hovered && hoveredRigidBodyPtr) {
+        selection->setHoveredRigidBody(hoveredRigidBodyPtr);
+    }
+    else if (!hovered && !hoveredRigidBodyPtr) {
+        selection->setHoveredRigidBody(nullptr);
+    }
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("rigid-body-create-menu");
     }
@@ -3547,7 +3568,16 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_model_joint_t *jointPtr = joints[i];
-            const model::Joint *joint = model::Joint::cast(jointPtr);
+            model::Joint *joint = model::Joint::cast(jointPtr);
+            StringUtils::format(buffer, sizeof(buffer), "##joint[%d].visible", i);
+            bool visible = joint->isEditingMasked() ? false : true;
+            if (ImGui::Checkbox(buffer, &visible)) {
+                joint->setEditingMasked(visible ? false : true);
+            }
+            else if (ImGui::IsItemHovered()) {
+                hoveredJointPtr = joints[i];
+            }
+            ImGui::SameLine();
             const bool selected = selection->containsJoint(jointPtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##joint[%d].name", joint->nameConstString(), i);
             if (ImGui::Selectable(buffer, selected)) {
@@ -3573,7 +3603,13 @@ ModelParameterDialog::layoutAllJoints(Project *project)
             }
         }
     }
-    selection->setHoveredJoint(hoveredJointPtr);
+    bool hovered = ImGui::IsItemHovered();
+    if (hovered && hoveredJointPtr) {
+        selection->setHoveredJoint(hoveredJointPtr);
+    }
+    else if (!hovered && !hoveredJointPtr) {
+        selection->setHoveredJoint(nullptr);
+    }
     ImGui::EndChild();
     joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {

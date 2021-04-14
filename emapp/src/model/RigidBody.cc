@@ -7,6 +7,7 @@
 #include "emapp/model/RigidBody.h"
 
 #include "emapp/Constants.h"
+#include "emapp/EnumUtils.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/StringUtils.h"
 #include "emapp/model/Bone.h"
@@ -19,6 +20,15 @@
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateAllForcesShouldReset = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespade anonymous */
 
 RigidBody::~RigidBody() NANOEM_DECL_NOEXCEPT
 {
@@ -172,7 +182,7 @@ RigidBody::synchronizeTransformFeedbackToSimulation(const nanoem_model_rigid_bod
 void
 RigidBody::applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT
 {
-    if (m_allForcesShouldReset) {
+    if (EnumUtils::isEnabled(kPrivateStateAllForcesShouldReset, m_states)) {
         m_physicsEngine->resetStates(m_physicsRigidBody);
     }
     else {
@@ -198,7 +208,7 @@ RigidBody::applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOE
             m_localVelocityForce = tinystl::make_pair(Constants::kZeroV3, false);
         }
     }
-    m_allForcesShouldReset = false;
+    EnumUtils::setEnabled(kPrivateStateAllForcesShouldReset, m_states, false);
 }
 
 void
@@ -269,7 +279,7 @@ RigidBody::addLocalVelocityForce(const Vector3 &value, nanoem_f32_t weight)
 void
 RigidBody::markAllForcesReset()
 {
-    m_allForcesShouldReset = true;
+    EnumUtils::setEnabled(kPrivateStateAllForcesShouldReset, m_states, true);
 }
 
 void
@@ -423,6 +433,18 @@ RigidBody::isKinematic() const NANOEM_DECL_NOEXCEPT
     return m_physicsEngine->isKinematic(m_physicsRigidBody);
 }
 
+bool
+RigidBody::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+RigidBody::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
+}
+
 const par_shapes_mesh *
 RigidBody::sharedShapeMesh(const nanoem_model_rigid_body_t *body)
 {
@@ -482,7 +504,7 @@ RigidBody::RigidBody(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT
       m_globalVelocityForce(Constants::kZeroV3, false),
       m_localTorqueForce(Constants::kZeroV3, false),
       m_localVelocityForce(Constants::kZeroV3, false),
-      m_allForcesShouldReset(false)
+      m_states(kPrivateStateInitialValue)
 {
 }
 

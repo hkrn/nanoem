@@ -7,11 +7,21 @@
 #include "emapp/model/Vertex.h"
 
 #include "emapp/Constants.h"
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateSkinningEnabled = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespace anonymous */
 
 static BX_FORCE_INLINE void
 assignBone(Model *model, const nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t i, model::Bone **bones)
@@ -163,13 +173,25 @@ Vertex::hasSoftBody() const NANOEM_DECL_NOEXCEPT
 bool
 Vertex::isSkinningEnabled() const NANOEM_DECL_NOEXCEPT
 {
-    return m_skinningEnabled;
+    return EnumUtils::isEnabled(kPrivateStateSkinningEnabled, m_states);
 }
 
 void
 Vertex::setSkinningEnabled(bool value)
 {
-    m_skinningEnabled = value;
+    EnumUtils::setEnabled(kPrivateStateSkinningEnabled, m_states, value);
+}
+
+bool
+Vertex::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+Vertex::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
 }
 
 void
@@ -209,7 +231,7 @@ Vertex::destroy(void *opaque, nanoem_model_object_t * /* vertex */) NANOEM_DECL_
 Vertex::Vertex(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_materialPtr(nullptr),
                                                                         m_softBodyPtr(nullptr),
                                                                         m_opaque(nullptr),
-                                                                        m_skinningEnabled(false)
+                                                                        m_states(kPrivateStateInitialValue)
 {
     m_bones[0] = m_bones[1] = m_bones[2] = m_bones[3] = nullptr;
 }

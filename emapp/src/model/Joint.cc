@@ -7,6 +7,7 @@
 #include "emapp/model/Joint.h"
 
 #include "emapp/Constants.h"
+#include "emapp/EnumUtils.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/StringUtils.h"
 #include "emapp/model/Bone.h"
@@ -16,6 +17,14 @@
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateEditingMasked = 1 << 1,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespade anonymous */
 
 int
 Joint::index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
@@ -169,6 +178,18 @@ Joint::getWorldTransformB(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT
     m_physicsEngine->getCalculatedTransformB(m_physicsJoint, value);
 }
 
+bool
+Joint::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+Joint::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
+}
+
 const par_shapes_mesh_s *
 Joint::sharedShapeMesh(const nanoem_model_joint_t * /* joint */)
 {
@@ -203,7 +224,8 @@ Joint::destroy(void *opaque, nanoem_model_object_t * /* joint */) NANOEM_DECL_NO
 
 Joint::Joint(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_physicsEngine(nullptr),
                                                                       m_physicsJoint(nullptr),
-                                                                      m_shape(nullptr)
+                                                                      m_shape(nullptr),
+                                                                      m_states(kPrivateStateInitialValue)
 {
 }
 
