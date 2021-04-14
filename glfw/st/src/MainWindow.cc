@@ -69,6 +69,12 @@ MainWindow::MainWindow(GLFWApplicationService *service, GLFWApplicationClient *c
             }
         },
         this, false);
+    m_client->addQuitApplicationEventListener(
+        [](void *userData) {
+            auto self = static_cast<MainWindow *>(userData);
+            handleCloseCallback(self->m_window);
+        },
+        this, false);
 }
 
 MainWindow::~MainWindow()
