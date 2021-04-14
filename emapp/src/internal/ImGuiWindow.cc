@@ -2763,6 +2763,9 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project, const I
     else if (const Accessory *activeAccessory = project->activeAccessory()) {
         ImGui::Text("%s: %s", tr("nanoem.gui.panel.model.default"), activeAccessory->nameConstString());
     }
+    else {
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.default"));
+    }
     // ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
     const ImVec2 offset(ImGui::GetCursorScreenPos());
     ImVec2 size(ImGui::GetContentRegionAvail()), innerOffset(offset), basePos;
