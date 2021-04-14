@@ -11,6 +11,7 @@
 #include "emapp/Forward.h"
 
 namespace nanoem {
+namespace command {
 
 class Error;
 class Project;
@@ -27,6 +28,7 @@ public:
     virtual const char *name() const NANOEM_DECL_NOEXCEPT = 0;
 };
 
+} /* namespace command */
 } /* namespace nanoem */
 
 #endif /* NANOEM_EMAPP_COMMAND_IUNDOCOMMAND_H_ */
