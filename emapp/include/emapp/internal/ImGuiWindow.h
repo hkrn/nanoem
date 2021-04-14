@@ -188,7 +188,6 @@ public:
     void resizeDevicePixelWindowSize(const Vector2UI16 &value) NANOEM_DECL_OVERRIDE;
     void setDevicePixelRatio(float value) NANOEM_DECL_OVERRIDE;
     void setAntiAliasEnabled(bool value) NANOEM_DECL_OVERRIDE;
-    void saveProject(Project *project) NANOEM_DECL_OVERRIDE;
     void drawAll2DPrimitives(
         Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
