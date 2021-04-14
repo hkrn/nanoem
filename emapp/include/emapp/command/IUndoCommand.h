@@ -11,10 +11,11 @@
 #include "emapp/Forward.h"
 
 namespace nanoem {
-namespace command {
 
 class Error;
 class Project;
+
+namespace command {
 
 class IUndoCommand {
 public:
