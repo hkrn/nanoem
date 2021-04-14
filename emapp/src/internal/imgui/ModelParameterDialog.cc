@@ -758,8 +758,8 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(MoveMaterialUpCommand(materials, m_materialIndex)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, m_materialIndex < numMaterials)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
+            numMaterials > 0 && m_materialIndex < numMaterials)) {
         struct MoveMaterialDownCommand : BaseMoveMaterialCommand {
             MoveMaterialDownCommand(nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
                 : BaseMoveMaterialCommand(materials, materialIndex)
@@ -1349,7 +1349,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, m_boneIndex < numBones - 1)) {
+            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, numBones > 0 && m_boneIndex < numBones - 1)) {
         struct MoveBoneDownCommand : ImGuiWindow::ILazyExecutionCommand {
             MoveBoneDownCommand(nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
                 : m_bones(bones)
@@ -2115,8 +2115,8 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(MoveMorphUpCommand(morphs, m_morphIndex)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, m_morphIndex < numMorphs - 1)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
+            numMorphs > 0 && m_morphIndex < numMorphs - 1)) {
         struct MoveMorphDownCommand : ImGuiWindow::ILazyExecutionCommand {
             MoveMorphDownCommand(nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
                 : m_morphs(morphs)
@@ -2985,8 +2985,8 @@ ModelParameterDialog::layoutAllLabels(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(MoveLabelUpCommand(labels, m_labelIndex)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, isEditable && m_labelIndex < numLabels - 1)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
+            isEditable && numLabels > 0 && m_labelIndex < numLabels - 1)) {
         struct MoveLabelDownCommand : ImGuiWindow::ILazyExecutionCommand {
             MoveLabelDownCommand(nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
                 : m_labels(labels)
@@ -3339,8 +3339,8 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(MoveRigidBodyUpCommand(rigidBodies, m_rigidBodyIndex)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, m_rigidBodyIndex < numRigidBodies - 1)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
+            numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies - 1)) {
         struct MoveRigidBodyDownCommand : ImGuiWindow::ILazyExecutionCommand {
             MoveRigidBodyDownCommand(nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
                 : m_rigidBodies(rigidBodies)
@@ -3729,8 +3729,8 @@ ModelParameterDialog::layoutAllJoints(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(MoveJointUpCommand(joints, m_jointIndex)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, m_jointIndex < numJoints - 1)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
+            numJoints > 0 && m_jointIndex < numJoints - 1)) {
         struct MoveJointDownCommand : ImGuiWindow::ILazyExecutionCommand {
             MoveJointDownCommand(nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
                 : m_joints(joints)
@@ -4068,8 +4068,8 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
         m_parent->addLazyExecutionCommand(nanoem_new(MoveSoftBodyUpCommand(soft_bodys, m_softBodyIndex)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, m_softBodyIndex < numSoftBodys - 1)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
+            numSoftBodys > 0 && m_softBodyIndex < numSoftBodys - 1)) {
         struct MoveSoftBodyDownCommand : ImGuiWindow::ILazyExecutionCommand {
             MoveSoftBodyDownCommand(nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex)
                 : m_soft_bodys(soft_bodys)
