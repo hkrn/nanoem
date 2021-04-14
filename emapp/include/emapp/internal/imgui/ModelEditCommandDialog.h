@@ -8,8 +8,8 @@
 #ifndef NANOEM_EMAPP_INTERNAL_IMGUI_MODELEDITCOMMANDDIALOG_H_
 #define NANOEM_EMAPP_INTERNAL_IMGUI_MODELEDITCOMMANDDIALOG_H_
 
-#include "emapp/Model.h"
 #include "emapp/IModelObjectSelection.h"
+#include "emapp/Model.h"
 #include "emapp/internal/imgui/BaseNonModalDialogWindow.h"
 
 namespace nanoem {

@@ -119,7 +119,8 @@ Bone::resetLocalTransform() NANOEM_DECL_NOEXCEPT
     m_localOrientation = m_localInherentOrientation = Constants::kZeroQ;
     m_localTranslation = m_localInherentTranslation = Constants::kZeroV3;
     for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
-        nanoem_motion_bone_keyframe_interpolation_type_t type = static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
+        nanoem_motion_bone_keyframe_interpolation_type_t type =
+            static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
         m_bezierControlPoints[i] = kDefaultBezierControlPoint;
         setLinearInterpolation(type, true);
     }
@@ -152,7 +153,8 @@ Bone::synchronizeMotion(const Motion *motion, const nanoem_model_bone_t *bone,
         setLocalUserTranslation(glm::mix(t0.m_translation, t1.m_translation, amount));
         setLocalUserOrientation(glm::slerp(t0.m_orientation, t1.m_orientation, amount));
         for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
-            nanoem_motion_bone_keyframe_interpolation_type_t type = static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
+            nanoem_motion_bone_keyframe_interpolation_type_t type =
+                static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
             m_bezierControlPoints[i] = glm::mix(t0.m_bezierControlPoints[i], t1.m_bezierControlPoints[i], amount);
             setLinearInterpolation(type, t0.m_enableLinearInterpolation[i]);
         }
@@ -161,7 +163,8 @@ Bone::synchronizeMotion(const Motion *motion, const nanoem_model_bone_t *bone,
         setLocalUserTranslation(t0.m_translation);
         setLocalUserOrientation(t0.m_orientation);
         for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
-            nanoem_motion_bone_keyframe_interpolation_type_t type = static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
+            nanoem_motion_bone_keyframe_interpolation_type_t type =
+                static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
             m_bezierControlPoints[i] = t0.m_bezierControlPoints[i];
             setLinearInterpolation(type, t0.m_enableLinearInterpolation[i]);
         }
