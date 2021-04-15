@@ -175,7 +175,7 @@ MainWindow::handleQuitRequest()
                                 self->destroyWindow();
                             },
                             self, true);
-                        // self->saveProject();
+                        self->m_client.sendSaveProjectMessage();
                     },
                     self, true);
                 client.addDiscardProjectAfterConfirmEventListener(
