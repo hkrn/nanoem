@@ -269,7 +269,7 @@ ModelParameterDialog::layoutVertexBoneSelection(const char *label, nanoem_model_
             const nanoem_model_bone_t *bonePtr = bones[j];
             bone = model::Bone::cast(bonePtr);
             if (bone && ImGui::Selectable(bone->nameConstString())) {
-                command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+                command::ScopedMutableVertex scoped(vertexPtr);
                 nanoemMutableModelVertexSetBoneObject(scoped, bonePtr, i);
             }
         }
@@ -293,7 +293,7 @@ ModelParameterDialog::layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, 
         nanoem_f32_t weight = nanoemModelVertexGetBoneWeight(vertexPtr, i);
         StringUtils::format(label, sizeof(label), "##weight%jd", i);
         if (ImGui::SliderFloat(label, &weight, 0, 1)) {
-            command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+            command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetBoneWeight(scoped, weight, i);
         }
         ImGui::PopItemWidth();
@@ -383,7 +383,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.origin"));
         Vector4 value(glm::make_vec4(nanoemModelVertexGetOrigin(vertexPtr)));
         if (ImGui::InputFloat3("##origin", glm::value_ptr(value))) {
-            command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+            command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetOrigin(scoped, glm::value_ptr(value));
         }
     }
@@ -391,7 +391,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.normal"));
         Vector4 value(glm::make_vec4(nanoemModelVertexGetNormal(vertexPtr)));
         if (ImGui::InputFloat3("##normal", glm::value_ptr(value))) {
-            command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+            command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetNormal(scoped, glm::value_ptr(value));
         }
     }
@@ -399,7 +399,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.texcoord"));
         Vector4 value(glm::make_vec4(nanoemModelVertexGetTexCoord(vertexPtr)));
         if (ImGui::InputFloat2("##texcoord", glm::value_ptr(value))) {
-            command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+            command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetTexCoord(scoped, glm::value_ptr(value));
         }
     }
@@ -423,7 +423,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         }
         Vector4 value(glm::make_vec4(nanoemModelVertexGetAdditionalUV(vertexPtr, offset)));
         if (ImGui::InputFloat4("##uva-value", glm::value_ptr(value))) {
-            command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+            command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetAdditionalUV(scoped, glm::value_ptr(value), offset);
         }
     }
@@ -431,7 +431,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.edge"));
         nanoem_f32_t width = nanoemModelVertexGetEdgeSize(vertexPtr);
         if (ImGui::InputFloat("##edge", &width)) {
-            command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+            command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetEdgeSize(scoped, width);
         }
     }
@@ -442,7 +442,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
             for (int i = NANOEM_MODEL_VERTEX_TYPE_FIRST_ENUM; i < NANOEM_MODEL_VERTEX_TYPE_MAX_ENUM; i++) {
                 const nanoem_model_vertex_type_t type = static_cast<nanoem_model_vertex_type_t>(i);
                 if (ImGui::Selectable(selectedVertexType(type))) {
-                    command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+                    command::ScopedMutableVertex scoped(vertexPtr);
                     nanoemMutableModelVertexSetType(scoped, type);
                 }
             }
@@ -469,7 +469,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.sdef.r0"));
                 Vector4 value(glm::make_vec4(nanoemModelVertexGetSdefR0(vertexPtr)));
                 if (ImGui::InputFloat3("##sdef.r0", glm::value_ptr(value))) {
-                    command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+                    command::ScopedMutableVertex scoped(vertexPtr);
                     nanoemMutableModelVertexSetSdefR0(scoped, glm::value_ptr(value));
                 }
             }
@@ -477,7 +477,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.sdef.r1"));
                 Vector4 value(glm::make_vec4(nanoemModelVertexGetSdefR1(vertexPtr)));
                 if (ImGui::InputFloat3("##sdef.r1", glm::value_ptr(value))) {
-                    command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+                    command::ScopedMutableVertex scoped(vertexPtr);
                     nanoemMutableModelVertexSetSdefR1(scoped, glm::value_ptr(value));
                 }
             }
@@ -485,7 +485,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.sdef.c"));
                 Vector4 value(glm::make_vec4(nanoemModelVertexGetSdefC(vertexPtr)));
                 if (ImGui::InputFloat3("##sdef.c", glm::value_ptr(value))) {
-                    command::ScopedMutableVertex scoped(vertexPtr, m_activeModel);
+                    command::ScopedMutableVertex scoped(vertexPtr);
                     nanoemMutableModelVertexSetSdefC(scoped, glm::value_ptr(value));
                 }
             }
@@ -657,14 +657,14 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelMaterialGetName(materialPtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+        command::ScopedMutableMaterial scoped(materialPtr);
         nanoemMutableModelMaterialSetName(scoped, scope.value(), language, &status);
     }
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.ambient.color"));
         Vector4 value(glm::make_vec4(nanoemModelMaterialGetAmbientColor(materialPtr)));
         if (ImGui::ColorEdit3("##ambient", glm::value_ptr(value))) {
-            command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+            command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetAmbientColor(scoped, glm::value_ptr(value));
         }
     }
@@ -673,7 +673,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         Vector4 value(glm::make_vec3(nanoemModelMaterialGetDiffuseColor(materialPtr)),
             nanoemModelMaterialGetDiffuseOpacity(materialPtr));
         if (ImGui::ColorEdit4("##diffuse", glm::value_ptr(value))) {
-            command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+            command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetDiffuseColor(scoped, glm::value_ptr(value));
             nanoemMutableModelMaterialSetDiffuseOpacity(scoped, value.w);
         }
@@ -682,7 +682,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.specular.color"));
         Vector4 value(glm::make_vec4(nanoemModelMaterialGetSpecularColor(materialPtr)));
         if (ImGui::ColorEdit3("##specular", glm::value_ptr(value))) {
-            command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+            command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetSpecularColor(scoped, glm::value_ptr(value));
         }
     }
@@ -692,7 +692,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         Vector4 value(glm::make_vec3(nanoemModelMaterialGetEdgeColor(materialPtr)),
             nanoemModelMaterialGetEdgeOpacity(materialPtr));
         if (ImGui::ColorEdit4("##edge", glm::value_ptr(value))) {
-            command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+            command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetEdgeColor(scoped, glm::value_ptr(value));
             nanoemMutableModelMaterialSetEdgeOpacity(scoped, value.w);
         }
@@ -701,17 +701,17 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         ImGui::TextUnformatted("Primitive Type");
         if (ImGui::BeginCombo("##primitive", selectedMaterialPrimitiveType(materialPtr))) {
             if (ImGui::Selectable(tr("nanoem.gui.model.edit.material.primitive.triangle"))) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetLineDrawEnabled(scoped, false);
                 nanoemMutableModelMaterialSetPointDrawEnabled(scoped, false);
             }
             if (ImGui::Selectable(tr("nanoem.gui.model.edit.material.primitive.line"))) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetLineDrawEnabled(scoped, true);
                 nanoemMutableModelMaterialSetPointDrawEnabled(scoped, false);
             }
             if (ImGui::Selectable(tr("nanoem.gui.model.edit.material.primitive.point"))) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetLineDrawEnabled(scoped, false);
                 nanoemMutableModelMaterialSetPointDrawEnabled(scoped, true);
             }
@@ -727,7 +727,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 const nanoem_model_material_sphere_map_texture_type_t index =
                     static_cast<nanoem_model_material_sphere_map_texture_type_t>(i);
                 if (ImGui::Selectable(selectedMaterialSphereMapType(index))) {
-                    command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                    command::ScopedMutableMaterial scoped(materialPtr);
                     nanoemMutableModelMaterialSetSphereMapTextureType(scoped, index);
                 }
             }
@@ -741,49 +741,49 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         {
             bool value = nanoemModelMaterialIsToonShared(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.shared-toon"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetToonShared(scoped, value);
             }
         }
         {
             bool value = nanoemModelMaterialIsEdgeEnabled(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.edge"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetEdgeEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelMaterialIsCullingDisabled(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.disable-culling"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetCullingDisabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelMaterialIsShadowMapEnabled(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.self-shadow"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetShadowMapEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelMaterialIsCastingShadowEnabled(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.casting-shadow"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetCastingShadowEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelMaterialIsCastingShadowMapEnabled(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.casting-self-shadow"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetCastingShadowMapEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelMaterialIsVertexColorEnabled(materialPtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.material.property.vertex-color"), &value)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoemMutableModelMaterialSetVertexColorEnabled(scoped, value);
             }
         }
@@ -823,7 +823,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetTextLineHeightWithSpacing() * 5))) {
             StringUtils::UnicodeStringScope s(factory);
             if (StringUtils::tryGetString(factory, clobBuffer.data(), s)) {
-                command::ScopedMutableMaterial scoped(materialPtr, m_activeModel);
+                command::ScopedMutableMaterial scoped(materialPtr);
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 nanoemMutableModelMaterialSetClob(scoped, s.value(), &status);
             }
@@ -1129,14 +1129,14 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelBoneGetName(bonePtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+        command::ScopedMutableBone scoped(bonePtr);
         nanoemMutableModelBoneSetName(scoped, scope.value(), language, &status);
     }
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.origin"));
         Vector4 value(glm::make_vec4(nanoemModelBoneGetOrigin(bonePtr)));
         if (ImGui::InputFloat3("##origin", glm::value_ptr(value))) {
-            command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+            command::ScopedMutableBone scoped(bonePtr);
             nanoemMutableModelBoneSetOrigin(scoped, glm::value_ptr(value));
         }
     }
@@ -1148,7 +1148,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 const nanoem_model_bone_t *candidateBonePtr = bones[i];
                 const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
                 if (candidateBone && ImGui::Selectable(candidateBone->nameConstString(), parentBone == candidateBone)) {
-                    command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                    command::ScopedMutableBone scoped(bonePtr);
                     nanoemMutableModelBoneSetParentBoneObject(scoped, candidateBonePtr);
                 }
             }
@@ -1158,12 +1158,12 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
     {
         bool value = nanoemModelBoneHasDestinationBone(bonePtr) != 0;
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.target"), value)) {
-            command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+            command::ScopedMutableBone scoped(bonePtr);
             nanoemMutableModelBoneSetTargetBoneObject(scoped, nanoemModelBoneGetTargetBoneObject(bonePtr));
         }
         ImGui::SameLine();
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.destination-origin"), value ? false : true)) {
-            command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+            command::ScopedMutableBone scoped(bonePtr);
             const Vector4 copy(glm::make_vec4(nanoemModelBoneGetDestinationOrigin(bonePtr)));
             nanoemMutableModelBoneSetDestinationOrigin(scoped, glm::value_ptr(copy));
         }
@@ -1175,7 +1175,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                     const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
                     if (candidateBone &&
                         ImGui::Selectable(candidateBone->nameConstString(), targetbone == candidateBone)) {
-                        command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                        command::ScopedMutableBone scoped(bonePtr);
                         nanoemMutableModelBoneSetTargetBoneObject(scoped, candidateBonePtr);
                     }
                 }
@@ -1185,7 +1185,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         else {
             Vector3 origin(glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr)));
             if (ImGui::DragFloat3("##destination.origin", glm::value_ptr(origin))) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetDestinationOrigin(scoped, glm::value_ptr(origin));
             }
         }
@@ -1194,7 +1194,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.stage"));
         int stageIndex = nanoemModelBoneGetStageIndex(bonePtr);
         if (ImGui::InputInt("##stage", &stageIndex)) {
-            command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+            command::ScopedMutableBone scoped(bonePtr);
             nanoemMutableModelBoneSetStageIndex(scoped, stageIndex);
         }
     }
@@ -1205,77 +1205,77 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         {
             bool value = nanoemModelBoneIsVisible(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.visible"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetVisible(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneIsMovable(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.movable"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetMovable(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneIsRotateable(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.rotateable"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetRotateable(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneIsUserHandleable(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.user-handleable"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetUserHandleable(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneHasLocalInherent(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.inherent.local"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetLocalInherentEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.affected-by-physics-simulation"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetAffectedByPhysicsSimulation(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneHasInherentTranslation(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.inherent.translation"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetInherentTranslationEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneHasInherentOrientation(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.inherent.orientation"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetInherentOrientationEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneHasFixedAxis(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.has-fixed-axis"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetFixedAxisEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneHasLocalAxes(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.has-local-axes"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetLocalAxesEnabled(scoped, value);
             }
         }
         {
             bool value = nanoemModelBoneHasConstraint(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.inverse-kinematics"), &value)) {
-                command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetConstraintEnabled(scoped, value);
             }
         }
@@ -1290,7 +1290,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                         const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
                         if (candidateBone &&
                             ImGui::Selectable(candidateBone->nameConstString(), candidateBone == parentBone)) {
-                            command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                            command::ScopedMutableBone scoped(bonePtr);
                             nanoemMutableModelBoneSetInherentParentBoneObject(scoped, candidateBonePtr);
                         }
                     }
@@ -1299,7 +1299,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 nanoem_f32_t coefficient = nanoemModelBoneGetInherentCoefficient(bonePtr);
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.inherent.coefficient"));
                 if (ImGui::DragFloat("##coefficient", &coefficient)) {
-                    command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                    command::ScopedMutableBone scoped(bonePtr);
                     nanoemMutableModelBoneSetInherentCoefficient(scoped, coefficient);
                 }
             }
@@ -1309,7 +1309,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 Vector3 axis(glm::make_vec3(nanoemModelBoneGetFixedAxis(bonePtr)));
                 ImGui::TextUnformatted("Fixed Axis");
                 if (ImGui::DragFloat3("##axis", glm::value_ptr(axis), 1.0f, 0.0f, 1.0f)) {
-                    command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                    command::ScopedMutableBone scoped(bonePtr);
                     nanoemMutableModelBoneSetFixedAxis(scoped, glm::value_ptr(axis));
                 }
             }
@@ -1320,13 +1320,13 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr)));
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.local-axis.x"));
                 if (ImGui::DragFloat3("##axis.x", glm::value_ptr(axisX), 1.0f, 0.0f, 1.0f)) {
-                    command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                    command::ScopedMutableBone scoped(bonePtr);
                     nanoemMutableModelBoneSetLocalXAxis(scoped, glm::value_ptr(axisX));
                 }
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.local-axis.z"));
                 Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr)));
                 if (ImGui::DragFloat3("##axis.z", glm::value_ptr(axisZ), 1.0f, 0.0f, 1.0f)) {
-                    command::ScopedMutableBone scoped(bonePtr, m_activeModel);
+                    command::ScopedMutableBone scoped(bonePtr);
                     nanoemMutableModelBoneSetLocalZAxis(scoped, glm::value_ptr(axisZ));
                 }
             }
@@ -1432,7 +1432,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
                         const nanoem_model_bone_t *targetBonePtr = bones[i];
                         targetBone = model::Bone::cast(targetBonePtr);
                         if (targetBone && ImGui::Selectable(targetBone->nameConstString())) {
-                            command::ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
+                            command::ScopedMutableConstraint scoped(constraintPtr);
                             nanoemMutableModelConstraintSetTargetBoneObject(scoped, targetBonePtr);
                         }
                     }
@@ -1450,7 +1450,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
                     const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
                     if (candidateBone &&
                         ImGui::Selectable(candidateBone->nameConstString(), candidateBone == effectorBone)) {
-                        command::ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
+                        command::ScopedMutableConstraint scoped(constraintPtr);
                         nanoemMutableModelConstraintSetEffectorBoneObject(scoped, candidateBonePtr);
                     }
                 }
@@ -1461,7 +1461,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             int value = nanoemModelConstraintGetNumIterations(constraintPtr);
             ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.iteration"));
             if (ImGui::DragInt("##constraint.iterations", &value)) {
-                command::ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
+                command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoemMutableModelConstraintSetNumIterations(scoped, value);
             }
         }
@@ -1469,7 +1469,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             nanoem_f32_t value = glm::degrees(nanoemModelConstraintGetAngleLimit(constraintPtr));
             ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.angle"));
             if (ImGui::SliderFloat("##constraint.angle", &value, -90, 90)) {
-                command::ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
+                command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoemMutableModelConstraintSetAngleLimit(scoped, glm::radians(value));
             }
         }
@@ -1533,7 +1533,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.bone.constraint.joints.add"),
                     ImGui::GetContentRegionAvail().x * 0.5f, manipulatable)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                command::ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
+                command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoem_mutable_model_constraint_joint_t *joint =
                     nanoemMutableModelConstraintJointCreate(scoped, &status);
                 nanoemMutableModelConstraintJointSetBoneObject(joint, bones[m_constraintJointCandidateIndex]);
@@ -1546,7 +1546,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.bone.constraint.joints.remove"),
                     ImGui::GetContentRegionAvail().x, m_constraintJointIndex < numJoints)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                command::ScopedMutableConstraint scoped(constraintPtr, m_activeModel);
+                command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoem_mutable_model_constraint_joint_t *joint =
                     nanoemMutableModelConstraintJointCreateAsReference(joints[m_constraintJointIndex], &status);
                 nanoemMutableModelConstraintRemoveJointObject(scoped, joint, &status);
@@ -1560,7 +1560,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
         {
             bool value = nanoemModelConstraintJointHasAngleLimit(jointPtr);
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.constraint.joint.angle-limit"), &value)) {
-                command::ScopedMutableConstraintJoint scoped(jointPtr, m_activeModel);
+                command::ScopedMutableConstraintJoint scoped(jointPtr);
                 nanoemMutableModelConstraintJointSetAngleLimitEnabled(scoped, value ? 1 : 0);
             }
         }
@@ -1568,7 +1568,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             Vector3 lowerLimit(glm::degrees(glm::make_vec3(nanoemModelConstraintJointGetLowerLimit(jointPtr))));
             ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower"));
             if (ImGui::DragFloat3("##joint.upper", glm::value_ptr(lowerLimit), 1.0f, 0.0f, 180.0f)) {
-                command::ScopedMutableConstraintJoint scoped(jointPtr, m_activeModel);
+                command::ScopedMutableConstraintJoint scoped(jointPtr);
                 nanoemMutableModelConstraintJointSetLowerLimit(scoped, glm::value_ptr(glm::radians(lowerLimit)));
             }
         }
@@ -1576,7 +1576,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             Vector3 upperLimit(glm::degrees(glm::make_vec3(nanoemModelConstraintJointGetUpperLimit(jointPtr))));
             ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper"));
             if (ImGui::DragFloat3("##joint.lower", glm::value_ptr(upperLimit), 1.0f, 0.0f, 180.0f)) {
-                command::ScopedMutableConstraintJoint scoped(jointPtr, m_activeModel);
+                command::ScopedMutableConstraintJoint scoped(jointPtr);
                 nanoemMutableModelConstraintJointSetUpperLimit(scoped, glm::value_ptr(glm::radians(upperLimit)));
             }
         }
@@ -1771,7 +1771,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelMorphGetName(morphPtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+        command::ScopedMutableMorph scoped(morphPtr);
         nanoemMutableModelMorphSetName(scoped, scope.value(), language, &status);
     }
     {
@@ -1782,7 +1782,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
             for (int i = NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM + 1; i < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM; i++) {
                 nanoem_model_morph_category_t type = static_cast<nanoem_model_morph_category_t>(i);
                 if (ImGui::Selectable(selectedMorphCategory(type))) {
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoemMutableModelMorphSetCategory(scoped, type);
                 }
             }
@@ -1796,7 +1796,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
             for (int i = NANOEM_MODEL_MORPH_TYPE_FIRST_ENUM; i < NANOEM_MODEL_MORPH_TYPE_MAX_ENUM; i++) {
                 nanoem_model_morph_type_t type = static_cast<nanoem_model_morph_type_t>(i);
                 if (ImGui::Selectable(selectedMorphType(type))) {
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoemMutableModelMorphSetType(scoped, type);
                 }
             }
@@ -1863,7 +1863,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.add"),
                         ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateBoneIndex < numBones)) {
                     nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_bone_t *item = nanoemMutableModelMorphBoneCreate(scoped, &status);
                     nanoemMutableModelMorphBoneSetBoneObject(item, bones[m_morphItemCandidateBoneIndex]);
                     nanoemMutableModelMorphInsertBoneMorphObject(scoped, item, -1, &status);
@@ -1875,7 +1875,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.remove"),
                         ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_bone_t *item =
                         nanoemMutableModelMorphBoneCreateAsReference(items[m_morphItemIndex], &status);
                     nanoemMutableModelMorphRemoveBoneMorphObject(scoped, item, &status);
@@ -1887,7 +1887,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 translation(glm::make_vec4(nanoemModelMorphBoneGetTranslation(bonePtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.translation"));
                     if (ImGui::DragFloat3("##bone.translation", glm::value_ptr(translation), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphBone scoped(bonePtr, m_activeModel);
+                        command::ScopedMutableMorphBone scoped(bonePtr);
                         nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(translation));
                     }
                 }
@@ -1896,7 +1896,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector3 angles(glm::degrees(glm::eulerAngles(orientation)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.orientation"));
                     if (ImGui::DragFloat3("##bone.orientation", glm::value_ptr(angles), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphBone scoped(bonePtr, m_activeModel);
+                        command::ScopedMutableMorphBone scoped(bonePtr);
                         nanoemMutableModelMorphBoneSetOrientation(
                             scoped, glm::value_ptr(glm::quat(glm::radians(angles))));
                     }
@@ -1954,7 +1954,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.add"),
                         ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMorphIndex < numMorphs)) {
                     nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_flip_t *item = nanoemMutableModelMorphFlipCreate(scoped, &status);
                     nanoemMutableModelMorphFlipSetMorphObject(item, morphs[m_morphItemCandidateMorphIndex]);
                     nanoemMutableModelMorphInsertFlipMorphObject(scoped, item, -1, &status);
@@ -1966,7 +1966,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.remove"),
                         ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_flip_t *item =
                         nanoemMutableModelMorphFlipCreateAsReference(items[m_morphItemIndex], &status);
                     nanoemMutableModelMorphRemoveFlipMorphObject(scoped, item, &status);
@@ -1978,7 +1978,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     nanoem_f32_t weight = nanoemModelMorphFlipGetWeight(flipPtr);
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.flip.weight"));
                     if (ImGui::SliderFloat("##flip.weight", &weight, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphFlip scoped(flipPtr, m_activeModel);
+                        command::ScopedMutableMorphFlip scoped(flipPtr);
                         nanoemMutableModelMorphFlipSetWeight(scoped, weight);
                     }
                 }
@@ -2035,7 +2035,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(
                         tr("nanoem.gui.model.edit.morph.group.add"), ImGui::GetContentRegionAvail().x * 0.5f, true)) {
                     nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(scoped, &status);
                     nanoemMutableModelMorphGroupSetMorphObject(item, morphs[m_morphItemCandidateMorphIndex]);
                     nanoemMutableModelMorphInsertGroupMorphObject(scoped, item, -1, &status);
@@ -2047,7 +2047,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.group.remove"),
                         ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_group_t *item =
                         nanoemMutableModelMorphGroupCreateAsReference(items[m_morphItemIndex], &status);
                     nanoemMutableModelMorphRemoveGroupMorphObject(scoped, item, &status);
@@ -2059,7 +2059,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     nanoem_f32_t weight = nanoemModelMorphGroupGetWeight(groupPtr);
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.group.weight"));
                     if (ImGui::SliderFloat("##group.weight", &weight, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphGroup scoped(groupPtr, m_activeModel);
+                        command::ScopedMutableMorphGroup scoped(groupPtr);
                         nanoemMutableModelMorphGroupSetWeight(scoped, weight);
                     }
                 }
@@ -2120,7 +2120,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.add"),
                         ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateRigidBodyIndex < numRigidBodies)) {
                     nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_impulse_t *item = nanoemMutableModelMorphImpulseCreate(scoped, &status);
                     nanoemMutableModelMorphImpulseSetRigidBodyObject(
                         item, rigidBodies[m_morphItemCandidateRigidBodyIndex]);
@@ -2133,7 +2133,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.remove"),
                         ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_impulse_t *item =
                         nanoemMutableModelMorphImpulseCreateAsReference(items[m_morphItemIndex], &status);
                     nanoemMutableModelMorphRemoveImpulseMorphObject(scoped, item, &status);
@@ -2146,7 +2146,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetTorque(impulsePtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.torque"));
                     if (ImGui::DragFloat3("##impulse.torque", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphImpulse scoped(impulsePtr, m_activeModel);
+                        command::ScopedMutableMorphImpulse scoped(impulsePtr);
                         nanoemMutableModelMorphImpulseSetTorque(scoped, glm::value_ptr(torque));
                     }
                 }
@@ -2154,7 +2154,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetVelocity(impulsePtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.velocity"));
                     if (ImGui::DragFloat3("##impulse.velocity", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphImpulse scoped(impulsePtr, m_activeModel);
+                        command::ScopedMutableMorphImpulse scoped(impulsePtr);
                         nanoemMutableModelMorphImpulseSetVelocity(scoped, glm::value_ptr(torque));
                     }
                 }
@@ -2162,7 +2162,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     bool isLocal = nanoemModelMorphImpulseIsLocal(impulsePtr) != 0;
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.local"));
                     if (ImGui::Checkbox("##impuluse.local", &isLocal)) {
-                        command::ScopedMutableMorphImpulse scoped(impulsePtr, m_activeModel);
+                        command::ScopedMutableMorphImpulse scoped(impulsePtr);
                         nanoemMutableModelMorphImpulseSetLocal(scoped, isLocal ? 1 : 0);
                     }
                 }
@@ -2223,7 +2223,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.add"),
                         ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMaterialIndex < numMaterials)) {
                     nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_material_t *item =
                         nanoemMutableModelMorphMaterialCreate(scoped, &status);
                     nanoemMutableModelMorphMaterialSetMaterialObject(
@@ -2237,7 +2237,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                 if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.remove"),
                         ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr, m_activeModel);
+                    command::ScopedMutableMorph scoped(morphPtr);
                     nanoem_mutable_model_morph_material_t *item =
                         nanoemMutableModelMorphMaterialCreateAsReference(items[m_morphItemIndex], &status);
                     nanoemMutableModelMorphRemoveMaterialMorphObject(scoped, item, &status);
@@ -2256,7 +2256,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                             nanoem_model_morph_material_operation_type_t type =
                                 static_cast<nanoem_model_morph_material_operation_type_t>(i);
                             if (ImGui::Selectable(selectedMorphMaterialOperationType(type))) {
-                                command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                                command::ScopedMutableMorphMaterial scoped(materialPtr);
                                 nanoemMutableModelMorphMaterialSetOperationType(scoped, type);
                             }
                         }
@@ -2267,7 +2267,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 ambientColor(glm::make_vec4(nanoemModelMorphMaterialGetAmbientColor(materialPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.ambient.color"));
                     if (ImGui::ColorEdit3("##material.ambient.color", glm::value_ptr(ambientColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetAmbientColor(scoped, glm::value_ptr(ambientColor));
                     }
                 }
@@ -2276,7 +2276,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                         nanoemModelMorphMaterialGetDiffuseOpacity(materialPtr));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.diffuse.color"));
                     if (ImGui::ColorEdit4("##material.diffuse.color", glm::value_ptr(diffuseColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetDiffuseColor(scoped, glm::value_ptr(diffuseColor));
                         nanoemMutableModelMorphMaterialSetDiffuseOpacity(scoped, diffuseColor.w);
                     }
@@ -2285,7 +2285,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 specularColor(glm::make_vec4(nanoemModelMorphMaterialGetSpecularColor(materialPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.color"));
                     if (ImGui::ColorEdit3("##material.specular.color", glm::value_ptr(specularColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetSpecularColor(scoped, glm::value_ptr(specularColor));
                     }
                 }
@@ -2293,7 +2293,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     nanoem_f32_t specularPower = nanoemModelMorphMaterialGetSpecularPower(materialPtr);
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.power"));
                     if (ImGui::DragFloat("##material.specular.power", &specularPower)) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetSpecularPower(scoped, specularPower);
                     }
                 }
@@ -2303,7 +2303,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                         nanoemModelMorphMaterialGetEdgeOpacity(materialPtr));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.color"));
                     if (ImGui::ColorEdit4("##material.edge.color", glm::value_ptr(edgeColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetEdgeColor(scoped, glm::value_ptr(edgeColor));
                         nanoemMutableModelMorphMaterialSetEdgeOpacity(scoped, edgeColor.w);
                     }
@@ -2312,7 +2312,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     nanoem_f32_t edgeSize = nanoemModelMorphMaterialGetEdgeSize(materialPtr);
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.size"));
                     if (ImGui::DragFloat("##material.edge.size", &edgeSize)) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetEdgeSize(scoped, edgeSize);
                     }
                 }
@@ -2321,7 +2321,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetDiffuseTextureBlend(materialPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.diffuse"));
                     if (ImGui::ColorEdit4("##material.blend.diffuse", glm::value_ptr(blendFactor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetDiffuseTextureBlend(scoped, glm::value_ptr(blendFactor));
                     }
                 }
@@ -2329,7 +2329,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(materialPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.sphere-map"));
                     if (ImGui::ColorEdit4("##material.blend.sphere-map", glm::value_ptr(blendFactor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetSphereMapTextureBlend(scoped, glm::value_ptr(blendFactor));
                     }
                 }
@@ -2337,7 +2337,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetToonTextureBlend(materialPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.toon"));
                     if (ImGui::ColorEdit4("##material.blend.toon", glm::value_ptr(blendFactor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr, m_activeModel);
+                        command::ScopedMutableMorphMaterial scoped(materialPtr);
                         nanoemMutableModelMorphMaterialSetToonTextureBlend(scoped, glm::value_ptr(blendFactor));
                     }
                 }
@@ -2370,7 +2370,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 position(glm::make_vec4(nanoemModelMorphUVGetPosition(vertexPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.uv.position"));
                     if (ImGui::DragFloat4("##uv.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphUV scoped(vertexPtr, m_activeModel);
+                        command::ScopedMutableMorphUV scoped(vertexPtr);
                         nanoemMutableModelMorphUVSetPosition(scoped, glm::value_ptr(position));
                     }
                 }
@@ -2401,7 +2401,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
                     Vector4 position(glm::make_vec4(nanoemModelMorphVertexGetPosition(vertexPtr)));
                     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.vertex.position"));
                     if (ImGui::DragFloat3("##vertex.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphVertex scoped(vertexPtr, m_activeModel);
+                        command::ScopedMutableMorphVertex scoped(vertexPtr);
                         nanoemMutableModelMorphVertexSetPosition(scoped, glm::value_ptr(position));
                     }
                 }
@@ -2537,13 +2537,13 @@ ModelParameterDialog::layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Pr
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelLabelGetName(labelPtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableLabel scoped(labelPtr, m_activeModel);
+        command::ScopedMutableLabel scoped(labelPtr);
         nanoemMutableModelLabelSetName(scoped, scope.value(), language, &status);
     }
     {
         bool value = nanoemModelLabelIsSpecial(labelPtr) != 0;
         if (ImGuiWindow::handleCheckBox(tr("nanoem.gui.model.edit.label.special"), &value, m_labelIndex > 0)) {
-            command::ScopedMutableLabel scoped(labelPtr, m_activeModel);
+            command::ScopedMutableLabel scoped(labelPtr);
             nanoemMutableModelLabelSetSpecial(scoped, value);
         }
     }
@@ -2624,7 +2624,7 @@ ModelParameterDialog::layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Pr
                 m_labelIndex > 0 &&
                     (m_labelItemCandidateBoneIndex < numBones || m_labelItemCandidateMorphIndex < numMorphs))) {
             nanoem_status_t status;
-            command::ScopedMutableLabel scoped(labelPtr, m_activeModel);
+            command::ScopedMutableLabel scoped(labelPtr);
             nanoem_mutable_model_label_item_t *item = nullptr;
             if (m_labelItemCandidateBoneIndex < numBones) {
                 item = nanoemMutableModelLabelItemCreateFromBoneObject(
@@ -2645,7 +2645,7 @@ ModelParameterDialog::layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Pr
         if (ImGuiWindow::handleButton(
                 "Remove", ImGui::GetContentRegionAvail().x, m_labelIndex > 0 && m_labelItemIndex < numItems)) {
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            command::ScopedMutableLabel scoped(labelPtr, m_activeModel);
+            command::ScopedMutableLabel scoped(labelPtr);
             nanoem_mutable_model_label_item_t *item =
                 nanoemMutableModelLabelItemCreateAsReference(items[m_labelItemIndex], &status);
             nanoemMutableModelLabelRemoveItemObject(scoped, item, &status);
@@ -2787,7 +2787,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelRigidBodyGetName(rigidBodyPtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+        command::ScopedMutableRigidBody scoped(rigidBodyPtr);
         nanoemMutableModelRigidBodySetName(scoped, scope.value(), language, &status);
     }
     {
@@ -2801,7 +2801,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
                 if (const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr)) {
                     StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", bone->nameConstString(), i);
                     if (ImGui::Selectable(candidateBone->nameConstString(), candidateBone == bone)) {
-                        command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+                        command::ScopedMutableRigidBody scoped(rigidBodyPtr);
                         nanoemMutableModelRigidBodySetBoneObject(scoped, candidateBonePtr);
                     }
                 }
@@ -2813,7 +2813,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.origin"));
         Vector4 value(glm::make_vec4(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
         if (ImGui::InputFloat3("##origin", glm::value_ptr(value))) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetOrigin(scoped, glm::value_ptr(value));
         }
     }
@@ -2821,7 +2821,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.orientation"));
         Vector4 value(glm::make_vec4(nanoemModelRigidBodyGetOrientation(rigidBodyPtr)));
         if (ImGui::InputFloat3("##orientation", glm::value_ptr(value))) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetOrientation(scoped, glm::value_ptr(value));
         }
     }
@@ -2829,7 +2829,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.shape.size"));
         Vector4 value(glm::make_vec4(nanoemModelRigidBodyGetShapeSize(rigidBodyPtr)));
         if (ImGui::InputFloat3("##size", glm::value_ptr(value))) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetShapeSize(scoped, glm::value_ptr(value));
         }
     }
@@ -2838,19 +2838,19 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         nanoem_model_rigid_body_shape_type_t value = nanoemModelRigidBodyGetShapeType(rigidBodyPtr);
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.shape-type.sphere"),
                 value == NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_SPHERE)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetShapeType(scoped, NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_SPHERE);
         }
         ImGui::SameLine();
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.shape-type.box"),
                 value == NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_BOX)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetShapeType(scoped, NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_BOX);
         }
         ImGui::SameLine();
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.shape-type.capsule"),
                 value == NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_CAPSULE)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetShapeType(scoped, NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_CAPSULE);
         }
     }
@@ -2859,19 +2859,19 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         nanoem_model_rigid_body_transform_type_t value = nanoemModelRigidBodyGetTransformType(rigidBodyPtr);
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.object-type.static"),
                 value == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetTransformType(
                 scoped, NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION);
         }
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.object-type.dynamic"),
                 value == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_SIMULATION_TO_BONE)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetTransformType(
                 scoped, NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_SIMULATION_TO_BONE);
         }
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.object-type.kinematic"),
                 value == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_ORIENTATION_AND_SIMULATION_TO_BONE)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetTransformType(
                 scoped, NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_ORIENTATION_AND_SIMULATION_TO_BONE);
         }
@@ -2881,7 +2881,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.mass"));
         nanoem_f32_t value = nanoemModelRigidBodyGetMass(rigidBodyPtr);
         if (ImGui::InputFloat("##mass", &value)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetMass(scoped, value);
         }
     }
@@ -2889,7 +2889,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.linear-damping"));
         nanoem_f32_t value = nanoemModelRigidBodyGetLinearDamping(rigidBodyPtr);
         if (ImGui::InputFloat("##damping.linear", &value)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetLinearDamping(scoped, value);
         }
     }
@@ -2897,7 +2897,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.angular-damping"));
         nanoem_f32_t value = nanoemModelRigidBodyGetAngularDamping(rigidBodyPtr);
         if (ImGui::InputFloat("##damping.angular", &value)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetAngularDamping(scoped, value);
         }
     }
@@ -2905,7 +2905,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.friction"));
         nanoem_f32_t value = nanoemModelRigidBodyGetFriction(rigidBodyPtr);
         if (ImGui::InputFloat("##friction", &value)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetFriction(scoped, value);
         }
     }
@@ -2913,7 +2913,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.restitution"));
         nanoem_f32_t value = nanoemModelRigidBodyGetRestitution(rigidBodyPtr);
         if (ImGui::InputFloat("##restitution", &value)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetRestitution(scoped, value);
         }
     }
@@ -2922,7 +2922,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         ImGui::TextUnformatted("Collision Group");
         int value = nanoemModelRigidBodyGetCollisionGroupId(rigidBodyPtr);
         if (ImGui::DragInt("##collision.group", &value, 0.05f, 0, 15)) {
-            command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+            command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetCollisionGroupId(scoped, value);
         }
     }
@@ -2935,7 +2935,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
             int offset = i + 1;
             StringUtils::format(buffer, sizeof(buffer), "%d##collision.mask.%d", offset, offset);
             if (ImGui::CheckboxFlags(buffer, &flags, 1 << i)) {
-                command::ScopedMutableRigidBody scoped(rigidBodyPtr, m_activeModel);
+                command::ScopedMutableRigidBody scoped(rigidBodyPtr);
                 nanoemMutableModelRigidBodySetCollisionMask(scoped, ~flags);
             }
             ImGui::NextColumn();
@@ -3075,7 +3075,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelJointGetName(jointPtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+        command::ScopedMutableJoint scoped(jointPtr);
         nanoemMutableModelJointSetName(scoped, scope.value(), language, &status);
     }
     {
@@ -3091,7 +3091,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
                     StringUtils::format(
                         buffer, sizeof(buffer), "%s##item[%lu].name", candidateBody->nameConstString(), i);
                     if (ImGui::Selectable(candidateBody->nameConstString(), candidateBody == rigidBodyA)) {
-                        command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+                        command::ScopedMutableJoint scoped(jointPtr);
                         nanoemMutableModelJointSetRigidBodyAObject(scoped, candidateBodyPtr);
                     }
                 }
@@ -3105,7 +3105,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
                 const nanoem_model_rigid_body_t *candidateBodyPtr = bodies[i];
                 model::RigidBody *candidateBody = model::RigidBody::cast(candidateBodyPtr);
                 if (candidateBody && ImGui::Selectable(candidateBody->nameConstString(), candidateBody == rigidBodyB)) {
-                    command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+                    command::ScopedMutableJoint scoped(jointPtr);
                     nanoemMutableModelJointSetRigidBodyAObject(scoped, candidateBodyPtr);
                 }
             }
@@ -3116,7 +3116,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.origin"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetOrigin(jointPtr)));
         if (ImGui::InputFloat3("##origin", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetOrigin(scoped, glm::value_ptr(value));
         }
     }
@@ -3124,7 +3124,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.orientation"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetOrientation(jointPtr)));
         if (ImGui::InputFloat3("##orientation", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetOrientation(scoped, glm::value_ptr(value));
         }
     }
@@ -3136,7 +3136,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
             for (int i = NANOEM_MODEL_JOINT_TYPE_FIRST_ENUM; i < NANOEM_MODEL_JOINT_TYPE_MAX_ENUM; i++) {
                 nanoem_model_joint_type_t type = static_cast<nanoem_model_joint_type_t>(i);
                 if (ImGui::Selectable(selectedJointType(type))) {
-                    command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+                    command::ScopedMutableJoint scoped(jointPtr);
                     nanoemMutableModelJointSetType(scoped, type);
                 }
             }
@@ -3147,7 +3147,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.linear.stiffness"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetLinearStiffness(jointPtr)));
         if (ImGui::InputFloat3("##linear.stiffness", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetLinearStiffness(scoped, glm::value_ptr(value));
         }
     }
@@ -3155,7 +3155,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.linear.upper"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetLinearUpperLimit(jointPtr)));
         if (ImGui::InputFloat3("##linear.upper", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetLinearUpperLimit(scoped, glm::value_ptr(value));
         }
     }
@@ -3163,7 +3163,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.linear.lower"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetLinearLowerLimit(jointPtr)));
         if (ImGui::InputFloat3("##linear.lower", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetLinearLowerLimit(scoped, glm::value_ptr(value));
         }
     }
@@ -3171,7 +3171,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.angular.stiffness"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetAngularStiffness(jointPtr)));
         if (ImGui::InputFloat3("##angular.stiffness", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetAngularStiffness(scoped, glm::value_ptr(value));
         }
     }
@@ -3179,7 +3179,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.angular.upper"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetAngularUpperLimit(jointPtr)));
         if (ImGui::InputFloat3("##angular.upper", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetAngularUpperLimit(scoped, glm::value_ptr(value));
         }
     }
@@ -3187,7 +3187,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.angular.lower"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetAngularLowerLimit(jointPtr)));
         if (ImGui::InputFloat3("##angular.lower", glm::value_ptr(value))) {
-            command::ScopedMutableJoint scoped(jointPtr, m_activeModel);
+            command::ScopedMutableJoint scoped(jointPtr);
             nanoemMutableModelJointSetAngularLowerLimit(scoped, glm::value_ptr(value));
         }
     }
@@ -3311,7 +3311,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
     ImGui::PushItemWidth(-1);
     if (layoutName(nanoemModelSoftBodyGetName(softBodyPtr, language), project, scope)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+        command::ScopedMutableSoftBody scoped(softBodyPtr);
         nanoemMutableModelSoftBodySetName(scoped, scope.value(), language, &status);
     }
     {
@@ -3326,7 +3326,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
                 if (const model::Material *candidateMaterial = model::Material::cast(candidateMaterialPtr)) {
                     StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", material->nameConstString(), i);
                     if (ImGui::Selectable(candidateMaterial->nameConstString(), candidateMaterial == material)) {
-                        command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+                        command::ScopedMutableSoftBody scoped(softBodyPtr);
                         nanoemMutableModelSoftBodySetMaterialObject(scoped, candidateMaterialPtr);
                     }
                 }
@@ -3340,13 +3340,13 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         nanoem_model_soft_body_shape_type_t value = nanoemModelSoftBodyGetShapeType(softBodyPtr);
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.soft-body.shape-type.tri-mesh"),
                 value == NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_TRI_MESH)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetShapeType(scoped, NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_TRI_MESH);
         }
         ImGui::SameLine();
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.soft-body.shape-type.rope"),
                 value == NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_ROPE)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetShapeType(scoped, NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_ROPE);
         }
     }
@@ -3359,7 +3359,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
                 nanoem_model_soft_body_aero_model_type_t type =
                     static_cast<nanoem_model_soft_body_aero_model_type_t>(i);
                 if (ImGui::Selectable(selectedSoftBodyAeroMdoelType(type))) {
-                    command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+                    command::ScopedMutableSoftBody scoped(softBodyPtr);
                     nanoemMutableModelSoftBodySetAeroModel(scoped, type);
                 }
             }
@@ -3371,7 +3371,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.collision-group-id"));
         int value = nanoemModelSoftBodyGetCollisionGroupId(softBodyPtr);
         if (ImGui::DragInt("##collision.group", &value, 0.05f, 0, 15)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetCollisionGroupId(scoped, value);
         }
     }
@@ -3384,7 +3384,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
             int offset = i + 1;
             StringUtils::format(buffer, sizeof(buffer), "%d##collision.mask.%d", offset, offset);
             if (ImGui::CheckboxFlags(buffer, &flags, 1 << i)) {
-                command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+                command::ScopedMutableSoftBody scoped(softBodyPtr);
                 nanoemMutableModelSoftBodySetCollisionMask(scoped, ~flags);
             }
             ImGui::NextColumn();
@@ -3396,7 +3396,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.total-mass"));
         nanoem_f32_t value = nanoemModelSoftBodyGetTotalMass(softBodyPtr);
         if (ImGui::InputFloat("##total-mass", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetTotalMass(scoped, value);
         }
     }
@@ -3404,7 +3404,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.collision-margin"));
         nanoem_f32_t value = nanoemModelSoftBodyGetCollisionMargin(softBodyPtr);
         if (ImGui::InputFloat("##collision-margin", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetCollisionMargin(scoped, value);
         }
     }
@@ -3413,7 +3413,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.velocity-correction-factor"));
         nanoem_f32_t value = nanoemModelSoftBodyGetVelocityCorrectionFactor(softBodyPtr);
         if (ImGui::InputFloat("##velocity-correction-factor", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetVelocityCorrectionFactor(scoped, value);
         }
     }
@@ -3421,7 +3421,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.damping-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetDampingCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##damping-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetDampingCoefficient(scoped, value);
         }
     }
@@ -3429,7 +3429,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.drag-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetDragCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##drag-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetDragCoefficient(scoped, value);
         }
     }
@@ -3437,7 +3437,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.lift-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetLiftCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##lift-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetLiftCoefficient(scoped, value);
         }
     }
@@ -3445,7 +3445,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.pressure-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetPressureCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##pressure-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetPressureCoefficient(scoped, value);
         }
     }
@@ -3453,7 +3453,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.volume-conversation-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetVolumeConversationCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##volume-conversation-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetVolumeConversationCoefficient(scoped, value);
         }
     }
@@ -3461,7 +3461,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.dynamic-friction-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetDynamicFrictionCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##dynamic-friction-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetDynamicFrictionCoefficient(scoped, value);
         }
     }
@@ -3469,7 +3469,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.pose-matching-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetPoseMatchingCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##pose-matching-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetPoseMatchingCoefficient(scoped, value);
         }
     }
@@ -3477,7 +3477,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.rigid-contact-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetRigidContactHardness(softBodyPtr);
         if (ImGui::InputFloat("##rigid-contact-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetRigidContactHardness(scoped, value);
         }
     }
@@ -3485,7 +3485,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.kinetic-contact-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetKineticContactHardness(softBodyPtr);
         if (ImGui::InputFloat("##kinetic-contact-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetKineticContactHardness(scoped, value);
         }
     }
@@ -3493,7 +3493,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-contact-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftContactHardness(softBodyPtr);
         if (ImGui::InputFloat("##soft-contact-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftContactHardness(scoped, value);
         }
     }
@@ -3501,7 +3501,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.anchor-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetAnchorHardness(softBodyPtr);
         if (ImGui::InputFloat("##anchor-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetAnchorHardness(scoped, value);
         }
     }
@@ -3509,7 +3509,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-vs-kinetic-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftVSKineticHardness(softBodyPtr);
         if (ImGui::InputFloat("##soft-vs-kinetic-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftVSKineticHardness(scoped, value);
         }
     }
@@ -3517,7 +3517,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-vs-rigid-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftVSRigidHardness(softBodyPtr);
         if (ImGui::InputFloat("##soft-vs-rigid-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftVSRigidHardness(scoped, value);
         }
     }
@@ -3525,7 +3525,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-vs-soft-hardness"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftVSSoftHardness(softBodyPtr);
         if (ImGui::InputFloat("##soft-vs-soft-hardness", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftVSSoftHardness(scoped, value);
         }
     }
@@ -3533,7 +3533,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-vs-kinetic-impulse-split"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(softBodyPtr);
         if (ImGui::InputFloat("##soft-vs-kinetic-impulse-split", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftVSKineticImpulseSplit(scoped, value);
         }
     }
@@ -3541,7 +3541,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-vs-rigid-impulse-split"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(softBodyPtr);
         if (ImGui::InputFloat("##soft-vs-rigid-impulse-split", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftVSRigidImpulseSplit(scoped, value);
         }
     }
@@ -3549,7 +3549,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.soft-vs-soft-impulse-split"));
         nanoem_f32_t value = nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(softBodyPtr);
         if (ImGui::InputFloat("##soft-vs-kinetic-soft-split", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetSoftVSSoftImpulseSplit(scoped, value);
         }
     }
@@ -3557,7 +3557,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.linear-stiffness-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetLinearStiffnessCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##linear-stiffness-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetLinearStiffnessCoefficient(scoped, value);
         }
     }
@@ -3565,7 +3565,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.angular-stiffness-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetAngularStiffnessCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##angular-stiffness-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetAngularStiffnessCoefficient(scoped, value);
         }
     }
@@ -3573,7 +3573,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.volume-stiffness-coefficient"));
         nanoem_f32_t value = nanoemModelSoftBodyGetVolumeStiffnessCoefficient(softBodyPtr);
         if (ImGui::InputFloat("##volume-stiffness-coefficient", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetVolumeStiffnessCoefficient(scoped, value);
         }
     }
@@ -3581,7 +3581,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.bending-constraints-distance"));
         int value = nanoemModelSoftBodyGetBendingConstraintsDistance(softBodyPtr);
         if (ImGui::InputInt("##bending-constraints-distance", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetBendingConstraintsDistance(scoped, value);
         }
     }
@@ -3589,7 +3589,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.cluster-count"));
         int value = nanoemModelSoftBodyGetClusterCount(softBodyPtr);
         if (ImGui::InputInt("##cluster-count", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetClusterCount(scoped, value);
         }
     }
@@ -3597,7 +3597,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.velocity-solver-iterations"));
         int value = nanoemModelSoftBodyGetVelocitySolverIterations(softBodyPtr);
         if (ImGui::InputInt("##velocity-solver-iterations", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetVelocitySolverIterations(scoped, value);
         }
     }
@@ -3605,7 +3605,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.position-solver-iterations"));
         int value = nanoemModelSoftBodyGetVelocitySolverIterations(softBodyPtr);
         if (ImGui::InputInt("##position-solver-iterations", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetPositionsSolverIterations(scoped, value);
         }
     }
@@ -3613,7 +3613,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.drift-solver-iterations"));
         int value = nanoemModelSoftBodyGetDriftSolverIterations(softBodyPtr);
         if (ImGui::InputInt("##drift-solver-iterations", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetDriftSolverIterations(scoped, value);
         }
     }
@@ -3621,28 +3621,28 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.cluster-solver-iterations"));
         int value = nanoemModelSoftBodyGetClusterSolverIterations(softBodyPtr);
         if (ImGui::InputInt("##cluster-solver-iterations", &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetClusterSolverIterations(scoped, value);
         }
     }
     {
         bool value = nanoemModelSoftBodyIsBendingConstraintsEnabled(softBodyPtr) != 0;
         if (ImGui::Checkbox(tr("nanoem.gui.model.edit.soft-body.bending-constraints-enabled"), &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetBendingConstraintsEnabled(scoped, value);
         }
     }
     {
         bool value = nanoemModelSoftBodyIsClustersEnabled(softBodyPtr) != 0;
         if (ImGui::Checkbox(tr("nanoem.gui.model.edit.soft-body.clusters-enabled"), &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetClustersEnabled(scoped, value);
         }
     }
     {
         bool value = nanoemModelSoftBodyIsRandomizeConstraintsNeeded(softBodyPtr) != 0;
         if (ImGui::Checkbox(tr("nanoem.gui.model.edit.soft-body.randomize-constraints-enabled"), &value)) {
-            command::ScopedMutableSoftBody scoped(softBodyPtr, m_activeModel);
+            command::ScopedMutableSoftBody scoped(softBodyPtr);
             nanoemMutableModelSoftBodySetRandomizeConstraintsNeeded(scoped, value);
         }
     }

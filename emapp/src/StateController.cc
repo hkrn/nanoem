@@ -131,8 +131,8 @@ BaseDraggingObjectState::BaseDraggingObjectState(
     : BaseState(stateController, application)
     , m_canUpdateAngle(canUpdateAngle)
     , m_lastDraggingState(nullptr)
-    , m_scaleFactor(0.0f)
     , m_type(IState::kTypeMaxEnum)
+    , m_scaleFactor(0.0f)
 {
 }
 
