@@ -2069,7 +2069,10 @@ StateController::handlePointerScroll(const Vector3SI32 &logicalScaleCursorPositi
                 for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end(); it != end;
                      ++it) {
                     Model *model = *it;
-                    if (model->edgeSizeScaleFactor() > 0.0f) {
+                    if (model->edgeSizeScaleFactor() > 0.0f && !model->isStagingVertexBufferDirty()) {
+                        model->resetAllMorphDeformStates();
+                        model->deformAllMorphs(false);
+                        model->performAllBonesTransform();
                         model->markStagingVertexBufferDirty();
                     }
                 }

@@ -743,7 +743,8 @@ Model::loadPose(const nanoem_u8_t *bytes, size_t length, Error &error)
     model::BindPose pose;
     bool result = pose.load(this, bytes, length, error);
     if (result) {
-        performAllMorphsDeform(false);
+        deformAllMorphs(true);
+        performAllBonesTransform();
     }
     return result;
 }
@@ -1491,89 +1492,85 @@ Model::performAllBonesTransform()
 }
 
 void
-Model::performAllMorphsDeform(bool resetAll)
+Model::resetAllMorphDeformStates()
 {
-    if (resetAll) {
-        nanoem_rsize_t numObjects, numChildren;
-        nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_opaque, &numObjects);
-        const Motion *motion = m_project->resolveMotion(this);
-        nanoem_frame_index_t currentFrameIndex = m_project->currentLocalFrameIndex();
-        model::Morph::Set activeMorphs;
-        for (int i = NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM; i < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM; i++) {
-            activeMorphs.insert(activeMorph(static_cast<nanoem_model_morph_category_t>(i)));
+    nanoem_rsize_t numObjects, numChildren;
+    nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_opaque, &numObjects);
+    const Motion *motion = m_project->resolveMotion(this);
+    nanoem_frame_index_t currentFrameIndex = m_project->currentLocalFrameIndex();
+    model::Morph::Set activeMorphs;
+    for (int i = NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM; i < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM; i++) {
+        activeMorphs.insert(activeMorph(static_cast<nanoem_model_morph_category_t>(i)));
+    }
+    for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+        const nanoem_model_morph_t *morphPtr = morphs[i];
+        switch (nanoemModelMorphGetType(morphPtr)) {
+        case NANOEM_MODEL_MORPH_TYPE_BONE: {
+            const nanoem_model_morph_bone_t *const *children =
+                nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_bone_t *child = children[i];
+                const nanoem_model_bone_t *targetBonePtr = nanoemModelMorphBoneGetBoneObject(child);
+                if (model::Bone *bone = model::Bone::cast(targetBonePtr)) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = nullptr;
+                    BoneBoundRigidBodyMap::const_iterator it = m_boneBoundRigidBodies.find(targetBonePtr);
+                    if (it != m_boneBoundRigidBodies.end()) {
+                        rigidBodyPtr = it->second;
+                    }
+                    bone->resetMorphTransform();
+                    bone->synchronizeMotion(motion, targetBonePtr, rigidBodyPtr, currentFrameIndex, 0);
+                }
+            }
+            break;
         }
-        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
-            const nanoem_model_morph_t *morphPtr = morphs[i];
-            switch (nanoemModelMorphGetType(morphPtr)) {
-            case NANOEM_MODEL_MORPH_TYPE_BONE: {
-                const nanoem_model_morph_bone_t *const *children =
-                    nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_bone_t *child = children[i];
-                    const nanoem_model_bone_t *targetBonePtr = nanoemModelMorphBoneGetBoneObject(child);
-                    if (model::Bone *bone = model::Bone::cast(targetBonePtr)) {
-                        const nanoem_model_rigid_body_t *rigidBodyPtr = nullptr;
-                        BoneBoundRigidBodyMap::const_iterator it = m_boneBoundRigidBodies.find(targetBonePtr);
-                        if (it != m_boneBoundRigidBodies.end()) {
-                            rigidBodyPtr = it->second;
-                        }
-                        bone->resetMorphTransform();
-                        bone->synchronizeMotion(motion, targetBonePtr, rigidBodyPtr, currentFrameIndex, 0);
+        case NANOEM_MODEL_MORPH_TYPE_FLIP: {
+            const nanoem_model_morph_flip_t *const *children =
+                nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_flip_t *child = children[i];
+                const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphFlipGetMorphObject(child);
+                if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
+                    if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
+                        const nanoem_unicode_string_t *name =
+                            nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+                        morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
                     }
                 }
-                break;
             }
-            case NANOEM_MODEL_MORPH_TYPE_FLIP: {
-                const nanoem_model_morph_flip_t *const *children =
-                    nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_flip_t *child = children[i];
-                    const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphFlipGetMorphObject(child);
-                    if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
-                        if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
-                            const nanoem_unicode_string_t *name =
-                                nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
-                            morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
-                        }
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_GROUP: {
+            const nanoem_model_morph_group_t *const *children =
+                nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_group_t *child = children[i];
+                const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphGroupGetMorphObject(child);
+                if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
+                    if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
+                        const nanoem_unicode_string_t *name =
+                            nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+                        morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
                     }
                 }
-                break;
             }
-            case NANOEM_MODEL_MORPH_TYPE_GROUP: {
-                const nanoem_model_morph_group_t *const *children =
-                    nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_group_t *child = children[i];
-                    const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphGroupGetMorphObject(child);
-                    if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
-                        if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
-                            const nanoem_unicode_string_t *name =
-                                nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
-                            morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
-                        }
-                    }
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
+            const nanoem_model_morph_material_t *const *children =
+                nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_material_t *child = children[i];
+                const nanoem_model_material_t *targetMaterialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
+                if (model::Material *material = model::Material::cast(targetMaterialPtr)) {
+                    material->reset(targetMaterialPtr);
                 }
-                break;
             }
-            case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
-                const nanoem_model_morph_material_t *const *children =
-                    nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_material_t *child = children[i];
-                    const nanoem_model_material_t *targetMaterialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
-                    if (model::Material *material = model::Material::cast(targetMaterialPtr)) {
-                        material->reset(targetMaterialPtr);
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-            }
+            break;
+        }
+        default:
+            break;
         }
     }
-    deformAllMorphs(true);
-    performAllBonesTransform();
 }
 
 void
@@ -1589,6 +1586,12 @@ Model::deformAllMorphs(bool checkDirty)
         const nanoem_model_morph_t *morphPtr = morphs[i];
         deformMorph(morphPtr, checkDirty);
     }
+}
+
+bool
+Model::isStagingVertexBufferDirty() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateDirtyStagingBuffer, m_states);
 }
 
 void

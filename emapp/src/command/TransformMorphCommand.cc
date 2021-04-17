@@ -73,7 +73,9 @@ TransformMorphCommand::execute(bool undo)
             morph->setWeight(undo ? state.second.second : state.second.first);
         }
     }
-    m_model->performAllMorphsDeform(true);
+    m_model->resetAllMorphDeformStates();
+    m_model->deformAllMorphs(true);
+    m_model->performAllBonesTransform();
 }
 
 TransformMorphCommand::TransformMorphCommand(

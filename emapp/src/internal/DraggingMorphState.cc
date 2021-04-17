@@ -45,7 +45,9 @@ DraggingMorphSliderState::deform(nanoem_f32_t weight)
     model::Morph *morph = model::Morph::cast(m_targetMorph);
     m_model->restoreBindPose(m_lastBindPose);
     morph->setWeight(weight);
-    m_model->performAllMorphsDeform(true);
+    m_model->resetAllMorphDeformStates();
+    m_model->deformAllMorphs(true);
+    m_model->performAllBonesTransform();
 }
 
 void

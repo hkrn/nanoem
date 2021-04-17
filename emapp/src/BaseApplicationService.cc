@@ -2210,30 +2210,15 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelMorphSetZero: {
-        if (Model *activeModel = project->activeModel()) {
-            if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
-                morph->setWeight(0.0f);
-                activeModel->performAllMorphsDeform(true);
-            }
-        }
+        setMorphWeight(0.0f, project);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelMorphSetHalf: {
-        if (Model *activeModel = project->activeModel()) {
-            if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
-                morph->setWeight(0.5f);
-                activeModel->performAllMorphsDeform(true);
-            }
-        }
+        setMorphWeight(0.5f, project);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelMorphSetOne: {
-        if (Model *activeModel = project->activeModel()) {
-            if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
-                morph->setWeight(1.0f);
-                activeModel->performAllMorphsDeform(true);
-            }
-        }
+        setMorphWeight(1.0f, project);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelEnableAddBlend: {
@@ -4022,7 +4007,9 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
             Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
                                                         : project->activeModel();
             if (model) {
-                model->performAllMorphsDeform(true);
+                model->resetAllMorphDeformStates();
+                model->deformAllMorphs(true);
+                model->performAllBonesTransform();
             }
         }
         break;
@@ -5630,6 +5617,19 @@ BaseApplicationService::performRedo(undo_command_t *commandPtr, undo_stack_t *st
     undoStackPushCommand(stack, commandPtr);
     undoCommandSetOnPersistRedoCallback(commandPtr, cb);
     commandPtrRef = commandPtr;
+}
+
+void
+BaseApplicationService::setMorphWeight(float value, Project *project)
+{
+    if (Model *activeModel = project->activeModel()) {
+        if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
+            morph->setWeight(value);
+            activeModel->resetAllMorphDeformStates();
+            activeModel->deformAllMorphs(true);
+            activeModel->performAllBonesTransform();
+        }
+    }
 }
 
 void

@@ -184,8 +184,9 @@ public:
     void synchronizeAllRigidBodiesTransformFeedbackFromSimulation(PhysicsEngine::RigidBodyFollowBoneType followType);
     void synchronizeAllRigidBodiesTransformFeedbackToSimulation();
     void performAllBonesTransform();
-    void performAllMorphsDeform(bool resetAll);
+    void resetAllMorphDeformStates();
     void deformAllMorphs(bool checkDirty);
+    bool isStagingVertexBufferDirty() const NANOEM_DECL_NOEXCEPT;
     void markStagingVertexBufferDirty();
     void updateStagingVertexBuffer();
     void resetLanguage();
