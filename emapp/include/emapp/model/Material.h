@@ -51,7 +51,8 @@ public:
         nanoem_language_type_t language);
     void destroy() NANOEM_DECL_NOEXCEPT;
     void reset(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT;
-    void update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT;
+    void resetDeform();
+    void deform(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT;
     String name() const;
     String canonicalName() const;
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;

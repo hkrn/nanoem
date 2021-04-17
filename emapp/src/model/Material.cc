@@ -92,6 +92,11 @@ Material::reset(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT
     eb.m_color = glm::make_vec3(nanoemModelMaterialGetEdgeColor(material));
     eb.m_opacity = nanoemModelMaterialGetEdgeOpacity(material);
     eb.m_size = nanoemModelMaterialGetEdgeSize(material);
+}
+
+void
+Material::resetDeform()
+{
     m_color.mul.reset(1);
     m_color.add.reset(0);
     m_edge.mul.reset(1);
@@ -99,7 +104,7 @@ Material::reset(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT
 }
 
 void
-Material::update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT
+Material::deform(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(morph, "must not be nullptr");
     static const Vector4 kOneV4(1.0f);
@@ -379,6 +384,7 @@ Material::Material(sg_image fallbackImage) NANOEM_DECL_NOEXCEPT : m_effect(nullp
                                                                   m_toonColor(1),
                                                                   m_states(kPrivateStateInitialValue)
 {
+    resetDeform();
     m_fallbackImage = fallbackImage;
 }
 

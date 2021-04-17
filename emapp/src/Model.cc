@@ -2990,8 +2990,29 @@ Model::predeformMorph(const nanoem_model_morph_t *morphPtr)
         }
         break;
     }
+    case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
+        nanoem_rsize_t numChildren, numMaterials;
+        const nanoem_model_morph_material_t *const *children =
+            nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numChildren);
+        const nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+        for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+            const nanoem_model_morph_material_t *child = children[i];
+            const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
+            if (model::Material *material = model::Material::cast(materialPtr)) {
+                material->resetDeform();
+            }
+            else {
+                for (nanoem_rsize_t j = 0; j < numMaterials; j++) {
+                    const nanoem_model_material_t *materialPtr = materials[j];
+                    if (model::Material *material = model::Material::cast(materialPtr)) {
+                        material->resetDeform();
+                    }
+                }
+            }
+        }
+        break;
+    }
     case NANOEM_MODEL_MORPH_TYPE_IMPULUSE:
-    case NANOEM_MODEL_MORPH_TYPE_MATERIAL:
     case NANOEM_MODEL_MORPH_TYPE_BONE:
     case NANOEM_MODEL_MORPH_TYPE_VERTEX:
     case NANOEM_MODEL_MORPH_TYPE_TEXTURE:
@@ -3071,13 +3092,13 @@ Model::deformMorph(const nanoem_model_morph_t *morphPtr, bool checkDirty)
                 const nanoem_model_morph_material_t *child = children[i];
                 const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
                 if (model::Material *material = model::Material::cast(materialPtr)) {
-                    material->update(child, weight);
+                    material->deform(child, weight);
                 }
                 else {
                     for (nanoem_rsize_t j = 0; j < numMaterials; j++) {
                         const nanoem_model_material_t *materialPtr = materials[j];
                         if (model::Material *material = model::Material::cast(materialPtr)) {
-                            material->update(child, weight);
+                            material->deform(child, weight);
                         }
                     }
                 }
