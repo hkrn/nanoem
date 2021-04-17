@@ -102,25 +102,27 @@ void
 Material::update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(morph, "must not be nullptr");
+    static const Vector4 kOneV4(1.0f);
+    static const Vector3 kOneV3(1.0f);
+    static const Vector4 kZeroV4(0.0f);
     const Vector4 diffuseTextureBlendFactor(glm::make_vec4(nanoemModelMorphMaterialGetDiffuseTextureBlend(morph)));
     const Vector4 sphereTextureBlendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(morph)));
     const Vector4 toonTextureBlendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(morph)));
     switch (nanoemModelMorphMaterialGetOperationType(morph)) {
     case NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_MULTIPLY: {
         Color &cm = m_color.mul;
-        static const Vector3 kOne(1.0f);
-        cm.m_ambient *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetAmbientColor(morph)), weight);
-        cm.m_diffuse *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(morph)), weight);
-        cm.m_specular *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetSpecularColor(morph)), weight);
+        cm.m_ambient *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetAmbientColor(morph)), weight);
+        cm.m_diffuse *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(morph)), weight);
+        cm.m_specular *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetSpecularColor(morph)), weight);
         cm.m_diffuseOpacity = glm::mix(cm.m_diffuseOpacity, nanoemModelMorphMaterialGetDiffuseOpacity(morph), weight);
         cm.m_specularPower =
             glm::max(glm::mix(cm.m_specularPower, nanoemModelMorphMaterialGetSpecularPower(morph), weight),
                 kMiniumSpecularPower);
-        cm.m_diffuseTextureBlendFactor *= glm::mix(Vector4(1), diffuseTextureBlendFactor, weight);
-        cm.m_sphereTextureBlendFactor *= glm::mix(Vector4(1), sphereTextureBlendFactor, weight);
-        cm.m_toonTextureBlendFactor *= glm::mix(Vector4(1), toonTextureBlendFactor, weight);
+        cm.m_diffuseTextureBlendFactor *= glm::mix(kOneV4, diffuseTextureBlendFactor, weight);
+        cm.m_sphereTextureBlendFactor *= glm::mix(kOneV4, sphereTextureBlendFactor, weight);
+        cm.m_toonTextureBlendFactor *= glm::mix(kOneV4, toonTextureBlendFactor, weight);
         Edge &em = m_edge.mul;
-        em.m_color *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morph)), weight);
+        em.m_color *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morph)), weight);
         em.m_opacity = glm::mix(em.m_opacity, nanoemModelMorphMaterialGetEdgeOpacity(morph), weight);
         em.m_size = glm::mix(em.m_size, nanoemModelMorphMaterialGetEdgeSize(morph), weight);
         break;
@@ -137,9 +139,9 @@ Material::update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight
         ca.m_specularPower =
             glm::max(glm::mix(ca.m_specularPower, nanoemModelMorphMaterialGetSpecularPower(morph), weight),
                 kMiniumSpecularPower);
-        ca.m_diffuseTextureBlendFactor += glm::mix(Vector4(0), diffuseTextureBlendFactor, weight);
-        ca.m_sphereTextureBlendFactor += glm::mix(Vector4(0), sphereTextureBlendFactor, weight);
-        ca.m_toonTextureBlendFactor += glm::mix(Vector4(0), toonTextureBlendFactor, weight);
+        ca.m_diffuseTextureBlendFactor += glm::mix(kZeroV4, diffuseTextureBlendFactor, weight);
+        ca.m_sphereTextureBlendFactor += glm::mix(kZeroV4, sphereTextureBlendFactor, weight);
+        ca.m_toonTextureBlendFactor += glm::mix(kZeroV4, toonTextureBlendFactor, weight);
         Edge &ea = m_edge.add;
         ea.m_color += glm::mix(Constants::kZeroV3, glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morph)), weight);
         ea.m_opacity = glm::mix(ea.m_opacity, nanoemModelMorphMaterialGetEdgeOpacity(morph), weight);

@@ -1163,7 +1163,7 @@ DraggingFaceSelectionState::commitSelection(Model *model, const Project *project
     }
     const ISelector *selector = currentSelector();
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-        const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materials[i]);
+        const nanoem_rsize_t numVI = nanoemModelMaterialGetNumVertexIndices(materials[i]);
         for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
             const nanoem_rsize_t o = offset + j;
             const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
@@ -1227,7 +1227,7 @@ DraggingMaterialSelectionState::commitSelection(Model *model, const Project *pro
     const ISelector *selector = currentSelector();
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
-        const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        const nanoem_rsize_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
         Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
         for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
             const nanoem_rsize_t o = offset + j;
@@ -1495,7 +1495,7 @@ DraggingSoftBodySelectionState::getMaterialMap(
     const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
-        const nanoem_f32_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        const nanoem_rsize_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
         Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
         for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
             const nanoem_rsize_t o = offset + j;
