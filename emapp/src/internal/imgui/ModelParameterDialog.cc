@@ -431,7 +431,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
     }
     {
         nanoem_rsize_t offset = 0;
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.2);
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.2f);
         if (ImGui::BeginCombo("##uva", "UVA")) {
             if (ImGui::Selectable("UVA1")) {
                 offset = 1;
@@ -1937,7 +1937,6 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
 void
 ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Project *project)
 {
-    char buffer[Inline::kNameStackBufferSize];
     nanoem_language_type_t language = static_cast<nanoem_language_type_t>(m_language);
     StringUtils::UnicodeStringScope scope(project->unicodeStringFactory());
     ImGui::PushItemWidth(-1);
@@ -1982,610 +1981,741 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
             ImGui::GetTextLineHeightWithSpacing() * kInnerItemListFrameHeightRowCount),
             propertyWindowSize(0, ImGui::GetTextLineHeightWithSpacing() * kInnerItemListFrameHeightRowCount);
         ImGui::BeginChild("##items", panelWindowSize, true);
-        {
-            bool itemUp, itemDown;
-            detectUpDown(itemUp, itemDown);
-            nanoem_rsize_t numItems;
-            switch (nanoemModelMorphGetType(morphPtr)) {
-            case NANOEM_MODEL_MORPH_TYPE_BONE: {
-                model::Bone::Set reservedBoneSet;
-                nanoem_model_morph_bone_t *const *items = nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_bone_t *item = items[i];
-                    const nanoem_model_bone_t *bonePtr = nanoemModelMorphBoneGetBoneObject(item);
-                    if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
-                        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                        StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", bone->nameConstString(), i);
-                        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                            ImGui::SetScrollHereY();
-                            m_morphItemIndex = i;
-                        }
-                    }
-                }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##bone.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_rsize_t numBones = 0;
-                nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
-                const char *name = "(select)";
-                if (m_morphItemCandidateBoneIndex < numBones) {
-                    if (model::Bone *bone = model::Bone::cast(bones[m_morphItemCandidateBoneIndex])) {
-                        name = bone->nameConstString();
-                    }
-                }
-                if (ImGui::BeginCombo("##candidate", name)) {
-                    for (nanoem_rsize_t i = 0; i < numBones; i++) {
-                        const nanoem_model_bone_t *bonePtr = bones[i];
-                        if (model::Bone *bone = model::Bone::cast(bonePtr)) {
-                            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateBoneIndex;
-                            const ImGuiSelectableFlags flags = reservedBoneSet.find(bonePtr) != reservedBoneSet.end()
-                                ? ImGuiSelectableFlags_Disabled
-                                : ImGuiSelectableFlags_None;
-                            StringUtils::format(
-                                buffer, sizeof(buffer), "%s##item[%lu].name", bone->nameConstString(), i);
-                            if (ImGui::Selectable(buffer, selected, flags)) {
-                                m_morphItemCandidateBoneIndex = i;
-                            }
-                            reservedBoneSet.insert(bonePtr);
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.add"),
-                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateBoneIndex < numBones)) {
-                    nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_bone_t *item = nanoemMutableModelMorphBoneCreate(scoped, &status);
-                    nanoemMutableModelMorphBoneSetBoneObject(item, bones[m_morphItemCandidateBoneIndex]);
-                    nanoemMutableModelMorphInsertBoneMorphObject(scoped, item, -1, &status);
-                    nanoemMutableModelMorphBoneDestroy(item);
-                    items = nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numItems);
-                    m_morphItemCandidateBoneIndex = NANOEM_RSIZE_MAX;
-                }
-                ImGui::SameLine();
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.remove"),
-                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
-                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_bone_t *item =
-                        nanoemMutableModelMorphBoneCreateAsReference(items[m_morphItemIndex], &status);
-                    nanoemMutableModelMorphRemoveBoneMorphObject(scoped, item, &status);
-                    nanoemMutableModelMorphBoneDestroy(item);
-                }
-                addSeparator();
-                nanoem_model_morph_bone_t *bonePtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    Vector4 translation(glm::make_vec4(nanoemModelMorphBoneGetTranslation(bonePtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.translation"));
-                    if (ImGui::DragFloat3("##bone.translation", glm::value_ptr(translation), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphBone scoped(bonePtr);
-                        nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(translation));
-                    }
-                }
-                {
-                    const Quaternion orientation(glm::make_quat(nanoemModelMorphBoneGetOrientation(bonePtr)));
-                    Vector3 angles(glm::degrees(glm::eulerAngles(orientation)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.orientation"));
-                    if (ImGui::DragFloat3("##bone.orientation", glm::value_ptr(angles), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphBone scoped(bonePtr);
-                        nanoemMutableModelMorphBoneSetOrientation(
-                            scoped, glm::value_ptr(glm::quat(glm::radians(angles))));
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+        switch (nanoemModelMorphGetType(morphPtr)) {
+        case NANOEM_MODEL_MORPH_TYPE_BONE: {
+            layoutMorphBonePropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_FLIP: {
+            layoutMorphFlipPropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_GROUP: {
+            layoutMorphGroupPropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_IMPULUSE: {
+            layoutMorphImpulsePropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
+            layoutMorphMaterialPropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_TEXTURE:
+        case NANOEM_MODEL_MORPH_TYPE_UVA1:
+        case NANOEM_MODEL_MORPH_TYPE_UVA2:
+        case NANOEM_MODEL_MORPH_TYPE_UVA3:
+        case NANOEM_MODEL_MORPH_TYPE_UVA4: {
+            layoutMorphUVPropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_VERTEX: {
+            layoutMorphVertexPropertyPane(propertyWindowSize, morphPtr, project);
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::EndChild();
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphBonePropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    model::Bone::Set reservedBoneSet;
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_bone_t *const *items = nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_bone_t *item = items[i];
+        const nanoem_model_bone_t *bonePtr = nanoemModelMorphBoneGetBoneObject(item);
+        if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
+            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+            StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", bone->nameConstString(), i);
+            if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+                ImGui::SetScrollHereY();
+                m_morphItemIndex = i;
             }
-            case NANOEM_MODEL_MORPH_TYPE_FLIP: {
-                model::Morph::Set reservedMorphSet;
-                nanoem_model_morph_flip_t *const *items = nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_flip_t *item = items[i];
-                    const nanoem_model_morph_t *morphPtr = nanoemModelMorphFlipGetMorphObject(item);
-                    if (const model::Morph *morph = model::Morph::cast(morphPtr)) {
-                        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                        StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
-                        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                            ImGui::SetScrollHereY();
-                            m_morphItemIndex = i;
-                        }
-                        reservedMorphSet.insert(morphPtr);
-                    }
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##bone.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_rsize_t numBones = 0;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+    const char *name = "(select)";
+    if (m_morphItemCandidateBoneIndex < numBones) {
+        if (model::Bone *bone = model::Bone::cast(bones[m_morphItemCandidateBoneIndex])) {
+            name = bone->nameConstString();
+        }
+    }
+    if (ImGui::BeginCombo("##candidate", name)) {
+        for (nanoem_rsize_t i = 0; i < numBones; i++) {
+            const nanoem_model_bone_t *bonePtr = bones[i];
+            if (model::Bone *bone = model::Bone::cast(bonePtr)) {
+                const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateBoneIndex;
+                const ImGuiSelectableFlags flags = reservedBoneSet.find(bonePtr) != reservedBoneSet.end()
+                    ? ImGuiSelectableFlags_Disabled
+                    : ImGuiSelectableFlags_None;
+                StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", bone->nameConstString(), i);
+                if (ImGui::Selectable(buffer, selected, flags)) {
+                    m_morphItemCandidateBoneIndex = i;
                 }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##flip.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                const char *name = "(select)";
-                if (m_morphItemCandidateMorphIndex < numMorphs) {
-                    if (model::Morph *morph = model::Morph::cast(morphs[m_morphItemCandidateMorphIndex])) {
-                        name = morph->nameConstString();
-                    }
-                }
-                if (ImGui::BeginCombo("##candidate", name)) {
-                    for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                        const nanoem_model_morph_t *morphPtr = morphs[i];
-                        if (model::Morph *morph = model::Morph::cast(morphPtr)) {
-                            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateMorphIndex;
-                            const ImGuiSelectableFlags flags = reservedMorphSet.find(morphPtr) != reservedMorphSet.end()
-                                ? ImGuiSelectableFlags_Disabled
-                                : ImGuiSelectableFlags_None;
-                            StringUtils::format(
-                                buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
-                            if (ImGui::Selectable(buffer, selected, flags)) {
-                                m_morphItemCandidateMorphIndex = i;
-                            }
-                            reservedMorphSet.insert(morphPtr);
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.add"),
-                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMorphIndex < numMorphs)) {
-                    nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_flip_t *item = nanoemMutableModelMorphFlipCreate(scoped, &status);
-                    nanoemMutableModelMorphFlipSetMorphObject(item, morphs[m_morphItemCandidateMorphIndex]);
-                    nanoemMutableModelMorphInsertFlipMorphObject(scoped, item, -1, &status);
-                    nanoemMutableModelMorphFlipDestroy(item);
-                    items = nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numItems);
-                    m_morphItemCandidateMorphIndex = NANOEM_RSIZE_MAX;
-                }
-                ImGui::SameLine();
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.remove"),
-                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
-                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_flip_t *item =
-                        nanoemMutableModelMorphFlipCreateAsReference(items[m_morphItemIndex], &status);
-                    nanoemMutableModelMorphRemoveFlipMorphObject(scoped, item, &status);
-                    nanoemMutableModelMorphFlipDestroy(item);
-                }
-                addSeparator();
-                nanoem_model_morph_flip_t *flipPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    nanoem_f32_t weight = nanoemModelMorphFlipGetWeight(flipPtr);
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.flip.weight"));
-                    if (ImGui::SliderFloat("##flip.weight", &weight, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphFlip scoped(flipPtr);
-                        nanoemMutableModelMorphFlipSetWeight(scoped, weight);
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+                reservedBoneSet.insert(bonePtr);
             }
-            case NANOEM_MODEL_MORPH_TYPE_GROUP: {
-                model::Morph::Set reservedMorphSet;
-                nanoem_model_morph_group_t *const *items = nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_group_t *item = items[i];
-                    const nanoem_model_morph_t *morphPtr = nanoemModelMorphGroupGetMorphObject(item);
-                    if (const model::Morph *morph = model::Morph::cast(morphPtr)) {
-                        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                        StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
-                        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                            ImGui::SetScrollHereY();
-                            m_morphItemIndex = i;
-                        }
-                        reservedMorphSet.insert(morphPtr);
-                    }
-                }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##group.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                const char *name = "(select)";
-                if (m_morphItemCandidateMorphIndex < numMorphs) {
-                    if (model::Morph *morph = model::Morph::cast(morphs[m_morphItemCandidateMorphIndex])) {
-                        name = morph->nameConstString();
-                    }
-                }
-                if (ImGui::BeginCombo("##candidate", name)) {
-                    for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                        const nanoem_model_morph_t *morphPtr = morphs[i];
-                        if (model::Morph *morph = model::Morph::cast(morphPtr)) {
-                            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateMorphIndex;
-                            const ImGuiSelectableFlags flags = reservedMorphSet.find(morphPtr) != reservedMorphSet.end()
-                                ? ImGuiSelectableFlags_Disabled
-                                : ImGuiSelectableFlags_None;
-                            StringUtils::format(
-                                buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
-                            if (ImGui::Selectable(buffer, selected, flags)) {
-                                m_morphItemCandidateMorphIndex = i;
-                            }
-                            reservedMorphSet.insert(morphPtr);
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                if (ImGuiWindow::handleButton(
-                        tr("nanoem.gui.model.edit.morph.group.add"), ImGui::GetContentRegionAvail().x * 0.5f, true)) {
-                    nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(scoped, &status);
-                    nanoemMutableModelMorphGroupSetMorphObject(item, morphs[m_morphItemCandidateMorphIndex]);
-                    nanoemMutableModelMorphInsertGroupMorphObject(scoped, item, -1, &status);
-                    nanoemMutableModelMorphGroupDestroy(item);
-                    items = nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numItems);
-                    m_morphItemCandidateMorphIndex = NANOEM_RSIZE_MAX;
-                }
-                ImGui::SameLine();
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.group.remove"),
-                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
-                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_group_t *item =
-                        nanoemMutableModelMorphGroupCreateAsReference(items[m_morphItemIndex], &status);
-                    nanoemMutableModelMorphRemoveGroupMorphObject(scoped, item, &status);
-                    nanoemMutableModelMorphGroupDestroy(item);
-                }
-                addSeparator();
-                nanoem_model_morph_group_t *groupPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    nanoem_f32_t weight = nanoemModelMorphGroupGetWeight(groupPtr);
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.group.weight"));
-                    if (ImGui::SliderFloat("##group.weight", &weight, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphGroup scoped(groupPtr);
-                        nanoemMutableModelMorphGroupSetWeight(scoped, weight);
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.add"), ImGui::GetContentRegionAvail().x * 0.5f,
+            m_morphItemCandidateBoneIndex < numBones)) {
+        nanoem_status_t status;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_bone_t *item = nanoemMutableModelMorphBoneCreate(scoped, &status);
+        nanoemMutableModelMorphBoneSetBoneObject(item, bones[m_morphItemCandidateBoneIndex]);
+        nanoemMutableModelMorphInsertBoneMorphObject(scoped, item, -1, &status);
+        nanoemMutableModelMorphBoneDestroy(item);
+        items = nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numItems);
+        m_morphItemCandidateBoneIndex = NANOEM_RSIZE_MAX;
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.bone.remove"), ImGui::GetContentRegionAvail().x,
+            m_morphItemIndex < numItems)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_bone_t *item =
+            nanoemMutableModelMorphBoneCreateAsReference(items[m_morphItemIndex], &status);
+        nanoemMutableModelMorphRemoveBoneMorphObject(scoped, item, &status);
+        nanoemMutableModelMorphBoneDestroy(item);
+    }
+    addSeparator();
+    nanoem_model_morph_bone_t *morphBonePtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##bone.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_bone_t *bonePtr = nanoemModelMorphBoneGetBoneObject(morphBonePtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphBonePtr != nullptr)) {
+            m_explicitTabType = kTabTypeBone;
+            m_morphIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+        }
+        ImGui::SameLine();
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        ImGui::TextUnformatted(bone ? bone->nameConstString() : "(none)");
+    }
+    addSeparator();
+    {
+        Vector4 translation(glm::make_vec4(nanoemModelMorphBoneGetTranslation(morphBonePtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.translation"));
+        if (ImGui::DragFloat3("##bone.translation", glm::value_ptr(translation), 1.0f, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphBone scoped(morphBonePtr);
+            nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(translation));
+        }
+    }
+    {
+        const Quaternion orientation(glm::make_quat(nanoemModelMorphBoneGetOrientation(morphBonePtr)));
+        Vector3 angles(glm::degrees(glm::eulerAngles(orientation)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.bone.orientation"));
+        if (ImGui::DragFloat3("##bone.orientation", glm::value_ptr(angles), 1.0f, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphBone scoped(morphBonePtr);
+            nanoemMutableModelMorphBoneSetOrientation(scoped, glm::value_ptr(glm::quat(glm::radians(angles))));
+        }
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphFlipPropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    model::Morph::Set reservedMorphSet;
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_flip_t *const *items = nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_flip_t *item = items[i];
+        const nanoem_model_morph_t *morphPtr = nanoemModelMorphFlipGetMorphObject(item);
+        if (const model::Morph *morph = model::Morph::cast(morphPtr)) {
+            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+            StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
+            if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+                ImGui::SetScrollHereY();
+                m_morphItemIndex = i;
             }
-            case NANOEM_MODEL_MORPH_TYPE_IMPULUSE: {
-                model::RigidBody::Set reservedRigidBodySet;
-                nanoem_model_morph_impulse_t *const *items =
-                    nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_impulse_t *item = items[i];
-                    const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemModelMorphImpulseGetRigidBodyObject(item);
-                    if (const model::RigidBody *body = model::RigidBody::cast(rigidBodyPtr)) {
-                        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                        StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", body->nameConstString(), i);
-                        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                            ImGui::SetScrollHereY();
-                            m_morphItemIndex = i;
-                        }
-                        reservedRigidBodySet.insert(rigidBodyPtr);
-                    }
+            reservedMorphSet.insert(morphPtr);
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##flip.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_rsize_t numMorphs;
+    nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+    const char *name = "(select)";
+    if (m_morphItemCandidateMorphIndex < numMorphs) {
+        if (model::Morph *morph = model::Morph::cast(morphs[m_morphItemCandidateMorphIndex])) {
+            name = morph->nameConstString();
+        }
+    }
+    if (ImGui::BeginCombo("##candidate", name)) {
+        for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+            const nanoem_model_morph_t *morphPtr = morphs[i];
+            if (model::Morph *morph = model::Morph::cast(morphPtr)) {
+                const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateMorphIndex;
+                const ImGuiSelectableFlags flags = reservedMorphSet.find(morphPtr) != reservedMorphSet.end()
+                    ? ImGuiSelectableFlags_Disabled
+                    : ImGuiSelectableFlags_None;
+                StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
+                if (ImGui::Selectable(buffer, selected, flags)) {
+                    m_morphItemCandidateMorphIndex = i;
                 }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##impulse.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_rsize_t numRigidBodies;
-                nanoem_model_rigid_body_t *const *rigidBodies =
-                    nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
-                const char *name = "(select)";
-                if (m_morphItemCandidateRigidBodyIndex < numRigidBodies) {
-                    if (model::RigidBody *rigidBody =
-                            model::RigidBody::cast(rigidBodies[m_morphItemCandidateRigidBodyIndex])) {
-                        name = rigidBody->nameConstString();
-                    }
-                }
-                if (ImGui::BeginCombo("##candidate", name)) {
-                    for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
-                        const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
-                        if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
-                            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateRigidBodyIndex;
-                            const ImGuiSelectableFlags flags =
-                                reservedRigidBodySet.find(rigidBodyPtr) != reservedRigidBodySet.end()
-                                ? ImGuiSelectableFlags_Disabled
-                                : ImGuiSelectableFlags_None;
-                            StringUtils::format(
-                                buffer, sizeof(buffer), "%s##item[%lu].name", rigidBody->nameConstString(), i);
-                            if (ImGui::Selectable(buffer, selected, flags)) {
-                                m_morphItemCandidateRigidBodyIndex = i;
-                            }
-                            reservedRigidBodySet.insert(rigidBodyPtr);
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.add"),
-                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateRigidBodyIndex < numRigidBodies)) {
-                    nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_impulse_t *item = nanoemMutableModelMorphImpulseCreate(scoped, &status);
-                    nanoemMutableModelMorphImpulseSetRigidBodyObject(
-                        item, rigidBodies[m_morphItemCandidateRigidBodyIndex]);
-                    nanoemMutableModelMorphInsertImpulseMorphObject(scoped, item, -1, &status);
-                    nanoemMutableModelMorphImpulseDestroy(item);
-                    items = nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
-                    m_morphItemCandidateRigidBodyIndex = NANOEM_RSIZE_MAX;
-                }
-                ImGui::SameLine();
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.remove"),
-                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
-                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_impulse_t *item =
-                        nanoemMutableModelMorphImpulseCreateAsReference(items[m_morphItemIndex], &status);
-                    nanoemMutableModelMorphRemoveImpulseMorphObject(scoped, item, &status);
-                    nanoemMutableModelMorphImpulseDestroy(item);
-                }
-                addSeparator();
-                nanoem_model_morph_impulse_t *impulsePtr =
-                    m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetTorque(impulsePtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.torque"));
-                    if (ImGui::DragFloat3("##impulse.torque", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphImpulse scoped(impulsePtr);
-                        nanoemMutableModelMorphImpulseSetTorque(scoped, glm::value_ptr(torque));
-                    }
-                }
-                {
-                    Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetVelocity(impulsePtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.velocity"));
-                    if (ImGui::DragFloat3("##impulse.velocity", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphImpulse scoped(impulsePtr);
-                        nanoemMutableModelMorphImpulseSetVelocity(scoped, glm::value_ptr(torque));
-                    }
-                }
-                {
-                    bool isLocal = nanoemModelMorphImpulseIsLocal(impulsePtr) != 0;
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.local"));
-                    if (ImGui::Checkbox("##impuluse.local", &isLocal)) {
-                        command::ScopedMutableMorphImpulse scoped(impulsePtr);
-                        nanoemMutableModelMorphImpulseSetLocal(scoped, isLocal ? 1 : 0);
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+                reservedMorphSet.insert(morphPtr);
             }
-            case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
-                model::Material::Set reservedMaterialSet;
-                nanoem_model_morph_material_t *const *items =
-                    nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_material_t *item = items[i];
-                    const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(item);
-                    if (const model::Material *material = model::Material::cast(materialPtr)) {
-                        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                        StringUtils::format(
-                            buffer, sizeof(buffer), "%s##item[%lu].name", material->nameConstString(), i);
-                        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                            ImGui::SetScrollHereY();
-                            m_morphItemIndex = i;
-                        }
-                        reservedMaterialSet.insert(materialPtr);
-                    }
-                }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##material.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_rsize_t numMaterials;
-                nanoem_model_material_t *const *materials =
-                    nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
-                const char *name = "(select)";
-                if (m_morphItemCandidateMaterialIndex < numMaterials) {
-                    if (model::Material *material =
-                            model::Material::cast(materials[m_morphItemCandidateMaterialIndex])) {
-                        name = material->nameConstString();
-                    }
-                }
-                if (ImGui::BeginCombo("##candidate", name)) {
-                    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-                        const nanoem_model_material_t *materialPtr = materials[i];
-                        if (model::Material *material = model::Material::cast(materialPtr)) {
-                            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateMaterialIndex;
-                            const ImGuiSelectableFlags flags =
-                                reservedMaterialSet.find(materialPtr) != reservedMaterialSet.end()
-                                ? ImGuiSelectableFlags_Disabled
-                                : ImGuiSelectableFlags_None;
-                            StringUtils::format(
-                                buffer, sizeof(buffer), "%s##item[%lu].name", material->nameConstString(), i);
-                            if (ImGui::Selectable(buffer, selected, flags)) {
-                                m_morphItemCandidateMaterialIndex = i;
-                            }
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.add"),
-                        ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMaterialIndex < numMaterials)) {
-                    nanoem_status_t status;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_material_t *item =
-                        nanoemMutableModelMorphMaterialCreate(scoped, &status);
-                    nanoemMutableModelMorphMaterialSetMaterialObject(
-                        item, materials[m_morphItemCandidateMaterialIndex]);
-                    nanoemMutableModelMorphInsertMaterialMorphObject(scoped, item, -1, &status);
-                    nanoemMutableModelMorphMaterialDestroy(item);
-                    items = nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
-                    m_morphItemCandidateMaterialIndex = NANOEM_RSIZE_MAX;
-                }
-                ImGui::SameLine();
-                if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.remove"),
-                        ImGui::GetContentRegionAvail().x, m_morphItemIndex < numItems)) {
-                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    command::ScopedMutableMorph scoped(morphPtr);
-                    nanoem_mutable_model_morph_material_t *item =
-                        nanoemMutableModelMorphMaterialCreateAsReference(items[m_morphItemIndex], &status);
-                    nanoemMutableModelMorphRemoveMaterialMorphObject(scoped, item, &status);
-                    nanoemMutableModelMorphMaterialDestroy(item);
-                }
-                addSeparator();
-                nanoem_model_morph_material_t *materialPtr =
-                    m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    nanoem_model_morph_material_operation_type_t value =
-                        nanoemModelMorphMaterialGetOperationType(materialPtr);
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.operation"));
-                    if (ImGui::BeginCombo("##operation", selectedMorphMaterialOperationType(value))) {
-                        for (int i = NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_FIRST_ENUM;
-                             i < NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_MAX_ENUM; i++) {
-                            nanoem_model_morph_material_operation_type_t type =
-                                static_cast<nanoem_model_morph_material_operation_type_t>(i);
-                            if (ImGui::Selectable(selectedMorphMaterialOperationType(type))) {
-                                command::ScopedMutableMorphMaterial scoped(materialPtr);
-                                nanoemMutableModelMorphMaterialSetOperationType(scoped, type);
-                            }
-                        }
-                        ImGui::EndCombo();
-                    }
-                }
-                {
-                    Vector4 ambientColor(glm::make_vec4(nanoemModelMorphMaterialGetAmbientColor(materialPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.ambient.color"));
-                    if (ImGui::ColorEdit3("##material.ambient.color", glm::value_ptr(ambientColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetAmbientColor(scoped, glm::value_ptr(ambientColor));
-                    }
-                }
-                {
-                    Vector4 diffuseColor(glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(materialPtr)),
-                        nanoemModelMorphMaterialGetDiffuseOpacity(materialPtr));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.diffuse.color"));
-                    if (ImGui::ColorEdit4("##material.diffuse.color", glm::value_ptr(diffuseColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetDiffuseColor(scoped, glm::value_ptr(diffuseColor));
-                        nanoemMutableModelMorphMaterialSetDiffuseOpacity(scoped, diffuseColor.w);
-                    }
-                }
-                {
-                    Vector4 specularColor(glm::make_vec4(nanoemModelMorphMaterialGetSpecularColor(materialPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.color"));
-                    if (ImGui::ColorEdit3("##material.specular.color", glm::value_ptr(specularColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetSpecularColor(scoped, glm::value_ptr(specularColor));
-                    }
-                }
-                {
-                    nanoem_f32_t specularPower = nanoemModelMorphMaterialGetSpecularPower(materialPtr);
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.power"));
-                    if (ImGui::DragFloat("##material.specular.power", &specularPower)) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetSpecularPower(scoped, specularPower);
-                    }
-                }
-                addSeparator();
-                {
-                    Vector4 edgeColor(glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(materialPtr)),
-                        nanoemModelMorphMaterialGetEdgeOpacity(materialPtr));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.color"));
-                    if (ImGui::ColorEdit4("##material.edge.color", glm::value_ptr(edgeColor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetEdgeColor(scoped, glm::value_ptr(edgeColor));
-                        nanoemMutableModelMorphMaterialSetEdgeOpacity(scoped, edgeColor.w);
-                    }
-                }
-                {
-                    nanoem_f32_t edgeSize = nanoemModelMorphMaterialGetEdgeSize(materialPtr);
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.size"));
-                    if (ImGui::DragFloat("##material.edge.size", &edgeSize)) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetEdgeSize(scoped, edgeSize);
-                    }
-                }
-                addSeparator();
-                {
-                    Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetDiffuseTextureBlend(materialPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.diffuse"));
-                    if (ImGui::ColorEdit4("##material.blend.diffuse", glm::value_ptr(blendFactor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetDiffuseTextureBlend(scoped, glm::value_ptr(blendFactor));
-                    }
-                }
-                {
-                    Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(materialPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.sphere-map"));
-                    if (ImGui::ColorEdit4("##material.blend.sphere-map", glm::value_ptr(blendFactor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetSphereMapTextureBlend(scoped, glm::value_ptr(blendFactor));
-                    }
-                }
-                {
-                    Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetToonTextureBlend(materialPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.toon"));
-                    if (ImGui::ColorEdit4("##material.blend.toon", glm::value_ptr(blendFactor))) {
-                        command::ScopedMutableMorphMaterial scoped(materialPtr);
-                        nanoemMutableModelMorphMaterialSetToonTextureBlend(scoped, glm::value_ptr(blendFactor));
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.add"), ImGui::GetContentRegionAvail().x * 0.5f,
+            m_morphItemCandidateMorphIndex < numMorphs)) {
+        nanoem_status_t status;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_flip_t *item = nanoemMutableModelMorphFlipCreate(scoped, &status);
+        nanoemMutableModelMorphFlipSetMorphObject(item, morphs[m_morphItemCandidateMorphIndex]);
+        nanoemMutableModelMorphInsertFlipMorphObject(scoped, item, -1, &status);
+        nanoemMutableModelMorphFlipDestroy(item);
+        items = nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numItems);
+        m_morphItemCandidateMorphIndex = NANOEM_RSIZE_MAX;
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.flip.remove"), ImGui::GetContentRegionAvail().x,
+            m_morphItemIndex < numItems)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_flip_t *item =
+            nanoemMutableModelMorphFlipCreateAsReference(items[m_morphItemIndex], &status);
+        nanoemMutableModelMorphRemoveFlipMorphObject(scoped, item, &status);
+        nanoemMutableModelMorphFlipDestroy(item);
+    }
+    addSeparator();
+    nanoem_model_morph_flip_t *morphFlipPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##group.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_morph_t *morphPtr = nanoemModelMorphFlipGetMorphObject(morphFlipPtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphFlipPtr != nullptr)) {
+            m_morphIndex = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morphPtr));
+        }
+        ImGui::SameLine();
+        const model::Morph *morph = model::Morph::cast(morphPtr);
+        ImGui::TextUnformatted(morph ? morph->nameConstString() : "(none)");
+    }
+    addSeparator();
+    {
+        nanoem_f32_t weight = nanoemModelMorphFlipGetWeight(morphFlipPtr);
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.flip.weight"));
+        if (ImGui::SliderFloat("##flip.weight", &weight, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphFlip scoped(morphFlipPtr);
+            nanoemMutableModelMorphFlipSetWeight(scoped, weight);
+        }
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphGroupPropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    model::Morph::Set reservedMorphSet;
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_group_t *const *items = nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_group_t *item = items[i];
+        const nanoem_model_morph_t *morphPtr = nanoemModelMorphGroupGetMorphObject(item);
+        if (const model::Morph *morph = model::Morph::cast(morphPtr)) {
+            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+            StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
+            if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+                ImGui::SetScrollHereY();
+                m_morphItemIndex = i;
             }
-            case NANOEM_MODEL_MORPH_TYPE_TEXTURE:
-            case NANOEM_MODEL_MORPH_TYPE_UVA1:
-            case NANOEM_MODEL_MORPH_TYPE_UVA2:
-            case NANOEM_MODEL_MORPH_TYPE_UVA3:
-            case NANOEM_MODEL_MORPH_TYPE_UVA4: {
-                nanoem_model_morph_uv_t *const *items = nanoemModelMorphGetAllUVMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_uv_t *item = items[i];
-                    const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphUVGetVertexObject(item);
-                    const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                    formatVertexText(buffer, sizeof(buffer), vertexPtr);
-                    if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                        ImGui::SetScrollHereY();
-                        m_morphItemIndex = i;
-                    }
+            reservedMorphSet.insert(morphPtr);
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##group.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_rsize_t numMorphs;
+    nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+    const char *name = "(select)";
+    if (m_morphItemCandidateMorphIndex < numMorphs) {
+        if (model::Morph *morph = model::Morph::cast(morphs[m_morphItemCandidateMorphIndex])) {
+            name = morph->nameConstString();
+        }
+    }
+    if (ImGui::BeginCombo("##candidate", name)) {
+        for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+            const nanoem_model_morph_t *morphPtr = morphs[i];
+            if (model::Morph *morph = model::Morph::cast(morphPtr)) {
+                const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateMorphIndex;
+                const ImGuiSelectableFlags flags = reservedMorphSet.find(morphPtr) != reservedMorphSet.end()
+                    ? ImGuiSelectableFlags_Disabled
+                    : ImGuiSelectableFlags_None;
+                StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", morph->nameConstString(), i);
+                if (ImGui::Selectable(buffer, selected, flags)) {
+                    m_morphItemCandidateMorphIndex = i;
                 }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##uv.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_model_morph_uv_t *vertexPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    Vector4 position(glm::make_vec4(nanoemModelMorphUVGetPosition(vertexPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.uv.position"));
-                    if (ImGui::DragFloat4("##uv.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphUV scoped(vertexPtr);
-                        nanoemMutableModelMorphUVSetPosition(scoped, glm::value_ptr(position));
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+                reservedMorphSet.insert(morphPtr);
             }
-            case NANOEM_MODEL_MORPH_TYPE_VERTEX: {
-                nanoem_model_morph_vertex_t *const *items =
-                    nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
-                selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
-                for (nanoem_rsize_t i = 0; i < numItems; i++) {
-                    const nanoem_model_morph_vertex_t *item = items[i];
-                    const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphVertexGetVertexObject(item);
-                    const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
-                    formatVertexText(buffer, sizeof(buffer), vertexPtr);
-                    if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
-                        ImGui::SetScrollHereY();
-                        m_morphItemIndex = i;
-                    }
-                }
-                ImGui::EndChild();
-                ImGui::SameLine();
-                ImGui::BeginChild("##vertex.properties", propertyWindowSize, false);
-                ImGui::PushItemWidth(-1);
-                nanoem_model_morph_vertex_t *vertexPtr =
-                    m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
-                {
-                    Vector4 position(glm::make_vec4(nanoemModelMorphVertexGetPosition(vertexPtr)));
-                    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.vertex.position"));
-                    if (ImGui::DragFloat3("##vertex.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
-                        command::ScopedMutableMorphVertex scoped(vertexPtr);
-                        nanoemMutableModelMorphVertexSetPosition(scoped, glm::value_ptr(position));
-                    }
-                }
-                ImGui::PopItemWidth();
-                break;
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGuiWindow::handleButton(
+            tr("nanoem.gui.model.edit.morph.group.add"), ImGui::GetContentRegionAvail().x * 0.5f, true)) {
+        nanoem_status_t status;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(scoped, &status);
+        nanoemMutableModelMorphGroupSetMorphObject(item, morphs[m_morphItemCandidateMorphIndex]);
+        nanoemMutableModelMorphInsertGroupMorphObject(scoped, item, -1, &status);
+        nanoemMutableModelMorphGroupDestroy(item);
+        items = nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numItems);
+        m_morphItemCandidateMorphIndex = NANOEM_RSIZE_MAX;
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.group.remove"), ImGui::GetContentRegionAvail().x,
+            m_morphItemIndex < numItems)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_group_t *item =
+            nanoemMutableModelMorphGroupCreateAsReference(items[m_morphItemIndex], &status);
+        nanoemMutableModelMorphRemoveGroupMorphObject(scoped, item, &status);
+        nanoemMutableModelMorphGroupDestroy(item);
+    }
+    addSeparator();
+    nanoem_model_morph_group_t *morphGroupPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##group.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_morph_t *morphPtr = nanoemModelMorphGroupGetMorphObject(morphGroupPtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphGroupPtr != nullptr)) {
+            m_morphIndex = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morphPtr));
+        }
+        ImGui::SameLine();
+        const model::Morph *morph = model::Morph::cast(morphPtr);
+        ImGui::TextUnformatted(morph ? morph->nameConstString() : "(none)");
+    }
+    addSeparator();
+    {
+        nanoem_f32_t weight = nanoemModelMorphGroupGetWeight(morphGroupPtr);
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.group.weight"));
+        if (ImGui::SliderFloat("##group.weight", &weight, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphGroup scoped(morphGroupPtr);
+            nanoemMutableModelMorphGroupSetWeight(scoped, weight);
+        }
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphImpulsePropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    model::RigidBody::Set reservedRigidBodySet;
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_impulse_t *const *items = nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_impulse_t *item = items[i];
+        const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemModelMorphImpulseGetRigidBodyObject(item);
+        if (const model::RigidBody *body = model::RigidBody::cast(rigidBodyPtr)) {
+            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+            StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", body->nameConstString(), i);
+            if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+                ImGui::SetScrollHereY();
+                m_morphItemIndex = i;
             }
-            default:
-                numItems = 0;
-                break;
+            reservedRigidBodySet.insert(rigidBodyPtr);
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##impulse.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_rsize_t numRigidBodies;
+    nanoem_model_rigid_body_t *const *rigidBodies =
+        nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
+    const char *name = "(select)";
+    if (m_morphItemCandidateRigidBodyIndex < numRigidBodies) {
+        if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[m_morphItemCandidateRigidBodyIndex])) {
+            name = rigidBody->nameConstString();
+        }
+    }
+    if (ImGui::BeginCombo("##candidate", name)) {
+        for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+            const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
+            if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+                const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateRigidBodyIndex;
+                const ImGuiSelectableFlags flags = reservedRigidBodySet.find(rigidBodyPtr) != reservedRigidBodySet.end()
+                    ? ImGuiSelectableFlags_Disabled
+                    : ImGuiSelectableFlags_None;
+                StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", rigidBody->nameConstString(), i);
+                if (ImGui::Selectable(buffer, selected, flags)) {
+                    m_morphItemCandidateRigidBodyIndex = i;
+                }
+                reservedRigidBodySet.insert(rigidBodyPtr);
             }
-            ImGui::EndChild();
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.add"),
+            ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateRigidBodyIndex < numRigidBodies)) {
+        nanoem_status_t status;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_impulse_t *item = nanoemMutableModelMorphImpulseCreate(scoped, &status);
+        nanoemMutableModelMorphImpulseSetRigidBodyObject(item, rigidBodies[m_morphItemCandidateRigidBodyIndex]);
+        nanoemMutableModelMorphInsertImpulseMorphObject(scoped, item, -1, &status);
+        nanoemMutableModelMorphImpulseDestroy(item);
+        items = nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
+        m_morphItemCandidateRigidBodyIndex = NANOEM_RSIZE_MAX;
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.impulse.remove"), ImGui::GetContentRegionAvail().x,
+            m_morphItemIndex < numItems)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_impulse_t *item =
+            nanoemMutableModelMorphImpulseCreateAsReference(items[m_morphItemIndex], &status);
+        nanoemMutableModelMorphRemoveImpulseMorphObject(scoped, item, &status);
+        nanoemMutableModelMorphImpulseDestroy(item);
+    }
+    addSeparator();
+    nanoem_model_morph_impulse_t *morphImpulsePtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##impulse.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemModelMorphImpulseGetRigidBodyObject(morphImpulsePtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphImpulsePtr != nullptr)) {
+            m_explicitTabType = kTabTypeRigidBody;
+            m_rigidBodyIndex = nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(rigidBodyPtr));
+        }
+        ImGui::SameLine();
+        const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
+        ImGui::TextUnformatted(rigidBody ? rigidBody->nameConstString() : "(none)");
+    }
+    addSeparator();
+    {
+        Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetTorque(morphImpulsePtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.torque"));
+        if (ImGui::DragFloat3("##impulse.torque", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphImpulse scoped(morphImpulsePtr);
+            nanoemMutableModelMorphImpulseSetTorque(scoped, glm::value_ptr(torque));
+        }
+    }
+    {
+        Vector4 torque(glm::make_vec4(nanoemModelMorphImpulseGetVelocity(morphImpulsePtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.velocity"));
+        if (ImGui::DragFloat3("##impulse.velocity", glm::value_ptr(torque), 1.0f, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphImpulse scoped(morphImpulsePtr);
+            nanoemMutableModelMorphImpulseSetVelocity(scoped, glm::value_ptr(torque));
+        }
+    }
+    {
+        bool isLocal = nanoemModelMorphImpulseIsLocal(morphImpulsePtr) != 0;
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.impulse.local"));
+        if (ImGui::Checkbox("##impuluse.local", &isLocal)) {
+            command::ScopedMutableMorphImpulse scoped(morphImpulsePtr);
+            nanoemMutableModelMorphImpulseSetLocal(scoped, isLocal ? 1 : 0);
+        }
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphMaterialPropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    model::Material::Set reservedMaterialSet;
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_material_t *const *items = nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_material_t *item = items[i];
+        const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(item);
+        if (const model::Material *material = model::Material::cast(materialPtr)) {
+            const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+            StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", material->nameConstString(), i);
+            if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+                ImGui::SetScrollHereY();
+                m_morphItemIndex = i;
+            }
+            reservedMaterialSet.insert(materialPtr);
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##material.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_rsize_t numMaterials;
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
+    const char *name = "(select)";
+    if (m_morphItemCandidateMaterialIndex < numMaterials) {
+        if (model::Material *material = model::Material::cast(materials[m_morphItemCandidateMaterialIndex])) {
+            name = material->nameConstString();
+        }
+    }
+    if (ImGui::BeginCombo("##candidate", name)) {
+        for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+            const nanoem_model_material_t *materialPtr = materials[i];
+            if (model::Material *material = model::Material::cast(materialPtr)) {
+                const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemCandidateMaterialIndex;
+                const ImGuiSelectableFlags flags = reservedMaterialSet.find(materialPtr) != reservedMaterialSet.end()
+                    ? ImGuiSelectableFlags_Disabled
+                    : ImGuiSelectableFlags_None;
+                StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", material->nameConstString(), i);
+                if (ImGui::Selectable(buffer, selected, flags)) {
+                    m_morphItemCandidateMaterialIndex = i;
+                }
+            }
+        }
+        ImGui::EndCombo();
+    }
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.add"),
+            ImGui::GetContentRegionAvail().x * 0.5f, m_morphItemCandidateMaterialIndex < numMaterials)) {
+        nanoem_status_t status;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_material_t *item = nanoemMutableModelMorphMaterialCreate(scoped, &status);
+        nanoemMutableModelMorphMaterialSetMaterialObject(item, materials[m_morphItemCandidateMaterialIndex]);
+        nanoemMutableModelMorphInsertMaterialMorphObject(scoped, item, -1, &status);
+        nanoemMutableModelMorphMaterialDestroy(item);
+        items = nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
+        m_morphItemCandidateMaterialIndex = NANOEM_RSIZE_MAX;
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.morph.material.remove"), ImGui::GetContentRegionAvail().x,
+            m_morphItemIndex < numItems)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        command::ScopedMutableMorph scoped(morphPtr);
+        nanoem_mutable_model_morph_material_t *item =
+            nanoemMutableModelMorphMaterialCreateAsReference(items[m_morphItemIndex], &status);
+        nanoemMutableModelMorphRemoveMaterialMorphObject(scoped, item, &status);
+        nanoemMutableModelMorphMaterialDestroy(item);
+    }
+    addSeparator();
+    nanoem_model_morph_material_t *morphMaterialPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##material.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(morphMaterialPtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphMaterialPtr != nullptr)) {
+            m_explicitTabType = kTabTypeMaterial;
+            m_materialIndex = nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
+        }
+        ImGui::SameLine();
+        const model::Material *material = model::Material::cast(materialPtr);
+        ImGui::TextUnformatted(material ? material->nameConstString() : "(none)");
+    }
+    addSeparator();
+    {
+        nanoem_model_morph_material_operation_type_t value = nanoemModelMorphMaterialGetOperationType(morphMaterialPtr);
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.operation"));
+        if (ImGui::BeginCombo("##operation", selectedMorphMaterialOperationType(value))) {
+            for (int i = NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_FIRST_ENUM;
+                 i < NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_MAX_ENUM; i++) {
+                nanoem_model_morph_material_operation_type_t type =
+                    static_cast<nanoem_model_morph_material_operation_type_t>(i);
+                if (ImGui::Selectable(selectedMorphMaterialOperationType(type))) {
+                    command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+                    nanoemMutableModelMorphMaterialSetOperationType(scoped, type);
+                }
+            }
+            ImGui::EndCombo();
+        }
+    }
+    {
+        Vector4 ambientColor(glm::make_vec4(nanoemModelMorphMaterialGetAmbientColor(morphMaterialPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.ambient.color"));
+        if (ImGui::ColorEdit3("##material.ambient.color", glm::value_ptr(ambientColor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetAmbientColor(scoped, glm::value_ptr(ambientColor));
+        }
+    }
+    {
+        Vector4 diffuseColor(glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(morphMaterialPtr)),
+            nanoemModelMorphMaterialGetDiffuseOpacity(morphMaterialPtr));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.diffuse.color"));
+        if (ImGui::ColorEdit4("##material.diffuse.color", glm::value_ptr(diffuseColor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetDiffuseColor(scoped, glm::value_ptr(diffuseColor));
+            nanoemMutableModelMorphMaterialSetDiffuseOpacity(scoped, diffuseColor.w);
+        }
+    }
+    {
+        Vector4 specularColor(glm::make_vec4(nanoemModelMorphMaterialGetSpecularColor(morphMaterialPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.color"));
+        if (ImGui::ColorEdit3("##material.specular.color", glm::value_ptr(specularColor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetSpecularColor(scoped, glm::value_ptr(specularColor));
+        }
+    }
+    {
+        nanoem_f32_t specularPower = nanoemModelMorphMaterialGetSpecularPower(morphMaterialPtr);
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.specular.power"));
+        if (ImGui::DragFloat("##material.specular.power", &specularPower)) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetSpecularPower(scoped, specularPower);
+        }
+    }
+    addSeparator();
+    {
+        Vector4 edgeColor(glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morphMaterialPtr)),
+            nanoemModelMorphMaterialGetEdgeOpacity(morphMaterialPtr));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.color"));
+        if (ImGui::ColorEdit4("##material.edge.color", glm::value_ptr(edgeColor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetEdgeColor(scoped, glm::value_ptr(edgeColor));
+            nanoemMutableModelMorphMaterialSetEdgeOpacity(scoped, edgeColor.w);
+        }
+    }
+    {
+        nanoem_f32_t edgeSize = nanoemModelMorphMaterialGetEdgeSize(morphMaterialPtr);
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.edge.size"));
+        if (ImGui::DragFloat("##material.edge.size", &edgeSize)) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetEdgeSize(scoped, edgeSize);
+        }
+    }
+    addSeparator();
+    {
+        Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetDiffuseTextureBlend(morphMaterialPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.diffuse"));
+        if (ImGui::ColorEdit4("##material.blend.diffuse", glm::value_ptr(blendFactor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetDiffuseTextureBlend(scoped, glm::value_ptr(blendFactor));
+        }
+    }
+    {
+        Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(morphMaterialPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.sphere-map"));
+        if (ImGui::ColorEdit4("##material.blend.sphere-map", glm::value_ptr(blendFactor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetSphereMapTextureBlend(scoped, glm::value_ptr(blendFactor));
+        }
+    }
+    {
+        Vector4 blendFactor(glm::make_vec4(nanoemModelMorphMaterialGetToonTextureBlend(morphMaterialPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.blend.toon"));
+        if (ImGui::ColorEdit4("##material.blend.toon", glm::value_ptr(blendFactor))) {
+            command::ScopedMutableMorphMaterial scoped(morphMaterialPtr);
+            nanoemMutableModelMorphMaterialSetToonTextureBlend(scoped, glm::value_ptr(blendFactor));
+        }
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphUVPropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_uv_t *const *items = nanoemModelMorphGetAllUVMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_uv_t *item = items[i];
+        const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphUVGetVertexObject(item);
+        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+        formatVertexText(buffer, sizeof(buffer), vertexPtr);
+        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+            ImGui::SetScrollHereY();
+            m_morphItemIndex = i;
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##uv.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_model_morph_uv_t *morphUVPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##uv.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphUVGetVertexObject(morphUVPtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphUVPtr != nullptr)) {
+            m_explicitTabType = kTabTypeVertex;
+            m_vertexIndex = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
+        }
+        ImGui::SameLine();
+        formatVertexText(buffer, sizeof(buffer), vertexPtr);
+        ImGui::TextUnformatted(buffer);
+    }
+    addSeparator();
+    {
+        Vector4 position(glm::make_vec4(nanoemModelMorphUVGetPosition(morphUVPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.uv.position"));
+        if (ImGui::DragFloat4("##uv.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphUV scoped(morphUVPtr);
+            nanoemMutableModelMorphUVSetPosition(scoped, glm::value_ptr(position));
+        }
+    }
+    ImGui::PopItemWidth();
+}
+
+void
+ModelParameterDialog::layoutMorphVertexPropertyPane(
+    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    bool itemUp, itemDown;
+    detectUpDown(itemUp, itemDown);
+    nanoem_rsize_t numItems;
+    nanoem_model_morph_vertex_t *const *items = nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
+    selectIndex(itemUp, itemDown, numItems, m_morphItemIndex);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        const nanoem_model_morph_vertex_t *item = items[i];
+        const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphVertexGetVertexObject(item);
+        const bool selected = static_cast<nanoem_rsize_t>(i) == m_morphItemIndex;
+        formatVertexText(buffer, sizeof(buffer), vertexPtr);
+        if (ImGui::Selectable(buffer, selected) || ((itemUp || itemDown) && selected)) {
+            ImGui::SetScrollHereY();
+            m_morphItemIndex = i;
+        }
+    }
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("##vertex.properties", propertyWindowSize, false);
+    ImGui::PushItemWidth(-1);
+    nanoem_model_morph_vertex_t *morphVertexPtr = m_morphItemIndex < numItems ? items[m_morphItemIndex] : nullptr;
+    {
+        StringUtils::format(buffer, sizeof(buffer), "%s##vertex.toggle", ImGuiWindow::kFALink);
+        const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphVertexGetVertexObject(morphVertexPtr);
+        if (ImGuiWindow::handleButton(buffer, 0, morphVertexPtr != nullptr)) {
+            m_explicitTabType = kTabTypeVertex;
+            m_vertexIndex = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
+        }
+        ImGui::SameLine();
+        formatVertexText(buffer, sizeof(buffer), vertexPtr);
+        ImGui::TextUnformatted(buffer);
+    }
+    addSeparator();
+    {
+        Vector4 position(glm::make_vec4(nanoemModelMorphVertexGetPosition(morphVertexPtr)));
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.vertex.position"));
+        if (ImGui::DragFloat3("##vertex.position", glm::value_ptr(position), 1.0f, 0.0f, 0.0f)) {
+            command::ScopedMutableMorphVertex scoped(morphVertexPtr);
+            nanoemMutableModelMorphVertexSetPosition(scoped, glm::value_ptr(position));
         }
     }
     ImGui::PopItemWidth();

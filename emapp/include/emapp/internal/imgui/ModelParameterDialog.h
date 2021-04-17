@@ -65,6 +65,19 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Project *project);
     void layoutAllMorphs(Project *project);
     void layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphBonePropertyPane(
+        const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphFlipPropertyPane(
+        const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphGroupPropertyPane(
+        const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphImpulsePropertyPane(
+        const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphMaterialPropertyPane(
+        const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphUVPropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
+    void layoutMorphVertexPropertyPane(
+        const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
     void layoutAllLabels(Project *project);
     void layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Project *project);
     void layoutAllRigidBodies(Project *project);
