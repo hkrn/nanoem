@@ -120,6 +120,7 @@ public:
     virtual bool containsRigidBody(const nanoem_model_rigid_body_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsJoint(const nanoem_model_joint_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual bool containsFace(const Vector3UI32 &value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsAnyBone() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT = 0;

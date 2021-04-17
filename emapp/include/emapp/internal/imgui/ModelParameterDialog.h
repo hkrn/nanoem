@@ -52,6 +52,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutAllVertices(Project *project);
     void layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr);
     void layoutAllFaces(Project *project);
+    void layoutFacePropertyPane(const Vector3UI32 &face);
     void layoutAllMaterials(Project *project);
     void layoutMaterialPropertyPane(nanoem_model_material_t *materialPtr, Project *project);
     void layoutMaterialDiffuseImage(

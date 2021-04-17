@@ -576,20 +576,46 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numFaces, m_faceIndex);
+    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numFaces));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_rsize_t offset = nanoem_rsize_t(i) * 3;
-            const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0];
-            const nanoem_u32_t vertexIndex1 = vertexIndices[offset + 1];
-            const nanoem_u32_t vertexIndex2 = vertexIndices[offset + 2];
+            const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0], vertexIndex1 = vertexIndices[offset + 1],
+                               vertexIndex2 = vertexIndices[offset + 2];
+            const Vector3UI32 face(vertexIndex0, vertexIndex1, vertexIndex2);
             StringUtils::format(buffer, sizeof(buffer), "%d (%d, %d, %d)##face[%d].name", i + 1, vertexIndex0,
                 vertexIndex1, vertexIndex2, i);
-            bool selected = false;
+            bool selected = selection->containsFace(face);
             if (selected) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
             }
-            if (ImGui::Selectable(buffer, selected) || ((up || down) && selected)) {
+            if (ImGui::Selectable(buffer, selected)) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
+                    selected ? selection->removeFace(face) : selection->addFace(face);
+                }
+                else {
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_faceIndex),
+                                             to = glm::max(offset, m_faceIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            const nanoem_rsize_t offset = nanoem_rsize_t(j) * 3;
+                            const nanoem_u32_t childVertexIndex0 = vertexIndices[offset + 0],
+                                               childVertexIndex1 = vertexIndices[offset + 1],
+                                               childVertexIndex2 = vertexIndices[offset + 2];
+                            const Vector3UI32 childFace(childVertexIndex0, childVertexIndex1, childVertexIndex2);
+                            selection->addFace(childFace);
+                        }
+                    }
+                    else {
+                        selection->removeAllFaces();
+                    }
+                    m_faceIndex = i;
+                    selection->addFace(face);
+                }
+            }
+            else if ((up || down) && m_faceIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_faceIndex = i;
             }
@@ -613,9 +639,55 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numVertexIndices > 0 && m_faceIndex < numVertexIndices) {
+    if (numFaces > 0 && m_faceIndex < numFaces) {
+        const nanoem_rsize_t offset = m_faceIndex * 3;
+        const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0], vertexIndex1 = vertexIndices[offset + 1],
+                           vertexIndex2 = vertexIndices[offset + 2];
+        const Vector3UI32 face(vertexIndex0, vertexIndex1, vertexIndex2);
+        layoutFacePropertyPane(face);
     }
     ImGui::EndChild();
+}
+
+void
+ModelParameterDialog::layoutFacePropertyPane(const Vector3UI32 &face)
+{
+    char label[Inline::kNameStackBufferSize];
+    nanoem_rsize_t numVertices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+    nanoem_u32_t vertexIndex = face[0];
+    if (vertexIndex < numVertices) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndex];
+        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        const nanoem_model_material_t *materialPtr = vertex->material();
+        StringUtils::format(label, sizeof(label), "%s##material", ImGuiWindow::kFALink);
+        if (ImGuiWindow::handleButton(label, 0, materialPtr != nullptr)) {
+            m_explicitTabType = kTabTypeMaterial;
+            m_materialIndex = nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
+        }
+        ImGui::SameLine();
+        const model::Material *material = model::Material::cast(materialPtr);
+        ImGui::TextUnformatted(material ? material->nameConstString() : "(none)");
+    }
+    addSeparator();
+    for (int i = 0; i < 3; i++) {
+        nanoem_u32_t vertexIndex = face[i];
+        if (vertexIndex < numVertices) {
+            const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndex];
+            const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            {
+                StringUtils::format(label, sizeof(label), "%s##vertex[%d]", ImGuiWindow::kFALink, i);
+                int vertexIndex = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
+                if (ImGuiWindow::handleButton(label, 0, vertexPtr != nullptr)) {
+                    m_explicitTabType = kTabTypeVertex;
+                    m_vertexIndex = nanoem_rsize_t(vertexIndex);
+                }
+                ImGui::SameLine();
+                StringUtils::format(label, sizeof(label), "Vertex%d", vertexIndex);
+                ImGui::TextUnformatted(label);
+            }
+        }
+    }
 }
 
 void
