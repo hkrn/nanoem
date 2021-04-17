@@ -93,6 +93,7 @@ public:
     static const ImU32 kColorInterpolationCurveBezierLine;
     static const ImU32 kColorInterpolationCurveControlLine;
     static const ImU32 kColorInterpolationCurveControlPoint;
+    static const ImU32 kColorSelectedModelObject;
     static const nanoem_u8_t kFAArrows[];
     static const nanoem_u8_t kFARefresh[];
     static const nanoem_u8_t kFAZoom[];

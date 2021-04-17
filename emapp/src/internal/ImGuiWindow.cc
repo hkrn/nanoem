@@ -200,6 +200,7 @@ const ImU32 ImGuiWindow::kColorRhombusMoving = IM_COL32(255, 127, 0, 127);
 const ImU32 ImGuiWindow::kColorInterpolationCurveBezierLine = IM_COL32(255, 127, 0, 255);
 const ImU32 ImGuiWindow::kColorInterpolationCurveControlLine = IM_COL32(0, 255, 0, 127);
 const ImU32 ImGuiWindow::kColorInterpolationCurveControlPoint = IM_COL32(255, 0, 0, 255);
+const ImU32 ImGuiWindow::kColorSelectedModelObject = IM_COL32(255, 127, 0, 255);
 const nanoem_u8_t ImGuiWindow::kFAArrows[] = { 0xef, 0x81, 0x87, 0 };
 const nanoem_u8_t ImGuiWindow::kFARefresh[] = { 0xef, 0x80, 0xa1, 0 };
 const nanoem_u8_t ImGuiWindow::kFAZoom[] = { 0xef, 0x80, 0x82, 0 };

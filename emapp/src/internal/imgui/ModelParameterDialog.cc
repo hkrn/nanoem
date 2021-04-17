@@ -342,15 +342,26 @@ ModelParameterDialog::layoutAllVertices(Project *project)
             nanoem_model_vertex_t *vertexPtr = vertices[i];
             formatVertexText(buffer, sizeof(buffer), vertexPtr);
             const bool selected = selection->containsVertex(vertexPtr);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeVertex(vertexPtr) : selection->addVertex(vertexPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllVertices();
-                        m_vertexIndex = i;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_vertexIndex),
+                                             to = glm::max(offset, m_vertexIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addVertex(vertices[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllVertices();
+                    }
+                    m_vertexIndex = i;
                     selection->addVertex(vertexPtr);
                 }
                 hoveredVertexPtr = vertexPtr;
@@ -361,6 +372,9 @@ ModelParameterDialog::layoutAllVertices(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredVertexPtr = vertexPtr;
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -565,16 +579,22 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     clipper.Begin(Inline::saturateInt32(numFaces));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
-            nanoem_rsize_t offset = i * 3;
-            nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0];
-            nanoem_u32_t vertexIndex1 = vertexIndices[offset + 1];
-            nanoem_u32_t vertexIndex2 = vertexIndices[offset + 2];
+            const nanoem_rsize_t offset = nanoem_rsize_t(i) * 3;
+            const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0];
+            const nanoem_u32_t vertexIndex1 = vertexIndices[offset + 1];
+            const nanoem_u32_t vertexIndex2 = vertexIndices[offset + 2];
             StringUtils::format(buffer, sizeof(buffer), "%d (%d, %d, %d)##face[%d].name", i + 1, vertexIndex0,
                 vertexIndex1, vertexIndex2, i);
             bool selected = false;
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected) || ((up || down) && selected)) {
                 ImGui::SetScrollHereY();
                 m_faceIndex = i;
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -635,16 +655,27 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             ImGui::SameLine();
             const bool selected = selection->containsMaterial(materialPtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##material[%d].name", material->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeMaterial(materialPtr) : selection->addMaterial(materialPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllMaterials();
-                        m_materialIndex = i;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_materialIndex),
+                                             to = glm::max(offset, m_materialIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addMaterial(materials[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllMaterials();
+                    }
+                    m_materialIndex = i;
                     selection->addMaterial(materialPtr);
                 }
                 hoveredMaterialPtr = materials[i];
@@ -655,6 +686,9 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredMaterialPtr = materials[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -1075,7 +1109,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_model_bone_t *bonePtr = bones[i];
             model::Bone *bone = model::Bone::cast(bonePtr);
-            StringUtils::format(buffer, sizeof(buffer), "##material[%d].visible", i);
+            StringUtils::format(buffer, sizeof(buffer), "##bone[%d].visible", i);
             bool visible = bone->isEditingMasked() ? false : true;
             if (ImGui::Checkbox(buffer, &visible)) {
                 bone->setEditingMasked(visible ? false : true);
@@ -1083,16 +1117,27 @@ ModelParameterDialog::layoutAllBones(Project *project)
             ImGui::SameLine();
             const bool selected = selection->containsBone(bonePtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##bone[%d].name", bone->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeBone(bonePtr) : selection->addBone(bonePtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllBones();
-                        m_boneIndex = i;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_boneIndex),
+                                             to = glm::max(offset, m_boneIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addBone(bones[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllBones();
+                    }
+                    m_boneIndex = i;
                     selection->addBone(bonePtr);
                 }
                 hoveredBonePtr = bones[i];
@@ -1103,6 +1148,9 @@ ModelParameterDialog::layoutAllBones(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredBonePtr = bones[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -1658,18 +1706,28 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
             model::Morph *morph = model::Morph::cast(morphPtr);
             const bool selected = selection->containsMorph(morphPtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##morph[%d].name", morph->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeMorph(morphPtr) : selection->addMorph(morphPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllMorphs();
-                        forceUpdateMorph(morph, project);
-                        m_morphIndex = i;
-                        m_morphItemIndex = 0;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_morphIndex),
+                                             to = glm::max(offset, m_morphIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addMorph(morphs[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllMorphs();
+                    }
+                    m_morphIndex = i;
+                    m_morphItemIndex = 0;
                     selection->addMorph(morphPtr);
                 }
                 hoveredMorphPtr = morphs[i];
@@ -1682,6 +1740,9 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredMorphPtr = morphs[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -2489,17 +2550,28 @@ ModelParameterDialog::layoutAllLabels(Project *project)
             const model::Label *label = model::Label::cast(labelPtr);
             const bool selected = selection->containsLabel(labelPtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##label[%d].name", label->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeLabel(labelPtr) : selection->addLabel(labelPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllLabels();
-                        m_labelIndex = i;
-                        m_labelItemIndex = 0;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_labelIndex),
+                                             to = glm::max(offset, m_labelIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addLabel(labels[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllLabels();
+                    }
+                    m_labelIndex = i;
+                    m_labelItemIndex = 0;
                     selection->addLabel(labelPtr);
                 }
                 hoveredLabelPtr = labels[i];
@@ -2511,6 +2583,9 @@ ModelParameterDialog::layoutAllLabels(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredLabelPtr = labels[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -2737,16 +2812,27 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             ImGui::SameLine();
             const bool selected = selection->containsRigidBody(rigidBodyPtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##rigidBody[%d].name", rigidBody->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeRigidBody(rigidBodyPtr) : selection->addRigidBody(rigidBodyPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllRigidBodies();
-                        m_rigidBodyIndex = i;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_rigidBodyIndex),
+                                             to = glm::max(offset, m_rigidBodyIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addRigidBody(rigidBodies[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllRigidBodies();
+                    }
+                    m_rigidBodyIndex = i;
                     selection->addRigidBody(rigidBodyPtr);
                 }
                 hoveredRigidBodyPtr = rigidBodies[i];
@@ -2757,6 +2843,9 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredRigidBodyPtr = rigidBodies[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -3035,16 +3124,27 @@ ModelParameterDialog::layoutAllJoints(Project *project)
             ImGui::SameLine();
             const bool selected = selection->containsJoint(jointPtr);
             StringUtils::format(buffer, sizeof(buffer), "%s##joint[%d].name", joint->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
                     selected ? selection->removeJoint(jointPtr) : selection->addJoint(jointPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllJoints();
-                        m_jointIndex = i;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_jointIndex),
+                                             to = glm::max(offset, m_jointIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addJoint(joints[j]);
+                        }
                     }
+                    else {
+                        selection->removeAllJoints();
+                    }
+                    m_jointIndex = i;
                     selection->addJoint(jointPtr);
                 }
                 hoveredJointPtr = joints[i];
@@ -3055,6 +3155,9 @@ ModelParameterDialog::layoutAllJoints(Project *project)
             }
             else if (ImGui::IsItemHovered()) {
                 hoveredJointPtr = joints[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
@@ -3265,7 +3368,7 @@ void
 ModelParameterDialog::layoutAllSoftBodies(Project *project)
 {
     nanoem_rsize_t numSoftBodys;
-    nanoem_model_soft_body_t *const *soft_bodys =
+    nanoem_model_soft_body_t *const *softBodies =
         nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodys);
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
@@ -3289,41 +3392,55 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     clipper.Begin(Inline::saturateInt32(numSoftBodys));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
-            const nanoem_model_soft_body_t *soft_bodyPtr = soft_bodys[i];
-            const model::SoftBody *soft_body = model::SoftBody::cast(soft_bodyPtr);
-            const bool selected = selection->containsSoftBody(soft_bodyPtr);
-            StringUtils::format(buffer, sizeof(buffer), "%s##soft_body[%d].name", soft_body->nameConstString(), i);
+            const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
+            const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
+            const bool selected = selection->containsSoftBody(softBodyPtr);
+            StringUtils::format(buffer, sizeof(buffer), "%s##softBody[%d].name", softBody->nameConstString(), i);
+            if (selected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
-                if (ImGui::GetIO().KeyCtrl) {
-                    selected ? selection->removeSoftBody(soft_bodyPtr) : selection->addSoftBody(soft_bodyPtr);
+                const ImGuiIO &io = ImGui::GetIO();
+                if (io.KeyCtrl) {
+                    selected ? selection->removeSoftBody(softBodyPtr) : selection->addSoftBody(softBodyPtr);
                 }
                 else {
-                    if (!ImGui::GetIO().KeyShift) {
-                        selection->removeAllSoftBodies();
-                        m_softBodyIndex = i;
+                    if (io.KeyShift) {
+                        const nanoem_rsize_t offset = i, from = glm::min(offset, m_softBodyIndex),
+                                             to = glm::max(offset, m_softBodyIndex);
+                        for (nanoem_rsize_t j = from; j < to; j++) {
+                            selection->addSoftBody(softBodies[j]);
+                        }
                     }
-                    selection->addSoftBody(soft_bodyPtr);
+                    else {
+                        selection->removeAllSoftBodies();
+                    }
+                    m_softBodyIndex = i;
+                    selection->addSoftBody(softBodyPtr);
                 }
-                hoveredSoftBodyPtr = soft_bodys[i];
+                hoveredSoftBodyPtr = softBodies[i];
             }
             else if ((up || down) && m_softBodyIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_softBodyIndex = i;
             }
             else if (ImGui::IsItemHovered()) {
-                hoveredSoftBodyPtr = soft_bodys[i];
+                hoveredSoftBodyPtr = softBodies[i];
+            }
+            if (selected) {
+                ImGui::PopStyleColor();
             }
         }
     }
     selection->setHoveredSoftBody(hoveredSoftBodyPtr);
     ImGui::EndChild();
-    soft_bodys = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodys);
+    softBodies = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodys);
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("rigid-body-create-menu");
     }
     if (ImGui::BeginPopup("rigid-body-create-menu")) {
-        const nanoem_model_soft_body_t *selectedSoftBody = numSoftBodys > 0 ? soft_bodys[m_softBodyIndex] : nullptr;
+        const nanoem_model_soft_body_t *selectedSoftBody = numSoftBodys > 0 ? softBodies[m_softBodyIndex] : nullptr;
         int selectedSoftBodyIndex = model::SoftBody::index(selectedSoftBody);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
@@ -3363,8 +3480,8 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numSoftBodys > 0 && m_softBodyIndex < numSoftBodys) {
-        nanoem_model_soft_body_t *soft_bodyPtr = soft_bodys[m_softBodyIndex];
-        layoutSoftBodyPropertyPane(soft_bodyPtr, project);
+        nanoem_model_soft_body_t *softBodyPtr = softBodies[m_softBodyIndex];
+        layoutSoftBodyPropertyPane(softBodyPtr, project);
     }
     ImGui::EndChild();
 }
