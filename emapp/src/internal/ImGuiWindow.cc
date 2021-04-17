@@ -4162,7 +4162,15 @@ ImGuiWindow::batchLazySetAllObjects(Project *project, bool seekable)
     if (seekable && m_allModalDialogs.empty()) {
         const ImGuiIO &io = ImGui::GetIO();
         const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-        if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_RightArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
+        if (Inline::isDebuggerPresent()) {
+            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow), false) && frameIndex < Motion::kMaxFrameIndex) {
+                project->seek(frameIndex + 1, false);
+            }
+            else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow), false) && frameIndex > 0) {
+                project->seek(frameIndex - 1, false);
+            }
+        }
+        else if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_RightArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
             frameIndex < Motion::kMaxFrameIndex) {
             project->seek(frameIndex + 1, false);
         }
