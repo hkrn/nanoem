@@ -83,7 +83,7 @@ struct Native::Context {
             if (const char *relativePath = value->relative_path) {
                 fileURI = URI::createFromFilePath(
                     FileUtils::canonicalizePath(baseURI.absolutePath(), relativePath), fragment ? fragment : "");
-                isAbsolutePath = true;
+                isAbsolutePath = false;
             }
             else if (const char *absolutePath = value->absolute_path) {
                 fileURI = URI::createFromFilePath(absolutePath, fragment ? fragment : "");
@@ -951,6 +951,7 @@ Native::Context::loadAllModelMaterialEffects(
     const Nanoem__Project__Model *m, Model *model, Error &error, Project::IDiagnostics *diagnostics)
 {
     Progress progress(m_project, m->n_material_effect_attachments);
+    size_t numMaterialEffectAttachmentsSucceeded = 0;
     bool isAbsolutePath = true;
     for (nanoem_rsize_t i = 0, numMaterialEffectAttachments = m->n_material_effect_attachments;
          i < numMaterialEffectAttachments; i++) {
@@ -960,6 +961,7 @@ Native::Context::loadAllModelMaterialEffects(
             Effect *effect = m_project->findEffect(fileURI);
             if (effect) {
                 attachModelMaterialEffect(model, effect, attachment->offset);
+                numMaterialEffectAttachmentsSucceeded++;
             }
             else {
                 URI sourceURI;
@@ -968,6 +970,7 @@ Native::Context::loadAllModelMaterialEffects(
                 if (m_project->loadEffectFromSource(fileURI, effect, sourceURI, progress, error)) {
                     effect->setFileURI(sourceURI);
                     attached = attachModelMaterialEffect(model, effect, attachment->offset);
+                    numMaterialEffectAttachmentsSucceeded++;
                 }
                 if (!attached) {
                     m_project->destroyEffect(effect);
@@ -978,7 +981,7 @@ Native::Context::loadAllModelMaterialEffects(
             diagnostics->addDigestMismatchFileURI(fileURI);
         }
     }
-    if (isAbsolutePath) {
+    if (isAbsolutePath && numMaterialEffectAttachmentsSucceeded > 0) {
         m_project->setFilePathMode(Project::kFilePathModeAbsolute);
     }
 }
@@ -1096,9 +1099,10 @@ Native::Context::loadMotionPayload(
             motion->setFormat(NANOEM_MOTION_FORMAT_TYPE_NMD);
         }
         if (succeeded) {
+            const URI fileURI(toURI(m->file_uri, m_project->fileURI(), isAbsolutePath));
             motion->setAnnotations(toAnnotations(m->annotations, m->n_annotations));
-            motion->setFileURI(toURI(m->file_uri, m_project->fileURI(), isAbsolutePath));
-            if (isAbsolutePath) {
+            motion->setFileURI(fileURI);
+            if (!fileURI.isEmpty() && isAbsolutePath) {
                 m_project->setFilePathMode(Project::kFilePathModeAbsolute);
             }
             loaded = true;
@@ -1225,7 +1229,7 @@ Native::Context::loadOffscreenRenderTargetEffectAttachment(
         if (uri && uri->absolute_path) {
             const URI fileURI(toURI(uri, m_project->fileURI(), isAbsolutePath));
             loadOffscreenRenderTargetEffectAttachmentFromFile(fileURI, name, target, error);
-            if (isAbsolutePath) {
+            if (!fileURI.isEmpty() && isAbsolutePath) {
                 m_project->setFilePathMode(Project::kFilePathModeAbsolute);
             }
         }
