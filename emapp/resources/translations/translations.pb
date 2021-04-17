@@ -1,5 +1,5 @@
 
-Ɋ@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -255,12 +255,13 @@ $nanoem.gui.window.model.tab.material材質（マテリアル）-
 4nanoem.gui.window.preference.file-path-mode.relative相対パス3
 #nanoem.gui.model.edit.vertex.origin頂点座標3
 #nanoem.gui.model.edit.vertex.normal法線座標1
-%nanoem.gui.model.edit.vertex.texcoordUV座標1
-!nanoem.gui.model.edit.vertex.type頂点種別3
+%nanoem.gui.model.edit.vertex.texcoordUV座標C
+!nanoem.gui.model.edit.vertex.type頂点種別と影響ボーン3
 #nanoem.gui.model.edit.vertex.weightウェイト/
 #nanoem.gui.model.edit.vertex.sdef.cSDEF (C)1
 $nanoem.gui.model.edit.vertex.sdef.r0	SDEF (R0)1
-$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
+$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
+%nanoem.gui.model.edit.vertex.material所属材質1
 !nanoem.gui.model.edit.vertex.edgeエッジ幅2
  nanoem.gui.model.edit.vertex.uva拡張UV座標E
 ,nanoem.gui.model.edit.material.name.japanese名称（日本語）A
@@ -942,7 +943,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1202,12 +1203,13 @@ Rigid Body*
 4nanoem.gui.window.preference.file-path-mode.relativeRelative Path-
 #nanoem.gui.model.edit.vertex.originOrigin-
 #nanoem.gui.model.edit.vertex.normalNormal+
-%nanoem.gui.model.edit.vertex.texcoordUV)
-!nanoem.gui.model.edit.vertex.typeType-
+%nanoem.gui.model.edit.vertex.texcoordUVE
+!nanoem.gui.model.edit.vertex.type Vertex Type and Influenced Bones-
 #nanoem.gui.model.edit.vertex.weightWeight/
 #nanoem.gui.model.edit.vertex.sdef.cSDEF (C)1
 $nanoem.gui.model.edit.vertex.sdef.r0	SDEF (R0)1
-$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)/
+$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1):
+%nanoem.gui.model.edit.vertex.materialAttached Material/
 !nanoem.gui.model.edit.vertex.edge
 Edge Width1
  nanoem.gui.model.edit.vertex.uvaAdditional UV?

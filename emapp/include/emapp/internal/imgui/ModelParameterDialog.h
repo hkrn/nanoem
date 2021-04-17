@@ -93,6 +93,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     Model *m_activeModel;
     int m_language;
     TabType m_tabType;
+    TabType m_explicitTabType;
     nanoem_rsize_t m_vertexIndex;
     nanoem_rsize_t m_faceIndex;
     nanoem_rsize_t m_materialIndex;

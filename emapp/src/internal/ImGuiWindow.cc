@@ -216,6 +216,7 @@ const nanoem_u8_t ImGuiWindow::kFAArrowDown[] = { 0xef, 0x81, 0xa3, 0x0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderOpen[] = { 0xef, 0x84, 0xba, 0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderClose[] = { 0xef, 0x84, 0xb8, 0 };
 const nanoem_u8_t ImGuiWindow::kFACircle[] = { 0xef, 0x84, 0x91, 0 };
+const nanoem_u8_t ImGuiWindow::kFALink[] = { 0xef, 0x83, 0x81, 0 };
 
 bool
 ImGuiWindow::handleButton(const char *label)

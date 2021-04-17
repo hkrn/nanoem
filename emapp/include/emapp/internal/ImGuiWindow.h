@@ -109,6 +109,7 @@ public:
     static const nanoem_u8_t kFAFolderOpen[];
     static const nanoem_u8_t kFAFolderClose[];
     static const nanoem_u8_t kFACircle[];
+    static const nanoem_u8_t kFALink[];
 
     struct ILazyExecutionCommand {
         virtual ~ILazyExecutionCommand() NANOEM_DECL_NOEXCEPT

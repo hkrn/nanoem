@@ -1025,8 +1025,8 @@
     ja_JP: 'UV座標'
 - key: nanoem.gui.model.edit.vertex.type
   phrase:
-    en_US: 'Type'
-    ja_JP: '頂点種別'
+    en_US: 'Vertex Type and Influenced Bones'
+    ja_JP: '頂点種別と影響ボーン'
 - key: nanoem.gui.model.edit.vertex.weight
   phrase:
     en_US: 'Weight'
@@ -1043,6 +1043,10 @@
   phrase:
     en_US: 'SDEF (R1)'
     ja_JP: 'SDEF (R1)'
+- key: nanoem.gui.model.edit.vertex.material
+  phrase:
+    en_US: 'Attached Material'
+    ja_JP: '所属材質'
 - key: nanoem.gui.model.edit.vertex.edge
   phrase:
     en_US: 'Edge Width'

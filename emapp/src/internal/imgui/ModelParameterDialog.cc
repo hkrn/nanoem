@@ -64,6 +64,7 @@ ModelParameterDialog::ModelParameterDialog(
     , m_activeModel(model)
     , m_language(project->castLanguage())
     , m_tabType(kTabTypeFirstEnum)
+    , m_explicitTabType(kTabTypeMaxEnum)
     , m_vertexIndex(0)
     , m_faceIndex(0)
     , m_materialIndex(0)
@@ -111,53 +112,57 @@ ModelParameterDialog::draw(Project *project)
     }
     if (open(windowTitle.c_str(), kIdentifier, &visible,
             ImVec2(width, ImGui::GetFrameHeightWithSpacing() * kWindowFrameHeightRowCount), 0)) {
+        const TabType explicitTabType = m_explicitTabType;
+        if (explicitTabType != kTabTypeMaxEnum) {
+            m_explicitTabType = kTabTypeMaxEnum;
+        }
         ImGui::BeginTabBar("tabbar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton);
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.info"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.info"), nullptr, explicitTabType == kTabTypeInfo ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutInformation(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeInfo, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.vertex"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr, explicitTabType == kTabTypeVertex ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllVertices(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeVertex, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.face"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.face"), nullptr, explicitTabType == kTabTypeFace ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllFaces(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeFace, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.material"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.material"), nullptr, explicitTabType == kTabTypeMaterial ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllMaterials(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeMaterial, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.bone"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.bone"), nullptr, explicitTabType == kTabTypeBone ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllBones(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeBone, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.morph"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.morph"), nullptr, explicitTabType == kTabTypeMorph ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllMorphs(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeMorph, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.label"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.label"), nullptr, explicitTabType == kTabTypeLabel ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllLabels(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeLabel, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.rigid-body"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr, explicitTabType == kTabTypeRigidBody ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllRigidBodies(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeRigidBody, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.joint"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.joint"), nullptr, explicitTabType == kTabTypeJoint ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllJoints(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeJoint, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.soft-body"))) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr, explicitTabType == kTabTypeSoftBody ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllSoftBodies(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeSoftBody, project);
@@ -284,8 +289,15 @@ ModelParameterDialog::layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, 
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
     for (nanoem_rsize_t i = 0; i < numItems; i++) {
         char label[Inline::kNameStackBufferSize];
+        const nanoem_model_bone_t *bonePtr = nanoemModelVertexGetBoneObject(vertexPtr, i);
+        StringUtils::format(label, sizeof(label), "%s##toggle%jd", ImGuiWindow::kFALink, i);
+        if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
+            m_explicitTabType = kTabTypeBone;
+            m_boneIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+        }
+        ImGui::SameLine();
         StringUtils::format(label, sizeof(label), "##bone%jd", i);
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.75f);
         layoutVertexBoneSelection(label, vertexPtr, i, bones, numBones);
         ImGui::PopItemWidth();
         ImGui::SameLine();
@@ -403,9 +415,9 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
             nanoemMutableModelVertexSetTexCoord(scoped, glm::value_ptr(value));
         }
     }
-    addSeparator();
     {
         nanoem_rsize_t offset = 0;
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.2);
         if (ImGui::BeginCombo("##uva", "UVA")) {
             if (ImGui::Selectable("UVA1")) {
                 offset = 1;
@@ -421,11 +433,28 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
             }
             ImGui::EndCombo();
         }
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
         Vector4 value(glm::make_vec4(nanoemModelVertexGetAdditionalUV(vertexPtr, offset)));
         if (ImGui::InputFloat4("##uva-value", glm::value_ptr(value))) {
             command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetAdditionalUV(scoped, glm::value_ptr(value), offset);
         }
+    }
+    addSeparator();
+    {
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.material"));
+        char label[Inline::kNameStackBufferSize];
+        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        const nanoem_model_material_t *materialPtr = vertex->material();
+        StringUtils::format(label, sizeof(label), "%s##material", ImGuiWindow::kFALink);
+        if (ImGuiWindow::handleButton(label, 0, materialPtr != nullptr)) {
+            m_explicitTabType = kTabTypeMaterial;
+            m_materialIndex = nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
+        }
+        ImGui::SameLine();
+        const model::Material *material = model::Material::cast(materialPtr);
+        ImGui::TextUnformatted(material ? material->nameConstString() : "(none)");
     }
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.edge"));
@@ -450,8 +479,16 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         }
         switch (nanoemModelVertexGetType(vertexPtr)) {
         case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
+            char label[Inline::kNameStackBufferSize];
             nanoem_rsize_t numBones;
             nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+            const nanoem_model_bone_t *bonePtr = nanoemModelVertexGetBoneObject(vertexPtr, 0);
+            StringUtils::format(label, sizeof(label), "%s##toggle0", ImGuiWindow::kFALink);
+            if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
+                m_explicitTabType = kTabTypeBone;
+                m_boneIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+            }
+            ImGui::SameLine();
             layoutVertexBoneSelection("##bone", vertexPtr, 0, bones, numBones);
             break;
         }
@@ -660,6 +697,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         command::ScopedMutableMaterial scoped(materialPtr);
         nanoemMutableModelMaterialSetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.ambient.color"));
         Vector4 value(glm::make_vec4(nanoemModelMaterialGetAmbientColor(materialPtr)));
@@ -1132,6 +1170,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         command::ScopedMutableBone scoped(bonePtr);
         nanoemMutableModelBoneSetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.origin"));
         Vector4 value(glm::make_vec4(nanoemModelBoneGetOrigin(bonePtr)));
@@ -1774,6 +1813,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
         command::ScopedMutableMorph scoped(morphPtr);
         nanoemMutableModelMorphSetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
         nanoem_model_morph_category_t value = nanoemModelMorphGetCategory(morphPtr);
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.category"));
@@ -2540,6 +2580,7 @@ ModelParameterDialog::layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Pr
         command::ScopedMutableLabel scoped(labelPtr);
         nanoemMutableModelLabelSetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
         bool value = nanoemModelLabelIsSpecial(labelPtr) != 0;
         if (ImGuiWindow::handleCheckBox(tr("nanoem.gui.model.edit.label.special"), &value, m_labelIndex > 0)) {
@@ -2790,11 +2831,20 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         command::ScopedMutableRigidBody scoped(rigidBodyPtr);
         nanoemMutableModelRigidBodySetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
-        const model::Bone *bone = model::Bone::cast(nanoemModelRigidBodyGetBoneObject(rigidBodyPtr));
+        char label[Inline::kNameStackBufferSize];
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.bone"));
+        const nanoem_model_bone_t *bonePtr = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
+        StringUtils::format(label, sizeof(label), "%s##toggle", ImGuiWindow::kFALink);
+        if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
+            m_explicitTabType = kTabTypeBone;
+            m_boneIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+        }
+        ImGui::SameLine();
+        const model::Bone *bone = model::Bone::cast(bonePtr);
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.bone"));
         if (ImGui::BeginCombo("##bone", bone ? bone->nameConstString() : "(none)")) {
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -2888,7 +2938,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.linear-damping"));
         nanoem_f32_t value = nanoemModelRigidBodyGetLinearDamping(rigidBodyPtr);
-        if (ImGui::InputFloat("##damping.linear", &value)) {
+        if (ImGui::SliderFloat("##damping.linear", &value, 0.0f, 1.0f)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetLinearDamping(scoped, value);
         }
@@ -2896,7 +2946,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.angular-damping"));
         nanoem_f32_t value = nanoemModelRigidBodyGetAngularDamping(rigidBodyPtr);
-        if (ImGui::InputFloat("##damping.angular", &value)) {
+        if (ImGui::SliderFloat("##damping.angular", &value, 0.0f, 1.0f)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetAngularDamping(scoped, value);
         }
@@ -2904,7 +2954,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.friction"));
         nanoem_f32_t value = nanoemModelRigidBodyGetFriction(rigidBodyPtr);
-        if (ImGui::InputFloat("##friction", &value)) {
+        if (ImGui::SliderFloat("##friction", &value, 0.0f, 1.0f)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetFriction(scoped, value);
         }
@@ -2912,7 +2962,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.restitution"));
         nanoem_f32_t value = nanoemModelRigidBodyGetRestitution(rigidBodyPtr);
-        if (ImGui::InputFloat("##restitution", &value)) {
+        if (ImGui::SliderFloat("##restitution", &value, 0.0f, 1.0f)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetRestitution(scoped, value);
         }
@@ -3078,12 +3128,21 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         command::ScopedMutableJoint scoped(jointPtr);
         nanoemMutableModelJointSetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
-        const model::RigidBody *rigidBodyA = model::RigidBody::cast(nanoemModelJointGetRigidBodyAObject(jointPtr));
+        char label[Inline::kNameStackBufferSize];
         nanoem_rsize_t numRigidBodies;
         nanoem_model_rigid_body_t *const *bodies =
             nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.rigid-body.a"));
+        const nanoem_model_rigid_body_t *rigidBodyAPtr = nanoemModelJointGetRigidBodyAObject(jointPtr);
+        StringUtils::format(label, sizeof(label), "%s##toggle-a", ImGuiWindow::kFALink);
+        if (ImGuiWindow::handleButton(label, 0, rigidBodyAPtr != nullptr)) {
+            m_explicitTabType = kTabTypeRigidBody;
+            m_rigidBodyIndex = nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(rigidBodyAPtr));
+        }
+        ImGui::SameLine();
+        const model::RigidBody *rigidBodyA = model::RigidBody::cast(rigidBodyAPtr);
         if (ImGui::BeginCombo("##rigid-body.a", rigidBodyA ? rigidBodyA->nameConstString() : "(none)")) {
             for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
                 const nanoem_model_rigid_body_t *candidateBodyPtr = bodies[i];
@@ -3098,8 +3157,15 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
             }
             ImGui::EndCombo();
         }
-        const model::RigidBody *rigidBodyB = model::RigidBody::cast(nanoemModelJointGetRigidBodyBObject(jointPtr));
+        const nanoem_model_rigid_body_t *rigidBodyBPtr = nanoemModelJointGetRigidBodyBObject(jointPtr);
+        StringUtils::format(label, sizeof(label), "%s##toggle-b", ImGuiWindow::kFALink);
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.rigid-body.b"));
+        if (ImGuiWindow::handleButton(label, 0, rigidBodyBPtr != nullptr)) {
+            m_explicitTabType = kTabTypeRigidBody;
+            m_rigidBodyIndex = nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(rigidBodyBPtr));
+        }
+        ImGui::SameLine();
+        const model::RigidBody *rigidBodyB = model::RigidBody::cast(rigidBodyBPtr);
         if (ImGui::BeginCombo("##rigid-body.b", rigidBodyB ? rigidBodyB->nameConstString() : "(none)")) {
             for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
                 const nanoem_model_rigid_body_t *candidateBodyPtr = bodies[i];
@@ -3112,6 +3178,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
             ImGui::EndCombo();
         }
     }
+    addSeparator();
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.origin"));
         Vector4 value(glm::make_vec4(nanoemModelJointGetOrigin(jointPtr)));
@@ -3314,6 +3381,7 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         command::ScopedMutableSoftBody scoped(softBodyPtr);
         nanoemMutableModelSoftBodySetName(scoped, scope.value(), language, &status);
     }
+    addSeparator();
     {
         const model::Material *material = model::Material::cast(nanoemModelSoftBodyGetMaterialObject(softBodyPtr));
         nanoem_rsize_t numMaterials;
