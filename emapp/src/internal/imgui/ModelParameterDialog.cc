@@ -943,55 +943,47 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         ImGui::OpenPopup("material.texture.menu");
     }
     if (ImGui::BeginPopupContextItem("material.texture.menu")) {
+        StringList extensions;
+        extensions.push_back("png");
+        extensions.push_back("jpg");
+        extensions.push_back("bmp");
+        extensions.push_back("tga");
         IEventPublisher *eventPublisher = project->eventPublisher();
         IFileManager *fileManager = m_applicationPtr->fileManager();
         if (ImGui::MenuItem("Set Diffuse Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
-            struct SetDiffuseTextureCallback {
+            struct SetDiffuseTextureCallback : IFileManager::QueryFileDialogCallbacks {
+                struct UserData {
+                    model::Material *m_material;
+                };
                 static void
-                handle(const URI &fileURI, Project *project, void *userData)
+                accept(const URI &fileURI, Project *project, void *userData)
                 {
                     SetDiffuseTextureCallback *self = static_cast<SetDiffuseTextureCallback *>(userData);
                     // self->m_material->setDiffuseImage(nullptr);
+                }
+                static void
+                destroy(void *userData)
+                {
+                    UserData *self = static_cast<UserData *>(userData);
                     nanoem_delete(self);
                 }
-                model::Material *m_material;
+                SetDiffuseTextureCallback()
+                {
+                    m_userData = nanoem_new(UserData);
+                    m_accept = accept;
+                    m_destory = destroy;
+                    m_cancel = nullptr;
+                }
             };
-            SetDiffuseTextureCallback *callback = nanoem_new(SetDiffuseTextureCallback);
-            callback->m_material = material;
-            fileManager->setTransientQueryFileDialogCallback(SetDiffuseTextureCallback::handle, callback);
-            eventPublisher->publishQueryOpenSingleFileDialogEvent(0, StringList());
+            SetDiffuseTextureCallback callbacks;
+            fileManager->setTransientQueryFileDialogCallback(callbacks);
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(IFileManager::kDialogTypeUserCallback, extensions);
         }
         if (ImGui::MenuItem("Set SphereMap Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
-            struct SetSphereMapTextureCallback {
-                static void
-                handle(const URI &fileURI, Project *project, void *userData)
-                {
-                    SetSphereMapTextureCallback *self = static_cast<SetSphereMapTextureCallback *>(userData);
-                    // self->m_material->setSphereMapImage(nullptr);
-                    nanoem_delete(self);
-                }
-                model::Material *m_material;
-            };
-            SetSphereMapTextureCallback *callback = nanoem_new(SetSphereMapTextureCallback);
-            callback->m_material = material;
-            fileManager->setTransientQueryFileDialogCallback(SetSphereMapTextureCallback::handle, callback);
-            eventPublisher->publishQueryOpenSingleFileDialogEvent(0, StringList());
+            
         }
         if (ImGui::MenuItem("Set Toon Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
-            struct SetToonTextureCallback {
-                static void
-                handle(const URI &fileURI, Project *project, void *userData)
-                {
-                    SetToonTextureCallback *self = static_cast<SetToonTextureCallback *>(userData);
-                    // self->m_material->setToonImage(nullptr);
-                    nanoem_delete(self);
-                }
-                model::Material *m_material;
-            };
-            SetToonTextureCallback *callback = nanoem_new(SetToonTextureCallback);
-            callback->m_material = material;
-            fileManager->setTransientQueryFileDialogCallback(SetToonTextureCallback::handle, callback);
-            eventPublisher->publishQueryOpenSingleFileDialogEvent(0, StringList());
+            
         }
         if (diffuseImage || sphereMapImage || hasOwnToonTexture) {
             ImGui::Separator();

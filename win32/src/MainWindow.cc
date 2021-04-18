@@ -2231,6 +2231,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
             if (dialog.open("", allowedExtensions)) {
                 self->m_client->sendQueryOpenSingleFileDialogMessage(types, dialog.fileURI());
             }
+            else {
+                self->m_client->sendQueryOpenSingleFileDialogMessage(types, URI());
+            }
         },
         this, false);
     m_client->addQueryOpenMultipleFilesDialogEventListener(
@@ -2241,6 +2244,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
             if (dialog.open("", allowedExtensions)) {
                 self->m_client->sendQueryOpenMultipleFilesDialogMessage(types, fileURIs);
             }
+            else {
+                self->m_client->sendQueryOpenMultipleFilesDialogMessage(types, URIList());
+            }
         },
         this, false);
     m_client->addQuerySaveFileDialogEventListener(
@@ -2249,6 +2255,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
             Dialog dialog(self->m_windowHandle);
             if (dialog.open("", allowedExtensions)) {
                 self->m_client->sendQuerySaveFileDialogMessage(types, dialog.fileURI());
+            }
+            else {
+                self->m_client->sendQuerySaveFileDialogMessage(types, URI());
             }
         },
         this, false);

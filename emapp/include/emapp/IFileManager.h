@@ -26,7 +26,15 @@ class Project;
 
 class IFileManager {
 public:
-    typedef void (*QueryFileDialogCallback)(const URI &fileURI, Project *project, void *userData);
+    struct QueryFileDialogCallbacks {
+        typedef void (*AcceptCallback)(const URI &fileURI, Project *project, void *userData);
+        typedef void (*CancelCallback)(Project *project, void *userData);
+        typedef void (*DestroyCallback)(void *userData);
+        void *m_userData;
+        AcceptCallback m_accept;
+        CancelCallback m_cancel;
+        DestroyCallback m_destory;
+    };
     typedef tinystl::vector<plugin::DecoderPlugin *, TinySTLAllocator> DecoderPluginList;
     typedef tinystl::vector<plugin::EncoderPlugin *, TinySTLAllocator> EncoderPluginList;
 
@@ -60,7 +68,8 @@ public:
     virtual bool loadFromFileWithModalDialog(const URI &fileURI, DialogType type, Project *project, Error &error) = 0;
     virtual bool saveAsFile(const URI &fileURI, DialogType type, Project *project, Error &error) = 0;
     virtual bool hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual void setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData) = 0;
+    virtual void setTransientQueryFileDialogCallback(QueryFileDialogCallbacks callbacks) = 0;
+    virtual void resetTransientQueryFileDialogCallback() = 0;
 
     virtual URI sharedSourceEffectCacheDirectory() = 0;
     virtual plugin::EffectPlugin *sharedEffectPlugin() = 0;

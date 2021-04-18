@@ -4919,9 +4919,14 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
             const Nanoem__Application__QueryOpenSingleFileDialogCommand *commandPtr =
                 command->query_open_single_file_dialog;
             const Nanoem__Application__URI *uri = commandPtr->file_uri;
-            const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-            IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
-            succeeded = project->fileManager()->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+            const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
+            if (!fileURI.isEmpty()) {
+                IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
+                succeeded = project->fileManager()->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+            }
+            else {
+                m_defaultFileManager->cancelQueryFileDialog(project);
+            }
         }
         break;
     }
@@ -4929,12 +4934,18 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             const Nanoem__Application__QueryOpenMultipleFilesDialogCommand *commandPtr =
                 command->query_open_multiple_files_dialog;
-            IFileManager *fileManager = project->fileManager();
             IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
-            for (nanoem_rsize_t i = 0, numItems = commandPtr->n_file_uri; i < numItems; i++) {
-                const Nanoem__Application__URI *uri = commandPtr->file_uri[i];
-                const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-                succeeded &= fileManager->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+            nanoem_rsize_t numItems = commandPtr->n_file_uri;
+            if (numItems > 0) {
+                IFileManager *fileManager = project->fileManager();
+                for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                    const Nanoem__Application__URI *uri = commandPtr->file_uri[i];
+                    const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
+                    succeeded &= fileManager->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+                }
+            }
+            else {
+                m_defaultFileManager->cancelQueryFileDialog(project);
             }
         }
         break;
@@ -4943,9 +4954,14 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             const Nanoem__Application__QuerySaveFileDialogCommand *commandPtr = command->query_save_file_dialog;
             const Nanoem__Application__URI *uri = commandPtr->file_uri;
-            const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-            IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
-            succeeded = project->fileManager()->saveAsFile(fileURI, dialogType, project, error);
+            const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
+            if (!fileURI.isEmpty()) {
+                IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
+                succeeded = project->fileManager()->saveAsFile(fileURI, dialogType, project, error);
+            }
+            else {
+                m_defaultFileManager->cancelQueryFileDialog(project);
+            }
         }
         break;
     }

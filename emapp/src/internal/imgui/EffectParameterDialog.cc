@@ -368,7 +368,8 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     if (ImGuiWindow::handleButton(tr("nanoem.gui.window.project.effect.emd.load"),
             ImGui::GetContentRegionAvail().x * 0.5f, isModelSelected)) {
         Model *model = models[m_activeModelTargetIndex];
-        project->fileManager()->setTransientQueryFileDialogCallback(handleLoadingModelEffectSetting, model);
+        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleLoadingModelEffectSetting, nullptr };
+        project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
         extensions.push_back("emd");
         IEventPublisher *eventPublisher = project->eventPublisher();
@@ -378,7 +379,8 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     if (ImGuiWindow::handleButton(
             tr("nanoem.gui.window.project.effect.emd.save"), ImGui::GetContentRegionAvail().x, isModelSelected)) {
         Model *model = models[m_activeModelTargetIndex];
-        project->fileManager()->setTransientQueryFileDialogCallback(handleSaveingModelEffectSetting, model);
+        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleSaveingModelEffectSetting, nullptr };
+        project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
         extensions.push_back("emd");
         IEventPublisher *eventPublisher = project->eventPublisher();

@@ -43,6 +43,7 @@ public:
     void initializeAllEncoderPlugins(const URIList &fileURIs, StringSet &availableExtensions);
     void initializeAllModelIOPlugins(const URIList &fileURIs);
     void initializeAllMotionIOPlugins(const URIList &fileURIs);
+    void cancelQueryFileDialog(Project *project);
     void destroyAllPlugins();
 
     bool loadAudioFile(const URI &fileURI, Project *project, Error &error) NANOEM_DECL_OVERRIDE;
@@ -74,7 +75,8 @@ protected:
         const URI &fileURI, DialogType type, Project *project, Error &error) NANOEM_DECL_OVERRIDE;
     bool saveAsFile(const URI &fileURI, DialogType type, Project *project, Error &error) NANOEM_DECL_OVERRIDE;
     bool hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData) NANOEM_DECL_OVERRIDE;
+    void setTransientQueryFileDialogCallback(QueryFileDialogCallbacks callbacks) NANOEM_DECL_OVERRIDE;
+    void resetTransientQueryFileDialogCallback() NANOEM_DECL_OVERRIDE;
 
 private:
     typedef void (*LoadEffectCallback)(Effect *effect, Project *project, Error &error);
@@ -117,8 +119,7 @@ private:
     tinystl::pair<ModelIOPluginList, bx::Mutex> m_modelIOPlugins;
     tinystl::pair<MotionIOPluginList, bx::Mutex> m_motionIOPlugins;
     plugin::EffectPlugin *m_effectPlugin;
-    QueryFileDialogCallback m_callback;
-    void *m_userData;
+    QueryFileDialogCallbacks m_queryFileDialogCallbacks;
 };
 
 } /* namespace nanoem */

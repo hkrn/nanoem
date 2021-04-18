@@ -1791,6 +1791,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
                                   const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(panel.URL));
                                   self->m_client->sendQueryOpenSingleFileDialogMessage(type, fileURI);
                               }
+                              else {
+                                  self->m_client->sendQueryOpenSingleFileDialogMessage(type, URI());
+                              }
                           }];
         },
         this, false);
@@ -1824,6 +1827,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
                               if (result == NSModalResponseOK) {
                                   const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(panel.URL));
                                   self->m_client->sendQuerySaveFileDialogMessage(type, fileURI);
+                              }
+                              else {
+                                  self->m_client->sendQuerySaveFileDialogMessage(type, URI());
                               }
                           }];
         },

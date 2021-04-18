@@ -187,7 +187,12 @@ struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
         if (!availableExtensions.empty()) {
             IFileManager *fileManager = builder->m_fileManager;
             if (!fileManager->hasTransientQueryFileDialogCallback()) {
-                fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
+                const IFileManager::QueryFileDialogCallbacks callbacks = {
+                    builder,
+                    handleTransientQueryFileDialog,
+                    nullptr,
+                };
+                fileManager->setTransientQueryFileDialogCallback(callbacks);
                 builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
                     IFileManager::kDialogTypeUserCallback, availableExtensions);
             }
@@ -234,7 +239,9 @@ struct ImGuiApplicationMenuBuilder::ExportVideoCallbackHandler {
         if (!availableExtensions.empty()) {
             IFileManager *fileManager = builder->m_fileManager;
             if (!fileManager->hasTransientQueryFileDialogCallback()) {
-                fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
+                const IFileManager::QueryFileDialogCallbacks callbacks = { builder, handleTransientQueryFileDialog,
+                    nullptr };
+                fileManager->setTransientQueryFileDialogCallback(callbacks);
                 builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
                     IFileManager::kDialogTypeUserCallback, availableExtensions);
             }
@@ -870,6 +877,9 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
             FileUtils::canonicalizePathSeparator(filePath, canonicalizedFilePath);
             const URI fileURI(URI::createFromFilePath(canonicalizedFilePath.c_str()));
             execute(fileURI, client);
+        }
+        else {
+            execute(URI(), client);
         }
         IGFD_CloseDialog(instance);
         m_opened = false;

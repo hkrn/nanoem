@@ -174,8 +174,6 @@ setEffectCallback(Effect *effect, Project *project, Error &error)
 DefaultFileManager::DefaultFileManager(BaseApplicationService *applicationPtr)
     : m_applicationPtr(applicationPtr)
     , m_effectPlugin(nullptr)
-    , m_callback(nullptr)
-    , m_userData(nullptr)
 {
     const JSON_Object *config = json_object(applicationPtr->applicationConfiguration());
     const char *locale = json_object_dotget_string(config, "project.locale");
@@ -186,6 +184,7 @@ DefaultFileManager::DefaultFileManager(BaseApplicationService *applicationPtr)
         m_translator.setLanguage(ITranslator::kLanguageTypeEnglish);
     }
     m_applicationPtr->setTranslator(&m_translator);
+    Inline::clearZeroMemory(m_queryFileDialogCallbacks);
 }
 
 DefaultFileManager::~DefaultFileManager() NANOEM_DECL_NOEXCEPT
@@ -315,6 +314,16 @@ DefaultFileManager::initializeAllMotionIOPlugins(const URIList &fileURIs)
             }
         }
     }
+}
+
+void
+DefaultFileManager::cancelQueryFileDialog(Project *project)
+{
+    if (m_queryFileDialogCallbacks.m_cancel) {
+        m_queryFileDialogCallbacks.m_cancel(project, m_queryFileDialogCallbacks.m_userData);
+        m_queryFileDialogCallbacks.m_cancel = nullptr;
+    }
+    resetTransientQueryFileDialogCallback();
 }
 
 void
@@ -553,14 +562,25 @@ DefaultFileManager::loadProject(const URI &fileURI, Project *project, Error &err
 bool
 DefaultFileManager::hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT
 {
-    return m_callback != nullptr;
+    return m_queryFileDialogCallbacks.m_accept != nullptr;
 }
 
 void
-DefaultFileManager::setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData)
+DefaultFileManager::setTransientQueryFileDialogCallback(QueryFileDialogCallbacks callbacks)
 {
-    m_callback = callback;
-    m_userData = userData;
+    m_queryFileDialogCallbacks = callbacks;
+}
+
+void
+DefaultFileManager::resetTransientQueryFileDialogCallback()
+{
+    if (m_queryFileDialogCallbacks.m_destory) {
+        m_queryFileDialogCallbacks.m_destory(m_queryFileDialogCallbacks.m_userData);
+        m_queryFileDialogCallbacks.m_destory = nullptr;
+    }
+    m_queryFileDialogCallbacks.m_accept = nullptr;
+    m_queryFileDialogCallbacks.m_cancel = nullptr;
+    m_queryFileDialogCallbacks.m_userData = nullptr;
 }
 
 bool
@@ -751,11 +771,10 @@ DefaultFileManager::internalLoadFromFile(
             break;
         }
         case kDialogTypeUserCallback: {
-            if (m_callback) {
-                m_callback(fileURI, project, m_userData);
-                m_callback = nullptr;
-                m_userData = nullptr;
+            if (m_queryFileDialogCallbacks.m_accept) {
+                m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_userData);
             }
+            resetTransientQueryFileDialogCallback();
             break;
         }
         case kDialogTypeMaxEnum:
@@ -794,11 +813,10 @@ DefaultFileManager::saveAsFile(const URI &fileURI, DialogType type, Project *pro
         break;
     }
     case kDialogTypeUserCallback: {
-        if (m_callback) {
-            m_callback(fileURI, project, m_userData);
-            m_callback = nullptr;
-            m_userData = nullptr;
+        if (m_queryFileDialogCallbacks.m_accept) {
+            m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_userData);
         }
+        resetTransientQueryFileDialogCallback();
         break;
     }
     default:
