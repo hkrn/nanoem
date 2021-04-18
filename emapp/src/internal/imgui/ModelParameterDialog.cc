@@ -113,7 +113,7 @@ ModelParameterDialog::draw(Project *project)
             windowTitle, "%s - %s", tr("nanoem.gui.window.model.title"), m_activeModel->nameConstString());
     }
     if (open(windowTitle.c_str(), kIdentifier, &visible,
-            ImVec2(width, ImGui::GetFrameHeightWithSpacing() * kWindowFrameHeightRowCount), 0)) {
+            ImVec2(width, ImGui::GetFrameHeightWithSpacing() * kWindowFrameHeightRowCount), ImGuiWindowFlags_None)) {
         const TabType explicitTabType = m_explicitTabType;
         if (explicitTabType != kTabTypeMaxEnum) {
             m_explicitTabType = kTabTypeMaxEnum;
@@ -1151,45 +1151,16 @@ ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const 
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
     }
     if (ImGui::CollapsingHeader(label)) {
-        const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
         model::Material *material = model::Material::cast(activeMaterialPtr);
         bool displayUVMeshEnabled = material->isDisplayDiffuseTextureUVMeshEnabled();
+        if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFAExpand))) {
+            m_parent->openUVEditDialog(activeMaterialPtr, m_activeModel);
+        }
+        ImGui::SameLine();
         if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
             material->setDisplayDiffuseTextureUVMeshEnabled(displayUVMeshEnabled);
         }
-        const ImVec2 itemOffset(ImGui::GetCursorScreenPos());
-        ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
-            ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
-        if (displayUVMeshEnabled) {
-            nanoem_rsize_t numMaterials, numVertices, numVertexIndices, offset = 0;
-            const nanoem_model_t *opaque = m_activeModel->data();
-            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
-            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
-            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
-            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *material = materials[i];
-                if (material == activeMaterialPtr) {
-                    break;
-                }
-                offset += nanoemModelMaterialGetNumVertexIndices(material);
-            }
-            const ImVec2 itemSize(ImGui::GetItemRectSize());
-            const nanoem_rsize_t offsetTo = offset + nanoemModelMaterialGetNumVertexIndices(activeMaterialPtr);
-            ImDrawList *drawList = ImGui::GetWindowDrawList();
-            drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
-            for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
-                const nanoem_f32_t *t0 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i]]),
-                                   *t1 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 1]]),
-                                   *t2 = nanoemModelVertexGetTexCoord(vertices[vertexIndices[i + 2]]);
-                const ImVec2 v0Pos(itemOffset.x + itemSize.x * t0[0], itemOffset.y + itemSize.y * t0[1]),
-                    v1Pos(itemOffset.x + itemSize.x * t1[0], itemOffset.y + itemSize.y * t1[1]),
-                    v2Pos(itemOffset.x + itemSize.x * t2[0], itemOffset.y + itemSize.y * t2[1]);
-                drawList->AddLine(v0Pos, v1Pos, IM_COL32(0xff, 0, 0, 0xff));
-                drawList->AddLine(v1Pos, v2Pos, IM_COL32(0xff, 0, 0, 0xff));
-                drawList->AddLine(v2Pos, v0Pos, IM_COL32(0xff, 0, 0, 0xff));
-            }
-            drawList->PopClipRect();
-        }
+        UVEditDialog::drawDiffuseImage(image, activeMaterialPtr, m_activeModel, 1.0f, displayUVMeshEnabled);
     }
     if (imageNotFound) {
         ImGui::PopStyleColor();
@@ -1213,46 +1184,7 @@ void ModelParameterDialog::layoutMaterialSphereMapImage(const IImageView *image,
         if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
             material->setDisplaySphereMapTextureUVMeshEnabled(displayUVMeshEnabled);
         }
-        const ImVec2 itemOffset(ImGui::GetCursorScreenPos());
-        ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
-            ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
-        if (displayUVMeshEnabled) {
-            nanoem_rsize_t numMaterials, numVertices, numVertexIndices, offset = 0;
-            const nanoem_model_t *opaque = m_activeModel->data();
-            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
-            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
-            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
-            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *material = materials[i];
-                if (material == activeMaterialPtr) {
-                    break;
-                }
-                offset += nanoemModelMaterialGetNumVertexIndices(material);
-            }
-            const ImVec2 itemSize(ImGui::GetItemRectSize());
-            const nanoem_rsize_t offsetTo = offset + nanoemModelMaterialGetNumVertexIndices(activeMaterialPtr);
-            ImDrawList *drawList = ImGui::GetWindowDrawList();
-            drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
-            for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
-                const Vector3 n0(
-                    glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i]]))) *
-                        Vector3(0.5f) +
-                    Vector3(0.5f)),
-                    n1(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 1]]))) *
-                            Vector3(0.5f) +
-                        Vector3(0.5f)),
-                    n2(glm::normalize(glm::make_vec3(nanoemModelVertexGetNormal(vertices[vertexIndices[i + 2]]))) *
-                            Vector3(0.5f) +
-                        Vector3(0.5f));
-                const ImVec2 n0Pos(itemOffset.x + itemSize.x * n0.x, itemOffset.y + itemSize.y * n0.y),
-                    n1Pos(itemOffset.x + itemSize.x * n1.x, itemOffset.y + itemSize.y * n1.y),
-                    n2Pos(itemOffset.x + itemSize.x * n2.x, itemOffset.y + itemSize.y * n2.y);
-                drawList->AddLine(n0Pos, n1Pos, IM_COL32(0xff, 0, 0, 0xff));
-                drawList->AddLine(n1Pos, n2Pos, IM_COL32(0xff, 0, 0, 0xff));
-                drawList->AddLine(n2Pos, n0Pos, IM_COL32(0xff, 0, 0, 0xff));
-            }
-            drawList->PopClipRect();
-        }
+        UVEditDialog::drawSphereMapImage(image, activeMaterialPtr, m_activeModel, 1.0f, displayUVMeshEnabled);
     }
     if (imageNotFound) {
         ImGui::PopStyleColor();
@@ -1271,7 +1203,7 @@ ModelParameterDialog::layoutMaterialToonImage(const IImageView *image, const Str
     }
     if (ImGui::CollapsingHeader(label)) {
         const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
-        ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
+        ImGui::Image(textureID, calcExpandedImageSize(image->description(), 1.0f), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
     }
     if (imageNotFound) {
@@ -1809,8 +1741,8 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
         }
         {
             nanoem_f32_t value = glm::degrees(nanoemModelConstraintGetAngleLimit(constraintPtr));
-            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.angle"));
-            if (ImGui::SliderFloat("##constraint.angle", &value, -90, 90)) {
+            StringUtils::format(buffer, sizeof(buffer), "%s: %%.3f", tr("nanoem.gui.model.edit.bone.constraint.angle"));
+            if (ImGui::SliderFloat("##constraint.angle", &value, -90, 90, buffer)) {
                 command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoemMutableModelConstraintSetAngleLimit(scoped, glm::radians(value));
             }
@@ -2401,8 +2333,8 @@ ModelParameterDialog::layoutMorphFlipPropertyPane(
     addSeparator();
     {
         nanoem_f32_t weight = nanoemModelMorphFlipGetWeight(morphFlipPtr);
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.flip.weight"));
-        if (ImGui::SliderFloat("##flip.weight", &weight, 0.0f, 0.0f)) {
+        StringUtils::format(buffer, sizeof(buffer), "%s %%.3f", tr("nanoem.gui.model.edit.morph.flip.weight"));
+        if (ImGui::SliderFloat("##flip.weight", &weight, 0.0f, 0.0f, buffer)) {
             command::ScopedMutableMorphFlip scoped(morphFlipPtr);
             nanoemMutableModelMorphFlipSetWeight(scoped, weight);
         }
@@ -2499,7 +2431,7 @@ ModelParameterDialog::layoutMorphGroupPropertyPane(
     addSeparator();
     {
         nanoem_f32_t weight = nanoemModelMorphGroupGetWeight(morphGroupPtr);
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.group.weight"));
+        StringUtils::format(buffer, sizeof(buffer), "%s %%.3f", tr("nanoem.gui.model.edit.morph.group.weight"));
         if (ImGui::SliderFloat("##group.weight", &weight, 0.0f, 0.0f)) {
             command::ScopedMutableMorphGroup scoped(morphGroupPtr);
             nanoemMutableModelMorphGroupSetWeight(scoped, weight);
@@ -3410,33 +3342,34 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         }
     }
     {
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.linear-damping"));
+        StringUtils::format(buffer, sizeof(buffer), "%s: %%.3f", tr("nanoem.gui.model.edit.rigid-body.linear-damping"));
         nanoem_f32_t value = nanoemModelRigidBodyGetLinearDamping(rigidBodyPtr);
-        if (ImGui::SliderFloat("##damping.linear", &value, 0.0f, 1.0f)) {
+        if (ImGui::SliderFloat("##damping.linear", &value, 0.0f, 1.0f, buffer)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetLinearDamping(scoped, value);
         }
     }
     {
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.angular-damping"));
+        StringUtils::format(
+            buffer, sizeof(buffer), "%s: %%.3f", tr("nanoem.gui.model.edit.rigid-body.angular-damping"));
         nanoem_f32_t value = nanoemModelRigidBodyGetAngularDamping(rigidBodyPtr);
-        if (ImGui::SliderFloat("##damping.angular", &value, 0.0f, 1.0f)) {
+        if (ImGui::SliderFloat("##damping.angular", &value, 0.0f, 1.0f, buffer)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetAngularDamping(scoped, value);
         }
     }
     {
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.friction"));
+        StringUtils::format(buffer, sizeof(buffer), "%s: %%.3f", tr("nanoem.gui.model.edit.rigid-body.friction"));
         nanoem_f32_t value = nanoemModelRigidBodyGetFriction(rigidBodyPtr);
-        if (ImGui::SliderFloat("##friction", &value, 0.0f, 1.0f)) {
+        if (ImGui::SliderFloat("##friction", &value, 0.0f, 1.0f, buffer)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetFriction(scoped, value);
         }
     }
     {
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.restitution"));
+        StringUtils::format(buffer, sizeof(buffer), "%s: %%.3f", tr("nanoem.gui.model.edit.rigid-body.restitution"));
         nanoem_f32_t value = nanoemModelRigidBodyGetRestitution(rigidBodyPtr);
-        if (ImGui::SliderFloat("##restitution", &value, 0.0f, 1.0f)) {
+        if (ImGui::SliderFloat("##restitution", &value, 0.0f, 1.0f, buffer)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
             nanoemMutableModelRigidBodySetRestitution(scoped, value);
         }

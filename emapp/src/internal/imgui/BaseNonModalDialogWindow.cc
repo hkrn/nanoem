@@ -14,24 +14,26 @@ namespace internal {
 namespace imgui {
 
 ImVec2
-BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height) NANOEM_DECL_NOEXCEPT
+BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height, nanoem_f32_t scaleFactort) NANOEM_DECL_NOEXCEPT
 {
     const ImGuiStyle &style = ImGui::GetStyle();
     const nanoem_f32_t avail = ImGui::GetContentRegionAvail().x - (style.IndentSpacing + style.FramePadding.x);
     ImVec2 size;
     if (width > avail) {
-        size = height > avail ? ImVec2(avail, avail) : ImVec2(avail, height * 1.0f);
+        size = height > avail ? ImVec2(avail * scaleFactort, avail * scaleFactort)
+                              : ImVec2(avail * scaleFactort, height * scaleFactort);
     }
     else {
-        size = ImVec2(width * 1.0f, height * 1.0f);
+        size = ImVec2(width * scaleFactort, height * scaleFactort);
     }
     return size;
 }
 
 ImVec2
-BaseNonModalDialogWindow::calcExpandedImageSize(const sg_image_desc &desc) NANOEM_DECL_NOEXCEPT
+BaseNonModalDialogWindow::calcExpandedImageSize(
+    const sg_image_desc &desc, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT
 {
-    return calcExpandedImageSize(desc.width, desc.height);
+    return calcExpandedImageSize(desc.width, desc.height, scaleFactor);
 }
 
 void

@@ -20,8 +20,8 @@ struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
         kResponseTypeOK,
         kResponseTypeCancel,
     };
-    static ImVec2 calcExpandedImageSize(int width, int height) NANOEM_DECL_NOEXCEPT;
-    static ImVec2 calcExpandedImageSize(const sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
+    static ImVec2 calcExpandedImageSize(int width, int height, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT;
+    static ImVec2 calcExpandedImageSize(const sg_image_desc &desc, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT;
     static void detectUpDown(bool &up, bool &down) NANOEM_DECL_NOEXCEPT;
     static void selectIndex(
         bool up, bool down, const nanoem_rsize_t numObjects, nanoem_rsize_t &offset) NANOEM_DECL_NOEXCEPT;
@@ -32,7 +32,8 @@ struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
     ~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT;
 
     bool open(const char *title, const char *id, bool *visible, const ImVec2 size, ImGuiWindowFlags flags);
-    bool open(const char *title, const char *id, bool *visible, nanoem_f32_t height = 0, ImGuiWindowFlags flags = 0);
+    bool open(const char *title, const char *id, bool *visible, nanoem_f32_t height = 0,
+        ImGuiWindowFlags flags = ImGuiWindowFlags_None);
     void close();
     ResponseType layoutCommonButtons(bool *visible);
     const char *tr(const char *text) const NANOEM_DECL_NOEXCEPT;

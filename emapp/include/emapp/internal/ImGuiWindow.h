@@ -111,6 +111,7 @@ public:
     static const nanoem_u8_t kFAFolderClose[];
     static const nanoem_u8_t kFACircle[];
     static const nanoem_u8_t kFALink[];
+    static const nanoem_u8_t kFAExpand[];
 
     struct ILazyExecutionCommand {
         virtual ~ILazyExecutionCommand() NANOEM_DECL_NOEXCEPT
@@ -149,7 +150,8 @@ public:
     void openCameraKeyframeBezierInterpolationCurveGraphDialog(Project *project);
     void openModelOutsideParentDialog(Project *project);
     void openAccessoryOutsideParentDialog(Project *project);
-    void openSelfShadowConfigurationDialog(Project *project);
+    void openSelfShadowConfigurationDialog();
+    void openUVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel);
 
     void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) NANOEM_DECL_OVERRIDE;
     void reset() NANOEM_DECL_OVERRIDE;

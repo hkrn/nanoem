@@ -34,6 +34,22 @@ struct ModelEditCommandDialog : BaseNonModalDialogWindow {
     Model *m_activeModel;
 };
 
+struct UVEditDialog : BaseNonModalDialogWindow {
+    static const char *const kIdentifier;
+    static void drawDiffuseImage(const IImageView *image, const nanoem_model_material_t *activeMaterialPtr,
+        Model *activeModel, nanoem_f32_t scaleFactor, bool displayUVMeshEnabled);
+    static void drawSphereMapImage(const IImageView *image, const nanoem_model_material_t *activeMaterialPtr,
+        Model *activeModel, nanoem_f32_t scaleFactor, bool displayUVMeshEnabled);
+
+    UVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel, BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project);
+
+    Model *m_activeModel;
+    const nanoem_model_material_t *m_activeMaterialPtr;
+    nanoem_f32_t m_scaleFactor;
+};
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

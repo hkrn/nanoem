@@ -218,6 +218,7 @@ const nanoem_u8_t ImGuiWindow::kFAFolderOpen[] = { 0xef, 0x84, 0xba, 0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderClose[] = { 0xef, 0x84, 0xb8, 0 };
 const nanoem_u8_t ImGuiWindow::kFACircle[] = { 0xef, 0x84, 0x91, 0 };
 const nanoem_u8_t ImGuiWindow::kFALink[] = { 0xef, 0x83, 0x81, 0 };
+const nanoem_u8_t ImGuiWindow::kFAExpand[] = { 0xef, 0x81, 0xa5, 0 };
 
 bool
 ImGuiWindow::handleButton(const char *label)
@@ -526,12 +527,20 @@ ImGuiWindow::openAccessoryOutsideParentDialog(Project *project)
 }
 
 void
-ImGuiWindow::openSelfShadowConfigurationDialog(Project *project)
+ImGuiWindow::openSelfShadowConfigurationDialog()
 {
-    BX_UNUSED_1(project);
     if (m_dialogWindows.find(SelfShadowConfigurationDialog::kIdentifier) == m_dialogWindows.end()) {
         INoModalDialogWindow *dialog = nanoem_new(SelfShadowConfigurationDialog(m_applicationPtr, this));
         m_dialogWindows.insert(tinystl::make_pair(SelfShadowConfigurationDialog::kIdentifier, dialog));
+    }
+}
+
+void
+ImGuiWindow::openUVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel)
+{
+    if (m_dialogWindows.find(UVEditDialog::kIdentifier) == m_dialogWindows.end()) {
+        INoModalDialogWindow *dialog = nanoem_new(UVEditDialog(materialPtr, activeModel, m_applicationPtr));
+        m_dialogWindows.insert(tinystl::make_pair(UVEditDialog::kIdentifier, dialog));
     }
 }
 
@@ -3310,7 +3319,7 @@ ImGuiWindow::drawLightPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PopItemWidth();
     if (handleTranslatedButton("nanoem.gui.panel.light.self-shadow", -1, buttonEnabled)) {
-        openSelfShadowConfigurationDialog(project);
+        openSelfShadowConfigurationDialog();
     }
     if (handleTranslatedButton("nanoem.gui.panel.light.register", -1, buttonEnabled)) {
         CommandRegistrator registrator(project);

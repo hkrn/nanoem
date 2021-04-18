@@ -90,7 +90,8 @@ EffectParameterDialog::draw(Project *project)
     else {
         StringUtils::copyString(title, tr("nanoem.gui.window.project.effect.title"), sizeof(title));
     }
-    if (open(title, kIdentifier, &visible, ImVec2(width, ImGui::GetFrameHeightWithSpacing() * 16), 0)) {
+    if (open(title, kIdentifier, &visible, ImVec2(width, ImGui::GetFrameHeightWithSpacing() * 16),
+            ImGuiWindowFlags_None)) {
         ImGui::BeginTabBar("tabbar");
         if (ImGui::BeginTabItem(tr("nanoem.gui.window.project.effect.tab.offscreen"))) {
             layoutAllOffscreenRenderTargets(project);
@@ -247,7 +248,7 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     }
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
     if (ImGui::TreeNode(textureID, "Color Texture")) {
-        ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription), ImVec2(0, 0), ImVec2(1, 1),
+        ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
         ImGui::TreePop();
     }
