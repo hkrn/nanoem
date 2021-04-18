@@ -361,21 +361,21 @@ struct CreateSoftBodyCommand : ModelObjectCommand {
 };
 
 struct DeleteSoftBodyCommand : ModelObjectCommand {
-    DeleteSoftBodyCommand(nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex);
+    DeleteSoftBodyCommand(nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex);
     void execute(Project *project);
     nanoem_model_soft_body_t *const *m_softBodies;
     nanoem_rsize_t &m_softBodyIndex;
 };
 
 struct MoveSoftBodyUpCommand : ModelObjectCommand {
-    MoveSoftBodyUpCommand(nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex);
+    MoveSoftBodyUpCommand(nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex);
     void execute(Project *project);
     nanoem_model_soft_body_t *const *m_softBodies;
     nanoem_rsize_t &m_softBodyIndex;
 };
 
 struct MoveSoftBodyDownCommand : ModelObjectCommand {
-    MoveSoftBodyDownCommand(nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex);
+    MoveSoftBodyDownCommand(nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex);
     void execute(Project *project);
     nanoem_model_soft_body_t *const *m_softBodies;
     nanoem_rsize_t &m_softBodyIndex;

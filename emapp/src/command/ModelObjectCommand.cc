@@ -1077,8 +1077,8 @@ CreateSoftBodyCommand::execute(Project *project)
 }
 
 DeleteSoftBodyCommand::DeleteSoftBodyCommand(
-    nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex)
-    : m_softBodies(soft_bodys)
+    nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+    : m_softBodies(softBodies)
     , m_softBodyIndex(soft_bodyIndex)
 {
 }
@@ -1097,8 +1097,8 @@ DeleteSoftBodyCommand::execute(Project *project)
 }
 
 MoveSoftBodyUpCommand::MoveSoftBodyUpCommand(
-    nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex)
-    : m_softBodies(soft_bodys)
+    nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+    : m_softBodies(softBodies)
     , m_softBodyIndex(soft_bodyIndex)
 {
 }
@@ -1116,8 +1116,8 @@ MoveSoftBodyUpCommand::execute(Project *project)
 }
 
 MoveSoftBodyDownCommand::MoveSoftBodyDownCommand(
-    nanoem_model_soft_body_t *const *soft_bodys, nanoem_rsize_t &soft_bodyIndex)
-    : m_softBodies(soft_bodys)
+    nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+    : m_softBodies(softBodies)
     , m_softBodyIndex(soft_bodyIndex)
 {
 }
