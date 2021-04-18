@@ -943,56 +943,157 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         ImGui::OpenPopup("material.texture.menu");
     }
     if (ImGui::BeginPopupContextItem("material.texture.menu")) {
-        StringList extensions;
-        extensions.push_back("png");
-        extensions.push_back("jpg");
-        extensions.push_back("bmp");
-        extensions.push_back("tga");
         IEventPublisher *eventPublisher = project->eventPublisher();
         IFileManager *fileManager = m_applicationPtr->fileManager();
+        struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
+            struct BaseUserData {
+                BaseUserData(nanoem_model_material_t *material, Model *model)
+                    : m_model(model)
+                    , m_material(material)
+                {
+                }
+                virtual void upload(const URI &fileURI, BaseUserData *userData,
+                    nanoem_mutable_model_material_t *material,
+                    nanoem_mutable_model_texture_t *texture, Error &error) = 0;
+                Model *m_model;
+                nanoem_model_material_t *m_material;
+            };
+            static void
+            accept(const URI &fileURI, Project *project, void *opaque)
+            {
+                BaseUserData *userData = static_cast<BaseUserData *>(opaque);
+                Model *model = userData->m_model;
+                const String filePath(FileUtils::relativePath(fileURI.absolutePath(), model->fileURI().absolutePath()));
+                nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
+                StringUtils::UnicodeStringScope scope(factory);
+                if (StringUtils::tryGetString(factory, filePath, scope)) {
+                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                    nanoem_mutable_model_material_t *material =
+                        nanoemMutableModelMaterialCreateAsReference(userData->m_material, &status);
+                    nanoem_mutable_model_texture_t *texture = nanoemMutableModelTextureCreate(model->data(), &status);
+                    nanoemMutableModelTextureSetPath(texture, scope.value(), &status);
+                    Error error;
+                    userData->upload(fileURI, userData, material, texture, error);
+                    nanoemMutableModelTextureDestroy(texture);
+                    nanoemMutableModelMaterialDestroy(material);
+                }
+            }
+            static void
+            destroy(void *opaque)
+            {
+                BaseUserData *userData = static_cast<BaseUserData *>(opaque);
+                nanoem_delete(userData);
+            }
+            BaseSetTextureCallback()
+            {
+                m_accept = accept;
+                m_destory = destroy;
+                m_cancel = nullptr;
+            }
+            void
+            open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model)
+            {
+                StringList extensions;
+                extensions.push_back("png");
+                extensions.push_back("jpg");
+                extensions.push_back("bmp");
+                extensions.push_back("tga");
+                m_opaque = createUserData(material, model);
+                fileManager->setTransientQueryFileDialogCallback(*this);
+                eventPublisher->publishQueryOpenSingleFileDialogEvent(
+                    IFileManager::kDialogTypeUserCallback, extensions);
+            }
+            virtual BaseUserData *createUserData(nanoem_model_material_t *material, Model *model) = 0;
+        };
         if (ImGui::MenuItem("Set Diffuse Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
-            struct SetDiffuseTextureCallback : IFileManager::QueryFileDialogCallbacks {
-                struct UserData {
-                    model::Material *m_material;
+            struct SetDiffuseTextureCallback : BaseSetTextureCallback {
+                struct PrivateUserData : BaseUserData {
+                    PrivateUserData(nanoem_model_material_t *material, Model *model)
+                        : BaseUserData(material, model)
+                    {
+                    }
+                    void
+                    upload(const URI &fileURI, BaseUserData *userData, nanoem_mutable_model_material_t *material,
+                        nanoem_mutable_model_texture_t *texture, Error &error) NANOEM_DECL_OVERRIDE
+                    {
+                        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                        nanoemMutableModelMaterialSetDiffuseTextureObject(material, texture, &status);
+                        userData->m_model->uploadDiffuseImage(userData->m_material, fileURI, error);
+                    }
                 };
-                static void
-                accept(const URI &fileURI, Project *project, void *opaque)
+                BaseUserData *
+                createUserData(nanoem_model_material_t *material, Model *model) NANOEM_DECL_OVERRIDE
                 {
-                    UserData *userData = static_cast<UserData *>(opaque);
-                    // userData->m_material->setDiffuseImage(nullptr);
-                }
-                static void
-                destroy(void *opaque)
-                {
-                    UserData *userData = static_cast<UserData *>(opaque);
-                    nanoem_delete(userData);
-                }
-                SetDiffuseTextureCallback()
-                {
-                    m_opaque = nanoem_new(UserData);
-                    m_accept = accept;
-                    m_destory = destroy;
-                    m_cancel = nullptr;
+                    return nanoem_new(PrivateUserData(material, model));
                 }
             };
             SetDiffuseTextureCallback callbacks;
-            fileManager->setTransientQueryFileDialogCallback(callbacks);
-            eventPublisher->publishQueryOpenSingleFileDialogEvent(IFileManager::kDialogTypeUserCallback, extensions);
+            callbacks.open(fileManager, eventPublisher, materialPtr, m_activeModel);
         }
         if (ImGui::MenuItem("Set SphereMap Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
-            
+            struct SetSphereMapTextureCallback : BaseSetTextureCallback {
+                struct PrivateUserData : BaseUserData {
+                    PrivateUserData(nanoem_model_material_t *material, Model *model)
+                        : BaseUserData(material, model)
+                    {
+                    }
+                    void
+                    upload(const URI &fileURI, BaseUserData *userData, nanoem_mutable_model_material_t *material,
+                        nanoem_mutable_model_texture_t *texture, Error &error) NANOEM_DECL_OVERRIDE
+                    {
+                        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                        nanoemMutableModelMaterialSetSphereMapTextureType(
+                            material, NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MULTIPLY);
+                        nanoemMutableModelMaterialSetSphereMapTextureObject(material, texture, &status);
+                        userData->m_model->uploadSphereMapImage(userData->m_material, fileURI, error);
+                    }
+                };
+                BaseUserData *
+                createUserData(nanoem_model_material_t *material, Model *model) NANOEM_DECL_OVERRIDE
+                {
+                    return nanoem_new(PrivateUserData(material, model));
+                }
+            };
+            SetSphereMapTextureCallback callbacks;
+            callbacks.open(fileManager, eventPublisher, materialPtr, m_activeModel);
         }
         if (ImGui::MenuItem("Set Toon Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
-            
+            struct SetToonTextureCallback : BaseSetTextureCallback {
+                struct PrivateUserData : BaseUserData {
+                    PrivateUserData(nanoem_model_material_t *material, Model *model)
+                        : BaseUserData(material, model)
+                    {
+                    }
+                    void
+                    upload(const URI &fileURI, BaseUserData *userData, nanoem_mutable_model_material_t *material,
+                        nanoem_mutable_model_texture_t *texture, Error &error) NANOEM_DECL_OVERRIDE
+                    {
+                        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                        nanoemMutableModelMaterialSetToonShared(material, false);
+                        nanoemMutableModelMaterialSetToonTextureObject(material, texture, &status);
+                        userData->m_model->uploadToonImage(userData->m_material, fileURI, error);
+                    }
+                };
+                BaseUserData *
+                createUserData(nanoem_model_material_t *material, Model *model) NANOEM_DECL_OVERRIDE
+                {
+                    return nanoem_new(PrivateUserData(material, model));
+                }
+            };
+            SetToonTextureCallback callbacks;
+            callbacks.open(fileManager, eventPublisher, materialPtr, m_activeModel);
         }
         if (diffuseImage || sphereMapImage || hasOwnToonTexture) {
             ImGui::Separator();
         }
         if (diffuseImage && ImGui::MenuItem("Clear Diffuse Texture")) {
+            // TODO: implement
         }
         if (sphereMapImage && ImGui::MenuItem("Clear SphereMap Texture")) {
+            // TODO: implement
         }
         if (hasOwnToonTexture && ImGui::MenuItem("Clear Toon Texture")) {
+            // TODO: implement
         }
         ImGui::EndPopup();
     }

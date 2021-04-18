@@ -924,52 +924,17 @@ Model::saveArchive(IFileWriter *writer, Error &error)
 nanoem_u32_t
 Model::createAllImages()
 {
-    const bool flip = !sg::query_features().origin_top_left;
-    Project::ISharedResourceRepository *repository = m_project->sharedResourceRepository();
     nanoem_rsize_t numMaterials;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
     nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+    sg_wrap mode;
+    nanoem_u32_t flags;
     clearAllLoadingImageItems();
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
-        model::Material *material = model::Material::cast(materialPtr);
-        if (const nanoem_model_texture_t *diffuseTexture = nanoemModelMaterialGetDiffuseTextureObject(materialPtr)) {
-            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(diffuseTexture);
-            nanoem_rsize_t length;
-            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            nanoem_u8_t utf8Path[16];
-            nanoemUnicodeStringFactoryToUtf8OnStackEXT(factory, path, &length, utf8Path, sizeof(utf8Path), &status);
-            if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(utf8Path))) {
-                m_screenImage = nanoem_new(Image);
-                m_screenImage->setFilename(Project::kViewportSecondaryName);
-                m_screenImage->setHandle(m_project->viewportSecondaryImage());
-                material->setDiffuseImage(m_screenImage);
-            }
-            else {
-                const nanoem_u32_t flags = ImageLoader::kFlagsEnableMipmap | ImageLoader::kFlagsFallbackWhiteOpaque;
-                material->setDiffuseImage(createImage(path, SG_WRAP_REPEAT, flags));
-            }
-        }
-        if (const nanoem_model_texture_t *sphereTexture = nanoemModelMaterialGetSphereMapTextureObject(materialPtr)) {
-            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(sphereTexture);
-            uint32_t flags = nanoemModelMaterialGetSphereMapTextureType(materialPtr) ==
-                    NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD
-                ? ImageLoader::kFlagsFallbackBlackOpaque
-                : ImageLoader::kFlagsFallbackWhiteOpaque;
-            if (flip) {
-                flags |= ImageLoader::kFlagsEnableFlipY;
-            }
-            material->setSphereMapImage(createImage(path, SG_WRAP_CLAMP_TO_EDGE, flags));
-        }
-        if (nanoemModelMaterialIsToonShared(materialPtr)) {
-            const int index = nanoemModelMaterialGetToonTextureIndex(materialPtr);
-            material->setToonImage(repository->toonImage(index));
-            material->setToonColor(repository->toonColor(index) / Vector4(0xff));
-        }
-        else if (const nanoem_model_texture_t *toonTexture = nanoemModelMaterialGetToonTextureObject(materialPtr)) {
-            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(toonTexture);
-            material->setToonImage(createImage(path, SG_WRAP_CLAMP_TO_EDGE, ImageLoader::kFlagsFallbackWhiteOpaque));
-        }
+        updateDiffuseImage(materialPtr, mode, flags);
+        updateSphereMapImage(materialPtr, mode, flags);
+        updateToonImage(materialPtr, mode, flags);
     }
     return Inline::saturateInt32U(m_loadingImageItems.size());
 }
@@ -1234,6 +1199,33 @@ Model::loadAllImages(Progress &progress, Error &error)
     }
     clearAllLoadingImageItems();
     SG_POP_GROUP();
+}
+
+void
+Model::uploadDiffuseImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error)
+{
+    sg_wrap mode;
+    nanoem_u32_t flags;
+    updateDiffuseImage(materialPtr, mode, flags);
+    m_project->sharedImageLoader()->load(fileURI, this, mode, flags, error);
+}
+
+void
+Model::uploadSphereMapImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error)
+{
+    sg_wrap mode;
+    nanoem_u32_t flags;
+    updateSphereMapImage(materialPtr, mode, flags);
+    m_project->sharedImageLoader()->load(fileURI, this, mode, flags, error);
+}
+
+void
+Model::uploadToonImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error)
+{
+    sg_wrap mode;
+    nanoem_u32_t flags;
+    updateToonImage(materialPtr, mode, flags);
+    m_project->sharedImageLoader()->load(fileURI, this, mode, flags, error);
 }
 
 void
@@ -2529,7 +2521,7 @@ Model::createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32
                 imagePtr = it->second;
             }
             else {
-                const URI &imageURI = Project::resolveArchiveURI(resolvedFileURI(), filename);
+                const URI imageURI(Project::resolveArchiveURI(resolvedFileURI(), filename));
                 Image *image = nanoem_new(Image);
                 image->setFilename(filename);
                 m_imageHandles.insert(tinystl::make_pair(filename, image));
@@ -2584,6 +2576,71 @@ Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bo
     }
     SG_POP_GROUP();
     return image;
+}
+
+void
+Model::updateDiffuseImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags)
+{
+    mode = SG_WRAP_REPEAT;
+    flags = 0;
+    if (const nanoem_model_texture_t *diffuseTexture = nanoemModelMaterialGetDiffuseTextureObject(materialPtr)) {
+        const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(diffuseTexture);
+        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+        nanoem_rsize_t length;
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        nanoem_u8_t utf8Path[16];
+        nanoemUnicodeStringFactoryToUtf8OnStackEXT(factory, path, &length, utf8Path, sizeof(utf8Path), &status);
+        model::Material *material = model::Material::cast(materialPtr);
+        if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(utf8Path))) {
+            m_screenImage = nanoem_new(Image);
+            m_screenImage->setFilename(Project::kViewportSecondaryName);
+            m_screenImage->setHandle(m_project->viewportSecondaryImage());
+            material->setDiffuseImage(m_screenImage);
+        }
+        else {
+            flags = ImageLoader::kFlagsEnableMipmap | ImageLoader::kFlagsFallbackWhiteOpaque;
+            material->setDiffuseImage(createImage(path, SG_WRAP_REPEAT, flags));
+        }
+    }
+}
+
+void
+Model::updateSphereMapImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags)
+{
+    mode = SG_WRAP_CLAMP_TO_EDGE;
+    flags = 0;
+    if (const nanoem_model_texture_t *sphereTexture = nanoemModelMaterialGetSphereMapTextureObject(materialPtr)) {
+        const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(sphereTexture);
+        flags =
+            nanoemModelMaterialGetSphereMapTextureType(materialPtr) == NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD
+            ? ImageLoader::kFlagsFallbackBlackOpaque
+            : ImageLoader::kFlagsFallbackWhiteOpaque;
+        if (!sg::query_features().origin_top_left) {
+            flags |= ImageLoader::kFlagsEnableFlipY;
+        }
+        model::Material *material = model::Material::cast(materialPtr);
+        material->setSphereMapImage(createImage(path, mode, flags));
+    }
+}
+
+void
+Model::updateToonImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags)
+{
+    mode = SG_WRAP_CLAMP_TO_EDGE;
+    flags = 0;
+    if (model::Material *material = model::Material::cast(materialPtr)) {
+        if (nanoemModelMaterialIsToonShared(materialPtr)) {
+            Project::ISharedResourceRepository *repository = m_project->sharedResourceRepository();
+            const int index = nanoemModelMaterialGetToonTextureIndex(materialPtr);
+            material->setToonImage(repository->toonImage(index));
+            material->setToonColor(repository->toonColor(index) / Vector4(0xff));
+        }
+        else if (const nanoem_model_texture_t *toonTexture = nanoemModelMaterialGetToonTextureObject(materialPtr)) {
+            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(toonTexture);
+            flags = ImageLoader::kFlagsFallbackWhiteOpaque;
+            material->setToonImage(createImage(path, mode, flags));
+        }
+    }
 }
 
 internal::LineDrawer *
@@ -3391,7 +3448,7 @@ Model::saveAllAttachments(const String &prefix, const FileEntityMap &allAttachme
     const nanoem_u8_t *ptr;
     bool succeeded = true;
     if (Project::isArchiveURI(fileURI())) {
-        const URI &baseURI = resolvedFileURI();
+        const URI baseURI(resolvedFileURI());
         FileReaderScope scope(m_project->translator());
         if (scope.open(baseURI, error)) {
             Archiver sourceArchive(scope.reader());

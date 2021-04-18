@@ -174,6 +174,9 @@ public:
     bool uploadArchive(ISeekableReader *reader, Progress &progress, Error &error);
     nanoem_u32_t createAllImages();
     void loadAllImages(Progress &progress, Error &error);
+    void uploadDiffuseImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error);
+    void uploadSphereMapImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error);
+    void uploadToonImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error);
     void readLoadCommandMessage(const Nanoem__Application__Command *messagePtr);
     void writeLoadCommandMessage(Error &error);
     void writeDeleteCommandMessage(Error &error);
@@ -452,6 +455,9 @@ private:
     IEffect *internalEffect(model::Material *material);
     const Image *createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32_t flags);
     Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
+    void updateDiffuseImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
+    void updateSphereMapImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
+    void updateToonImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
     internal::LineDrawer *lineDrawer();
     void splitBonesPerMaterial(model::Material::BoneIndexHashMap &boneIndexHash) const;
     void bindConstraint(nanoem_model_constraint_t *constraintPtr);
