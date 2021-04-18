@@ -941,9 +941,8 @@ Model::createAllImages()
             nanoemUnicodeStringFactoryToUtf8OnStackEXT(factory, path, &length, utf8Path, sizeof(utf8Path), &status);
             if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(utf8Path))) {
                 m_screenImage = nanoem_new(Image);
-                m_screenImage->m_filename = Project::kViewportSecondaryName;
-                m_screenImage->m_handle = m_project->viewportSecondaryImage();
-                Inline::clearZeroMemory(m_screenImage->m_description);
+                m_screenImage->setFilename(Project::kViewportSecondaryName);
+                m_screenImage->setHandle(m_project->viewportSecondaryImage());
                 material->setDiffuseImage(m_screenImage);
             }
             else {
@@ -2432,30 +2431,28 @@ Model::removeOutsideParent(const nanoem_model_bone_t *key)
     }
 }
 
-sg_image *
+IImageView *
 Model::uploadImage(const String &filename, const sg_image_desc &desc)
 {
     SG_PUSH_GROUPF("Model::uploadImage(name=%s, width=%d, height=%d)", filename.c_str(), desc.width, desc.height);
-    sg_image *handlePtr = nullptr;
+    IImageView *imageView = nullptr;
     ImageMap::iterator it = m_imageHandles.find(filename);
     if (it != m_imageHandles.end()) {
         Image *image = it->second;
-        sg_image &handleRef = image->m_handle;
-        sg::destroy_image(handleRef);
         if (Inline::isDebugLabelEnabled()) {
             char label[Inline::kMarkerStringLength];
             StringUtils::format(label, sizeof(label), "Models/%s/%s", canonicalNameConstString(), filename.c_str());
-            sg_image_desc newDesc(desc);
-            newDesc.label = label;
-            handleRef = sg::make_image(&newDesc);
-            handlePtr = &handleRef;
-            SG_LABEL_IMAGE(handleRef, label);
+            sg_image_desc labeledDesc(desc);
+            labeledDesc.label = label;
+            ImageLoader::copyImageDescrption(labeledDesc, image);
+            image->create();
+            SG_LABEL_IMAGE(image->handle(), label);
         }
         else {
-            handleRef = sg::make_image(&desc);
-            handlePtr = &handleRef;
+            ImageLoader::copyImageDescrption(desc, image);
+            image->create();
         }
-        ImageLoader::copyImageDescrption(desc, image);
+        imageView = image;
         nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
         StringUtils::UnicodeStringScope scope(factory);
         StringUtils::tryGetString(factory, filename, scope);
@@ -2477,10 +2474,10 @@ Model::uploadImage(const String &filename, const sg_image_desc &desc)
                 }
             }
         }
-        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), handleRef.id);
+        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
     }
     SG_POP_GROUP();
-    return handlePtr;
+    return imageView;
 }
 
 int
@@ -2577,9 +2574,7 @@ Model::createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32
             else {
                 const URI &imageURI = Project::resolveArchiveURI(resolvedFileURI(), filename);
                 Image *image = nanoem_new(Image);
-                image->m_filename = filename;
-                image->m_handle = { SG_INVALID_ID };
-                Inline::clearZeroMemory(image->m_description);
+                image->setFilename(filename);
                 m_imageHandles.insert(tinystl::make_pair(filename, image));
                 m_imageURIs.insert(tinystl::make_pair(filename, imageURI));
                 m_loadingImageItems.push_back(nanoem_new(LoadingImageItem(imageURI, filename, wrap, flags)));
@@ -2745,9 +2740,10 @@ Model::internalClear()
         }
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
-        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", it->second->m_handle.id, it->first.c_str());
-        sg::destroy_image(it->second->m_handle);
-        nanoem_delete(it->second);
+        Image *image = it->second;
+        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", image->handle().id, it->first.c_str());
+        image->destroy();
+        nanoem_delete(image);
     }
     SG_INSERT_MARKERF("Model::internalClear(vertex0=%d, vertex1=%d, index=%d)", m_vertexBuffers[0].id,
         m_vertexBuffers[1].id, m_indexBuffer.id);
@@ -3524,7 +3520,7 @@ Model::drawColor(bool scriptExternalColor)
     const String &passType = isShadowMapEnabled() && m_project->isShadowMapEnabled() ? Effect::kPassTypeObjectSelfShadow
                                                                                      : Effect::kPassTypeObject;
     if (m_screenImage) {
-        m_screenImage->m_handle = m_project->viewportSecondaryImage();
+        m_screenImage->setHandle(m_project->viewportSecondaryImage());
     }
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
@@ -3738,7 +3734,7 @@ Model::drawAllVertexPoints()
         vertexUnit.m_color =
             m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, 0xff) : Vector4U8(0, 0, 0xff, 0xff);
     }
-    const nanoem_rsize_t size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
+    const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
         sg::update_buffer(m_drawAllPoints.m_buffer, vertexUnits, size);
     }

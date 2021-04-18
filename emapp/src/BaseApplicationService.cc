@@ -5403,8 +5403,6 @@ BaseApplicationService::SharedResourceRepository::SharedResourceRepository()
     }
     for (size_t i = 0; i < BX_COUNTOF(m_sharedToonImages); i++) {
         Image *imageRef = m_sharedToonImages[i] = nanoem_new(Image);
-        Inline::clearZeroMemory(imageRef->m_description);
-        imageRef->m_handle = { SG_INVALID_ID };
     }
 }
 
@@ -5422,7 +5420,8 @@ void
 BaseApplicationService::SharedResourceRepository::destroy()
 {
     for (size_t i = 0; i < BX_COUNTOF(m_sharedToonImages); i++) {
-        sg::destroy_image(m_sharedToonImages[i]->m_handle);
+        Image *sharedToonImage = m_sharedToonImages[i];
+        sharedToonImage->destroy();
     }
     if (m_modelProgramBundle) {
         m_modelProgramBundle->destroy();

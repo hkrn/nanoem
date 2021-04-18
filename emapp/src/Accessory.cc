@@ -489,9 +489,10 @@ Accessory::destroy()
         }
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
-        SG_INSERT_MARKERF("Accessory::destroy(image=%d, name=%s)", it->second->m_handle.id, it->first.c_str());
-        sg::destroy_image(it->second->m_handle);
-        nanoem_delete(it->second);
+        Image *image = it->second;
+        SG_INSERT_MARKERF("Accessory::destroy(image=%d, name=%s)", image->handle().id, it->first.c_str());
+        image->destroy();
+        nanoem_delete(image);
     }
     SG_INSERT_MARKERF("Accessory::destroy(vertex=%d, index=%d)", m_vertexBuffer.id, m_indexBuffer.id);
     sg::destroy_buffer(m_vertexBuffer);
@@ -570,35 +571,34 @@ Accessory::synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *ke
     }
 }
 
-sg_image *
+IImageView *
 Accessory::uploadImage(const String &filename, const sg_image_desc &desc)
 {
     SG_PUSH_GROUPF(
         "Accessory::uploadImage(filename=%s, width=%d, height=%d)", filename.c_str(), desc.width, desc.height);
-    sg_image *handlePtr = nullptr;
+    IImageView *imageView = nullptr;
     ImageMap::iterator it = m_imageHandles.find(filename);
     if (it != m_imageHandles.end()) {
         char label[Inline::kMarkerStringLength];
         Image *image = it->second;
-        sg_image &handleRef = image->m_handle;
-        sg::destroy_image(handleRef);
-        handlePtr = &handleRef;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(
                 label, sizeof(label), "Accessories/%s/%s", canonicalNameConstString(), filename.c_str());
             sg_image_desc labeledDesc(desc);
             labeledDesc.label = label;
-            handleRef = sg::make_image(&labeledDesc);
             ImageLoader::copyImageDescrption(labeledDesc, image);
+            image->create();
+            SG_LABEL_IMAGE(image->handle(), label);
         }
         else {
-            handleRef = sg::make_image(&desc);
             ImageLoader::copyImageDescrption(desc, image);
+            image->create();
         }
-        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), handleRef.id);
+        imageView = image;
+        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
     }
     SG_POP_GROUP();
-    return handlePtr;
+    return imageView;
 }
 
 const Accessory::Material *
@@ -1180,9 +1180,7 @@ Accessory::createImage(const nanodxm_uint8_t *path)
     else {
         const URI &imageURI = Project::resolveArchiveURI(resolvedFileURI(), filename);
         Image *image = nanoem_new(Image);
-        image->m_handle = { SG_INVALID_ID };
-        image->m_filename = filename;
-        Inline::clearZeroMemory(image->m_description);
+        image->setFilename(filename);
         m_imageHandles.insert(tinystl::make_pair(filename, image));
         m_imageURIMap.insert(tinystl::make_pair(filename, imageURI));
         m_loadingImageItems.push_back(nanoem_new(LoadingImageItem(imageURI, filename)));
@@ -1221,9 +1219,8 @@ Accessory::createAllImages()
             }
             if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(path))) {
                 m_screenImage = nanoem_new(Image);
-                m_screenImage->m_filename = Project::kViewportSecondaryName;
-                m_screenImage->m_handle = m_project->viewportSecondaryImage();
-                Inline::clearZeroMemory(m_screenImage->m_description);
+                m_screenImage->setFilename(Project::kViewportSecondaryName);
+                m_screenImage->setHandle(m_project->viewportSecondaryImage());
                 material->setDiffuseImage(m_screenImage);
             }
             else {
@@ -1564,7 +1561,7 @@ Accessory::drawColor(bool scriptExternalColor)
     nanodxm_rsize_t numMaterials, indexOffset = 0;
     nanodxm_material_t *const *materials = nanodxmDocumentGetMaterials(m_opaque, &numMaterials);
     if (m_screenImage) {
-        m_screenImage->m_handle = m_project->viewportSecondaryImage();
+        m_screenImage->setHandle(m_project->viewportSecondaryImage());
     }
     sg_image diffuseTexture = { SG_INVALID_ID };
     for (nanodxm_rsize_t i = 0; i < numMaterials; i++) {

@@ -92,7 +92,7 @@ public:
     void destroy();
     void synchronizeMotion(const Motion *motion, nanoem_frame_index_t frameIndex);
     void synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *keyframe);
-    sg_image *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
+    IImageView *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
     const Material *findMaterial(const nanodxm_material_t *material) const NANOEM_DECL_NOEXCEPT;
     void addAttachment(const String &name, const URI &fullPath);
     void removeAttachment(const String &name);

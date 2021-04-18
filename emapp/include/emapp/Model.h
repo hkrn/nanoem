@@ -244,7 +244,7 @@ public:
     bool hasOutsideParent(const nanoem_model_bone_t *key) const NANOEM_DECL_NOEXCEPT;
     void setOutsideParent(const nanoem_model_bone_t *key, const StringPair &value);
     void removeOutsideParent(const nanoem_model_bone_t *key);
-    sg_image *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
+    IImageView *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
     bool isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     bool isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT;
     bool isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
