@@ -977,12 +977,16 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
 }
 
 void
-ModelParameterDialog::layoutMaterialDiffuseImage(
-    const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
+ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const String &filename,
+    const nanoem_model_material_t *activeMaterialPtr)
 {
     static const char id[] = "nanoem.gui.model.edit.material.texture.diffuse";
     char label[Inline::kLongNameStackBufferSize];
     StringUtils::format(label, sizeof(label), "%s (%s)##%s/%s", tr(id), filename.c_str(), id, filename.c_str());
+    bool imageNotFound = !image->isFileExist();
+    if (imageNotFound) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
+    }
     if (ImGui::CollapsingHeader(label)) {
         const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
         model::Material *material = model::Material::cast(activeMaterialPtr);
@@ -1024,15 +1028,21 @@ ModelParameterDialog::layoutMaterialDiffuseImage(
             drawList->PopClipRect();
         }
     }
+    if (imageNotFound) {
+        ImGui::PopStyleColor();
+    }
 }
 
-void
-ModelParameterDialog::layoutMaterialSphereMapImage(
-    const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
+void ModelParameterDialog::layoutMaterialSphereMapImage(const IImageView *image, const String &filename,
+        const nanoem_model_material_t *activeMaterialPtr)
 {
     static const char id[] = "nanoem.gui.model.edit.material.texture.sphere";
     char label[Inline::kLongNameStackBufferSize];
     StringUtils::format(label, sizeof(label), "%s (%s)##%s/%s", tr(id), filename.c_str(), id, filename.c_str());
+    bool imageNotFound = !image->isFileExist();
+    if (imageNotFound) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
+    }
     if (ImGui::CollapsingHeader(label)) {
         const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
         model::Material *material = model::Material::cast(activeMaterialPtr);
@@ -1081,6 +1091,9 @@ ModelParameterDialog::layoutMaterialSphereMapImage(
             drawList->PopClipRect();
         }
     }
+    if (imageNotFound) {
+        ImGui::PopStyleColor();
+    }
 }
 
 void
@@ -1089,10 +1102,17 @@ ModelParameterDialog::layoutMaterialToonImage(const IImageView *image, const Str
     static const char id[] = "nanoem.gui.model.edit.material.texture.toon";
     char label[Inline::kLongNameStackBufferSize];
     StringUtils::format(label, sizeof(label), "%s (%s)##%s/%s", tr(id), filename.c_str(), id, filename.c_str());
+    bool imageNotFound = !image->isFileExist();
+    if (imageNotFound) {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
+    }
     if (ImGui::CollapsingHeader(label)) {
         const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
         ImGui::Image(textureID, calcExpandedImageSize(image->description()), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
+    }
+    if (imageNotFound) {
+        ImGui::PopStyleColor();
     }
 }
 

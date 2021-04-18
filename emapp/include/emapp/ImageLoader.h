@@ -84,6 +84,7 @@ public:
     void setOriginData(const nanoem_u8_t *data, nanoem_rsize_t size);
     void setMipmapData(nanoem_rsize_t index, const nanoem_u8_t *data, nanoem_rsize_t size);
     void resizeMipmapData(nanoem_rsize_t value);
+    void setLabel(const String &value);
 
     sg_image handle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setHandle(sg_image value);
@@ -94,13 +95,17 @@ public:
     const char *filenameConstString() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     String filename() const NANOEM_DECL_OVERRIDE;
     void setFilename(const String &value);
+    bool isFileExist() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setFileExist(bool value);
 
 private:
     String m_filename;
+    String m_label;
     sg_image m_handle;
     sg_image_desc m_description;
     ByteArray m_originData;
     ByteArrayList m_mipmapData;
+    bool m_fileExist;
 };
 
 class ImageLoader NANOEM_DECL_SEALED : private NonCopyable {

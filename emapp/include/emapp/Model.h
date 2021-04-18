@@ -451,6 +451,7 @@ private:
     IEffect *activeEffect(model::Material *material);
     IEffect *internalEffect(model::Material *material);
     const Image *createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32_t flags);
+    Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
     internal::LineDrawer *lineDrawer();
     void splitBonesPerMaterial(model::Material::BoneIndexHashMap &boneIndexHash) const;
     void bindConstraint(nanoem_model_constraint_t *constraintPtr);

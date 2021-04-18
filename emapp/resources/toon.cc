@@ -49,11 +49,12 @@ loadSharedTexture(const nanoem_u8_t *data, size_t size, int index, Image *&image
         bytes.assign(dataPtr, dataPtr + dataSize);
         desc.num_mipmaps = 1;
         imageRef->setFilename(filename);
-        if (Inline::isDebugLabelEnabled()) {
-            desc.label = imageRef->filenameConstString();
-        }
         imageRef->setDescription(desc);
+        if (Inline::isDebugLabelEnabled()) {
+            imageRef->setLabel(imageRef->filenameConstString());
+        }
         imageRef->setOriginData(bytes.data(), dataSize);
+        imageRef->setFileExist(true);
         imageRef->create();
         SG_LABEL_IMAGE(imageRef->handle(), filename.c_str());
         bimg::imageFree(container);

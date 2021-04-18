@@ -380,7 +380,7 @@ Accessory::uploadArchive(const String &entryPoint, const Archiver &archiver, Pro
                     sg_image_desc desc;
                     const nanoem_u32_t pixel = item->m_usingWhiteFallback ? 0xffffffff : 0x0;
                     ImageLoader::fill1x1PixelImage(&pixel, desc);
-                    uploadImage(item->m_filename, desc);
+                    internalUploadImage(item->m_filename, desc, false);
                 }
             }
             SG_POP_GROUP();
@@ -574,31 +574,7 @@ Accessory::synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *ke
 IImageView *
 Accessory::uploadImage(const String &filename, const sg_image_desc &desc)
 {
-    SG_PUSH_GROUPF(
-        "Accessory::uploadImage(filename=%s, width=%d, height=%d)", filename.c_str(), desc.width, desc.height);
-    IImageView *imageView = nullptr;
-    ImageMap::iterator it = m_imageHandles.find(filename);
-    if (it != m_imageHandles.end()) {
-        char label[Inline::kMarkerStringLength];
-        Image *image = it->second;
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(
-                label, sizeof(label), "Accessories/%s/%s", canonicalNameConstString(), filename.c_str());
-            sg_image_desc labeledDesc(desc);
-            labeledDesc.label = label;
-            ImageLoader::copyImageDescrption(labeledDesc, image);
-            image->create();
-            SG_LABEL_IMAGE(image->handle(), label);
-        }
-        else {
-            ImageLoader::copyImageDescrption(desc, image);
-            image->create();
-        }
-        imageView = image;
-        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
-    }
-    SG_POP_GROUP();
-    return imageView;
+    return internalUploadImage(filename, desc, true);
 }
 
 const Accessory::Material *
@@ -1187,6 +1163,31 @@ Accessory::createImage(const nanodxm_uint8_t *path)
         imagePtr = image;
     }
     return imagePtr;
+}
+
+
+Image *
+Accessory::internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist)
+{
+    SG_PUSH_GROUPF("Accessory::internalUploadImage(filename=%s, width=%d, height=%d, fileExist=%d)", filename.c_str(),
+        desc.width, desc.height, fileExist);
+    Image *image = nullptr;
+    ImageMap::iterator it = m_imageHandles.find(filename);
+    if (it != m_imageHandles.end()) {
+        image = it->second;
+        ImageLoader::copyImageDescrption(desc, image);
+        if (Inline::isDebugLabelEnabled()) {
+            char label[Inline::kMarkerStringLength];
+            StringUtils::format(
+                label, sizeof(label), "Accessories/%s/%s", canonicalNameConstString(), filename.c_str());
+            image->setLabel(label);
+        }
+        image->setFileExist(fileExist);
+        image->create();
+        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
+    }
+    SG_POP_GROUP();
+    return image;
 }
 
 void

@@ -86,6 +86,7 @@ struct CRC {
 } /* namespace anonymous */
 
 Image::Image()
+    : m_fileExist(false)
 {
     Inline::clearZeroMemory(m_description);
     m_handle = { SG_INVALID_ID };
@@ -99,6 +100,9 @@ void
 Image::create()
 {
     m_handle = sg::make_image(&m_description);
+    if (!m_label.empty()) {
+        SG_LABEL_IMAGE(m_handle, m_label.c_str());
+    }
 }
 
 void
@@ -130,6 +134,13 @@ void
 Image::resizeMipmapData(nanoem_rsize_t value)
 {
     m_mipmapData.resize(value);
+}
+
+void
+Image::setLabel(const String &value)
+{
+    m_label = value;
+    m_description.label = m_label.c_str();
 }
 
 sg_image
@@ -184,6 +195,18 @@ void
 Image::setFilename(const String &value)
 {
     m_filename = value;
+}
+
+bool
+Image::isFileExist() const NANOEM_DECL_NOEXCEPT
+{
+    return m_fileExist;
+}
+
+void
+Image::setFileExist(bool value)
+{
+    m_fileExist = value;
 }
 
 sg_pixel_format

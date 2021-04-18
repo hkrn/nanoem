@@ -186,6 +186,7 @@ private:
 
     static void trianguleNormal(const nanodxm_vector3_t *vertices, const glm::uvec3 &index, Vector3List &normalSum);
     const Image *createImage(const nanodxm_uint8_t *path);
+    Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
     void clearAllLoadingImageItems();
     void createAllImages();
     void fillNormalBuffer(const Vector3List &normalSum, nanodxm_rsize_t numVertices, VertexUnit *ptr) const;

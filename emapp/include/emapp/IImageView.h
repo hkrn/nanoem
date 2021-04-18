@@ -23,6 +23,7 @@ public:
     virtual const ByteArray *mipmapData(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual const char *filenameConstString() const NANOEM_DECL_NOEXCEPT = 0;
     virtual String filename() const = 0;
+    virtual bool isFileExist() const NANOEM_DECL_NOEXCEPT = 0;
 };
 
 } /* namespace nanoem */

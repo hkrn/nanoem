@@ -5402,7 +5402,7 @@ BaseApplicationService::SharedResourceRepository::SharedResourceRepository()
         m_sharedToonColors[i] = Constants::kZeroV4;
     }
     for (size_t i = 0; i < BX_COUNTOF(m_sharedToonImages); i++) {
-        Image *imageRef = m_sharedToonImages[i] = nanoem_new(Image);
+        m_sharedToonImages[i] = nanoem_new(Image);
     }
 }
 
