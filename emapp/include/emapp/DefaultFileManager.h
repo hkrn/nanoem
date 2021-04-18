@@ -73,6 +73,7 @@ protected:
     bool loadFromFileWithModalDialog(
         const URI &fileURI, DialogType type, Project *project, Error &error) NANOEM_DECL_OVERRIDE;
     bool saveAsFile(const URI &fileURI, DialogType type, Project *project, Error &error) NANOEM_DECL_OVERRIDE;
+    bool hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData) NANOEM_DECL_OVERRIDE;
 
 private:

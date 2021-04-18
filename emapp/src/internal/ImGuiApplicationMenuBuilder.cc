@@ -185,9 +185,12 @@ struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
     {
         ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
         if (!availableExtensions.empty()) {
-            builder->m_fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
-            builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
-                IFileManager::kDialogTypeUserCallback, availableExtensions);
+            IFileManager *fileManager = builder->m_fileManager;
+            if (!fileManager->hasTransientQueryFileDialogCallback()) {
+                fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
+                builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
+                    IFileManager::kDialogTypeUserCallback, availableExtensions);
+            }
         }
         else {
             builder->m_client->sendExecuteExportingImageMessage(URI());
@@ -229,9 +232,12 @@ struct ImGuiApplicationMenuBuilder::ExportVideoCallbackHandler {
     {
         ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
         if (!availableExtensions.empty()) {
-            builder->m_fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
-            builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
-                IFileManager::kDialogTypeUserCallback, availableExtensions);
+            IFileManager *fileManager = builder->m_fileManager;
+            if (!fileManager->hasTransientQueryFileDialogCallback()) {
+                fileManager->setTransientQueryFileDialogCallback(handleTransientQueryFileDialog, builder);
+                builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
+                    IFileManager::kDialogTypeUserCallback, availableExtensions);
+            }
         }
         else {
             builder->m_client->sendExecuteExportingVideoMessage(URI());

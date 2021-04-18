@@ -59,6 +59,7 @@ public:
         const URI &fileURI, nanoem_u16_t handle, DialogType type, Project *project, Error &error) = 0;
     virtual bool loadFromFileWithModalDialog(const URI &fileURI, DialogType type, Project *project, Error &error) = 0;
     virtual bool saveAsFile(const URI &fileURI, DialogType type, Project *project, Error &error) = 0;
+    virtual bool hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData) = 0;
 
     virtual URI sharedSourceEffectCacheDirectory() = 0;

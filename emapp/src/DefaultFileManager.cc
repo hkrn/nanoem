@@ -550,6 +550,12 @@ DefaultFileManager::loadProject(const URI &fileURI, Project *project, Error &err
     return succeeded;
 }
 
+bool
+DefaultFileManager::hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT
+{
+    return m_callback != nullptr;
+}
+
 void
 DefaultFileManager::setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData)
 {
