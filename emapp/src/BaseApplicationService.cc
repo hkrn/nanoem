@@ -2705,21 +2705,27 @@ BaseApplicationService::loadFromFile(const URI &fileURI, Project *project, IFile
 {
     /* intercept pass to swap new loaded project */
     bool result = false;
-    if (type == IFileManager::kDialogTypeOpenProject) {
-        Project *newProject = m_stateController->createProject();
-        if (m_defaultFileManager->loadProject(fileURI, newProject, error)) {
-            int language = project->castLanguage();
-            setProject(newProject);
-            sendLoadingAllModelIOPluginsEventMessage(language);
-            sendLoadingAllMotionIOPluginsEventMessage(language);
-            result = true;
+    if (!fileURI.isEmpty()) {
+        if (type == IFileManager::kDialogTypeOpenProject) {
+            Project *newProject = m_stateController->createProject();
+            if (m_defaultFileManager->loadProject(fileURI, newProject, error)) {
+                int language = project->castLanguage();
+                setProject(newProject);
+                sendLoadingAllModelIOPluginsEventMessage(language);
+                sendLoadingAllMotionIOPluginsEventMessage(language);
+                result = true;
+            }
+            else {
+                destroyProject(newProject);
+            }
         }
-        else {
-            destroyProject(newProject);
+        else if (nanoem_likely(project)) {
+            result = fileManager()->loadFromFile(fileURI, type, project, error);
         }
     }
     else if (nanoem_likely(project)) {
-        result = fileManager()->loadFromFile(fileURI, type, project, error);
+        m_defaultFileManager->cancelQueryFileDialog(project);
+        result = true;
     }
     return result;
 }
@@ -2729,7 +2735,13 @@ BaseApplicationService::saveAsFile(const URI &fileURI, Project *project, IFileMa
 {
     bool result = false;
     if (nanoem_likely(project)) {
-        result = fileManager()->saveAsFile(fileURI, type, project, error);
+        if (!fileURI.isEmpty()) {
+            result = fileManager()->saveAsFile(fileURI, type, project, error);
+        }
+        else {
+            m_defaultFileManager->cancelQueryFileDialog(project);
+            result = true;
+        }
     }
     return result;
 }
