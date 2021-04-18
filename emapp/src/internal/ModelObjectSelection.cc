@@ -533,7 +533,7 @@ ModelObjectSelection::containsSoftBody(const nanoem_model_soft_body_t *value) co
 }
 
 bool
-ModelObjectSelection::containsFace(const Vector3UI32 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE
+ModelObjectSelection::containsFace(const Vector3UI32 &value) const NANOEM_DECL_NOEXCEPT
 {
     return m_selectedFaceSet.find(value) != m_selectedFaceSet.end();
 }
