@@ -1165,7 +1165,6 @@ Accessory::createImage(const nanodxm_uint8_t *path)
     return imagePtr;
 }
 
-
 Image *
 Accessory::internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist)
 {

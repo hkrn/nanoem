@@ -4172,7 +4172,8 @@ ImGuiWindow::batchLazySetAllObjects(Project *project, bool seekable)
         const ImGuiIO &io = ImGui::GetIO();
         const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
         if (Inline::isDebuggerPresent()) {
-            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow), false) && frameIndex < Motion::kMaxFrameIndex) {
+            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow), false) &&
+                frameIndex < Motion::kMaxFrameIndex) {
                 project->seek(frameIndex + 1, false);
             }
             else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow), false) && frameIndex > 0) {

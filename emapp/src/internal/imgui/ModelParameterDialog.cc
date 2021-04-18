@@ -119,52 +119,62 @@ ModelParameterDialog::draw(Project *project)
             m_explicitTabType = kTabTypeMaxEnum;
         }
         ImGui::BeginTabBar("tabbar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton);
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.info"), nullptr, explicitTabType == kTabTypeInfo ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.info"), nullptr,
+                explicitTabType == kTabTypeInfo ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutInformation(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeInfo, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr, explicitTabType == kTabTypeVertex ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr,
+                explicitTabType == kTabTypeVertex ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllVertices(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeVertex, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.face"), nullptr, explicitTabType == kTabTypeFace ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.face"), nullptr,
+                explicitTabType == kTabTypeFace ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllFaces(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeFace, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.material"), nullptr, explicitTabType == kTabTypeMaterial ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.material"), nullptr,
+                explicitTabType == kTabTypeMaterial ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllMaterials(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeMaterial, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.bone"), nullptr, explicitTabType == kTabTypeBone ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.bone"), nullptr,
+                explicitTabType == kTabTypeBone ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllBones(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeBone, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.morph"), nullptr, explicitTabType == kTabTypeMorph ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.morph"), nullptr,
+                explicitTabType == kTabTypeMorph ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllMorphs(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeMorph, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.label"), nullptr, explicitTabType == kTabTypeLabel ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.label"), nullptr,
+                explicitTabType == kTabTypeLabel ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllLabels(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeLabel, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr, explicitTabType == kTabTypeRigidBody ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr,
+                explicitTabType == kTabTypeRigidBody ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllRigidBodies(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeRigidBody, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.joint"), nullptr, explicitTabType == kTabTypeJoint ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.joint"), nullptr,
+                explicitTabType == kTabTypeJoint ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllJoints(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeJoint, project);
         }
-        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr, explicitTabType == kTabTypeSoftBody ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr,
+                explicitTabType == kTabTypeSoftBody ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllSoftBodies(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeSoftBody, project);
@@ -953,8 +963,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 {
                 }
                 virtual void upload(const URI &fileURI, BaseUserData *userData,
-                    nanoem_mutable_model_material_t *material,
-                    nanoem_mutable_model_texture_t *texture, Error &error) = 0;
+                    nanoem_mutable_model_material_t *material, nanoem_mutable_model_texture_t *texture,
+                    Error &error) = 0;
                 Model *m_model;
                 nanoem_model_material_t *m_material;
             };
@@ -991,7 +1001,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 m_cancel = nullptr;
             }
             void
-            open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model)
+            open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material,
+                Model *model)
             {
                 StringList extensions;
                 extensions.push_back("png");
@@ -1140,8 +1151,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
 }
 
 void
-ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const String &filename,
-    const nanoem_model_material_t *activeMaterialPtr)
+ModelParameterDialog::layoutMaterialDiffuseImage(
+    const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
 {
     static const char id[] = "nanoem.gui.model.edit.material.texture.diffuse";
     char label[Inline::kLongNameStackBufferSize];
@@ -1167,8 +1178,9 @@ ModelParameterDialog::layoutMaterialDiffuseImage(const IImageView *image, const 
     }
 }
 
-void ModelParameterDialog::layoutMaterialSphereMapImage(const IImageView *image, const String &filename,
-        const nanoem_model_material_t *activeMaterialPtr)
+void
+ModelParameterDialog::layoutMaterialSphereMapImage(
+    const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr)
 {
     static const char id[] = "nanoem.gui.model.edit.material.texture.sphere";
     char label[Inline::kLongNameStackBufferSize];

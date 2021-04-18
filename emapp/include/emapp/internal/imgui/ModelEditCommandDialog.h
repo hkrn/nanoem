@@ -41,7 +41,8 @@ struct UVEditDialog : BaseNonModalDialogWindow {
     static void drawSphereMapImage(const IImageView *image, const nanoem_model_material_t *activeMaterialPtr,
         Model *activeModel, nanoem_f32_t scaleFactor, bool displayUVMeshEnabled);
 
-    UVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel, BaseApplicationService *applicationPtr);
+    UVEditDialog(
+        const nanoem_model_material_t *materialPtr, Model *activeModel, BaseApplicationService *applicationPtr);
 
     bool draw(Project *project);
 
