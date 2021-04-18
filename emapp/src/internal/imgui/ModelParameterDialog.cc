@@ -7,6 +7,8 @@
 #include "emapp/internal/imgui/ModelParameterDialog.h"
 
 #include "emapp/Error.h"
+#include "emapp/IEventPublisher.h"
+#include "emapp/IFileManager.h"
 #include "emapp/IImageView.h"
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
@@ -932,12 +934,79 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
             }
         }
     }
-    const model::Material *material = model::Material::cast(materialPtr);
+    model::Material *material = model::Material::cast(materialPtr);
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     const IImageView *diffuseImage = material->diffuseImage(), *sphereMapImage = material->sphereMapImage(),
                      *toonImage = material->toonImage();
-    if (diffuseImage || (toonImage && !nanoemModelMaterialIsToonShared(materialPtr)) || sphereMapImage) {
-        ImGui::TextUnformatted("Textures");
+    bool hasOwnToonTexture = toonImage && !nanoemModelMaterialIsToonShared(materialPtr);
+    if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
+        ImGui::OpenPopup("material.texture.menu");
+    }
+    if (ImGui::BeginPopupContextItem("material.texture.menu")) {
+        IEventPublisher *eventPublisher = project->eventPublisher();
+        IFileManager *fileManager = m_applicationPtr->fileManager();
+        if (ImGui::MenuItem("Set Diffuse Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
+            struct SetDiffuseTextureCallback {
+                static void
+                handle(const URI &fileURI, Project *project, void *userData)
+                {
+                    SetDiffuseTextureCallback *self = static_cast<SetDiffuseTextureCallback *>(userData);
+                    // self->m_material->setDiffuseImage(nullptr);
+                    nanoem_delete(self);
+                }
+                model::Material *m_material;
+            };
+            SetDiffuseTextureCallback *callback = nanoem_new(SetDiffuseTextureCallback);
+            callback->m_material = material;
+            fileManager->setTransientQueryFileDialogCallback(SetDiffuseTextureCallback::handle, callback);
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(0, StringList());
+        }
+        if (ImGui::MenuItem("Set SphereMap Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
+            struct SetSphereMapTextureCallback {
+                static void
+                handle(const URI &fileURI, Project *project, void *userData)
+                {
+                    SetSphereMapTextureCallback *self = static_cast<SetSphereMapTextureCallback *>(userData);
+                    // self->m_material->setSphereMapImage(nullptr);
+                    nanoem_delete(self);
+                }
+                model::Material *m_material;
+            };
+            SetSphereMapTextureCallback *callback = nanoem_new(SetSphereMapTextureCallback);
+            callback->m_material = material;
+            fileManager->setTransientQueryFileDialogCallback(SetSphereMapTextureCallback::handle, callback);
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(0, StringList());
+        }
+        if (ImGui::MenuItem("Set Toon Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
+            struct SetToonTextureCallback {
+                static void
+                handle(const URI &fileURI, Project *project, void *userData)
+                {
+                    SetToonTextureCallback *self = static_cast<SetToonTextureCallback *>(userData);
+                    // self->m_material->setToonImage(nullptr);
+                    nanoem_delete(self);
+                }
+                model::Material *m_material;
+            };
+            SetToonTextureCallback *callback = nanoem_new(SetToonTextureCallback);
+            callback->m_material = material;
+            fileManager->setTransientQueryFileDialogCallback(SetToonTextureCallback::handle, callback);
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(0, StringList());
+        }
+        if (diffuseImage || sphereMapImage || hasOwnToonTexture) {
+            ImGui::Separator();
+        }
+        if (diffuseImage && ImGui::MenuItem("Clear Diffuse Texture")) {
+        }
+        if (sphereMapImage && ImGui::MenuItem("Clear SphereMap Texture")) {
+        }
+        if (hasOwnToonTexture && ImGui::MenuItem("Clear Toon Texture")) {
+        }
+        ImGui::EndPopup();
+    }
+    ImGui::SameLine();
+    ImGui::TextUnformatted("Textures");
+    if (diffuseImage || hasOwnToonTexture || sphereMapImage) {
         String filename;
         if (diffuseImage) {
             StringUtils::getUtf8String(
@@ -950,12 +1019,13 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 filename);
             layoutMaterialSphereMapImage(sphereMapImage, filename, materialPtr);
         }
-        if (toonImage && !nanoemModelMaterialIsToonShared(materialPtr)) {
+        if (hasOwnToonTexture) {
             StringUtils::getUtf8String(
                 nanoemModelTextureGetPath(nanoemModelMaterialGetToonTextureObject(materialPtr)), factory, filename);
             layoutMaterialToonImage(toonImage, filename);
         }
     }
+    addSeparator();
     {
         ImGui::TextUnformatted("Arbitrary Area");
         String clob;
