@@ -27,10 +27,10 @@ class Project;
 class IFileManager {
 public:
     struct QueryFileDialogCallbacks {
-        typedef void (*AcceptCallback)(const URI &fileURI, Project *project, void *userData);
-        typedef void (*CancelCallback)(Project *project, void *userData);
+        typedef void (*AcceptCallback)(const URI &fileURI, Project *project, void *opaque);
+        typedef void (*CancelCallback)(Project *project, void *opaque);
         typedef void (*DestroyCallback)(void *userData);
-        void *m_userData;
+        void *m_opaque;
         AcceptCallback m_accept;
         CancelCallback m_cancel;
         DestroyCallback m_destory;

@@ -320,7 +320,7 @@ void
 DefaultFileManager::cancelQueryFileDialog(Project *project)
 {
     if (m_queryFileDialogCallbacks.m_cancel) {
-        m_queryFileDialogCallbacks.m_cancel(project, m_queryFileDialogCallbacks.m_userData);
+        m_queryFileDialogCallbacks.m_cancel(project, m_queryFileDialogCallbacks.m_opaque);
         m_queryFileDialogCallbacks.m_cancel = nullptr;
     }
     resetTransientQueryFileDialogCallback();
@@ -575,12 +575,10 @@ void
 DefaultFileManager::resetTransientQueryFileDialogCallback()
 {
     if (m_queryFileDialogCallbacks.m_destory) {
-        m_queryFileDialogCallbacks.m_destory(m_queryFileDialogCallbacks.m_userData);
+        m_queryFileDialogCallbacks.m_destory(m_queryFileDialogCallbacks.m_opaque);
         m_queryFileDialogCallbacks.m_destory = nullptr;
     }
-    m_queryFileDialogCallbacks.m_accept = nullptr;
-    m_queryFileDialogCallbacks.m_cancel = nullptr;
-    m_queryFileDialogCallbacks.m_userData = nullptr;
+    Inline::clearZeroMemory(m_queryFileDialogCallbacks);
 }
 
 bool
@@ -772,7 +770,7 @@ DefaultFileManager::internalLoadFromFile(
         }
         case kDialogTypeUserCallback: {
             if (m_queryFileDialogCallbacks.m_accept) {
-                m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_userData);
+                m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_opaque);
             }
             resetTransientQueryFileDialogCallback();
             break;
@@ -814,7 +812,7 @@ DefaultFileManager::saveAsFile(const URI &fileURI, DialogType type, Project *pro
     }
     case kDialogTypeUserCallback: {
         if (m_queryFileDialogCallbacks.m_accept) {
-            m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_userData);
+            m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_opaque);
         }
         resetTransientQueryFileDialogCallback();
         break;

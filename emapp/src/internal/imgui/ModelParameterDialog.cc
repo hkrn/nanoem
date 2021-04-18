@@ -956,20 +956,20 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                     model::Material *m_material;
                 };
                 static void
-                accept(const URI &fileURI, Project *project, void *userData)
+                accept(const URI &fileURI, Project *project, void *opaque)
                 {
-                    SetDiffuseTextureCallback *self = static_cast<SetDiffuseTextureCallback *>(userData);
-                    // self->m_material->setDiffuseImage(nullptr);
+                    UserData *userData = static_cast<UserData *>(opaque);
+                    // userData->m_material->setDiffuseImage(nullptr);
                 }
                 static void
-                destroy(void *userData)
+                destroy(void *opaque)
                 {
-                    UserData *self = static_cast<UserData *>(userData);
-                    nanoem_delete(self);
+                    UserData *userData = static_cast<UserData *>(opaque);
+                    nanoem_delete(userData);
                 }
                 SetDiffuseTextureCallback()
                 {
-                    m_userData = nanoem_new(UserData);
+                    m_opaque = nanoem_new(UserData);
                     m_accept = accept;
                     m_destory = destroy;
                     m_cancel = nullptr;
