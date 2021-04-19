@@ -57,6 +57,7 @@ UpdateCameraCommand::undo(Error &error)
     m_camera->setDistance(m_distance.second);
     m_camera->setFovRadians(m_fov.second);
     m_camera->update();
+    project->resetAllModelEdges();
 }
 
 void
@@ -73,6 +74,7 @@ UpdateCameraCommand::redo(Error &error)
     m_camera->setDistance(m_distance.first);
     m_camera->setFovRadians(m_fov.first);
     m_camera->update();
+    project->resetAllModelEdges();
 }
 
 const char *

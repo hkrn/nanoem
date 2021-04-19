@@ -19,7 +19,7 @@ struct CameraParametersDialog : BaseNonModalDialogWindow {
 
     CameraParametersDialog(Project *project, BaseApplicationService *applicationPtr);
     bool draw(Project *project);
-    void reset();
+    void reset(Project *project);
 
     ICamera *m_camera;
     Vector3 m_lookAt;

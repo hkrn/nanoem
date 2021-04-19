@@ -105,6 +105,12 @@ DraggingCameraState::updateLastCursorPosition(const Vector2 &logicalCursorPositi
     m_accumulatedPositionDelta += delta;
 }
 
+void
+DraggingCameraState::resetAllModelEdges()
+{
+    m_project->resetAllModelEdges();
+}
+
 AxisAlignedTranslateCameraState::AxisAlignedTranslateCameraState(
     Project *project, ICamera *camera, const Vector2SI32 &pressedCursorPosition, int axisIndex)
     : DraggingCameraState(project, camera, pressedCursorPosition)
@@ -123,12 +129,14 @@ AxisAlignedTranslateCameraState::transform(const Vector2SI32 &logicalCursorPosit
     case ICamera::kTransformCoordinateTypeGlobal: {
         camera->setLookAt(lookAt() + delta);
         camera->update();
+        resetAllModelEdges();
     }
     case ICamera::kTransformCoordinateTypeLocal: {
         Matrix4x4 viewMatrix, projectionMatrix;
         camera->getViewTransform(viewMatrix, projectionMatrix);
         camera->setLookAt(lookAt() + glm::inverse(Matrix3x3(viewMatrix)) * (accumulatedPositionDelta() + delta));
         camera->update();
+        resetAllModelEdges();
     }
     case ICamera::kTransformCoordinateTypeMaxEnum:
     default:
@@ -195,6 +203,7 @@ CameraZoomState::transform(const Vector2SI32 &logicalCursorPosition)
     camera->setDistance(distance() + accumulatedPositionDelta().y + delta.y);
     camera->update();
     updateLastCursorPosition(logicalCursorPosition, delta);
+    resetAllModelEdges();
 }
 
 const char *
@@ -221,6 +230,7 @@ CameraLookAtState::transform(const Vector2SI32 &logicalCursorPosition)
     camera->setLookAt(lookAt() + glm::inverse(Matrix3x3(viewMatrix)) * accumulatedPositionDelta() + delta);
     camera->update();
     updateLastCursorPosition(logicalCursorPosition, delta);
+    resetAllModelEdges();
 }
 
 const char *

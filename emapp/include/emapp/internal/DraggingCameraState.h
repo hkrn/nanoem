@@ -34,6 +34,7 @@ protected:
     Vector2 cursorDelta(const Vector2 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t distance() const NANOEM_DECL_NOEXCEPT;
     void updateLastCursorPosition(const Vector2 &logicalCursorPosition, const Vector3 &delta);
+    void resetAllModelEdges();
 
 private:
     Project *m_project;
