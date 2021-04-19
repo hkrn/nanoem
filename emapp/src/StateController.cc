@@ -2065,17 +2065,7 @@ StateController::handlePointerScroll(const Vector3SI32 &logicalScaleCursorPositi
                 camera->distance() + delta.y * BaseDraggingObjectState::scaleFactor(logicalScaleCursorPosition));
             camera->update();
             if (project->editingMode() != Project::kEditingModeSelect) {
-                const Project::ModelList allModels(project->allModels());
-                for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end(); it != end;
-                     ++it) {
-                    Model *model = *it;
-                    if (model->edgeSizeScaleFactor() > 0.0f && !model->isStagingVertexBufferDirty()) {
-                        model->resetAllMorphDeformStates();
-                        model->deformAllMorphs(false);
-                        model->performAllBonesTransform();
-                        model->markStagingVertexBufferDirty();
-                    }
-                }
+                project->resetAllModelEdges();
             }
         }
         project->setLastScrollDelta(delta);

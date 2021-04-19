@@ -2630,6 +2630,20 @@ Project::resetPhysicsSimulation()
 }
 
 void
+Project::resetAllModelEdges()
+{
+    for (Project::ModelList::const_iterator it = m_allModelPtrs.begin(), end = m_allModelPtrs.end(); it != end; ++it) {
+        Model *model = *it;
+        if (model->edgeSizeScaleFactor() > 0.0f && !model->isStagingVertexBufferDirty()) {
+            model->resetAllMorphDeformStates();
+            model->deformAllMorphs(false);
+            model->performAllBonesTransform();
+            model->markStagingVertexBufferDirty();
+        }
+    }
+}
+
+void
 Project::performPhysicsSimulationOnce()
 {
     internalPerformPhysicsSimulation(physicsSimulationTimeStep());

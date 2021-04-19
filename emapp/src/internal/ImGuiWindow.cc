@@ -3253,6 +3253,7 @@ ImGuiWindow::drawCameraPanel(const ImVec2 &panelSize, Project *project)
     if (handleTranslatedButton("nanoem.gui.panel.camera.reset", -1, buttonEnabled)) {
         activeCamera->reset();
         activeCamera->update();
+        project->resetAllModelEdges();
     }
     bool perspective = activeCamera->isPerspective();
     if (handleCheckBox(tr("nanoem.gui.panel.camera.perspective"), &perspective, buttonEnabled)) {

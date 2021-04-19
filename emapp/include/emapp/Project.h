@@ -372,6 +372,7 @@ public:
     bool canSeek() const NANOEM_DECL_NOEXCEPT;
 
     void resetPhysicsSimulation();
+    void resetAllModelEdges();
     void performPhysicsSimulationOnce();
     void synchronizeAllMotions(
         nanoem_frame_index_t frameIndex, nanoem_f32_t amount, PhysicsEngine::SimulationTimingType timing);

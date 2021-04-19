@@ -2113,7 +2113,11 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeCameraReset: {
-        project->activeCamera()->reset();
+        ICamera *camera = project->activeCamera();
+        camera->reset();
+        camera->update();
+        project->resetAllModelEdges();
+        project->update();
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeLightSelfShadowDisable: {
