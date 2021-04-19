@@ -25,24 +25,26 @@ undo_command_t *
 UpdateCameraCommand::create(void *messagePtr, ICamera *camera, Project *project)
 {
     UpdateCameraCommand *command =
-        nanoem_new(UpdateCameraCommand(project, camera, Constants::kZeroV3, Constants::kZeroV3, 0, 0));
+        nanoem_new(UpdateCameraCommand(project, camera, Constants::kZeroV3, Constants::kZeroV3, 0, 0, false));
     command->read(messagePtr);
     return command->createCommand();
 }
 
 undo_command_t *
 UpdateCameraCommand::create(Project *project, ICamera *camera, const Vector3 &lookAt, const Vector3 &angle,
-    nanoem_f32_t distance, nanoem_f32_t fov)
+    nanoem_f32_t distance, nanoem_f32_t fov, bool isPerspective)
 {
     nanoem_parameter_assert(project->globalCamera() == camera, "must be global camera");
-    UpdateCameraCommand *command = nanoem_new(UpdateCameraCommand(project, camera, lookAt, angle, distance, fov));
+    UpdateCameraCommand *command =
+        nanoem_new(UpdateCameraCommand(project, camera, lookAt, angle, distance, fov, isPerspective));
     return command->createCommand();
 }
 
 undo_command_t *
 UpdateCameraCommand::create(Project *project, ICamera *camera, const ICamera &source)
 {
-    return create(project, camera, source.lookAt(), source.angle(), source.distance(), source.fovRadians());
+    return create(project, camera, source.lookAt(), source.angle(), source.distance(), source.fovRadians(),
+        source.isPerspective());
 }
 
 void
@@ -56,6 +58,7 @@ UpdateCameraCommand::undo(Error &error)
     m_camera->setAngle(m_angle.second);
     m_camera->setDistance(m_distance.second);
     m_camera->setFovRadians(m_fov.second);
+    m_camera->setPerspective(m_perspective.second);
     m_camera->update();
     project->resetAllModelEdges();
 }
@@ -73,6 +76,7 @@ UpdateCameraCommand::redo(Error &error)
     m_camera->setAngle(m_angle.first);
     m_camera->setDistance(m_distance.first);
     m_camera->setFovRadians(m_fov.first);
+    m_camera->setPerspective(m_perspective.first);
     m_camera->update();
     project->resetAllModelEdges();
 }
@@ -84,7 +88,7 @@ UpdateCameraCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 UpdateCameraCommand::UpdateCameraCommand(Project *project, ICamera *camera, const Vector3 &lookAt, const Vector3 &angle,
-    nanoem_f32_t distance, nanoem_f32_t fov)
+    nanoem_f32_t distance, nanoem_f32_t fov, bool isPerspective)
     : BaseUndoCommand(project)
     , m_localFrameIndex(project->currentLocalFrameIndex())
     , m_camera(camera)
@@ -92,6 +96,7 @@ UpdateCameraCommand::UpdateCameraCommand(Project *project, ICamera *camera, cons
     , m_angle(tinystl::make_pair(camera->angle(), angle))
     , m_distance(tinystl::make_pair(camera->distance(), distance))
     , m_fov(tinystl::make_pair(camera->fovRadians(), fov))
+    , m_perspective(tinystl::make_pair(camera->isPerspective(), isPerspective))
 {
 }
 
@@ -105,11 +110,13 @@ UpdateCameraCommand::read(const void *messagePtr)
     CommandMessageUtil::getVector(current->angle, m_angle.first);
     m_fov.first = current->fov;
     m_distance.first = current->distance;
+    m_perspective.first = current->perspective != 0;
     const Nanoem__Application__RedoUpdateCameraCommand__State *last = command->last_state;
     CommandMessageUtil::getVector(last->look_at, m_lookAt.second);
     CommandMessageUtil::getVector(last->angle, m_angle.second);
     m_fov.second = last->fov;
     m_distance.second = last->distance;
+    m_perspective.second = last->perspective != 0;
 }
 
 void
@@ -131,6 +138,7 @@ UpdateCameraCommand::write(void *messagePtr)
     CommandMessageUtil::setVector(m_lookAt.second, last->look_at);
     last->distance = m_distance.second;
     last->fov = m_fov.second;
+    last->perspective = m_perspective.second;
     writeCommandMessage(command, NANOEM__APPLICATION__COMMAND__TYPE_REDO_UPDATE_CAMERA, messagePtr);
 }
 

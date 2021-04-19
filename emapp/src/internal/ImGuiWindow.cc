@@ -1537,6 +1537,7 @@ ImGuiWindow::setCameraPerspective(bool value, ICamera *camera, Project *project)
     BX_UNUSED_1(project);
     camera->setPerspective(value);
     camera->update();
+    project->resetAllModelEdges();
 }
 
 void

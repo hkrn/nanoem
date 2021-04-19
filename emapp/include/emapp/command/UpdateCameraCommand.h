@@ -21,7 +21,7 @@ public:
     ~UpdateCameraCommand() NANOEM_DECL_NOEXCEPT;
     static undo_command_t *create(void *messagePtr, ICamera *camera, Project *project);
     static undo_command_t *create(Project *project, ICamera *camera, const Vector3 &lookAt, const Vector3 &angle,
-        nanoem_f32_t distance, nanoem_f32_t fov);
+        nanoem_f32_t distance, nanoem_f32_t fov, bool isPerspective);
     static undo_command_t *create(Project *project, ICamera *camera, const ICamera &source);
 
     void undo(Error &error);
@@ -30,7 +30,7 @@ public:
 
 private:
     UpdateCameraCommand(Project *project, ICamera *camera, const Vector3 &lookAt, const Vector3 &angle,
-        nanoem_f32_t distance, nanoem_f32_t fov);
+        nanoem_f32_t distance, nanoem_f32_t fov, bool isPerspective);
 
     void read(const void *messagePtr);
     void write(void *messagePtr);
@@ -42,6 +42,7 @@ private:
     tinystl::pair<Vector3, Vector3> m_angle;
     tinystl::pair<nanoem_f32_t, nanoem_f32_t> m_distance;
     tinystl::pair<nanoem_f32_t, nanoem_f32_t> m_fov;
+    tinystl::pair<bool, bool> m_perspective;
 };
 
 } /* namespace command */

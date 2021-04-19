@@ -23,6 +23,7 @@ DraggingCameraState::DraggingCameraState(Project *project, ICamera *camera, cons
     , m_angle(camera->angle())
     , m_distance(camera->distance())
     , m_fov(camera->fovRadians())
+    , m_perspective(camera->isPerspective())
     , m_accumulatedPositionDelta(0)
     , m_lastPressedCursorPosition(pressedCursorPosition)
     , m_scaleFactor(1.0f)
@@ -36,8 +37,8 @@ void
 DraggingCameraState::commit(const Vector2SI32 & /* logicalCursorPosition */)
 {
     if (m_project->globalCamera() == m_activeCamera) {
-        m_project->pushUndo(
-            command::UpdateCameraCommand::create(m_project, m_activeCamera, m_lookAt, m_angle, m_distance, m_fov));
+        m_project->pushUndo(command::UpdateCameraCommand::create(
+            m_project, m_activeCamera, m_lookAt, m_angle, m_distance, m_fov, m_perspective));
     }
     m_project->eventPublisher()->publishEnableCursorEvent(Vector2SI32(0));
     m_accumulatedPositionDelta = Vector3(0);

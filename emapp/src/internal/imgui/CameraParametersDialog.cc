@@ -66,7 +66,7 @@ CameraParametersDialog::draw(Project *project)
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
             project->pushUndo(command::UpdateCameraCommand::create(
-                project, m_camera, lookAt, angle, distance, m_camera->fovRadians()));
+                project, m_camera, lookAt, angle, distance, m_camera->fovRadians(), m_camera->isPerspective()));
             break;
         }
         case kResponseTypeCancel: {

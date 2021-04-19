@@ -43,6 +43,7 @@ private:
     const Vector3 m_angle;
     const nanoem_f32_t m_distance;
     const nanoem_f32_t m_fov;
+    const bool m_perspective;
     Vector3 m_accumulatedPositionDelta;
     Vector2 m_lastPressedCursorPosition;
     nanoem_f32_t m_scaleFactor;
