@@ -15,7 +15,7 @@ fd --glob "*.{cc,h,m,mm}" \
   -E "emapp/src/sha1.h" \
   -E "emapp/src/wildcardcmp.h" \
   -E "win32/ffmpeg" \
-  -E "glfw/include/GL" \
+  -E "glfw/common/include/GL" \
   -E "nanoem" \
   -E "scripts" \
   -E "khash.h" \
