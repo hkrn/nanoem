@@ -120,9 +120,14 @@ PerspectiveCamera::update()
         m_projectionMatrix = glm::infinitePerspective(m_fov.second, aspectRatio(), 0.5f);
     }
     else {
-        const nanoem_f32_t aspect = aspectRatio(), v = m_distance * (0.5f / aspect), x2 = lookAt.x - kInitialLookAt.x,
-                           y2 = lookAt.y - kInitialLookAt.y;
-        m_projectionMatrix = glm::ortho(x2 + (-v * aspect), x2 + (v * aspect), y2 + -v, y2 + v, 0.5f, zfar());
+        const Vector2 viewportImageSize(m_project->viewportImageSize());
+        const nanoem_f32_t aspectRatio = (viewportImageSize.x / viewportImageSize.y),
+                           inverseDistance = 1.0f / m_distance;
+        Matrix4x4 projectionMatrix(1);
+        projectionMatrix[0][0] = 2.0f * inverseDistance;
+        projectionMatrix[1][1] = 2.0f * aspectRatio * inverseDistance;
+        projectionMatrix[2][2] = 2.0f / (zfar() - 0.5f);
+        m_projectionMatrix = projectionMatrix;
     }
 }
 
