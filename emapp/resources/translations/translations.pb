@@ -1,5 +1,5 @@
 
-��@
+Ҏ@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -812,9 +812,11 @@ $nanoem.project.track.selected-morphs選択モーフ5
 =nanoem.error.plugin.model.no-active-model.recovery-suggestion$モデルを選択してくださいk
 nanoem.error.model.dirty.reasonHキーフレーム未登録のボーンまたはモーフがあります�
 ,nanoem.error.model.dirty.recovery-suggestion�未登録のボーンまたはモーフをキーフレーム登録するかフレーム移動してリセットしてくださいj
--nanoem.error.effect.material-not-found.reason9エフェクトに割り当てる材質がありませんq
-1nanoem.error.effect.model-effect-not-found.reason<エフェクトに割り当てるモデルがありません�
-.nanoem.error.effect.offscreen-not-found.reasonQオフスクリーンエフェクトに割り当てるモデルがありません`
+-nanoem.error.effect.material-not-found.reason9エフェクトに割り当てる材質がありませんt
+1nanoem.error.effect.model-effect-not-found.reason?エフェクトに割り当てるモデルが存在しません�
+.nanoem.error.effect.offscreen-not-found.reasonQオフスクリーンエフェクトに割り当てる対象が存在しません�
+-nanoem.error.effect.invalid-attachment.reasonoエフェクトに割り当てるモデルまたはオフスクリーンの対象が設定されていません�
+:nanoem.error.effect.invalid-attachment.recovery-suggestion�メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてください`
  nanoem.project.diagnostics.title<プロジェクトの一部ファイルの読み込み失敗�
 'nanoem.project.diagnostics.message.mainrプロジェクトの読み込みは成功しましたが、一部のファイルが読み込めませんでした�
 ,nanoem.project.diagnostics.message.not-foundQ次のファイルが見つかりません。移動した可能性があります�
@@ -943,7 +945,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1773,8 +1775,10 @@ All Morphs#
 nanoem.error.model.dirty.reason2The model has any unregistered bone(s) or morph(s)�
 ,nanoem.error.model.dirty.recovery-suggestionVTry registering all unregistered bone(s) or morph(s), or seek any frame point to reset\
 -nanoem.error.effect.material-not-found.reason+The material to attach the effect not found]
-1nanoem.error.effect.model-effect-not-found.reason(The model to attach the effect not foundd
-.nanoem.error.effect.offscreen-not-found.reason2The model to attach the offscreen effect not foundH
+1nanoem.error.effect.model-effect-not-found.reason(The model to attach the effect not founde
+.nanoem.error.effect.offscreen-not-found.reason3The object to attach the offscreen effect not foundu
+-nanoem.error.effect.invalid-attachment.reasonDThe model or offscreen target to attach the effect is not configured�
+:nanoem.error.effect.invalid-attachment.recovery-suggestionnSet the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect fileH
  nanoem.project.diagnostics.title$Loading Project with Partial Failurel
 'nanoem.project.diagnostics.message.mainALoading the project is succeeded but some files cannot be loaded.^
 ,nanoem.project.diagnostics.message.not-found.Below files cannot be loaded due to not found.l

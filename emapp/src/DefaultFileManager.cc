@@ -891,9 +891,9 @@ DefaultFileManager::internalLoadEffectSourceFile(
         else {
             cancelled = error.isCancelled();
         }
-    }
-    if (cancelled || error.hasReason()) {
-        project->destroyEffect(effect);
+        if (cancelled || error.hasReason()) {
+            project->destroyEffect(effect);
+        }
     }
     return !error.hasReason();
 }

@@ -3511,11 +3511,19 @@
 - key: nanoem.error.effect.model-effect-not-found.reason
   phrase:
     en_US: 'The model to attach the effect not found'
-    ja_JP: 'エフェクトに割り当てるモデルがありません'
+    ja_JP: 'エフェクトに割り当てるモデルが存在しません'
 - key: nanoem.error.effect.offscreen-not-found.reason
   phrase:
-    en_US: 'The model to attach the offscreen effect not found'
-    ja_JP: 'オフスクリーンエフェクトに割り当てるモデルがありません'
+    en_US: 'The object to attach the offscreen effect not found'
+    ja_JP: 'オフスクリーンエフェクトに割り当てる対象が存在しません'
+- key: nanoem.error.effect.invalid-attachment.reason
+  phrase:
+    en_US: 'The model or offscreen target to attach the effect is not configured'
+    ja_JP: 'エフェクトに割り当てるモデルまたはオフスクリーンの対象が設定されていません'
+- key: nanoem.error.effect.invalid-attachment.recovery-suggestion
+  phrase:
+    en_US: 'Set the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect file'
+    ja_JP: 'メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてください'
 
 - key: nanoem.project.diagnostics.title
   phrase:

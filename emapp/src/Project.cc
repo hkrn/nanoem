@@ -1208,6 +1208,7 @@ Project::Project(const Injector &injector)
     , m_boneInterpolationType(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_FIRST_ENUM)
     , m_cameraInterpolationType(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FIRST_ENUM)
     , m_transformPerformedAt(Motion::kMaxFrameIndex, 0)
+    , m_indicesOfMaterialToAttachEffect(bx::kInvalidHandle, ModelMaterialIndexSet())
     , m_windowDevicePixelRatio(injector.m_windowDevicePixelRatio, injector.m_windowDevicePixelRatio)
     , m_viewportDevicePixelRatio(injector.m_viewportDevicePixelRatio, injector.m_viewportDevicePixelRatio)
     , m_uptime(0.0, 0.0f)
@@ -3100,6 +3101,11 @@ Project::attachEffectToSelectedDrawable(Effect *targetEffect, Error &error)
             error = Error(m_translator->translate("nanoem.error.effect.offscreen-not-found.reason"), nullptr,
                 Error::kDomainTypeApplication);
         }
+    }
+    else {
+        error = Error(m_translator->translate("nanoem.error.effect.invalid-attachment.reason"),
+            m_translator->translate("nanoem.error.effect.invalid-attachment.recovery-suggestion"),
+            Error::kDomainTypeApplication);
     }
 }
 
