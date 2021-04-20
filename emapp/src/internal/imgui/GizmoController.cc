@@ -90,6 +90,7 @@ GizmoController::draw(ImDrawList *drawList, const ImVec2 &offset, const ImVec2 &
     bool hovered = true;
     ImGuizmo::SetDrawlist(drawList);
     ImGuizmo::SetRect(offset.x, offset.y, size.x, size.y);
+    ImGuizmo::SetOrthographic(project->activeCamera()->isPerspective() ? false : true);
     project->activeCamera()->getViewTransform(view, projection);
     Model *activeModel = project->activeModel();
     Matrix4x4 pivotMatrix(activeModel->pivotMatrix());

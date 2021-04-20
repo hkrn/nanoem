@@ -1171,7 +1171,16 @@ ModelParameterDialog::layoutMaterialDiffuseImage(
         if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
             material->setDisplayDiffuseTextureUVMeshEnabled(displayUVMeshEnabled);
         }
-        UVEditDialog::drawDiffuseImage(image, activeMaterialPtr, m_activeModel, 1.0f, displayUVMeshEnabled);
+        const ImVec2 offset(ImGui::GetCursorScreenPos());
+        UVEditDialog::drawImage(image, 1.0f);
+        if (displayUVMeshEnabled) {
+            const ImVec2 size(ImGui::GetItemRectSize());
+            ImDrawList *drawList = ImGui::GetWindowDrawList();
+            drawList->PushClipRect(offset, ImVec2(offset.x + size.x, offset.y + size.y), true);
+            UVEditDialog::drawDiffuseImageUVMesh(
+                drawList, offset, size, activeMaterialPtr, m_activeModel, nullptr, false);
+            drawList->PopClipRect();
+        }
     }
     if (imageNotFound) {
         ImGui::PopStyleColor();
@@ -1190,13 +1199,16 @@ ModelParameterDialog::layoutMaterialSphereMapImage(
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
     }
     if (ImGui::CollapsingHeader(label)) {
-        const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
         model::Material *material = model::Material::cast(activeMaterialPtr);
         bool displayUVMeshEnabled = material->isDisplaySphereMapTextureUVMeshEnabled();
         if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
             material->setDisplaySphereMapTextureUVMeshEnabled(displayUVMeshEnabled);
         }
-        UVEditDialog::drawSphereMapImage(image, activeMaterialPtr, m_activeModel, 1.0f, displayUVMeshEnabled);
+        const ImVec2 offset(ImGui::GetCursorScreenPos());
+        UVEditDialog::drawImage(image, 1.0f);
+        if (displayUVMeshEnabled) {
+            UVEditDialog::drawSphereMapImageUVMesh(offset, activeMaterialPtr, m_activeModel);
+        }
     }
     if (imageNotFound) {
         ImGui::PopStyleColor();

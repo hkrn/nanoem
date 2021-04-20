@@ -14,17 +14,17 @@ namespace internal {
 namespace imgui {
 
 ImVec2
-BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height, nanoem_f32_t scaleFactort) NANOEM_DECL_NOEXCEPT
+BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT
 {
     const ImGuiStyle &style = ImGui::GetStyle();
     const nanoem_f32_t avail = ImGui::GetContentRegionAvail().x - (style.IndentSpacing + style.FramePadding.x);
     ImVec2 size;
     if (width > avail) {
-        size = height > avail ? ImVec2(avail * scaleFactort, avail * scaleFactort)
-                              : ImVec2(avail * scaleFactort, height * scaleFactort);
+        size = height > avail ? ImVec2(avail * scaleFactor, avail * scaleFactor)
+                              : ImVec2(avail * scaleFactor, height * scaleFactor);
     }
     else {
-        size = ImVec2(width * scaleFactort, height * scaleFactort);
+        size = ImVec2(width * scaleFactor, height * scaleFactor);
     }
     return size;
 }
@@ -90,20 +90,20 @@ BaseNonModalDialogWindow::~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-BaseNonModalDialogWindow::open(
-    const char *title, const char *id, bool *visible, const ImVec2 size, ImGuiWindowFlags flags)
+BaseNonModalDialogWindow::open(const char *title, const char *id, bool *visible, const ImVec2 size,
+    ImGuiWindowFlags flags, ImGuiSizeCallback sizeCB, void *sizeCBOpaque)
 {
     char buffer[Inline::kNameStackBufferSize];
     const float scaleFactor = ImGui::GetIO().DisplayFramebufferScale.x;
     StringUtils::format(buffer, sizeof(buffer), "%s##%s", title, id);
-    ImGui::SetNextWindowSizeConstraints(size, ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(size, ImVec2(FLT_MAX, FLT_MAX), sizeCB, sizeCBOpaque);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, ImGuiWindow::kWindowRounding * scaleFactor);
     return ImGui::Begin(buffer, visible, flags) && *visible;
 }
 
 bool
-BaseNonModalDialogWindow::open(
-    const char *title, const char *id, bool *visible, nanoem_f32_t height, ImGuiWindowFlags flags)
+BaseNonModalDialogWindow::open(const char *title, const char *id, bool *visible, nanoem_f32_t height,
+    ImGuiWindowFlags flags, ImGuiSizeCallback sizeCB, void *sizeCBOpaque)
 {
     char buffer[Inline::kNameStackBufferSize];
     StringUtils::format(buffer, sizeof(buffer), "%s##%s", title, id);
@@ -113,7 +113,7 @@ BaseNonModalDialogWindow::open(
                        textWidth = ImGui::CalcTextSize(title).x + (style.WindowPadding.x + windowRounding) * 2,
                        width = glm::max(textWidth, 250.0f * scaleFactor),
                        minHeight = height + style.WindowPadding.y * 2;
-    ImGui::SetNextWindowSizeConstraints(ImVec2(width, minHeight), ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(ImVec2(width, minHeight), ImVec2(FLT_MAX, FLT_MAX), sizeCB, sizeCBOpaque);
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, windowRounding);
     return ImGui::Begin(buffer, visible, flags) && *visible;
 }

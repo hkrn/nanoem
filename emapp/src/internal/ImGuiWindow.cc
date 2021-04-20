@@ -4004,7 +4004,7 @@ ImGuiWindow::handleVerticalSplitter(
     ImVec2 posFrom(pos);
     nanoem_f32_t thumbWidth = 10 * deviceScaleRatio;
     posFrom.x -= thumbWidth;
-    const ImVec2 posTo(posFrom.x + thumbWidth, posFrom.y + viewportHeight);
+    const ImVec2 posTo(posFrom.x + thumbWidth * 0.5f, posFrom.y + viewportHeight);
     if (m_lastTimelineWidth > 0) {
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
             const nanoem_f32_t threshold = size.x * kTimelineSnapGridRatio;
@@ -4016,7 +4016,8 @@ ImGuiWindow::handleVerticalSplitter(
             }
             m_timelineWidth = width;
             m_timelineWidthRatio = width / size.x;
-            ImGui::GetWindowDrawList()->AddRectFilled(posFrom, posTo, IM_COL32(255, 255, 0, 255));
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                posFrom, posTo, ImGui::ColorConvertFloat4ToU32(ImVec4(0.10f, 0.40f, 0.75f, 1.00f)));
         }
         else if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
             m_lastTimelineWidth = 0;
@@ -4026,7 +4027,8 @@ ImGuiWindow::handleVerticalSplitter(
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
             m_lastTimelineWidth = m_timelineWidth;
         }
-        ImGui::GetWindowDrawList()->AddRectFilled(posFrom, posTo, IM_COL32(0, 255, 0, 255));
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            posFrom, posTo, ImGui::ColorConvertFloat4ToU32(ImVec4(0.10f, 0.40f, 0.75f, 0.78f)));
     }
 }
 
