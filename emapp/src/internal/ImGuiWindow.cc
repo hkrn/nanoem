@@ -553,6 +553,7 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
     io.FontGlobalScale = windowDevicePixelRatio;
     io.DisplayFramebufferScale = ImVec2(windowDevicePixelRatio, windowDevicePixelRatio);
     io.KeyMap[ImGuiKey_Tab] = BaseApplicationService::kKeyType_TAB;
