@@ -285,8 +285,12 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
     ImGui::SameLine();
     const char *drawableName = drawable->nameConstString();
     const bool selectable =
-        drawable->activeEffect() != effect || (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard);
-    bool selected = project->containsDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
+        drawable->activeEffect() != effect || (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard),
+        wasSelected = project->containsDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
+    if (wasSelected) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+    }
+    bool selected = wasSelected;
     if (ImGui::Selectable(drawableName, &selected,
             selectable ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled, ImVec2(maxTextWidth, 0))) {
         if (selected) {
@@ -298,6 +302,9 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
         else {
             project->removeDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
         }
+    }
+    if (wasSelected) {
+        ImGui::PopStyleColor();
     }
     ImGui::SameLine();
     const ImGuiStyle &style = ImGui::GetStyle();
@@ -410,7 +417,11 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
             const nanoem_rsize_t materialIndex = static_cast<nanoem_rsize_t>(i);
             model::Material *material = model::Material::cast(materialPtr);
             const char *materialName = material->nameConstString();
-            bool selected = project->containsIndexOfMaterialToAttachEffect(modelHandle, materialIndex);
+            const bool wasSelected = project->containsIndexOfMaterialToAttachEffect(modelHandle, materialIndex);
+            if (wasSelected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
+            bool selected = wasSelected;
             if (ImGui::Selectable(materialName, &selected, ImGuiSelectableFlags_None, ImVec2(maxTextWidth, 0))) {
                 if (selected) {
                     if (!ImGui::GetIO().KeyShift) {
@@ -421,6 +432,9 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
                 else {
                     project->removeIndexOfMaterialToAttachEffect(modelHandle, materialIndex);
                 }
+            }
+            if (wasSelected) {
+                ImGui::PopStyleColor();
             }
             ImGui::SameLine();
             const Effect *effect = material->effect();
