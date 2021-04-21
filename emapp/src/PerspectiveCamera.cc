@@ -121,11 +121,10 @@ PerspectiveCamera::update()
     }
     else {
         const Vector2 viewportImageSize(m_project->viewportImageSize());
-        const nanoem_f32_t aspectRatio = (viewportImageSize.x / viewportImageSize.y),
-                           inverseDistance = 1.0f / m_distance;
+        const nanoem_f32_t inverseDistance = 1.0f / m_distance;
         Matrix4x4 projectionMatrix(1);
-        projectionMatrix[0][0] = 2.0f * inverseDistance;
-        projectionMatrix[1][1] = 2.0f * aspectRatio * inverseDistance;
+        projectionMatrix[0][0] = 2.0f * glm::max(viewportImageSize.y / viewportImageSize.x, 1.0f) * inverseDistance;
+        projectionMatrix[1][1] = 2.0f * glm::max(viewportImageSize.x / viewportImageSize.y, 1.0f) * inverseDistance;
         projectionMatrix[2][2] = 2.0f / (zfar() - 0.5f);
         m_projectionMatrix = projectionMatrix;
     }
