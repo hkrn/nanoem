@@ -35,7 +35,7 @@ struct ModelEditCommandDialog : BaseNonModalDialogWindow {
 };
 
 struct UVEditDialog : BaseNonModalDialogWindow {
-    typedef tinystl::unordered_set<const nanoem_model_vertex_t *, TinySTLAllocator> VertexSet;
+    typedef tinystl::unordered_set<nanoem_model_vertex_t *, TinySTLAllocator> VertexSet;
     enum OperationType {
         kOperationTypeSelect,
         kOperationTypeTranslate,
@@ -45,7 +45,7 @@ struct UVEditDialog : BaseNonModalDialogWindow {
     struct Selector {
         Selector(const Vector4SI32 &region, const ImVec2 &itemOffset, const ImVec2 &itemSize, VertexSet *vertexSet,
             bool modifiable);
-        bool select(const nanoem_model_vertex_t *vertex, ImVec2 &pos);
+        bool select(nanoem_model_vertex_t *vertex, ImVec2 &pos);
         VertexSet *m_vertexSet;
         Vector4SI32 m_region;
         ImVec2 m_offset;
@@ -53,9 +53,19 @@ struct UVEditDialog : BaseNonModalDialogWindow {
         bool m_modifiable;
     };
     struct State {
+        typedef tinystl::vector<nanoem_mutable_model_vertex_t *, TinySTLAllocator> MutableVertexList;
         State();
+        void begin();
+        void transform(const Matrix4x4 &delta, Model *activeModel);
+        void commit();
+        bool isDragging() const NANOEM_DECL_NOEXCEPT;
+        OperationType operation() const NANOEM_DECL_NOEXCEPT;
+        void setOperation(OperationType value);
+        MutableVertexList m_mutableVertices;
         VertexSet m_vertexSet;
-        Matrix4x4 m_matrix;
+        Matrix4x4 m_pivotMatrix;
+        Matrix4x4 m_initialPivotMatrix;
+        Matrix4x4 m_transformMatrix;
         ImVec4 m_rect;
         OperationType m_operation;
         bool m_dragging;

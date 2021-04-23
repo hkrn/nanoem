@@ -13,6 +13,7 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/matrix_decompose.hpp"
 #include "imguizmo/ImGuizmo.h"
 
 namespace nanoem {
@@ -211,11 +212,11 @@ UVEditDialog::Selector::Selector(
 }
 
 bool
-UVEditDialog::Selector::select(const nanoem_model_vertex_t *vertex, ImVec2 &pos)
+UVEditDialog::Selector::select(nanoem_model_vertex_t *vertex, ImVec2 &pos)
 {
     const nanoem_f32_t *t0 = nanoemModelVertexGetTexCoord(vertex);
     bool selected = false;
-    pos = ImVec2(m_offset.x + m_size.x * t0[0], m_offset.y + m_size.y * t0[1]);
+    pos = ImVec2(m_offset.x + m_size.x * Inline::fract(t0[0]), m_offset.y + m_size.y * Inline::fract(t0[1]));
     if (m_vertexSet->find(vertex) != m_vertexSet->end()) {
         selected = true;
     }
@@ -229,10 +230,133 @@ UVEditDialog::Selector::select(const nanoem_model_vertex_t *vertex, ImVec2 &pos)
 }
 
 UVEditDialog::State::State()
-    : m_matrix(Constants::kIdentity)
+    : m_pivotMatrix(glm::translate(Constants::kIdentity, Vector3(0.5f)))
+    , m_initialPivotMatrix(Constants::kIdentity)
+    , m_transformMatrix(Constants::kIdentity)
     , m_operation(kOperationTypeSelect)
     , m_dragging(false)
 {
+}
+
+void
+UVEditDialog::State::begin()
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (VertexSet::const_iterator it = m_vertexSet.begin(), end = m_vertexSet.end(); it != end; ++it) {
+        nanoem_model_vertex_t *vertexPtr = *it;
+        m_mutableVertices.push_back(nanoemMutableModelVertexCreateAsReference(vertexPtr, &status));
+    }
+    m_initialPivotMatrix = m_pivotMatrix;
+    m_dragging = true;
+}
+
+void
+UVEditDialog::State::transform(const Matrix4x4 &delta, Model *activeModel)
+{
+    Vector4 perspective;
+    Vector3 scale, translation, skew;
+    Quaternion orientation;
+    glm::decompose(delta, scale, orientation, translation, skew, perspective);
+    if (m_operation == kOperationTypeTranslate) {
+        for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+             ++it) {
+            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
+            Vector4 newTexCoord(glm::make_vec4(nanoemModelVertexGetTexCoord(vertexPtr)));
+            newTexCoord.x += translation.x;
+            newTexCoord.y -= translation.y;
+            nanoemMutableModelVertexSetTexCoord(*it, glm::value_ptr(newTexCoord));
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            vertex->m_simd.m_texcoord = bx::simd_ld(glm::value_ptr(newTexCoord));
+        }
+    }
+    else if (m_operation == kOperationTypeRotate) {
+        const Vector2 position(m_initialPivotMatrix[3]), offset(position.x, 1 - position.y);
+        const nanoem_f32_t angle = glm::angle(orientation) * glm::sign(glm::axis(orientation).z), c = glm::cos(angle),
+                           s = glm::sin(angle);
+        for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+             ++it) {
+            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
+            Vector4 newTexCoord(glm::make_vec4(nanoemModelVertexGetTexCoord(vertexPtr)));
+            newTexCoord.x -= offset.x;
+            newTexCoord.y -= offset.y;
+            const nanoem_f32_t x = newTexCoord.x, y = newTexCoord.y;
+            newTexCoord.x = x * c + y * s;
+            newTexCoord.y = x * -s + y * c;
+            newTexCoord.x += offset.x;
+            newTexCoord.y += offset.y;
+            nanoemMutableModelVertexSetTexCoord(*it, glm::value_ptr(newTexCoord));
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            vertex->m_simd.m_texcoord = bx::simd_ld(glm::value_ptr(newTexCoord));
+        }
+    }
+    else if (m_operation == kOperationTypeScale) {
+        const Vector2 position(m_initialPivotMatrix[3]), offset(position.x, 1 - position.y);
+        const nanoem_f32_t a = glm::angle(orientation), c = glm::cos(a), s = glm::sin(a);
+        for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+             ++it) {
+            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
+            Vector4 newTexCoord(glm::make_vec4(nanoemModelVertexGetTexCoord(vertexPtr)));
+            newTexCoord.x -= offset.x;
+            newTexCoord.y -= offset.y;
+            const nanoem_f32_t x = newTexCoord.x, y = newTexCoord.y;
+            newTexCoord.x *= scale.x;
+            newTexCoord.y *= scale.y;
+            newTexCoord.x += offset.x;
+            newTexCoord.y += offset.y;
+            nanoemMutableModelVertexSetTexCoord(*it, glm::value_ptr(newTexCoord));
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            vertex->m_simd.m_texcoord = bx::simd_ld(glm::value_ptr(newTexCoord));
+        }
+    }
+    activeModel->markStagingVertexBufferDirty();
+    activeModel->updateStagingVertexBuffer();
+}
+
+void
+UVEditDialog::State::commit()
+{
+    for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+         ++it) {
+        nanoemMutableModelVertexDestroy(*it);
+    }
+    m_mutableVertices.clear();
+    m_dragging = false;
+
+}
+
+bool
+UVEditDialog::State::isDragging() const NANOEM_DECL_NOEXCEPT
+{
+    return m_dragging;
+}
+
+UVEditDialog::OperationType
+UVEditDialog::State::operation() const NANOEM_DECL_NOEXCEPT
+{
+    return m_operation;
+}
+
+void
+UVEditDialog::State::setOperation(OperationType value)
+{
+    m_operation = value;
+    if (value != kOperationTypeSelect) {
+        if (m_vertexSet.empty()) {
+            m_pivotMatrix = glm::translate(Constants::kIdentity, Vector3(0.5f));
+        }
+        else {
+            Vector2 min(FLT_MAX), max(-FLT_MAX), pivot;
+            for (VertexSet::const_iterator it = m_vertexSet.begin(), end = m_vertexSet.end(); it != end; ++it) {
+                const nanoem_model_vertex_t *vertexPtr = *it;
+                const Vector2 texCoord(glm::make_vec2(nanoemModelVertexGetTexCoord(vertexPtr)));
+                min = glm::min(min, texCoord);
+                max = glm::max(max, texCoord);
+            }
+            pivot = (min + max) * 0.5f;
+            pivot.y = 1.0f - pivot.y;
+            m_pivotMatrix = glm::translate(Constants::kIdentity, Vector3(pivot, 0));
+        }
+    }
 }
 
 void
@@ -279,8 +403,8 @@ UVEditDialog::drawDiffuseImageUVMesh(ImDrawList *drawList, const ImVec2 &itemOff
     }
     const nanoem_rsize_t offsetTo = offset + nanoemModelMaterialGetNumVertexIndices(activeMaterialPtr);
     for (nanoem_rsize_t i = offset; i < offsetTo; i += 3) {
-        const nanoem_model_vertex_t *v0 = vertices[vertexIndices[i]], *v1 = vertices[vertexIndices[i + 1]],
-                                    *v2 = vertices[vertexIndices[i + 2]];
+        nanoem_model_vertex_t *v0 = vertices[vertexIndices[i]], *v1 = vertices[vertexIndices[i + 1]],
+                              *v2 = vertices[vertexIndices[i + 2]];
         ImVec2 v0Pos, v1Pos, v2Pos;
         const ImU32 v0Color = selector.select(v0, v0Pos) ? kColorYellow : kColorRed,
                     v1Color = selector.select(v1, v1Pos) ? kColorYellow : kColorRed,
@@ -349,7 +473,7 @@ UVEditDialog::UVEditDialog(
 bool
 UVEditDialog::draw(Project *project)
 {
-    bool visible = true;
+    bool visible = project->isModelEditingEnabled();
     Model *currentActiveModel = project->activeModel();
     const model::Material *material = model::Material::cast(m_activeMaterialPtr);
     const IImageView *diffuseImage = material ? material->diffuseImage() : nullptr;
@@ -367,27 +491,28 @@ UVEditDialog::draw(Project *project)
         ImGui::PushItemWidth(-1);
         ImGui::SliderFloat("##scale", &m_scaleFactor, 1.0f, 32.0f, "Scale Factor: %.1f", ImGuiSliderFlags_None);
         ImGui::Spacing();
-        if (ImGui::RadioButton("Select", m_selectionState.m_operation == kOperationTypeSelect)) {
-            m_selectionState.m_operation = kOperationTypeSelect;
+        const OperationType operation(m_selectionState.operation());
+        if (ImGui::RadioButton("Select", operation == kOperationTypeSelect)) {
+            m_selectionState.setOperation(kOperationTypeSelect);
         }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Translate", m_selectionState.m_operation == kOperationTypeTranslate)) {
-            m_selectionState.m_operation = kOperationTypeTranslate;
+        if (ImGui::RadioButton("Translate", operation == kOperationTypeTranslate)) {
+            m_selectionState.setOperation(kOperationTypeTranslate);
         }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Rotate", m_selectionState.m_operation == kOperationTypeRotate)) {
-            m_selectionState.m_operation = kOperationTypeRotate;
+        if (ImGui::RadioButton("Rotate", operation == kOperationTypeRotate)) {
+            m_selectionState.setOperation(kOperationTypeRotate);
         }
         ImGui::SameLine();
-        if (ImGui::RadioButton("Scale", m_selectionState.m_operation == kOperationTypeScale)) {
-            m_selectionState.m_operation = kOperationTypeScale;
+        if (ImGui::RadioButton("Scale", operation == kOperationTypeScale)) {
+            m_selectionState.setOperation(kOperationTypeScale);
         }
         ImGui::PopItemWidth();
         ImGui::Separator();
         ImVec2 size(ImGui::GetContentRegionAvail());
         ImGui::BeginChild("image", size, true, ImGuiWindowFlags_HorizontalScrollbar);
         const ImVec2 itemOffset(ImGui::GetCursorScreenPos());
-        if (m_selectionState.m_operation == kOperationTypeSelect) {
+        if (operation == kOperationTypeSelect) {
             drawImage(diffuseImage, m_scaleFactor);
             bool hovered = ImGui::IsItemHovered();
             const ImVec2 itemSize(ImGui::GetItemRectSize());
@@ -406,7 +531,6 @@ UVEditDialog::draw(Project *project)
             ImDrawList *drawList = ImGui::GetWindowDrawList();
             drawList->PushClipRect(itemOffset, ImVec2(itemOffset.x + itemSize.x, itemOffset.y + itemSize.y), true);
             drawDiffuseImageUVMesh(drawList, itemOffset, itemSize, ImGui::IsItemHovered());
-            const OperationType operation = m_selectionState.m_operation;
             ImGuizmo::OPERATION op;
             switch (operation) {
             case kOperationTypeTranslate: {
@@ -428,13 +552,17 @@ UVEditDialog::draw(Project *project)
             ImGuizmo::SetDrawlist(drawList);
             ImGuizmo::SetRect(itemOffset.x, itemOffset.y, itemSize.x, itemSize.y);
             ImGuizmo::SetOrthographic(true);
-            Matrix4x4 view(Constants::kIdentity), projection(glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f));
+            const Matrix4x4 view(glm::lookAt(-Constants::kUnitZ, Constants::kZeroV3, Constants::kUnitY)),
+                projection(glm::ortho(0.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f));
+            Matrix4x4 delta;
             if (ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, ImGuizmo::WORLD,
-                    glm::value_ptr(m_selectionState.m_matrix))) {
-                m_selectionState.m_dragging = true;
+                    glm::value_ptr(m_selectionState.m_pivotMatrix), glm::value_ptr(delta))) {
+                m_selectionState.isDragging() ? m_selectionState.transform(delta, m_activeModel)
+                                              : m_selectionState.begin();
+                m_selectionState.m_transformMatrix *= delta;
             }
             else if (!ImGuizmo::IsUsing()) {
-                m_selectionState.m_dragging = false;
+                m_selectionState.commit();
             }
         }
         ImGui::EndChild();
