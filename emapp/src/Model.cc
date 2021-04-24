@@ -75,19 +75,20 @@ enum PrivateStateFlags {
     kPrivateStateShowAllBones = 1 << 4,
     kPrivateStateShowAllVertexPoints = 1 << 5,
     kPrivateStateShowAllVertexFaces = 1 << 6,
-    kPrivateStateShowAllRigidBodies = 1 << 7,
-    kPrivateStateShowAllRigidBodiesColorByShape = 1 << 8,
+    kPrivateStateShowAllRigidBodyShapes = 1 << 7,
+    kPrivateStateShowAllRigidBodyShapesColorByShape = 1 << 8,
     kPrivateStateComputeShaderSkinning = 1 << 9,
     kPrivateStateMorphWeightFocus = 1 << 10,
     kPrivateStateEnableShadow = 1 << 11,
     kPrivateStateEnableShadowMap = 1 << 12,
     kPrivateStateEnableAddBlend = 1 << 13,
-    kPrivateStateShowAllJoints = 1 << 14,
+    kPrivateStateShowAllJointShapes = 1 << 14,
     kPrivateStateDirty = 1 << 15,
     kPrivateStateDirtyStagingBuffer = 1 << 16,
     kPrivateStateDirtyMorph = 1 << 17,
     kPrivateStatePhysicsSimulation = 1 << 18,
     kPrivateStateEnableGroundShadow = 1 << 19,
+    kPrivateStateShowAllMaterialShapes = 1 << 20,
     kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStatePhysicsSimulation | kPrivateStateEnableGroundShadow;
@@ -111,6 +112,87 @@ struct BoneUtils : private NonCopyable {
         const model::Bone *bone = model::Bone::cast(bonePtr);
         return bone ? !bone->isEditingMasked() : false;
     }
+};
+
+struct DummyLight : ILight {
+    DummyLight(Project *project)
+        : m_project(project)
+    {
+    }
+    void
+    destroy() NANOEM_DECL_NOEXCEPT
+    {
+    }
+    void
+    reset() NANOEM_DECL_NOEXCEPT
+    {
+    }
+    void
+    synchronizeParameters(const Motion *motion, const nanoem_frame_index_t frameIndex)
+    {
+        BX_UNUSED_2(motion, frameIndex);
+    }
+    void
+    getShadowTransform(Matrix4x4 &value) const
+    {
+        value = Constants::kIdentity;
+    }
+    const Project *
+    project() const NANOEM_DECL_NOEXCEPT
+    {
+        return m_project;
+    }
+    Project *
+    project() NANOEM_DECL_NOEXCEPT
+    {
+        return m_project;
+    }
+    Vector3
+    color() const NANOEM_DECL_NOEXCEPT
+    {
+        return Vector3(1);
+    }
+    void
+    setColor(const Vector3 &value)
+    {
+        BX_UNUSED_1(value);
+    }
+    Vector3
+    direction() const NANOEM_DECL_NOEXCEPT
+    {
+        return m_project->activeLight()->direction();
+    }
+    void
+    setDirection(const Vector3 &value)
+    {
+        BX_UNUSED_1(value);
+    }
+    Vector3
+    groundShadowColor() const NANOEM_DECL_NOEXCEPT
+    {
+        return Vector3(1, 0, 0);
+    }
+    bool
+    isTranslucentGroundShadowEnabled() const NANOEM_DECL_NOEXCEPT
+    {
+        return true;
+    }
+    void
+    setTranslucentGroundShadowEnabled(bool value)
+    {
+        BX_UNUSED_1(value);
+    }
+    bool
+    isDirty() const NANOEM_DECL_NOEXCEPT
+    {
+        return false;
+    }
+    void
+    setDirty(bool value)
+    {
+        BX_UNUSED_1(value);
+    }
+    Project *m_project;
 };
 
 } /* namespace anonymous */
@@ -1933,11 +2015,14 @@ Model::draw(DrawType type)
             if (isShowAllVertexPoints()) {
                 drawAllVertexPoints();
             }
+            if (isShowAllMaterialOverlays()) {
+                drawAllMaterialOverlays();
+            }
             const bool enabled = isPhysicsSimulationEnabled() && m_project->isPhysicsSimulationEnabled();
-            if (isShowAllRigidBodies() && enabled) {
+            if (isShowAllRigidBodyShapes() && enabled) {
                 drawAllRigidBodyShapes();
             }
-            if (isShowAllJoints() && enabled) {
+            if (isShowAllJointShapes() && enabled) {
                 drawAllJointShapes();
             }
             break;
@@ -3584,7 +3669,7 @@ Model::drawColor(bool scriptExternalColor)
         const nanoem_model_material_t *materialPtr = materials[i];
         numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
         model::Material *material = model::Material::cast(materialPtr);
-        IPass::Buffer buffer(numIndices, indexOffset);
+        IPass::Buffer buffer(numIndices, indexOffset, true);
         if (getVertexIndexBuffer(material, buffer)) {
             IEffect *effect = internalEffect(material);
             if (ITechnique *technique = effect->findTechnique(passType, materialPtr, i, numMaterials, this)) {
@@ -3624,7 +3709,7 @@ Model::drawEdge(nanoem_f32_t edgeSizeScaleFactor)
         if (nanoemModelMaterialIsEdgeEnabled(materialPtr) && !nanoemModelMaterialIsLineDrawEnabled(materialPtr) &&
             !nanoemModelMaterialIsPointDrawEnabled(materialPtr)) {
             model::Material *material = model::Material::cast(materialPtr);
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getEdgeIndexBuffer(material, buffer)) {
                 IEffect *effect = internalEffect(material);
                 if (ITechnique *technique =
@@ -3667,7 +3752,7 @@ Model::drawGroundShadow()
         if (nanoemModelMaterialIsCastingShadowEnabled(materialPtr) &&
             !nanoemModelMaterialIsPointDrawEnabled(materialPtr)) {
             model::Material *material = model::Material::cast(materialPtr);
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBuffer(material, buffer)) {
                 IEffect *effect = internalEffect(material);
                 if (ITechnique *technique =
@@ -3710,7 +3795,7 @@ Model::drawShadowMap()
         if (nanoemModelMaterialIsCastingShadowMapEnabled(materialPtr) &&
             !nanoemModelMaterialIsPointDrawEnabled(materialPtr)) {
             model::Material *material = model::Material::cast(materialPtr);
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBuffer(material, buffer)) {
                 IEffect *effect = internalEffect(material);
                 if (ITechnique *technique =
@@ -3722,6 +3807,48 @@ Model::drawShadowMap()
                         pass->setLightParameters(globalLight, false);
                         pass->setAllModelParameters(this, m_project);
                         pass->setShadowMapParameters(shadowCamera, kInitialWorldMatrix);
+                        pass->execute(this, buffer);
+                    }
+                    if (!technique->hasNextScriptCommand()) {
+                        technique->resetScriptCommandState();
+                    }
+                    SG_POP_GROUP();
+                }
+            }
+        }
+        indexOffset += numIndices;
+    }
+    SG_POP_GROUP();
+}
+
+void
+Model::drawAllMaterialOverlays()
+{
+    SG_PUSH_GROUPF("Model::drawAllMaterialOverlays(name=%s)", canonicalNameConstString());
+    nanoem_rsize_t numMaterials, numIndices, indexOffset = 0;
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+    ModelProgramBundle *effect = m_project->sharedResourceRepository()->modelProgramBundle();
+    const ICamera *activeCamera = m_project->activeCamera();
+    const IModelObjectSelection *s = selection();
+    const ShadowCamera *shadowCamera = m_project->shadowCamera();
+    DummyLight dummyLight(m_project);
+    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        model::Material *material = model::Material::cast(materialPtr);
+        if (material->isVisible() && s->containsMaterial(materialPtr)) {
+            IPass::Buffer buffer(numIndices, indexOffset, false);
+            if (getVertexIndexBuffer(material, buffer)) {
+                if (ITechnique *technique =
+                        effect->findTechnique(Effect::kPassTypeShadow, materialPtr, i, numMaterials, this)) {
+                    SG_PUSH_GROUPF("Model::drawMaterialOverlay(offset=%d, name=%s)", i, material->canonicalNameConstString());
+                    while (IPass *pass = technique->execute(this, false)) {
+                        pass->setGlobalParameters(this, m_project);
+                        pass->setCameraParameters(activeCamera, Constants::kIdentity);
+                        pass->setLightParameters(&dummyLight, false);
+                        pass->setAllModelParameters(this, m_project);
+                        pass->setMaterialParameters(materialPtr);
+                        pass->setGroundShadowParameters(&dummyLight, activeCamera, Constants::kIdentity);
                         pass->execute(this, buffer);
                     }
                     if (!technique->hasNextScriptCommand()) {
@@ -3928,8 +4055,8 @@ Model::drawAllRigidBodyShapes()
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *rigidBodyPtr = bodies[i];
         if (hoveredJointPtr) {
-            const nanoem_model_rigid_body_t *bodyA = nanoemModelJointGetRigidBodyAObject(hoveredJointPtr);
-            const nanoem_model_rigid_body_t *bodyB = nanoemModelJointGetRigidBodyBObject(hoveredJointPtr);
+            const nanoem_model_rigid_body_t *bodyA = nanoemModelJointGetRigidBodyAObject(hoveredJointPtr),
+                                            *bodyB = nanoemModelJointGetRigidBodyBObject(hoveredJointPtr);
             if (bodyA == rigidBodyPtr || bodyB == rigidBodyPtr) {
                 drawRigidBodyShape(rigidBodyPtr);
             }
@@ -3977,7 +4104,7 @@ Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
         if (m_selection->containsRigidBody(bodyPtr)) {
             color = Vector3(1, 0, 0);
         }
-        else if (EnumUtils::isEnabled(m_states, kPrivateStateShowAllRigidBodiesColorByShape)) {
+        else if (EnumUtils::isEnabled(m_states, kPrivateStateShowAllRigidBodyShapesColorByShape)) {
             color = model::RigidBody::colorByShapeType(bodyPtr);
         }
         else {
@@ -5055,16 +5182,16 @@ Model::setShowAllVertexFaces(bool value)
 }
 
 bool
-Model::isShowAllRigidBodies() const NANOEM_DECL_NOEXCEPT
+Model::isShowAllRigidBodyShapes() const NANOEM_DECL_NOEXCEPT
 {
-    return EnumUtils::isEnabled(kPrivateStateShowAllRigidBodies, m_states);
+    return EnumUtils::isEnabled(kPrivateStateShowAllRigidBodyShapes, m_states);
 }
 
 void
-Model::setShowAllRigidBodies(bool value)
+Model::setShowAllRigidBodyShapes(bool value)
 {
-    if (isShowAllRigidBodies() != value) {
-        EnumUtils::setEnabled(kPrivateStateShowAllRigidBodies, m_states, value);
+    if (isShowAllRigidBodyShapes() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllRigidBodyShapes, m_states, value);
         if (m_project->activeModel() == this) {
             m_project->eventPublisher()->publishToggleActiveModelShowAllRigidBodiesEvent(value);
         }
@@ -5072,16 +5199,30 @@ Model::setShowAllRigidBodies(bool value)
 }
 
 bool
-Model::isShowAllJoints() const NANOEM_DECL_NOEXCEPT
+Model::isShowAllJointShapes() const NANOEM_DECL_NOEXCEPT
 {
-    return EnumUtils::isEnabled(kPrivateStateShowAllJoints, m_states);
+    return EnumUtils::isEnabled(kPrivateStateShowAllJointShapes, m_states);
 }
 
 void
-Model::setShowAllJoints(bool value)
+Model::setShowAllJointShapes(bool value)
 {
-    if (isShowAllJoints() != value) {
-        EnumUtils::setEnabled(kPrivateStateShowAllJoints, m_states, value);
+    if (isShowAllJointShapes() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllJointShapes, m_states, value);
+    }
+}
+
+bool
+Model::isShowAllMaterialOverlays() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateShowAllMaterialShapes, m_states);
+}
+
+void
+Model::setShowAllMaterialOverlays(bool value)
+{
+    if (isShowAllMaterialOverlays() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllMaterialShapes, m_states, value);
     }
 }
 

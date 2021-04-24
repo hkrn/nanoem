@@ -370,10 +370,12 @@ public:
     void setShowAllVertexPoints(bool value);
     bool isShowAllVertexFaces() const NANOEM_DECL_NOEXCEPT;
     void setShowAllVertexFaces(bool value);
-    bool isShowAllRigidBodies() const NANOEM_DECL_NOEXCEPT;
-    void setShowAllRigidBodies(bool value);
-    bool isShowAllJoints() const NANOEM_DECL_NOEXCEPT;
-    void setShowAllJoints(bool value);
+    bool isShowAllRigidBodyShapes() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllRigidBodyShapes(bool value);
+    bool isShowAllJointShapes() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllJointShapes(bool value);
+    bool isShowAllMaterialOverlays() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllMaterialOverlays(bool value);
     bool isGroundShadowEnabled() const NANOEM_DECL_NOEXCEPT;
     void setGroundShadowEnabled(bool value);
     bool isShadowMapEnabled() const NANOEM_DECL_NOEXCEPT;
@@ -493,6 +495,7 @@ private:
     void drawShadowMap();
     void drawAllJointShapes();
     void drawAllRigidBodyShapes();
+    void drawAllMaterialOverlays();
     void drawAllVertexPoints();
     void drawAllVertexFaces();
     void drawJointShape(const nanoem_model_joint_t *jointPtr);

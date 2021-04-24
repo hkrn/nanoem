@@ -4250,7 +4250,7 @@ Project::setActiveModel(Model *value)
         e->publishToggleActiveModelShadowMapEnabledEvent(value ? value->isShadowMapEnabled() : false);
         e->publishToggleActiveModelVisibleEvent(value ? value->isVisible() : false);
         e->publishToggleActiveModelShowAllBonesEvent(value ? value->isShowAllBones() : false);
-        e->publishToggleActiveModelShowAllRigidBodiesEvent(value ? value->isShowAllRigidBodies() : false);
+        e->publishToggleActiveModelShowAllRigidBodiesEvent(value ? value->isShowAllRigidBodyShapes() : false);
         e->publishToggleActiveModelShowAllVertexFacesEvent(value ? value->isShowAllVertexFaces() : false);
         e->publishToggleActiveModelShowAllVertexPointsEvent(value ? value->isShowAllVertexPoints() : false);
         rebuildAllTracks();

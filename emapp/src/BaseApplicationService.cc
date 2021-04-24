@@ -2251,13 +2251,13 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowRigidBodies: {
         if (Model *activeModel = project->activeModel()) {
-            activeModel->setShowAllRigidBodies(activeModel->isShowAllRigidBodies() ? false : true);
+            activeModel->setShowAllRigidBodyShapes(activeModel->isShowAllRigidBodyShapes() ? false : true);
         }
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowJoints: {
         if (Model *activeModel = project->activeModel()) {
-            activeModel->setShowAllJoints(activeModel->isShowAllJoints() ? false : true);
+            activeModel->setShowAllJointShapes(activeModel->isShowAllJointShapes() ? false : true);
         }
         break;
     }

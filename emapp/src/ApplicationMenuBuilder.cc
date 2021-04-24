@@ -740,10 +740,10 @@ ApplicationMenuBuilder::validateMenuItem(const Project *project, MenuItemType ty
                         state = convertCheckedState(activeModel->isShowAllBones());
                         break;
                     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowRigidBodies:
-                        state = convertCheckedState(activeModel->isShowAllRigidBodies());
+                        state = convertCheckedState(activeModel->isShowAllRigidBodyShapes());
                         break;
                     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowJoints:
-                        state = convertCheckedState(activeModel->isShowAllJoints());
+                        state = convertCheckedState(activeModel->isShowAllJointShapes());
                         break;
                     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowVertexFaces:
                         state = convertCheckedState(activeModel->isShowAllVertexFaces());

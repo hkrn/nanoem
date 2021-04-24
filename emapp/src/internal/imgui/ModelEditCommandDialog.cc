@@ -35,6 +35,10 @@ ModelEditCommandDialog::beforeToggleEditingMode(
         activeModel->setShowAllVertexFaces(false);
         break;
     }
+    case IModelObjectSelection::kEditingTypeMaterial: {
+        activeModel->setShowAllMaterialOverlays(false);
+        break;
+    }
     case IModelObjectSelection::kEditingTypeBone: {
         activeModel->setShowAllBones(false);
         project->setEditingMode(Project::kEditingModeSelect);
@@ -51,11 +55,11 @@ ModelEditCommandDialog::beforeToggleEditingMode(
         break;
     }
     case IModelObjectSelection::kEditingTypeRigidBody: {
-        activeModel->setShowAllRigidBodies(false);
+        activeModel->setShowAllRigidBodyShapes(false);
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
-        activeModel->setShowAllJoints(false);
+        activeModel->setShowAllJointShapes(false);
         break;
     }
     case IModelObjectSelection::kEditingTypeSoftBody: {
@@ -91,6 +95,7 @@ ModelEditCommandDialog::afterToggleEditingMode(
         break;
     }
     case IModelObjectSelection::kEditingTypeMaterial: {
+        activeModel->setShowAllMaterialOverlays(true);
         activeModel->selection()->setEditingType(editingType);
         project->setEditingMode(Project::kEditingModeNone);
         break;
@@ -102,13 +107,13 @@ ModelEditCommandDialog::afterToggleEditingMode(
         break;
     }
     case IModelObjectSelection::kEditingTypeRigidBody: {
-        activeModel->setShowAllRigidBodies(true);
+        activeModel->setShowAllRigidBodyShapes(true);
         activeModel->selection()->setEditingType(editingType);
         project->setEditingMode(Project::kEditingModeNone);
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
-        activeModel->setShowAllJoints(true);
+        activeModel->setShowAllJointShapes(true);
         activeModel->selection()->setEditingType(editingType);
         project->setEditingMode(Project::kEditingModeNone);
         break;

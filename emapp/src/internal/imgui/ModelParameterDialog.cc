@@ -90,8 +90,8 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllVertexPoints(model->isShowAllVertexPoints())
     , m_showAllVertexFaces(model->isShowAllVertexFaces())
     , m_showAllBones(model->isShowAllBones())
-    , m_showAllRigidBodies(model->isShowAllRigidBodies())
-    , m_showAllJoints(model->isShowAllJoints())
+    , m_showAllRigidBodies(model->isShowAllRigidBodyShapes())
+    , m_showAllJoints(model->isShowAllJointShapes())
     , m_showAllSoftBodies(false)
 {
     ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kEditingTypeNone, m_activeModel, project);
@@ -186,8 +186,8 @@ ModelParameterDialog::draw(Project *project)
         m_activeModel->setShowAllVertexPoints(m_showAllVertexPoints);
         m_activeModel->setShowAllVertexFaces(m_showAllVertexFaces);
         m_activeModel->setShowAllBones(m_showAllBones);
-        m_activeModel->setShowAllRigidBodies(m_showAllRigidBodies);
-        m_activeModel->setShowAllJoints(m_showAllJoints);
+        m_activeModel->setShowAllRigidBodyShapes(m_showAllRigidBodies);
+        m_activeModel->setShowAllJointShapes(m_showAllJoints);
         toggleTab(kTabTypeInfo, project);
     }
     close();

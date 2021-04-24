@@ -1570,7 +1570,7 @@ Accessory::drawColor(bool scriptExternalColor)
         if (numIndices > 0) {
             nanoem_model_material_sphere_map_texture_type_t sphereTextureType =
                 NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBufferAndTexture(material, buffer, diffuseTexture, sphereTextureType)) {
                 IEffect *effect = internalEffect();
                 if (ITechnique *technique = effect->findTechnique(passType, material, i, numMaterials, this)) {
@@ -1612,7 +1612,7 @@ Accessory::drawGroundShadow()
         if (numIndices > 0) {
             nanoem_model_material_sphere_map_texture_type_t sphereTextureType =
                 NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBufferAndTexture(material, buffer, diffuseTexture, sphereTextureType)) {
                 IEffect *effect = internalEffect();
                 if (ITechnique *technique =
@@ -1657,7 +1657,7 @@ Accessory::drawShadowMap()
         if (numIndices > 0 && enableCastingShadowMap) {
             nanoem_model_material_sphere_map_texture_type_t sphereTextureType =
                 NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBufferAndTexture(material, buffer, diffuseTexture, sphereTextureType)) {
                 IEffect *effect = internalEffect();
                 if (ITechnique *technique =

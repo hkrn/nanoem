@@ -92,7 +92,7 @@ ITechnique *
 ModelProgramBundle::findTechnique(const String &passType, const nanoem_model_material_t *material,
     nanoem_rsize_t materialIndex, nanoem_rsize_t numMaterials, Model *model)
 {
-    BX_UNUSED_4(material, materialIndex, numMaterials, model);
+    BX_UNUSED_2(materialIndex, numMaterials);
     BaseTechnique *foundTechnique = nullptr;
     const model::Material *m = model::Material::cast(material);
     if (m && m->isVisible()) {
@@ -327,7 +327,6 @@ void
 ModelProgramBundle::CommonPass::setGroundShadowParameters(
     const ILight *light, const ICamera *camera, const Matrix4x4 &world)
 {
-    BX_UNUSED_2(camera, world);
     nanoem_parameter_assert(light, "must not be nullptr");
     Matrix4x4 originShadowMatrix, viewMatrix, projectionMatrix;
     camera->getViewTransform(viewMatrix, projectionMatrix);
@@ -381,7 +380,7 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
 {
     Model *model = m_parentTechnique->model();
     Project *project = model->project();
-    const bool isAddBlend = model->isAddBlendEnabled(),
+    const bool isAddBlend = model->isAddBlendEnabled(), isDepthEnabled = buffer.m_depthEnabled,
                isOffscreenRenderPassActive = project->isOffscreenRenderPassActive();
     const sg_pass pass =
         isOffscreenRenderPassActive ? project->currentOffscreenRenderPass() : project->currentRenderPass();
@@ -393,6 +392,7 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
     hash.add(m_primitiveType);
     hash.add(techniqueType);
     hash.add(isAddBlend);
+    hash.add(isDepthEnabled);
     hash.add(isOffscreenRenderPassActive);
     format.addHash(hash);
     nanoem_u32_t key = hash.end();
@@ -412,19 +412,23 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
         }
         desc.shader = m_parentTechnique->shader();
         desc.primitive_type = m_primitiveType;
-        desc.colors[0].pixel_format = format.m_colorPixelFormats[0];
-        desc.depth.pixel_format = format.m_depthPixelFormat;
         desc.color_count = format.m_numColorAttachments;
+        sg_color_state &cs = desc.colors[0];
+        cs.pixel_format = format.m_colorPixelFormats[0];
+        sg_depth_state &ds = desc.depth;
+        ds.compare = isDepthEnabled ? SG_COMPAREFUNC_LESS_EQUAL : SG_COMPAREFUNC_ALWAYS;
+        ds.pixel_format = format.m_depthPixelFormat;
+        ds.write_enabled = isDepthEnabled;
         if (isAddBlend) {
-            Project::setAddBlendMode(desc.colors[0]);
+            Project::setAddBlendMode(cs);
         }
         else {
-            Project::setAlphaBlendMode(desc.colors[0]);
+            Project::setAlphaBlendMode(cs);
         }
         if (!project->isRenderPassViewport()) {
-            desc.colors[0].write_mask = SG_COLORMASK_RGBA;
+            cs.write_mask = SG_COLORMASK_RGBA;
         }
-        if (techniqueType == kTechniqueTypeGroundShadow) {
+        if (techniqueType == kTechniqueTypeGroundShadow && isDepthEnabled) {
             Project::setShadowDepthStencilState(desc.depth, desc.stencil);
         }
         desc.cull_mode = m_cullMode;
