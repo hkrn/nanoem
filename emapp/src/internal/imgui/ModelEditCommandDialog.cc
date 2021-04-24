@@ -14,6 +14,7 @@
 
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/matrix_decompose.hpp"
+#include "glm/gtx/matrix_query.hpp"
 #include "imguizmo/ImGuizmo.h"
 
 namespace nanoem {
@@ -147,27 +148,28 @@ ModelEditCommandDialog::draw(Project *project)
     }
     const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 3;
     if (open(tr("Model Commands"), kIdentifier, &visible, height)) {
-        if (ImGui::CollapsingHeader("Gizmo")) {
+        bool enabled = !glm::isNull(m_activeModel->pivotMatrix(), Constants::kEpsilon);
+        if (ImGui::CollapsingHeader("Gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::Text("Operation Type");
-            addGizmoOperationButton("Translate", Model::kGizmoOperationTypeTranslate);
+            addGizmoOperationButton("Translate", Model::kGizmoOperationTypeTranslate, enabled);
             ImGui::SameLine();
-            addGizmoOperationButton("Rotate", Model::kGizmoOperationTypeRotate);
+            addGizmoOperationButton("Rotate", Model::kGizmoOperationTypeRotate, enabled);
             ImGui::SameLine();
-            addGizmoOperationButton("Scale", Model::kGizmoOperationTypeScale);
+            addGizmoOperationButton("Scale", Model::kGizmoOperationTypeScale, enabled);
             addSeparator();
             ImGui::Text("Coordinate Type");
-            addGizmoCoordinationButton("Global", Model::kTransformCoordinateTypeGlobal);
+            addGizmoCoordinationButton("Global", Model::kTransformCoordinateTypeGlobal, enabled);
             ImGui::SameLine();
-            addGizmoCoordinationButton("Local", Model::kTransformCoordinateTypeLocal);
+            addGizmoCoordinationButton("Local", Model::kTransformCoordinateTypeLocal, enabled);
         }
-        if (ImGui::CollapsingHeader("Selection")) {
+        if (ImGui::CollapsingHeader("Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
             addSelectionButton("(none)", IModelObjectSelection::kEditingTypeNone, project);
-            addSelectionButton("Vertex", IModelObjectSelection::kEditingTypeVertex, project);
-            addSelectionButton("Face", IModelObjectSelection::kEditingTypeFace, project);
-            addSelectionButton("Material", IModelObjectSelection::kEditingTypeMaterial, project);
-            addSelectionButton("Bone", IModelObjectSelection::kEditingTypeBone, project);
-            addSelectionButton("Rigid Body", IModelObjectSelection::kEditingTypeRigidBody, project);
-            addSelectionButton("Joint", IModelObjectSelection::kEditingTypeJoint, project);
+            addSelectionButton(tr("nanoem.gui.window.model.tab.vertex"), IModelObjectSelection::kEditingTypeVertex, project);
+            addSelectionButton(tr("nanoem.gui.window.model.tab.face"), IModelObjectSelection::kEditingTypeFace, project);
+            addSelectionButton(tr("nanoem.gui.window.model.tab.material"), IModelObjectSelection::kEditingTypeMaterial, project);
+            addSelectionButton(tr("nanoem.gui.window.model.tab.bone"), IModelObjectSelection::kEditingTypeBone, project);
+            addSelectionButton(tr("nanoem.gui.window.model.tab.rigid-body"), IModelObjectSelection::kEditingTypeRigidBody, project);
+            addSelectionButton(tr("nanoem.gui.window.model.tab.joint"), IModelObjectSelection::kEditingTypeJoint, project);
         }
     }
     close();
@@ -175,19 +177,19 @@ ModelEditCommandDialog::draw(Project *project)
 }
 
 void
-ModelEditCommandDialog::addGizmoOperationButton(const char *text, Model::GizmoOperationType type)
+ModelEditCommandDialog::addGizmoOperationButton(const char *text, Model::GizmoOperationType type, bool enabled)
 {
     Model::GizmoOperationType op = m_activeModel->gizmoOperationType();
-    if (ImGui::RadioButton(text, op == type)) {
+    if (ImGuiWindow::handleRadioButton(text, op == type, enabled)) {
         m_activeModel->setGizmoOperationType(type);
     }
 }
 
 void
-ModelEditCommandDialog::addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type)
+ModelEditCommandDialog::addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type, bool enabled)
 {
     Model::TransformCoordinateType coord = m_activeModel->gizmoTransformCoordinateType();
-    if (ImGui::RadioButton(text, coord == type)) {
+    if (ImGuiWindow::handleRadioButton(text, coord == type, enabled)) {
         m_activeModel->setGizmoTransformCoordinateType(type);
     }
 }
@@ -296,14 +298,12 @@ UVEditDialog::State::transform(const Matrix4x4 &delta, Model *activeModel)
     }
     else if (m_operation == kOperationTypeScale) {
         const Vector2 position(m_initialPivotMatrix[3]), offset(position.x, 1 - position.y);
-        const nanoem_f32_t a = glm::angle(orientation), c = glm::cos(a), s = glm::sin(a);
         for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
              ++it) {
             const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
             Vector4 newTexCoord(glm::make_vec4(nanoemModelVertexGetTexCoord(vertexPtr)));
             newTexCoord.x -= offset.x;
             newTexCoord.y -= offset.y;
-            const nanoem_f32_t x = newTexCoord.x, y = newTexCoord.y;
             newTexCoord.x *= scale.x;
             newTexCoord.y *= scale.y;
             newTexCoord.x += offset.x;

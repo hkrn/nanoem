@@ -27,8 +27,8 @@ struct ModelEditCommandDialog : BaseNonModalDialogWindow {
     ModelEditCommandDialog(Model *model, BaseApplicationService *applicationPtr);
 
     bool draw(Project *project);
-    void addGizmoOperationButton(const char *text, Model::GizmoOperationType type);
-    void addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type);
+    void addGizmoOperationButton(const char *text, Model::GizmoOperationType type, bool enabled);
+    void addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type, bool enabled);
     void addSelectionButton(const char *text, IModelObjectSelection::EditingType type, Project *project);
 
     Model *m_activeModel;
