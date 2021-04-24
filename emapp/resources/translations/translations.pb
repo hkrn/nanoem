@@ -1,5 +1,5 @@
 
-Ҏ@
+ˏ@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -204,7 +204,8 @@ $nanoem.gui.viewport.parameter.camera	カメラ4
 *nanoem.gui.window.project.effect.tab.model	モデルA
 .nanoem.gui.window.project.effect.tab.parameterパラメータK
 2nanoem.gui.window.project.effect.offscreen.default（デフォルト）?
-/nanoem.gui.window.project.effect.offscreen.none（なし）>
+/nanoem.gui.window.project.effect.offscreen.none（なし）w
+:nanoem.gui.window.project.effect.offscreen.display-texture9レンダーターゲットテクスチャを表示する>
 .nanoem.gui.window.project.effect.material.none（なし）Y
 1nanoem.gui.window.project.effect.parameter.reload$エフェクトをリロードするf
 2nanoem.gui.window.project.effect.parameter.inspect0パラメータのデバッグを有効にする3
@@ -945,7 +946,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1153,7 +1154,8 @@ Initialize5
 *nanoem.gui.window.project.effect.tab.modelModel;
 .nanoem.gui.window.project.effect.tab.parameter	Parameter?
 2nanoem.gui.window.project.effect.offscreen.default	(Default)9
-/nanoem.gui.window.project.effect.offscreen.none(None)8
+/nanoem.gui.window.project.effect.offscreen.none(None)[
+:nanoem.gui.window.project.effect.offscreen.display-textureDisplay Render Target Texture8
 .nanoem.gui.window.project.effect.material.none(None)J
 1nanoem.gui.window.project.effect.parameter.reloadReload Current EffectQ
 2nanoem.gui.window.project.effect.parameter.inspectEnable Parameter Inspection1

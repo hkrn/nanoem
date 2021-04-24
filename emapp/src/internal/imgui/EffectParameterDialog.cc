@@ -246,8 +246,9 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
             layoutOffscreenRenderTargetAttachment(project, drawable, name, maxTextWidth);
         }
     }
+    addSeparator();
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
-    if (ImGui::TreeNode(textureID, "Color Texture")) {
+    if (ImGui::TreeNode(textureID, tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
         ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
         ImGui::TreePop();

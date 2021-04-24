@@ -818,6 +818,10 @@
   phrase:
     en_US: (None)
     ja_JP: （なし）
+- key: nanoem.gui.window.project.effect.offscreen.display-texture
+  phrase:
+    en_US: Display Render Target Texture
+    ja_JP: レンダーターゲットテクスチャを表示する
 - key: nanoem.gui.window.project.effect.material.none
   phrase:
     en_US: (None)
