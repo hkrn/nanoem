@@ -116,7 +116,6 @@ UniformBlock
 static const Vector4 kColorRed(1, 0, 0, 1);
 static const Vector4 kColorGreen(0, 1, 0, 1);
 static const Vector4 kColorBlue(0, 0, 1, 1);
-static const Vector4 kColorYellow(1, 1, 0, 1);
 static const Vector4 kColorTranslucentRed(1, 0, 0, 0.5f);
 static const Vector4 kColorTranslucentGreen(0, 1, 0, 0.5f);
 static const Vector4 kColorTranslucentBlue(0, 0, 1, 0.5f);
@@ -131,7 +130,7 @@ isSelectingBoneHandle(const IModelObjectSelection *selection, Project::Rectangle
 }
 
 static bool
-isDraggingBoneHandle(const IState *state) NANOEM_DECL_NOEXCEPT
+isDraggingBoneAxisAlignedState(const IState *state) NANOEM_DECL_NOEXCEPT
 {
     bool result = false;
     if (state && state->isGrabbingHandle()) {
@@ -139,6 +138,8 @@ isDraggingBoneHandle(const IState *state) NANOEM_DECL_NOEXCEPT
         case IState::kTypeDraggingBoneAxisAlignedOrientateActiveBoneState:
         case IState::kTypeDraggingBoneAxisAlignedTranslateActiveBoneState:
             result = true;
+            break;
+        default:
             break;
         }
     }
@@ -3807,7 +3808,7 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state,
             const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
             if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
                 ((intersected && isSelectingBoneHandle(selection, intersectedRectangleType)) ||
-                    isDraggingBoneHandle(state))) {
+                    isDraggingBoneAxisAlignedState(state))) {
                 Quaternion orientation(Constants::kZeroQ);
                 if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
                     orientation =

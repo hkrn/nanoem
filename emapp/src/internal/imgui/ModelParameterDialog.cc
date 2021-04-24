@@ -693,18 +693,15 @@ ModelParameterDialog::layoutFacePropertyPane(const Vector3UI32 &face)
         nanoem_u32_t vertexIndex = face[i];
         if (vertexIndex < numVertices) {
             const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndex];
-            const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-            {
-                StringUtils::format(label, sizeof(label), "%s##vertex[%d]", ImGuiWindow::kFALink, i);
-                int vertexIndex = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
-                if (ImGuiWindow::handleButton(label, 0, vertexPtr != nullptr)) {
-                    m_explicitTabType = kTabTypeVertex;
-                    m_vertexIndex = nanoem_rsize_t(vertexIndex);
-                }
-                ImGui::SameLine();
-                StringUtils::format(label, sizeof(label), "Vertex%d", vertexIndex);
-                ImGui::TextUnformatted(label);
+            StringUtils::format(label, sizeof(label), "%s##vertex[%d]", ImGuiWindow::kFALink, i);
+            int vertexIndex = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
+            if (ImGuiWindow::handleButton(label, 0, vertexPtr != nullptr)) {
+                m_explicitTabType = kTabTypeVertex;
+                m_vertexIndex = nanoem_rsize_t(vertexIndex);
             }
+            ImGui::SameLine();
+            StringUtils::format(label, sizeof(label), "Vertex%d", vertexIndex);
+            ImGui::TextUnformatted(label);
         }
     }
 }
@@ -976,7 +973,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
                 nanoem_model_material_t *m_material;
             };
             static void
-            accept(const URI &fileURI, Project *project, void *opaque)
+            accept(const URI &fileURI, Project * /* project */, void *opaque)
             {
                 BaseUserData *userData = static_cast<BaseUserData *>(opaque);
                 Model *model = userData->m_model;
