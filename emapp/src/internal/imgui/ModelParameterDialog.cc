@@ -352,11 +352,18 @@ ModelParameterDialog::layoutAllVertices(Project *project)
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             char buffer[Inline::kNameStackBufferSize];
             nanoem_model_vertex_t *vertexPtr = vertices[i];
-            formatVertexText(buffer, sizeof(buffer), vertexPtr);
             const bool selected = selection->containsVertex(vertexPtr);
             if (selected) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
             }
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            bool visible = vertex->isEditingMasked() ? false : true;
+            StringUtils::format(buffer, sizeof(buffer), "##vertex[%d].visible", i);
+            if (ImGui::Checkbox(buffer, &visible)) {
+                vertex->setEditingMasked(visible ? false : true);
+            }
+            ImGui::SameLine();
+            formatVertexText(buffer, sizeof(buffer), vertexPtr);
             if (ImGui::Selectable(buffer, selected)) {
                 const ImGuiIO &io = ImGui::GetIO();
                 if (io.KeyCtrl) {
