@@ -4008,11 +4008,11 @@ ImGuiWindow::handleVerticalSplitter(
     const ImVec2 posTo(posFrom.x + thumbWidth * 0.5f, posFrom.y + viewportHeight);
     if (m_lastTimelineWidth > 0) {
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-            const nanoem_f32_t threshold = size.x * kTimelineSnapGridRatio;
+            const nanoem_f32_t snapThreshold = size.x * kTimelineSnapGridRatio;
             nanoem_f32_t width = glm::clamp(m_lastTimelineWidth + ImGui::GetMouseDragDelta().x,
                              size.x * kTimelineMinWidthRatio, size.x * kTimelineMaxWidthRatio),
                          delta = width - m_defaultTimelineWidth;
-            if (delta > -threshold && delta < threshold) {
+            if (delta > -snapThreshold && delta < snapThreshold) {
                 width = m_defaultTimelineWidth;
             }
             m_timelineWidth = width;
