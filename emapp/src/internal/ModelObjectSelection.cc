@@ -6,6 +6,7 @@
 
 #include "emapp/internal/ModelObjectSelection.h"
 
+#include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 
@@ -101,12 +102,9 @@ ModelObjectSelection::addSoftBody(const nanoem_model_soft_body_t *value)
 }
 
 void
-ModelObjectSelection::addFace(const Vector3UI32 &value)
+ModelObjectSelection::addFace(const Vector4UI32 &value)
 {
     m_selectedFaceSet.insert(value);
-    m_vertexIndexSet.insert(value.x);
-    m_vertexIndexSet.insert(value.y);
-    m_vertexIndexSet.insert(value.z);
 }
 
 void
@@ -232,12 +230,9 @@ ModelObjectSelection::removeSoftBody(const nanoem_model_soft_body_t *value)
 }
 
 void
-ModelObjectSelection::removeFace(const Vector3UI32 &value)
+ModelObjectSelection::removeFace(const Vector4UI32 &value)
 {
     m_selectedFaceSet.erase(value);
-    m_vertexIndexSet.erase(value.x);
-    m_vertexIndexSet.erase(value.y);
-    m_vertexIndexSet.erase(value.z);
 }
 
 void
@@ -294,7 +289,6 @@ void
 ModelObjectSelection::removeAllFaces()
 {
     m_selectedFaceSet.clear();
-    m_vertexIndexSet.clear();
 }
 
 void
@@ -494,10 +488,10 @@ ModelObjectSelection::allSoftBodySet() const
     return m_selectedSoftBodySet;
 }
 
-IModelObjectSelection::VertexIndexSet
-ModelObjectSelection::allVertexIndexSet() const
+IModelObjectSelection::FaceList
+ModelObjectSelection::allFaces() const
 {
-    return m_vertexIndexSet;
+    return ListUtils::toListFromSet(m_selectedFaceSet);
 }
 
 bool
@@ -549,15 +543,9 @@ ModelObjectSelection::containsSoftBody(const nanoem_model_soft_body_t *value) co
 }
 
 bool
-ModelObjectSelection::containsFace(const Vector3UI32 &value) const NANOEM_DECL_NOEXCEPT
+ModelObjectSelection::containsFace(const Vector4UI32 &value) const NANOEM_DECL_NOEXCEPT
 {
     return m_selectedFaceSet.find(value) != m_selectedFaceSet.end();
-}
-
-bool
-ModelObjectSelection::containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT
-{
-    return m_vertexIndexSet.find(value) != m_vertexIndexSet.end();
 }
 
 bool
@@ -650,9 +638,9 @@ namespace tinystl {
 
 template <>
 inline size_t
-hash(const nanoem::Vector3UI32 &value)
+hash(const nanoem::Vector4UI32 &value)
 {
-    return std::hash<nanoem::Vector3UI32>()(value);
+    return std::hash<nanoem::Vector4UI32>()(value);
 }
 
 } /* namespace tinystl */

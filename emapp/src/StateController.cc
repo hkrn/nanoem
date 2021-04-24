@@ -814,16 +814,18 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         break;
     }
     case IModelObjectSelection::kEditingTypeFace: {
-        const IModelObjectSelection::VertexIndexSet selectedBoneSet(selection->allVertexIndexSet());
-        if (!selectedBoneSet.empty()) {
+        const IModelObjectSelection::FaceList selectedFaces(selection->allFaces());
+        if (!selectedFaces.empty()) {
             nanoem_rsize_t numVertices;
             nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-            for (IModelObjectSelection::VertexIndexSet::const_iterator it = selectedBoneSet.begin(),
-                                                                       end = selectedBoneSet.end();
+            for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(),
+                                                                       end = selectedFaces.end();
                  it != end; ++it) {
-                const nanoem_u32_t vertexIndex = *it;
-                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+                const Vector4UI32 &face = *it;
+                for (nanoem_rsize_t i = 1; i < 4; i++) {
+                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[face[i]])));
+                    assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+                }
             }
             assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
         }
@@ -852,9 +854,12 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
             const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
             MaterialOffsetMap materialOffsets;
             for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *material = materials[i];
-                materialOffsets.insert(tinystl::make_pair(material, offset));
-                offset += nanoemModelMaterialGetNumVertexIndices(material);
+                const nanoem_model_material_t *materialPtr = materials[i];
+                const model::Material *material = model::Material::cast(materialPtr);
+                if (material && material->isVisible()) {
+                    materialOffsets.insert(tinystl::make_pair(materialPtr, offset));
+                }
+                offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
             }
             for (model::Material::Set::const_iterator it = selectedMaterialSet.begin(), end = selectedMaterialSet.end();
                  it != end; ++it) {
@@ -897,9 +902,12 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
             const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
             MaterialOffsetMap materialOffsets;
             for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *material = materials[i];
-                materialOffsets.insert(tinystl::make_pair(material, offset));
-                offset += nanoemModelMaterialGetNumVertexIndices(material);
+                const nanoem_model_material_t *materialPtr = materials[i];
+                const model::Material *material = model::Material::cast(materialPtr);
+                if (material && material->isVisible()) {
+                    materialOffsets.insert(tinystl::make_pair(materialPtr, offset));
+                }
+                offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
             }
             for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet.begin(), end = selectedSoftBodySet.end();
                  it != end; ++it) {
@@ -1155,7 +1163,7 @@ DraggingFaceSelectionState::commitSelection(Model *model, const Project *project
     nanoem_rsize_t numVertices, numMaterials, numVertexIndices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
-    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
     const ICamera *camera = project->activeCamera();
     IModelObjectSelection *selection = model->selection();
     if (removeAll) {
@@ -1163,20 +1171,25 @@ DraggingFaceSelectionState::commitSelection(Model *model, const Project *project
     }
     const ISelector *selector = currentSelector();
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-        const nanoem_rsize_t numVI = nanoemModelMaterialGetNumVertexIndices(materials[i]);
-        for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
-            const nanoem_rsize_t o = offset + j;
-            const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
-            const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-            const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
-                baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
-            if (selector->contains(coord)) {
-                const Vector3UI32 face(i0, i1, i2);
-                selection->addFace(face);
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_rsize_t numVertexIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        const model::Material *material = model::Material::cast(materialPtr);
+        if (material && material->isVisible()) {
+            for (nanoem_rsize_t j = 0; j < numVertexIndices; j += 3) {
+                const nanoem_rsize_t o = offset + j;
+                const nanoem_u32_t i0 = vertexIndices[o], i1 = vertexIndices[o + 1], i2 = vertexIndices[o + 2];
+                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
+                    baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
+                const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
+                if (selector->contains(coord)) {
+                    const Vector4UI32 face(o / 3, i0, i1, i2);
+                    selection->addFace(face);
+                }
             }
         }
+        offset += numVertexIndices;
     }
 }
 
@@ -1227,26 +1240,30 @@ DraggingMaterialSelectionState::commitSelection(Model *model, const Project *pro
     const ISelector *selector = currentSelector();
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
-        const nanoem_rsize_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-        Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
-        for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
-            const nanoem_rsize_t o = offset + j;
-            const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
-            const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-            const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
-            aabbMin = glm::min(aabbMin, o0);
-            aabbMin = glm::min(aabbMin, o1);
-            aabbMin = glm::min(aabbMin, o2);
-            aabbMax = glm::max(aabbMax, o0);
-            aabbMax = glm::max(aabbMax, o1);
-            aabbMax = glm::max(aabbMax, o2);
+        const model::Material *material = model::Material::cast(materialPtr);
+        const nanoem_rsize_t numVertexIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        if (material && material->isVisible()) {
+            Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+            for (nanoem_rsize_t j = 0; j < numVertexIndices; j += 3) {
+                const nanoem_rsize_t o = offset + j;
+                const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
+                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+                aabbMin = glm::min(aabbMin, o0);
+                aabbMin = glm::min(aabbMin, o1);
+                aabbMin = glm::min(aabbMin, o2);
+                aabbMax = glm::max(aabbMax, o0);
+                aabbMax = glm::max(aabbMax, o1);
+                aabbMax = glm::max(aabbMax, o2);
+            }
+            const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
+            if (selector->contains(coord)) {
+                selection->addMaterial(materialPtr);
+            }
         }
-        const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
-        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
-        if (selector->contains(coord)) {
-            selection->addMaterial(materialPtr);
-        }
+        offset += numVertexIndices;
     }
 }
 
@@ -1495,23 +1512,27 @@ DraggingSoftBodySelectionState::getMaterialMap(
     const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numVertexIndices);
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
-        const nanoem_rsize_t numVI = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-        Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
-        for (nanoem_rsize_t j = 0; j < numVI; j += 3) {
-            const nanoem_rsize_t o = offset + j;
-            const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
-            const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-            const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
-            aabbMin = glm::min(aabbMin, o0);
-            aabbMin = glm::min(aabbMin, o1);
-            aabbMin = glm::min(aabbMin, o2);
-            aabbMax = glm::max(aabbMax, o0);
-            aabbMax = glm::max(aabbMax, o1);
-            aabbMax = glm::max(aabbMax, o2);
+        const model::Material *material = model::Material::cast(materialPtr);
+        const nanoem_rsize_t numVertexIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        if (material && material->isVisible()) {
+            Vector3 aabbMin(FLT_MAX), aabbMax(FLT_MIN);
+            for (nanoem_rsize_t j = 0; j < numVertexIndices; j += 3) {
+                const nanoem_rsize_t o = offset + j;
+                const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
+                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+                aabbMin = glm::min(aabbMin, o0);
+                aabbMin = glm::min(aabbMin, o1);
+                aabbMin = glm::min(aabbMin, o2);
+                aabbMax = glm::max(aabbMax, o0);
+                aabbMax = glm::max(aabbMax, o1);
+                aabbMax = glm::max(aabbMax, o2);
+            }
+            const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
+            baryCenters.insert(tinystl::make_pair(materialPtr, baryCenter));
         }
-        const Vector3 baryCenter((aabbMin + aabbMax) * 0.5f);
-        baryCenters.insert(tinystl::make_pair(materialPtr, baryCenter));
+        offset += numVertexIndices;
     }
 }
 

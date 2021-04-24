@@ -631,7 +631,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
             if (ImGui::MenuItem("Select All Faces")) {
                 for (nanoem_rsize_t i = 0; i < numFaces; i++) {
                     const nanoem_u32_t *facesPtr = &vertexIndices[i * 3];
-                    const Vector3UI32 face(facesPtr[0], facesPtr[1], facesPtr[2]);
+                    const Vector4UI32 face(i, facesPtr[0], facesPtr[1], facesPtr[2]);
                     selection->addFace(face);
                 }
             }
@@ -642,25 +642,17 @@ ModelParameterDialog::layoutAllFaces(Project *project)
         }
         if (ImGui::BeginMenu("Masking")) {
             if (ImGui::MenuItem("Mask All Selected Faces")) {
-                nanoem_rsize_t numVertices;
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-                const IModelObjectSelection::VertexIndexSet vertexIndexSet(selection->allVertexIndexSet());
-                for (IModelObjectSelection::VertexIndexSet::const_iterator it = vertexIndexSet.begin(), end = vertexIndexSet.end(); it != end; ++it) {
-                    const nanoem_model_vertex_t *vertexPtr = vertices[*it];
-                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
-                        vertex->setEditingMasked(true);
-                    }
+                const IModelObjectSelection::FaceList faces(selection->allFaces());
+                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end; ++it) {
+                    const Vector4UI32 &face = *it;
+                    m_activeModel->setFaceEditingMasked(face.x, true);
                 }
             }
             if (ImGui::MenuItem("Unmask All Selected Faces")) {
-                nanoem_rsize_t numVertices;
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-                const IModelObjectSelection::VertexIndexSet vertexIndexSet(selection->allVertexIndexSet());
-                for (IModelObjectSelection::VertexIndexSet::const_iterator it = vertexIndexSet.begin(), end = vertexIndexSet.end(); it != end; ++it) {
-                    const nanoem_model_vertex_t *vertexPtr = vertices[*it];
-                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
-                        vertex->setEditingMasked(false);
-                    }
+                const IModelObjectSelection::FaceList faces(selection->allFaces());
+                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end; ++it) {
+                    const Vector4UI32 &face = *it;
+                    m_activeModel->setFaceEditingMasked(face.x, false);
                 }
             }
             ImGui::Separator();
@@ -696,13 +688,19 @@ ModelParameterDialog::layoutAllFaces(Project *project)
             const nanoem_rsize_t offset = nanoem_rsize_t(i) * 3;
             const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0], vertexIndex1 = vertexIndices[offset + 1],
                                vertexIndex2 = vertexIndices[offset + 2];
-            const Vector3UI32 face(vertexIndex0, vertexIndex1, vertexIndex2);
-            StringUtils::format(buffer, sizeof(buffer), "%d (%d, %d, %d)##face[%d].name", i + 1, vertexIndex0,
-                vertexIndex1, vertexIndex2, i);
+            const Vector4UI32 face(i, vertexIndex0, vertexIndex1, vertexIndex2);
             bool selected = selection->containsFace(face);
             if (selected) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
             }
+            bool visible = m_activeModel->isFaceEditingMasked(i) ? false : true;
+            StringUtils::format(buffer, sizeof(buffer), "##face[%d].visible", i);
+            if (ImGui::Checkbox(buffer, &visible)) {
+                m_activeModel->setFaceEditingMasked(i, visible ? false : true);
+            }
+            ImGui::SameLine();
+            StringUtils::format(buffer, sizeof(buffer), "%d (%d, %d, %d)##face[%d].name", i + 1, vertexIndex0,
+                vertexIndex1, vertexIndex2, i);
             if (ImGui::Selectable(buffer, selected)) {
                 const ImGuiIO &io = ImGui::GetIO();
                 if (io.KeyCtrl) {
@@ -717,7 +715,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
                             const nanoem_u32_t childVertexIndex0 = vertexIndices[offset + 0],
                                                childVertexIndex1 = vertexIndices[offset + 1],
                                                childVertexIndex2 = vertexIndices[offset + 2];
-                            const Vector3UI32 childFace(childVertexIndex0, childVertexIndex1, childVertexIndex2);
+                            const Vector4UI32 childFace(j, childVertexIndex0, childVertexIndex1, childVertexIndex2);
                             selection->addFace(childFace);
                         }
                     }
@@ -867,7 +865,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     IndicesMap::const_iterator it2 = indices.find(materialPtr);
                     if (it2 != indices.end()) {
                         for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i += 3) {
-                            const Vector3UI32 face(vertexIndices[i], vertexIndices[i + 1], vertexIndices[i + 2]);
+                            const Vector4UI32 face(i, vertexIndices[i], vertexIndices[i + 1], vertexIndices[i + 2]);
                             selection->addFace(face);
                         }
                     }

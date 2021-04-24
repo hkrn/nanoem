@@ -204,6 +204,8 @@ public:
     void removeBoneReference(const String &value);
     void removeMorphReference(const nanoem_model_morph_t *value);
     void removeMorphReference(const String &value);
+    bool isFaceEditingMasked(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT;
+    void setFaceEditingMasked(nanoem_rsize_t index, bool value);
     void pushUndo(undo_command_t *command);
     void solveAllConstraints();
 
@@ -395,6 +397,7 @@ public:
 
 private:
     struct LoadingImageItem;
+    typedef tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> LineVertexList;
     typedef tinystl::vector<LoadingImageItem *, TinySTLAllocator> LoadingImageItemList;
     typedef tinystl::unordered_map<String, Image *, TinySTLAllocator> ImageMap;
     typedef tinystl::unordered_map<String, const nanoem_model_bone_t *, TinySTLAllocator> BoneHashMap;
@@ -419,19 +422,24 @@ private:
         DrawArrayBuffer();
         ~DrawArrayBuffer() NANOEM_DECL_NOEXCEPT;
         void destroy();
+        LineVertexList m_vertices;
         sg_buffer m_buffer;
-        tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> m_vertices;
     };
     struct DrawIndexedBuffer {
         typedef nanoem_u32_t IndexType;
+        typedef tinystl::vector<IndexType, TinySTLAllocator> IndexList;
         DrawIndexedBuffer();
         ~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT;
         nanoem_u32_t fillShape(const par_shapes_mesh *mesh, const nanoem::Vector4 &color);
+        void initializeVertexBuffer(const char *name, nanoem_rsize_t numVertices);
+        void initializeIndexBuffer(const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices);
+        void update();
         void destroy();
+        LineVertexList m_vertices;
+        IndexList m_activeIndices;
         sg_buffer m_vertexBuffer;
         sg_buffer m_indexBuffer;
-        tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> m_vertices;
-        tinystl::vector<IndexType, TinySTLAllocator> m_indices;
+        sg_buffer m_activeIndexBuffer;
         Vector4 m_color;
     };
     struct OffscreenPassiveRenderTargetEffect {
@@ -523,6 +531,7 @@ private:
     const nanoem_model_constraint_t *m_activeConstraintPtr;
     const nanoem_model_material_t *m_activeMaterialPtr;
     ByteArray m_vertexBufferData;
+    tinystl::vector<nanoem_u32_t, TinySTLAllocator> m_faceStates;
     tinystl::pair<const nanoem_model_bone_t *, const nanoem_model_bone_t *> m_activeBonePairPtr;
     tinystl::pair<IEffect *, IEffect *> m_activeEffectPtrPair;
     Image *m_screenImage;

@@ -8,6 +8,7 @@
 
 cbuffer grid_parameters_t : register(b0) {
     float4x4 u_modelViewProjectionMatrix;
+    float4 u_color;
 };
 
 vs_output_t
@@ -15,7 +16,7 @@ nanoemVSMain(vs_input_t input)
 {
     vs_output_t output;
     output.position = mul(u_modelViewProjectionMatrix, float4(input.position, 1));
-    output.color0 = input.color0;
+    output.color0 = input.color0 * u_color;
 #ifdef NANOEM_IO_HAS_POINT
     output.psize = 1.0;
 #endif

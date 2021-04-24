@@ -580,8 +580,9 @@ Model::DrawArrayBuffer::destroy()
 }
 
 Model::DrawIndexedBuffer::DrawIndexedBuffer()
+    : m_color(0xff)
 {
-    m_vertexBuffer = m_indexBuffer = { SG_INVALID_ID };
+    m_vertexBuffer = m_indexBuffer = m_activeIndexBuffer = { SG_INVALID_ID };
 }
 
 Model::DrawIndexedBuffer::~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT
@@ -616,14 +617,15 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
     }
     if (!sg::is_valid(m_indexBuffer)) {
         nanoem_u32_t numIndices = Inline::saturateInt32U(shape->ntriangles) * 3;
-        size_t size = sizeof(m_indices[0]) * numIndices;
-        m_indices.resize(numIndices);
+        tinystl::vector<nanoem_u32_t, TinySTLAllocator> indices(numIndices);
+        size_t size = sizeof(indices[0]) * numIndices;
+        indices.resize(numIndices);
         for (nanoem_u32_t i = 0; i < numIndices; i++) {
-            m_indices[i] = shape->triangles[i];
+            indices[i] = shape->triangles[i];
         }
         sg_buffer_desc desc;
         Inline::clearZeroMemory(desc);
-        desc.data.ptr = m_indices.data();
+        desc.data.ptr = indices.data();
         desc.data.size = desc.size = size;
         desc.usage = SG_USAGE_IMMUTABLE;
         desc.type = SG_BUFFERTYPE_INDEXBUFFER;
@@ -631,6 +633,80 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
         nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
     }
     return numVertices;
+}
+
+void
+Model::DrawIndexedBuffer::initializeVertexBuffer(const char *name, nanoem_rsize_t numVertices)
+{
+    if (!sg::is_valid(m_vertexBuffer)) {
+        m_vertices.resize(glm::max(numVertices, size_t(1)));
+        sg_buffer_desc desc;
+        Inline::clearZeroMemory(desc);
+        desc.size = sizeof(m_vertices[0]) * m_vertices.size();
+        desc.usage = SG_USAGE_DYNAMIC;
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/Lines/VertexBuffer", name);
+            desc.label = label;
+        }
+        m_vertexBuffer = sg::make_buffer(&desc);
+        nanoem_assert(sg::query_buffer_state(m_vertexBuffer) == SG_RESOURCESTATE_VALID,
+            "vertex buffer must be valid");
+        SG_LABEL_BUFFER(m_vertexBuffer, desc.label);
+    }
+}
+
+void
+Model::DrawIndexedBuffer::initializeIndexBuffer(const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices)
+{
+    if (!sg::is_valid(m_indexBuffer)) {
+        nanoem_u32_t numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
+        IndexList indices(numAllocateVertexIndices);
+        IndexType *indexBuffer = indices.data();
+        for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
+            nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1], vertexIndex2 = vertexIndices[i + 2];
+            size_t offset = i * 2;
+            indexBuffer[offset + 0] = vertexIndex0;
+            indexBuffer[offset + 1] = vertexIndex1;
+            indexBuffer[offset + 2] = vertexIndex1;
+            indexBuffer[offset + 3] = vertexIndex2;
+            indexBuffer[offset + 4] = vertexIndex2;
+            indexBuffer[offset + 5] = vertexIndex0;
+        }
+        sg_buffer_desc desc;
+        Inline::clearZeroMemory(desc);
+        if (numVertexIndices > 0) {
+            desc.data.size = desc.size = sizeof(indexBuffer[0]) * numAllocateVertexIndices;
+            desc.data.ptr = indices.data();
+        }
+        else {
+            static const IndexType kDummyIndex = 0;
+            desc.data.size = desc.size = sizeof(kDummyIndex);
+            desc.data.ptr = &kDummyIndex;
+        }
+        desc.usage = SG_USAGE_IMMUTABLE;
+        desc.type = SG_BUFFERTYPE_INDEXBUFFER;
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/Lines/IndexBuffer", name);
+            desc.label = label;
+        }
+        m_indexBuffer = sg::make_buffer(&desc);
+        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID,
+            "index buffer must be valid");
+        SG_LABEL_BUFFER(m_indexBuffer, desc.label);
+    }
+}
+
+void
+Model::DrawIndexedBuffer::update()
+{
+    const int vertexBufferSize = Inline::saturateInt32(m_vertices.size() * sizeof(m_vertices[0]));
+    sg::update_buffer(m_vertexBuffer, m_vertices.data(), vertexBufferSize);
+    if (sg::is_valid(m_activeIndexBuffer)) {
+        const int activeIndexBufferSize = Inline::saturateInt32(m_activeIndices.size() * sizeof(m_activeIndices[0]));
+        sg::update_buffer(m_activeIndexBuffer, m_activeIndices.data(), activeIndexBufferSize);
+    }
 }
 
 void
@@ -644,6 +720,10 @@ Model::DrawIndexedBuffer::destroy()
     if (sg::is_valid(m_indexBuffer)) {
         sg::destroy_buffer(m_indexBuffer);
         m_indexBuffer = { SG_INVALID_ID };
+    }
+    if (sg::is_valid(m_activeIndexBuffer)) {
+        sg::destroy_buffer(m_activeIndexBuffer);
+        m_activeIndexBuffer = { SG_INVALID_ID };
     }
 }
 
@@ -723,7 +803,6 @@ Model::Model(Project *project, nanoem_u16_t handle)
     nanoem_assert(m_project, "must not be nullptr");
     Inline::clearZeroMemory(m_activeMorphPtr);
     m_vertexBuffers[0] = m_vertexBuffers[1] = m_indexBuffer = { SG_INVALID_ID };
-    m_drawAllPoints.m_buffer = m_drawAllLines.m_vertexBuffer = m_drawAllLines.m_indexBuffer = { SG_INVALID_ID };
     m_activeEffectPtrPair.first = m_project->sharedResourceRepository()->modelProgramBundle();
     m_activeEffectPtrPair.second = nullptr;
     m_selection = nanoem_new(internal::ModelObjectSelection(this));
@@ -1008,7 +1087,6 @@ Model::createAllImages()
 {
     nanoem_rsize_t numMaterials;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-    nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
     sg_wrap mode;
     nanoem_u32_t flags;
     clearAllLoadingImageItems();
@@ -1947,6 +2025,25 @@ Model::removeMorphReference(const String &value)
     }
 }
 
+bool
+Model::isFaceEditingMasked(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT
+{
+    return !m_faceStates.empty() && index < m_faceStates.size() ? m_faceStates[index] != 0 : false;
+}
+
+void
+Model::setFaceEditingMasked(nanoem_rsize_t index, bool value)
+{
+    if (m_faceStates.empty()) {
+        nanoem_rsize_t numVertices;
+        nanoemModelGetAllVertexIndices(m_opaque, &numVertices);
+        m_faceStates.resize(numVertices / 3);
+    }
+    if (index < m_faceStates.size()) {
+        m_faceStates[index] = value ? 1 : 0;
+    }
+}
+
 void
 Model::pushUndo(undo_command_t *command)
 {
@@ -2140,7 +2237,8 @@ Model::isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEX
 bool
 Model::isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return !m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value);
+    const model::Material *material = model::Material::cast(value);
+    return (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value)) && material && material->isVisible();
 }
 
 bool
@@ -3830,7 +3928,6 @@ Model::drawAllMaterialOverlays()
     ModelProgramBundle *effect = m_project->sharedResourceRepository()->modelProgramBundle();
     const ICamera *activeCamera = m_project->activeCamera();
     const IModelObjectSelection *s = selection();
-    const ShadowCamera *shadowCamera = m_project->shadowCamera();
     DummyLight dummyLight(m_project);
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
@@ -3933,66 +4030,12 @@ Model::drawAllVertexPoints()
 void
 Model::drawAllVertexFaces()
 {
-    static const Vector4U8 kColorTranslucentRed(0xff, 0, 0, 0x7f), kColorTranslucentBlack(0, 0, 0, 0x7f);
     nanoem_rsize_t numMaterials, numVertices, numVertexIndices, indexOffset = 0;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-    if (!sg::is_valid(m_drawAllLines.m_vertexBuffer)) {
-        m_drawAllLines.m_vertices.resize(glm::max(numVertices, size_t(1)));
-        sg_buffer_desc desc;
-        Inline::clearZeroMemory(desc);
-        desc.size = sizeof(m_drawAllLines.m_vertices[0]) * m_drawAllLines.m_vertices.size();
-        desc.usage = SG_USAGE_DYNAMIC;
-        char label[Inline::kMarkerStringLength];
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(label, sizeof(label), "Models/%s/Lines/VertexBuffer", canonicalNameConstString());
-            desc.label = label;
-        }
-        m_drawAllLines.m_vertexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_drawAllLines.m_vertexBuffer) == SG_RESOURCESTATE_VALID,
-            "vertex buffer must be valid");
-        SG_LABEL_BUFFER(m_drawAllLines.m_vertexBuffer, desc.label);
-    }
-    if (!sg::is_valid(m_drawAllLines.m_indexBuffer)) {
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
-        nanoem_u32_t numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
-        m_drawAllLines.m_indices.resize(numAllocateVertexIndices);
-        DrawIndexedBuffer::IndexType *vertexIndices = m_drawAllLines.m_indices.data();
-        for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
-            const DrawIndexedBuffer::IndexType vertexIndex0 = indices[i + 0];
-            const DrawIndexedBuffer::IndexType vertexIndex1 = indices[i + 1];
-            const DrawIndexedBuffer::IndexType vertexIndex2 = indices[i + 2];
-            size_t offset = i * 2;
-            vertexIndices[offset + 0] = vertexIndex0;
-            vertexIndices[offset + 1] = vertexIndex1;
-            vertexIndices[offset + 2] = vertexIndex1;
-            vertexIndices[offset + 3] = vertexIndex2;
-            vertexIndices[offset + 4] = vertexIndex2;
-            vertexIndices[offset + 5] = vertexIndex0;
-        }
-        sg_buffer_desc desc;
-        Inline::clearZeroMemory(desc);
-        if (numVertexIndices > 0) {
-            desc.data.ptr = vertexIndices;
-            desc.data.size = desc.size = sizeof(m_drawAllLines.m_indices[0]) * m_drawAllLines.m_indices.size();
-        }
-        else {
-            static const int kDummyIndex = 0;
-            desc.data.ptr = &kDummyIndex;
-            desc.data.size = desc.size = sizeof(kDummyIndex);
-        }
-        desc.usage = SG_USAGE_IMMUTABLE;
-        desc.type = SG_BUFFERTYPE_INDEXBUFFER;
-        char label[Inline::kMarkerStringLength];
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(label, sizeof(label), "Models/%s/Lines/IndexBuffer", canonicalNameConstString());
-            desc.label = label;
-        }
-        m_drawAllLines.m_indexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_drawAllLines.m_indexBuffer) == SG_RESOURCESTATE_VALID,
-            "index buffer must be valid");
-        SG_LABEL_BUFFER(m_drawAllLines.m_indexBuffer, desc.label);
-    }
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
+    m_drawAllLines.initializeVertexBuffer(canonicalNameConstString(), numVertices);
+    m_drawAllLines.initializeIndexBuffer(canonicalNameConstString(), vertexIndices, numVertexIndices);
     sg::LineVertexUnit *vertexUnits = m_drawAllLines.m_vertices.data();
     bx::simd128_t normal;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
@@ -4008,27 +4051,56 @@ Model::drawAllVertexFaces()
         else {
             Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
         }
-        const nanoem_u32_t vertexIndex = Inline::saturateInt32U(i);
-        vertexUnit.m_color =
-            m_selection->containsVertexIndex(vertexIndex) ? kColorTranslucentRed : kColorTranslucentBlack;
+        vertexUnit.m_color = Vector4U8(0xff);
     }
-    internal::LineDrawer *drawer = lineDrawer();
-    sg::update_buffer(m_drawAllLines.m_vertexBuffer, m_drawAllLines.m_vertices.data(),
-        Inline::saturateInt32(m_drawAllLines.m_vertices.size() * sizeof(m_drawAllLines.m_vertices[0])));
+    const IModelObjectSelection::FaceList faces(m_selection->allFaces());
+    if (!faces.empty() && !sg::is_valid(m_drawAllLines.m_activeIndexBuffer)) {
+        sg_buffer_desc desc;
+        Inline::clearZeroMemory(desc);
+        nanoem_rsize_t numAllocateVertexIndices = numVertexIndices * 2;
+        desc.data.size = desc.size = sizeof(DrawIndexedBuffer::IndexType) * numAllocateVertexIndices;
+        desc.type = SG_BUFFERTYPE_INDEXBUFFER;
+        desc.usage = SG_USAGE_DYNAMIC;
+        m_drawAllLines.m_activeIndexBuffer = sg::make_buffer(&desc);
+        m_drawAllLines.m_activeIndices.resize(numAllocateVertexIndices);
+    }
+    DrawIndexedBuffer::IndexType *activeIndices = m_drawAllLines.m_activeIndices.data();
+    const nanoem_rsize_t numSelectedFaces = faces.size();
+    for (nanoem_rsize_t i = 0; i < numSelectedFaces; i++) {
+        const Vector4UI32 &face = faces[i];
+        nanoem_u32_t vertexIndex0 = face.y, vertexIndex1 = face.z, vertexIndex2 = face.w;
+        size_t offset = i * 6;
+        activeIndices[offset + 0] = vertexIndex0;
+        activeIndices[offset + 1] = vertexIndex1;
+        activeIndices[offset + 2] = vertexIndex1;
+        activeIndices[offset + 3] = vertexIndex2;
+        activeIndices[offset + 4] = vertexIndex2;
+        activeIndices[offset + 5] = vertexIndex0;
+    }
+    m_drawAllLines.update();
     internal::LineDrawer::Option option(m_drawAllLines.m_vertexBuffer, 0);
     option.m_indexBuffer = m_drawAllLines.m_indexBuffer;
     option.m_primitiveType = SG_PRIMITIVETYPE_LINES;
     option.m_indexType = SG_INDEXTYPE_UINT32;
-    option.m_enableDepthTest = option.m_enableBlendMode = true;
+    option.m_enableDepthTest = true;
+    option.m_color = Vector4(0, 0, 1, 1);
+    internal::LineDrawer *drawer = lineDrawer();
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-        const nanoem_model_material_t *material = materials[i];
-        const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(material) * 2;
-        if (isMaterialSelected(material)) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr) * 2;
+        if (isMaterialSelected(materialPtr)) {
             option.m_numIndices = numIndices;
             option.m_offset = indexOffset;
             drawer->drawPass(option);
         }
         indexOffset += numIndices;
+    }
+    if (sg::is_valid(m_drawAllLines.m_activeIndexBuffer)) {
+        option.m_indexBuffer = m_drawAllLines.m_activeIndexBuffer;
+        option.m_numIndices = numSelectedFaces * 6;
+        option.m_color = Vector4(1, 0, 0, 1);
+        option.m_offset = 0;
+        drawer->drawPass(option);
     }
 }
 

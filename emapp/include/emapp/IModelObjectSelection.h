@@ -23,7 +23,7 @@ namespace nanoem {
 
 class IModelObjectSelection {
 public:
-    typedef tinystl::unordered_set<nanoem_u32_t, TinySTLAllocator> VertexIndexSet;
+    typedef tinystl::vector<Vector4UI32, TinySTLAllocator> FaceList;
     enum EditingType {
         kEditingTypeFirstEnum,
         kEditingTypeNone = kEditingTypeFirstEnum,
@@ -59,7 +59,7 @@ public:
     virtual void addRigidBody(const nanoem_model_rigid_body_t *value) = 0;
     virtual void addJoint(const nanoem_model_joint_t *value) = 0;
     virtual void addSoftBody(const nanoem_model_soft_body_t *value) = 0;
-    virtual void addFace(const Vector3UI32 &value) = 0;
+    virtual void addFace(const Vector4UI32 &value) = 0;
     virtual void addAllBones() = 0;
     virtual void addAllDirtyBones() = 0;
     virtual void addAllMovableBones() = 0;
@@ -72,7 +72,7 @@ public:
     virtual void removeRigidBody(const nanoem_model_rigid_body_t *value) = 0;
     virtual void removeJoint(const nanoem_model_joint_t *value) = 0;
     virtual void removeSoftBody(const nanoem_model_soft_body_t *value) = 0;
-    virtual void removeFace(const Vector3UI32 &value) = 0;
+    virtual void removeFace(const Vector4UI32 &value) = 0;
     virtual void removeAllVertices() = 0;
     virtual void removeAllBones() = 0;
     virtual void removeAllMaterials() = 0;
@@ -111,7 +111,7 @@ public:
     virtual model::RigidBody::Set allRigidBodySet() const = 0;
     virtual model::Joint::Set allJointSet() const = 0;
     virtual model::SoftBody::Set allSoftBodySet() const = 0;
-    virtual VertexIndexSet allVertexIndexSet() const = 0;
+    virtual FaceList allFaces() const = 0;
     virtual bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT = 0;
@@ -120,8 +120,7 @@ public:
     virtual bool containsRigidBody(const nanoem_model_rigid_body_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsJoint(const nanoem_model_joint_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual bool containsFace(const Vector3UI32 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual bool containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual bool containsFace(const Vector4UI32 &value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsAnyBone() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT = 0;

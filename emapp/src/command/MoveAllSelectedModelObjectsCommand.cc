@@ -37,17 +37,18 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         break;
     }
     case IModelObjectSelection::kEditingTypeFace: {
-        const IModelObjectSelection::VertexIndexSet selectedBoneSet(selection->allVertexIndexSet());
+        const IModelObjectSelection::FaceList selectedFaces(selection->allFaces());
         nanoem_rsize_t numVertices;
         nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-        for (IModelObjectSelection::VertexIndexSet::const_iterator it = selectedBoneSet.begin(),
-                                                                   end = selectedBoneSet.end();
+        for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(), end = selectedFaces.end();
              it != end; ++it) {
-            const nanoem_u32_t vertexIndex = *it;
-            nanoem_model_vertex_t *mutableVertexPtr = vertices[vertexIndex];
-            nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
-            const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
-            m_vertices.push_back(tinystl::make_pair(item, origin));
+            const Vector4UI32 &face = *it;
+            for (nanoem_rsize_t i = 1; i < 4; i++) {
+                nanoem_model_vertex_t *mutableVertexPtr = vertices[face[i]];
+                nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
+                const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
+                m_vertices.push_back(tinystl::make_pair(item, origin));
+            }
         }
         break;
     }

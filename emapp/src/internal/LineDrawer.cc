@@ -24,6 +24,12 @@ namespace {
 #include "emapp/private/shaders/grid_vs_glsl_es3.h"
 #include "emapp/private/shaders/grid_vs_msl_macos.h"
 #include "emapp/private/shaders/pointed_grid_vs_msl_macos.h"
+
+struct Uniform {
+    Matrix4x4 m_viewProjection;
+    Vector4 m_color;
+};
+
 } /* namespace anonymous */
 
 LineDrawer::Option::Option(sg_buffer vertexBuffer, size_t numIndices)
@@ -34,6 +40,7 @@ LineDrawer::Option::Option(sg_buffer vertexBuffer, size_t numIndices)
     , m_offset(0)
     , m_numIndices(numIndices)
     , m_worldTransform(1)
+    , m_color(1.0f)
     , m_enableBlendMode(false)
     , m_enableDepthTest(false)
 {
@@ -58,7 +65,7 @@ LineDrawer::initialize()
 {
     sg_shader_desc sd;
     Inline::clearZeroMemory(sd);
-    sd.vs.uniform_blocks[0].size = sizeof(Matrix4x4);
+    sd.vs.uniform_blocks[0].size = sizeof(Uniform);
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
     sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_30", SG_UNIFORMTYPE_FLOAT4, 4 };
 #else
@@ -172,10 +179,12 @@ LineDrawer::draw(sg::PassBlock &pb, const Option &option)
     m_bindings.vertex_buffers[0] = option.m_vertexBuffer;
     m_bindings.index_buffer = option.m_indexBuffer;
     pb.applyPipelineBindings(pipeline, m_bindings);
-    Matrix4x4 view, projection, viewProjection;
+    Matrix4x4 view, projection;
+    Uniform uniform;
     m_project->activeCamera()->getViewTransform(view, projection);
-    viewProjection = projection * view * option.m_worldTransform;
-    pb.applyUniformBlock(SG_SHADERSTAGE_VS, glm::value_ptr(viewProjection), sizeof(viewProjection));
+    uniform.m_viewProjection = projection * view * option.m_worldTransform;
+    uniform.m_color = option.m_color;
+    pb.applyUniformBlock(SG_SHADERSTAGE_VS, &uniform, sizeof(uniform));
     pb.draw(Inline::saturateInt32(option.m_offset), Inline::saturateInt32(option.m_numIndices));
 }
 

@@ -26,7 +26,7 @@ public:
     void addRigidBody(const nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
     void addJoint(const nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
     void addSoftBody(const nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
-    void addFace(const Vector3UI32 &value) NANOEM_DECL_OVERRIDE;
+    void addFace(const Vector4UI32 &value) NANOEM_DECL_OVERRIDE;
     void addAllBones() NANOEM_DECL_OVERRIDE;
     void addAllDirtyBones() NANOEM_DECL_OVERRIDE;
     void addAllMovableBones() NANOEM_DECL_OVERRIDE;
@@ -39,7 +39,7 @@ public:
     void removeRigidBody(const nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
     void removeJoint(const nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
     void removeSoftBody(const nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
-    void removeFace(const Vector3UI32 &value) NANOEM_DECL_OVERRIDE;
+    void removeFace(const Vector4UI32 &value) NANOEM_DECL_OVERRIDE;
     void removeAllVertices() NANOEM_DECL_OVERRIDE;
     void removeAllBones() NANOEM_DECL_OVERRIDE;
     void removeAllMaterials() NANOEM_DECL_OVERRIDE;
@@ -78,7 +78,7 @@ public:
     model::RigidBody::Set allRigidBodySet() const NANOEM_DECL_OVERRIDE;
     model::Joint::Set allJointSet() const NANOEM_DECL_OVERRIDE;
     model::SoftBody::Set allSoftBodySet() const NANOEM_DECL_OVERRIDE;
-    VertexIndexSet allVertexIndexSet() const NANOEM_DECL_OVERRIDE;
+    FaceList allFaces() const NANOEM_DECL_OVERRIDE;
     bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -87,8 +87,7 @@ public:
     bool containsRigidBody(const nanoem_model_rigid_body_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsJoint(const nanoem_model_joint_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    bool containsFace(const Vector3UI32 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    bool containsVertexIndex(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    bool containsFace(const Vector4UI32 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsAnyBone() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -101,7 +100,7 @@ public:
     void setTargetMode(SelectTargetModeType value) NANOEM_DECL_OVERRIDE;
 
 private:
-    typedef tinystl::unordered_set<Vector3UI32, TinySTLAllocator> FaceSet;
+    typedef tinystl::unordered_set<Vector4UI32, TinySTLAllocator> FaceSet;
 
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;
@@ -113,7 +112,6 @@ private:
     model::Joint::Set m_selectedJointSet;
     model::SoftBody::Set m_selectedSoftBodySet;
     FaceSet m_selectedFaceSet;
-    VertexIndexSet m_vertexIndexSet;
     nanoem_model_vertex_t *m_hoveredVertex;
     nanoem_model_material_t *m_hoveredMaterial;
     nanoem_model_bone_t *m_hoveredBone;
