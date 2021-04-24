@@ -38,50 +38,66 @@ ModelObjectSelection::~ModelObjectSelection() NANOEM_DECL_NOEXCEPT
 void
 ModelObjectSelection::addVertex(const nanoem_model_vertex_t *value)
 {
-    m_selectedVertexSet.insert(value);
+    if (value) {
+        m_selectedVertexSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addBone(const nanoem_model_bone_t *value)
 {
-    m_selectedBoneSet.insert(value);
-    m_parent->setActiveBone(value);
+    if (value) {
+        m_selectedBoneSet.insert(value);
+        m_parent->setActiveBone(value);
+    }
 }
 
 void
 ModelObjectSelection::addMaterial(const nanoem_model_material_t *value)
 {
-    m_selectedMaterialSet.insert(value);
+    if (value) {
+        m_selectedMaterialSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addMorph(const nanoem_model_morph_t *value)
 {
-    m_selectedMorphSet.insert(value);
+    if (value) {
+        m_selectedMorphSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addLabel(const nanoem_model_label_t *value)
 {
-    m_selectedLabelSet.insert(value);
+    if (value) {
+        m_selectedLabelSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addRigidBody(const nanoem_model_rigid_body_t *value)
 {
-    m_selectedRigidBodySet.insert(value);
+    if (value) {
+        m_selectedRigidBodySet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addJoint(const nanoem_model_joint_t *value)
 {
-    m_selectedJointSet.insert(value);
+    if (value) {
+        m_selectedJointSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addSoftBody(const nanoem_model_soft_body_t *value)
 {
-    m_selectedSoftBodySet.insert(value);
+    if (value) {
+        m_selectedSoftBodySet.insert(value);
+    }
 }
 
 void

@@ -334,7 +334,50 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("vertex-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("vertex-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Vertices")) {
+                for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+                    const nanoem_model_vertex_t *vertexPtr = vertices[i];
+                    selection->addVertex(vertexPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Vertices")) {
+                selection->removeAllVertices();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Masking")) {
+            if (ImGui::MenuItem("Mask All Selected Vertices")) {
+                const model::Vertex::Set vertices(selection->allVertexSet());
+                for (model::Vertex::Set::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
+                    const nanoem_model_vertex_t *vertexPtr = *it;
+                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                        vertex->setEditingMasked(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Unmask All Selected Vertices")) {
+                const model::Vertex::Set vertices(selection->allVertexSet());
+                for (model::Vertex::Set::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
+                    const nanoem_model_vertex_t *vertexPtr = *it;
+                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                        vertex->setEditingMasked(false);
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Invert All Mask/Unmask Vertices")) {
+                for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+                    const nanoem_model_vertex_t *vertexPtr = vertices[i];
+                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                        vertex->setEditingMasked(!vertex->isEditingMasked());
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -346,7 +389,6 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numVertices, m_vertexIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numVertices));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -583,7 +625,60 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("face-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("face-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Faces")) {
+                for (nanoem_rsize_t i = 0; i < numFaces; i++) {
+                    const nanoem_u32_t *facesPtr = &vertexIndices[i * 3];
+                    const Vector3UI32 face(facesPtr[0], facesPtr[1], facesPtr[2]);
+                    selection->addFace(face);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Faces")) {
+                selection->removeAllFaces();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Masking")) {
+            if (ImGui::MenuItem("Mask All Selected Faces")) {
+                nanoem_rsize_t numVertices;
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                const IModelObjectSelection::VertexIndexSet vertexIndexSet(selection->allVertexIndexSet());
+                for (IModelObjectSelection::VertexIndexSet::const_iterator it = vertexIndexSet.begin(), end = vertexIndexSet.end(); it != end; ++it) {
+                    const nanoem_model_vertex_t *vertexPtr = vertices[*it];
+                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                        vertex->setEditingMasked(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Unmask All Selected Faces")) {
+                nanoem_rsize_t numVertices;
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                const IModelObjectSelection::VertexIndexSet vertexIndexSet(selection->allVertexIndexSet());
+                for (IModelObjectSelection::VertexIndexSet::const_iterator it = vertexIndexSet.begin(), end = vertexIndexSet.end(); it != end; ++it) {
+                    const nanoem_model_vertex_t *vertexPtr = vertices[*it];
+                    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                        vertex->setEditingMasked(false);
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Invert All Mask/Unmask Faces")) {
+                nanoem_rsize_t numVertices;
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                for (nanoem_rsize_t i = 0; i < numFaces; i++) {
+                    const nanoem_u32_t *facesPtr = &vertexIndices[i * 3];
+                    for (nanoem_rsize_t j = 0; j < 3; j++) {
+                        const nanoem_model_vertex_t *vertexPtr = vertices[facesPtr[j]];
+                        if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                            vertex->setEditingMasked(!vertex->isEditingMasked());
+                        }
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -595,7 +690,6 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numFaces, m_faceIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numFaces));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -716,7 +810,125 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("material-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("material-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Materials")) {
+                for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *materialPtr = materials[i];
+                    selection->addMaterial(materialPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Materials")) {
+                selection->removeAllMaterials();
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Select All Bones from All Selected Materials")) {
+                nanoem_rsize_t numVertexIndices, numVertices;
+                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> IndicesMap;
+                IndicesMap indices;
+                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *materialPtr = materials[i];
+                    const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    indices.insert(tinystl::make_pair(materialPtr, offset));
+                    offset += numIndices;
+                }
+                const model::Material::Set materials(selection->allMaterialSet());
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                    const nanoem_model_material_t *materialPtr = *it;
+                    IndicesMap::const_iterator it2 = indices.find(materialPtr);
+                    if (it2 != indices.end()) {
+                        for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i++) {
+                            const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndices[i]];
+                            selection->addBone(nanoemModelVertexGetBoneObject(vertexPtr, 0));
+                            selection->addBone(nanoemModelVertexGetBoneObject(vertexPtr, 1));
+                            selection->addBone(nanoemModelVertexGetBoneObject(vertexPtr, 2));
+                            selection->addBone(nanoemModelVertexGetBoneObject(vertexPtr, 3));
+                        }
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Select All Faces from All Selected Materials")) {
+                nanoem_rsize_t numVertexIndices;
+                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> IndicesMap;
+                IndicesMap indices;
+                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *materialPtr = materials[i];
+                    const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    indices.insert(tinystl::make_pair(materialPtr, offset));
+                    offset += numIndices;
+                }
+                const model::Material::Set materials(selection->allMaterialSet());
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                    const nanoem_model_material_t *materialPtr = *it;
+                    IndicesMap::const_iterator it2 = indices.find(materialPtr);
+                    if (it2 != indices.end()) {
+                        for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i += 3) {
+                            const Vector3UI32 face(vertexIndices[i], vertexIndices[i + 1], vertexIndices[i + 2]);
+                            selection->addFace(face);
+                        }
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Select All Vertices from All Selected Materials")) {
+                nanoem_rsize_t numVertexIndices, numVertices;
+                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> IndicesMap;
+                IndicesMap indices;
+                for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *materialPtr = materials[i];
+                    const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    indices.insert(tinystl::make_pair(materialPtr, offset));
+                    offset += numIndices;
+                }
+                const model::Material::Set materials(selection->allMaterialSet());
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                    const nanoem_model_material_t *materialPtr = *it;
+                    IndicesMap::const_iterator it2 = indices.find(materialPtr);
+                    if (it2 != indices.end()) {
+                        for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i++) {
+                            const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndices[i]];
+                            selection->addVertex(vertexPtr);
+                        }
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Masking")) {
+            if (ImGui::MenuItem("Mask All Selected Materials")) {
+                const model::Material::Set materials(selection->allMaterialSet());
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                    const nanoem_model_material_t *materialPtr = *it;
+                    if (model::Material *material = model::Material::cast(materialPtr)) {
+                        material->setVisible(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Unmask All Selected Materials")) {
+                const model::Material::Set materials(selection->allMaterialSet());
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                    const nanoem_model_material_t *materialPtr = *it;
+                    if (model::Material *material = model::Material::cast(materialPtr)) {
+                        material->setVisible(false);
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Invert All Mask/Unmask Materials")) {
+                for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *materialPtr = materials[i];
+                    if (model::Material *material = model::Material::cast(materialPtr)) {
+                        material->setVisible(!material->isVisible());
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -729,7 +941,6 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numMaterials, m_materialIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numMaterials));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -1303,10 +1514,62 @@ ModelParameterDialog::layoutAllBones(Project *project)
     nanoem_model_bone_t *hoveredBonePtr = nullptr;
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("bone-op-menu");
     }
     if (ImGui::BeginPopup("bone-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Bones")) {
+                for (nanoem_rsize_t i = 0; i < numBones; i++) {
+                    const nanoem_model_bone_t *bonePtr = bones[i];
+                    selection->addBone(bonePtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Bones")) {
+                selection->removeAllBones();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Masking")) {
+            if (ImGui::MenuItem("Mask All Selected Bones")) {
+                const model::Bone::Set bones(selection->allBoneSet());
+                for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+                    const nanoem_model_bone_t *bonePtr = *it;
+                    if (model::Bone *bone = model::Bone::cast(bonePtr)) {
+                        bone->setEditingMasked(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Unmask All Selected Bones")) {
+                const model::Bone::Set bones(selection->allBoneSet());
+                for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+                    const nanoem_model_bone_t *bonePtr = *it;
+                    if (model::Bone *bone = model::Bone::cast(bonePtr)) {
+                        bone->setEditingMasked(false);
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Mask All Invisible Bones")) {
+                for (nanoem_rsize_t i = 0; i < numBones; i++) {
+                    const nanoem_model_bone_t *bonePtr = bones[i];
+                    model::Bone *bone = model::Bone::cast(bonePtr);
+                    if (bone && !(m_activeModel->isBoneSelectable(bonePtr) && m_activeModel->isRigidBodyBound(bonePtr))) {
+                        bone->setEditingMasked(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Invert All Mask/Unmask Bones")) {
+                for (nanoem_rsize_t i = 0; i < numBones; i++) {
+                    const nanoem_model_bone_t *bonePtr = bones[i];
+                    if (model::Bone *bone = model::Bone::cast(bonePtr)) {
+                        bone->setEditingMasked(!bone->isEditingMasked());
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -1318,7 +1581,6 @@ ModelParameterDialog::layoutAllBones(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numBones, m_boneIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numBones));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -1900,7 +2162,20 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("morph-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("morph-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Morphs")) {
+                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+                    const nanoem_model_morph_t *morphPtr = morphs[i];
+                    selection->addMorph(morphPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Morphs")) {
+                selection->removeAllMorphs();
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -1913,7 +2188,6 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     detectUpDown(up, down);
     selectIndex(up, down, numMorphs, m_morphIndex);
     project->setEditingMode(Project::kEditingModeNone);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numMorphs));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -1964,9 +2238,9 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     selection->setHoveredMorph(hoveredMorphPtr);
     ImGui::EndChild();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
-        ImGui::OpenPopup("morph-op-menu");
+        ImGui::OpenPopup("morph-create-menu");
     }
-    if (ImGui::BeginPopup("morph-op-menu")) {
+    if (ImGui::BeginPopup("morph-create-menu")) {
         const nanoem_model_morph_t *selectedMorph = numMorphs > 0 ? morphs[m_morphIndex] : nullptr;
         int selectedMorphIndex = model::Morph::index(selectedMorph);
         if (ImGui::BeginMenu("Insert New")) {
@@ -2875,7 +3149,20 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("label-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("label-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Labels")) {
+                for (nanoem_rsize_t i = 0; i < numLabels; i++) {
+                    const nanoem_model_label_t *labelPtr = labels[i];
+                    selection->addLabel(labelPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Labels")) {
+                selection->removeAllLabels();
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -2887,7 +3174,6 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numLabels, m_labelIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numLabels));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -3127,7 +3413,50 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("rigid-body-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("rigid-body-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Rigid Bodies")) {
+                for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
+                    selection->addRigidBody(rigidBodyPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Rigid Bodies")) {
+                selection->removeAllRigidBodies();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Masking")) {
+            if (ImGui::MenuItem("Mask All Selected Rigid Bodies")) {
+                const model::RigidBody::Set rigidBodies(selection->allRigidBodySet());
+                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end; ++it) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                    if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+                        rigidBody->setEditingMasked(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Unmask All Selected Rigid Bodies")) {
+                const model::RigidBody::Set rigidBodies(selection->allRigidBodySet());
+                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end; ++it) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                    if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+                        rigidBody->setEditingMasked(false);
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Invert All Mask/Unmask Rigid Bodies")) {
+                for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
+                    if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+                        rigidBody->setEditingMasked(!rigidBody->isEditingMasked());
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -3140,7 +3469,6 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numRigidBodies, m_rigidBodyIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numRigidBodies));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -3440,7 +3768,50 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
         ImGui::OpenPopup("joint-op-menu");
     }
+    IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginPopup("joint-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Joints")) {
+                for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+                    const nanoem_model_joint_t *jointPtr = joints[i];
+                    selection->addJoint(jointPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Joints")) {
+                selection->removeAllJoints();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Masking")) {
+            if (ImGui::MenuItem("Mask All Selected Joints")) {
+                const model::Joint::Set joints(selection->allJointSet());
+                for (model::Joint::Set::const_iterator it = joints.begin(), end = joints.end(); it != end; ++it) {
+                    const nanoem_model_joint_t *jointPtr = *it;
+                    if (model::Joint *joint = model::Joint::cast(jointPtr)) {
+                        joint->setEditingMasked(true);
+                    }
+                }
+            }
+            if (ImGui::MenuItem("Unmask All Selected Joints")) {
+                const model::Joint::Set joints(selection->allJointSet());
+                for (model::Joint::Set::const_iterator it = joints.begin(), end = joints.end(); it != end; ++it) {
+                    const nanoem_model_joint_t *jointPtr = *it;
+                    if (model::Joint *joint = model::Joint::cast(jointPtr)) {
+                        joint->setEditingMasked(false);
+                    }
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Invert All Mask/Unmask Joints")) {
+                for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+                    const nanoem_model_joint_t *jointPtr = joints[i];
+                    if (model::Joint *joint = model::Joint::cast(jointPtr)) {
+                        joint->setEditingMasked(!joint->isEditingMasked());
+                    }
+                }
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -3453,7 +3824,6 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numJoints, m_jointIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
     clipper.Begin(Inline::saturateInt32(numJoints));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
@@ -3713,19 +4083,32 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
 void
 ModelParameterDialog::layoutAllSoftBodies(Project *project)
 {
-    nanoem_rsize_t numSoftBodys;
+    nanoem_rsize_t numSoftBodies;
     nanoem_model_soft_body_t *const *softBodies =
-        nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodys);
+        nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
-        ImGui::OpenPopup("soft_body-op-menu");
+        ImGui::OpenPopup("soft-body-op-menu");
     }
-    if (ImGui::BeginPopup("soft_body-op-menu")) {
+    IModelObjectSelection *selection = m_activeModel->selection();
+    if (ImGui::BeginPopup("soft-body-op-menu")) {
+        if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::MenuItem("Select All Soft Bodies")) {
+                for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+                    const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
+                    selection->addSoftBody(softBodyPtr);
+                }
+            }
+            if (ImGui::MenuItem("Deselect All Soft Bodies")) {
+                selection->removeAllSoftBodies();
+            }
+            ImGui::EndMenu();
+        }
         ImGui::EndPopup();
     }
     ImGui::SameLine();
-    ImGui::Text("%lu / %lu", m_softBodyIndex + 1, numSoftBodys);
+    ImGui::Text("%lu / %lu", m_softBodyIndex + 1, numSoftBodies);
     ImGui::BeginChild(
         "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
     ImGuiListClipper clipper;
@@ -3733,9 +4116,8 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
     detectUpDown(up, down);
-    selectIndex(up, down, numSoftBodys, m_softBodyIndex);
-    IModelObjectSelection *selection = m_activeModel->selection();
-    clipper.Begin(Inline::saturateInt32(numSoftBodys));
+    selectIndex(up, down, numSoftBodies, m_softBodyIndex);
+    clipper.Begin(Inline::saturateInt32(numSoftBodies));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
@@ -3781,23 +4163,23 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     }
     selection->setHoveredSoftBody(hoveredSoftBodyPtr);
     ImGui::EndChild();
-    softBodies = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodys);
+    softBodies = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("rigid-body-create-menu");
     }
     if (ImGui::BeginPopup("rigid-body-create-menu")) {
-        const nanoem_model_soft_body_t *selectedSoftBody = numSoftBodys > 0 ? softBodies[m_softBodyIndex] : nullptr;
+        const nanoem_model_soft_body_t *selectedSoftBody = numSoftBodies > 0 ? softBodies[m_softBodyIndex] : nullptr;
         int selectedSoftBodyIndex = model::SoftBody::index(selectedSoftBody);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 // m_parent->addLazyExecutionCommand(nanoem_new(CreateSoftBodyCommand(numSoftBodys, -1, nullptr)));
             }
-            if (ImGui::MenuItem("after Selected", nullptr, nullptr, m_softBodyIndex < numSoftBodys)) {
+            if (ImGui::MenuItem("after Selected", nullptr, nullptr, m_softBodyIndex < numSoftBodies)) {
                 // m_parent->addLazyExecutionCommand(nanoem_new(CreateSoftBodyCommand(numSoftBodys, selectedSoftBodyIndex + 1, nullptr)));
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Insert Copy", m_softBodyIndex < numSoftBodys)) {
+        if (ImGui::BeginMenu("Insert Copy", m_softBodyIndex < numSoftBodies)) {
             if (ImGui::MenuItem("at Last")) {
                 // m_parent->addLazyExecutionCommand(nanoem_new(CreateSoftBodyCommand(numSoftBodys, -1, selectedSoftBody)));
             }
@@ -3810,7 +4192,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, m_softBodyIndex < numSoftBodys)) {
+            reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, m_softBodyIndex < numSoftBodies)) {
         // m_parent->addLazyExecutionCommand(nanoem_new(DeleteSoftBodyCommand(soft_bodys, m_softBodyIndex)));
     }
     ImGui::SameLine();
@@ -3819,13 +4201,13 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
-            numSoftBodys > 0 && m_softBodyIndex < numSoftBodys - 1)) {
+            numSoftBodies > 0 && m_softBodyIndex < numSoftBodies - 1)) {
         // m_parent->addLazyExecutionCommand(nanoem_new(MoveSoftBodyDownCommand(soft_bodys, m_softBodyIndex)));
     }
     ImGui::EndChild();
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numSoftBodys > 0 && m_softBodyIndex < numSoftBodys) {
+    if (numSoftBodies > 0 && m_softBodyIndex < numSoftBodies) {
         nanoem_model_soft_body_t *softBodyPtr = softBodies[m_softBodyIndex];
         layoutSoftBodyPropertyPane(softBodyPtr, project);
     }
