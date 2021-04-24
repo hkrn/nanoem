@@ -651,7 +651,7 @@ foreach(arch_item ${ARCH_LIST})
   endif()
   if(WIN32)
     # https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8
-    if(NOT "${arch_item}" STREQUAL "arm64")
+    if(NOT "${arch_item}" STREQUAL "arm64" AND NOT "${target_compiler}" STREQUAL "clang")
       set(global_cmake_flags "-DCMAKE_CXX_FLAGS='-utf-8'")
     endif()
     if(NOT target_compiler)
