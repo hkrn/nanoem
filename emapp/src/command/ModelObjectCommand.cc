@@ -595,7 +595,7 @@ CreateBoneCommand::execute(Project *project)
     nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(bone);
     newBone->bind(bonePtr);
     newBone->resetLanguage(nanoemMutableModelBoneGetOriginObject(bone), factory, project->castLanguage());
-    activeModel->addBone(bonePtr);
+    activeModel->addBoneReference(bonePtr);
 }
 
 DeleteBoneCommand::DeleteBoneCommand(nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
@@ -615,7 +615,7 @@ DeleteBoneCommand::execute(Project *project)
     if (activeModel->activeBone() == bonePtr) {
         activeModel->setActiveBone(nullptr);
     }
-    activeModel->removeBone(bonePtr);
+    activeModel->removeBoneReference(bonePtr);
     nanoemMutableModelRemoveBoneObject(model, bone, &status);
     project->rebuildAllTracks();
     if (m_boneIndex > 0) {
@@ -718,7 +718,7 @@ DeleteMorphCommand::execute(Project *project)
             activeModel->setActiveMorph(category, nullptr);
         }
     }
-    activeModel->removeMorph(morphPtr);
+    activeModel->removeMorphReference(morphPtr);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelRemoveMorphObject(model, morph, &status);
     project->rebuildAllTracks();

@@ -1665,7 +1665,7 @@ BaseCreatingBoneState::onRelease(const Vector3SI32 & /* logicalCursorPosition */
                     nanoemMutableModelCreateAsReference(activeModel->data(), &status);
                 nanoemMutableModelInsertBoneObject(mutableModel, m_destinationBone, -1, &status);
                 nanoemMutableModelDestroy(mutableModel);
-                activeModel->addBone(destinationBonePtr);
+                activeModel->addBoneReference(destinationBonePtr);
             }
         }
     }

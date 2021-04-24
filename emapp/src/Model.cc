@@ -1864,7 +1864,7 @@ Model::resetLanguage()
 }
 
 void
-Model::addBone(const nanoem_model_bone_t *value)
+Model::addBoneReference(const nanoem_model_bone_t *value)
 {
     if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(value)) {
         bindConstraint(const_cast<nanoem_model_constraint_t *>(constraint));
@@ -1886,16 +1886,16 @@ Model::addBone(const nanoem_model_bone_t *value)
 }
 
 void
-Model::removeBone(const nanoem_model_bone_t *value)
+Model::removeBoneReference(const nanoem_model_bone_t *value)
 {
     String s;
     const nanoem_unicode_string_t *name = nanoemModelBoneGetName(value, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
     StringUtils::getUtf8String(name, m_project->unicodeStringFactory(), s);
-    removeBone(s);
+    removeBoneReference(s);
 }
 
 void
-Model::removeBone(const String &value)
+Model::removeBoneReference(const String &value)
 {
     BoneHashMap::const_iterator it = m_bones.find(value);
     if (it != m_bones.end()) {
@@ -1930,16 +1930,16 @@ Model::removeBone(const String &value)
 }
 
 void
-Model::removeMorph(const nanoem_model_morph_t *value)
+Model::removeMorphReference(const nanoem_model_morph_t *value)
 {
     String s;
     const nanoem_unicode_string_t *name = nanoemModelMorphGetName(value, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
     StringUtils::getUtf8String(name, m_project->unicodeStringFactory(), s);
-    removeMorph(s);
+    removeMorphReference(s);
 }
 
 void
-Model::removeMorph(const String &value)
+Model::removeMorphReference(const String &value)
 {
     MorphHashMap::const_iterator it = m_morphs.find(value);
     if (it != m_morphs.end()) {
@@ -3916,8 +3916,9 @@ Model::drawAllVertexPoints()
         else {
             Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
         }
+        const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
         vertexUnit.m_color =
-            m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, 0xff) : Vector4U8(0, 0, 0xff, 0xff);
+            m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity) : Vector4U8(0, 0, 0xff, opacity);
     }
     const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
