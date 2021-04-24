@@ -331,7 +331,7 @@ ImGuiApplicationMenuBuilder::draw(void *debugger)
 }
 
 void
-ImGuiApplicationMenuBuilder::openSaveProjectDialog(Project *project)
+ImGuiApplicationMenuBuilder::openSaveProjectDialog(Project * /* project */)
 {
     m_saveFileDialogState.initialize(Project::loadableExtensions(), IFileManager::kDialogTypeSaveProjectFile);
 }

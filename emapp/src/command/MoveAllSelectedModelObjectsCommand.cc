@@ -188,7 +188,6 @@ MoveAllSelectedModelObjectsCommand::State::~State() NANOEM_DECL_NOEXCEPT
 void
 MoveAllSelectedModelObjectsCommand::State::transform(const Matrix4x4 &delta)
 {
-    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     switch (m_editingType) {
     case IModelObjectSelection::kEditingTypeBone: {
         for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
@@ -242,7 +241,6 @@ MoveAllSelectedModelObjectsCommand::State::reset()
     switch (m_editingType) {
     case IModelObjectSelection::kEditingTypeBone: {
         for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
-            const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(it->first);
             nanoemMutableModelBoneSetOrigin(it->first, glm::value_ptr(it->second));
         }
         break;
@@ -265,7 +263,6 @@ MoveAllSelectedModelObjectsCommand::State::reset()
     case IModelObjectSelection::kEditingTypeSoftBody:
     case IModelObjectSelection::kEditingTypeVertex: {
         for (MutableOffsetVertexList::const_iterator it = m_vertices.begin(), end = m_vertices.end(); it != end; ++it) {
-            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(it->first);
             nanoemMutableModelVertexSetOrigin(it->first, glm::value_ptr(it->second));
         }
         break;
@@ -295,14 +292,14 @@ MoveAllSelectedModelObjectsCommand::~MoveAllSelectedModelObjectsCommand() NANOEM
 }
 
 void
-MoveAllSelectedModelObjectsCommand::undo(Error &error)
+MoveAllSelectedModelObjectsCommand::undo(Error & /* error */)
 {
     m_state.transform(glm::inverse(m_transformMatrix));
     m_state.setPivotMatrix(m_lastPivotMatrix);
 }
 
 void
-MoveAllSelectedModelObjectsCommand::redo(Error &error)
+MoveAllSelectedModelObjectsCommand::redo(Error & /* error */)
 {
     m_state.transform(m_transformMatrix);
     m_state.setPivotMatrix(m_currentPivotMatrix);
