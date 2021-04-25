@@ -2756,7 +2756,7 @@ const ProtobufCMessageDescriptor nanoem__project__model__descriptor =
   (ProtobufCMessageInit) nanoem__project__model__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__project__offscreen_render_target_effect__attachment__field_descriptors[5] =
+static const ProtobufCFieldDescriptor nanoem__project__offscreen_render_target_effect__attachment__field_descriptors[6] =
 {
   {
     "handle",
@@ -2818,8 +2818,21 @@ static const ProtobufCFieldDescriptor nanoem__project__offscreen_render_target_e
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "enabled",
+    6,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_BOOL,
+    offsetof(Nanoem__Project__OffscreenRenderTargetEffect__Attachment, has_enabled),
+    offsetof(Nanoem__Project__OffscreenRenderTargetEffect__Attachment, enabled),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned nanoem__project__offscreen_render_target_effect__attachment__field_indices_by_name[] = {
+  5,   /* field[5] = enabled */
   4,   /* field[4] = file_checksum */
   3,   /* field[3] = file_uri */
   0,   /* field[0] = handle */
@@ -2829,7 +2842,7 @@ static const unsigned nanoem__project__offscreen_render_target_effect__attachmen
 static const ProtobufCIntRange nanoem__project__offscreen_render_target_effect__attachment__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 5 }
+  { 0, 6 }
 };
 const ProtobufCMessageDescriptor nanoem__project__offscreen_render_target_effect__attachment__descriptor =
 {
@@ -2839,7 +2852,7 @@ const ProtobufCMessageDescriptor nanoem__project__offscreen_render_target_effect
   "Nanoem__Project__OffscreenRenderTargetEffect__Attachment",
   "nanoem.project",
   sizeof(Nanoem__Project__OffscreenRenderTargetEffect__Attachment),
-  5,
+  6,
   nanoem__project__offscreen_render_target_effect__attachment__field_descriptors,
   nanoem__project__offscreen_render_target_effect__attachment__field_indices_by_name,
   1,  nanoem__project__offscreen_render_target_effect__attachment__number_ranges,

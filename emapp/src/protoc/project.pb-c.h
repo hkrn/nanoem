@@ -404,10 +404,12 @@ struct  _Nanoem__Project__OffscreenRenderTargetEffect__Attachment
   Nanoem__Project__URI *file_uri;
   protobuf_c_boolean has_file_checksum;
   ProtobufCBinaryData file_checksum;
+  protobuf_c_boolean has_enabled;
+  protobuf_c_boolean enabled;
 };
 #define NANOEM__PROJECT__OFFSCREEN_RENDER_TARGET_EFFECT__ATTACHMENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__offscreen_render_target_effect__attachment__descriptor) \
-    , 0, NULL, 0,NULL, NULL, 0, {0,NULL} }
+    , 0, NULL, 0,NULL, NULL, 0, {0,NULL}, 0, 0 }
 
 
 struct  _Nanoem__Project__OffscreenRenderTargetEffect
