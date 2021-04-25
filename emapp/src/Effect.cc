@@ -2171,13 +2171,22 @@ Effect::createAllDrawableRenderTargetColorImages(const IDrawable *drawable)
          it != end; ++it) {
         const String &name = it->first;
         const RenderTargetColorImageContainer *sourceContainer = it->second;
-        if (!sourceContainer->isSharedTexture() && destContainers.find(name) == destContainers.end()) {
+        RenderTargetColorImageContainer *destContainer = nullptr;
+        if (sourceContainer->isSharedTexture()) {
             String label;
             StringUtils::format(label, "%s/%s", it->first.c_str(), drawable->nameConstString());
-            RenderTargetColorImageContainer *destContainer = nanoem_new(RenderTargetColorImageContainer(label));
+            destContainer = nanoem_new(RenderTargetColorImageContainer(label));
+            destContainer->share(sourceContainer);
+        }
+        else if (destContainers.find(name) == destContainers.end()) {
+            String label;
+            StringUtils::format(label, "%s/%s", it->first.c_str(), drawable->nameConstString());
+            destContainer = nanoem_new(RenderTargetColorImageContainer(label));
             destContainer->setColorImageDescription(sourceContainer->colorImageDescription());
             destContainer->setScaleFactor(sourceContainer->scaleFactor());
             destContainer->create(this);
+        }
+        if (destContainer) {
             destContainers.insert(tinystl::make_pair(name, destContainer));
         }
     }
