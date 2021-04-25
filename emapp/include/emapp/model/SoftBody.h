@@ -52,6 +52,8 @@ public:
     const char *canonicalNameConstString() const NANOEM_DECL_NOEXCEPT;
     PhysicsEngine *physicsEngine() const NANOEM_DECL_NOEXCEPT;
     nanoem_physics_soft_body_t *physicsSoftBody() const NANOEM_DECL_NOEXCEPT;
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
 private:
     struct PlaceHolder {

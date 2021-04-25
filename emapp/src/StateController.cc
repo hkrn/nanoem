@@ -370,8 +370,9 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
         draggingState = createDraggingState(rectangleType, logicalScaleCursorPosition, project);
     }
     else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
         const Vector2SI32 activeBoneCursorPosition(logicalScaleCursorActiveBoneInWindow(project));
-        if (model->transformAxisType() != Model::kAxisTypeMaxEnum) {
+        if (!bone->isEditingMasked() && model->transformAxisType() != Model::kAxisTypeMaxEnum) {
             const Project::EditingMode editingMode = project->editingMode();
             const IModelObjectSelection *selection = model->selection();
             if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
@@ -1062,10 +1063,12 @@ DraggingBoxSelectedBoneState::commitSelection(Model *model, const Project *proje
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
         const model::Bone *bone = model::Bone::cast(bonePtr);
-        const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
-        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-        if (selector->contains(coord)) {
-            selection->addBone(bonePtr);
+        if (!bone->isEditingMasked()) {
+            const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+            if (selector->contains(coord)) {
+                selection->addBone(bonePtr);
+            }
         }
     }
 }
@@ -1116,11 +1119,13 @@ DraggingVertexSelectionState::commitSelection(Model *model, const Project *proje
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
         const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        const bx::simd128_t v = vertex->m_simd.m_origin;
-        const Vector3 position(bx::simd_x(v), bx::simd_y(v), bx::simd_z(v));
-        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-        if (selector->contains(coord)) {
-            selection->addVertex(vertexPtr);
+        if (!vertex->isEditingMasked()) {
+            const bx::simd128_t v = vertex->m_simd.m_origin;
+            const Vector3 position(bx::simd_x(v), bx::simd_y(v), bx::simd_z(v));
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+            if (selector->contains(coord)) {
+                selection->addVertex(vertexPtr);
+            }
         }
     }
 }
@@ -1176,16 +1181,18 @@ DraggingFaceSelectionState::commitSelection(Model *model, const Project *project
         const model::Material *material = model::Material::cast(materialPtr);
         if (material && material->isVisible()) {
             for (nanoem_rsize_t j = 0; j < numVertexIndices; j += 3) {
-                const nanoem_rsize_t o = offset + j;
-                const nanoem_u32_t i0 = vertexIndices[o], i1 = vertexIndices[o + 1], i2 = vertexIndices[o + 2];
-                const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
-                const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
-                    baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
-                const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
-                if (selector->contains(coord)) {
-                    const Vector4UI32 face(o / 3, i0, i1, i2);
-                    selection->addFace(face);
+                const nanoem_rsize_t o = offset + j, faceIndex = o / 3;
+                if (!model->isFaceEditingMasked(faceIndex)) {
+                    const nanoem_u32_t i0 = vertexIndices[o], i1 = vertexIndices[o + 1], i2 = vertexIndices[o + 2];
+                    const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
+                    const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
+                        o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
+                        baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
+                    const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
+                    if (selector->contains(coord)) {
+                        const Vector4UI32 face(o / 3, i0, i1, i2);
+                        selection->addFace(face);
+                    }
                 }
             }
         }
@@ -1313,10 +1320,12 @@ DraggingBoneSelectionState::commitSelection(Model *model, const Project *project
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
         const model::Bone *bone = model::Bone::cast(bonePtr);
-        const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
-        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-        if (selector->contains(coord)) {
-            selection->addBone(bonePtr);
+        if (!bone->isEditingMasked()) {
+            const Vector3 position(model->worldTransform(bone->worldTransform())[3]);
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+            if (selector->contains(coord)) {
+                selection->addBone(bonePtr);
+            }
         }
     }
 }
@@ -1368,11 +1377,13 @@ DraggingRigidBodySelectionState::commitSelection(Model *model, const Project *pr
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *bodyPtr = bodies[i];
         const model::RigidBody *body = model::RigidBody::cast(bodyPtr);
-        worldTransform = body->worldTransform();
-        const Vector3 position(model->worldTransform(worldTransform)[3]);
-        const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-        if (selector->contains(coord)) {
-            selection->addRigidBody(bodyPtr);
+        if (!body->isEditingMasked()) {
+            worldTransform = body->worldTransform();
+            const Vector3 position(model->worldTransform(worldTransform)[3]);
+            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+            if (selector->contains(coord)) {
+                selection->addRigidBody(bodyPtr);
+            }
         }
     }
 }
@@ -1424,16 +1435,18 @@ DraggingJointSelectionState::commitSelection(Model *model, const Project *projec
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         const nanoem_model_joint_t *jointPtr = joints[i];
         const model::Joint *joint = model::Joint::cast(jointPtr);
-        joint->getWorldTransformA(glm::value_ptr(worldTransformA));
-        const Vector3 positionA(model->worldTransform(worldTransformA)[3]);
-        const Vector2SI32 coordA(camera->toDeviceScreenCoordinateInViewport(positionA));
-        if (selector->contains(coordA)) {
-            selection->addJoint(jointPtr);
-        }
-        const Vector3 positionB(model->worldTransform(worldTransformB)[3]);
-        const Vector2SI32 coordB(camera->toDeviceScreenCoordinateInViewport(positionB));
-        if (selector->contains(coordB)) {
-            selection->addJoint(jointPtr);
+        if (!joint->isEditingMasked()) {
+            joint->getWorldTransformA(glm::value_ptr(worldTransformA));
+            const Vector3 positionA(model->worldTransform(worldTransformA)[3]);
+            const Vector2SI32 coordA(camera->toDeviceScreenCoordinateInViewport(positionA));
+            if (selector->contains(coordA)) {
+                selection->addJoint(jointPtr);
+            }
+            const Vector3 positionB(model->worldTransform(worldTransformB)[3]);
+            const Vector2SI32 coordB(camera->toDeviceScreenCoordinateInViewport(positionB));
+            if (selector->contains(coordB)) {
+                selection->addJoint(jointPtr);
+            }
         }
     }
 }
@@ -1489,14 +1502,17 @@ DraggingSoftBodySelectionState::commitSelection(Model *model, const Project *pro
     getMaterialMap(model, baryCenters);
     const ISelector *selector = currentSelector();
     for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
-        const nanoem_model_soft_body_t *bodyPtr = bodies[i];
-        const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(bodyPtr);
-        MaterialBaryCenterMap::const_iterator it = baryCenters.find(materialPtr);
-        if (it != baryCenters.end()) {
-            const Vector3 position(it->second);
-            const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
-            if (selector->contains(coord)) {
-                selection->addSoftBody(bodyPtr);
+        const nanoem_model_soft_body_t *softBodyPtr = bodies[i];
+        const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
+        if (!softBody->isEditingMasked()) {
+            const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
+            MaterialBaryCenterMap::const_iterator it = baryCenters.find(materialPtr);
+            if (it != baryCenters.end()) {
+                const Vector3 position(it->second);
+                const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(position));
+                if (selector->contains(coord)) {
+                    selection->addSoftBody(softBodyPtr);
+                }
             }
         }
     }

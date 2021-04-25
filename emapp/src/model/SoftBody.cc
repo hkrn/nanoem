@@ -6,6 +6,7 @@
 
 #include "emapp/model/SoftBody.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/StringUtils.h"
@@ -210,6 +211,18 @@ nanoem_physics_soft_body_t *
 SoftBody::physicsSoftBody() const NANOEM_DECL_NOEXCEPT
 {
     return m_physicsSoftBody;
+}
+
+bool
+SoftBody::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+SoftBody::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
 }
 
 void
