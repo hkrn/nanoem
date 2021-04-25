@@ -42,7 +42,6 @@ struct Native::Context {
     typedef tinystl::unordered_map<const Motion *, const Accessory *, TinySTLAllocator> MotionAccessoryMap;
     typedef tinystl::unordered_map<const Motion *, const Model *, TinySTLAllocator> MotionModelMap;
     typedef tinystl::unordered_map<nanoem_u16_t, nanoem_u16_t, TinySTLAllocator> HandleMap;
-    typedef tinystl::unordered_map<String, ByteArray, TinySTLAllocator> CompiledEffectCacheMap;
 
     static inline void
     copyString(char *&ptr, const String &value)
@@ -272,7 +271,6 @@ struct Native::Context {
     DrawableHandleMap m_drawables;
     DrawableIncludeEffectSourceMap m_includeEffectSources;
     OffscreenRenderTargetEffectAttachmentList m_offscreenRenderTargetEffectAttachments;
-    CompiledEffectCacheMap m_compiledEffectCaches;
     StringMap m_annotations;
     URI m_audioURI;
     URI m_videoURI;
@@ -1184,24 +1182,16 @@ bool
 Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
     const URI &fileURI, const char *ownerName, IDrawable *target, Error &error)
 {
-    const String filePath(fileURI.absolutePath());
     PluginFactory::EffectPluginProxy proxy(m_project->fileManager()->sharedEffectPlugin());
     Progress progress(m_project, 0);
     ByteArray outputBinary;
-    Effect *effect = nullptr;
-    bool succeeded;
-    CompiledEffectCacheMap::const_iterator it = m_compiledEffectCaches.find(filePath);
-    if (it != m_compiledEffectCaches.end()) {
-        outputBinary = it->second;
-        succeeded = true;
+    bool succeeded = false;
+    Effect *effect = m_project->findEffect(fileURI);
+    if (effect) {
+        m_project->setOffscreenPassiveRenderTargetEffect(ownerName, target, effect);
+        succeeded = !error.isCancelled() && !error.hasReason();
     }
-    else {
-        succeeded = proxy.compile(fileURI, outputBinary);
-        if (succeeded) {
-            m_compiledEffectCaches.insert(tinystl::make_pair(filePath, outputBinary));
-        }
-    }
-    if (succeeded) {
+    else if (proxy.compile(fileURI, outputBinary)) {
         effect = m_project->createEffect();
         effect->setName(fileURI.lastPathComponent());
         if (effect->load(outputBinary, progress, error)) {
