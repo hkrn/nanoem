@@ -1185,7 +1185,7 @@ Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
     PluginFactory::EffectPluginProxy proxy(m_project->fileManager()->sharedEffectPlugin());
     Progress progress(m_project, 0);
     ByteArray outputBinary;
-    bool succeeded = false;
+    bool succeeded = false, created = false;
     Effect *effect = m_project->findEffect(fileURI);
     if (effect) {
         m_project->setOffscreenPassiveRenderTargetEffect(ownerName, target, effect);
@@ -1194,6 +1194,7 @@ Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
     else if (proxy.compile(fileURI, outputBinary)) {
         effect = m_project->createEffect();
         effect->setName(fileURI.lastPathComponent());
+        created = true;
         if (effect->load(outputBinary, progress, error)) {
             effect->setFileURI(fileURI);
             if (effect->upload(effect::kAttachmentTypeOffscreenPassive, progress, error)) {
@@ -1205,7 +1206,7 @@ Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
     else {
         error = proxy.error();
     }
-    if (!succeeded) {
+    if (!succeeded && created) {
         m_project->destroyEffect(effect);
     }
     return succeeded;
