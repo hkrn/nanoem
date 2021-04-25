@@ -1782,8 +1782,8 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         break;
                     }
                     if (!(shaderDescription.vs.source && shaderDescription.fs.source)) {
-                        m_logger->log("Creating the pass Effects/%s/%s/%s failed due to empty source", nameConstString(),
-                            techniquePtr->name, passPtr->name);
+                        m_logger->log("Creating the pass Effects/%s/%s/%s failed due to empty source",
+                            nameConstString(), techniquePtr->name, passPtr->name);
                     }
                     else if (!error.hasReason()) {
                         shaderDescription.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };
@@ -2171,7 +2171,7 @@ Effect::createAllDrawableRenderTargetColorImages(const IDrawable *drawable)
          it != end; ++it) {
         const String &name = it->first;
         const RenderTargetColorImageContainer *sourceContainer = it->second;
-        NamedRenderTargetColorImageContainerMap::const_iterator it2 = destContainers.find(name) ;
+        NamedRenderTargetColorImageContainerMap::const_iterator it2 = destContainers.find(name);
         RenderTargetColorImageContainer *destContainer = nullptr;
         if (it2 != destContainers.end()) {
             if (sourceContainer->isSharedTexture()) {
@@ -2185,7 +2185,7 @@ Effect::createAllDrawableRenderTargetColorImages(const IDrawable *drawable)
             if (sourceContainer->isSharedTexture()) {
                 destContainer->share(sourceContainer);
             }
-            else  {
+            else {
                 destContainer->setColorImageDescription(sourceContainer->colorImageDescription());
                 destContainer->setScaleFactor(sourceContainer->scaleFactor());
                 destContainer->create(this);

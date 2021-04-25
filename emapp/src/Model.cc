@@ -650,21 +650,22 @@ Model::DrawIndexedBuffer::initializeVertexBuffer(const char *name, nanoem_rsize_
             desc.label = label;
         }
         m_vertexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_vertexBuffer) == SG_RESOURCESTATE_VALID,
-            "vertex buffer must be valid");
+        nanoem_assert(sg::query_buffer_state(m_vertexBuffer) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
         SG_LABEL_BUFFER(m_vertexBuffer, desc.label);
     }
 }
 
 void
-Model::DrawIndexedBuffer::initializeIndexBuffer(const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices)
+Model::DrawIndexedBuffer::initializeIndexBuffer(
+    const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices)
 {
     if (!sg::is_valid(m_indexBuffer)) {
         nanoem_u32_t numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
         IndexList indices(numAllocateVertexIndices);
         IndexType *indexBuffer = indices.data();
         for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
-            nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1], vertexIndex2 = vertexIndices[i + 2];
+            nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1],
+                         vertexIndex2 = vertexIndices[i + 2];
             size_t offset = i * 2;
             indexBuffer[offset + 0] = vertexIndex0;
             indexBuffer[offset + 1] = vertexIndex1;
@@ -692,8 +693,7 @@ Model::DrawIndexedBuffer::initializeIndexBuffer(const char *name, const nanoem_u
             desc.label = label;
         }
         m_indexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID,
-            "index buffer must be valid");
+        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
         SG_LABEL_BUFFER(m_indexBuffer, desc.label);
     }
 }
@@ -2241,7 +2241,8 @@ bool
 Model::isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT
 {
     const model::Material *material = model::Material::cast(value);
-    return (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value)) && material && material->isVisible();
+    return (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value)) && material &&
+        material->isVisible();
 }
 
 bool
@@ -3941,7 +3942,8 @@ Model::drawAllMaterialOverlays()
             if (getVertexIndexBuffer(material, buffer)) {
                 if (ITechnique *technique =
                         effect->findTechnique(Effect::kPassTypeShadow, materialPtr, i, numMaterials, this)) {
-                    SG_PUSH_GROUPF("Model::drawMaterialOverlay(offset=%d, name=%s)", i, material->canonicalNameConstString());
+                    SG_PUSH_GROUPF(
+                        "Model::drawMaterialOverlay(offset=%d, name=%s)", i, material->canonicalNameConstString());
                     while (IPass *pass = technique->execute(this, false)) {
                         pass->setGlobalParameters(this, m_project);
                         pass->setCameraParameters(activeCamera, Constants::kIdentity);

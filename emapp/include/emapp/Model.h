@@ -432,7 +432,8 @@ private:
         ~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT;
         nanoem_u32_t fillShape(const par_shapes_mesh *mesh, const nanoem::Vector4 &color);
         void initializeVertexBuffer(const char *name, nanoem_rsize_t numVertices);
-        void initializeIndexBuffer(const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices);
+        void initializeIndexBuffer(
+            const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices);
         void update();
         void destroy();
         LineVertexList m_vertices;

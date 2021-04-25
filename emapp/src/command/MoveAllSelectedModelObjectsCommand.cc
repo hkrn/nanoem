@@ -45,7 +45,8 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             const Vector4UI32 &face = *it;
             for (nanoem_rsize_t i = 1; i < 4; i++) {
                 nanoem_model_vertex_t *mutableVertexPtr = vertices[face[i]];
-                nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
+                nanoem_mutable_model_vertex_t *item =
+                    nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
                 const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
                 m_vertices.push_back(tinystl::make_pair(item, origin));
             }

@@ -819,8 +819,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         if (!selectedFaces.empty()) {
             nanoem_rsize_t numVertices;
             nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-            for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(),
-                                                                       end = selectedFaces.end();
+            for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(), end = selectedFaces.end();
                  it != end; ++it) {
                 const Vector4UI32 &face = *it;
                 for (nanoem_rsize_t i = 1; i < 4; i++) {
@@ -1186,7 +1185,8 @@ DraggingFaceSelectionState::commitSelection(Model *model, const Project *project
                     const nanoem_u32_t i0 = vertexIndices[o], i1 = vertexIndices[o + 1], i2 = vertexIndices[o + 2];
                     const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
                     const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                        o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
+                        o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
+                        o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2))),
                         baryCenter(o0 + (o1 - o0) * 0.5f + (o2 - o0) * 0.5f);
                     const Vector2SI32 coord(camera->toDeviceScreenCoordinateInViewport(baryCenter));
                     if (selector->contains(coord)) {
@@ -1256,7 +1256,8 @@ DraggingMaterialSelectionState::commitSelection(Model *model, const Project *pro
                 const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
                 const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
                 const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
+                    o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
                 aabbMin = glm::min(aabbMin, o0);
                 aabbMin = glm::min(aabbMin, o1);
                 aabbMin = glm::min(aabbMin, o2);
@@ -1537,7 +1538,8 @@ DraggingSoftBodySelectionState::getMaterialMap(
                 const nanoem_u32_t i0 = indices[o], i1 = indices[o + 1], i2 = indices[o + 2];
                 const nanoem_model_vertex_t *v0 = vertices[i0], *v1 = vertices[i1], *v2 = vertices[i2];
                 const Vector3 o0(glm::make_vec3(nanoemModelVertexGetOrigin(v0))),
-                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))), o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
+                    o1(glm::make_vec3(nanoemModelVertexGetOrigin(v1))),
+                    o2(glm::make_vec3(nanoemModelVertexGetOrigin(v2)));
                 aabbMin = glm::min(aabbMin, o0);
                 aabbMin = glm::min(aabbMin, o1);
                 aabbMin = glm::min(aabbMin, o2);

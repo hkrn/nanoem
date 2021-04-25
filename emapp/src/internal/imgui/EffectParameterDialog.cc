@@ -285,9 +285,9 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
     nanoem_f32_t devicePixelRatio = project->windowDevicePixelRatio();
     ImGui::SameLine();
     const char *drawableName = drawable->nameConstString();
-    const bool selectable =
-        drawable->activeEffect() != effect || (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard),
-        wasSelected = project->containsDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
+    const bool selectable = drawable->activeEffect() != effect ||
+        (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard),
+               wasSelected = project->containsDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
     if (wasSelected) {
         ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
     }

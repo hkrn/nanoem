@@ -164,12 +164,18 @@ ModelEditCommandDialog::draw(Project *project)
         }
         if (ImGui::CollapsingHeader("Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
             addSelectionButton("(none)", IModelObjectSelection::kEditingTypeNone, project);
-            addSelectionButton(tr("nanoem.gui.window.model.tab.vertex"), IModelObjectSelection::kEditingTypeVertex, project);
-            addSelectionButton(tr("nanoem.gui.window.model.tab.face"), IModelObjectSelection::kEditingTypeFace, project);
-            addSelectionButton(tr("nanoem.gui.window.model.tab.material"), IModelObjectSelection::kEditingTypeMaterial, project);
-            addSelectionButton(tr("nanoem.gui.window.model.tab.bone"), IModelObjectSelection::kEditingTypeBone, project);
-            addSelectionButton(tr("nanoem.gui.window.model.tab.rigid-body"), IModelObjectSelection::kEditingTypeRigidBody, project);
-            addSelectionButton(tr("nanoem.gui.window.model.tab.joint"), IModelObjectSelection::kEditingTypeJoint, project);
+            addSelectionButton(
+                tr("nanoem.gui.window.model.tab.vertex"), IModelObjectSelection::kEditingTypeVertex, project);
+            addSelectionButton(
+                tr("nanoem.gui.window.model.tab.face"), IModelObjectSelection::kEditingTypeFace, project);
+            addSelectionButton(
+                tr("nanoem.gui.window.model.tab.material"), IModelObjectSelection::kEditingTypeMaterial, project);
+            addSelectionButton(
+                tr("nanoem.gui.window.model.tab.bone"), IModelObjectSelection::kEditingTypeBone, project);
+            addSelectionButton(
+                tr("nanoem.gui.window.model.tab.rigid-body"), IModelObjectSelection::kEditingTypeRigidBody, project);
+            addSelectionButton(
+                tr("nanoem.gui.window.model.tab.joint"), IModelObjectSelection::kEditingTypeJoint, project);
         }
     }
     close();
@@ -326,7 +332,6 @@ UVEditDialog::State::commit()
     }
     m_mutableVertices.clear();
     m_dragging = false;
-
 }
 
 bool

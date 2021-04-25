@@ -228,9 +228,11 @@ struct Native::Context {
         const Nanoem__Project__Motion *m, const ProtobufCBinaryData &payload, Motion *motion, Error &error);
     void loadMotion(const Nanoem__Project__Motion *m, const HandleMap &handles, bool &needsRestart, Error &error);
     void loadAllMotions(const Nanoem__Project__Project *p, const HandleMap &handles, bool &needsRestart, Error &error);
-    bool loadOffscreenRenderTargetEffectAttachmentFromFile(const URI &fileURI, const char *ownerName, IDrawable *target, Error &error);
+    bool loadOffscreenRenderTargetEffectAttachmentFromFile(
+        const URI &fileURI, const char *ownerName, IDrawable *target, Error &error);
     void loadOffscreenRenderTargetEffectAttachment(
-        const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *ownerName, Error &error);
+        const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *ownerName,
+        Error &error);
     void loadAllOffscreenRenderTargetEffects(const Nanoem__Project__Project *p, Error &error);
     void load(const Nanoem__Project__Project *p, FileType fileType, Error &error, Project::IDiagnostics *diagnostics);
 
@@ -259,7 +261,8 @@ struct Native::Context {
     Nanoem__Project__Motion *saveMotion(Motion *motion);
     void saveAllMotions(Nanoem__Project__Project *p, FileType fileType, const MotionAccessoryMap &m2a,
         const MotionModelMap &m2m, Error &error);
-    Nanoem__Project__OffscreenRenderTargetEffect *saveOffscreenRenderTargetEffect(const IDrawable *ownerEffect, const String &ownerName, FileType fileType, Error &error);
+    Nanoem__Project__OffscreenRenderTargetEffect *saveOffscreenRenderTargetEffect(
+        const IDrawable *ownerEffect, const String &ownerName, FileType fileType, Error &error);
     void saveAllEffects(Nanoem__Project__Project *p, FileType fileType, Error &error);
     bool save(Nanoem__Project__Project *p, FileType fileType, Error &error);
     const Project::IncludeEffectSourceMap *findIncludeEffectSource(const IDrawable *drawable) const;
@@ -1229,7 +1232,8 @@ Native::Context::loadOffscreenRenderTargetEffectAttachment(
         if (uri && (uri->absolute_path || uri->relative_path)) {
             const URI fileURI(toURI(uri, m_project->fileURI(), isAbsolutePath));
             if (loadOffscreenRenderTargetEffectAttachmentFromFile(fileURI, ownerName, target, error)) {
-                target->setOffscreenPassiveRenderTargetEffectEnabled(ownerName, attachment->has_enabled ? attachment->enabled : true);
+                target->setOffscreenPassiveRenderTargetEffectEnabled(
+                    ownerName, attachment->has_enabled ? attachment->enabled : true);
             }
             if (!fileURI.isEmpty() && isAbsolutePath) {
                 m_project->setFilePathMode(Project::kFilePathModeAbsolute);

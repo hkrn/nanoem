@@ -643,14 +643,16 @@ ModelParameterDialog::layoutAllFaces(Project *project)
         if (ImGui::BeginMenu("Masking")) {
             if (ImGui::MenuItem("Mask All Selected Faces")) {
                 const IModelObjectSelection::FaceList faces(selection->allFaces());
-                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end; ++it) {
+                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end;
+                     ++it) {
                     const Vector4UI32 &face = *it;
                     m_activeModel->setFaceEditingMasked(face.x, true);
                 }
             }
             if (ImGui::MenuItem("Unmask All Selected Faces")) {
                 const IModelObjectSelection::FaceList faces(selection->allFaces());
-                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end; ++it) {
+                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end;
+                     ++it) {
                     const Vector4UI32 &face = *it;
                     m_activeModel->setFaceEditingMasked(face.x, false);
                 }
@@ -658,7 +660,8 @@ ModelParameterDialog::layoutAllFaces(Project *project)
             ImGui::Separator();
             if (ImGui::MenuItem("Invert All Mask/Unmask Faces")) {
                 nanoem_rsize_t numVertices;
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
                 for (nanoem_rsize_t i = 0; i < numFaces; i++) {
                     const nanoem_u32_t *facesPtr = &vertexIndices[i * 3];
                     for (nanoem_rsize_t j = 0; j < 3; j++) {
@@ -823,9 +826,12 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             ImGui::Separator();
             if (ImGui::MenuItem("Select All Bones from All Selected Materials")) {
                 nanoem_rsize_t numVertexIndices, numVertices;
-                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> IndicesMap;
+                const nanoem_u32_t *vertexIndices =
+                    nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator>
+                    IndicesMap;
                 IndicesMap indices;
                 for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
                     const nanoem_model_material_t *materialPtr = materials[i];
@@ -834,11 +840,14 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     offset += numIndices;
                 }
                 const model::Material::Set materials(selection->allMaterialSet());
-                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end;
+                     ++it) {
                     const nanoem_model_material_t *materialPtr = *it;
                     IndicesMap::const_iterator it2 = indices.find(materialPtr);
                     if (it2 != indices.end()) {
-                        for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i++) {
+                        for (nanoem_rsize_t i = it2->second,
+                                            to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                             i < to; i++) {
                             const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndices[i]];
                             selection->addBone(nanoemModelVertexGetBoneObject(vertexPtr, 0));
                             selection->addBone(nanoemModelVertexGetBoneObject(vertexPtr, 1));
@@ -850,8 +859,10 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             }
             if (ImGui::MenuItem("Select All Faces from All Selected Materials")) {
                 nanoem_rsize_t numVertexIndices;
-                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
-                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> IndicesMap;
+                const nanoem_u32_t *vertexIndices =
+                    nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator>
+                    IndicesMap;
                 IndicesMap indices;
                 for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
                     const nanoem_model_material_t *materialPtr = materials[i];
@@ -860,11 +871,14 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     offset += numIndices;
                 }
                 const model::Material::Set materials(selection->allMaterialSet());
-                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end;
+                     ++it) {
                     const nanoem_model_material_t *materialPtr = *it;
                     IndicesMap::const_iterator it2 = indices.find(materialPtr);
                     if (it2 != indices.end()) {
-                        for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i += 3) {
+                        for (nanoem_rsize_t i = it2->second,
+                                            to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                             i < to; i += 3) {
                             const Vector4UI32 face(i, vertexIndices[i], vertexIndices[i + 1], vertexIndices[i + 2]);
                             selection->addFace(face);
                         }
@@ -873,9 +887,12 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             }
             if (ImGui::MenuItem("Select All Vertices from All Selected Materials")) {
                 nanoem_rsize_t numVertexIndices, numVertices;
-                const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> IndicesMap;
+                const nanoem_u32_t *vertexIndices =
+                    nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator>
+                    IndicesMap;
                 IndicesMap indices;
                 for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
                     const nanoem_model_material_t *materialPtr = materials[i];
@@ -884,11 +901,14 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     offset += numIndices;
                 }
                 const model::Material::Set materials(selection->allMaterialSet());
-                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end;
+                     ++it) {
                     const nanoem_model_material_t *materialPtr = *it;
                     IndicesMap::const_iterator it2 = indices.find(materialPtr);
                     if (it2 != indices.end()) {
-                        for (nanoem_rsize_t i = it2->second, to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr); i < to; i++) {
+                        for (nanoem_rsize_t i = it2->second,
+                                            to = i + nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                             i < to; i++) {
                             const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndices[i]];
                             selection->addVertex(vertexPtr);
                         }
@@ -900,7 +920,8 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
         if (ImGui::BeginMenu("Masking")) {
             if (ImGui::MenuItem("Mask All Selected Materials")) {
                 const model::Material::Set materials(selection->allMaterialSet());
-                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end;
+                     ++it) {
                     const nanoem_model_material_t *materialPtr = *it;
                     if (model::Material *material = model::Material::cast(materialPtr)) {
                         material->setVisible(true);
@@ -909,7 +930,8 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             }
             if (ImGui::MenuItem("Unmask All Selected Materials")) {
                 const model::Material::Set materials(selection->allMaterialSet());
-                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+                for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end;
+                     ++it) {
                     const nanoem_model_material_t *materialPtr = *it;
                     if (model::Material *material = model::Material::cast(materialPtr)) {
                         material->setVisible(false);
@@ -1553,7 +1575,8 @@ ModelParameterDialog::layoutAllBones(Project *project)
                 for (nanoem_rsize_t i = 0; i < numBones; i++) {
                     const nanoem_model_bone_t *bonePtr = bones[i];
                     model::Bone *bone = model::Bone::cast(bonePtr);
-                    if (bone && !(m_activeModel->isBoneSelectable(bonePtr) && m_activeModel->isRigidBodyBound(bonePtr))) {
+                    if (bone &&
+                        !(m_activeModel->isBoneSelectable(bonePtr) && m_activeModel->isRigidBodyBound(bonePtr))) {
                         bone->setEditingMasked(true);
                     }
                 }
@@ -3534,7 +3557,8 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         if (ImGui::BeginMenu("Masking")) {
             if (ImGui::MenuItem("Mask All Selected Rigid Bodies")) {
                 const model::RigidBody::Set rigidBodies(selection->allRigidBodySet());
-                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end; ++it) {
+                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end;
+                     ++it) {
                     const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                     if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
                         rigidBody->setEditingMasked(true);
@@ -3543,7 +3567,8 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             }
             if (ImGui::MenuItem("Unmask All Selected Rigid Bodies")) {
                 const model::RigidBody::Set rigidBodies(selection->allRigidBodySet());
-                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end; ++it) {
+                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end;
+                     ++it) {
                     const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                     if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
                         rigidBody->setEditingMasked(false);

@@ -3119,8 +3119,8 @@ Project::attachModelMaterialEffect(model::Material *material, Effect *effect)
 }
 
 void
-Project::setOffscreenPassiveRenderTargetEffect(const String &offscreenOwnerName,
-    IDrawable *drawable, Effect *targetEffect)
+Project::setOffscreenPassiveRenderTargetEffect(
+    const String &offscreenOwnerName, IDrawable *drawable, Effect *targetEffect)
 {
     if (drawable && targetEffect) {
         drawable->setOffscreenPassiveRenderTargetEffect(offscreenOwnerName, targetEffect);
