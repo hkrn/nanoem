@@ -463,7 +463,7 @@ PMM::Context::EffectMap::attachOffscreenRenderTargetEffect(Effect *effect, const
     }
     if (drawable) {
         Effect *innerEffect = compileEffect(filePath, effect::kAttachmentTypeOffscreenPassive, progress, innerError);
-        m_project->setOffscreenPassiveRenderTargetEffect(drawable, offscreenOwnerName, innerEffect);
+        m_project->setOffscreenPassiveRenderTargetEffect(offscreenOwnerName, drawable, innerEffect);
     }
     if (effect && innerError.hasReason()) {
         effect->setEnabled(false);

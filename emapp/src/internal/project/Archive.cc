@@ -468,7 +468,7 @@ Archive::loadOffscreenEffectAttachment(
                 IDrawable *drawable = attachment.m_target;
                 effect->setFileURI(URI::createFromFilePath(drawable->fileURI().absolutePath(), entryPath));
                 if (effect->upload(effect::kAttachmentTypeOffscreenPassive, m_archiver, *m_progress, error)) {
-                    m_project->setOffscreenPassiveRenderTargetEffect(drawable, attachment.m_name, effect);
+                    m_project->setOffscreenPassiveRenderTargetEffect(attachment.m_name, drawable, effect);
                     continuable = !error.hasReason();
                 }
             }

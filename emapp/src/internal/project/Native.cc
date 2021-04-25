@@ -228,10 +228,9 @@ struct Native::Context {
         const Nanoem__Project__Motion *m, const ProtobufCBinaryData &payload, Motion *motion, Error &error);
     void loadMotion(const Nanoem__Project__Motion *m, const HandleMap &handles, bool &needsRestart, Error &error);
     void loadAllMotions(const Nanoem__Project__Project *p, const HandleMap &handles, bool &needsRestart, Error &error);
-    bool loadOffscreenRenderTargetEffectAttachmentFromFile(
-        const URI &fileURI, const char *name, IDrawable *target, Error &error);
+    bool loadOffscreenRenderTargetEffectAttachmentFromFile(const URI &fileURI, const char *ownerName, IDrawable *target, Error &error);
     void loadOffscreenRenderTargetEffectAttachment(
-        const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *name, Error &error);
+        const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *ownerName, Error &error);
     void loadAllOffscreenRenderTargetEffects(const Nanoem__Project__Project *p, Error &error);
     void load(const Nanoem__Project__Project *p, FileType fileType, Error &error, Project::IDiagnostics *diagnostics);
 
@@ -1181,7 +1180,7 @@ Native::Context::loadAllMotions(
 
 bool
 Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
-    const URI &fileURI, const char *name, IDrawable *target, Error &error)
+    const URI &fileURI, const char *ownerName, IDrawable *target, Error &error)
 {
     PluginFactory::EffectPluginProxy proxy(m_project->fileManager()->sharedEffectPlugin());
     Progress progress(m_project, 0);
@@ -1189,7 +1188,7 @@ Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
     bool succeeded = false;
     Effect *effect = m_project->findEffect(fileURI);
     if (effect) {
-        m_project->setOffscreenPassiveRenderTargetEffect(target, name, effect);
+        m_project->setOffscreenPassiveRenderTargetEffect(ownerName, target, effect);
         succeeded = !error.isCancelled() && !error.hasReason();
     }
     else if (proxy.compile(fileURI, outputBinary)) {
@@ -1198,7 +1197,7 @@ Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
         if (effect->load(outputBinary, progress, error)) {
             effect->setFileURI(fileURI);
             if (effect->upload(effect::kAttachmentTypeOffscreenPassive, progress, error)) {
-                m_project->setOffscreenPassiveRenderTargetEffect(target, name, effect);
+                m_project->setOffscreenPassiveRenderTargetEffect(ownerName, target, effect);
                 succeeded = !error.isCancelled() && !error.hasReason();
             }
         }
@@ -1214,12 +1213,12 @@ Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
 
 void
 Native::Context::loadOffscreenRenderTargetEffectAttachment(
-    const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *name, Error &error)
+    const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *ownerName, Error &error)
 {
     bool isAbsolutePath = true;
     if (IDrawable *target = findDrawable(attachment->handle)) {
         OffscreenRenderTargetEffectAttachment effect;
-        effect.m_name = name;
+        effect.m_name = ownerName;
         effect.m_target = target;
         effect.m_filePath = attachment->path;
         for (nanoem_rsize_t i = 0, numIncludePaths = attachment->n_include_paths; i < numIncludePaths; i++) {
@@ -1228,8 +1227,8 @@ Native::Context::loadOffscreenRenderTargetEffectAttachment(
         const Nanoem__Project__URI *uri = attachment->file_uri;
         if (uri && (uri->absolute_path || uri->relative_path)) {
             const URI fileURI(toURI(uri, m_project->fileURI(), isAbsolutePath));
-            if (loadOffscreenRenderTargetEffectAttachmentFromFile(fileURI, name, target, error)) {
-                target->setOffscreenPassiveRenderTargetEffectEnabled(name, attachment->has_enabled ? attachment->enabled : true);
+            if (loadOffscreenRenderTargetEffectAttachmentFromFile(fileURI, ownerName, target, error)) {
+                target->setOffscreenPassiveRenderTargetEffectEnabled(ownerName, attachment->has_enabled ? attachment->enabled : true);
             }
             if (!fileURI.isEmpty() && isAbsolutePath) {
                 m_project->setFilePathMode(Project::kFilePathModeAbsolute);
@@ -1246,10 +1245,10 @@ Native::Context::loadAllOffscreenRenderTargetEffects(const Nanoem__Project__Proj
 {
     for (nanoem_rsize_t i = 0, numEffects = p->n_offscreen_render_target_effects; i < numEffects; i++) {
         const Nanoem__Project__OffscreenRenderTargetEffect *effect = p->offscreen_render_target_effects[i];
-        if (const char *name = effect->name) {
+        if (const char *ownerName = effect->name) {
             for (nanoem_rsize_t j = 0, numAttachments = effect->n_attachments; j < numAttachments; j++) {
                 const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment = effect->attachments[j];
-                loadOffscreenRenderTargetEffectAttachment(attachment, name, error);
+                loadOffscreenRenderTargetEffectAttachment(attachment, ownerName, error);
             }
         }
     }

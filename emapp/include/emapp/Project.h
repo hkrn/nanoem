@@ -420,7 +420,7 @@ public:
         Progress &progress, Error &error);
     void attachEffectToSelectedDrawable(Effect *effect, Error &error);
     void attachModelMaterialEffect(model::Material *material, Effect *effect);
-    void setOffscreenPassiveRenderTargetEffect(IDrawable *drawable, const String &name, Effect *targetEffect);
+    void setOffscreenPassiveRenderTargetEffect(const String &name, IDrawable *drawable, Effect *targetEffect);
 
     void setRedoDrawable(nanoem_u32_t key, IDrawable *value);
     Accessory *resolveRedoAccessory(nanoem_u32_t key);

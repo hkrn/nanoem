@@ -3094,7 +3094,7 @@ Project::attachEffectToSelectedDrawable(Effect *targetEffect, Error &error)
             for (DrawableSet::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
                 IDrawable *drawable = *it;
                 setOffscreenPassiveRenderTargetEffect(
-                    drawable, m_drawablesToAttachOffscreenRenderTargetEffect.first, targetEffect);
+                    m_drawablesToAttachOffscreenRenderTargetEffect.first, drawable, targetEffect);
             }
         }
         else {
@@ -3119,8 +3119,8 @@ Project::attachModelMaterialEffect(model::Material *material, Effect *effect)
 }
 
 void
-Project::setOffscreenPassiveRenderTargetEffect(
-    IDrawable *drawable, const String &offscreenOwnerName, Effect *targetEffect)
+Project::setOffscreenPassiveRenderTargetEffect(const String &offscreenOwnerName,
+    IDrawable *drawable, Effect *targetEffect)
 {
     if (drawable && targetEffect) {
         drawable->setOffscreenPassiveRenderTargetEffect(offscreenOwnerName, targetEffect);
@@ -7031,7 +7031,7 @@ Project::internalAttachOffscreenRenderTargetEffect(IDrawable *drawable, Effect *
                 if (matched) {
                     if (!condition.m_hidden) {
                         if (!condition.m_none) {
-                            setOffscreenPassiveRenderTargetEffect(drawable, ownerName, condition.m_passiveEffect);
+                            setOffscreenPassiveRenderTargetEffect(ownerName, drawable, condition.m_passiveEffect);
                         }
                         else {
                             drawable->setOffscreenDefaultRenderTargetEffect(ownerName);
