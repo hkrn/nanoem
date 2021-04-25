@@ -2172,6 +2172,78 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
             if (ImGui::MenuItem("Deselect All Morphs")) {
                 selection->removeAllMorphs();
             }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Select All Model Objects from All Selected Morphs")) {
+                const model::Morph::Set morphs(selection->allMorphSet());
+                for (model::Morph::Set::const_iterator it = morphs.begin(), end = morphs.end(); it != end; ++it) {
+                    const nanoem_model_morph_t *morphPtr = *it;
+                    nanoem_rsize_t numItems;
+                    switch (nanoemModelMorphGetType(morphPtr)) {
+                    case NANOEM_MODEL_MORPH_TYPE_BONE: {
+                        nanoem_model_morph_bone_t *const *items =
+                            nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addBone(nanoemModelMorphBoneGetBoneObject(items[i]));
+                        }
+                        break;
+                    }
+                    case NANOEM_MODEL_MORPH_TYPE_FLIP: {
+                        nanoem_model_morph_flip_t *const *items =
+                            nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addMorph(nanoemModelMorphFlipGetMorphObject(items[i]));
+                        }
+                        break;
+                    }
+                    case NANOEM_MODEL_MORPH_TYPE_GROUP: {
+                        nanoem_model_morph_group_t *const *items =
+                            nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addMorph(nanoemModelMorphGroupGetMorphObject(items[i]));
+                        }
+                        break;
+                    }
+                    case NANOEM_MODEL_MORPH_TYPE_IMPULUSE: {
+                        nanoem_model_morph_impulse_t *const *items =
+                            nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addRigidBody(nanoemModelMorphImpulseGetRigidBodyObject(items[i]));
+                        }
+                        break;
+                    }
+                    case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
+                        nanoem_model_morph_material_t *const *items =
+                            nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addMaterial(nanoemModelMorphMaterialGetMaterialObject(items[i]));
+                        }
+                        break;
+                    }
+                    case NANOEM_MODEL_MORPH_TYPE_TEXTURE:
+                    case NANOEM_MODEL_MORPH_TYPE_UVA1:
+                    case NANOEM_MODEL_MORPH_TYPE_UVA2:
+                    case NANOEM_MODEL_MORPH_TYPE_UVA3:
+                    case NANOEM_MODEL_MORPH_TYPE_UVA4: {
+                        nanoem_model_morph_uv_t *const *items =
+                            nanoemModelMorphGetAllUVMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addVertex(nanoemModelMorphUVGetVertexObject(items[i]));
+                        }
+                        break;
+                    }
+                    case NANOEM_MODEL_MORPH_TYPE_VERTEX: {
+                        nanoem_model_morph_vertex_t *const *items =
+                            nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
+                        for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                            selection->addVertex(nanoemModelMorphVertexGetVertexObject(items[i]));
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+            }
             ImGui::EndMenu();
         }
         ImGui::EndPopup();
@@ -3159,6 +3231,30 @@ ModelParameterDialog::layoutAllLabels(Project *project)
             if (ImGui::MenuItem("Deselect All Labels")) {
                 selection->removeAllLabels();
             }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Select All Bones/Morphs from All Selected Labels")) {
+                const model::Label::Set labels(selection->allLabelSet());
+                for (model::Label::Set::const_iterator it = labels.begin(), end = labels.end(); it != end; ++it) {
+                    const nanoem_model_label_t *labelPtr = *it;
+                    nanoem_rsize_t numItems;
+                    nanoem_model_label_item_t *const *items = nanoemModelLabelGetAllItemObjects(labelPtr, &numItems);
+                    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                        const nanoem_model_label_item_t *item = items[i];
+                        switch (nanoemModelLabelItemGetType(item)) {
+                        case NANOEM_MODEL_LABEL_ITEM_TYPE_BONE: {
+                            selection->addBone(nanoemModelLabelItemGetBoneObject(item));
+                            break;
+                        }
+                        case NANOEM_MODEL_LABEL_ITEM_TYPE_MORPH: {
+                            selection->addMorph(nanoemModelLabelItemGetMorphObject(item));
+                            break;
+                        }
+                        default:
+                            break;
+                        }
+                    }
+                }
+            }
             ImGui::EndMenu();
         }
         ImGui::EndPopup();
@@ -3422,6 +3518,16 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             }
             if (ImGui::MenuItem("Deselect All Rigid Bodies")) {
                 selection->removeAllRigidBodies();
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Select All Bones from All Selected Rigid Bodies")) {
+                const model::RigidBody::Set rigidBodies(selection->allRigidBodySet());
+                for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end;
+                     ++it) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                    const nanoem_model_bone_t *bonePtr = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
+                    selection->addBone(bonePtr);
+                }
             }
             ImGui::EndMenu();
         }
@@ -3777,6 +3883,29 @@ ModelParameterDialog::layoutAllJoints(Project *project)
             }
             if (ImGui::MenuItem("Deselect All Joints")) {
                 selection->removeAllJoints();
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Select All Bones from All Selected Joints")) {
+                const model::Joint::Set joints(selection->allJointSet());
+                for (model::Joint::Set::const_iterator it = joints.begin(), end = joints.end(); it != end; ++it) {
+                    const nanoem_model_joint_t *jointPtr = *it;
+                    const nanoem_model_rigid_body_t *bodyAPtr = nanoemModelJointGetRigidBodyAObject(jointPtr),
+                                                    *bodyBPtr = nanoemModelJointGetRigidBodyBObject(jointPtr);
+                    const nanoem_model_bone_t *boneAPtr = nanoemModelRigidBodyGetBoneObject(bodyAPtr),
+                                              *boneBPtr = nanoemModelRigidBodyGetBoneObject(bodyBPtr);
+                    selection->addBone(boneAPtr);
+                    selection->addBone(boneBPtr);
+                }
+            }
+            if (ImGui::MenuItem("Select All Rigid Bodies from All Selected Joints")) {
+                const model::Joint::Set joints(selection->allJointSet());
+                for (model::Joint::Set::const_iterator it = joints.begin(), end = joints.end(); it != end; ++it) {
+                    const nanoem_model_joint_t *jointPtr = *it;
+                    const nanoem_model_rigid_body_t *bodyAPtr = nanoemModelJointGetRigidBodyAObject(jointPtr),
+                                                    *bodyBPtr = nanoemModelJointGetRigidBodyBObject(jointPtr);
+                    selection->addRigidBody(bodyAPtr);
+                    selection->addRigidBody(bodyBPtr);
+                }
             }
             ImGui::EndMenu();
         }
