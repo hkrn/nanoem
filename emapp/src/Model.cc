@@ -2186,6 +2186,9 @@ Model::setOffscreenPassiveRenderTargetEffect(const String &ownerName, IEffect *v
             else {
                 const OffscreenPassiveRenderTargetEffect effect = { value, true };
                 m_offscreenPassiveRenderTargetEffects.insert(tinystl::make_pair(ownerName, effect));
+                if (Effect *innerEffect = m_project->upcastEffect(value)) {
+                    innerEffect->createAllDrawableRenderTargetColorImages(this);
+                }
             }
         }
     }
