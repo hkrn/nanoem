@@ -1781,7 +1781,11 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         SG_POP_GROUP();
                         break;
                     }
-                    if (!error.hasReason()) {
+                    if (!(shaderDescription.vs.source && shaderDescription.fs.source)) {
+                        m_logger->log("Creating the pass Effects/%s/%s/%s failed due to empty source", nameConstString(),
+                            techniquePtr->name, passPtr->name);
+                    }
+                    else if (!error.hasReason()) {
                         shaderDescription.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };
                         shaderDescription.attrs[1] = sg_shader_attr_desc { "a_normal", "NORMAL", 0 };
                         shaderDescription.attrs[2] = sg_shader_attr_desc { "a_texcoord0", "TEXCOORD", 0 };
