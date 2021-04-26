@@ -28,6 +28,7 @@ enum PrivateStateFlags {
     kPrivateStateLinearInterpolationOrientation = 1 << 4,
     kPrivateStateDirty = 1 << 5,
     kPrivateStateEditingMasked = 1 << 6,
+    kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStateLinearInterpolationTranslationX |
     kPrivateStateLinearInterpolationTranslationY | kPrivateStateLinearInterpolationTranslationZ |

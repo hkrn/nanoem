@@ -19,6 +19,7 @@ enum PrivateStateFlags {
     kPrivateStateVisible = 1 << 1,
     kPrivateStateDisplayDiffuseTextureUVMeshEnabled = 1 << 2,
     kPrivateStateDisplaySphereMapTextureUVMeshEnabled = 1 << 3,
+    kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue =
     kPrivateStateVisible | kPrivateStateDisplayDiffuseTextureUVMeshEnabled;

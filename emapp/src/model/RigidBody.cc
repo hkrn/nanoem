@@ -25,6 +25,7 @@ namespace {
 enum PrivateStateFlags {
     kPrivateStateAllForcesShouldReset = 1 << 1,
     kPrivateStateEditingMasked = 1 << 2,
+    kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = 0;
 
