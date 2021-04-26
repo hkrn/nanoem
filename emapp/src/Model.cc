@@ -2097,9 +2097,14 @@ Model::draw(DrawType type)
         switch (type) {
         case IDrawable::kDrawTypeColor:
         case IDrawable::kDrawTypeScriptExternalColor: {
-            drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
             if (isShowAllVertexWeights()) {
+                if (isBlendingVertexWeightsEnabled()) {
+                    drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
+                }
                 drawAllVertexWeights();
+            }
+            else {
+                drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
             }
             if (isShowAllVertexFaces()) {
                 drawAllVertexFaces();
