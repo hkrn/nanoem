@@ -89,28 +89,36 @@ enum PrivateStateFlags {
     kPrivateStatePhysicsSimulation = 1 << 18,
     kPrivateStateEnableGroundShadow = 1 << 19,
     kPrivateStateShowAllMaterialShapes = 1 << 20,
+    kPrivateStateShowAllVertexWeights = 1 << 21,
+    kPrivateStateBlendingVertexWeightsEnabled = 1 << 22,
     kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStatePhysicsSimulation | kPrivateStateEnableGroundShadow;
 
-struct BoneUtils : private NonCopyable {
+struct PrivateUtils : private NonCopyable {
     static inline Matrix4x4
-    worldMatrix(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    boneWorldMatrix(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     {
         const model::Bone *bone = model::Bone::cast(bonePtr);
         return bone ? bone->worldTransform() : Constants::kIdentity;
     }
     static inline bool
-    isDirty(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    isBoneDirty(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     {
         const model::Bone *bone = model::Bone::cast(bonePtr);
         return bone ? bone->isDirty() : false;
     }
     static inline bool
-    isEditingVisible(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    isBoneEditingVisible(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     {
         const model::Bone *bone = model::Bone::cast(bonePtr);
         return bone ? !bone->isEditingMasked() : false;
+    }
+    static inline bool
+    isMaterialVisible(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Material *material = model::Material::cast(materialPtr);
+        return material ? material->isVisible() : false;
     }
 };
 
@@ -248,37 +256,6 @@ Model::VertexUnit::performSkinning(nanoem_f32_t edgeSizeFactor, const model::Ver
     }
     m_edge = bx::simd_madd(m_normal, bx::simd_splat(bx::simd_x(vertex->m_simd.m_info) * edgeSizeFactor), m_position);
     m_texcoord = bx::simd_add(vertex->m_simd.m_texcoord, vertex->m_simd.m_deltaUVA[0]);
-    setUVA(vertex);
-}
-
-void
-Model::VertexUnit::setWeightColor(const model::Bone *bone, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT
-{
-    performSkinningByType(vertex, &m_position, &m_normal);
-    Vector3 color(Constants::kZeroV3);
-    for (nanoem_rsize_t i = 0; i < 4; i++) {
-        const model::Bone *item = vertex->bone(i);
-        if (item && item == bone) {
-            nanoem_f32_t component = 0;
-            switch (i) {
-            case 0:
-                component = bx::simd_x(vertex->m_simd.m_weights);
-                break;
-            case 1:
-                component = bx::simd_y(vertex->m_simd.m_weights);
-                break;
-            case 2:
-                component = bx::simd_z(vertex->m_simd.m_weights);
-                break;
-            case 3:
-                component = bx::simd_w(vertex->m_simd.m_weights);
-                break;
-            }
-            color = Color::jet(component);
-            break;
-        }
-    }
-    m_info = bx::simd_ld(glm::value_ptr(Vector4(color, 1)));
     setUVA(vertex);
 }
 
@@ -636,7 +613,7 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
 }
 
 void
-Model::DrawIndexedBuffer::initializeVertexBuffer(const char *name, nanoem_rsize_t numVertices)
+Model::DrawIndexedBuffer::ensureVertexBufferInitialized(const char *name, nanoem_rsize_t numVertices)
 {
     if (!sg::is_valid(m_vertexBuffer)) {
         m_vertices.resize(glm::max(numVertices, size_t(1)));
@@ -656,28 +633,44 @@ Model::DrawIndexedBuffer::initializeVertexBuffer(const char *name, nanoem_rsize_
 }
 
 void
-Model::DrawIndexedBuffer::initializeIndexBuffer(
-    const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices)
+Model::DrawIndexedBuffer::ensureIndexBufferInitialized(
+    const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices, bool line)
 {
     if (!sg::is_valid(m_indexBuffer)) {
-        nanoem_u32_t numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
-        IndexList indices(numAllocateVertexIndices);
-        IndexType *indexBuffer = indices.data();
-        for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
-            nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1],
-                         vertexIndex2 = vertexIndices[i + 2];
-            size_t offset = i * 2;
-            indexBuffer[offset + 0] = vertexIndex0;
-            indexBuffer[offset + 1] = vertexIndex1;
-            indexBuffer[offset + 2] = vertexIndex1;
-            indexBuffer[offset + 3] = vertexIndex2;
-            indexBuffer[offset + 4] = vertexIndex2;
-            indexBuffer[offset + 5] = vertexIndex0;
+        nanoem_u32_t numAllocateVertexIndices;
+        IndexList indices;
+        if (line) {
+            numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
+            indices.resize(numAllocateVertexIndices);
+            IndexType *indexBuffer = indices.data();
+            for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
+                const nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1],
+                                   vertexIndex2 = vertexIndices[i + 2];
+                const nanoem_rsize_t offset = i * 2;
+                indexBuffer[offset + 0] = vertexIndex0;
+                indexBuffer[offset + 1] = vertexIndex1;
+                indexBuffer[offset + 2] = vertexIndex1;
+                indexBuffer[offset + 3] = vertexIndex2;
+                indexBuffer[offset + 4] = vertexIndex2;
+                indexBuffer[offset + 5] = vertexIndex0;
+            }
+        }
+        else {
+            numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices);
+            indices.resize(numAllocateVertexIndices);
+            IndexType *indexBuffer = indices.data();
+            for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
+                const nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1],
+                                   vertexIndex2 = vertexIndices[i + 2];
+                indexBuffer[i + 0] = vertexIndex0;
+                indexBuffer[i + 1] = vertexIndex1;
+                indexBuffer[i + 2] = vertexIndex2;
+            }
         }
         sg_buffer_desc desc;
         Inline::clearZeroMemory(desc);
         if (numVertexIndices > 0) {
-            desc.data.size = desc.size = sizeof(indexBuffer[0]) * numAllocateVertexIndices;
+            desc.data.size = desc.size = sizeof(indices[0]) * numAllocateVertexIndices;
             desc.data.ptr = indices.data();
         }
         else {
@@ -2103,9 +2096,11 @@ Model::draw(DrawType type)
     if (isVisible()) {
         switch (type) {
         case IDrawable::kDrawTypeColor:
-        case IDrawable::kDrawTypeScriptExternalColor:
-        case IDrawable::kDrawTypeVertexWeight: {
+        case IDrawable::kDrawTypeScriptExternalColor: {
             drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
+            if (isShowAllVertexWeights()) {
+                drawAllVertexWeights();
+            }
             if (isShowAllVertexFaces()) {
                 drawAllVertexFaces();
             }
@@ -2240,22 +2235,22 @@ Model::isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEX
 bool
 Model::isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    const model::Material *material = model::Material::cast(value);
-    return (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value)) && material &&
-        material->isVisible();
+    const bool selected =
+        (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value));
+    return selected && PrivateUtils::isMaterialVisible(value);
 }
 
 bool
 Model::isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return !(isShowAllBones() && !BoneUtils::isEditingVisible(value)) && model::Bone::isSelectable(value) &&
+    return !(isShowAllBones() && !PrivateUtils::isBoneEditingVisible(value)) && model::Bone::isSelectable(value) &&
         !isRigidBodyBound(value);
 }
 
 bool
 Model::isBoneConnectionVisible(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return isShowAllBones() && BoneUtils::isEditingVisible(value);
+    return isShowAllBones() && PrivateUtils::isBoneEditingVisible(value);
 }
 
 void
@@ -2298,9 +2293,9 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
     if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bonePtr)) {
         drawBoneConnections(primitive, bonePtr, targetBone, kDrawBoneConnectionThickness);
     }
-    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) && BoneUtils::isEditingVisible(bonePtr)) {
+    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) && PrivateUtils::isBoneEditingVisible(bonePtr)) {
         const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bonePtr);
-        const Matrix4x4 transform(worldTransform(BoneUtils::worldMatrix(bonePtr)));
+        const Matrix4x4 transform(worldTransform(PrivateUtils::boneWorldMatrix(bonePtr)));
         const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
         const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
         drawBoneConnection(primitive, bonePtr, destinationPositon, color, circleRadius, kDrawBoneConnectionThickness);
@@ -2637,10 +2632,6 @@ Model::handlePerformSkinningVertexTransform(void *opaque, size_t index)
     case IDrawable::kDrawTypeShadowMap:
     case IDrawable::kDrawTypeScriptExternalColor:
         p.performSkinning(s->m_edgeSizeScaleFactor, vertex);
-        vertex->reset();
-        break;
-    case IDrawable::kDrawTypeVertexWeight:
-        p.setWeightColor(model::Bone::cast(s->m_model->activeBone()), vertex);
         vertex->reset();
         break;
     default:
@@ -3005,8 +2996,8 @@ Model::internalClear()
     m_vertexBuffers[1] = { SG_INVALID_ID };
     sg::destroy_buffer(m_indexBuffer);
     m_indexBuffer = { SG_INVALID_ID };
-    m_drawAllLines.destroy();
-    m_drawAllPoints.destroy();
+    m_drawAllVertexFaces.destroy();
+    m_drawAllVertexPoints.destroy();
     for (RigidBodyBuffers::iterator it = m_drawRigidBody.begin(), end = m_drawRigidBody.end(); it != end; ++it) {
         it->second.destroy();
     }
@@ -3723,7 +3714,7 @@ Model::connectionBoneColor(
     if (m_selection->containsBone(bonePtr)) {
         color = Vector4(1, 0, 0, kOpacity);
     }
-    else if (BoneUtils::isDirty(bonePtr)) {
+    else if (PrivateUtils::isBoneDirty(bonePtr)) {
         color = Vector4(0, 1, 0, kOpacity);
     }
     else if (isConstraintJointBone(bonePtr)) {
@@ -3986,24 +3977,24 @@ Model::drawAllVertexPoints()
         }
     }
     const size_t numNewVertices = newVertices.size();
-    if (!sg::is_valid(m_drawAllPoints.m_buffer)) {
+    if (!sg::is_valid(m_drawAllVertexPoints.m_buffer)) {
         sg_buffer_desc bd;
         Inline::clearZeroMemory(bd);
-        bd.size = sizeof(m_drawAllPoints.m_vertices[0]) * glm::max(numNewVertices, size_t(1));
+        bd.size = sizeof(m_drawAllVertexPoints.m_vertices[0]) * glm::max(numNewVertices, size_t(1));
         bd.usage = SG_USAGE_DYNAMIC;
         char label[Inline::kMarkerStringLength];
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "Models/%s/Points/VertexBuffer", canonicalNameConstString());
             bd.label = label;
         }
-        m_drawAllPoints.m_buffer = sg::make_buffer(&bd);
-        m_drawAllPoints.m_vertices.resize(numNewVertices);
+        m_drawAllVertexPoints.m_buffer = sg::make_buffer(&bd);
+        m_drawAllVertexPoints.m_vertices.resize(numNewVertices);
         nanoem_assert(
-            sg::query_buffer_state(m_drawAllPoints.m_buffer) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
-        SG_LABEL_BUFFER(m_drawAllPoints.m_buffer, bd.label);
+            sg::query_buffer_state(m_drawAllVertexPoints.m_buffer) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
+        SG_LABEL_BUFFER(m_drawAllVertexPoints.m_buffer, bd.label);
     }
     bx::simd128_t normal;
-    sg::LineVertexUnit *vertexUnits = m_drawAllPoints.m_vertices.data();
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexPoints.m_vertices.data();
     for (size_t i = 0; i < numNewVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = newVertices[i];
         const int index = model::Vertex::index(vertexPtr);
@@ -4024,10 +4015,10 @@ Model::drawAllVertexPoints()
     }
     const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
-        sg::update_buffer(m_drawAllPoints.m_buffer, vertexUnits, size);
+        sg::update_buffer(m_drawAllVertexPoints.m_buffer, vertexUnits, size);
     }
     internal::LineDrawer *drawer = lineDrawer();
-    internal::LineDrawer::Option option(m_drawAllPoints.m_buffer, numNewVertices);
+    internal::LineDrawer::Option option(m_drawAllVertexPoints.m_buffer, numNewVertices);
     option.m_primitiveType = SG_PRIMITIVETYPE_POINTS;
     drawer->drawPass(option);
 }
@@ -4039,9 +4030,9 @@ Model::drawAllVertexFaces()
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
-    m_drawAllLines.initializeVertexBuffer(canonicalNameConstString(), numVertices);
-    m_drawAllLines.initializeIndexBuffer(canonicalNameConstString(), vertexIndices, numVertexIndices);
-    sg::LineVertexUnit *vertexUnits = m_drawAllLines.m_vertices.data();
+    m_drawAllVertexFaces.ensureVertexBufferInitialized(canonicalNameConstString(), numVertices);
+    m_drawAllVertexFaces.ensureIndexBufferInitialized(canonicalNameConstString(), vertexIndices, numVertexIndices, true);
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexFaces.m_vertices.data();
     bx::simd128_t normal;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
@@ -4059,17 +4050,17 @@ Model::drawAllVertexFaces()
         vertexUnit.m_color = Vector4U8(0xff);
     }
     const IModelObjectSelection::FaceList faces(m_selection->allFaces());
-    if (!faces.empty() && !sg::is_valid(m_drawAllLines.m_activeIndexBuffer)) {
+    if (!faces.empty() && !sg::is_valid(m_drawAllVertexFaces.m_activeIndexBuffer)) {
         sg_buffer_desc desc;
         Inline::clearZeroMemory(desc);
         nanoem_rsize_t numAllocateVertexIndices = numVertexIndices * 2;
         desc.data.size = desc.size = sizeof(DrawIndexedBuffer::IndexType) * numAllocateVertexIndices;
         desc.type = SG_BUFFERTYPE_INDEXBUFFER;
         desc.usage = SG_USAGE_DYNAMIC;
-        m_drawAllLines.m_activeIndexBuffer = sg::make_buffer(&desc);
-        m_drawAllLines.m_activeIndices.resize(numAllocateVertexIndices);
+        m_drawAllVertexFaces.m_activeIndexBuffer = sg::make_buffer(&desc);
+        m_drawAllVertexFaces.m_activeIndices.resize(numAllocateVertexIndices);
     }
-    DrawIndexedBuffer::IndexType *activeIndices = m_drawAllLines.m_activeIndices.data();
+    DrawIndexedBuffer::IndexType *activeIndices = m_drawAllVertexFaces.m_activeIndices.data();
     const nanoem_rsize_t numSelectedFaces = faces.size();
     for (nanoem_rsize_t i = 0; i < numSelectedFaces; i++) {
         const Vector4UI32 &face = faces[i];
@@ -4082,10 +4073,9 @@ Model::drawAllVertexFaces()
         activeIndices[offset + 4] = vertexIndex2;
         activeIndices[offset + 5] = vertexIndex0;
     }
-    m_drawAllLines.update();
-    internal::LineDrawer::Option option(m_drawAllLines.m_vertexBuffer, 0);
-    option.m_indexBuffer = m_drawAllLines.m_indexBuffer;
-    option.m_primitiveType = SG_PRIMITIVETYPE_LINES;
+    m_drawAllVertexFaces.update();
+    internal::LineDrawer::Option option(m_drawAllVertexFaces.m_vertexBuffer, 0);
+    option.m_indexBuffer = m_drawAllVertexFaces.m_indexBuffer;
     option.m_indexType = SG_INDEXTYPE_UINT32;
     option.m_enableDepthTest = true;
     option.m_color = Vector4(0, 0, 1, 1);
@@ -4100,12 +4090,92 @@ Model::drawAllVertexFaces()
         }
         indexOffset += numIndices;
     }
-    if (sg::is_valid(m_drawAllLines.m_activeIndexBuffer)) {
-        option.m_indexBuffer = m_drawAllLines.m_activeIndexBuffer;
+    if (sg::is_valid(m_drawAllVertexFaces.m_activeIndexBuffer)) {
+        option.m_indexBuffer = m_drawAllVertexFaces.m_activeIndexBuffer;
         option.m_numIndices = numSelectedFaces * 6;
         option.m_color = Vector4(1, 0, 0, 1);
         option.m_offset = 0;
         drawer->drawPass(option);
+    }
+}
+
+void
+Model::drawAllVertexWeights()
+{
+    nanoem_rsize_t numMaterials, numVertices, numVertexIndices, indexOffset = 0;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+    const model::Bone *activeBoneObject = model::Bone::cast(activeBone());
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
+    const bool enableBlending = isBlendingVertexWeightsEnabled();
+    m_drawAllVertexWeights.ensureVertexBufferInitialized(canonicalNameConstString(), numVertices);
+    m_drawAllVertexWeights.ensureIndexBufferInitialized(
+        canonicalNameConstString(), vertexIndices, numVertexIndices, false);
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexWeights.m_vertices.data();
+    bx::simd128_t normal;
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[i];
+        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        sg::LineVertexUnit &vertexUnit = vertexUnits[i];
+        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+            bx::simd128_t position;
+            softBody->getVertexPosition(vertexPtr, &position);
+            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        }
+        else {
+            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+        }
+        Vector3 color(Constants::kZeroV3);
+        nanoem_f32_t opacity = enableBlending ? 0.0f : 1.0f;
+        for (nanoem_rsize_t j = 0; j < 4; j++) {
+            const model::Bone *bone = vertex->bone(j);
+            if (bone && bone == activeBoneObject) {
+                nanoem_f32_t component = 0;
+                switch (j) {
+                case 0: {
+                    component = bx::simd_x(vertex->m_simd.m_weights);
+                    break;
+                }
+                case 1: {
+                    component = bx::simd_y(vertex->m_simd.m_weights);
+                    break;
+                }
+                case 2: {
+                    component = bx::simd_z(vertex->m_simd.m_weights);
+                    break;
+                }
+                case 3: {
+                    component = bx::simd_w(vertex->m_simd.m_weights);
+                    break;
+                }
+                default:
+                    break;
+                }
+                color = Color::jet(component);
+                opacity = 1.0f;
+                break;
+            }
+        }
+        vertexUnit.m_color = Vector4(color, opacity) * 255.0f;
+    }
+    m_drawAllVertexWeights.update();
+    internal::LineDrawer::Option option(m_drawAllVertexWeights.m_vertexBuffer, 0);
+    option.m_indexBuffer = m_drawAllVertexWeights.m_indexBuffer;
+    option.m_primitiveType = SG_PRIMITIVETYPE_TRIANGLES;
+    option.m_indexType = SG_INDEXTYPE_UINT32;
+    option.m_enableDepthTest = true;
+    option.m_enableBlendMode = enableBlending;
+    internal::LineDrawer *drawer = lineDrawer();
+    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        if (isMaterialSelected(materialPtr)) {
+            option.m_numIndices = numIndices;
+            option.m_offset = indexOffset;
+            drawer->drawPass(option);
+        }
+        indexOffset += numIndices;
     }
 }
 
@@ -4275,7 +4345,7 @@ Model::drawConstraintConnections(
     for (nanoem_rsize_t j = 0; j < numJoints - 1; j++) {
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[j]);
         const nanoem_model_bone_t *nextJointBone = nanoemModelConstraintJointGetBoneObject(joints[j + 1]);
-        const Vector3 destinationPosition(worldTransform(BoneUtils::worldMatrix(nextJointBone))[3]);
+        const Vector3 destinationPosition(worldTransform(PrivateUtils::boneWorldMatrix(nextJointBone))[3]);
         const Vector4 color(Color::hotToCold((numJoints - j - 1.5f) / nanoem_f32_t(numJoints)), 1);
         drawBoneConnection(
             primitive, jointBone, destinationPosition, color, circleRadius, kDrawBoneConnectionThickness);
@@ -4283,7 +4353,7 @@ Model::drawConstraintConnections(
     if (numJoints > 0) {
         const nanoem_model_bone_t *effectorBone = nanoemModelConstraintGetEffectorBoneObject(constraint);
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[0]);
-        const Vector3 destinationPosition(worldTransform(BoneUtils::worldMatrix(jointBone))[3]);
+        const Vector3 destinationPosition(worldTransform(PrivateUtils::boneWorldMatrix(jointBone))[3]);
         const Vector4 color(Color::hotToCold(1.0f), 1);
         drawBoneConnection(
             primitive, effectorBone, destinationPosition, color, circleRadius, kDrawBoneConnectionThickness);
@@ -4558,9 +4628,6 @@ Model::setActiveBone(const nanoem_model_bone_t *value)
         const model::Bone *bone = model::Bone::cast(value);
         m_project->eventPublisher()->publishSetActiveBoneEvent(this, bone ? bone->nameConstString() : nullptr);
         m_activeBonePairPtr.first = value;
-        if (m_project->drawType() == kDrawTypeVertexWeight) {
-            markStagingVertexBufferDirty();
-        }
     }
 }
 
@@ -5301,6 +5368,34 @@ Model::setShowAllMaterialOverlays(bool value)
 {
     if (isShowAllMaterialOverlays() != value) {
         EnumUtils::setEnabled(kPrivateStateShowAllMaterialShapes, m_states, value);
+    }
+}
+
+bool
+Model::isShowAllVertexWeights() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateShowAllVertexWeights, m_states);
+}
+
+void
+Model::setShowAllVertexWeights(bool value)
+{
+    if (isShowAllVertexWeights() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllVertexWeights, m_states, value);
+    }
+}
+
+bool
+Model::isBlendingVertexWeightsEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateBlendingVertexWeightsEnabled, m_states);
+}
+
+void
+Model::setBlendingVertexWeightsEnabled(bool value)
+{
+    if (isBlendingVertexWeightsEnabled() != value) {
+        EnumUtils::setEnabled(kPrivateStateBlendingVertexWeightsEnabled, m_states, value);
     }
 }
 

@@ -96,7 +96,6 @@ public:
         ~VertexUnit() NANOEM_DECL_NOEXCEPT;
         void setUVA(const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
         void performSkinning(nanoem_f32_t edgeSize, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
-        void setWeightColor(const model::Bone *bonePtr, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
         void prepareSkinning(const model::Material::BoneIndexHashMap *indexHashMap, const model::Vertex *vertex)
             NANOEM_DECL_NOEXCEPT;
         static bx::simd128_t swizzleWeight(const model::Vertex *vertex, nanoem_rsize_t index) NANOEM_DECL_NOEXCEPT;
@@ -378,6 +377,10 @@ public:
     void setShowAllJointShapes(bool value);
     bool isShowAllMaterialOverlays() const NANOEM_DECL_NOEXCEPT;
     void setShowAllMaterialOverlays(bool value);
+    bool isShowAllVertexWeights() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllVertexWeights(bool value);
+    bool isBlendingVertexWeightsEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setBlendingVertexWeightsEnabled(bool value);
     bool isGroundShadowEnabled() const NANOEM_DECL_NOEXCEPT;
     void setGroundShadowEnabled(bool value);
     bool isShadowMapEnabled() const NANOEM_DECL_NOEXCEPT;
@@ -431,9 +434,9 @@ private:
         DrawIndexedBuffer();
         ~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT;
         nanoem_u32_t fillShape(const par_shapes_mesh *mesh, const nanoem::Vector4 &color);
-        void initializeVertexBuffer(const char *name, nanoem_rsize_t numVertices);
-        void initializeIndexBuffer(
-            const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices);
+        void ensureVertexBufferInitialized(const char *name, nanoem_rsize_t numVertices);
+        void ensureIndexBufferInitialized(
+            const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices, bool line);
         void update();
         void destroy();
         LineVertexList m_vertices;
@@ -507,6 +510,7 @@ private:
     void drawAllMaterialOverlays();
     void drawAllVertexPoints();
     void drawAllVertexFaces();
+    void drawAllVertexWeights();
     void drawJointShape(const nanoem_model_joint_t *jointPtr);
     void drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr);
     void drawBoneConnection(IPrimitive2D *primitive, const nanoem_model_bone_t *from,
@@ -522,8 +526,9 @@ private:
     internal::LineDrawer *m_drawer;
     model::ISkinDeformer *m_skinDeformer;
     OffscreenPassiveRenderTargetEffectMap m_offscreenPassiveRenderTargetEffects;
-    DrawArrayBuffer m_drawAllPoints;
-    DrawIndexedBuffer m_drawAllLines;
+    DrawArrayBuffer m_drawAllVertexPoints;
+    DrawIndexedBuffer m_drawAllVertexFaces;
+    DrawIndexedBuffer m_drawAllVertexWeights;
     RigidBodyBuffers m_drawRigidBody;
     JointBuffers m_drawJoint;
     nanoem_model_t *m_opaque;

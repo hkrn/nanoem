@@ -245,8 +245,6 @@ EnumStringifyUtils::toString(IDrawable::DrawType type) NANOEM_DECL_NOEXCEPT
         return "GroundShadow";
     case IDrawable::kDrawTypeShadowMap:
         return "ShadowMap";
-    case IDrawable::kDrawTypeVertexWeight:
-        return "VertexWeight";
     default:
         return "(Unknown)";
     }

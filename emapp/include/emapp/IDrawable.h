@@ -26,7 +26,6 @@ public:
         kDrawTypeGroundShadow,
         kDrawTypeShadowMap,
         kDrawTypeScriptExternalColor,
-        kDrawTypeVertexWeight,
         kDrawTypeMaxEnum
     };
     typedef tinystl::unordered_map<String, IImageView *, TinySTLAllocator> ImageViewMap;
