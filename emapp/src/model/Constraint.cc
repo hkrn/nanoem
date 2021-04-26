@@ -7,6 +7,7 @@
 #include "emapp/model/Constraint.h"
 
 #include "emapp/Constants.h"
+#include "emapp/EnumUtils.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 
@@ -15,6 +16,15 @@
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateEnabled = 1 << 1,
+    kPrivateStateReserved = 1 << 31,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStateEnabled;
+
+} /* namespade anonymous */
 
 Constraint::Joint::Joint()
     : m_orientation(Constants::kZeroQ)
@@ -193,13 +203,13 @@ Constraint::canonicalNameConstString() const NANOEM_DECL_NOEXCEPT
 bool
 Constraint::isEnabled() const NANOEM_DECL_NOEXCEPT
 {
-    return m_enabled;
+    return EnumUtils::isEnabled(kPrivateStateEnabled, m_states);
 }
 
 void
 Constraint::setEnabled(bool value)
 {
-    m_enabled = value;
+    EnumUtils::setEnabled(kPrivateStateEnabled, m_states, value);
 }
 
 void
@@ -210,7 +220,7 @@ Constraint::destroy(void *opaque, nanoem_model_object_t * /* constraint */) NANO
     nanoem_delete(self);
 }
 
-Constraint::Constraint(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_enabled(true)
+Constraint::Constraint(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_states(kPrivateStateEnabled)
 {
 }
 

@@ -76,7 +76,7 @@ private:
     JointIterationResult m_effectorIterationResult;
     String m_name;
     String m_canonicalName;
-    bool m_enabled;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */
