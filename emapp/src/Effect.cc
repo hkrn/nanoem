@@ -4071,7 +4071,7 @@ Effect::handleRenderColorTargetSemantic(
         else {
             Vector2 scaleFactor(0);
             const AnnotationMap &annotations = parameter.m_annotations;
-            const Vector4 size(self->determineImageSize(annotations, self->viewportImageSize(Vector2(1)), scaleFactor));
+            const Vector4 size(self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
             const sg_pixel_format format =
                 self->determinePixelFormat(annotations, self->m_project->viewportPixelFormat());
             const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
@@ -4106,7 +4106,7 @@ Effect::handleRenderDepthStencilTargetSemantic(
     if (parameterType == kParameterTypeTexture || parameterType == kParameterTypeTexture2D) {
         Vector2 scaleFactor(0);
         const AnnotationMap &annotations = parameter.m_annotations;
-        const Vector4 size(self->determineImageSize(annotations, self->viewportImageSize(Vector2(1)), scaleFactor));
+        const Vector4 size(self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
         const sg_pixel_format format =
             self->determineDepthStencilPixelFormat(annotations, SG_PIXELFORMAT_DEPTH_STENCIL);
         const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
@@ -4192,7 +4192,7 @@ Effect::handleOffscreenRenderTargetSemantic(
         else {
             Vector2 scaleFactor(0);
             const AnnotationMap &annotations = parameter.m_annotations;
-            const Vector4 size(self->determineImageSize(annotations, self->viewportImageSize(Vector2(1)), scaleFactor));
+            const Vector4 size(self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
             const sg_pixel_format format = self->determinePixelFormat(annotations, SG_PIXELFORMAT_RGBA8);
             const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
             AnnotationMap::const_iterator it;
@@ -4713,10 +4713,10 @@ Effect::determineDepthStencilPixelFormat(
 }
 
 Vector4
-Effect::viewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT
+Effect::scaledViewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT
 {
     static const Vector2 kMaxSize(UINT16_MAX), kMinSize(1);
-    const Vector2 size(m_project->deviceScaleUniformedViewportImageSize()),
+    const Vector2 size(m_project->deviceScaleViewportPrimaryImageSize()),
         normalizedScaleFactor(glm::max(scaleFactor, 0.0f));
     return Vector4(glm::clamp(size * normalizedScaleFactor, kMinSize, kMaxSize), 1, normalizedScaleFactor.x);
 }
@@ -4729,7 +4729,7 @@ Effect::determineImageSize(
     Vector4 result(defaultValue);
     if (it != annotations.end()) {
         scaleFactor = it->second.m_vector;
-        result = viewportImageSize(scaleFactor);
+        result = scaledViewportImageSize(scaleFactor);
     }
     else {
         it = annotations.findAnnotation(kDimensionsKeyLiteral);

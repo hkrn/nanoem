@@ -632,6 +632,7 @@ public:
     void attachDrawableOffscreenEffects(IDrawable *drawable);
     void releaseAllOffscreenRenderTarget(Effect *ownerEffect);
     void getAllOffscreenRenderTargetEffects(const IEffect *ownerEffect, LoadedEffectSet &allRenderTargetEffects) const;
+    Vector2UI16 deviceScaleViewportPrimaryImageSize() const NANOEM_DECL_NOEXCEPT;
     sg_pass viewportPrimaryPass() const NANOEM_DECL_NOEXCEPT;
     sg_image viewportPrimaryImage() const NANOEM_DECL_NOEXCEPT;
     sg_image viewportSecondaryImage() const NANOEM_DECL_NOEXCEPT;

@@ -2932,7 +2932,7 @@ Project::getOriginOffscreenRenderPassColorImageDescription(
                 id.pixel_format = format.m_colorPixelFormats[0];
                 id.sample_count = format.m_numSamples;
                 pd.color_attachments[0].image = colorImage;
-                const Vector2UI16 imageSize(deviceScaleUniformedViewportImageSize());
+                const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
                 id.width = imageSize.x;
                 id.height = imageSize.y;
             }
@@ -2983,7 +2983,7 @@ Project::getViewportRenderPassColorImageDescription(sg_pass_desc &pd, sg_image_d
     id.pixel_format = viewportPixelFormat();
     id.sample_count = sampleCount();
     pd.color_attachments[0].image = viewportPrimaryImage();
-    const Vector2UI16 imageSize(deviceScaleUniformedViewportImageSize());
+    const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
     id.width = imageSize.x;
     id.height = imageSize.y;
 }
@@ -5080,6 +5080,12 @@ Project::getAllOffscreenRenderTargetEffects(const IEffect *ownerEffect, LoadedEf
     if (it != m_allOffscreenRenderTargetEffectSets.end()) {
         allRenderTargetEffects = it->second;
     }
+}
+
+Vector2UI16
+Project::deviceScaleViewportPrimaryImageSize() const NANOEM_DECL_NOEXCEPT
+{
+    return Vector2(logicalScaleUniformedViewportImageSize()) * viewportDevicePixelRatio();
 }
 
 sg_pass
