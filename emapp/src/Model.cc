@@ -95,7 +95,7 @@ enum PrivateStateFlags {
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStatePhysicsSimulation | kPrivateStateEnableGroundShadow;
 
-struct PrivateUtils : private NonCopyable {
+struct PrivateModelUtils : private NonCopyable {
     static inline Matrix4x4
     boneWorldMatrix(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     {
@@ -2242,20 +2242,20 @@ Model::isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DEC
 {
     const bool selected =
         (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value));
-    return selected && PrivateUtils::isMaterialVisible(value);
+    return selected && PrivateModelUtils::isMaterialVisible(value);
 }
 
 bool
 Model::isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return !(isShowAllBones() && !PrivateUtils::isBoneEditingVisible(value)) && model::Bone::isSelectable(value) &&
+    return !(isShowAllBones() && !PrivateModelUtils::isBoneEditingVisible(value)) && model::Bone::isSelectable(value) &&
         !isRigidBodyBound(value);
 }
 
 bool
 Model::isBoneConnectionVisible(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return isShowAllBones() && PrivateUtils::isBoneEditingVisible(value);
+    return isShowAllBones() && PrivateModelUtils::isBoneEditingVisible(value);
 }
 
 void
@@ -2298,9 +2298,9 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
     if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bonePtr)) {
         drawBoneConnections(primitive, bonePtr, targetBone, kDrawBoneConnectionThickness);
     }
-    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) && PrivateUtils::isBoneEditingVisible(bonePtr)) {
+    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) && PrivateModelUtils::isBoneEditingVisible(bonePtr)) {
         const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bonePtr);
-        const Matrix4x4 transform(worldTransform(PrivateUtils::boneWorldMatrix(bonePtr)));
+        const Matrix4x4 transform(worldTransform(PrivateModelUtils::boneWorldMatrix(bonePtr)));
         const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
         const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
         drawBoneConnection(primitive, bonePtr, destinationPositon, color, circleRadius, kDrawBoneConnectionThickness);
@@ -3719,7 +3719,7 @@ Model::connectionBoneColor(
     if (m_selection->containsBone(bonePtr)) {
         color = Vector4(1, 0, 0, kOpacity);
     }
-    else if (PrivateUtils::isBoneDirty(bonePtr)) {
+    else if (PrivateModelUtils::isBoneDirty(bonePtr)) {
         color = Vector4(0, 1, 0, kOpacity);
     }
     else if (isConstraintJointBone(bonePtr)) {
@@ -4350,7 +4350,7 @@ Model::drawConstraintConnections(
     for (nanoem_rsize_t j = 0; j < numJoints - 1; j++) {
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[j]);
         const nanoem_model_bone_t *nextJointBone = nanoemModelConstraintJointGetBoneObject(joints[j + 1]);
-        const Vector3 destinationPosition(worldTransform(PrivateUtils::boneWorldMatrix(nextJointBone))[3]);
+        const Vector3 destinationPosition(worldTransform(PrivateModelUtils::boneWorldMatrix(nextJointBone))[3]);
         const Vector4 color(Color::hotToCold((numJoints - j - 1.5f) / nanoem_f32_t(numJoints)), 1);
         drawBoneConnection(
             primitive, jointBone, destinationPosition, color, circleRadius, kDrawBoneConnectionThickness);
@@ -4358,7 +4358,7 @@ Model::drawConstraintConnections(
     if (numJoints > 0) {
         const nanoem_model_bone_t *effectorBone = nanoemModelConstraintGetEffectorBoneObject(constraint);
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[0]);
-        const Vector3 destinationPosition(worldTransform(PrivateUtils::boneWorldMatrix(jointBone))[3]);
+        const Vector3 destinationPosition(worldTransform(PrivateModelUtils::boneWorldMatrix(jointBone))[3]);
         const Vector4 color(Color::hotToCold(1.0f), 1);
         drawBoneConnection(
             primitive, effectorBone, destinationPosition, color, circleRadius, kDrawBoneConnectionThickness);
