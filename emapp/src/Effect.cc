@@ -1841,11 +1841,13 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                             techniquePtr->name, passPtr->name, error.reasonConstString());
                     }
                 }
-                effect::Technique *technique =
-                    nanoem_new(Technique(this, techniquePtr->name, techniqueAnnotations, passes));
-                m_hasScriptExternal |= technique->hasScriptExternal();
-                m_allTechniques.push_back(technique);
-                m_techniqueByPassTypes[technique->passType()].push_back(technique);
+                if (!passes.empty()) {
+                    effect::Technique *technique =
+                        nanoem_new(Technique(this, techniquePtr->name, techniqueAnnotations, passes));
+                    m_hasScriptExternal |= technique->hasScriptExternal();
+                    m_allTechniques.push_back(technique);
+                    m_techniqueByPassTypes[technique->passType()].push_back(technique);
+                }
             }
             m_needsBehaviorCompatibility = needsBehaviorCompatibility;
         }
