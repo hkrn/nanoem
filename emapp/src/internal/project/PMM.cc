@@ -92,7 +92,6 @@ struct PMM::Context {
 
         typedef tinystl::unordered_map<String, Effect *, TinySTLAllocator> CacheMap;
         Project *m_project;
-        CacheMap m_cachedEffects;
         StringMap m_effectPropertyKey2FilePaths;
         StringMap m_filePath2EffectPropertyKeys;
         TreeMap m_offscreenEffectProperties;
@@ -345,31 +344,27 @@ Effect *
 PMM::Context::EffectMap::compileEffect(
     const String &filePath, effect::AttachmentType type, Progress &progress, Error &error)
 {
-    CacheMap::const_iterator it = m_cachedEffects.find(filePath);
+    IFileManager *fileManager = m_project->fileManager();
+    const URI effectFileURI(URI::createFromFilePath(filePath)),
+              effectResolvedURI(Effect::resolveSourceURI(fileManager, effectFileURI));
     Effect *effect = nullptr;
-    if (it != m_cachedEffects.end()) {
-        effect = it->second;
-    }
-    else {
-        IFileManager *fileManager = m_project->fileManager();
-        const URI &effectFileURI = URI::createFromFilePath(filePath),
-                  &effectResolvedURI = Effect::resolveSourceURI(fileManager, effectFileURI);
-        if (!effectResolvedURI.isEmpty()) {
+    if (!effectResolvedURI.isEmpty()) {
+        effect = m_project->findEffect(effectResolvedURI);
+        if (!effect) {
             ByteArray bytes;
             if (Effect::compileFromSource(
                     effectResolvedURI, fileManager, m_project->isMipmapEnabled(), bytes, progress, error)) {
                 Effect *innerEffect = m_project->createEffect();
                 innerEffect->setName(effectResolvedURI.lastPathComponent());
-                bool cached = false;
+                bool succeeded = false;
                 if (innerEffect->load(bytes, progress, error)) {
                     innerEffect->setFileURI(effectResolvedURI);
                     if (innerEffect->upload(type, progress, error)) {
                         effect = innerEffect;
-                        m_cachedEffects.insert(tinystl::make_pair(filePath, innerEffect));
-                        cached = !error.hasReason();
+                        succeeded = !error.hasReason();
                     }
                 }
-                if (!cached) {
+                if (!succeeded) {
                     m_project->destroyEffect(innerEffect);
                 }
             }
