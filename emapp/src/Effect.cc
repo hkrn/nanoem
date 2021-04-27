@@ -153,6 +153,7 @@ public:
         ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices);
     static void fillShaderImageDescriptions(const char *prefix, sg_shader_image_desc *desc, StringList &names);
     static void parseSubsetString(char *ptr, int numMaterials, Effect::MaterialIndexSet &output);
+    static bool hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT;
     static Vector3 angle(const Accessory *accessory);
 
     static inline void
@@ -949,6 +950,12 @@ PrivateEffectUtils::parseSubsetString(char *ptr, int numMaterials, Effect::Mater
             output.insert(materialIndex);
         }
     }
+}
+
+bool
+PrivateEffectUtils::hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT
+{
+    return (desc.vs.source && desc.fs.source) || (desc.vs.bytecode.size > 0 && desc.fs.bytecode.size > 0);
 }
 
 Vector3
@@ -1781,7 +1788,7 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         SG_POP_GROUP();
                         break;
                     }
-                    if (!(shaderDescription.vs.source && shaderDescription.fs.source)) {
+                    if (!PrivateEffectUtils::hasShaderSource(shaderDescription)) {
                         m_logger->log("Creating the pass Effects/%s/%s/%s failed due to empty source",
                             nameConstString(), techniquePtr->name, passPtr->name);
                     }
