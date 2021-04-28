@@ -75,12 +75,6 @@ nanoem::command::ScopedMutableVertex::operator nanoem_mutable_model_vertex_t *()
     return m_vertex;
 }
 
-DeleteMaterialCommand::DeleteMaterialCommand(nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
-    : m_materials(materials)
-    , m_materialIndex(materialIndex)
-{
-}
-
 ScopedMutableMaterial::ScopedMutableMaterial(Model *model)
     : m_material(nullptr)
 {
@@ -425,9 +419,36 @@ nanoem::command::ScopedMutableSoftBody::operator nanoem_mutable_model_soft_body_
     return m_softBody;
 }
 
-void
-DeleteMaterialCommand::execute(Project *project)
+undo_command_t *
+DeleteMaterialCommand::create(
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
+    DeleteMaterialCommand *command =
+        nanoem_new(DeleteMaterialCommand(project, materials, materialIndex));
+    return command->createCommand();
+}
+
+DeleteMaterialCommand::DeleteMaterialCommand(
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+    : BaseUndoCommand(project)
+    , m_materials(materials)
+    , m_materialIndex(materialIndex)
+{
+}
+
+DeleteMaterialCommand::~DeleteMaterialCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+DeleteMaterialCommand::undo(Error &error)
+{
+}
+
+void
+DeleteMaterialCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableMaterial material(m_materials[m_materialIndex]);
     ScopedMutableModel model(activeModel);
@@ -454,7 +475,6 @@ DeleteMaterialCommand::execute(Project *project)
     nanoemMutableModelRemoveMaterialObject(model, material, &status);
     nanoemMutableModelMaterialDestroy(material);
     ByteArray bytes;
-    Error error;
     activeModel->save(bytes, error);
     Progress reloadModelProgress(project, 0);
     activeModel->clear();
@@ -471,10 +491,39 @@ DeleteMaterialCommand::execute(Project *project)
     reloadModelProgress.complete();
 }
 
+void
+DeleteMaterialCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteMaterialCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteMaterialCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteMaterialCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteMaterialCommand";
+}
+
 BaseMoveMaterialCommand::BaseMoveMaterialCommand(
-    nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
-    : m_materials(materials)
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
+    : BaseUndoCommand(project)
+    , m_materials(materials)
     , m_materialIndex(materialIndex)
+{
+}
+
+BaseMoveMaterialCommand::~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT
 {
 }
 
@@ -499,15 +548,33 @@ BaseMoveMaterialCommand::move(int destination, const BaseMoveMaterialCommand::La
     nanoemMutableModelInsertMaterialObject(model, material, destination, &status);
 }
 
-MoveMaterialUpCommand::MoveMaterialUpCommand(nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
-    : BaseMoveMaterialCommand(materials, materialIndex)
+undo_command_t *
+MoveMaterialUpCommand::create(
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
+{
+    MoveMaterialUpCommand *command = nanoem_new(MoveMaterialUpCommand(project, materials, materialIndex));
+    return command->createCommand();
+}
+
+MoveMaterialUpCommand::MoveMaterialUpCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
+    : BaseMoveMaterialCommand(project, materials, materialIndex)
+{
+}
+
+MoveMaterialUpCommand::~MoveMaterialUpCommand() NANOEM_DECL_NOEXCEPT
 {
 }
 
 void
-MoveMaterialUpCommand::execute(Project *project)
+MoveMaterialUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveMaterialUpCommand::redo(Error &error)
 {
     const nanoem_model_material_t *activeMaterial = m_materials[m_materialIndex];
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     nanoem_rsize_t numMaterials, offset = 0;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
@@ -530,16 +597,58 @@ MoveMaterialUpCommand::execute(Project *project)
     move(destination, from, to, activeModel);
 }
 
+void
+MoveMaterialUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMaterialUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMaterialUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveMaterialUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveMaterialUpCommand";
+}
+
+undo_command_t *
+MoveMaterialDownCommand::create(
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
+{
+    MoveMaterialDownCommand *command = nanoem_new(MoveMaterialDownCommand(project, materials, materialIndex));
+    return command->createCommand();
+}
+
 MoveMaterialDownCommand::MoveMaterialDownCommand(
-    nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
-    : BaseMoveMaterialCommand(materials, materialIndex)
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
+    : BaseMoveMaterialCommand(project, materials, materialIndex)
+{
+}
+
+MoveMaterialDownCommand::~MoveMaterialDownCommand() NANOEM_DECL_NOEXCEPT
 {
 }
 
 void
-MoveMaterialDownCommand::execute(Project *project)
+MoveMaterialDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveMaterialDownCommand::redo(Error &error)
 {
     const nanoem_model_material_t *activeMaterial = m_materials[m_materialIndex];
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     nanoem_rsize_t numMaterials, offset = 0;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
@@ -562,16 +671,59 @@ MoveMaterialDownCommand::execute(Project *project)
     move(destination, from, to, activeModel);
 }
 
-CreateBoneCommand::CreateBoneCommand(nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base)
-    : m_base(base)
+void
+MoveMaterialDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMaterialDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMaterialDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveMaterialDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveMaterialDownCommand";
+}
+
+undo_command_t *
+CreateBoneCommand::create(Project *project, nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base)
+{
+    CreateBoneCommand *command = nanoem_new(CreateBoneCommand(project, numBones, offset, base));
+    return command->createCommand();
+}
+
+CreateBoneCommand::CreateBoneCommand(
+    Project *project, nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base)
+    : BaseUndoCommand(project)
+    , m_base(base)
     , m_numBones(numBones)
     , m_offset(offset)
 {
 }
 
-void
-CreateBoneCommand::execute(Project *project)
+CreateBoneCommand::~CreateBoneCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+CreateBoneCommand::undo(Error &error)
+{
+}
+
+void
+CreateBoneCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableModel model(activeModel);
     ScopedMutableBone bone(activeModel);
@@ -598,16 +750,58 @@ CreateBoneCommand::execute(Project *project)
     activeModel->addBoneReference(bonePtr);
 }
 
-DeleteBoneCommand::DeleteBoneCommand(nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
-    : m_bones(bones)
+void
+CreateBoneCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateBoneCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateBoneCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateBoneCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateBoneCommand";
+}
+
+undo_command_t *
+DeleteBoneCommand::create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t boneIndex)
+{
+    DeleteBoneCommand *command = nanoem_new(DeleteBoneCommand(project, bones, boneIndex));
+    return command->createCommand();
+}
+
+DeleteBoneCommand::DeleteBoneCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
+    : BaseUndoCommand(project)
+    , m_bones(bones)
     , m_boneIndex(boneIndex)
 {
 }
 
+DeleteBoneCommand::~DeleteBoneCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
 void
-DeleteBoneCommand::execute(Project *project)
+DeleteBoneCommand::undo(Error &error)
+{
+}
+
+void
+DeleteBoneCommand::redo(Error &error)
 {
     nanoem_model_bone_t *bonePtr = m_bones[m_boneIndex];
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableBone bone(bonePtr);
     ScopedMutableModel model(activeModel);
@@ -623,15 +817,58 @@ DeleteBoneCommand::execute(Project *project)
     }
 }
 
-MoveBoneDownCommand::MoveBoneDownCommand(nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
-    : m_bones(bones)
+void
+DeleteBoneCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteBoneCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteBoneCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteBoneCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteBoneCommand";
+}
+
+undo_command_t *
+MoveBoneDownCommand::create(
+    Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
+{
+    MoveBoneDownCommand *command = nanoem_new(MoveBoneDownCommand(project, bones, boneIndex));
+    return command->createCommand();
+}
+
+MoveBoneDownCommand::MoveBoneDownCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
+    : BaseUndoCommand(project)
+    , m_bones(bones)
     , m_boneIndex(boneIndex)
 {
 }
 
-void
-MoveBoneDownCommand::execute(Project *project)
+MoveBoneDownCommand::~MoveBoneDownCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveBoneDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveBoneDownCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableBone bone(m_bones[m_boneIndex]);
     ScopedMutableModel model(activeModel);
@@ -641,15 +878,57 @@ MoveBoneDownCommand::execute(Project *project)
     nanoemMutableModelInsertBoneObject(model, bone, offset, &status);
 }
 
-MoveBoneUpCommand::MoveBoneUpCommand(nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
-    : m_bones(bones)
+void
+MoveBoneDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveBoneDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveBoneDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveBoneDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveBoneDownCommand";
+}
+
+undo_command_t *
+MoveBoneUpCommand::create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
+{
+    MoveBoneUpCommand *command = nanoem_new(MoveBoneUpCommand(project, bones, boneIndex));
+    return command->createCommand();
+}
+
+MoveBoneUpCommand::MoveBoneUpCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
+    : BaseUndoCommand(project)
+    , m_bones(bones)
     , m_boneIndex(boneIndex)
 {
 }
 
-void
-MoveBoneUpCommand::execute(Project *project)
+MoveBoneUpCommand::~MoveBoneUpCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveBoneUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveBoneUpCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableBone bone(m_bones[m_boneIndex]);
     ScopedMutableModel model(activeModel);
@@ -659,18 +938,61 @@ MoveBoneUpCommand::execute(Project *project)
     nanoemMutableModelInsertBoneObject(model, bone, offset, &status);
 }
 
-CreateMorphCommand::CreateMorphCommand(
-    nanoem_rsize_t numMorphs, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type)
-    : m_base(base)
+void
+MoveBoneUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveBoneUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveBoneUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveBoneUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveBoneUpCommand";
+}
+
+undo_command_t *
+CreateMorphCommand::create(Project *project, nanoem_rsize_t numMorphs, int offset, const nanoem_model_morph_t *base,
+    nanoem_model_morph_type_t type)
+{
+    CreateMorphCommand *command = nanoem_new(CreateMorphCommand(project, numMorphs, offset, base, type));
+    return command->createCommand();
+}
+
+CreateMorphCommand::CreateMorphCommand(Project *project, nanoem_rsize_t numMorphs, int offset,
+    const nanoem_model_morph_t *base, nanoem_model_morph_type_t type)
+    : BaseUndoCommand(project)
+    , m_base(base)
     , m_type(type)
     , m_numMorphs(numMorphs)
     , m_offset(offset)
 {
 }
 
-void
-CreateMorphCommand::execute(Project *project)
+CreateMorphCommand::~CreateMorphCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+CreateMorphCommand::undo(Error &error)
+{
+}
+
+void
+CreateMorphCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableMorph morph(activeModel);
     ScopedMutableModel model(activeModel);
@@ -699,16 +1021,60 @@ CreateMorphCommand::execute(Project *project)
     project->rebuildAllTracks();
 }
 
-DeleteMorphCommand::DeleteMorphCommand(nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
-    : m_morphs(morphs)
+void
+CreateMorphCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateMorphCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateMorphCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateMorphCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateMorphCommand";
+}
+
+undo_command_t *
+DeleteMorphCommand::create(
+    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+{
+    DeleteMorphCommand *command = nanoem_new(DeleteMorphCommand(project, morphs, morphIndex));
+    return command->createCommand();
+}
+
+DeleteMorphCommand::DeleteMorphCommand(
+    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+    : BaseUndoCommand(project)
+    , m_morphs(morphs)
     , m_morphIndex(morphIndex)
 {
 }
 
+DeleteMorphCommand::~DeleteMorphCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
 void
-DeleteMorphCommand::execute(Project *project)
+DeleteMorphCommand::undo(Error &error)
+{
+}
+
+void
+DeleteMorphCommand::redo(Error &error)
 {
     nanoem_model_morph_t *morphPtr = m_morphs[m_morphIndex];
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableMorph morph(morphPtr);
     ScopedMutableModel model(activeModel);
@@ -727,15 +1093,59 @@ DeleteMorphCommand::execute(Project *project)
     }
 }
 
-MoveMorphUpCommand::MoveMorphUpCommand(nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
-    : m_morphs(morphs)
+void
+DeleteMorphCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteMorphCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteMorphCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteMorphCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteMorphCommand";
+}
+
+undo_command_t *
+MoveMorphUpCommand::create(
+    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+{
+    MoveMorphUpCommand *command = nanoem_new(MoveMorphUpCommand(project, morphs, morphIndex));
+    return command->createCommand();
+}
+
+MoveMorphUpCommand::MoveMorphUpCommand(
+    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+    : BaseUndoCommand(project)
+    , m_morphs(morphs)
     , m_morphIndex(morphIndex)
 {
 }
 
-void
-MoveMorphUpCommand::execute(Project *project)
+MoveMorphUpCommand::~MoveMorphUpCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveMorphUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveMorphUpCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableMorph morph(m_morphs[m_morphIndex]);
     ScopedMutableModel model(activeModel);
@@ -745,15 +1155,58 @@ MoveMorphUpCommand::execute(Project *project)
     nanoemMutableModelInsertMorphObject(model, morph, offset, &status);
 }
 
-MoveMorphDownCommand::MoveMorphDownCommand(nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
-    : m_morphs(morphs)
+void
+MoveMorphUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMorphUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMorphUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveMorphUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveMorphUpCommand";
+}
+
+undo_command_t *
+MoveMorphDownCommand::create(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+{
+    MoveMorphDownCommand *command = nanoem_new(MoveMorphDownCommand(project, morphs, morphIndex));
+    return command->createCommand();
+}
+
+MoveMorphDownCommand::MoveMorphDownCommand(
+    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+    : BaseUndoCommand(project)
+    , m_morphs(morphs)
     , m_morphIndex(morphIndex)
 {
 }
 
-void
-MoveMorphDownCommand::execute(Project *project)
+MoveMorphDownCommand::~MoveMorphDownCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveMorphDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveMorphDownCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableMorph morph(m_morphs[m_morphIndex]);
     ScopedMutableModel model(activeModel);
@@ -763,16 +1216,60 @@ MoveMorphDownCommand::execute(Project *project)
     nanoemMutableModelInsertMorphObject(model, morph, offset, &status);
 }
 
-CreateLabelCommand::CreateLabelCommand(nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base)
-    : m_base(base)
+void
+MoveMorphDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMorphDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveMorphDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveMorphDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveMorphDownCommand";
+}
+
+undo_command_t *
+CreateLabelCommand::create(
+    Project *project, nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base)
+{
+    CreateLabelCommand *command = nanoem_new(CreateLabelCommand(project, numLabels, offset, base));
+    return command->createCommand();
+}
+
+CreateLabelCommand::CreateLabelCommand(
+    Project *project, nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base)
+    : BaseUndoCommand(project)
+    , m_base(base)
     , m_numLabels(numLabels)
     , m_offset(offset)
 {
 }
 
-void
-CreateLabelCommand::execute(Project *project)
+CreateLabelCommand::~CreateLabelCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+CreateLabelCommand::undo(Error &error)
+{
+}
+
+void
+CreateLabelCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableLabel label(activeModel);
     ScopedMutableModel model(activeModel);
@@ -798,15 +1295,58 @@ CreateLabelCommand::execute(Project *project)
     project->rebuildAllTracks();
 }
 
-DeleteLabelCommand::DeleteLabelCommand(nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
-    : m_labels(labels)
+void
+CreateLabelCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateLabelCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateLabelCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateLabelCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateLabelCommand";
+}
+
+undo_command_t *
+DeleteLabelCommand::create(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
+{
+    DeleteLabelCommand *command = nanoem_new(DeleteLabelCommand(project, labels, labelIndex));
+    return command->createCommand();
+}
+
+DeleteLabelCommand::DeleteLabelCommand(
+    Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
+    : BaseUndoCommand(project)
+    , m_labels(labels)
     , m_labelIndex(labelIndex)
 {
 }
 
-void
-DeleteLabelCommand::execute(Project *project)
+DeleteLabelCommand::~DeleteLabelCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+DeleteLabelCommand::undo(Error &error)
+{
+}
+
+void
+DeleteLabelCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableLabel label(m_labels[m_labelIndex]);
     ScopedMutableModel model(activeModel);
@@ -818,15 +1358,58 @@ DeleteLabelCommand::execute(Project *project)
     }
 }
 
-MoveLabelUpCommand::MoveLabelUpCommand(nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
-    : m_labels(labels)
+void
+DeleteLabelCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteLabelCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteLabelCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteLabelCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteLabelCommand";
+}
+
+undo_command_t *
+MoveLabelUpCommand::create(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
+{
+    MoveLabelUpCommand *command = nanoem_new(MoveLabelUpCommand(project, labels, labelIndex));
+    return command->createCommand();
+}
+
+MoveLabelUpCommand::MoveLabelUpCommand(
+    Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
+    : BaseUndoCommand(project)
+    , m_labels(labels)
     , m_labelIndex(labelIndex)
 {
 }
 
-void
-MoveLabelUpCommand::execute(Project *project)
+MoveLabelUpCommand::~MoveLabelUpCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveLabelUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveLabelUpCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableLabel label(m_labels[m_labelIndex]);
     ScopedMutableModel model(activeModel);
@@ -837,15 +1420,58 @@ MoveLabelUpCommand::execute(Project *project)
     project->rebuildAllTracks();
 }
 
-MoveLabelDownCommand::MoveLabelDownCommand(nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
-    : m_labels(labels)
+void
+MoveLabelUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveLabelUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveLabelUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveLabelUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveLabelUpCommand";
+}
+
+undo_command_t *
+MoveLabelDownCommand::create(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
+{
+    MoveLabelDownCommand *command = nanoem_new(MoveLabelDownCommand(project, labels, labelIndex));
+    return command->createCommand();
+}
+
+MoveLabelDownCommand::MoveLabelDownCommand(
+    Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex)
+    : BaseUndoCommand(project)
+    , m_labels(labels)
     , m_labelIndex(labelIndex)
 {
 }
 
-void
-MoveLabelDownCommand::execute(Project *project)
+MoveLabelDownCommand::~MoveLabelDownCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveLabelDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveLabelDownCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableLabel label(m_labels[m_labelIndex]);
     ScopedMutableModel model(activeModel);
@@ -856,17 +1482,60 @@ MoveLabelDownCommand::execute(Project *project)
     project->rebuildAllTracks();
 }
 
+void
+MoveLabelDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveLabelDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveLabelDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveLabelDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveLabelDownCommand";
+}
+
+undo_command_t *
+CreateRigidBodyCommand::create(
+    Project *project, nanoem_rsize_t numRigidBodies, int offset, const nanoem_model_rigid_body_t *base)
+{
+    CreateRigidBodyCommand *command = nanoem_new(CreateRigidBodyCommand(project, numRigidBodies, offset, base));
+    return command->createCommand();
+}
+
 CreateRigidBodyCommand::CreateRigidBodyCommand(
-    nanoem_rsize_t numRigidBodies, int offset, const nanoem_model_rigid_body_t *base)
-    : m_base(base)
+    Project *project, nanoem_rsize_t numRigidBodies, int offset, const nanoem_model_rigid_body_t *base)
+    : BaseUndoCommand(project)
+    , m_base(base)
     , m_numRigidBodies(numRigidBodies)
     , m_offset(offset)
 {
 }
 
-void
-CreateRigidBodyCommand::execute(Project *project)
+CreateRigidBodyCommand::~CreateRigidBodyCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+CreateRigidBodyCommand::undo(Error &error)
+{
+}
+
+void
+CreateRigidBodyCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableModel model(activeModel);
     ScopedMutableRigidBody body(activeModel);
@@ -892,16 +1561,59 @@ CreateRigidBodyCommand::execute(Project *project)
     newBody->resetLanguage(nanoemMutableModelRigidBodyGetOriginObject(body), factory, project->castLanguage());
 }
 
+void
+CreateRigidBodyCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateRigidBodyCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateRigidBodyCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateRigidBodyCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateRigidBodyCommand";
+}
+
+undo_command_t *
+DeleteRigidBodyCommand::create(
+    Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
+{
+    DeleteRigidBodyCommand *command = nanoem_new(DeleteRigidBodyCommand(project, rigidBodies, rigidBodyIndex));
+    return command->createCommand();
+}
+
 DeleteRigidBodyCommand::DeleteRigidBodyCommand(
-    nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
-    : m_rigidBodies(rigidBodies)
+    Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
+    : BaseUndoCommand(project)
+    , m_rigidBodies(rigidBodies)
     , m_rigidBodyIndex(rigidBodyIndex)
 {
 }
 
-void
-DeleteRigidBodyCommand::execute(Project *project)
+DeleteRigidBodyCommand::~DeleteRigidBodyCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+DeleteRigidBodyCommand::undo(Error &error)
+{
+}
+
+void
+DeleteRigidBodyCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableRigidBody rigid_body(m_rigidBodies[m_rigidBodyIndex]);
     ScopedMutableModel model(activeModel);
@@ -912,16 +1624,59 @@ DeleteRigidBodyCommand::execute(Project *project)
     }
 }
 
+void
+DeleteRigidBodyCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteRigidBodyCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteRigidBodyCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteRigidBodyCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteRigidBodyCommand";
+}
+
+undo_command_t *
+MoveRigidBodyUpCommand::create(
+    Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
+{
+    MoveRigidBodyUpCommand *command = nanoem_new(MoveRigidBodyUpCommand(project, rigidBodies, rigidBodyIndex));
+    return command->createCommand();
+}
+
 MoveRigidBodyUpCommand::MoveRigidBodyUpCommand(
-    nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
-    : m_rigidBodies(rigidBodies)
+    Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
+    : BaseUndoCommand(project)
+    , m_rigidBodies(rigidBodies)
     , m_rigidBodyIndex(rigidBodyIndex)
 {
 }
 
-void
-MoveRigidBodyUpCommand::execute(Project *project)
+MoveRigidBodyUpCommand::~MoveRigidBodyUpCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveRigidBodyUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveRigidBodyUpCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableRigidBody rigid_body(m_rigidBodies[m_rigidBodyIndex]);
     ScopedMutableModel model(activeModel);
@@ -931,16 +1686,59 @@ MoveRigidBodyUpCommand::execute(Project *project)
     nanoemMutableModelInsertRigidBodyObject(model, rigid_body, offset, &status);
 }
 
+void
+MoveRigidBodyUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveRigidBodyUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveRigidBodyUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveRigidBodyUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveRigidBodyUpCommand";
+}
+
+undo_command_t *
+MoveRigidBodyDownCommand::create(
+    Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
+{
+    MoveRigidBodyDownCommand *command = nanoem_new(MoveRigidBodyDownCommand(project, rigidBodies, rigidBodyIndex));
+    return command->createCommand();
+}
+
 MoveRigidBodyDownCommand::MoveRigidBodyDownCommand(
-    nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
-    : m_rigidBodies(rigidBodies)
+    Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex)
+    : BaseUndoCommand(project)
+    , m_rigidBodies(rigidBodies)
     , m_rigidBodyIndex(rigidBodyIndex)
 {
 }
 
-void
-MoveRigidBodyDownCommand::execute(Project *project)
+MoveRigidBodyDownCommand::~MoveRigidBodyDownCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveRigidBodyDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveRigidBodyDownCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableRigidBody rigid_body(m_rigidBodies[m_rigidBodyIndex]);
     ScopedMutableModel model(activeModel);
@@ -950,16 +1748,59 @@ MoveRigidBodyDownCommand::execute(Project *project)
     nanoemMutableModelInsertRigidBodyObject(model, rigid_body, offset, &status);
 }
 
-CreateJointCommand::CreateJointCommand(nanoem_rsize_t numJoints, int offset, const nanoem_model_joint_t *base)
-    : m_base(base)
+void
+MoveRigidBodyDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveRigidBodyDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveRigidBodyDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveRigidBodyDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveRigidBodyDownCommand";
+}
+
+undo_command_t *
+CreateJointCommand::create(Project *project, nanoem_rsize_t numJoints, int offset, const nanoem_model_joint_t *base)
+{
+    CreateJointCommand *command = nanoem_new(CreateJointCommand(project, numJoints, offset, base));
+    return command->createCommand();
+}
+
+CreateJointCommand::CreateJointCommand(
+    Project *project, nanoem_rsize_t numJoints, int offset, const nanoem_model_joint_t *base)
+    : BaseUndoCommand(project)
+    , m_base(base)
     , m_numJoints(numJoints)
     , m_offset(offset)
 {
 }
 
-void
-CreateJointCommand::execute(Project *project)
+CreateJointCommand::~CreateJointCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+CreateJointCommand::undo(Error &error)
+{
+}
+
+void
+CreateJointCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableJoint joint(activeModel);
     ScopedMutableModel model(activeModel);
@@ -985,15 +1826,59 @@ CreateJointCommand::execute(Project *project)
     newJoint->resetLanguage(nanoemMutableModelJointGetOriginObject(joint), factory, project->castLanguage());
 }
 
-DeleteJointCommand::DeleteJointCommand(nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
-    : m_joints(joints)
+void
+CreateJointCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateJointCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateJointCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateJointCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateJointCommand";
+}
+
+undo_command_t *
+DeleteJointCommand::create(
+    Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+{
+    DeleteJointCommand *command = nanoem_new(DeleteJointCommand(project, joints, jointIndex));
+    return command->createCommand();
+}
+
+DeleteJointCommand::DeleteJointCommand(
+    Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+    : BaseUndoCommand(project)
+    , m_joints(joints)
     , m_jointIndex(jointIndex)
 {
 }
 
-void
-DeleteJointCommand::execute(Project *project)
+DeleteJointCommand::~DeleteJointCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+DeleteJointCommand::undo(Error &error)
+{
+}
+
+void
+DeleteJointCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableJoint joint(m_joints[m_jointIndex]);
     ScopedMutableModel model(activeModel);
@@ -1004,15 +1889,58 @@ DeleteJointCommand::execute(Project *project)
     }
 }
 
-MoveJointUpCommand::MoveJointUpCommand(nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
-    : m_joints(joints)
+void
+DeleteJointCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteJointCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteJointCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteJointCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteJointCommand";
+}
+
+undo_command_t *
+MoveJointUpCommand::create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+{
+    MoveJointUpCommand *command = nanoem_new(MoveJointUpCommand(project, joints, jointIndex));
+    return command->createCommand();
+}
+
+MoveJointUpCommand::MoveJointUpCommand(
+    Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+    : BaseUndoCommand(project)
+    , m_joints(joints)
     , m_jointIndex(jointIndex)
 {
 }
 
-void
-MoveJointUpCommand::execute(Project *project)
+MoveJointUpCommand::~MoveJointUpCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveJointUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveJointUpCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableJoint joint(m_joints[m_jointIndex]);
     ScopedMutableModel model(activeModel);
@@ -1022,15 +1950,58 @@ MoveJointUpCommand::execute(Project *project)
     nanoemMutableModelInsertJointObject(model, joint, offset, &status);
 }
 
-MoveJointDownCommand::MoveJointDownCommand(nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
-    : m_joints(joints)
+void
+MoveJointUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveJointUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveJointUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveJointUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveJointUpCommand";
+}
+
+undo_command_t *
+MoveJointDownCommand::create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+{
+    MoveJointDownCommand *command = nanoem_new(MoveJointDownCommand(project, joints, jointIndex));
+    return command->createCommand();
+}
+
+MoveJointDownCommand::MoveJointDownCommand(
+    Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+    : BaseUndoCommand(project)
+    , m_joints(joints)
     , m_jointIndex(jointIndex)
 {
 }
 
-void
-MoveJointDownCommand::execute(Project *project)
+MoveJointDownCommand::~MoveJointDownCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveJointDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveJointDownCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableJoint joint(m_joints[m_jointIndex]);
     ScopedMutableModel model(activeModel);
@@ -1040,17 +2011,60 @@ MoveJointDownCommand::execute(Project *project)
     nanoemMutableModelInsertJointObject(model, joint, offset, &status);
 }
 
+void
+MoveJointDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveJointDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveJointDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveJointDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveJointDownCommand";
+}
+
+undo_command_t *
+CreateSoftBodyCommand::create(
+    Project *project, nanoem_rsize_t numSoftBodys, int offset, const nanoem_model_soft_body_t *base)
+{
+    CreateSoftBodyCommand *command = nanoem_new(CreateSoftBodyCommand(project, numSoftBodys, offset, base));
+    return command->createCommand();
+}
+
 CreateSoftBodyCommand::CreateSoftBodyCommand(
-    nanoem_rsize_t numSoftBodys, int offset, const nanoem_model_soft_body_t *base)
-    : m_base(base)
+    Project *project, nanoem_rsize_t numSoftBodys, int offset, const nanoem_model_soft_body_t *base)
+    : BaseUndoCommand(project)
+    , m_base(base)
     , m_numSoftBodys(numSoftBodys)
     , m_offset(offset)
 {
 }
 
-void
-CreateSoftBodyCommand::execute(Project *project)
+CreateSoftBodyCommand::~CreateSoftBodyCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+CreateSoftBodyCommand::undo(Error &error)
+{
+}
+
+void
+CreateSoftBodyCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableSoftBody soft_body(activeModel);
     ScopedMutableModel model(activeModel);
@@ -1076,16 +2090,59 @@ CreateSoftBodyCommand::execute(Project *project)
     newSoftBody->resetLanguage(nanoemMutableModelSoftBodyGetOriginObject(soft_body), factory, project->castLanguage());
 }
 
+void
+CreateSoftBodyCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateSoftBodyCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateSoftBodyCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateSoftBodyCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateSoftBodyCommand";
+}
+
+undo_command_t *
+DeleteSoftBodyCommand::create(
+    Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+{
+    DeleteSoftBodyCommand *command = nanoem_new(DeleteSoftBodyCommand(project, softBodies, soft_bodyIndex));
+    return command->createCommand();
+}
+
 DeleteSoftBodyCommand::DeleteSoftBodyCommand(
-    nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
-    : m_softBodies(softBodies)
+    Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+    : BaseUndoCommand(project)
+    , m_softBodies(softBodies)
     , m_softBodyIndex(soft_bodyIndex)
 {
 }
 
-void
-DeleteSoftBodyCommand::execute(Project *project)
+DeleteSoftBodyCommand::~DeleteSoftBodyCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+DeleteSoftBodyCommand::undo(Error &error)
+{
+}
+
+void
+DeleteSoftBodyCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableSoftBody soft_body(m_softBodies[m_softBodyIndex]);
     ScopedMutableModel model(activeModel);
@@ -1096,16 +2153,59 @@ DeleteSoftBodyCommand::execute(Project *project)
     }
 }
 
+void
+DeleteSoftBodyCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteSoftBodyCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+DeleteSoftBodyCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+DeleteSoftBodyCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "DeleteSoftBodyCommand";
+}
+
+undo_command_t *
+MoveSoftBodyUpCommand::create(
+    Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+{
+    MoveSoftBodyUpCommand *command = nanoem_new(MoveSoftBodyUpCommand(project, softBodies, soft_bodyIndex));
+    return command->createCommand();
+}
+
 MoveSoftBodyUpCommand::MoveSoftBodyUpCommand(
-    nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
-    : m_softBodies(softBodies)
+    Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+    : BaseUndoCommand(project)
+    , m_softBodies(softBodies)
     , m_softBodyIndex(soft_bodyIndex)
 {
 }
 
-void
-MoveSoftBodyUpCommand::execute(Project *project)
+MoveSoftBodyUpCommand::~MoveSoftBodyUpCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveSoftBodyUpCommand::undo(Error &error)
+{
+}
+
+void
+MoveSoftBodyUpCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableSoftBody soft_body(m_softBodies[m_softBodyIndex]);
     ScopedMutableModel model(activeModel);
@@ -1115,16 +2215,59 @@ MoveSoftBodyUpCommand::execute(Project *project)
     nanoemMutableModelInsertSoftBodyObject(model, soft_body, offset, &status);
 }
 
+void
+MoveSoftBodyUpCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveSoftBodyUpCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveSoftBodyUpCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveSoftBodyUpCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveSoftBodyUpCommand";
+}
+
+undo_command_t *
+MoveSoftBodyDownCommand::create(
+    Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+{
+    MoveSoftBodyDownCommand *command = nanoem_new(MoveSoftBodyDownCommand(project, softBodies, soft_bodyIndex));
+    return command->createCommand();
+}
+
 MoveSoftBodyDownCommand::MoveSoftBodyDownCommand(
-    nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
-    : m_softBodies(softBodies)
+    Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex)
+    : BaseUndoCommand(project)
+    , m_softBodies(softBodies)
     , m_softBodyIndex(soft_bodyIndex)
 {
 }
 
-void
-MoveSoftBodyDownCommand::execute(Project *project)
+MoveSoftBodyDownCommand::~MoveSoftBodyDownCommand() NANOEM_DECL_NOEXCEPT
 {
+}
+
+void
+MoveSoftBodyDownCommand::undo(Error &error)
+{
+}
+
+void
+MoveSoftBodyDownCommand::redo(Error &error)
+{
+    Project *project = currentProject();
     Model *activeModel = project->activeModel();
     ScopedMutableSoftBody softBody(m_softBodies[m_softBodyIndex]);
     ScopedMutableModel model(activeModel);
@@ -1132,6 +2275,30 @@ MoveSoftBodyDownCommand::execute(Project *project)
     nanoemMutableModelRemoveSoftBodyObject(model, softBody, &status);
     int offset = Inline::saturateInt32(++m_softBodyIndex);
     nanoemMutableModelInsertSoftBodyObject(model, softBody, offset, &status);
+}
+
+void
+MoveSoftBodyDownCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveSoftBodyDownCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MoveSoftBodyDownCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MoveSoftBodyDownCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MoveSoftBodyDownCommand";
 }
 
 } /* namespace command */

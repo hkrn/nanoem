@@ -19,7 +19,7 @@ namespace command {
 
 class IUndoCommand {
 public:
-    virtual ~IUndoCommand()
+    virtual ~IUndoCommand() NANOEM_DECL_NOEXCEPT
     {
     }
 
