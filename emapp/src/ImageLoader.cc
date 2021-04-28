@@ -812,8 +812,8 @@ ImageLoader::load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_
 {
     nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
     IImageView *imageView = nullptr;
-    const String base(drawable->fileURI().absolutePathByDeletingLastPathComponent()), path(fileURI.absolutePath()),
-        filename(path.size() > base.size() ? path.c_str() + base.size() : fileURI.lastPathComponent());
+    const String filename(FileUtils::relativePath(
+            fileURI.absolutePath(), drawable->fileURI().absolutePathByDeletingLastPathComponent()));
     const char lastChr = filename.empty() ? 0 : *(filename.c_str() + filename.size() - 1);
     if (lastChr != '/' && FileUtils::exists(fileURI)) {
         FileReaderScope scope(nullptr);
@@ -825,7 +825,7 @@ ImageLoader::load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_
                     flags &= ~ImageLoader::kFlagsEnableMipmap;
                 }
                 const ImmutableImageContainer container(
-                    filename.c_str() + 1, bytes, Vector2UI16(), wrap, m_project->maxAnisotropyValue(), flags);
+                    filename, bytes, Vector2UI16(), wrap, m_project->maxAnisotropyValue(), flags);
                 imageView = decodeImageContainer(container, drawable, error);
             }
         }
