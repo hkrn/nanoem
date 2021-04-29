@@ -199,6 +199,7 @@ public:
     void registerResetMorphSetWeightsCommand(const model::Morph::Set &morphSet);
     void registerResetAllMorphWeightsCommand();
     void addBoneReference(const nanoem_model_bone_t *value);
+    void addMorphReference(const nanoem_model_morph_t *value);
     void removeBoneReference(const nanoem_model_bone_t *value);
     void removeBoneReference(const String &value);
     void removeMorphReference(const nanoem_model_morph_t *value);
