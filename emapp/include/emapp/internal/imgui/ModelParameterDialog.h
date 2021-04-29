@@ -43,6 +43,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     static void formatVertexText(char *buffer, nanoem_rsize_t size, const nanoem_model_vertex_t *vertexPtr);
 
     ModelParameterDialog(Model *model, Project *project, BaseApplicationService *applicationPtr, ImGuiWindow *parent);
+    ~ModelParameterDialog();
 
     bool draw(Project *project);
     void layoutInformation(Project *project);
@@ -89,6 +90,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     bool layoutName(const nanoem_unicode_string_t *namePtr, Project *project, StringUtils::UnicodeStringScope &scope);
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
+    void setActiveModel(Model *model);
 
     const char *selectedCodecType(const nanoem_codec_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedVertexType(const nanoem_model_vertex_type_t type) const NANOEM_DECL_NOEXCEPT;
@@ -103,8 +105,13 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     const char *selectedSoftBodyAeroMdoelType(
         const nanoem_model_soft_body_aero_model_type_t type) const NANOEM_DECL_NOEXCEPT;
 
+    typedef tinystl::unordered_map<Model *, ByteArray, TinySTLAllocator> SavedModelMotionMap;
     ImGuiWindow *m_parent;
+    Project *m_project;
     Model *m_activeModel;
+    Project::SaveState *m_saveState;
+    SavedModelMotionMap m_savedModelMotions;
+    model::BindPose m_bindPose;
     int m_language;
     TabType m_tabType;
     TabType m_explicitTabType;

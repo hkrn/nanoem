@@ -7,9 +7,12 @@
 #include "emapp/internal/imgui/ModelParameterDialog.h"
 
 #include "emapp/Error.h"
+#include "emapp/Grid.h"
+#include "emapp/ICamera.h"
 #include "emapp/IEventPublisher.h"
 #include "emapp/IFileManager.h"
 #include "emapp/IImageView.h"
+#include "emapp/ILight.h"
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
@@ -83,7 +86,9 @@ ModelParameterDialog::ModelParameterDialog(
     Model *model, Project *project, BaseApplicationService *applicationPtr, ImGuiWindow *parent)
     : BaseNonModalDialogWindow(applicationPtr)
     , m_parent(parent)
+    , m_project(project)
     , m_activeModel(model)
+    , m_saveState(nullptr)
     , m_language(project->castLanguage())
     , m_tabType(kTabTypeFirstEnum)
     , m_explicitTabType(kTabTypeMaxEnum)
@@ -115,6 +120,32 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllSoftBodies(false)
 {
     ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kEditingTypeNone, m_activeModel, project);
+    project->saveState(m_saveState);
+    project->activeCamera()->reset();
+    project->activeLight()->reset();
+    project->grid()->setVisible(true);
+    setActiveModel(model);
+}
+
+ModelParameterDialog::~ModelParameterDialog()
+{
+    const Project::DrawableList drawables(m_project->drawableOrderList());
+    Error error;
+    for (SavedModelMotionMap::const_iterator it = m_savedModelMotions.begin(), end = m_savedModelMotions.end(); it != end; ++it) {
+        Model *model = it->first;
+        if (Motion *motion = m_project->resolveMotion(model)) {
+            motion->load(it->second, 0, error);
+        }
+    }
+    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        IDrawable *drawable = *it;
+        if (drawable != m_activeModel) {
+            drawable->setVisible(true);
+        }
+    }
+    m_project->restoreState(m_saveState, true);
+    m_activeModel->restoreBindPose(m_bindPose);
+    m_saveState = nullptr;
 }
 
 bool
@@ -125,6 +156,9 @@ ModelParameterDialog::draw(Project *project)
     bool visible = true;
     Model *currentActiveModel = project->activeModel();
     if (currentActiveModel != m_activeModel) {
+        if (currentActiveModel) {
+            setActiveModel(currentActiveModel);
+        }
         m_activeModel = currentActiveModel;
         visible = currentActiveModel != nullptr;
     }
@@ -4845,6 +4879,34 @@ ModelParameterDialog::forceUpdateMorph(model::Morph *morph, Project *project)
         m_activeModel->markStagingVertexBufferDirty();
         project->update();
     }
+}
+
+void
+ModelParameterDialog::setActiveModel(Model *model)
+{
+    const Project::DrawableList drawables(m_project->drawableOrderList());
+    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        IDrawable *drawable = *it;
+        drawable->setVisible(false);
+    }
+    if (Motion *motion = m_project->resolveMotion(model)) {
+        Error error;
+        SavedModelMotionMap::const_iterator it = m_savedModelMotions.find(model);
+        if (it == m_savedModelMotions.end()) {
+            ByteArray bytes;
+            if (motion->save(bytes, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
+                motion->clearAllKeyframes();
+                m_savedModelMotions.insert(tinystl::make_pair(model, bytes));
+            }
+        }
+    }
+    model->setVisible(true);
+    model->resetAllBoneTransforms();
+    model->resetAllMaterials();
+    model->resetAllMorphs();
+    model->resetAllVertices();
+    model->performAllBonesTransform();;
+    model->updateStagingVertexBuffer();
 }
 
 const char *
