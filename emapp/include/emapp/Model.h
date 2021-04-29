@@ -484,6 +484,7 @@ private:
     void initializeVertexBufferByteArray();
     void internalUpdateStagingVertexBuffer(nanoem_u8_t *ptr, nanoem_rsize_t numVertices);
     void clearAllLoadingImageItems();
+    void setAllPhysicsObjectsEnabled(bool value);
     void predeformMorph(const nanoem_model_morph_t *morphPtr);
     void deformMorph(const nanoem_model_morph_t *morphPtr, bool checkDirty);
     void solveConstraint(

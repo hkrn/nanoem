@@ -18,7 +18,8 @@ namespace model {
 namespace {
 
 enum PrivateStateFlags {
-    kPrivateStateEditingMasked = 1 << 1,
+    kPrivateStateEnabled = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = 0;
 
@@ -59,7 +60,7 @@ SoftBody::bind(nanoem_model_soft_body_t *softBodyPtr, PhysicsEngine *engine, Rig
     nanoemModelObjectSetUserData(nanoemModelSoftBodyGetModelObjectMutable(softBodyPtr), userData);
     m_physicsSoftBody = engine->createSoftBody(softBodyPtr, status);
     m_physicsEngine = engine;
-    engine->addSoftBody(m_physicsSoftBody);
+    enable();
     int numSoftBodyVertices = engine->numSoftBodyVertices(m_physicsSoftBody);
     for (int i = 0; i < numSoftBodyVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = engine->resolveSoftBodyVertexObject(m_physicsSoftBody, i);
@@ -168,13 +169,19 @@ SoftBody::getVertexNormal(const nanoem_model_vertex_t *vertexPtr, bx::simd128_t 
 void
 SoftBody::enable()
 {
-    m_physicsEngine->addSoftBody(m_physicsSoftBody);
+    if (!EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->addSoftBody(m_physicsSoftBody);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, true);
+    }
 }
 
 void
 SoftBody::disable()
 {
-    m_physicsEngine->removeSoftBody(m_physicsSoftBody);
+    if (EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->removeSoftBody(m_physicsSoftBody);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, false);
+    }
 }
 
 String

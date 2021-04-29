@@ -23,8 +23,9 @@ namespace model {
 namespace {
 
 enum PrivateStateFlags {
-    kPrivateStateAllForcesShouldReset = 1 << 1,
-    kPrivateStateEditingMasked = 1 << 2,
+    kPrivateStateEnabled = 1 << 1,
+    kPrivateStateAllForcesShouldReset = 1 << 2,
+    kPrivateStateEditingMasked = 1 << 3,
     kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = 0;
@@ -52,7 +53,7 @@ RigidBody::bind(nanoem_model_rigid_body_t *body, PhysicsEngine *engine, bool isM
     if (isMorph) {
         engine->disableDeactivation(m_physicsRigidBody);
     }
-    engine->addRigidBody(m_physicsRigidBody);
+    enable();
 }
 
 void
@@ -286,13 +287,19 @@ RigidBody::markAllForcesReset()
 void
 RigidBody::enable()
 {
-    m_physicsEngine->addRigidBody(m_physicsRigidBody);
+    if (!EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->addRigidBody(m_physicsRigidBody);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, true);
+    }
 }
 
 void
 RigidBody::disable()
 {
-    m_physicsEngine->removeRigidBody(m_physicsRigidBody);
+    if (EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->removeRigidBody(m_physicsRigidBody);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, false);
+    }
 }
 
 void

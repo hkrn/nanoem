@@ -3214,6 +3214,49 @@ Model::clearAllLoadingImageItems()
 }
 
 void
+Model::setAllPhysicsObjectsEnabled(bool value)
+{
+    nanoem_rsize_t numRigidBodies, numJoints, numSoftBodies;
+    nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_opaque, &numRigidBodies);
+    nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_opaque, &numJoints);
+    nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(m_opaque, &numSoftBodies);
+    if (value) {
+        for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+            if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
+                softBody->enable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+            if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
+                rigidBody->enable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+            if (model::Joint *joint = model::Joint::cast(joints[i])) {
+                joint->enable();
+            }
+        }
+    }
+    else {
+        for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+            if (model::Joint *joint = model::Joint::cast(joints[i])) {
+                joint->disable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+            if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
+                rigidBody->disable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+            if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
+                softBody->disable();
+            }
+        }
+    }
+}
+
+void
 Model::predeformMorph(const nanoem_model_morph_t *morphPtr)
 {
     nanoem_parameter_assert(morphPtr, "must not be nullptr");
@@ -5469,45 +5512,8 @@ void
 Model::setPhysicsSimulationEnabled(bool value)
 {
     if (isPhysicsSimulationEnabled() != value) {
+        setAllPhysicsObjectsEnabled(value && isVisible());
         EnumUtils::setEnabled(kPrivateStatePhysicsSimulation, m_states, value);
-        nanoem_rsize_t numRigidBodies, numJoints, numSoftBodies;
-        nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_opaque, &numRigidBodies);
-        nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_opaque, &numJoints);
-        nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(m_opaque, &numSoftBodies);
-        if (value) {
-            for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
-                if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
-                    softBody->enable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
-                if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
-                    rigidBody->enable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numJoints; i++) {
-                if (model::Joint *joint = model::Joint::cast(joints[i])) {
-                    joint->enable();
-                }
-            }
-        }
-        else {
-            for (nanoem_rsize_t i = 0; i < numJoints; i++) {
-                if (model::Joint *joint = model::Joint::cast(joints[i])) {
-                    joint->disable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
-                if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
-                    rigidBody->disable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
-                if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
-                    softBody->disable();
-                }
-            }
-        }
     }
 }
 
@@ -5538,10 +5544,11 @@ void
 Model::setVisible(bool value)
 {
     if (isVisible() != value) {
-        EnumUtils::setEnabled(kPrivateStateVisible, m_states, value);
+        setAllPhysicsObjectsEnabled(value && isPhysicsSimulationEnabled());
         if (Effect *effect = m_project->resolveEffect(this)) {
             effect->setEnabled(value);
         }
+        EnumUtils::setEnabled(kPrivateStateVisible, m_states, value);
         if (m_project->activeModel() == this) {
             m_project->eventPublisher()->publishToggleActiveModelVisibleEvent(value);
         }

@@ -20,7 +20,8 @@ namespace model {
 namespace {
 
 enum PrivateStateFlags {
-    kPrivateStateEditingMasked = 1 << 1,
+    kPrivateStateEnabled = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
     kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = 0;
@@ -97,7 +98,7 @@ Joint::bind(nanoem_model_joint_t *joint, PhysicsEngine *engine, const RigidBody:
     opaque.world = engine->worldOpaque();
     m_physicsJoint = engine->createJoint(joint, &opaque, status);
     m_physicsEngine = engine;
-    engine->addJoint(m_physicsJoint);
+    enable();
 }
 
 void
@@ -205,13 +206,19 @@ Joint::sharedShapeMesh(const nanoem_model_joint_t * /* joint */)
 void
 Joint::enable()
 {
-    m_physicsEngine->addJoint(m_physicsJoint);
+    if (!EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->addJoint(m_physicsJoint);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, true);
+    }
 }
 
 void
 Joint::disable()
 {
-    m_physicsEngine->removeJoint(m_physicsJoint);
+    if (EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->removeJoint(m_physicsJoint);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, false);
+    }
 }
 
 void
