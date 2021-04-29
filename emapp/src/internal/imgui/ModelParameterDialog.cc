@@ -88,6 +88,7 @@ ModelParameterDialog::ModelParameterDialog(
     , m_parent(parent)
     , m_activeModel(model)
     , m_saveState(nullptr)
+    , m_lastEditingMode(project->editingMode())
     , m_language(project->castLanguage())
     , m_tabType(kTabTypeFirstEnum)
     , m_explicitTabType(kTabTypeMaxEnum)
@@ -4910,6 +4911,7 @@ ModelParameterDialog::restoreProjectState(Project* project)
         }
     }
     project->restoreState(m_saveState, true);
+    project->setEditingMode(m_lastEditingMode);
     m_activeModel->restoreBindPose(m_bindPose);
     m_saveState = nullptr;
 }

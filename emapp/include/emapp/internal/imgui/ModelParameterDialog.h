@@ -109,6 +109,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     ImGuiWindow *m_parent;
     Model *m_activeModel;
     Project::SaveState *m_saveState;
+    Project::EditingMode m_lastEditingMode;
     SavedModelMotionMap m_savedModelMotions;
     model::BindPose m_bindPose;
     int m_language;
