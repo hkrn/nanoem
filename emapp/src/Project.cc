@@ -845,27 +845,27 @@ Project::SerialDrawQueue::registerCallback(sg::PassBlock::Callback callback, voi
 
 struct Project::SaveState {
     SaveState(Project *project)
-        : activeModelPtr(nullptr)
-        , activeAccessoryPtr(nullptr)
-        , camera(project)
-        , light(project)
-        , localFrameIndex(0)
-        , stateFlags(0)
-        , confirmSeekFlags(0)
-        , lastPhysicsDebugFlags(0)
+        : m_activeModel(nullptr)
+        , m_activeAccessory(nullptr)
+        , m_camera(project)
+        , m_light(project)
+        , m_localFrameIndex(0)
+        , m_stateFlags(0)
+        , m_confirmSeekFlags(0)
+        , m_lastPhysicsDebugFlags(0)
     {
     }
     ~SaveState() NANOEM_DECL_NOEXCEPT
     {
     }
-    Model *activeModelPtr;
-    Accessory *activeAccessoryPtr;
-    PerspectiveCamera camera;
-    DirectionalLight light;
-    nanoem_frame_index_t localFrameIndex;
-    nanoem_u64_t stateFlags;
-    nanoem_u64_t confirmSeekFlags;
-    nanoem_u32_t lastPhysicsDebugFlags;
+    Model *m_activeModel;
+    Accessory *m_activeAccessory;
+    PerspectiveCamera m_camera;
+    DirectionalLight m_light;
+    nanoem_frame_index_t m_localFrameIndex;
+    nanoem_u64_t m_stateFlags;
+    nanoem_u64_t m_confirmSeekFlags;
+    nanoem_u32_t m_lastPhysicsDebugFlags;
 };
 
 Project::Pass::Pass(Project *project, const char *name)
@@ -2144,46 +2144,46 @@ Project::saveState(SaveState *&state)
         state = nanoem_new(SaveState(this));
     }
     const ICamera *camera = activeCamera();
-    PerspectiveCamera &c = state->camera;
+    PerspectiveCamera &c = state->m_camera;
     c.setAngle(camera->angle());
     c.setLookAt(camera->lookAt());
     c.setDistance(camera->distance());
     c.setFov(camera->fov());
     const ILight *light = activeLight();
-    DirectionalLight &l = state->light;
+    DirectionalLight &l = state->m_light;
     l.setColor(light->color());
     l.setDirection(light->direction());
-    state->activeAccessoryPtr = m_activeAccessoryPtr;
-    state->activeModelPtr = m_activeModelPairPtr.first;
-    state->localFrameIndex = currentLocalFrameIndex();
-    state->stateFlags = m_stateFlags;
-    state->confirmSeekFlags = m_confirmSeekFlags;
-    state->lastPhysicsDebugFlags = m_lastPhysicsDebugFlags;
+    state->m_activeAccessory = m_activeAccessoryPtr;
+    state->m_activeModel = m_activeModelPairPtr.first;
+    state->m_localFrameIndex = currentLocalFrameIndex();
+    state->m_stateFlags = m_stateFlags;
+    state->m_confirmSeekFlags = m_confirmSeekFlags;
+    state->m_lastPhysicsDebugFlags = m_lastPhysicsDebugFlags;
 }
 
 void
 Project::restoreState(const SaveState *state, bool forceSeek)
 {
     if (state) {
-        setActiveAccessory(state->activeAccessoryPtr);
-        setActiveModel(state->activeModelPtr);
-        const PerspectiveCamera &c = state->camera;
+        setActiveAccessory(state->m_activeAccessory);
+        setActiveModel(state->m_activeModel);
+        const PerspectiveCamera &c = state->m_camera;
         ICamera *camera = activeCamera();
         camera->setAngle(c.angle());
         camera->setLookAt(c.lookAt());
         camera->setDistance(c.distance());
         camera->setFov(c.fov());
         camera->update();
-        const DirectionalLight &l = state->light;
+        const DirectionalLight &l = state->m_light;
         ILight *light = activeLight();
         light->setColor(l.color());
         light->setDirection(l.direction());
         if (forceSeek) {
-            internalSeek(state->localFrameIndex);
+            internalSeek(state->m_localFrameIndex);
         }
-        m_stateFlags = state->stateFlags;
-        m_confirmSeekFlags = state->confirmSeekFlags;
-        m_lastPhysicsDebugFlags = state->lastPhysicsDebugFlags;
+        m_stateFlags = state->m_stateFlags;
+        m_confirmSeekFlags = state->m_confirmSeekFlags;
+        m_lastPhysicsDebugFlags = state->m_lastPhysicsDebugFlags;
     }
 }
 

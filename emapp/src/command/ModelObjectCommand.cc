@@ -578,7 +578,7 @@ MoveMaterialUpCommand::redo(Error &error)
     Model *activeModel = project->activeModel();
     nanoem_rsize_t numMaterials, offset = 0;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
-    LayoutPosition from, to;
+    LayoutPosition from = { 0, 0 }, to = { 0, 0 };
     int destination = 0;
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *currentMaterialPtr = materials[i];
@@ -652,7 +652,7 @@ MoveMaterialDownCommand::redo(Error &error)
     Model *activeModel = project->activeModel();
     nanoem_rsize_t numMaterials, offset = 0;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(activeModel->data(), &numMaterials);
-    LayoutPosition from, to;
+    LayoutPosition from = { 0, 0 }, to = { 0, 0 };
     int destination = 0;
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *currentMaterialPtr = materials[i];
