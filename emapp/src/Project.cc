@@ -2473,22 +2473,24 @@ Project::seek(nanoem_frame_index_t frameIndex, bool forceSeek)
 void
 Project::seek(nanoem_frame_index_t frameIndex, nanoem_f32_t amount, bool forceSeek)
 {
-    if (forceSeek || canSeek()) {
-        const nanoem_frame_index_t lastDuration = duration(), seekFrom = currentLocalFrameIndex();
-        const nanoem_u32_t fps = preferredMotionFPS(), base = baseFPS(),
-                           denominator = glm::max(m_audioPlayer->sampleRate(), fps), fpsRate = fps / base;
-        const nanoem_f64_t seconds = static_cast<nanoem_f64_t>(frameIndex) / static_cast<nanoem_f32_t>(baseFPS());
-        const nanoem_f32_t delta =
-            frameIndex > seekFrom ? (frameIndex - seekFrom) * fpsRate * physicsSimulationTimeStep() : 0;
-        const IAudioPlayer::Rational rational = { static_cast<nanoem_u64_t>(seconds * denominator), denominator };
-        setBaseDuration(frameIndex);
-        m_audioPlayer->seek(rational);
-        m_audioPlayer->update();
-        internalSeek(frameIndex, amount, delta);
-        eventPublisher()->publishSeekEvent(lastDuration, frameIndex, seekFrom);
-    }
-    else {
-        m_confirmer->seek(frameIndex, this);
+    if (canSeek()) {
+        if (forceSeek) {
+            const nanoem_frame_index_t lastDuration = duration(), seekFrom = currentLocalFrameIndex();
+            const nanoem_u32_t fps = preferredMotionFPS(), base = baseFPS(),
+                               denominator = glm::max(m_audioPlayer->sampleRate(), fps), fpsRate = fps / base;
+            const nanoem_f64_t seconds = static_cast<nanoem_f64_t>(frameIndex) / static_cast<nanoem_f32_t>(baseFPS());
+            const nanoem_f32_t delta =
+                frameIndex > seekFrom ? (frameIndex - seekFrom) * fpsRate * physicsSimulationTimeStep() : 0;
+            const IAudioPlayer::Rational rational = { static_cast<nanoem_u64_t>(seconds * denominator), denominator };
+            setBaseDuration(frameIndex);
+            m_audioPlayer->seek(rational);
+            m_audioPlayer->update();
+            internalSeek(frameIndex, amount, delta);
+            eventPublisher()->publishSeekEvent(lastDuration, frameIndex, seekFrom);
+        }
+        else {
+            m_confirmer->seek(frameIndex, this);
+        }
     }
 }
 
@@ -2599,7 +2601,7 @@ Project::pushUndo(undo_command_t *command)
 bool
 Project::canSeek() const NANOEM_DECL_NOEXCEPT
 {
-    bool seekable = isModelEditingEnabled();
+    bool seekable = !isModelEditingEnabled();
     if (const Model *model = activeModel()) {
         seekable &= !(model->hasAnyDirtyBone() && isConfirmSeekEnabled(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_BONE));
         seekable &= !(model->hasAnyDirtyMorph() && isConfirmSeekEnabled(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MORPH));
