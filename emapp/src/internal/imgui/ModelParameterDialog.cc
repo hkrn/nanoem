@@ -86,7 +86,6 @@ ModelParameterDialog::ModelParameterDialog(
     Model *model, Project *project, BaseApplicationService *applicationPtr, ImGuiWindow *parent)
     : BaseNonModalDialogWindow(applicationPtr)
     , m_parent(parent)
-    , m_project(project)
     , m_activeModel(model)
     , m_saveState(nullptr)
     , m_language(project->castLanguage())
@@ -124,28 +123,7 @@ ModelParameterDialog::ModelParameterDialog(
     project->activeCamera()->reset();
     project->activeLight()->reset();
     project->grid()->setVisible(true);
-    setActiveModel(model);
-}
-
-ModelParameterDialog::~ModelParameterDialog()
-{
-    const Project::DrawableList drawables(m_project->drawableOrderList());
-    Error error;
-    for (SavedModelMotionMap::const_iterator it = m_savedModelMotions.begin(), end = m_savedModelMotions.end(); it != end; ++it) {
-        Model *model = it->first;
-        if (Motion *motion = m_project->resolveMotion(model)) {
-            motion->load(it->second, 0, error);
-        }
-    }
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
-        IDrawable *drawable = *it;
-        if (drawable != m_activeModel) {
-            drawable->setVisible(true);
-        }
-    }
-    m_project->restoreState(m_saveState, true);
-    m_activeModel->restoreBindPose(m_bindPose);
-    m_saveState = nullptr;
+    setActiveModel(model, project);
 }
 
 bool
@@ -157,7 +135,7 @@ ModelParameterDialog::draw(Project *project)
     Model *currentActiveModel = project->activeModel();
     if (currentActiveModel != m_activeModel) {
         if (currentActiveModel) {
-            setActiveModel(currentActiveModel);
+            setActiveModel(currentActiveModel, project);
         }
         m_activeModel = currentActiveModel;
         visible = currentActiveModel != nullptr;
@@ -246,6 +224,9 @@ ModelParameterDialog::draw(Project *project)
     }
     close();
     project->setModelEditingEnabled(visible);
+    if (!visible) {
+        restoreProjectState(project);
+    }
     return visible;
 }
 
@@ -4882,14 +4863,14 @@ ModelParameterDialog::forceUpdateMorph(model::Morph *morph, Project *project)
 }
 
 void
-ModelParameterDialog::setActiveModel(Model *model)
+ModelParameterDialog::setActiveModel(Model *model, Project *project)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList drawables(project->drawableOrderList());
     for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
         IDrawable *drawable = *it;
         drawable->setVisible(false);
     }
-    if (Motion *motion = m_project->resolveMotion(model)) {
+    if (Motion *motion = project->resolveMotion(model)) {
         Error error;
         SavedModelMotionMap::const_iterator it = m_savedModelMotions.find(model);
         if (it == m_savedModelMotions.end()) {
@@ -4907,6 +4888,30 @@ ModelParameterDialog::setActiveModel(Model *model)
     model->resetAllVertices();
     model->performAllBonesTransform();;
     model->updateStagingVertexBuffer();
+}
+
+void
+ModelParameterDialog::restoreProjectState(Project* project)
+{
+    const Project::DrawableList drawables(project->drawableOrderList());
+    Error error;
+    for (SavedModelMotionMap::const_iterator it = m_savedModelMotions.begin(), end = m_savedModelMotions.end();
+         it != end; ++it) {
+        Model *model = it->first;
+        if (Motion *motion = project->resolveMotion(model)) {
+            motion->load(it->second, 0, error);
+        }
+    }
+    m_savedModelMotions.clear();
+    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        IDrawable *drawable = *it;
+        if (drawable != m_activeModel) {
+            drawable->setVisible(true);
+        }
+    }
+    project->restoreState(m_saveState, true);
+    m_activeModel->restoreBindPose(m_bindPose);
+    m_saveState = nullptr;
 }
 
 const char *
