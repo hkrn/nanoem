@@ -29,6 +29,7 @@
 #include "emapp/StringUtils.h"
 #include "emapp/command/TransformBoneCommand.h"
 #include "emapp/command/TransformMorphCommand.h"
+#include "emapp/internal/DebugDrawer.h"
 #include "emapp/internal/LineDrawer.h"
 #include "emapp/internal/ModelObjectSelection.h"
 #include "emapp/model/BindPose.h"
@@ -42,6 +43,7 @@
 #include "emapp/model/Vertex.h"
 #include "emapp/private/CommonInclude.h"
 
+#include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtx/dual_quaternion.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtx/quaternion.hpp"
@@ -50,10 +52,6 @@
 #include "nanoem/ext/converter.h"
 #include "sokol/sokol_time.h"
 #include "undo/undo.h"
-
-#include "emapp/internal/DebugDrawer.h"
-
-#include <glm/gtc/matrix_inverse.hpp>
 
 #if defined(NANOEM_ENABLE_TBB)
 #include "tbb/tbb.h"
@@ -2139,11 +2137,10 @@ Model::draw(DrawType type)
             if (isShowAllMaterialOverlays()) {
                 drawAllMaterialOverlays();
             }
-            const bool enabled = isPhysicsSimulationEnabled() && m_project->isPhysicsSimulationEnabled();
-            if (isShowAllRigidBodyShapes() && enabled) {
+            if (isShowAllRigidBodyShapes()) {
                 drawAllRigidBodyShapes();
             }
-            if (isShowAllJointShapes() && enabled) {
+            if (isShowAllJointShapes()) {
                 drawAllJointShapes();
             }
             break;
