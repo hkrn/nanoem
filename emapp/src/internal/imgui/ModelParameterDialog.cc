@@ -4384,12 +4384,18 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
-            const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
             const bool selected = selection->containsSoftBody(softBodyPtr);
-            StringUtils::format(buffer, sizeof(buffer), "%s##softBody[%d].name", softBody->nameConstString(), i);
             if (selected) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
             }
+            model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
+            bool visible = softBody->isEditingMasked() ? false : true;
+            StringUtils::format(buffer, sizeof(buffer), "##softbody[%d].visible", i);
+            if (ImGui::Checkbox(buffer, &visible)) {
+                softBody->setEditingMasked(visible ? false : true);
+            }
+            ImGui::SameLine();
+            StringUtils::format(buffer, sizeof(buffer), "%s##softBody[%d].name", softBody->nameConstString(), i);
             if (ImGui::Selectable(buffer, selected)) {
                 ImGui::SetScrollHereY();
                 const ImGuiIO &io = ImGui::GetIO();

@@ -242,7 +242,8 @@ SoftBody::destroy(void *opaque, nanoem_model_object_t * /* object */) NANOEM_DEC
 }
 
 SoftBody::SoftBody(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_physicsEngine(nullptr),
-                                                                            m_physicsSoftBody(nullptr)
+                                                                            m_physicsSoftBody(nullptr),
+                                                                            m_states(kPrivateStateInitialValue)
 {
 }
 
