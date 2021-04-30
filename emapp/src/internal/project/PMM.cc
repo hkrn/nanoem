@@ -1081,6 +1081,8 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
                     if (selectedModelIndex == i) {
                         activeModel = model;
                     }
+                    /* reset dirty morph state at initializing model to apply morph motion correctly */
+                    model->updateStagingVertexBuffer();
                 }
                 else {
                     const char *message = Error::convertStatusToMessage(status, m_project->translator());

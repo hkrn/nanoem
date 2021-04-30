@@ -1135,6 +1135,8 @@ Native::Context::loadMotion(
             if (Model *model = m_project->findModelByHandle(handle)) {
                 Motion *motion = m_project->resolveMotion(model);
                 needsRestart |= loadMotionPayload(m, item->payload, motion, error);
+                /* reset dirty morph state at initializing model to apply morph motion correctly */
+                model->updateStagingVertexBuffer();
             }
         }
         break;
@@ -1296,6 +1298,7 @@ Native::Context::load(
     bool needsRestart = false;
     loadAllMotions(p, handles, needsRestart, error);
     if (needsRestart) {
+        /* restart project for applying offscreen render target parameters after restart */
         m_project->restart();
     }
     loadAllOffscreenRenderTargetEffects(p, error);
