@@ -2322,7 +2322,8 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
     if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bonePtr)) {
         drawBoneConnections(primitive, bonePtr, targetBone, kDrawBoneConnectionThickness);
     }
-    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) && PrivateModelUtils::isBoneEditingVisible(bonePtr)) {
+    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) &&
+        PrivateModelUtils::isBoneEditingVisible(bonePtr)) {
         const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bonePtr);
         const Matrix4x4 transform(worldTransform(PrivateModelUtils::boneWorldMatrix(bonePtr)));
         const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
@@ -4061,8 +4062,8 @@ Model::drawAllVertexPoints()
         }
         m_drawAllVertexPoints.m_buffer = sg::make_buffer(&bd);
         m_drawAllVertexPoints.m_vertices.resize(numNewVertices);
-        nanoem_assert(
-            sg::query_buffer_state(m_drawAllVertexPoints.m_buffer) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
+        nanoem_assert(sg::query_buffer_state(m_drawAllVertexPoints.m_buffer) == SG_RESOURCESTATE_VALID,
+            "vertex buffer must be valid");
         SG_LABEL_BUFFER(m_drawAllVertexPoints.m_buffer, bd.label);
     }
     bx::simd128_t normal;
@@ -4103,7 +4104,8 @@ Model::drawAllVertexFaces()
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
     m_drawAllVertexFaces.ensureVertexBufferInitialized(canonicalNameConstString(), numVertices);
-    m_drawAllVertexFaces.ensureIndexBufferInitialized(canonicalNameConstString(), vertexIndices, numVertexIndices, true);
+    m_drawAllVertexFaces.ensureIndexBufferInitialized(
+        canonicalNameConstString(), vertexIndices, numVertexIndices, true);
     sg::LineVertexUnit *vertexUnits = m_drawAllVertexFaces.m_vertices.data();
     bx::simd128_t normal;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {

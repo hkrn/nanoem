@@ -346,7 +346,7 @@ PMM::Context::EffectMap::compileEffect(
 {
     IFileManager *fileManager = m_project->fileManager();
     const URI effectFileURI(URI::createFromFilePath(filePath)),
-              effectResolvedURI(Effect::resolveSourceURI(fileManager, effectFileURI));
+        effectResolvedURI(Effect::resolveSourceURI(fileManager, effectFileURI));
     Effect *effect = nullptr;
     if (!effectResolvedURI.isEmpty()) {
         effect = m_project->findEffect(effectResolvedURI);

@@ -812,8 +812,8 @@ ImageLoader::load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_
 {
     nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
     IImageView *imageView = nullptr;
-    const String filename(FileUtils::relativePath(
-            fileURI.absolutePath(), drawable->fileURI().absolutePathByDeletingLastPathComponent()));
+    const String filename(
+        FileUtils::relativePath(fileURI.absolutePath(), drawable->fileURI().absolutePathByDeletingLastPathComponent()));
     const char lastChr = filename.empty() ? 0 : *(filename.c_str() + filename.size() - 1);
     if (lastChr != '/' && FileUtils::exists(fileURI)) {
         FileReaderScope scope(nullptr);

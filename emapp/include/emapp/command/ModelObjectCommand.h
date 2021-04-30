@@ -263,8 +263,7 @@ private:
 
 class DeleteBoneCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t boneIndex);
+    static undo_command_t *create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t boneIndex);
 
     DeleteBoneCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
     ~DeleteBoneCommand() NANOEM_DECL_NOEXCEPT;
@@ -744,8 +743,7 @@ public:
     static undo_command_t *create(
         Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
 
-    MoveSoftBodyUpCommand(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
+    MoveSoftBodyUpCommand(Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
     ~MoveSoftBodyUpCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;

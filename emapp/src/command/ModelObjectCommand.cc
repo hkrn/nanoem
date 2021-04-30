@@ -420,11 +420,9 @@ nanoem::command::ScopedMutableSoftBody::operator nanoem_mutable_model_soft_body_
 }
 
 undo_command_t *
-DeleteMaterialCommand::create(
-    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+DeleteMaterialCommand::create(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
-    DeleteMaterialCommand *command =
-        nanoem_new(DeleteMaterialCommand(project, materials, materialIndex));
+    DeleteMaterialCommand *command = nanoem_new(DeleteMaterialCommand(project, materials, materialIndex));
     return command->createCommand();
 }
 
@@ -556,7 +554,8 @@ MoveMaterialUpCommand::create(
     return command->createCommand();
 }
 
-MoveMaterialUpCommand::MoveMaterialUpCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
+MoveMaterialUpCommand::MoveMaterialUpCommand(
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex)
     : BaseMoveMaterialCommand(project, materials, materialIndex)
 {
 }
@@ -882,8 +881,7 @@ BaseMoveBoneCommand::move(int delta, Error &error)
 }
 
 undo_command_t *
-MoveBoneDownCommand::create(
-    Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
+MoveBoneDownCommand::create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex)
 {
     MoveBoneDownCommand *command = nanoem_new(MoveBoneDownCommand(project, bones, boneIndex));
     return command->createCommand();
@@ -1079,8 +1077,7 @@ CreateMorphCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-DeleteMorphCommand::create(
-    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+DeleteMorphCommand::create(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
 {
     DeleteMorphCommand *command = nanoem_new(DeleteMorphCommand(project, morphs, morphIndex));
     return command->createCommand();
@@ -1182,8 +1179,7 @@ BaseMoveMorphCommand::move(int delta, Error &error)
 }
 
 undo_command_t *
-MoveMorphUpCommand::create(
-    Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
+MoveMorphUpCommand::create(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex)
 {
     MoveMorphUpCommand *command = nanoem_new(MoveMorphUpCommand(project, morphs, morphIndex));
     return command->createCommand();
@@ -1289,8 +1285,7 @@ MoveMorphDownCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateLabelCommand::create(
-    Project *project, nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base)
+CreateLabelCommand::create(Project *project, nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base)
 {
     CreateLabelCommand *command = nanoem_new(CreateLabelCommand(project, numLabels, offset, base));
     return command->createCommand();
@@ -1698,7 +1693,8 @@ DeleteRigidBodyCommand::undo(Error &error)
     const nanoem_model_rigid_body_t *labelPtr = nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    nanoemMutableModelInsertRigidBodyObject(model, m_mutableRigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
+    nanoemMutableModelInsertRigidBodyObject(
+        model, m_mutableRigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
     assignError(status, error);
 }
 
@@ -1952,8 +1948,7 @@ CreateJointCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-DeleteJointCommand::create(
-    Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
+DeleteJointCommand::create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex)
 {
     DeleteJointCommand *command = nanoem_new(DeleteJointCommand(project, joints, jointIndex));
     return command->createCommand();
