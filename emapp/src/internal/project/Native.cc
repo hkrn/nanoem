@@ -1299,6 +1299,7 @@ Native::Context::load(
         m_project->restart();
     }
     loadAllOffscreenRenderTargetEffects(p, error);
+    m_project->setActiveModel(activeModelPtr);
     m_project->setDrawableOrderList(drawableOrderList);
     m_project->setTransformOrderList(transformOrderList);
     const nanoem_frame_index_t currentLocalFrameIndex(p->timeline->current_frame_index);
@@ -1306,7 +1307,6 @@ Native::Context::load(
     m_project->restart(currentLocalFrameIndex);
     m_project->update();
     if (activeModelPtr) {
-        m_project->setActiveModel(activeModelPtr);
         activeModelPtr->setTransformAxisType(static_cast<Model::AxisType>(p->axis_type));
         activeModelPtr->setTransformCoordinateType(static_cast<Model::TransformCoordinateType>(p->transform_type));
     }
