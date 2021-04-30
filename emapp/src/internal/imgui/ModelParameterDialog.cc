@@ -4892,38 +4892,48 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
     }
     if (Motion *motion = project->resolveMotion(model)) {
         Error error;
-        SavedModelMotionMap::const_iterator it = m_savedModelMotions.find(model);
-        if (it == m_savedModelMotions.end()) {
-            ByteArray bytes;
-            if (motion->save(bytes, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
+        SavedModelStateMap::const_iterator it = m_savedModelStates.find(model);
+        if (it == m_savedModelStates.end()) {
+            SavedModelState state;
+            if (motion->save(state.m_motion, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
                 motion->clearAllKeyframes();
-                m_savedModelMotions.insert(tinystl::make_pair(model, bytes));
+                state.m_activeBone = model->activeBone();
+                state.m_activeMorph = model->activeMorph();
+                m_savedModelStates.insert(tinystl::make_pair(model, state));
             }
         }
     }
+    model->selection()->clearAll();
+    model->setActiveBone(nullptr);
+    model->setActiveMorph(nullptr);
     model->setVisible(true);
     model->resetAllBoneTransforms();
     model->resetAllMaterials();
     model->resetAllMorphs();
     model->resetAllVertices();
     model->performAllBonesTransform();
-    ;
     model->updateStagingVertexBuffer();
+    project->activeCamera()->reset();
+    project->activeLight()->reset();
 }
+
 
 void
 ModelParameterDialog::restoreProjectState(Project *project)
 {
     const Project::DrawableList drawables(project->drawableOrderList());
     Error error;
-    for (SavedModelMotionMap::const_iterator it = m_savedModelMotions.begin(), end = m_savedModelMotions.end();
+    for (SavedModelStateMap::const_iterator it = m_savedModelStates.begin(), end = m_savedModelStates.end();
          it != end; ++it) {
+        const SavedModelState &state = it->second;
         Model *model = it->first;
+        model->setActiveBone(state.m_activeBone);
+        model->setActiveMorph(state.m_activeMorph);
         if (Motion *motion = project->resolveMotion(model)) {
-            motion->load(it->second, 0, error);
+            motion->load(state.m_motion, 0, error);
         }
     }
-    m_savedModelMotions.clear();
+    m_savedModelStates.clear();
     for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
         IDrawable *drawable = *it;
         if (drawable != m_activeModel) {

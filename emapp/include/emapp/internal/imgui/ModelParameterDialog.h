@@ -105,12 +105,18 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     const char *selectedSoftBodyAeroMdoelType(
         const nanoem_model_soft_body_aero_model_type_t type) const NANOEM_DECL_NOEXCEPT;
 
-    typedef tinystl::unordered_map<Model *, ByteArray, TinySTLAllocator> SavedModelMotionMap;
+    struct SavedModelState {
+        const nanoem_model_bone_t *m_activeBone;
+        const nanoem_model_morph_t *m_activeMorph;
+        ByteArray m_motion;
+    };
+    typedef tinystl::unordered_map<Model *, SavedModelState, TinySTLAllocator> SavedModelStateMap;
+
     ImGuiWindow *m_parent;
     Model *m_activeModel;
     Project::SaveState *m_saveState;
     Project::EditingMode m_lastEditingMode;
-    SavedModelMotionMap m_savedModelMotions;
+    SavedModelStateMap m_savedModelStates;
     model::BindPose m_bindPose;
     int m_language;
     TabType m_tabType;
