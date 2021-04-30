@@ -1,5 +1,5 @@
 
-ˏ@
+ѹ@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -217,11 +217,11 @@ $nanoem.gui.viewport.parameter.camera	カメラ4
  nanoem.gui.window.model.tab.face面C
 $nanoem.gui.window.model.tab.material材質（マテリアル）-
  nanoem.gui.window.model.tab.bone	ボーン:
-!nanoem.gui.window.model.tab.morph表情（モーフ）=
+!nanoem.gui.window.model.tab.morphモーフ（表情）=
 !nanoem.gui.window.model.tab.label表示枠（ラベル）0
 &nanoem.gui.window.model.tab.rigid-body剛体4
-!nanoem.gui.window.model.tab.jointジョイント/
-%nanoem.gui.window.model.tab.soft-body柔体D
+!nanoem.gui.window.model.tab.jointジョイント;
+%nanoem.gui.window.model.tab.soft-bodyソフトボディD
 "nanoem.gui.window.preference.titleアプリケーション設定n
 ,nanoem.gui.window.preference.global.renderer>レンダラ ※ 変更後要アプリケーション再起動O
 0nanoem.gui.window.preference.global.color-formatカラーフォーマットE
@@ -253,7 +253,11 @@ $nanoem.gui.window.model.tab.material材質（マテリアル）-
 +nanoem.gui.window.preference.grid.size.grid地面軸セルの表示数Y
 1nanoem.gui.window.preference.file-path-mode.title$保存時のファイルパス設定D
 4nanoem.gui.window.preference.file-path-mode.absolute絶対パスD
-4nanoem.gui.window.preference.file-path-mode.relative相対パス3
+4nanoem.gui.window.preference.file-path-mode.relative相対パス)
+nanoem.gui.model.edit.info.name名前2
+"nanoem.gui.model.edit.info.commentコメント<
+#nanoem.gui.model.edit.info.encoding文字エンコード/
+nanoem.gui.model.edit.info.uva追加 UV 数3
 #nanoem.gui.model.edit.vertex.origin頂点座標3
 #nanoem.gui.model.edit.vertex.normal法線座標1
 %nanoem.gui.model.edit.vertex.texcoordUV座標C
@@ -471,12 +475,59 @@ $nanoem.gui.model.edit.morph.flip.add追加1
 "nanoem.gui.model.edit.vertex.title頂点C
 $nanoem.gui.model.edit.material.title材質（マテリアル）-
  nanoem.gui.model.edit.bone.title	ボーン:
-!nanoem.gui.model.edit.morph.title表情（モーフ）=
+!nanoem.gui.model.edit.morph.titleモーフ（表情）=
 !nanoem.gui.model.edit.label.title表示枠（ラベル）0
 &nanoem.gui.model.edit.rigid-body.title剛体4
 !nanoem.gui.model.edit.joint.titleジョイント,
 "nanoem.gui.model.edit.window.apply適用6
-#nanoem.gui.model.edit.window.cancelキャンセルO
+#nanoem.gui.model.edit.window.cancelキャンセル6
+,nanoem.gui.model.edit.action.selection.title選択=
+*nanoem.gui.model.edit.action.masking.titleマスキングT
+8nanoem.gui.model.edit.action.selection.vertex.enable-all全ての頂点を選択d
+9nanoem.gui.model.edit.action.selection.vertex.disable-all'選択された全ての頂点を解除j
+6nanoem.gui.model.edit.action.masking.vertex.enable-all0選択された全ての頂点をマスキングt
+7nanoem.gui.model.edit.action.masking.vertex.disable-all9選択された全ての頂点のマスキングを解除j
+6nanoem.gui.model.edit.action.masking.vertex.invert-all0全ての頂点のマスキング状態を反転O
+6nanoem.gui.model.edit.action.selection.face.enable-all全ての面を選択_
+7nanoem.gui.model.edit.action.selection.face.disable-all$選択された全ての面を解除e
+4nanoem.gui.model.edit.action.masking.face.enable-all-選択された全ての面をマスキングo
+5nanoem.gui.model.edit.action.masking.face.disable-all6選択された全ての面のマスキングを解除e
+4nanoem.gui.model.edit.action.masking.face.invert-all-全ての面のマスキング状態を反転V
+:nanoem.gui.model.edit.action.selection.material.enable-all全ての材質を選択f
+;nanoem.gui.model.edit.action.selection.material.disable-all'選択された全ての材質を解除�
+@nanoem.gui.model.edit.action.selection.material.enable-all-bonesE選択された材質に含まれる全てのボーンを選択する�
+@nanoem.gui.model.edit.action.selection.material.enable-all-faces?選択された材質に含まれる全ての面を選択する�
+Cnanoem.gui.model.edit.action.selection.material.enable-all-verticesB選択された材質に含まれる全ての頂点を選択するl
+8nanoem.gui.model.edit.action.masking.material.enable-all0選択された全ての材質をマスキングv
+9nanoem.gui.model.edit.action.masking.material.disable-all9選択された全ての材質のマスキングを解除l
+8nanoem.gui.model.edit.action.masking.material.invert-all0全ての材質のマスキング状態を反転U
+6nanoem.gui.model.edit.action.selection.bone.enable-all全てのボーンを選択e
+7nanoem.gui.model.edit.action.selection.bone.disable-all*選択された全てのボーンを解除k
+4nanoem.gui.model.edit.action.masking.bone.enable-all3選択された全てのボーンをマスキングr
+>nanoem.gui.model.edit.action.masking.bone.enable-all-invisible0非表示の全てのボーンをマスキングu
+5nanoem.gui.model.edit.action.masking.bone.disable-all<選択された全てのボーンのマスキングを解除k
+4nanoem.gui.model.edit.action.masking.bone.invert-all3全てのボーンのマスキング状態を反転V
+7nanoem.gui.model.edit.action.selection.morph.enable-all全てのモーフを選択f
+8nanoem.gui.model.edit.action.selection.morph.disable-all*選択された全てのモーフを解除�
+9nanoem.gui.model.edit.action.selection.morph.children-allW選択されたモーフから該当する全てのモデルオブジェクトを選択V
+7nanoem.gui.model.edit.action.selection.label.enable-all全ての表示枠を選択f
+8nanoem.gui.model.edit.action.selection.label.disable-all*選択された全ての表示枠を解除�
+9nanoem.gui.model.edit.action.selection.label.children-allW選択された表示枠から該当する全てのボーンまたはモーフを選択X
+<nanoem.gui.model.edit.action.selection.rigid-body.enable-all全ての剛体を選択�
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bonesB選択された剛体から該当する全てのボーンを選択h
+=nanoem.gui.model.edit.action.selection.rigid-body.disable-all'選択された全ての剛体を解除n
+:nanoem.gui.model.edit.action.masking.rigid-body.enable-all0選択された全ての剛体をマスキングx
+;nanoem.gui.model.edit.action.masking.rigid-body.disable-all9選択された全ての剛体のマスキングを解除n
+:nanoem.gui.model.edit.action.masking.rigid-body.invert-all0全ての剛体のマスキング状態を反転\
+7nanoem.gui.model.edit.action.selection.joint.enable-all!全てのジョイントを選択�
+=nanoem.gui.model.edit.action.selection.joint.enable-all-bonesK選択されたジョイントから該当する全てのボーンを選択�
+Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択されたジョイントから該当する全ての剛体を選択l
+8nanoem.gui.model.edit.action.selection.joint.disable-all0選択された全てのジョイントを解除r
+5nanoem.gui.model.edit.action.masking.joint.enable-all9選択された全てのジョイントをマスキング|
+6nanoem.gui.model.edit.action.masking.joint.disable-allB選択された全てのジョイントのマスキングを解除r
+5nanoem.gui.model.edit.action.masking.joint.invert-all9全てのジョイントのマスキング状態を反転c
+;nanoem.gui.model.edit.action.selection.soft-body.enable-all$全てのソフトボディを選択s
+<nanoem.gui.model.edit.action.selection.soft-body.disable-all3選択された全てのソフトボディを解除O
 nanoem.macos.expiration.title.nanoem PR 版の試用期限が切れました�
 #nanoem.macos.expiration.description�使用期限が切れたため終了します（もし使用を継続する場合は最新版を取得して上書きインストールしてください）+
 nanoem.versionnanoem のバージョン+
@@ -946,7 +997,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1204,7 +1255,11 @@ Rigid Body*
 +nanoem.gui.window.preference.grid.size.gridNumber of CellI
 1nanoem.gui.window.preference.file-path-mode.titleFile Path in ProjectE
 4nanoem.gui.window.preference.file-path-mode.absoluteAbsolute PathE
-4nanoem.gui.window.preference.file-path-mode.relativeRelative Path-
+4nanoem.gui.window.preference.file-path-mode.relativeRelative Path'
+nanoem.gui.model.edit.info.nameName-
+"nanoem.gui.model.edit.info.commentComment9
+#nanoem.gui.model.edit.info.encodingCharacter Encoding5
+nanoem.gui.model.edit.info.uvaAdditional UV Count-
 #nanoem.gui.model.edit.vertex.originOrigin-
 #nanoem.gui.model.edit.vertex.normalNormal+
 %nanoem.gui.model.edit.vertex.texcoordUVE
@@ -1439,7 +1494,54 @@ $nanoem.gui.model.edit.material.titleMateiral(
 Rigid Body*
 !nanoem.gui.model.edit.joint.titleJoint+
 "nanoem.gui.model.edit.window.applyApply-
-#nanoem.gui.model.edit.window.cancelCancelL
+#nanoem.gui.model.edit.window.cancelCancel9
+,nanoem.gui.model.edit.action.selection.title	Selection5
+*nanoem.gui.model.edit.action.masking.titleMaskingO
+8nanoem.gui.model.edit.action.selection.vertex.enable-allSelect All VerticesR
+9nanoem.gui.model.edit.action.selection.vertex.disable-allDeselect All VerticesT
+6nanoem.gui.model.edit.action.masking.vertex.enable-allMask All Selected VerticesW
+7nanoem.gui.model.edit.action.masking.vertex.disable-allUnmask All Selected VerticesY
+6nanoem.gui.model.edit.action.masking.vertex.invert-allInvert All Mask/Unmask VerticesJ
+6nanoem.gui.model.edit.action.selection.face.enable-allSelect All FacesM
+7nanoem.gui.model.edit.action.selection.face.disable-allDeselect All FacesN
+4nanoem.gui.model.edit.action.masking.face.enable-allMask All Selected FaceQ
+5nanoem.gui.model.edit.action.masking.face.disable-allUnmask All Selected FaceS
+4nanoem.gui.model.edit.action.masking.face.invert-allInvert All Mask/Unmask FaceR
+:nanoem.gui.model.edit.action.selection.material.enable-allSelect All MaterialsU
+;nanoem.gui.model.edit.action.selection.material.disable-allDeselect All Materialsp
+@nanoem.gui.model.edit.action.selection.material.enable-all-bones,Select All Bones from All Selected Materialsp
+@nanoem.gui.model.edit.action.selection.material.enable-all-faces,Select All Faces from All Selected Materialsv
+Cnanoem.gui.model.edit.action.selection.material.enable-all-vertices/Select All Vertices from All Selected MaterialsW
+8nanoem.gui.model.edit.action.masking.material.enable-allMask All Selected MaterialsZ
+9nanoem.gui.model.edit.action.masking.material.disable-allUnmask All Selected Materials\
+8nanoem.gui.model.edit.action.masking.material.invert-all Invert All Mask/Unmask MaterialsJ
+6nanoem.gui.model.edit.action.selection.bone.enable-allSelect All BonesM
+7nanoem.gui.model.edit.action.selection.bone.disable-allDeselect All BonesO
+4nanoem.gui.model.edit.action.masking.bone.enable-allMask All Selected BonesZ
+>nanoem.gui.model.edit.action.masking.bone.enable-all-invisibleMask All Invisible BonesR
+5nanoem.gui.model.edit.action.masking.bone.disable-allUnmask All Selected BonesT
+4nanoem.gui.model.edit.action.masking.bone.invert-allInvert All Mask/Unmask BonesL
+7nanoem.gui.model.edit.action.selection.morph.enable-allSelect All MorphsO
+8nanoem.gui.model.edit.action.selection.morph.disable-allDeselect All Morphsn
+9nanoem.gui.model.edit.action.selection.morph.children-all1Select All Model Objects from All Selected MorphsL
+7nanoem.gui.model.edit.action.selection.label.enable-allSelect All LabelsO
+8nanoem.gui.model.edit.action.selection.label.disable-allDeselect All Labelsm
+9nanoem.gui.model.edit.action.selection.label.children-all0Select All Bones/Morphs from All Selected LabelsW
+<nanoem.gui.model.edit.action.selection.rigid-body.enable-allSelect All Rigid Bodiesu
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones/Select All Bones from All Selected Rigid BodiesZ
+=nanoem.gui.model.edit.action.selection.rigid-body.disable-allDeselect All Rigid Bodies\
+:nanoem.gui.model.edit.action.masking.rigid-body.enable-allMask All Selected Rigid Bodies_
+;nanoem.gui.model.edit.action.masking.rigid-body.disable-all Unmask All Selected Rigid Bodiesa
+:nanoem.gui.model.edit.action.masking.rigid-body.invert-all#Invert All Mask/Unmask Rigid BodiesL
+7nanoem.gui.model.edit.action.selection.joint.enable-allSelect All Jointsj
+=nanoem.gui.model.edit.action.selection.joint.enable-all-bones)Select All Bones from All Selected Jointsx
+Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select All Rigid Bodies from All Selected JointsO
+8nanoem.gui.model.edit.action.selection.joint.disable-allDeselect All JointsQ
+5nanoem.gui.model.edit.action.masking.joint.enable-allMask All Selected JointsT
+6nanoem.gui.model.edit.action.masking.joint.disable-allUnmask All Selected JointsV
+5nanoem.gui.model.edit.action.masking.joint.invert-allInvert All Mask/Unmask JointsU
+;nanoem.gui.model.edit.action.selection.soft-body.enable-allSelect All Soft BodiesX
+<nanoem.gui.model.edit.action.selection.soft-body.disable-allDeselect All Soft BodiesL
 nanoem.macos.expiration.title+Trial of nanoem PR edition has been expired�
 #nanoem.macos.expiration.description�The application has been expired due to specified expiration date and will be terminated. (If you continue using the application, You should grab the latest version and overwrite install this)
 nanoem.versionVersion)

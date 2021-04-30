@@ -869,7 +869,7 @@
 - key: nanoem.gui.window.model.tab.morph
   phrase:
     en_US: Morph
-    ja_JP: 表情（モーフ）
+    ja_JP: モーフ（表情）
 - key: nanoem.gui.window.model.tab.label
   phrase:
     en_US: Label
@@ -885,7 +885,7 @@
 - key: nanoem.gui.window.model.tab.soft-body
   phrase:
     en_US: Soft Body
-    ja_JP: 柔体
+    ja_JP: ソフトボディ
 - key: nanoem.gui.window.preference.title
   phrase:
     en_US: Application Preference
@@ -1015,6 +1015,22 @@
     en_US: Relative Path
     ja_JP: 相対パス
 
+- key: nanoem.gui.model.edit.info.name
+  phrase:
+    en_US: 'Name'
+    ja_JP: '名前'
+- key: nanoem.gui.model.edit.info.comment
+  phrase:
+    en_US: 'Comment'
+    ja_JP: 'コメント'
+- key: nanoem.gui.model.edit.info.encoding
+  phrase:
+    en_US: 'Character Encoding'
+    ja_JP: '文字エンコード'
+- key: nanoem.gui.model.edit.info.uva
+  phrase:
+    en_US: 'Additional UV Count'
+    ja_JP: '追加 UV 数'
 - key: nanoem.gui.model.edit.vertex.origin
   phrase:
     en_US: 'Origin'
@@ -1870,7 +1886,7 @@
 - key: nanoem.gui.model.edit.morph.title
   phrase:
     en_US: 'Morph'
-    ja_JP: '表情（モーフ）'
+    ja_JP: 'モーフ（表情）'
 - key: nanoem.gui.model.edit.label.title
   phrase:
     en_US: 'Label'
@@ -1891,6 +1907,194 @@
   phrase:
     en_US: 'Cancel'
     ja_JP: 'キャンセル'
+- key: nanoem.gui.model.edit.action.selection.title
+  phrase:
+    en_US: 'Selection'
+    ja_JP: '選択'
+- key: nanoem.gui.model.edit.action.masking.title
+  phrase:
+    en_US: 'Masking'
+    ja_JP: 'マスキング'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all
+  phrase:
+    en_US: 'Select All Vertices'
+    ja_JP: '全ての頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.disable-all
+  phrase:
+    en_US: 'Deselect All Vertices'
+    ja_JP: '選択された全ての頂点を解除'
+- key: nanoem.gui.model.edit.action.masking.vertex.enable-all
+  phrase:
+    en_US: 'Mask All Selected Vertices'
+    ja_JP: '選択された全ての頂点をマスキング'
+- key: nanoem.gui.model.edit.action.masking.vertex.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Vertices'
+    ja_JP: '選択された全ての頂点のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.vertex.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Vertices'
+    ja_JP: '全ての頂点のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.face.enable-all
+  phrase:
+    en_US: 'Select All Faces'
+    ja_JP: '全ての面を選択'
+- key: nanoem.gui.model.edit.action.selection.face.disable-all
+  phrase:
+    en_US: 'Deselect All Faces'
+    ja_JP: '選択された全ての面を解除'
+- key: nanoem.gui.model.edit.action.masking.face.enable-all
+  phrase:
+    en_US: 'Mask All Selected Face'
+    ja_JP: '選択された全ての面をマスキング'
+- key: nanoem.gui.model.edit.action.masking.face.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Face'
+    ja_JP: '選択された全ての面のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.face.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Face'
+    ja_JP: '全ての面のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all
+  phrase:
+    en_US: 'Select All Materials'
+    ja_JP: '全ての材質を選択'
+- key: nanoem.gui.model.edit.action.selection.material.disable-all
+  phrase:
+    en_US: 'Deselect All Materials'
+    ja_JP: '選択された全ての材質を解除'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all-bones
+  phrase:
+    en_US: 'Select All Bones from All Selected Materials'
+    ja_JP: '選択された材質に含まれる全てのボーンを選択する'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all-faces
+  phrase:
+    en_US: 'Select All Faces from All Selected Materials'
+    ja_JP: '選択された材質に含まれる全ての面を選択する'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all-vertices
+  phrase:
+    en_US: 'Select All Vertices from All Selected Materials'
+    ja_JP: '選択された材質に含まれる全ての頂点を選択する'
+- key: nanoem.gui.model.edit.action.masking.material.enable-all
+  phrase:
+    en_US: 'Mask All Selected Materials'
+    ja_JP: '選択された全ての材質をマスキング'
+- key: nanoem.gui.model.edit.action.masking.material.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Materials'
+    ja_JP: '選択された全ての材質のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.material.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Materials'
+    ja_JP: '全ての材質のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all
+  phrase:
+    en_US: 'Select All Bones'
+    ja_JP: '全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.disable-all
+  phrase:
+    en_US: 'Deselect All Bones'
+    ja_JP: '選択された全てのボーンを解除'
+- key: nanoem.gui.model.edit.action.masking.bone.enable-all
+  phrase:
+    en_US: 'Mask All Selected Bones'
+    ja_JP: '選択された全てのボーンをマスキング'
+- key: nanoem.gui.model.edit.action.masking.bone.enable-all-invisible
+  phrase:
+    en_US: 'Mask All Invisible Bones'
+    ja_JP: '非表示の全てのボーンをマスキング'
+- key: nanoem.gui.model.edit.action.masking.bone.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Bones'
+    ja_JP: '選択された全てのボーンのマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.bone.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Bones'
+    ja_JP: '全てのボーンのマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.morph.enable-all
+  phrase:
+    en_US: 'Select All Morphs'
+    ja_JP: '全てのモーフを選択'
+- key: nanoem.gui.model.edit.action.selection.morph.disable-all
+  phrase:
+    en_US: 'Deselect All Morphs'
+    ja_JP: '選択された全てのモーフを解除'
+- key: nanoem.gui.model.edit.action.selection.morph.children-all
+  phrase:
+    en_US: 'Select All Model Objects from All Selected Morphs'
+    ja_JP: '選択されたモーフから該当する全てのモデルオブジェクトを選択'
+- key: nanoem.gui.model.edit.action.selection.label.enable-all
+  phrase:
+    en_US: 'Select All Labels'
+    ja_JP: '全ての表示枠を選択'
+- key: nanoem.gui.model.edit.action.selection.label.disable-all
+  phrase:
+    en_US: 'Deselect All Labels'
+    ja_JP: '選択された全ての表示枠を解除'
+- key: nanoem.gui.model.edit.action.selection.label.children-all
+  phrase:
+    en_US: 'Select All Bones/Morphs from All Selected Labels'
+    ja_JP: '選択された表示枠から該当する全てのボーンまたはモーフを選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.enable-all
+  phrase:
+    en_US: 'Select All Rigid Bodies'
+    ja_JP: '全ての剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones
+  phrase:
+    en_US: 'Select All Bones from All Selected Rigid Bodies'
+    ja_JP: '選択された剛体から該当する全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.disable-all
+  phrase:
+    en_US: 'Deselect All Rigid Bodies'
+    ja_JP: '選択された全ての剛体を解除'
+- key: nanoem.gui.model.edit.action.masking.rigid-body.enable-all
+  phrase:
+    en_US: 'Mask All Selected Rigid Bodies'
+    ja_JP: '選択された全ての剛体をマスキング'
+- key: nanoem.gui.model.edit.action.masking.rigid-body.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Rigid Bodies'
+    ja_JP: '選択された全ての剛体のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.rigid-body.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Rigid Bodies'
+    ja_JP: '全ての剛体のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-all
+  phrase:
+    en_US: 'Select All Joints'
+    ja_JP: '全てのジョイントを選択'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-all-bones
+  phrase:
+    en_US: 'Select All Bones from All Selected Joints'
+    ja_JP: '選択されたジョイントから該当する全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies
+  phrase:
+    en_US: 'Select All Rigid Bodies from All Selected Joints'
+    ja_JP: '選択されたジョイントから該当する全ての剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.joint.disable-all
+  phrase:
+    en_US: 'Deselect All Joints'
+    ja_JP: '選択された全てのジョイントを解除'
+- key: nanoem.gui.model.edit.action.masking.joint.enable-all
+  phrase:
+    en_US: 'Mask All Selected Joints'
+    ja_JP: '選択された全てのジョイントをマスキング'
+- key: nanoem.gui.model.edit.action.masking.joint.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Joints'
+    ja_JP: '選択された全てのジョイントのマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.joint.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Joints'
+    ja_JP: '全てのジョイントのマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.soft-body.enable-all
+  phrase:
+    en_US: 'Select All Soft Bodies'
+    ja_JP: '全てのソフトボディを選択'
+- key: nanoem.gui.model.edit.action.selection.soft-body.disable-all
+  phrase:
+    en_US: 'Deselect All Soft Bodies'
+    ja_JP: '選択された全てのソフトボディを解除'
 
 - key: nanoem.macos.expiration.title
   phrase:
