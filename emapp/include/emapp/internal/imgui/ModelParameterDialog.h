@@ -87,10 +87,22 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutAllSoftBodies(Project *project);
     void layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softBodyPtr, Project *project);
     bool layoutName(const nanoem_unicode_string_t *namePtr, Project *project, StringUtils::UnicodeStringScope &scope);
+
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
     void setActiveModel(Model *model, Project *project);
     void restoreProjectState(Project *project);
+
+    void removeAllVertexSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllFaceSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllMaterialSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllBoneSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllMorphSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllLabelSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllRigidBodySelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllJointSelectionIfNeeded(IModelObjectSelection *selection);
+    void removeAllSoftBodySelectionIfNeeded(IModelObjectSelection *selection);
+    void selectAllVerticesByType(IModelObjectSelection *selection, nanoem_model_vertex_type_t type);
 
     const char *selectedCodecType(const nanoem_codec_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedVertexType(const nanoem_model_vertex_type_t type) const NANOEM_DECL_NOEXCEPT;

@@ -1,5 +1,5 @@
 
-ѹ@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -484,7 +484,12 @@ $nanoem.gui.model.edit.material.title材質（マテリアル）-
 ,nanoem.gui.model.edit.action.selection.title選択=
 *nanoem.gui.model.edit.action.masking.titleマスキングT
 8nanoem.gui.model.edit.action.selection.vertex.enable-all全ての頂点を選択d
-9nanoem.gui.model.edit.action.selection.vertex.disable-all'選択された全ての頂点を解除j
+9nanoem.gui.model.edit.action.selection.vertex.disable-all'選択された全ての頂点を解除d
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1"全ての BDEF1 の頂点を選択d
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2"全ての BDEF2 の頂点を選択d
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4"全ての BDEF4 の頂点を選択b
+=nanoem.gui.model.edit.action.selection.vertex.enable-all-sdef!全ての SDEF の頂点を選択b
+=nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef!全ての QDEF の頂点を選択j
 6nanoem.gui.model.edit.action.masking.vertex.enable-all0選択された全ての頂点をマスキングt
 7nanoem.gui.model.edit.action.masking.vertex.disable-all9選択された全ての頂点のマスキングを解除j
 6nanoem.gui.model.edit.action.masking.vertex.invert-all0全ての頂点のマスキング状態を反転O
@@ -501,7 +506,10 @@ Cnanoem.gui.model.edit.action.selection.material.enable-all-verticesB選択さ�
 8nanoem.gui.model.edit.action.masking.material.enable-all0選択された全ての材質をマスキングv
 9nanoem.gui.model.edit.action.masking.material.disable-all9選択された全ての材質のマスキングを解除l
 8nanoem.gui.model.edit.action.masking.material.invert-all0全ての材質のマスキング状態を反転U
-6nanoem.gui.model.edit.action.selection.bone.enable-all全てのボーンを選択e
+6nanoem.gui.model.edit.action.selection.bone.enable-all全てのボーンを選択c
+>nanoem.gui.model.edit.action.selection.bone.enable-all-visible!全ての表示ボーンを選択l
+Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateable'全ての回転可能ボーンを選択i
+>nanoem.gui.model.edit.action.selection.bone.enable-all-movable'全ての移動可能ボーンを選択e
 7nanoem.gui.model.edit.action.selection.bone.disable-all*選択された全てのボーンを解除k
 4nanoem.gui.model.edit.action.masking.bone.enable-all3選択された全てのボーンをマスキングr
 >nanoem.gui.model.edit.action.masking.bone.enable-all-invisible0非表示の全てのボーンをマスキングu
@@ -997,7 +1005,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1498,7 +1506,12 @@ Rigid Body*
 ,nanoem.gui.model.edit.action.selection.title	Selection5
 *nanoem.gui.model.edit.action.masking.titleMaskingO
 8nanoem.gui.model.edit.action.selection.vertex.enable-allSelect All VerticesR
-9nanoem.gui.model.edit.action.selection.vertex.disable-allDeselect All VerticesT
+9nanoem.gui.model.edit.action.selection.vertex.disable-allDeselect All Vertices[
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1Select All BDEF1 Vertices[
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2Select All BDEF2 Vertices[
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4Select All BDEF4 VerticesY
+=nanoem.gui.model.edit.action.selection.vertex.enable-all-sdefSelect All SDEF VerticesY
+=nanoem.gui.model.edit.action.selection.vertex.enable-all-qdefSelect All QDEF VerticesT
 6nanoem.gui.model.edit.action.masking.vertex.enable-allMask All Selected VerticesW
 7nanoem.gui.model.edit.action.masking.vertex.disable-allUnmask All Selected VerticesY
 6nanoem.gui.model.edit.action.masking.vertex.invert-allInvert All Mask/Unmask VerticesJ
@@ -1515,7 +1528,10 @@ Cnanoem.gui.model.edit.action.selection.material.enable-all-vertices/Select All
 8nanoem.gui.model.edit.action.masking.material.enable-allMask All Selected MaterialsZ
 9nanoem.gui.model.edit.action.masking.material.disable-allUnmask All Selected Materials\
 8nanoem.gui.model.edit.action.masking.material.invert-all Invert All Mask/Unmask MaterialsJ
-6nanoem.gui.model.edit.action.selection.bone.enable-allSelect All BonesM
+6nanoem.gui.model.edit.action.selection.bone.enable-allSelect All BonesZ
+>nanoem.gui.model.edit.action.selection.bone.enable-all-visibleSelect All Visible Bones`
+Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateableSelect All Rotateable BonesZ
+>nanoem.gui.model.edit.action.selection.bone.enable-all-movableSelect All Movable BonesM
 7nanoem.gui.model.edit.action.selection.bone.disable-allDeselect All BonesO
 4nanoem.gui.model.edit.action.masking.bone.enable-allMask All Selected BonesZ
 >nanoem.gui.model.edit.action.masking.bone.enable-all-invisibleMask All Invisible BonesR

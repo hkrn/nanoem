@@ -1923,6 +1923,26 @@
   phrase:
     en_US: 'Deselect All Vertices'
     ja_JP: '選択された全ての頂点を解除'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1
+  phrase:
+    en_US: 'Select All BDEF1 Vertices'
+    ja_JP: '全ての BDEF1 の頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2
+  phrase:
+    en_US: 'Select All BDEF2 Vertices'
+    ja_JP: '全ての BDEF2 の頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4
+  phrase:
+    en_US: 'Select All BDEF4 Vertices'
+    ja_JP: '全ての BDEF4 の頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-sdef
+  phrase:
+    en_US: 'Select All SDEF Vertices'
+    ja_JP: '全ての SDEF の頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef
+  phrase:
+    en_US: 'Select All QDEF Vertices'
+    ja_JP: '全ての QDEF の頂点を選択'
 - key: nanoem.gui.model.edit.action.masking.vertex.enable-all
   phrase:
     en_US: 'Mask All Selected Vertices'
@@ -1991,6 +2011,18 @@
   phrase:
     en_US: 'Select All Bones'
     ja_JP: '全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-visible
+  phrase:
+    en_US: 'Select All Visible Bones'
+    ja_JP: '全ての表示ボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-rotateable
+  phrase:
+    en_US: 'Select All Rotateable Bones'
+    ja_JP: '全ての回転可能ボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-movable
+  phrase:
+    en_US: 'Select All Movable Bones'
+    ja_JP: '全ての移動可能ボーンを選択'
 - key: nanoem.gui.model.edit.action.selection.bone.disable-all
   phrase:
     en_US: 'Deselect All Bones'
