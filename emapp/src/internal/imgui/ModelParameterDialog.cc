@@ -2293,7 +2293,8 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
             ImGui::Separator();
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.morph.children-all"))) {
                 const model::Morph::Set morphs(selection->allMorphSet());
-                bool resetAllBones = false, resetAllMaterials = false, resetAllMorphs = false, resetAllRigidBodies = false, resetAllVertices = false;
+                bool resetAllBones = false, resetAllMaterials = false, resetAllMorphs = false,
+                     resetAllRigidBodies = false, resetAllVertices = false;
                 for (model::Morph::Set::const_iterator it = morphs.begin(), end = morphs.end(); it != end; ++it) {
                     const nanoem_model_morph_t *morphPtr = *it;
                     nanoem_rsize_t numItems;
@@ -5011,14 +5012,13 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
     project->activeLight()->reset();
 }
 
-
 void
 ModelParameterDialog::restoreProjectState(Project *project)
 {
     const Project::DrawableList drawables(project->drawableOrderList());
     Error error;
-    for (SavedModelStateMap::const_iterator it = m_savedModelStates.begin(), end = m_savedModelStates.end();
-         it != end; ++it) {
+    for (SavedModelStateMap::const_iterator it = m_savedModelStates.begin(), end = m_savedModelStates.end(); it != end;
+         ++it) {
         const SavedModelState &state = it->second;
         Model *model = it->first;
         model->setActiveBone(state.m_activeBone);
