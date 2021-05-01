@@ -28,6 +28,11 @@ public:
         return nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
     }
     static int
+    index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
+    {
+        return nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
+    }
+    static int
     index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     {
         return nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
@@ -36,6 +41,26 @@ public:
     index(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
     {
         return nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morphPtr));
+    }
+    static int
+    index(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
+    {
+        return nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(labelPtr));
+    }
+    static int
+    index(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
+    {
+        return nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(rigidBodyPtr));
+    }
+    static int
+    index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
+    {
+        return nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(jointPtr));
+    }
+    static int
+    index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
+    {
+        return nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(softBodyPtr));
     }
     static const char *
     nameConstString(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
@@ -80,6 +105,12 @@ public:
         return softBody ? softBody->nameConstString() : "(unknown)";
     }
     static const char *
+    canonicalNameConstString(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Material *material = model::Material::cast(materialPtr);
+        return material ? material->canonicalNameConstString() : "(unknown)";
+    }
+    static const char *
     canonicalNameConstString(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     {
         const model::Bone *bone = model::Bone::cast(bonePtr);
@@ -90,6 +121,30 @@ public:
     {
         const model::Morph *morph = model::Morph::cast(morphPtr);
         return morph ? morph->canonicalNameConstString() : "(unknown)";
+    }
+    static const char *
+    canonicalNameConstString(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Label *label = model::Label::cast(labelPtr);
+        return label ? label->canonicalNameConstString() : "(unknown)";
+    }
+    static const char *
+    canonicalNameConstString(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
+        return rigidBody ? rigidBody->canonicalNameConstString() : "(unknown)";
+    }
+    static const char *
+    canonicalNameConstString(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Joint *joint = model::Joint::cast(jointPtr);
+        return joint ? joint->canonicalNameConstString() : "(unknown)";
+    }
+    static const char *
+    canonicalNameConstString(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
+        return softBody ? softBody->canonicalNameConstString() : "(unknown)";
     }
 };
 
@@ -167,6 +222,16 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.face.oob"));
         break;
     }
+    case kMessageTypeMaterialEmptyName: {
+        StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.material.name.empty"),
+            PrivateUtils::index(diag.u.m_materialPtr));
+        break;
+    }
+    case kMessageTypeMaterialDuplicatedName: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.material.name.duplicated"),
+            PrivateUtils::canonicalNameConstString(diag.u.m_materialPtr));
+        break;
+    }
     case kMessageTypeMaterialAmbientColorOutOfBound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.ambient.color.oob"),
@@ -237,7 +302,7 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     }
     case kMessageTypeBoneDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.name.duplicated"),
-            PrivateUtils::nameConstString(diag.u.m_bonePtr));
+            PrivateUtils::canonicalNameConstString(diag.u.m_bonePtr));
         break;
     }
     case kMessageTypeBoneInherentBoneNullBoneObject: {
@@ -263,7 +328,18 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     }
     case kMessageTypeMorphDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.morph.name.duplicated"),
-            PrivateUtils::nameConstString(diag.u.m_morphPtr));
+            PrivateUtils::canonicalNameConstString(diag.u.m_morphPtr));
+        break;
+    }
+    case kMessageTypeLabelEmptyName: {
+        StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.label.name.empty"),
+            PrivateUtils::index(diag.u.m_labelPtr));
+        break;
+    }
+    case kMessageTypeLabelDuplicatedName: {
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.label.name.duplicated"),
+            PrivateUtils::canonicalNameConstString(diag.u.m_labelPtr));
         break;
     }
     case kMessageTypeLabelEmptyItems: {
@@ -281,9 +357,29 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
             PrivateUtils::nameConstString(diag.u.m_labelPtr));
         break;
     }
+    case kMessageTypeRigidBodyEmptyName: {
+        StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.rigid-body.name.empty"),
+            PrivateUtils::index(diag.u.m_rigidBodyPtr));
+        break;
+    }
+    case kMessageTypeRigidBodyDuplicatedName: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.rigid-body.name.duplicated"),
+            PrivateUtils::canonicalNameConstString(diag.u.m_rigidBodyPtr));
+        break;
+    }
     case kMessageTypeRigidBodyNullBoneObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.rigid-body.bone.null"),
             PrivateUtils::nameConstString(diag.u.m_rigidBodyPtr));
+        break;
+    }
+    case kMessageTypeJointEmptyName: {
+        StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.joint.name.empty"),
+            PrivateUtils::index(diag.u.m_jointPtr));
+        break;
+    }
+    case kMessageTypeJointDuplicatedName: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.joint.name.duplicated"),
+            PrivateUtils::canonicalNameConstString(diag.u.m_jointPtr));
         break;
     }
     case kMessageTypeJointRigidBodyANullObject: {
@@ -294,6 +390,16 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     case kMessageTypeJointRigidBodyBNullObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.joint.rigid-body-b.null"),
             PrivateUtils::nameConstString(diag.u.m_jointPtr));
+        break;
+    }
+    case kMessageTypeSoftBodyEmptyName: {
+        StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.soft-body.name.empty"),
+            PrivateUtils::index(diag.u.m_softBodyPtr));
+        break;
+    }
+    case kMessageTypeSoftBodyDuplicatedName: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.soft-body.name.duplicated"),
+            PrivateUtils::canonicalNameConstString(diag.u.m_softBodyPtr));
         break;
     }
     case kMessageTypeSoftBodyNullMaterialObject: {
@@ -415,11 +521,26 @@ void
 Validator::validateAllMaterialObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
     nanoem_rsize_t numMaterials;
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
+    StringSet nameSet;
+    String utf8Name;
     Diagnostics diag;
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_unicode_string_t *name = nanoemModelMaterialGetName(materialPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_materialPtr = materialPtr;
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
+            diag.m_message = kMessageTypeMaterialEmptyName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
+        else if (!nameSet.insert(utf8Name).second) {
+            diag.m_message = kMessageTypeMaterialDuplicatedName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
         if (!validateColor(nanoemModelMaterialGetAmbientColor(materialPtr), kMessageTypeMaterialAmbientColorOutOfBound,
                 filter, &diag)) {
             result.push_back(diag);
@@ -474,32 +595,34 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
     nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
     StringUtils::UnicodeStringScope scope(factory);
-    StringSet names;
-    String s;
+    StringSet nameSet;
+    String utf8Name;
     Diagnostics diag;
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
         const nanoem_unicode_string_t *name = nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_bonePtr = bonePtr;
-        if (!validateName(name, 15, kMessageTypeBoneTooLongName, filter, factory, &diag)) {
-            bool selectable = model::Bone::isSelectable(bonePtr),
-                 canPush = selectable || (!selectable && testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag));
-            if (canPush) {
-                result.push_back(diag);
-            }
-        }
-        if (!validateVector3(nanoemModelBoneGetOrigin(bonePtr), filter, &diag)) {
-            result.push_back(diag);
-        }
-        StringUtils::getUtf8String(name, factory, s);
-        if (s.empty()) {
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
             diag.m_message = kMessageTypeBoneEmptyName;
             diag.m_severity = kSeverityTypeError;
             result.push_back(diag);
         }
-        else if (!names.insert(s).second) {
-            diag.m_message = kMessageTypeBoneDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
+        else {
+            if (!validateNameInShiftJIS(name, 15, kMessageTypeBoneTooLongName, filter, factory, &diag)) {
+                bool selectable = model::Bone::isSelectable(bonePtr),
+                     canPush = selectable || (!selectable && testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag));
+                if (canPush) {
+                    result.push_back(diag);
+                }
+            }
+            if (!nameSet.insert(utf8Name).second) {
+                diag.m_message = kMessageTypeBoneDuplicatedName;
+                diag.m_severity = kSeverityTypeWarning;
+                result.push_back(diag);
+            }
+        }
+        if (!validateVector3(nanoemModelBoneGetOrigin(bonePtr), filter, &diag)) {
             result.push_back(diag);
         }
     }
@@ -512,30 +635,32 @@ Validator::validateAllMorphObjects(const Model *model, nanoem_u32_t filter, Diag
     nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(model->data(), &numMorphs);
     StringUtils::UnicodeStringScope scope(factory);
-    StringSet names;
-    String s;
+    StringSet nameSet;
+    String utf8Name;
     Diagnostics diag;
     for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
         const nanoem_model_morph_t *morphPtr = morphs[i];
         const nanoem_unicode_string_t *name = nanoemModelMorphGetName(morphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_morphPtr = morphPtr;
-        if (!validateName(name, 15, kMessageTypeMorphTooLongName, filter, factory, &diag)) {
-            bool isHidden = nanoemModelMorphGetCategory(morphPtr) == NANOEM_MODEL_MORPH_CATEGORY_BASE,
-                 canPush = !isHidden || (isHidden && testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag));
-            if (canPush) {
-                result.push_back(diag);
-            }
-        }
-        StringUtils::getUtf8String(name, factory, s);
-        if (s.empty()) {
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
             diag.m_message = kMessageTypeMorphEmptyName;
             diag.m_severity = kSeverityTypeError;
             result.push_back(diag);
         }
-        else if (!names.insert(s).second) {
-            diag.m_message = kMessageTypeMorphDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
-            result.push_back(diag);
+        else {
+            if (!validateNameInShiftJIS(name, 15, kMessageTypeMorphTooLongName, filter, factory, &diag)) {
+                bool isHidden = nanoemModelMorphGetCategory(morphPtr) == NANOEM_MODEL_MORPH_CATEGORY_BASE,
+                     canPush = !isHidden || (isHidden && testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag));
+                if (canPush) {
+                    result.push_back(diag);
+                }
+            }
+            if (!nameSet.insert(utf8Name).second) {
+                diag.m_message = kMessageTypeMorphDuplicatedName;
+                diag.m_severity = kSeverityTypeWarning;
+                result.push_back(diag);
+            }
         }
     }
 }
@@ -544,11 +669,26 @@ void
 Validator::validateAllLabelObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
     nanoem_rsize_t numLabels, numItems;
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(model->data(), &numLabels);
     Diagnostics diag;
+    StringSet nameSet;
+    String utf8Name;
     for (nanoem_rsize_t i = 0; i < numLabels; i++) {
         const nanoem_model_label_t *labelPtr = labels[i];
+        const nanoem_unicode_string_t *name = nanoemModelLabelGetName(labelPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_labelPtr = labelPtr;
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
+            diag.m_message = kMessageTypeLabelEmptyName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
+        else if (!nameSet.insert(utf8Name).second) {
+            diag.m_message = kMessageTypeLabelDuplicatedName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
         nanoem_model_label_item_t *const *items = nanoemModelLabelGetAllItemObjects(labelPtr, &numItems);
         if (numItems == 0 && testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag)) {
             diag.m_message = kMessageTypeLabelEmptyItems;
@@ -585,11 +725,26 @@ void
 Validator::validateAllRigidBodyObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
     nanoem_rsize_t numRigidBodies;
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(model->data(), &numRigidBodies);
     Diagnostics diag;
+    StringSet nameSet;
+    String utf8Name;
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
+        const nanoem_unicode_string_t *name = nanoemModelRigidBodyGetName(rigidBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_rigidBodyPtr = rigidBodyPtr;
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
+            diag.m_message = kMessageTypeRigidBodyEmptyName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
+        else if (!nameSet.insert(utf8Name).second) {
+            diag.m_message = kMessageTypeRigidBodyDuplicatedName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
         if (!validateEulerAngles(nanoemModelRigidBodyGetOrigin(rigidBodyPtr), filter, &diag)) {
             result.push_back(diag);
         }
@@ -608,11 +763,26 @@ void
 Validator::validateAllJointObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
     nanoem_rsize_t numJoints;
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(model->data(), &numJoints);
     Diagnostics diag;
+    StringSet nameSet;
+    String utf8Name;
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         const nanoem_model_joint_t *jointPtr = joints[i];
+        const nanoem_unicode_string_t *name = nanoemModelJointGetName(jointPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_jointPtr = jointPtr;
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
+            diag.m_message = kMessageTypeJointEmptyName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
+        else if (!nameSet.insert(utf8Name).second) {
+            diag.m_message = kMessageTypeJointDuplicatedName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
         if (nanoemModelJointGetRigidBodyAObject(jointPtr) == nullptr &&
             testDiagnosticsSeverity(kSeverityTypeFatal, filter, &diag)) {
             diag.m_message = kMessageTypeJointRigidBodyANullObject;
@@ -654,11 +824,26 @@ void
 Validator::validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
     nanoem_rsize_t numSoftBodies;
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(model->data(), &numSoftBodies);
     Diagnostics diag;
+    StringSet nameSet;
+    String utf8Name;
     for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
         const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
+        const nanoem_unicode_string_t *name = nanoemModelSoftBodyGetName(softBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_softBodyPtr = softBodyPtr;
+        StringUtils::getUtf8String(name, factory, utf8Name);
+        if (utf8Name.empty()) {
+            diag.m_message = kMessageTypeSoftBodyEmptyName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
+        else if (!nameSet.insert(utf8Name).second) {
+            diag.m_message = kMessageTypeSoftBodyDuplicatedName;
+            diag.m_severity = kSeverityTypeWarning;
+            result.push_back(diag);
+        }
         if (nanoemModelSoftBodyGetMaterialObject(softBodyPtr) == nullptr &&
             testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
             diag.m_message = kMessageTypeSoftBodyNullMaterialObject;
@@ -668,7 +853,7 @@ Validator::validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, D
 }
 
 bool
-Validator::validateName(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
+Validator::validateNameInShiftJIS(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
     nanoem_u32_t filter, nanoem_unicode_string_factory_t *factory, Diagnostics *diag)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;

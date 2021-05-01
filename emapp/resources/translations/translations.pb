@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -891,7 +891,9 @@ $nanoem.project.track.selected-morphs選択モーフ5
 *nanoem.model.validator.vertex.type.invalid頂点の種別が不正ですW
 ,nanoem.model.validator.face.not-triangulated'面が三角形になっていませんU
 'nanoem.model.validator.face.vertex.null*面の頂点が設定されていませんJ
-nanoem.model.validator.face.oob'面が頂点の範囲外にありますe
+nanoem.model.validator.face.oob'面が頂点の範囲外にありますU
+*nanoem.model.validator.material.name.empty'材質名が設定されていませんT
+/nanoem.model.validator.material.name.duplicated!材質名が重複していますe
 1nanoem.model.validator.material.ambient.color.oob0材質の環境光色が範囲外にありますe
 1nanoem.model.validator.material.diffuse.color.oob0材質の拡散光色が範囲外にありますv
 3nanoem.model.validator.material.diffuse.opacity.oob?材質の拡散光色の不透明度が範囲外にありますc
@@ -901,21 +903,27 @@ $nanoem.project.track.selected-morphs選択モーフ5
 9nanoem.model.validator.material.texture.diffuse.not-foundH材質の拡散光のテクスチャファイルが見つかりません�
 <nanoem.model.validator.material.texture.sphere-map.not-foundQ材質のスフィアマップテクスチャファイルが見つかりません�
 6nanoem.model.validator.material.texture.toon.not-foundH材質のトゥーンテクスチャファイルが見つかりませんh
-(nanoem.model.validator.material.face.oob<材質が参照する面が頂点の範囲外にありますK
-)nanoem.model.validator.bone.name.too-longボーン名が長すぎますT
+(nanoem.model.validator.material.face.oob<材質が参照する面が頂点の範囲外にありますY
+)nanoem.model.validator.bone.name.too-long,ボーン名が15バイトを超えてますT
 &nanoem.model.validator.bone.name.empty*ボーン名が設定されていませんS
 +nanoem.model.validator.bone.name.duplicated$ボーン名が重複していますZ
 )nanoem.model.validator.bone.inherent.null-付与ボーンが設定されていませんc
-5nanoem.model.validator.bone.fixed-axis.not-normalized*固定軸が正規化されていませんL
-*nanoem.model.validator.morph.name.too-longモーフ名が長すぎますU
+5nanoem.model.validator.bone.fixed-axis.not-normalized*固定軸が正規化されていませんZ
+*nanoem.model.validator.morph.name.too-long,モーフ名が15バイトを超えてますU
 'nanoem.model.validator.morph.name.empty*モーフ名が設定されていませんT
 ,nanoem.model.validator.morph.name.duplicated$モーフ名が重複しています;
 "nanoem.model.validator.label.empty表示枠が空ですe
 +nanoem.model.validator.label.item.bone.null6表示枠内のボーンが設定されていませんf
-,nanoem.model.validator.label.item.morph.null6表示枠内のモーフが設定されていませんk
-+nanoem.model.validator.rigid-body.bone.null<剛体に対応するボーンが設定されていませんy
+,nanoem.model.validator.label.item.morph.null6表示枠内のモーフが設定されていませんW
+,nanoem.model.validator.rigid-body.name.empty'剛体名が設定されていませんV
+1nanoem.model.validator.rigid-body.name.duplicated!剛体名が重複していますk
++nanoem.model.validator.rigid-body.bone.null<剛体に対応するボーンが設定されていません[
+'nanoem.model.validator.joint.name.empty0ジョイント名が設定されていませんZ
+,nanoem.model.validator.joint.name.duplicated*ジョイント名が重複していますy
 .nanoem.model.validator.joint.rigid-body-a.nullGジョイントに対応する剛体 (A) が設定されていませんy
-.nanoem.model.validator.joint.rigid-body-b.nullGジョイントに対応する剛体 (B) が設定されていませんw
+.nanoem.model.validator.joint.rigid-body-b.nullGジョイントに対応する剛体 (B) が設定されていませんb
++nanoem.model.validator.soft-body.name.empty3ソフトボディ名が設定されていませんa
+0nanoem.model.validator.soft-body.name.duplicated-ソフトボディ名が重複していますw
 .nanoem.model.validator.soft-body.material.nullEソフトボディに対応する材質が設定されていません
 nanoem.status.SUCCESS成功I
 !nanoem.status.ERROR_MALLOC_FAILED$メモリ確保に失敗しましたJ
@@ -1041,7 +1049,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+�F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1949,7 +1957,9 @@ All Morphs#
 *nanoem.model.validator.vertex.type.invalidThe vertex type is invalidL
 ,nanoem.model.validator.face.not-triangulatedThe face is not triangulatedL
 'nanoem.model.validator.face.vertex.null!The vertex of the face is not setK
-nanoem.model.validator.face.oob(The face is out of bound of the vertices_
+nanoem.model.validator.face.oob(The face is out of bound of the verticesV
+*nanoem.model.validator.material.name.empty(The material name (of Japanese) is empty`
+/nanoem.model.validator.material.name.duplicated-The material name (of Japanese) is duplicated_
 1nanoem.model.validator.material.ambient.color.oob*The material ambient color is out of bound_
 1nanoem.model.validator.material.diffuse.color.oob*The material diffuse color is out of boundc
 3nanoem.model.validator.material.diffuse.opacity.oob,The material diffuse opacity is out of bounda
@@ -1959,21 +1969,27 @@ All Morphs#
 9nanoem.model.validator.material.texture.diffuse.not-found.The material diffuse texture file is not foundq
 <nanoem.model.validator.material.texture.sphere-map.not-found1The material sphere map texture file is not founde
 6nanoem.model.validator.material.texture.toon.not-found+The material toon texture file is not foundk
-(nanoem.model.validator.material.face.oob?The face corresponding material is out of bound of the verticesF
-)nanoem.model.validator.bone.name.too-longThe bone name is too long@
-&nanoem.model.validator.bone.name.emptyThe bone name is emptyJ
-+nanoem.model.validator.bone.name.duplicatedThe bone name is duplicatedI
+(nanoem.model.validator.material.face.oob?The face corresponding material is out of bound of the verticesh
+)nanoem.model.validator.bone.name.too-long;The bone name length (of Japanese) is greater than 15 bytesN
+&nanoem.model.validator.bone.name.empty$The bone name (of Japanese) is emptyX
++nanoem.model.validator.bone.name.duplicated)The bone name (of Japanese) is duplicatedI
 )nanoem.model.validator.bone.inherent.nullThe inherent bone is not set]
-5nanoem.model.validator.bone.fixed-axis.not-normalized$Fixed axis of the bone is normalizedH
-*nanoem.model.validator.morph.name.too-longThe morph name is too longB
-'nanoem.model.validator.morph.name.emptyThe morph name is emptyL
-,nanoem.model.validator.morph.name.duplicatedThe morph name is duplicated=
+5nanoem.model.validator.bone.fixed-axis.not-normalized$Fixed axis of the bone is normalizedc
+*nanoem.model.validator.morph.name.too-long5The morph name (of Japanese) is greater than 15 bytesP
+'nanoem.model.validator.morph.name.empty%The morph name (of Japanese) is emptyZ
+,nanoem.model.validator.morph.name.duplicated*The morph name (of Japanese) is duplicated=
 "nanoem.model.validator.label.emptyThe label item is emptyO
 +nanoem.model.validator.label.item.bone.null The bone in the label is not setQ
-,nanoem.model.validator.label.item.morph.null!The morph in the label is not set[
-+nanoem.model.validator.rigid-body.bone.null,The bone corresponding rigid body is not setc
+,nanoem.model.validator.label.item.morph.null!The morph in the label is not setZ
+,nanoem.model.validator.rigid-body.name.empty*The rigid body name (of Japanese) is emptyd
+1nanoem.model.validator.rigid-body.name.duplicated/The rigid body name (of Japanese) is duplicated[
++nanoem.model.validator.rigid-body.bone.null,The bone corresponding rigid body is not setP
+'nanoem.model.validator.joint.name.empty%The joint name (of Japanese) is emptyZ
+,nanoem.model.validator.joint.name.duplicated*The joint name (of Japanese) is duplicatedc
 .nanoem.model.validator.joint.rigid-body-a.null1The rigid body (A) corresponding joint is not setc
-.nanoem.model.validator.joint.rigid-body-b.null1The rigid body (B) corresponding joint is not seta
+.nanoem.model.validator.joint.rigid-body-b.null1The rigid body (B) corresponding joint is not setX
++nanoem.model.validator.soft-body.name.empty)The soft body name (of Japanese) is emptyb
+0nanoem.model.validator.soft-body.name.duplicated.The soft body name (of Japanese) is duplicateda
 .nanoem.model.validator.soft-body.material.null/The material corresponding soft body is not set 
 nanoem.status.SUCCESSSuccess>
 !nanoem.status.ERROR_MALLOC_FAILEDFailed to allocate memory?
