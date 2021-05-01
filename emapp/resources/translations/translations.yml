@@ -3296,6 +3296,11 @@
     en_US: 'Collapse All Tracks'
     ja_JP: '全てのトラックを折りたたみ'
   description: ''
+- key: nanoem.menu.model.validation
+  phrase:
+    en_US: 'Perform Model Data Validation'
+    ja_JP: 'モデルデータの検証を実行'
+  description: ''
 - key: nanoem.menu.model.edit-mode.select
   phrase:
     en_US: 'Selection Mode'
@@ -3781,6 +3786,147 @@
   phrase:
     en_US: 'Below files cannot be loaded due to file modification.'
     ja_JP: '次のファイルは保存時から変更があったため読み込めません'
+
+- key: nanoem.model.validator.result.title
+  phrase:
+    en_US: 'Validation result of %s'
+    ja_JP: '「%s」の検証結果'
+- key: nanoem.model.validator.result.success
+  phrase:
+    en_US: 'No validation problem found'
+    ja_JP: '検証した結果問題はありませんでした'
+- key: nanoem.model.validator.result.failure
+  phrase:
+    en_US: '%zu validation problem(s) found'
+    ja_JP: '検証した結果 %zu 件の問題が見つかりました'
+- key: nanoem.model.validator.vertex.texcoord.oob
+  phrase:
+    en_US: 'Texture coordinate of the vertex is out of bound'
+    ja_JP: '頂点のテクスチャ座標が範囲外です'
+- key: nanoem.model.validator.vertex.bone.null
+  phrase:
+    en_US: 'The bone of the vertex is not set'
+    ja_JP: '頂点に対応するボーンが設定されていません'
+- key: nanoem.model.validator.vertex.weight.not-normalized
+  phrase:
+    en_US: 'The bone weight of the vertex is not normalized'
+    ja_JP: '頂点のボーンウェイトが正規化されていません'
+- key: nanoem.model.validator.vertex.type.invalid
+  phrase:
+    en_US: 'The vertex type is invalid'
+    ja_JP: '頂点の種別が不正です'
+- key: nanoem.model.validator.face.not-triangulated
+  phrase:
+    en_US: 'The face is not triangulated'
+    ja_JP: '面が三角形になっていません'
+- key: nanoem.model.validator.face.vertex.null
+  phrase:
+    en_US: 'The vertex of the face is not set'
+    ja_JP: '面の頂点が設定されていません'
+- key: nanoem.model.validator.face.oob
+  phrase:
+    en_US: 'The face is out of bound of the vertices'
+    ja_JP: '面が頂点の範囲外にあります'
+- key: nanoem.model.validator.material.ambient.color.oob
+  phrase:
+    en_US: 'The material ambient color is out of bound'
+    ja_JP: '材質の環境光色が範囲外にあります'
+- key: nanoem.model.validator.material.diffuse.color.oob
+  phrase:
+    en_US: 'The material diffuse color is out of bound'
+    ja_JP: '材質の拡散光色が範囲外にあります'
+- key: nanoem.model.validator.material.diffuse.opacity.oob
+  phrase:
+    en_US: 'The material diffuse opacity is out of bound'
+    ja_JP: '材質の拡散光色の不透明度が範囲外にあります'
+- key: nanoem.model.validator.material.specular.color.oob
+  phrase:
+    en_US: 'The material specular color is out of bound'
+    ja_JP: '材質の鏡面色が範囲外にあります'
+- key: nanoem.model.validator.material.edge.color.oob
+  phrase:
+    en_US: 'The material edge color is out of bound'
+    ja_JP: '材質のエッジ色が範囲外にあります'
+- key: nanoem.model.validator.material.edge.opacity.oob
+  phrase:
+    en_US: 'The material edge opacity is out of bound'
+    ja_JP: '材質のエッジ色の不透明度が範囲外にあります'
+- key: nanoem.model.validator.material.texture.diffuse.not-found
+  phrase:
+    en_US: 'The material diffuse texture file is not found'
+    ja_JP: '材質の拡散光のテクスチャファイルが見つかりません'
+- key: nanoem.model.validator.material.texture.sphere-map.not-found
+  phrase:
+    en_US: 'The material sphere map texture file is not found'
+    ja_JP: '材質のスフィアマップテクスチャファイルが見つかりません'
+- key: nanoem.model.validator.material.texture.toon.not-found
+  phrase:
+    en_US: 'The material toon texture file is not found'
+    ja_JP: '材質のトゥーンテクスチャファイルが見つかりません'
+- key: nanoem.model.validator.material.face.oob
+  phrase:
+    en_US: 'The face corresponding material is out of bound of the vertices'
+    ja_JP: '材質が参照する面が頂点の範囲外にあります'
+- key: nanoem.model.validator.bone.name.too-long
+  phrase:
+    en_US: 'The bone name is too long'
+    ja_JP: 'ボーン名が長すぎます'
+- key: nanoem.model.validator.bone.name.empty
+  phrase:
+    en_US: 'The bone name is empty'
+    ja_JP: 'ボーン名が設定されていません'
+- key: nanoem.model.validator.bone.name.duplicated
+  phrase:
+    en_US: 'The bone name is duplicated'
+    ja_JP: 'ボーン名が重複しています'
+- key: nanoem.model.validator.bone.inherent.null
+  phrase:
+    en_US: 'The inherent bone is not set'
+    ja_JP: '付与ボーンが設定されていません'
+- key: nanoem.model.validator.bone.fixed-axis.not-normalized
+  phrase:
+    en_US: 'Fixed axis of the bone is normalized'
+    ja_JP: '固定軸が正規化されていません'
+- key: nanoem.model.validator.morph.name.too-long
+  phrase:
+    en_US: 'The morph name is too long'
+    ja_JP: 'モーフ名が長すぎます'
+- key: nanoem.model.validator.morph.name.empty
+  phrase:
+    en_US: 'The morph name is empty'
+    ja_JP: 'モーフ名が設定されていません'
+- key: nanoem.model.validator.morph.name.duplicated
+  phrase:
+    en_US: 'The morph name is duplicated'
+    ja_JP: 'モーフ名が重複しています'
+- key: nanoem.model.validator.label.empty
+  phrase:
+    en_US: 'The label item is empty'
+    ja_JP: '表示枠が空です'
+- key: nanoem.model.validator.label.item.bone.null
+  phrase:
+    en_US: 'The bone in the label is not set'
+    ja_JP: '表示枠内のボーンが設定されていません'
+- key: nanoem.model.validator.label.item.morph.null
+  phrase:
+    en_US: 'The morph in the label is not set'
+    ja_JP: '表示枠内のモーフが設定されていません'
+- key: nanoem.model.validator.rigid-body.bone.null
+  phrase:
+    en_US: 'The bone corresponding rigid body is not set'
+    ja_JP: '剛体に対応するボーンが設定されていません'
+- key: nanoem.model.validator.joint.rigid-body-a.null
+  phrase:
+    en_US: 'The rigid body (A) corresponding joint is not set'
+    ja_JP: 'ジョイントに対応する剛体 (A) が設定されていません'
+- key: nanoem.model.validator.joint.rigid-body-b.null
+  phrase:
+    en_US: 'The rigid body (B) corresponding joint is not set'
+    ja_JP: 'ジョイントに対応する剛体 (B) が設定されていません'
+- key: nanoem.model.validator.soft-body.material.null
+  phrase:
+    en_US: 'The material corresponding soft body is not set'
+    ja_JP: 'ソフトボディに対応する材質が設定されていません'
 
 - key: nanoem.status.SUCCESS
   phrase:

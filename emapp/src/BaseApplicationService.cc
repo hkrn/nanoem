@@ -49,6 +49,7 @@
 #include "emapp/internal/ImGuiWindow.h"
 #include "emapp/internal/LightValueState.h"
 #include "emapp/model/Morph.h"
+#include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "emapp/command/AddAccessoryKeyframeCommand.h"
@@ -2175,6 +2176,35 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelCollapseAllTracks: {
         project->collapseAllTracks();
+        break;
+    }
+    case ApplicationMenuBuilder::kMenuItemTypeModelPerformValidation: {
+        if (const Model *activeModel = project->activeModel()) {
+            model::Validator validator;
+            model::Validator::DiagnosticsList diagnostics;
+            const nanoem_u32_t filter = 0 | model::Validator::kSeverityTypeFatal |
+                model::Validator::kSeverityTypeError | model::Validator::kSeverityTypeWarning;
+            validator.validate(activeModel, filter, diagnostics);
+            String text;
+            if (diagnostics.empty()) {
+                text = m_translatorPtr->translate("nanoem.model.validator.result.success");
+            }
+            else {
+                StringUtils::format(
+                    text, m_translatorPtr->translate("nanoem.model.validator.result.failure"), diagnostics.size());
+                text.append("\n\n");
+                for (model::Validator::DiagnosticsList::const_iterator it = diagnostics.begin(),
+                                                                       end = diagnostics.end();
+                     it != end; ++it) {
+                    validator.format(*it, m_translatorPtr, text);
+                }
+            }
+            char title[Inline::kLongNameStackBufferSize];
+            StringUtils::format(title, sizeof(title), m_translatorPtr->translate("nanoem.model.validator.result.title"),
+                activeModel->nameConstString());
+            IModalDialog *dialog = ModalDialogFactory::createDisplayPlainTextDialog(this, title, text);
+            addModalDialog(dialog);
+        }
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelEditModeSelect: {
