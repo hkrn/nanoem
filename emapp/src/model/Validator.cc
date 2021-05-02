@@ -160,9 +160,12 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
             model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
-    case kMessageTypeMaterialVertexIndexOutOfBound: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.material.face.oob"),
-            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
+    case kMessageTypeMaterialVertexIndexNotFill: {
+        StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.material.face.not-fill"));
+        break;
+    }
+    case kMessageTypeMaterialVertexIndexOverflow: {
+        StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.material.face.overflow"));
         break;
     }
     case kMessageTypeBoneTooLongName: {
@@ -395,9 +398,10 @@ Validator::validateAllFaces(const Model *model, nanoem_u32_t filter, Diagnostics
 void
 Validator::validateAllMaterialObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
-    nanoem_rsize_t numMaterials;
+    nanoem_rsize_t numMaterials, numIndices, actualIndices = 0;
     nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
+    nanoemModelGetAllVertexIndices(model->data(), &numIndices);
     StringSet nameSet;
     String utf8Name;
     Diagnostics diag;
@@ -458,6 +462,15 @@ Validator::validateAllMaterialObjects(const Model *model, nanoem_u32_t filter, D
                 }
             }
         }
+        actualIndices += nanoemModelMaterialGetNumVertexIndices(materialPtr);
+    }
+    if (actualIndices < numIndices && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
+        diag.m_message = kMessageTypeMaterialVertexIndexNotFill;
+        result.push_back(diag);
+    }
+    else if (actualIndices > numIndices && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
+        diag.m_message = kMessageTypeMaterialVertexIndexOverflow;
+        result.push_back(diag);
     }
 }
 

@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -902,8 +902,9 @@ $nanoem.project.track.selected-morphs選択モーフ5
 0nanoem.model.validator.material.edge.opacity.oob?材質のエッジ色の不透明度が範囲外にあります�
 9nanoem.model.validator.material.texture.diffuse.not-foundH材質の拡散光のテクスチャファイルが見つかりません�
 <nanoem.model.validator.material.texture.sphere-map.not-foundQ材質のスフィアマップテクスチャファイルが見つかりません�
-6nanoem.model.validator.material.texture.toon.not-foundH材質のトゥーンテクスチャファイルが見つかりませんh
-(nanoem.model.validator.material.face.oob<材質が参照する面が頂点の範囲外にありますY
+6nanoem.model.validator.material.texture.toon.not-foundH材質のトゥーンテクスチャファイルが見つかりません�
+-nanoem.model.validator.material.face.not-fill`全材質が参照するインデックスが対応する面の数よりも少ない状態です�
+-nanoem.model.validator.material.face.overflow]全材質が参照するインデックスが対応する面の数よりも多い状態ですY
 )nanoem.model.validator.bone.name.too-long,ボーン名が15バイトを超えてますT
 &nanoem.model.validator.bone.name.empty*ボーン名が設定されていませんS
 +nanoem.model.validator.bone.name.duplicated$ボーン名が重複していますZ
@@ -1049,7 +1050,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-�F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1968,8 +1969,9 @@ All Morphs#
 0nanoem.model.validator.material.edge.opacity.oob)The material edge opacity is out of boundk
 9nanoem.model.validator.material.texture.diffuse.not-found.The material diffuse texture file is not foundq
 <nanoem.model.validator.material.texture.sphere-map.not-found1The material sphere map texture file is not founde
-6nanoem.model.validator.material.texture.toon.not-found+The material toon texture file is not foundk
-(nanoem.model.validator.material.face.oob?The face corresponding material is out of bound of the verticesh
+6nanoem.model.validator.material.texture.toon.not-found+The material toon texture file is not foundv
+-nanoem.model.validator.material.face.not-fillEAll material vertex index count are less than corresponding all facesy
+-nanoem.model.validator.material.face.overflowHAll material vertex index count are greater than corresponding all facesh
 )nanoem.model.validator.bone.name.too-long;The bone name length (of Japanese) is greater than 15 bytesN
 &nanoem.model.validator.bone.name.empty$The bone name (of Japanese) is emptyX
 +nanoem.model.validator.bone.name.duplicated)The bone name (of Japanese) is duplicatedI

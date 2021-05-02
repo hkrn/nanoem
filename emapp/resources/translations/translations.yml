@@ -3871,10 +3871,14 @@
   phrase:
     en_US: 'The material toon texture file is not found'
     ja_JP: '材質のトゥーンテクスチャファイルが見つかりません'
-- key: nanoem.model.validator.material.face.oob
+- key: nanoem.model.validator.material.face.not-fill
   phrase:
-    en_US: 'The face corresponding material is out of bound of the vertices'
-    ja_JP: '材質が参照する面が頂点の範囲外にあります'
+    en_US: 'All material vertex index count are less than corresponding all faces'
+    ja_JP: '全材質が参照するインデックスが対応する面の数よりも少ない状態です'
+- key: nanoem.model.validator.material.face.overflow
+  phrase:
+    en_US: 'All material vertex index count are greater than corresponding all faces'
+    ja_JP: '全材質が参照するインデックスが対応する面の数よりも多い状態です'
 - key: nanoem.model.validator.bone.name.too-long
   phrase:
     en_US: 'The bone name length (of Japanese) is greater than 15 bytes'
