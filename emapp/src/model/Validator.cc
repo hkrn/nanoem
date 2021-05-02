@@ -103,7 +103,8 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeMaterialDuplicatedName: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.material.name.duplicated"),
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.material.name.duplicated"),
             model::Material::canonicalNameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
@@ -184,7 +185,8 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeBoneTransformBeforeParent: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.transform-before-parent"),
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.bone.transform-before-parent"),
             model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
@@ -194,7 +196,14 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeBoneTransformBeforeInherentParent: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.inherent.transform-before-parent"),
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.bone.inherent.transform-before-parent"),
+            model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
+        break;
+    }
+    case kMessageTypeBoneTransformBeforeConstraint: {
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.bone.constraint.transform-before-parent"),
             model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
@@ -225,8 +234,7 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeLabelDuplicatedName: {
-        StringUtils::format(text, "* %s: %s\n",
-            translator->translate("nanoem.model.validator.label.name.duplicated"),
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.name.duplicated"),
             model::Label::canonicalNameConstString(diag.u.m_labelPtr, kUnknownName));
         break;
     }
@@ -241,7 +249,8 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeLabelNotAssignedMorphObject: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.not-assigned-morph"),
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.label.not-assigned-morph"),
             model::Morph::nameConstString(diag.u.m_morphPtr, kUnknownName));
         break;
     }
@@ -261,7 +270,8 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeRigidBodyDuplicatedName: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.rigid-body.name.duplicated"),
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.rigid-body.name.duplicated"),
             model::RigidBody::canonicalNameConstString(diag.u.m_rigidBodyPtr, kUnknownName));
         break;
     }
@@ -296,7 +306,8 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
         break;
     }
     case kMessageTypeSoftBodyDuplicatedName: {
-        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.soft-body.name.duplicated"),
+        StringUtils::format(text, "* %s: %s\n",
+            translator->translate("nanoem.model.validator.soft-body.name.duplicated"),
             model::SoftBody::canonicalNameConstString(diag.u.m_softBodyPtr, kUnknownName));
         break;
     }
@@ -542,6 +553,14 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
                 result.push_back(diag);
             }
         }
+        if (nanoemModelBoneHasConstraint(bonePtr)) {
+            const nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObject(bonePtr);
+            const nanoem_model_bone_t *effectorBonePtr = nanoemModelConstraintGetEffectorBoneObject(constraintPtr);
+            if (!validateParentBone(
+                    bonePtr, effectorBonePtr, kMessageTypeBoneTransformBeforeConstraint, filter, &diag)) {
+                result.push_back(diag);
+            }
+        }
     }
 }
 
@@ -669,7 +688,8 @@ Validator::validateAllRigidBodyObjects(const Model *model, nanoem_u32_t filter, 
     String utf8Name;
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
-        const nanoem_unicode_string_t *name = nanoemModelRigidBodyGetName(rigidBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+        const nanoem_unicode_string_t *name =
+            nanoemModelRigidBodyGetName(rigidBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_rigidBodyPtr = rigidBodyPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
         if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
@@ -787,26 +807,34 @@ bool
 Validator::validateParentBone(
     const nanoem_model_bone_t *bonePtr, MessageType type, nanoem_u32_t filter, Diagnostics *diag)
 {
-    diag->m_message = kMessageTypeNone;
+    bool result = true;
     if (const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr)) {
-        if (nanoemModelBoneIsAffectedByPhysicsSimulation(parentBonePtr) &&
-            !nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr) &&
+        result = validateParentBone(bonePtr, parentBonePtr, type, filter, diag);
+    }
+    return result;
+}
+
+bool
+Validator::validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr,
+    MessageType type, nanoem_u32_t filter, Diagnostics *diag)
+{
+    diag->m_message = kMessageTypeNone;
+    if (nanoemModelBoneIsAffectedByPhysicsSimulation(parentBonePtr) &&
+        !nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr) &&
+        testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+        diag->m_message = type;
+    }
+    else {
+        int parentBoneIndex = model::Bone::index(parentBonePtr), boneIndex = model::Bone::index(bonePtr),
+            parentBoneStageIndex = nanoemModelBoneGetStageIndex(parentBonePtr),
+            boneStageIndex = nanoemModelBoneGetStageIndex(bonePtr);
+        if (parentBoneIndex < boneIndex && parentBoneStageIndex > boneStageIndex &&
             testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
             diag->m_message = type;
         }
-        else {
-            int parentBoneIndex = model::Bone::index(parentBonePtr), boneIndex = model::Bone::index(bonePtr),
-                parentBoneStageIndex = nanoemModelBoneGetStageIndex(parentBonePtr),
-                boneStageIndex = nanoemModelBoneGetStageIndex(bonePtr);
-            if (parentBoneIndex < boneIndex && parentBoneStageIndex > boneStageIndex &&
-                testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-                diag->m_message = type;
-            }
-            else if 
-                (parentBoneIndex > boneIndex && parentBoneStageIndex >= boneStageIndex &&
-                testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-                diag->m_message = type;
-            }
+        else if (parentBoneIndex > boneIndex && parentBoneStageIndex >= boneStageIndex &&
+            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+            diag->m_message = type;
         }
     }
     return diag->m_message == kMessageTypeNone;

@@ -3903,6 +3903,10 @@
   phrase:
     en_US: 'The inherent bone will be transformed before its parent inherent bone due to relation problem'
     ja_JP: '親子関係の問題から付与親ボーンより先に変形されます'
+- key: nanoem.model.validator.bone.constraint.transform-before-parent
+  phrase:
+    en_US: 'The IK bone will be transformed before its target bone due to relation problem'
+    ja_JP: '親子関係の問題からIKターゲットボーンより先に変形されます'
 - key: nanoem.model.validator.bone.fixed-axis.not-normalized
   phrase:
     en_US: 'Fixed axis of the bone is normalized'
