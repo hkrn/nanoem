@@ -33,6 +33,10 @@ public:
         nanoem_f32_t amount);
 
     static int index(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_morph_t *morphPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_morph_t *morphPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static Morph *cast(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT;
     static Morph *create();
 

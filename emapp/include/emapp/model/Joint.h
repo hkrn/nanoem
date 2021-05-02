@@ -24,6 +24,10 @@ public:
     typedef tinystl::unordered_set<nanoem_model_joint_t *, TinySTLAllocator> MutableSet;
 
     static int index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static Joint *cast(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT;
     static Joint *create();
     ~Joint() NANOEM_DECL_NOEXCEPT;

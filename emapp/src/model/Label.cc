@@ -50,6 +50,21 @@ Label::index(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
     return nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(labelPtr));
 }
 
+const char *
+Label::nameConstString(const nanoem_model_label_t *labelPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Label *label = cast(labelPtr);
+    return label ? label->nameConstString() : placeHolder;
+}
+
+const char *
+Label::canonicalNameConstString(
+    const nanoem_model_label_t* labelPtr, const char* placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Label *label = cast(labelPtr);
+    return label ? label->canonicalNameConstString() : placeHolder;
+}
+
 Label *
 Label::cast(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
 {

@@ -31,6 +31,22 @@ SoftBody::index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEP
     return nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(softBodyPtr));
 }
 
+const char *
+SoftBody::nameConstString(
+    const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const SoftBody *body = cast(softBodyPtr);
+    return body ? body->nameConstString() : placeHolder;
+}
+
+const char *
+SoftBody::canonicalNameConstString(
+    const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const SoftBody *body = cast(softBodyPtr);
+    return body ? body->canonicalNameConstString() : placeHolder;
+}
+
 SoftBody *
 SoftBody::cast(const nanoem_model_soft_body_t *softBodyPtr)
 {

@@ -26,6 +26,10 @@ public:
     void resetLanguage(
         const nanoem_model_label_t *label, nanoem_unicode_string_factory_t *factory, nanoem_language_type_t language);
     static int index(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_label_t *labelPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_label_t *labelPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static Label *cast(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT;
     static Label *create();
 

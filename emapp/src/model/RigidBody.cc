@@ -37,18 +37,18 @@ RigidBody::~RigidBody() NANOEM_DECL_NOEXCEPT
 }
 
 void
-RigidBody::bind(nanoem_model_rigid_body_t *body, PhysicsEngine *engine, bool isMorph, Resolver &resolver)
+RigidBody::bind(nanoem_model_rigid_body_t *rigidBodyPtr, PhysicsEngine *engine, bool isMorph, Resolver &resolver)
 {
-    nanoem_parameter_assert(body, "must not be nullptr");
+    nanoem_parameter_assert(rigidBodyPtr, "must not be nullptr");
     nanoem_parameter_assert(engine, "must not be nullptr");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_user_data_t *userData = nanoemUserDataCreate(&status);
     nanoemUserDataSetOnDestroyModelObjectCallback(userData, &RigidBody::destroy);
     nanoemUserDataSetOpaqueData(userData, this);
-    nanoemModelObjectSetUserData(nanoemModelRigidBodyGetModelObjectMutable(body), userData);
-    m_physicsRigidBody = engine->createRigidBody(body, status);
+    nanoemModelObjectSetUserData(nanoemModelRigidBodyGetModelObjectMutable(rigidBodyPtr), userData);
+    m_physicsRigidBody = engine->createRigidBody(rigidBodyPtr, status);
     m_physicsEngine = engine;
-    const nanoem_model_rigid_body_t *bodyPtr = body;
+    const nanoem_model_rigid_body_t *bodyPtr = rigidBodyPtr;
     resolver.insert(tinystl::make_pair(bodyPtr, m_physicsRigidBody));
     if (isMorph) {
         engine->disableDeactivation(m_physicsRigidBody);
@@ -57,16 +57,15 @@ RigidBody::bind(nanoem_model_rigid_body_t *body, PhysicsEngine *engine, bool isM
 }
 
 void
-RigidBody::resetLanguage(
-    const nanoem_model_rigid_body_t *body, nanoem_unicode_string_factory_t *factory, nanoem_language_type_t language)
+RigidBody::resetLanguage(const nanoem_model_rigid_body_t *rigidBodyPtr, nanoem_unicode_string_factory_t *factory,
+    nanoem_language_type_t language)
 {
-    StringUtils::getUtf8String(nanoemModelRigidBodyGetName(body, language), factory, m_name);
+    StringUtils::getUtf8String(nanoemModelRigidBodyGetName(rigidBodyPtr, language), factory, m_name);
     if (m_canonicalName.empty()) {
         StringUtils::getUtf8String(
-            nanoemModelRigidBodyGetName(body, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
+            nanoemModelRigidBodyGetName(rigidBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "RigidBody%d", nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(body)));
+            StringUtils::format(m_canonicalName, "RigidBody%d", index(rigidBodyPtr));
         }
     }
     if (m_name.empty()) {
@@ -89,26 +88,27 @@ RigidBody::destroy() NANOEM_DECL_NOEXCEPT
 }
 
 void
-RigidBody::getWorldTransform(const nanoem_model_rigid_body_t *body, nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT
+RigidBody::getWorldTransform(
+    const nanoem_model_rigid_body_t *rigidBodyPtr, nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    BX_UNUSED_1(body);
-    nanoem_parameter_assert(body, "must not be nullptr");
+    BX_UNUSED_1(rigidBodyPtr);
+    nanoem_parameter_assert(rigidBodyPtr, "must not be nullptr");
     nanoem_physics_motion_state_t *state = m_physicsEngine->motionState(m_physicsRigidBody);
     m_physicsEngine->getWorldTransform(state, value);
 }
 
 void
-RigidBody::synchronizeTransformFeedbackFromSimulation(
-    const nanoem_model_rigid_body_t *body, PhysicsEngine::RigidBodyFollowBoneType followType) NANOEM_DECL_NOEXCEPT
+RigidBody::synchronizeTransformFeedbackFromSimulation(const nanoem_model_rigid_body_t *rigidBodyPtr,
+    PhysicsEngine::RigidBodyFollowBoneType followType) NANOEM_DECL_NOEXCEPT
 {
-    nanoem_parameter_assert(body, "must not be nullptr");
-    const nanoem_model_rigid_body_transform_type_t transformType = nanoemModelRigidBodyGetTransformType(body);
+    nanoem_parameter_assert(rigidBodyPtr, "must not be nullptr");
+    const nanoem_model_rigid_body_transform_type_t transformType = nanoemModelRigidBodyGetTransformType(rigidBodyPtr);
     if ((transformType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_SIMULATION_TO_BONE ||
             transformType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_ORIENTATION_AND_SIMULATION_TO_BONE) &&
         !isKinematic()) {
-        const nanoem_model_bone_t *bonePtr = nanoemModelRigidBodyGetBoneObject(body);
+        const nanoem_model_bone_t *bonePtr = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
         if (Bone *bone = Bone::cast(bonePtr)) {
-            const nanoem_model_rigid_body_transform_type_t type = nanoemModelRigidBodyGetTransformType(body);
+            const nanoem_model_rigid_body_transform_type_t type = nanoemModelRigidBodyGetTransformType(rigidBodyPtr);
 #if 1
             Matrix4x4 worldTransform, initialTransform;
             nanoem_physics_motion_state_t *state = m_physicsEngine->motionState(m_physicsRigidBody);
@@ -164,12 +164,12 @@ RigidBody::synchronizeTransformFeedbackFromSimulation(
 }
 
 void
-RigidBody::synchronizeTransformFeedbackToSimulation(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT
+RigidBody::synchronizeTransformFeedbackToSimulation(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
 {
-    nanoem_parameter_assert(body, "must not be nullptr");
-    const nanoem_model_rigid_body_transform_type_t transformType = nanoemModelRigidBodyGetTransformType(body);
+    nanoem_parameter_assert(rigidBodyPtr, "must not be nullptr");
+    const nanoem_model_rigid_body_transform_type_t transformType = nanoemModelRigidBodyGetTransformType(rigidBodyPtr);
     if (transformType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION || isKinematic()) {
-        if (const Bone *bone = Bone::cast(nanoemModelRigidBodyGetBoneObject(body))) {
+        if (const Bone *bone = Bone::cast(nanoemModelRigidBodyGetBoneObject(rigidBodyPtr))) {
             nanoem_physics_motion_state_t *state = m_physicsEngine->motionState(m_physicsRigidBody);
             bx::float4x4_t initialTransform, worldTransform;
             m_physicsEngine->getInitialTransform(state, reinterpret_cast<nanoem_f32_t *>(&initialTransform));
@@ -182,7 +182,7 @@ RigidBody::synchronizeTransformFeedbackToSimulation(const nanoem_model_rigid_bod
 }
 
 void
-RigidBody::applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT
+RigidBody::applyAllForces(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
 {
     if (EnumUtils::isEnabled(kPrivateStateAllForcesShouldReset, m_states)) {
         m_physicsEngine->resetStates(m_physicsRigidBody);
@@ -194,7 +194,7 @@ RigidBody::applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOE
         }
         if (m_localTorqueForce.second) {
             Matrix3x3 value;
-            getLocalOrientationMatrix(body, value);
+            getLocalOrientationMatrix(rigidBodyPtr, value);
             m_physicsEngine->applyTorqueImpulse(m_physicsRigidBody, glm::value_ptr(value * m_localTorqueForce.first));
             m_localTorqueForce = tinystl::make_pair(Constants::kZeroV3, false);
         }
@@ -204,7 +204,7 @@ RigidBody::applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOE
         }
         if (m_localVelocityForce.second) {
             Matrix3x3 value;
-            getLocalOrientationMatrix(body, value);
+            getLocalOrientationMatrix(rigidBodyPtr, value);
             m_physicsEngine->applyVelocityImpulse(
                 m_physicsRigidBody, glm::value_ptr(value * m_localVelocityForce.first));
             m_localVelocityForce = tinystl::make_pair(Constants::kZeroV3, false);
@@ -214,10 +214,10 @@ RigidBody::applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOE
 }
 
 void
-RigidBody::initializeTransformFeedback(const nanoem_model_rigid_body_t *body)
+RigidBody::initializeTransformFeedback(const nanoem_model_rigid_body_t *rigidBodyPtr)
 {
-    nanoem_parameter_assert(body, "must not be nullptr");
-    if (const Bone *bone = Bone::cast(nanoemModelRigidBodyGetBoneObject(body))) {
+    nanoem_parameter_assert(rigidBodyPtr, "must not be nullptr");
+    if (const Bone *bone = Bone::cast(nanoemModelRigidBodyGetBoneObject(rigidBodyPtr))) {
         nanoem_physics_motion_state_t *state = m_physicsEngine->motionState(m_physicsRigidBody);
         bx::float4x4_t initialTransform, worldTransform;
         m_physicsEngine->getInitialTransform(state, reinterpret_cast<nanoem_f32_t *>(&initialTransform));
@@ -230,15 +230,15 @@ RigidBody::initializeTransformFeedback(const nanoem_model_rigid_body_t *body)
 }
 
 void
-RigidBody::resetTransformFeedback(const nanoem_model_rigid_body_t *body)
+RigidBody::resetTransformFeedback(const nanoem_model_rigid_body_t *rigidBodyPtr)
 {
-    if (const model::Bone *bone = model::Bone::cast(nanoemModelRigidBodyGetBoneObject(body))) {
+    if (const model::Bone *bone = model::Bone::cast(nanoemModelRigidBodyGetBoneObject(rigidBodyPtr))) {
         nanoem_physics_motion_state_t *state = m_physicsEngine->motionState(m_physicsRigidBody);
         bx::float4x4_t initialTransform, worldTransform;
         m_physicsEngine->getInitialTransform(state, reinterpret_cast<nanoem_f32_t *>(&initialTransform));
         const bx::float4x4_t skinningTransformMatrix = bone->skinningTransformMatrix();
         bx::float4x4_mul(&worldTransform, &initialTransform, &skinningTransformMatrix);
-        if (nanoemModelRigidBodyGetTransformType(body) ==
+        if (nanoemModelRigidBodyGetTransformType(rigidBodyPtr) ==
             NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION) {
             m_physicsEngine->setWorldTransform(
                 m_physicsRigidBody, reinterpret_cast<const nanoem_f32_t *>(&worldTransform));
@@ -325,15 +325,30 @@ RigidBody::forceActive()
 }
 
 int
-RigidBody::index(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT
+RigidBody::index(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(bodyPtr));
+    return nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(rigidBodyPtr));
+}
+
+const char *
+RigidBody::nameConstString(const nanoem_model_rigid_body_t *rigidBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const RigidBody *body = cast(rigidBodyPtr);
+    return body ? body->nameConstString() : placeHolder;
+}
+
+const char *
+RigidBody::canonicalNameConstString(
+    const nanoem_model_rigid_body_t *rigidBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const RigidBody *body = cast(rigidBodyPtr);
+    return body ? body->canonicalNameConstString() : placeHolder;
 }
 
 Vector3
-RigidBody::colorByShapeType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT
+RigidBody::colorByShapeType(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
 {
-    switch (nanoemModelRigidBodyGetShapeType(bodyPtr)) {
+    switch (nanoemModelRigidBodyGetShapeType(rigidBodyPtr)) {
     case NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_BOX: {
         return Vector3(0, 1, 1);
     }
@@ -349,9 +364,9 @@ RigidBody::colorByShapeType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DEC
 }
 
 Vector3
-RigidBody::colorByObjectType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT
+RigidBody::colorByObjectType(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
 {
-    switch (nanoemModelRigidBodyGetTransformType(bodyPtr)) {
+    switch (nanoemModelRigidBodyGetTransformType(rigidBodyPtr)) {
     case NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION: {
         return Vector3(0, 1, 1);
     }
@@ -367,9 +382,9 @@ RigidBody::colorByObjectType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DE
 }
 
 RigidBody *
-RigidBody::cast(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT
+RigidBody::cast(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelRigidBodyGetModelObject(body);
+    const nanoem_model_object_t *object = nanoemModelRigidBodyGetModelObject(rigidBodyPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<RigidBody *>(nanoemUserDataGetOpaqueData(userData));
 }

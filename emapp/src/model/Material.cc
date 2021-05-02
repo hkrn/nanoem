@@ -241,6 +241,21 @@ Material::index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
     return nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
 }
 
+const char *
+Material::nameConstString(const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Material *material = cast(materialPtr);
+    return material ? material->nameConstString() : placeHolder;
+}
+
+const char *
+Material::canonicalNameConstString(
+    const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Material *material = cast(materialPtr);
+    return material ? material->canonicalNameConstString() : placeHolder;
+}
+
 Material *
 Material::cast(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
 {

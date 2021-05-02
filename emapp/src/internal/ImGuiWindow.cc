@@ -2771,8 +2771,7 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project, const I
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio(),
                        invertDeviceScaleRatio = 1.0f / deviceScaleRatio;
     if (const Model *activeModel = project->activeModel()) {
-        const model::Bone *activeBone = model::Bone::cast(activeModel->activeBone());
-        ImGui::Text("%s: %s", activeModel->nameConstString(), activeBone ? activeBone->nameConstString() : nullptr);
+        ImGui::Text("%s: %s", activeModel->nameConstString(), model::Bone::nameConstString(activeModel->activeBone(), nullptr));
     }
     else if (const Accessory *activeAccessory = project->activeAccessory()) {
         ImGui::Text("%s: %s", tr("nanoem.gui.panel.model.default"), activeAccessory->nameConstString());

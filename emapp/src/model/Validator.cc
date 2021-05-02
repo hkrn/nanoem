@@ -14,139 +14,14 @@
 #include "emapp/model/Joint.h"
 #include "emapp/model/Label.h"
 #include "emapp/model/SoftBody.h"
+#include "emapp/model/Vertex.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace model {
 namespace {
 
-class PrivateUtils : private NonCopyable {
-public:
-    static int
-    index(const nanoem_model_vertex_t *vertexPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
-    }
-    static int
-    index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
-    }
-    static int
-    index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
-    }
-    static int
-    index(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morphPtr));
-    }
-    static int
-    index(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(labelPtr));
-    }
-    static int
-    index(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelRigidBodyGetModelObject(rigidBodyPtr));
-    }
-    static int
-    index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(jointPtr));
-    }
-    static int
-    index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
-    {
-        return nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(softBodyPtr));
-    }
-    static const char *
-    nameConstString(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Material *material = model::Material::cast(materialPtr);
-        return material ? material->nameConstString() : "(unknown)";
-    }
-    static const char *
-    nameConstString(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Bone *bone = model::Bone::cast(bonePtr);
-        return bone ? bone->nameConstString() : "(unknown)";
-    }
-    static const char *
-    nameConstString(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Morph *morph = model::Morph::cast(morphPtr);
-        return morph ? morph->nameConstString() : "(unknown)";
-    }
-    static const char *
-    nameConstString(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Label *label = model::Label::cast(labelPtr);
-        return label ? label->nameConstString() : "(unknown)";
-    }
-    static const char *
-    nameConstString(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
-        return rigidBody ? rigidBody->nameConstString() : "(unknown)";
-    }
-    static const char *
-    nameConstString(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Joint *joint = model::Joint::cast(jointPtr);
-        return joint ? joint->nameConstString() : "(unknown)";
-    }
-    static const char *
-    nameConstString(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
-        return softBody ? softBody->nameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Material *material = model::Material::cast(materialPtr);
-        return material ? material->canonicalNameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Bone *bone = model::Bone::cast(bonePtr);
-        return bone ? bone->canonicalNameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Morph *morph = model::Morph::cast(morphPtr);
-        return morph ? morph->canonicalNameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Label *label = model::Label::cast(labelPtr);
-        return label ? label->canonicalNameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
-        return rigidBody ? rigidBody->canonicalNameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::Joint *joint = model::Joint::cast(jointPtr);
-        return joint ? joint->canonicalNameConstString() : "(unknown)";
-    }
-    static const char *
-    canonicalNameConstString(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
-    {
-        const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);
-        return softBody ? softBody->canonicalNameConstString() : "(unknown)";
-    }
-};
+static const char kUnknownName[] = "(unknown)";
 
 } /* anonymous */
 
@@ -186,28 +61,28 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     }
     case kMessageTypeVertexNormalInvalid: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.vertex.normal.invalid"),
-            PrivateUtils::index(diag.u.m_vertexPtr));
+            model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
     case kMessageTypeVertexTexCoordOutOfBound: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.vertex.texcoord.oob"),
-            PrivateUtils::index(diag.u.m_vertexPtr));
+            model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
     case kMessageTypeVertexNullBoneObject: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.vertex.bone.null"),
-            PrivateUtils::index(diag.u.m_vertexPtr));
+            model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
     case kMessageTypeVertexBoneWeightNotNormalized: {
         StringUtils::format(text, "* %s: %d\n",
             translator->translate("nanoem.model.validator.vertex.weight.not-normalized"),
-            PrivateUtils::index(diag.u.m_vertexPtr));
+            model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
     case kMessageTypeVertexInvalidType: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.vertex.type.invalid"),
-            PrivateUtils::index(diag.u.m_vertexPtr));
+            model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
     case kMessageTypeVertexIndexNotTriangulated: {
@@ -224,187 +99,187 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     }
     case kMessageTypeMaterialEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.material.name.empty"),
-            PrivateUtils::index(diag.u.m_materialPtr));
+            model::Material::index(diag.u.m_materialPtr));
         break;
     }
     case kMessageTypeMaterialDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.material.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_materialPtr));
+            model::Material::canonicalNameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialAmbientColorOutOfBound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.ambient.color.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialDiffuseColorOutOfBound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.diffuse.color.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialDiffuseOpacityOutOfBound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.diffuse.opacity.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialSpecularColorOutOfBound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.specular.color.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialEdgeColorOutOfBound: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.material.edge.color.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialEdgeOpacityOutOfBound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.edge.opacity.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialDiffuseTextureNotFound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.texture.diffuse.not-found"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialSphereMapTextureNotFound: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.material.texture.sphere-map.not-found"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialToonTextureNotFound: {
         StringUtils::format(text, "* %s:%s\n",
             translator->translate("nanoem.model.validator.material.texture.toon.not-found"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeMaterialVertexIndexOutOfBound: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.material.face.oob"),
-            PrivateUtils::nameConstString(diag.u.m_materialPtr));
+            model::Material::nameConstString(diag.u.m_materialPtr, kUnknownName));
         break;
     }
     case kMessageTypeBoneTooLongName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.name.too-long"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_bonePtr));
+            model::Bone::canonicalNameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
     case kMessageTypeBoneEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.bone.name.empty"),
-            PrivateUtils::index(diag.u.m_bonePtr));
+            model::Bone::index(diag.u.m_bonePtr));
         break;
     }
     case kMessageTypeBoneDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_bonePtr));
+            model::Bone::canonicalNameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
     case kMessageTypeBoneInherentBoneNullBoneObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.inherent.null"),
-            PrivateUtils::nameConstString(diag.u.m_bonePtr));
+            model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
     case kMessageTypeBoneFixedAxisNotNormalized: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.bone.fixed-axis.not-normalized"),
-            PrivateUtils::nameConstString(diag.u.m_bonePtr));
+            model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
     case kMessageTypeMorphTooLongName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.morph.name.too-long"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_morphPtr));
+            model::Morph::canonicalNameConstString(diag.u.m_morphPtr, kUnknownName));
         break;
     }
     case kMessageTypeMorphEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.morph.name.empty"),
-            PrivateUtils::index(diag.u.m_morphPtr));
+            model::Morph::index(diag.u.m_morphPtr));
         break;
     }
     case kMessageTypeMorphDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.morph.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_morphPtr));
+            model::Morph::canonicalNameConstString(diag.u.m_morphPtr, kUnknownName));
         break;
     }
     case kMessageTypeLabelEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.label.name.empty"),
-            PrivateUtils::index(diag.u.m_labelPtr));
+            model::Label::index(diag.u.m_labelPtr));
         break;
     }
     case kMessageTypeLabelDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n",
             translator->translate("nanoem.model.validator.label.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_labelPtr));
+            model::Label::canonicalNameConstString(diag.u.m_labelPtr, kUnknownName));
         break;
     }
     case kMessageTypeLabelEmptyItems: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.empty"),
-            PrivateUtils::nameConstString(diag.u.m_labelPtr));
+            model::Label::nameConstString(diag.u.m_labelPtr, kUnknownName));
         break;
     }
     case kMessageTypeLabelItemNullBoneObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.item.bone.null"),
-            PrivateUtils::nameConstString(diag.u.m_labelPtr));
+            model::Label::nameConstString(diag.u.m_labelPtr, kUnknownName));
         break;
     }
     case kMessageTypeLabelItemNullMorphObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.item.morph.null"),
-            PrivateUtils::nameConstString(diag.u.m_labelPtr));
+            model::Label::nameConstString(diag.u.m_labelPtr, kUnknownName));
         break;
     }
     case kMessageTypeRigidBodyEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.rigid-body.name.empty"),
-            PrivateUtils::index(diag.u.m_rigidBodyPtr));
+            model::RigidBody::index(diag.u.m_rigidBodyPtr));
         break;
     }
     case kMessageTypeRigidBodyDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.rigid-body.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_rigidBodyPtr));
+            model::RigidBody::canonicalNameConstString(diag.u.m_rigidBodyPtr, kUnknownName));
         break;
     }
     case kMessageTypeRigidBodyNullBoneObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.rigid-body.bone.null"),
-            PrivateUtils::nameConstString(diag.u.m_rigidBodyPtr));
+            model::RigidBody::nameConstString(diag.u.m_rigidBodyPtr, kUnknownName));
         break;
     }
     case kMessageTypeJointEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.joint.name.empty"),
-            PrivateUtils::index(diag.u.m_jointPtr));
+            model::Joint::index(diag.u.m_jointPtr));
         break;
     }
     case kMessageTypeJointDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.joint.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_jointPtr));
+            model::Joint::canonicalNameConstString(diag.u.m_jointPtr, kUnknownName));
         break;
     }
     case kMessageTypeJointRigidBodyANullObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.joint.rigid-body-a.null"),
-            PrivateUtils::nameConstString(diag.u.m_jointPtr));
+            model::Joint::nameConstString(diag.u.m_jointPtr, kUnknownName));
         break;
     }
     case kMessageTypeJointRigidBodyBNullObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.joint.rigid-body-b.null"),
-            PrivateUtils::nameConstString(diag.u.m_jointPtr));
+            model::Joint::nameConstString(diag.u.m_jointPtr, kUnknownName));
         break;
     }
     case kMessageTypeSoftBodyEmptyName: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.soft-body.name.empty"),
-            PrivateUtils::index(diag.u.m_softBodyPtr));
+            model::SoftBody::index(diag.u.m_softBodyPtr));
         break;
     }
     case kMessageTypeSoftBodyDuplicatedName: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.soft-body.name.duplicated"),
-            PrivateUtils::canonicalNameConstString(diag.u.m_softBodyPtr));
+            model::SoftBody::canonicalNameConstString(diag.u.m_softBodyPtr, kUnknownName));
         break;
     }
     case kMessageTypeSoftBodyNullMaterialObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.soft-body.material.null"),
-            PrivateUtils::nameConstString(diag.u.m_softBodyPtr));
+            model::SoftBody::nameConstString(diag.u.m_softBodyPtr, kUnknownName));
         break;
     }
     default:

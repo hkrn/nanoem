@@ -457,6 +457,20 @@ Bone::index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
     return nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
 }
 
+const char *
+Bone::nameConstString(const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Bone *bone = cast(bonePtr);
+    return bone ? bone->nameConstString() : placeHolder;
+}
+
+const char *
+Bone::canonicalNameConstString(const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Bone *bone = cast(bonePtr);
+    return bone ? bone->canonicalNameConstString() : placeHolder;
+}
+
 Matrix3x3
 Bone::localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {

@@ -34,6 +34,20 @@ Joint::index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
     return nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(jointPtr));
 }
 
+const char *
+Joint::nameConstString(const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Joint *joint = cast(jointPtr);
+    return joint ? joint->nameConstString() : placeHolder;
+}
+
+const char *
+Joint::canonicalNameConstString(const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Joint *joint = cast(jointPtr);
+    return joint ? joint->canonicalNameConstString() : placeHolder;
+}
+
 Joint *
 Joint::cast(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
 {

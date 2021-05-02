@@ -268,8 +268,7 @@ Model::VertexUnit::prepareSkinning(
             const Int32HashMap &hashMap = it->second;
             nanoem_f32_t values[4];
             for (int i = 0; i < 4; i++) {
-                int vertexBoneIndex = nanoemModelObjectGetIndex(
-                    nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertex->data(), i)));
+                int vertexBoneIndex = model::Bone::index(nanoemModelVertexGetBoneObject(vertex->data(), i));
                 Int32HashMap::const_iterator it2 = hashMap.find(vertexBoneIndex);
                 values[i] = nanoem_f32_t(it2 != hashMap.end() ? it2->second : -1);
             }
@@ -4696,8 +4695,7 @@ void
 Model::setActiveBone(const nanoem_model_bone_t *value)
 {
     if (m_activeBonePairPtr.first != value) {
-        const model::Bone *bone = model::Bone::cast(value);
-        m_project->eventPublisher()->publishSetActiveBoneEvent(this, bone ? bone->nameConstString() : nullptr);
+        m_project->eventPublisher()->publishSetActiveBoneEvent(this, model::Bone::nameConstString(value, nullptr));
         m_activeBonePairPtr.first = value;
     }
 }
@@ -4745,8 +4743,7 @@ Model::setActiveMorph(nanoem_model_morph_category_t category, const nanoem_model
 {
     if (category >= NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM && category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM &&
         m_activeMorphPtr[category] != value) {
-        const model::Morph *morph = model::Morph::cast(value);
-        m_project->eventPublisher()->publishSetActiveMorphEvent(this, morph ? morph->nameConstString() : nullptr);
+        m_project->eventPublisher()->publishSetActiveMorphEvent(this, model::Morph::nameConstString(value, nullptr));
         m_activeMorphPtr[category] = value;
     }
 }

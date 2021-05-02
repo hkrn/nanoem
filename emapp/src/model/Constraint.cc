@@ -46,10 +46,32 @@ Constraint::~Constraint() NANOEM_DECL_NOEXCEPT
     m_effectorIterationResult.clear();
 }
 
-Constraint *
-Constraint::cast(const nanoem_model_constraint_t *constraint) NANOEM_DECL_NOEXCEPT
+int
+Constraint::index(const nanoem_model_constraint_t *constraintPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelConstraintGetModelObject(constraint);
+    return nanoemModelObjectGetIndex(nanoemModelConstraintGetModelObject(constraintPtr));
+}
+
+const char *
+Constraint::nameConstString(
+    const nanoem_model_constraint_t *constraintPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Constraint *constraint = cast(constraintPtr);
+    return constraint ? constraint->nameConstString() : placeHolder;
+}
+
+const char *
+Constraint::canonicalNameConstString(
+    const nanoem_model_constraint_t *constraintPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Constraint *constraint = cast(constraintPtr);
+    return constraint ? constraint->canonicalNameConstString() : placeHolder;
+}
+
+Constraint *
+Constraint::cast(const nanoem_model_constraint_t *constraintPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelConstraintGetModelObject(constraintPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Constraint *>(nanoemUserDataGetOpaqueData(userData));
 }
@@ -109,28 +131,27 @@ Constraint::hasUnitXConstraint(
 }
 
 void
-Constraint::bind(nanoem_model_constraint_t *constraint)
+Constraint::bind(nanoem_model_constraint_t *constraintPtr)
 {
-    nanoem_parameter_assert(constraint, "must not be nullptr");
+    nanoem_parameter_assert(constraintPtr, "must not be nullptr");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_user_data_t *userData = nanoemUserDataCreate(&status);
     nanoemUserDataSetOnDestroyModelObjectCallback(userData, &Constraint::destroy);
     nanoemUserDataSetOpaqueData(userData, this);
-    nanoemModelObjectSetUserData(nanoemModelConstraintGetModelObjectMutable(constraint), userData);
+    nanoemModelObjectSetUserData(nanoemModelConstraintGetModelObjectMutable(constraintPtr), userData);
 }
 
 void
-Constraint::resetLanguage(const nanoem_model_constraint_t *constraint, nanoem_unicode_string_factory_t *factory,
+Constraint::resetLanguage(const nanoem_model_constraint_t *constraintPtr, nanoem_unicode_string_factory_t *factory,
     nanoem_language_type_t language)
 {
-    const nanoem_model_bone_t *targetBone = nanoemModelConstraintGetTargetBoneObject(constraint);
+    const nanoem_model_bone_t *targetBone = nanoemModelConstraintGetTargetBoneObject(constraintPtr);
     StringUtils::getUtf8String(nanoemModelBoneGetName(targetBone, language), factory, m_name);
     if (m_canonicalName.empty()) {
         StringUtils::getUtf8String(
             nanoemModelBoneGetName(targetBone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(m_canonicalName, "Constraint%d",
-                nanoemModelObjectGetIndex(nanoemModelConstraintGetModelObject(constraint)));
+            StringUtils::format(m_canonicalName, "Constraint%d", index(constraintPtr));
         }
     }
     if (m_name.empty()) {
@@ -139,12 +160,12 @@ Constraint::resetLanguage(const nanoem_model_constraint_t *constraint, nanoem_un
 }
 
 void
-Constraint::initialize(const nanoem_model_constraint_t *constraint)
+Constraint::initialize(const nanoem_model_constraint_t *constraintPtr)
 {
-    nanoem_parameter_assert(constraint, "must not be nullptr");
+    nanoem_parameter_assert(constraintPtr, "must not be nullptr");
     nanoem_rsize_t numJoints;
-    nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraint, &numJoints);
-    nanoem_rsize_t numIterations = nanoem_rsize_t(glm::max(nanoemModelConstraintGetNumIterations(constraint), 0));
+    nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
+    nanoem_rsize_t numIterations = nanoem_rsize_t(glm::max(nanoemModelConstraintGetNumIterations(constraintPtr), 0));
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         nanoem_model_constraint_joint_t *joint = joints[i];
         m_jointIterationResult[joint].reserve(numIterations);
@@ -213,7 +234,7 @@ Constraint::setEnabled(bool value)
 }
 
 void
-Constraint::destroy(void *opaque, nanoem_model_object_t * /* constraint */) NANOEM_DECL_NOEXCEPT
+Constraint::destroy(void *opaque, nanoem_model_object_t * /* constraintPtr */) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(opaque, "must not be nullptr");
     Constraint *self = static_cast<Constraint *>(opaque);

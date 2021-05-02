@@ -64,6 +64,10 @@ public:
     Edge edge() const NANOEM_DECL_NOEXCEPT;
 
     static int index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static Material *cast(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT;
     static Material *create(sg_image fallbackTexture);
 
