@@ -2183,7 +2183,7 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
             model::Validator validator;
             model::Validator::DiagnosticsList diagnostics;
             const nanoem_u32_t filter = 0 | model::Validator::kSeverityTypeFatal |
-                model::Validator::kSeverityTypeError | model::Validator::kSeverityTypeWarning;
+                model::Validator::kSeverityTypeError;
             validator.validate(activeModel, filter, diagnostics);
             String text;
             if (diagnostics.empty()) {

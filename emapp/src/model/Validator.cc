@@ -442,19 +442,19 @@ Validator::validateAllMaterialObjects(const Model *model, nanoem_u32_t filter, D
         }
         if (const model::Material *material = model::Material::cast(materialPtr)) {
             if (const IImageView *view = material->diffuseImage()) {
-                if (!view->isFileExist() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
+                if (!view->isFileExist() && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
                     diag.m_message = kMessageTypeMaterialDiffuseTextureNotFound;
                     result.push_back(diag);
                 }
             }
             if (const IImageView *view = material->sphereMapImage()) {
-                if (!view->isFileExist() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
+                if (!view->isFileExist() && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
                     diag.m_message = kMessageTypeMaterialSphereMapTextureNotFound;
                     result.push_back(diag);
                 }
             }
             if (const IImageView *view = material->toonImage()) {
-                if (!view->isFileExist() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
+                if (!view->isFileExist() && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
                     diag.m_message = kMessageTypeMaterialToonTextureNotFound;
                     result.push_back(diag);
                 }
@@ -627,7 +627,7 @@ Validator::validateAllRigidBodyObjects(const Model *model, nanoem_u32_t filter, 
             result.push_back(diag);
         }
         if (nanoemModelRigidBodyGetBoneObject(rigidBodyPtr) == nullptr &&
-            testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
+            testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeRigidBodyNullBoneObject;
             result.push_back(diag);
         }
