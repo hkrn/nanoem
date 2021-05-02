@@ -316,7 +316,8 @@ void
 ModelParameterDialog::layoutVertexBoneSelection(const char *label, nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t i,
     nanoem_model_bone_t *const *bones, nanoem_rsize_t numBones)
 {
-    if (ImGui::BeginCombo(label, model::Bone::nameConstString(nanoemModelVertexGetBoneObject(vertexPtr, i), "(none)"))) {
+    if (ImGui::BeginCombo(
+            label, model::Bone::nameConstString(nanoemModelVertexGetBoneObject(vertexPtr, i), "(none)"))) {
         for (nanoem_rsize_t j = 0; j < numBones; j++) {
             const nanoem_model_bone_t *bonePtr = bones[j];
             const model::Bone *bone = model::Bone::cast(bonePtr);

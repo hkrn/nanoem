@@ -32,8 +32,7 @@ SoftBody::index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEP
 }
 
 const char *
-SoftBody::nameConstString(
-    const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+SoftBody::nameConstString(const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
 {
     const SoftBody *body = cast(softBodyPtr);
     return body ? body->nameConstString() : placeHolder;

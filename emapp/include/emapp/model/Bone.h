@@ -69,7 +69,8 @@ public:
     static bool isMovable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
     static bool isRotateable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
     static int index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
-    static const char *nameConstString(const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static const char *canonicalNameConstString(
         const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static Matrix3x3 localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;

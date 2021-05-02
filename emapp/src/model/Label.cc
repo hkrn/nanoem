@@ -58,8 +58,7 @@ Label::nameConstString(const nanoem_model_label_t *labelPtr, const char *placeHo
 }
 
 const char *
-Label::canonicalNameConstString(
-    const nanoem_model_label_t* labelPtr, const char* placeHolder) NANOEM_DECL_NOEXCEPT
+Label::canonicalNameConstString(const nanoem_model_label_t *labelPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
 {
     const Label *label = cast(labelPtr);
     return label ? label->canonicalNameConstString() : placeHolder;
