@@ -435,7 +435,7 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     ImGui::SameLine();
     ImGui::Text("%lu / %lu", m_vertexIndex + 1, numVertices);
     ImGui::BeginChild(
-        "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
+        "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
     ImGuiListClipper clipper;
     nanoem_model_vertex_t *hoveredVertexPtr = nullptr;
     bool up, down;
@@ -492,26 +492,15 @@ ModelParameterDialog::layoutAllVertices(Project *project)
         }
     }
     selection->setHoveredVertex(hoveredVertexPtr);
-    ImGui::EndChild();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, false)) {
-    }
-    ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, false)) {
-    }
-    ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, false)) {
-    }
-    ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, false)) {
-    }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numVertices > 0 && m_vertexIndex < numVertices) {
         nanoem_model_vertex_t *vertexPtr = vertices[m_vertexIndex];
         layoutVertexPropertyPane(vertexPtr);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -730,7 +719,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     ImGui::SameLine();
     ImGui::Text("%lu / %lu", m_faceIndex + 1, numFaces);
     ImGui::BeginChild(
-        "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
+        "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
     ImGuiListClipper clipper;
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
@@ -789,19 +778,8 @@ ModelParameterDialog::layoutAllFaces(Project *project)
             }
         }
     }
-    ImGui::EndChild();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, false)) {
-    }
-    ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, false)) {
-    }
-    ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, false)) {
-    }
-    ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0, false)) {
-    }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numFaces > 0 && m_faceIndex < numFaces) {
@@ -811,7 +789,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
         const Vector3UI32 face(vertexIndex0, vertexIndex1, vertexIndex2);
         layoutFacePropertyPane(face);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -1065,7 +1043,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
         }
     }
     selection->setHoveredMaterial(hoveredMaterialPtr);
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, false)) {
     }
     ImGui::SameLine();
@@ -1085,14 +1063,14 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
         undo_command_t *command = command::MoveMaterialDownCommand::create(project, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numMaterials > 0 && m_materialIndex < numMaterials) {
         nanoem_model_material_t *materialPtr = materials[m_materialIndex];
         layoutMaterialPropertyPane(materialPtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -1737,7 +1715,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
         }
     }
     selection->setHoveredBone(hoveredBonePtr);
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("bone-create-menu");
     }
@@ -1786,14 +1764,14 @@ ModelParameterDialog::layoutAllBones(Project *project)
         undo_command_t *command = command::MoveBoneDownCommand::create(project, bones, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numBones > 0 && m_boneIndex < numBones) {
         nanoem_model_bone_t *bonePtr = bones[m_boneIndex];
         layoutBonePropertyPane(bonePtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -2452,7 +2430,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
         }
     }
     selection->setHoveredMorph(hoveredMorphPtr);
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("morph-create-menu");
     }
@@ -2592,14 +2570,14 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
         undo_command_t *command = command::MoveMorphDownCommand::create(project, morphs, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numMorphs > 0 && m_morphIndex < numMorphs) {
         nanoem_model_morph_t *morphPtr = morphs[m_morphIndex];
         layoutMorphPropertyPane(morphPtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -3500,7 +3478,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
         }
     }
     selection->setHoveredLabel(hoveredLabelPtr);
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     const nanoem_model_label_t *selectedLabel = numLabels > 0 ? labels[m_labelIndex] : nullptr;
     bool isEditable = !(nanoemModelLabelIsSpecial(selectedLabel) &&
         StringUtils::equals(model::Label::cast(selectedLabel)->nameConstString(), "Root"));
@@ -3552,14 +3530,14 @@ ModelParameterDialog::layoutAllLabels(Project *project)
         undo_command_t *command = command::MoveLabelDownCommand::create(project, labels, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numLabels > 0 && m_labelIndex < numLabels) {
         nanoem_model_label_t *labelPtr = labels[m_labelIndex];
         layoutLabelPropertyPane(labelPtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -3823,7 +3801,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             }
         }
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     bool hovered = ImGui::IsItemHovered();
     if (hovered && hoveredRigidBodyPtr) {
         selection->setHoveredRigidBody(hoveredRigidBodyPtr);
@@ -3882,14 +3860,14 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         undo_command_t *command = command::MoveRigidBodyDownCommand::create(project, rigidBodies, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies) {
         nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[m_rigidBodyIndex];
         layoutRigidBodyPropertyPane(rigidBodyPtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -4220,7 +4198,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     else if (!hovered && !hoveredJointPtr) {
         selection->setHoveredJoint(nullptr);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("rigid-body-create-menu");
@@ -4270,14 +4248,14 @@ ModelParameterDialog::layoutAllJoints(Project *project)
         undo_command_t *command = command::MoveJointDownCommand::create(project, joints, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numJoints > 0 && m_jointIndex < numJoints) {
         nanoem_model_joint_t *jointPtr = joints[m_jointIndex];
         layoutJointPropertyPane(jointPtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
@@ -4513,7 +4491,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
         }
     }
     selection->setHoveredSoftBody(hoveredSoftBodyPtr);
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane-inner */
     softBodies = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("rigid-body-create-menu");
@@ -4565,14 +4543,14 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
         undo_command_t *command = command::MoveSoftBodyDownCommand::create(project, softBodies, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numSoftBodies > 0 && m_softBodyIndex < numSoftBodies) {
         nanoem_model_soft_body_t *softBodyPtr = softBodies[m_softBodyIndex];
         layoutSoftBodyPropertyPane(softBodyPtr, project);
     }
-    ImGui::EndChild();
+    ImGui::EndChild(); /* right-pane */
 }
 
 void
