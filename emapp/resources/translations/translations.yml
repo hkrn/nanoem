@@ -1943,6 +1943,18 @@
   phrase:
     en_US: 'Select All QDEF Vertices'
     ja_JP: '全ての QDEF の頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-faces
+  phrase:
+    en_US: 'Select All Faces from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれる面を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs
+  phrase:
+    en_US: 'Select All Vertex Morphs from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれる頂点モーフを選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-texture-morphs
+  phrase:
+    en_US: 'Select All Texture Morphs from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれるテクスチャモーフを選択'
 - key: nanoem.gui.model.edit.action.masking.vertex.enable-all
   phrase:
     en_US: 'Mask All Selected Vertices'
@@ -2011,6 +2023,18 @@
   phrase:
     en_US: 'Select All Bones'
     ja_JP: '全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-vertices
+  phrase:
+    en_US: 'Select All Vertices from All Selected Bones'
+    ja_JP: '選択されたボーンが含まれる頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-morphs
+  phrase:
+    en_US: 'Select All Bone Morphs from All Selected Bones'
+    ja_JP: '選択されたボーンが含まれるボーンモーフを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-rigid-bodies
+  phrase:
+    en_US: 'Select All Rigid Bodies from All Selected Bones'
+    ja_JP: '選択されたボーンが含まれる剛体を選択'
 - key: nanoem.gui.model.edit.action.selection.bone.enable-all-visible
   phrase:
     en_US: 'Select All Visible Bones'
