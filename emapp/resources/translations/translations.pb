@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -616,55 +616,8 @@ $nanoem.window.dialog.buttons.discard破棄6
 %nanoem.window.effect.render-target.%dレンダーターゲットC
 $nanoem.window.progress.capture-image%s に画像を出力中...L
 $nanoem.window.progress.capture-video$%s に動画を出力中... (%u FPS)/
-nanoem.window.scheme.finderFinder で開く0
-nanoem.window.title.accessoryアクセサリ#
-nanoem.window.title.audio音源8
-nanoem.window.title.audio-video音源と背景動画"
-nanoem.window.title.back戻る%
-nanoem.window.title.bone	ボーン'
-nanoem.window.title.camera	カメラ-
-nanoem.window.title.cancelキャンセル
-nanoem.window.title.cd-up..0
- nanoem.window.title.change-order描画順序?
-!nanoem.window.title.confirm.modelモデル「%s」の確認$
-nanoem.window.title.delete削除Q
-#nanoem.window.title.remove-keyframe*選択されたキーフレームを削除%
-nanoem.window.title.execute実行&
-nanoem.window.title.reset	初期化,
-nanoem.window.title.jointジョイント&
-nanoem.window.title.label	表示枠&
-nanoem.window.title.light	照明光&
-nanoem.window.title.material材質&
-nanoem.window.title.model	モデル&
-nanoem.window.title.morph	モーフ$
-nanoem.window.title.null(なし)"
-nanoem.window.title.open開く7
-nanoem.window.title.open-audio音源の読み込みQ
-&nanoem.window.title.open-camera-motion'カメラモーションの読み込みA
-nanoem.window.title.open-effectエフェクトの読み込みP
-%nanoem.window.title.open-light-motion'照明光モーションの読み込みT
-(nanoem.window.title.open-model-accessory(モデル/アクセサリの読み込みP
-%nanoem.window.title.open-model-motion'モデルモーションの読み込みA
-nanoem.window.title.open-motionモーションの読み込みE
- nanoem.window.title.open-project!プロジェクトの読み込みA
-nanoem.window.title.open-scriptスクリプトの読み込みB
- nanoem.window.title.open-textureテクスチャの読み込み7
-nanoem.window.title.open-video動画の読み込み(
-nanoem.window.title.preference設定1
-nanoem.window.title.projectプロジェクト%
-nanoem.window.title.redo	リドゥD
-%nanoem.window.title.register-keyframeキーフレームを登録(
-nanoem.window.title.rigid-body剛体"
-nanoem.window.title.save保存%
-nanoem.window.title.save-as保存K
-&nanoem.window.title.save-camera-motion!カメラモーションの保存J
-%nanoem.window.title.save-light-motion!照明光モーションの保存J
-%nanoem.window.title.save-model-motion!モデルモーションの保存?
- nanoem.window.title.save-projectプロジェクトの保存(
-nanoem.window.title.undoアンドゥ+
-nanoem.window.title.unknown（不明）$
-nanoem.window.title.vertex頂点#
-nanoem.window.title.video動画*
+nanoem.window.scheme.finderFinder で開く?
+!nanoem.window.title.confirm.modelモデル「%s」の確認*
 nanoem.menu.file.titleファイル(&F)4
 nanoem.menu.file.new新規プロジェクト(&N)8
 nanoem.menu.file.openプロジェクトを開く(&O).
@@ -1066,7 +1019,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1699,58 +1652,8 @@ $nanoem.window.dialog.buttons.discardDiscard-
 %nanoem.window.effect.render-target.%dRender Target@
 $nanoem.window.progress.capture-imageCapturing Image as %s...I
 $nanoem.window.progress.capture-video!Capturing Video as %s... (%u FPS)
-nanoem.window.scheme.finder *
-nanoem.window.title.accessory	Accessory)
-nanoem.window.title.audioAudio SourceD
-nanoem.window.title.audio-video!Audio Source and Background Video 
-nanoem.window.title.backBack 
-nanoem.window.title.boneBone$
-nanoem.window.title.cameraCamera$
-nanoem.window.title.cancelCancel
-nanoem.window.title.cd-up..1
- nanoem.window.title.change-orderDrawing Order:
-!nanoem.window.title.confirm.modelConfirm Loading of %s$
-nanoem.window.title.deleteDeleteB
-#nanoem.window.title.remove-keyframeRemove Selected Keyframe(s)&
-nanoem.window.title.executeExecute'
-nanoem.window.title.reset
-Initialize"
-nanoem.window.title.jointJoint"
-nanoem.window.title.labelLabel"
-nanoem.window.title.lightLight(
-nanoem.window.title.materialMaterial"
-nanoem.window.title.modelModel"
-nanoem.window.title.morphMorph"
-nanoem.window.title.null(none) 
-nanoem.window.title.openOpen3
-nanoem.window.title.open-audioOpen Audio Source<
-&nanoem.window.title.open-camera-motionOpen Camera Motion.
-nanoem.window.title.open-effectOpen Effect:
-%nanoem.window.title.open-light-motionOpen Light Motion@
-(nanoem.window.title.open-model-accessoryOpen Model/Accessory:
-%nanoem.window.title.open-model-motionOpen Model Motion.
-nanoem.window.title.open-motionOpen Motion0
- nanoem.window.title.open-projectOpen Project.
-nanoem.window.title.open-scriptOpen Script0
- nanoem.window.title.open-textureOpen Texture,
-nanoem.window.title.open-video
-Open Video-
-nanoem.window.title.preferencePreferences&
-nanoem.window.title.projectProject 
-nanoem.window.title.redoRedoK
-%nanoem.window.title.register-keyframe"Register Keyframe at Current Frame,
-nanoem.window.title.rigid-body
-Rigid Body 
-nanoem.window.title.saveSave&
-nanoem.window.title.save-asSave as<
-&nanoem.window.title.save-camera-motionSave Camera Motion:
-%nanoem.window.title.save-light-motionSave Light Motion:
-%nanoem.window.title.save-model-motionSave Model Motion0
- nanoem.window.title.save-projectSave Project 
-nanoem.window.title.undoUndo(
-nanoem.window.title.unknown	(Unknown)$
-nanoem.window.title.vertexVertex"
-nanoem.window.title.videoVideo
+nanoem.window.scheme.finder :
+!nanoem.window.title.confirm.modelConfirm Loading of %s
 nanoem.menu.file.title&File$
 nanoem.menu.file.new&New Project&
 nanoem.menu.file.open&Open Project'
