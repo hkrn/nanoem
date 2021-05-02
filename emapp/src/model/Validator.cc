@@ -406,14 +406,12 @@ Validator::validateAllMaterialObjects(const Model *model, nanoem_u32_t filter, D
         const nanoem_unicode_string_t *name = nanoemModelMaterialGetName(materialPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_materialPtr = materialPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeMaterialEmptyName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
-        else if (!nameSet.insert(utf8Name).second) {
+        else if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeMaterialDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
         if (!validateColor(nanoemModelMaterialGetAmbientColor(materialPtr), kMessageTypeMaterialAmbientColorOutOfBound,
@@ -478,9 +476,8 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
         const nanoem_unicode_string_t *name = nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_bonePtr = bonePtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeBoneEmptyName;
-            diag.m_severity = kSeverityTypeError;
             result.push_back(diag);
         }
         else {
@@ -491,9 +488,8 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
                     result.push_back(diag);
                 }
             }
-            if (!nameSet.insert(utf8Name).second) {
+            if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
                 diag.m_message = kMessageTypeBoneDuplicatedName;
-                diag.m_severity = kSeverityTypeWarning;
                 result.push_back(diag);
             }
         }
@@ -518,9 +514,8 @@ Validator::validateAllMorphObjects(const Model *model, nanoem_u32_t filter, Diag
         const nanoem_unicode_string_t *name = nanoemModelMorphGetName(morphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_morphPtr = morphPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeMorphEmptyName;
-            diag.m_severity = kSeverityTypeError;
             result.push_back(diag);
         }
         else {
@@ -531,9 +526,8 @@ Validator::validateAllMorphObjects(const Model *model, nanoem_u32_t filter, Diag
                     result.push_back(diag);
                 }
             }
-            if (!nameSet.insert(utf8Name).second) {
+            if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
                 diag.m_message = kMessageTypeMorphDuplicatedName;
-                diag.m_severity = kSeverityTypeWarning;
                 result.push_back(diag);
             }
         }
@@ -554,14 +548,12 @@ Validator::validateAllLabelObjects(const Model *model, nanoem_u32_t filter, Diag
         const nanoem_unicode_string_t *name = nanoemModelLabelGetName(labelPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_labelPtr = labelPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeLabelEmptyName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
-        else if (!nameSet.insert(utf8Name).second) {
+        else if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeLabelDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
         nanoem_model_label_item_t *const *items = nanoemModelLabelGetAllItemObjects(labelPtr, &numItems);
@@ -610,14 +602,12 @@ Validator::validateAllRigidBodyObjects(const Model *model, nanoem_u32_t filter, 
         const nanoem_unicode_string_t *name = nanoemModelRigidBodyGetName(rigidBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_rigidBodyPtr = rigidBodyPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeRigidBodyEmptyName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
-        else if (!nameSet.insert(utf8Name).second) {
+        else if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeRigidBodyDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
         if (!validateEulerAngles(nanoemModelRigidBodyGetOrigin(rigidBodyPtr), filter, &diag)) {
@@ -648,14 +638,12 @@ Validator::validateAllJointObjects(const Model *model, nanoem_u32_t filter, Diag
         const nanoem_unicode_string_t *name = nanoemModelJointGetName(jointPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_jointPtr = jointPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeJointEmptyName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
-        else if (!nameSet.insert(utf8Name).second) {
+        else if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeJointDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
         if (nanoemModelJointGetRigidBodyAObject(jointPtr) == nullptr &&
@@ -709,14 +697,12 @@ Validator::validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, D
         const nanoem_unicode_string_t *name = nanoemModelSoftBodyGetName(softBodyPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         diag.u.m_softBodyPtr = softBodyPtr;
         StringUtils::getUtf8String(name, factory, utf8Name);
-        if (utf8Name.empty()) {
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeSoftBodyEmptyName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
-        else if (!nameSet.insert(utf8Name).second) {
+        else if (!nameSet.insert(utf8Name).second && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
             diag.m_message = kMessageTypeSoftBodyDuplicatedName;
-            diag.m_severity = kSeverityTypeWarning;
             result.push_back(diag);
         }
         if (nanoemModelSoftBodyGetMaterialObject(softBodyPtr) == nullptr &&
