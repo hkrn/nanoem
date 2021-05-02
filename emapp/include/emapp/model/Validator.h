@@ -48,7 +48,9 @@ public:
         kMessageTypeBoneTooLongName,
         kMessageTypeBoneEmptyName,
         kMessageTypeBoneDuplicatedName,
+        kMessageTypeBoneTransformBeforeParent,
         kMessageTypeBoneInherentBoneNullBoneObject,
+        kMessageTypeBoneTransformBeforeInherentParent,
         kMessageTypeBoneFixedAxisNotNormalized,
         kMessageTypeMorphTooLongName,
         kMessageTypeMorphEmptyName,
@@ -115,6 +117,8 @@ private:
     void validateAllRigidBodyObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllJointObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
+    bool validateParentBone(
+        const nanoem_model_bone_t *bonePtr, MessageType type, nanoem_u32_t filter, Diagnostics *diag);
     bool validateNameInShiftJIS(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
         nanoem_u32_t filter, nanoem_unicode_string_factory_t *factory, Diagnostics *diag);
     bool validateVector3(const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;

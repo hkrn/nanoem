@@ -183,8 +183,18 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
             model::Bone::canonicalNameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
+    case kMessageTypeBoneTransformBeforeParent: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.transform-before-parent"),
+            model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
+        break;
+    }
     case kMessageTypeBoneInherentBoneNullBoneObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.inherent.null"),
+            model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
+        break;
+    }
+    case kMessageTypeBoneTransformBeforeInherentParent: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.bone.inherent.transform-before-parent"),
             model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
         break;
     }
@@ -516,8 +526,21 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
                 result.push_back(diag);
             }
         }
+        if (!validateParentBone(bonePtr, kMessageTypeBoneTransformBeforeParent, filter, &diag)) {
+            result.push_back(diag);
+        }
         if (!validateVector3(nanoemModelBoneGetOrigin(bonePtr), filter, &diag)) {
             result.push_back(diag);
+        }
+        if (nanoemModelBoneHasInherentTranslation(bonePtr) || nanoemModelBoneHasInherentOrientation(bonePtr)) {
+            const nanoem_model_bone_t *inherentParentBonePtr = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
+            if (inherentParentBonePtr == nullptr && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
+                diag.m_message = kMessageTypeBoneInherentBoneNullBoneObject;
+                result.push_back(diag);
+            }
+            else if (!validateParentBone(bonePtr, kMessageTypeBoneTransformBeforeInherentParent, filter, &diag)) {
+                result.push_back(diag);
+            }
         }
     }
 }
@@ -758,6 +781,35 @@ Validator::validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, D
             result.push_back(diag);
         }
     }
+}
+
+bool
+Validator::validateParentBone(
+    const nanoem_model_bone_t *bonePtr, MessageType type, nanoem_u32_t filter, Diagnostics *diag)
+{
+    diag->m_message = kMessageTypeNone;
+    if (const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr)) {
+        if (nanoemModelBoneIsAffectedByPhysicsSimulation(parentBonePtr) &&
+            !nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr) &&
+            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+            diag->m_message = type;
+        }
+        else {
+            int parentBoneIndex = model::Bone::index(parentBonePtr), boneIndex = model::Bone::index(bonePtr),
+                parentBoneStageIndex = nanoemModelBoneGetStageIndex(parentBonePtr),
+                boneStageIndex = nanoemModelBoneGetStageIndex(bonePtr);
+            if (parentBoneIndex < boneIndex && parentBoneStageIndex > boneStageIndex &&
+                testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+                diag->m_message = type;
+            }
+            else if 
+                (parentBoneIndex > boneIndex && parentBoneStageIndex >= boneStageIndex &&
+                testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+                diag->m_message = type;
+            }
+        }
+    }
+    return diag->m_message == kMessageTypeNone;
 }
 
 bool

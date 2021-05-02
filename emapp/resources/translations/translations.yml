@@ -3891,10 +3891,18 @@
   phrase:
     en_US: 'The bone name (of Japanese) is duplicated'
     ja_JP: 'ボーン名が重複しています'
+- key: nanoem.model.validator.bone.transform-before-parent
+  phrase:
+    en_US: 'The bone will be transformed before its parent bone due to relation problem'
+    ja_JP: '親子関係の問題から親ボーンより先に変形されます'
 - key: nanoem.model.validator.bone.inherent.null
   phrase:
     en_US: 'The inherent bone is not set'
     ja_JP: '付与ボーンが設定されていません'
+- key: nanoem.model.validator.bone.inherent.transform-before-parent
+  phrase:
+    en_US: 'The inherent bone will be transformed before its parent inherent bone due to relation problem'
+    ja_JP: '親子関係の問題から付与親ボーンより先に変形されます'
 - key: nanoem.model.validator.bone.fixed-axis.not-normalized
   phrase:
     en_US: 'Fixed axis of the bone is normalized'

@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -907,8 +907,10 @@ $nanoem.project.track.selected-morphs選択モーフ5
 -nanoem.model.validator.material.face.overflow]全材質が参照するインデックスが対応する面の数よりも多い状態ですY
 )nanoem.model.validator.bone.name.too-long,ボーン名が15バイトを超えてますT
 &nanoem.model.validator.bone.name.empty*ボーン名が設定されていませんS
-+nanoem.model.validator.bone.name.duplicated$ボーン名が重複していますZ
-)nanoem.model.validator.bone.inherent.null-付与ボーンが設定されていませんc
++nanoem.model.validator.bone.name.duplicated$ボーン名が重複しています|
+3nanoem.model.validator.bone.transform-before-parentE親子関係の問題から親ボーンより先に変形されますZ
+)nanoem.model.validator.bone.inherent.null-付与ボーンが設定されていません�
+<nanoem.model.validator.bone.inherent.transform-before-parentK親子関係の問題から付与親ボーンより先に変形されますc
 5nanoem.model.validator.bone.fixed-axis.not-normalized*固定軸が正規化されていませんZ
 *nanoem.model.validator.morph.name.too-long,モーフ名が15バイトを超えてますU
 'nanoem.model.validator.morph.name.empty*モーフ名が設定されていませんT
@@ -1054,7 +1056,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-۞F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1978,8 +1980,10 @@ All Morphs#
 -nanoem.model.validator.material.face.overflowHAll material vertex index count are greater than corresponding all facesh
 )nanoem.model.validator.bone.name.too-long;The bone name length (of Japanese) is greater than 15 bytesN
 &nanoem.model.validator.bone.name.empty$The bone name (of Japanese) is emptyX
-+nanoem.model.validator.bone.name.duplicated)The bone name (of Japanese) is duplicatedI
-)nanoem.model.validator.bone.inherent.nullThe inherent bone is not set]
++nanoem.model.validator.bone.name.duplicated)The bone name (of Japanese) is duplicated�
+3nanoem.model.validator.bone.transform-before-parentKThe bone will be transformed before its parent bone due to relation problemI
+)nanoem.model.validator.bone.inherent.nullThe inherent bone is not set�
+<nanoem.model.validator.bone.inherent.transform-before-parent]The inherent bone will be transformed before its parent inherent bone due to relation problem]
 5nanoem.model.validator.bone.fixed-axis.not-normalized$Fixed axis of the bone is normalizedc
 *nanoem.model.validator.morph.name.too-long5The morph name (of Japanese) is greater than 15 bytesP
 'nanoem.model.validator.morph.name.empty%The morph name (of Japanese) is emptyZ
