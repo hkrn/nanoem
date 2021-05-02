@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -877,7 +877,9 @@ $nanoem.project.track.selected-morphs選択モーフ5
 1nanoem.error.effect.model-effect-not-found.reason?エフェクトに割り当てるモデルが存在しません�
 .nanoem.error.effect.offscreen-not-found.reasonQオフスクリーンエフェクトに割り当てる対象が存在しません�
 -nanoem.error.effect.invalid-attachment.reasonoエフェクトに割り当てるモデルまたはオフスクリーンの対象が設定されていません�
-:nanoem.error.effect.invalid-attachment.recovery-suggestion�メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてください`
+:nanoem.error.effect.invalid-attachment.recovery-suggestion�メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてくださいm
+$nanoem.error.motion.not-model.reasonE読み込まれたモーションはモデル用ではありません�
+/nanoem.error.motion.not-camera-and-light.reasonQ読み込まれたモーションはカメラ及び照明用ではありません`
  nanoem.project.diagnostics.title<プロジェクトの一部ファイルの読み込み失敗�
 'nanoem.project.diagnostics.message.mainrプロジェクトの読み込みは成功しましたが、一部のファイルが読み込めませんでした�
 ,nanoem.project.diagnostics.message.not-foundQ次のファイルが見つかりません。移動した可能性があります�
@@ -910,8 +912,8 @@ $nanoem.project.track.selected-morphs選択モーフ5
 +nanoem.model.validator.bone.name.duplicated$ボーン名が重複しています|
 3nanoem.model.validator.bone.transform-before-parentE親子関係の問題から親ボーンより先に変形されますZ
 )nanoem.model.validator.bone.inherent.null-付与ボーンが設定されていません�
-<nanoem.model.validator.bone.inherent.transform-before-parentK親子関係の問題から付与親ボーンより先に変形されます�
->nanoem.model.validator.bone.constraint.transform-before-parentG親子関係の問題からIK先ボーンより先に変形されますc
+<nanoem.model.validator.bone.inherent.transform-before-parentK親子関係の問題から付与親ボーンより先に変形されます�
+>nanoem.model.validator.bone.constraint.transform-before-parentS親子関係の問題からIKターゲットボーンより先に変形されますc
 5nanoem.model.validator.bone.fixed-axis.not-normalized*固定軸が正規化されていませんZ
 *nanoem.model.validator.morph.name.too-long,モーフ名が15バイトを超えてますU
 'nanoem.model.validator.morph.name.empty*モーフ名が設定されていませんT
@@ -1057,7 +1059,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+ѣF
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1951,7 +1953,9 @@ All Morphs#
 1nanoem.error.effect.model-effect-not-found.reason(The model to attach the effect not founde
 .nanoem.error.effect.offscreen-not-found.reason3The object to attach the offscreen effect not foundu
 -nanoem.error.effect.invalid-attachment.reasonDThe model or offscreen target to attach the effect is not configured�
-:nanoem.error.effect.invalid-attachment.recovery-suggestionnSet the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect fileH
+:nanoem.error.effect.invalid-attachment.recovery-suggestionnSet the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect fileT
+$nanoem.error.motion.not-model.reason,The loading motion is not intended for modelf
+/nanoem.error.motion.not-camera-and-light.reason3The loading motion is not intended for camera/lightH
  nanoem.project.diagnostics.title$Loading Project with Partial Failurel
 'nanoem.project.diagnostics.message.mainALoading the project is succeeded but some files cannot be loaded.^
 ,nanoem.project.diagnostics.message.not-found.Below files cannot be loaded due to not found.l

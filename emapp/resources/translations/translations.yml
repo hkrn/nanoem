@@ -3769,6 +3769,14 @@
   phrase:
     en_US: 'Set the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect file'
     ja_JP: 'メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてください'
+- key: nanoem.error.motion.not-model.reason
+  phrase:
+    en_US: 'The loading motion is not intended for model'
+    ja_JP: '読み込まれたモーションはモデル用ではありません'
+- key: nanoem.error.motion.not-camera-and-light.reason
+  phrase:
+    en_US: 'The loading motion is not intended for camera/light'
+    ja_JP: '読み込まれたモーションはカメラ及び照明用ではありません'
 
 - key: nanoem.project.diagnostics.title
   phrase:

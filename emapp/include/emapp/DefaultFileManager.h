@@ -109,6 +109,7 @@ private:
     bool validateWrittenFile(FileWriterScope &scope, const nanoem_u8_t *expectedChecksum, Error &error);
     bool decodeAudioWave(
         const Project *project, PluginFactory::DecoderPluginProxy &proxy, ByteArray &bytes, Error &error);
+    bool isCameraLightMotion(const Motion *motion);
 
     BaseApplicationService *m_applicationPtr;
     DefaultTranslator m_translator;

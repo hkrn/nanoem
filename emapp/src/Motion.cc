@@ -464,7 +464,8 @@ compareKeyframeDescend(
 
 const String Motion::kNMDFormatExtension = String("nmd");
 const String Motion::kVMDFormatExtension = String("vmd");
-
+const nanoem_u8_t Motion::kCameraAndLightTargetModelName[] = { 0xe3, 0x82, 0xab, 0xe3, 0x83, 0xa1, 0xe3, 0x83, 0xa9, 0xe3,
+    0x83, 0xbb, 0xe7, 0x85, 0xa7, 0xe6, 0x98, 0x8e, 0 }; /* "Camera and Light" in Japanese */
 const nanoem_frame_index_t Motion::kMaxFrameIndex = nanoem_frame_index_t(~0);
 
 struct Motion::SelectionState NANOEM_DECL_SEALED {
@@ -1346,12 +1347,9 @@ Motion::save(IWriter *writer, const Model *model, nanoem_u32_t flags, Error &err
     if (status == NANOEM_STATUS_SUCCESS &&
         (EnumUtils::isEnabled(flags, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_CAMERA) ||
             EnumUtils::isEnabled(flags, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_LIGHT))) {
-        /* "Camera and Light" in Japanese */
-        static const nanoem_u8_t kTargetModelName[] = { 0xe3, 0x82, 0xab, 0xe3, 0x83, 0xa1, 0xe3, 0x83, 0xa9, 0xe3,
-            0x83, 0xbb, 0xe7, 0x85, 0xa7, 0xe6, 0x98, 0x8e, 0 };
         nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
         StringUtils::UnicodeStringScope us(factory);
-        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kTargetModelName), us)) {
+        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kCameraAndLightTargetModelName), us)) {
             nanoemMutableMotionSetTargetModelName(mutableMotion, us.value(), &status);
         }
     }

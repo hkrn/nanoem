@@ -97,7 +97,9 @@ public:
 
     static const String kNMDFormatExtension;
     static const String kVMDFormatExtension;
+    static const nanoem_u8_t kCameraAndLightTargetModelName[];
     static const nanoem_frame_index_t kMaxFrameIndex;
+
     static StringList loadableExtensions();
     static StringSet loadableExtensionsSet();
     static bool isLoadableExtension(const String &extension);

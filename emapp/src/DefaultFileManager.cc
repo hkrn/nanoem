@@ -1058,9 +1058,17 @@ DefaultFileManager::loadCameraMotion(const URI &fileURI, Project *project, Error
     Motion *motion = project->createMotion();
     bool succeeded = false;
     if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
-        motion->writeLoadCameraCommandMessage(fileURI, error);
+        if (isCameraLightMotion(motion)) {
+            motion->writeLoadCameraCommandMessage(fileURI, error);
+            succeeded = !error.hasReason();
+        }
+        else {
+            error = Error(translator()->translate("nanoem.error.motion.not-camera-and-light.reason"), "",
+                Error::kDomainTypeApplication);
+        }
+    }
+    if (succeeded) {
         project->setCameraMotion(motion);
-        succeeded = !error.hasReason();
     }
     else {
         project->destroyMotion(motion);
@@ -1074,9 +1082,17 @@ DefaultFileManager::loadLightMotion(const URI &fileURI, Project *project, Error 
     Motion *motion = project->createMotion();
     bool succeeded = false;
     if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
-        motion->writeLoadLightCommandMessage(fileURI, error);
+        if (isCameraLightMotion(motion)) {
+            motion->writeLoadLightCommandMessage(fileURI, error);
+            succeeded = !error.hasReason();
+        }
+        else {
+            error = Error(translator()->translate("nanoem.error.motion.not-camera-and-light.reason"), "",
+                Error::kDomainTypeApplication);
+        }
+    }
+    if (succeeded) {
         project->setLightMotion(motion);
-        succeeded = !error.hasReason();
     }
     else {
         project->destroyMotion(motion);
@@ -1092,12 +1108,22 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
         if (Motion::isLoadableExtension(fileURI)) {
             Motion *motion = project->createMotion(), *lastMotionPtr = motion;
             if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
-                motion->writeLoadModelCommandMessage(model->handle(), fileURI, error);
+                if (!isCameraLightMotion(motion)) {
+                    motion->writeLoadModelCommandMessage(model->handle(), fileURI, error);
+                    succeeded = !error.hasReason();
+                }
+                else {
+                    error = Error(translator()->translate("nanoem.error.motion.not-model.reason"), "",
+                        Error::kDomainTypeApplication);
+                }
+            }
+            if (succeeded) {
                 lastMotionPtr = project->addModelMotion(motion, model);
                 project->restart();
-                succeeded = !error.hasReason();
             }
-            project->destroyMotion(lastMotionPtr);
+            else {
+                project->destroyMotion(lastMotionPtr);
+            }
         }
         else if (model::BindPose::isLoadableExtension(fileURI)) {
             FileReaderScope scope(&m_translator);
@@ -1407,6 +1433,17 @@ DefaultFileManager::decodeAudioWave(
         }
     }
     return succeeded;
+}
+
+bool
+DefaultFileManager::isCameraLightMotion(const Motion *motion)
+{
+    nanoem_unicode_string_factory_t *factory = motion->project()->unicodeStringFactory();
+    const nanoem_unicode_string_t *name = nanoemMotionGetTargetModelName(motion->data());
+    String targetModelName;
+    StringUtils::getUtf8String(name, factory, targetModelName);
+    return StringUtils::equals(
+        reinterpret_cast<const char *>(Motion::kCameraAndLightTargetModelName), targetModelName.c_str());
 }
 
 } /* namespace nanoem */
