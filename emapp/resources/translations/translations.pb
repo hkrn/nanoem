@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -912,8 +912,12 @@ $nanoem.project.track.selected-morphs選択モーフ5
 5nanoem.model.validator.bone.fixed-axis.not-normalized*固定軸が正規化されていませんZ
 *nanoem.model.validator.morph.name.too-long,モーフ名が15バイトを超えてますU
 'nanoem.model.validator.morph.name.empty*モーフ名が設定されていませんT
-,nanoem.model.validator.morph.name.duplicated$モーフ名が重複しています;
-"nanoem.model.validator.label.empty表示枠が空ですe
+,nanoem.model.validator.morph.name.duplicated$モーフ名が重複していますU
+'nanoem.model.validator.label.name.empty*表示枠名が設定されていませんT
+,nanoem.model.validator.label.name.duplicated$表示枠名が重複しています;
+"nanoem.model.validator.label.empty表示枠が空ですk
+.nanoem.model.validator.label.not-assigned-bone9ボーンが表示枠に割り当てられていませんl
+/nanoem.model.validator.label.not-assigned-morph9モーフが表示枠に割り当てられていませんe
 +nanoem.model.validator.label.item.bone.null6表示枠内のボーンが設定されていませんf
 ,nanoem.model.validator.label.item.morph.null6表示枠内のモーフが設定されていませんW
 ,nanoem.model.validator.rigid-body.name.empty'剛体名が設定されていませんV
@@ -1050,7 +1054,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+۞F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1979,8 +1983,12 @@ All Morphs#
 5nanoem.model.validator.bone.fixed-axis.not-normalized$Fixed axis of the bone is normalizedc
 *nanoem.model.validator.morph.name.too-long5The morph name (of Japanese) is greater than 15 bytesP
 'nanoem.model.validator.morph.name.empty%The morph name (of Japanese) is emptyZ
-,nanoem.model.validator.morph.name.duplicated*The morph name (of Japanese) is duplicated=
-"nanoem.model.validator.label.emptyThe label item is emptyO
+,nanoem.model.validator.morph.name.duplicated*The morph name (of Japanese) is duplicatedP
+'nanoem.model.validator.label.name.empty%The label name (of Japanese) is emptyZ
+,nanoem.model.validator.label.name.duplicated*The label name (of Japanese) is duplicated=
+"nanoem.model.validator.label.emptyThe label item is emptyW
+.nanoem.model.validator.label.not-assigned-bone%The bone is not assigned to the labelY
+/nanoem.model.validator.label.not-assigned-morph&The morph is not assigned to the labelO
 +nanoem.model.validator.label.item.bone.null The bone in the label is not setQ
 ,nanoem.model.validator.label.item.morph.null!The morph in the label is not setZ
 ,nanoem.model.validator.rigid-body.name.empty*The rigid body name (of Japanese) is emptyd

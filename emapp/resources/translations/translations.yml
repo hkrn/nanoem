@@ -3911,10 +3911,26 @@
   phrase:
     en_US: 'The morph name (of Japanese) is duplicated'
     ja_JP: 'モーフ名が重複しています'
+- key: nanoem.model.validator.label.name.empty
+  phrase:
+    en_US: 'The label name (of Japanese) is empty'
+    ja_JP: '表示枠名が設定されていません'
+- key: nanoem.model.validator.label.name.duplicated
+  phrase:
+    en_US: 'The label name (of Japanese) is duplicated'
+    ja_JP: '表示枠名が重複しています'
 - key: nanoem.model.validator.label.empty
   phrase:
     en_US: 'The label item is empty'
     ja_JP: '表示枠が空です'
+- key: nanoem.model.validator.label.not-assigned-bone
+  phrase:
+    en_US: 'The bone is not assigned to the label'
+    ja_JP: 'ボーンが表示枠に割り当てられていません'
+- key: nanoem.model.validator.label.not-assigned-morph
+  phrase:
+    en_US: 'The morph is not assigned to the label'
+    ja_JP: 'モーフが表示枠に割り当てられていません'
 - key: nanoem.model.validator.label.item.bone.null
   phrase:
     en_US: 'The bone in the label is not set'

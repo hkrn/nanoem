@@ -56,6 +56,8 @@ public:
         kMessageTypeLabelEmptyName,
         kMessageTypeLabelDuplicatedName,
         kMessageTypeLabelEmptyItems,
+        kMessageTypeLabelNotAssignedBoneObject,
+        kMessageTypeLabelNotAssignedMorphObject,
         kMessageTypeLabelItemNullBoneObject,
         kMessageTypeLabelItemNullMorphObject,
         kMessageTypeRigidBodyEmptyName,

@@ -225,6 +225,16 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
             model::Label::nameConstString(diag.u.m_labelPtr, kUnknownName));
         break;
     }
+    case kMessageTypeLabelNotAssignedBoneObject: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.not-assigned-bone"),
+            model::Bone::nameConstString(diag.u.m_bonePtr, kUnknownName));
+        break;
+    }
+    case kMessageTypeLabelNotAssignedMorphObject: {
+        StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.not-assigned-morph"),
+            model::Morph::nameConstString(diag.u.m_morphPtr, kUnknownName));
+        break;
+    }
     case kMessageTypeLabelItemNullBoneObject: {
         StringUtils::format(text, "* %s: %s\n", translator->translate("nanoem.model.validator.label.item.bone.null"),
             model::Label::nameConstString(diag.u.m_labelPtr, kUnknownName));
@@ -550,12 +560,22 @@ Validator::validateAllMorphObjects(const Model *model, nanoem_u32_t filter, Diag
 void
 Validator::validateAllLabelObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
-    nanoem_rsize_t numLabels, numItems;
+    nanoem_rsize_t numBones, numLabels, numMorphs, numItems;
     nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
     nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(model->data(), &numLabels);
+    nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(model->data(), &numMorphs);
     Diagnostics diag;
+    model::Bone::Set boneSet;
+    model::Morph::Set morphSet;
     StringSet nameSet;
     String utf8Name;
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        boneSet.insert(bones[i]);
+    }
+    for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+        morphSet.insert(morphs[i]);
+    }
     for (nanoem_rsize_t i = 0; i < numLabels; i++) {
         const nanoem_model_label_t *labelPtr = labels[i];
         const nanoem_unicode_string_t *name = nanoemModelLabelGetName(labelPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
@@ -579,24 +599,38 @@ Validator::validateAllLabelObjects(const Model *model, nanoem_u32_t filter, Diag
             diag.u.m_labelItemPtr = item;
             switch (nanoemModelLabelItemGetType(item)) {
             case NANOEM_MODEL_LABEL_ITEM_TYPE_BONE: {
-                if (nanoemModelLabelItemGetBoneObject(item) == nullptr) {
+                const nanoem_model_bone_t *bonePtr = nanoemModelLabelItemGetBoneObject(item);
+                if (bonePtr == nullptr && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
                     diag.m_message = kMessageTypeLabelItemNullBoneObject;
-                    diag.m_severity = kSeverityTypeError;
                     result.push_back(diag);
                 }
+                boneSet.erase(bonePtr);
                 break;
             }
             case NANOEM_MODEL_LABEL_ITEM_TYPE_MORPH: {
-                if (nanoemModelLabelItemGetMorphObject(item) == nullptr) {
+                const nanoem_model_morph_t *morphPtr = nanoemModelLabelItemGetMorphObject(item);
+                if (morphPtr == nullptr && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
                     diag.m_message = kMessageTypeLabelItemNullMorphObject;
-                    diag.m_severity = kSeverityTypeError;
                     result.push_back(diag);
                 }
+                morphSet.erase(morphPtr);
                 break;
             }
             default:
                 break;
             }
+        }
+    }
+    if (testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag)) {
+        diag.m_message = kMessageTypeLabelNotAssignedBoneObject;
+        for (model::Bone::Set::const_iterator it = boneSet.begin(), end = boneSet.end(); it != end; ++it) {
+            diag.u.m_bonePtr = *it;
+            result.push_back(diag);
+        }
+        diag.m_message = kMessageTypeLabelNotAssignedMorphObject;
+        for (model::Morph::Set::const_iterator it = morphSet.begin(), end = morphSet.end(); it != end; ++it) {
+            diag.u.m_morphPtr = *it;
+            result.push_back(diag);
         }
     }
 }
