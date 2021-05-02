@@ -3831,10 +3831,14 @@
   phrase:
     en_US: 'The vertex of the face is not set'
     ja_JP: '面の頂点が設定されていません'
-- key: nanoem.model.validator.face.oob
+- key: nanoem.model.validator.face.vertex.oob
   phrase:
     en_US: 'The face is out of bound of the vertices'
     ja_JP: '面が頂点の範囲外にあります'
+- key: nanoem.model.validator.face.vertex.not-used
+  phrase:
+    en_US: 'The vertex is not referenced from the face'
+    ja_JP: '頂点が面から参照されていません'
 - key: nanoem.model.validator.material.name.empty
   phrase:
     en_US: 'The material name (of Japanese) is empty'

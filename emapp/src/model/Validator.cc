@@ -85,16 +85,21 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
             model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
-    case kMessageTypeVertexIndexNotTriangulated: {
+    case kMessageTypeFaceNotTriangulated: {
         StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.face.not-triangulated"));
         break;
     }
-    case kMessageTypeVertexIndexNullVertexObject: {
+    case kMessageTypeFaceNullVertexObject: {
         StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.face.vertex.null"));
         break;
     }
-    case kMessageTypeVertexIndexOutOfBound: {
-        StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.face.oob"));
+    case kMessageTypeFaceVertexObjectOutOfBound: {
+        StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.face.vertex.oob"));
+        break;
+    }
+    case kMessageTypeFaceVertexObjectNotUsed: {
+        StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.face.vertex.not-used"),
+            model::Vertex::index(diag.u.m_vertexPtr));
         break;
     }
     case kMessageTypeMaterialEmptyName: {
@@ -401,26 +406,44 @@ Validator::validateAllFaces(const Model *model, nanoem_u32_t filter, Diagnostics
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numVertices);
     const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model->data(), &numIndices);
     Diagnostics diag;
-    diag.u.m_bonePtr = nullptr;
+    diag.u.m_vertexPtr = nullptr;
     if (numIndices % 3 != 0 && testDiagnosticsSeverity(kSeverityTypeFatal, filter, &diag)) {
-        diag.m_message = kMessageTypeVertexIndexNotTriangulated;
+        diag.m_message = kMessageTypeFaceNotTriangulated;
         result.push_back(diag);
     }
     else {
+        typedef tinystl::unordered_set<int, TinySTLAllocator> VertexIndexSet;
+        VertexIndexSet vertexIndexSet;
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            int vertexIndex = model::Vertex::index(vertices[i]);
+            if (vertexIndex >= 0) {
+                vertexIndexSet.insert(vertexIndex);
+            }
+        }
         for (nanoem_rsize_t i = 0; i < numIndices; i += 3) {
             for (nanoem_rsize_t j = 0; j < 3; j++) {
-                nanoem_u32_t offset = indices[i + j];
-                if (offset < numVertices) {
-                    const nanoem_model_vertex_t *vertexPtr = vertices[offset];
+                nanoem_u32_t vertexIndex = indices[i + j];
+                if (vertexIndex < numVertices) {
+                    const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndex];
                     if (vertexPtr == nullptr && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
-                        diag.m_message = kMessageTypeVertexIndexNullVertexObject;
+                        diag.m_message = kMessageTypeFaceNullVertexObject;
                         result.push_back(diag);
                     }
                 }
                 else if (testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {
-                    diag.m_message = kMessageTypeVertexIndexOutOfBound;
+                    diag.m_message = kMessageTypeFaceVertexObjectOutOfBound;
                     result.push_back(diag);
                 }
+                vertexIndexSet.erase(vertexIndex);
+            }
+        }
+        if (!vertexIndexSet.empty() && testDiagnosticsSeverity(kSeverityTypeInfo, filter, &diag)) {
+            diag.m_message = kMessageTypeFaceVertexObjectNotUsed;
+            for (VertexIndexSet::const_iterator it = vertexIndexSet.begin(), end = vertexIndexSet.end(); it != end;
+                 ++it) {
+                const nanoem_model_vertex_t *vertexPtr = vertices[*it];
+                diag.u.m_vertexPtr = vertexPtr;
+                result.push_back(diag);
             }
         }
     }

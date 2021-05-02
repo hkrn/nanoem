@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -892,8 +892,9 @@ $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモ�
 3nanoem.model.validator.vertex.weight.not-normalized?頂点のボーンウェイトが正規化されていませんL
 *nanoem.model.validator.vertex.type.invalid頂点の種別が不正ですW
 ,nanoem.model.validator.face.not-triangulated'面が三角形になっていませんU
-'nanoem.model.validator.face.vertex.null*面の頂点が設定されていませんJ
-nanoem.model.validator.face.oob'面が頂点の範囲外にありますU
+'nanoem.model.validator.face.vertex.null*面の頂点が設定されていませんQ
+&nanoem.model.validator.face.vertex.oob'面が頂点の範囲外にあります\
++nanoem.model.validator.face.vertex.not-used-頂点が面から参照されていませんU
 *nanoem.model.validator.material.name.empty'材質名が設定されていませんT
 /nanoem.model.validator.material.name.duplicated!材質名が重複していますe
 1nanoem.model.validator.material.ambient.color.oob0材質の環境光色が範囲外にありますe
@@ -1059,7 +1060,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-ѣF
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1968,8 +1969,9 @@ $nanoem.error.motion.not-model.reason,The loading motion is not intended for mo
 3nanoem.model.validator.vertex.weight.not-normalized/The bone weight of the vertex is not normalizedH
 *nanoem.model.validator.vertex.type.invalidThe vertex type is invalidL
 ,nanoem.model.validator.face.not-triangulatedThe face is not triangulatedL
-'nanoem.model.validator.face.vertex.null!The vertex of the face is not setK
-nanoem.model.validator.face.oob(The face is out of bound of the verticesV
+'nanoem.model.validator.face.vertex.null!The vertex of the face is not setR
+&nanoem.model.validator.face.vertex.oob(The face is out of bound of the verticesY
++nanoem.model.validator.face.vertex.not-used*The vertex is not referenced from the faceV
 *nanoem.model.validator.material.name.empty(The material name (of Japanese) is empty`
 /nanoem.model.validator.material.name.duplicated-The material name (of Japanese) is duplicated_
 1nanoem.model.validator.material.ambient.color.oob*The material ambient color is out of bound_
