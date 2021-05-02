@@ -69,6 +69,14 @@ public:
     nanoem_model_rigid_body_t *hoveredRigidBody() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_model_joint_t *hoveredJoint() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_model_soft_body_t *hoveredSoftBody() NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllVertices() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllMaterials() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllBones() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllMorphs() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllLabels() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllRigidBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllJoints() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     model::Vertex::Set allVertexSet() const NANOEM_DECL_OVERRIDE;
     model::Bone::Set allBoneSet() const NANOEM_DECL_OVERRIDE;

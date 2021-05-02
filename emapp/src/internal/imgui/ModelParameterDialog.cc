@@ -1047,19 +1047,21 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, false)) {
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(
-            reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, m_materialIndex < numMaterials)) {
+    const bool isSingleMaterialSelected = selection->countAllMaterials() == 1;
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
+            m_materialIndex < numMaterials && isSingleMaterialSelected)) {
         undo_command_t *command = command::DeleteMaterialCommand::create(project, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
-    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_materialIndex > 0)) {
+    if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0,
+            m_materialIndex > 0 && isSingleMaterialSelected)) {
         undo_command_t *command = command::MoveMaterialUpCommand::create(project, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
-            numMaterials > 0 && m_materialIndex < numMaterials)) {
+            numMaterials > 0 && m_materialIndex < numMaterials - 1 && isSingleMaterialSelected)) {
         undo_command_t *command = command::MoveMaterialDownCommand::create(project, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }

@@ -440,6 +440,54 @@ ModelObjectSelection::hoveredSoftBody() NANOEM_DECL_NOEXCEPT
     return m_hoveredSoftBody;
 }
 
+nanoem_rsize_t
+ModelObjectSelection::countAllVertices() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedVertexSet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllMaterials() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedMaterialSet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllBones() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedBoneSet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllMorphs() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedMorphSet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllLabels() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedLabelSet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllRigidBodies() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedRigidBodySet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllJoints() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedJointSet.size();
+}
+
+nanoem_rsize_t
+ModelObjectSelection::countAllSoftBodies() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedSoftBodySet.size();
+}
+
 model::Vertex::Set
 ModelObjectSelection::allVertexSet() const
 {
