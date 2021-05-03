@@ -117,10 +117,8 @@ public:
             NANOEM_DECL_NOEXCEPT;
     };
     struct NewModelDescription {
-        String m_nameInJapanese;
-        String m_nameInEnglish;
-        String m_commentInJapanese;
-        String m_commentInEnglish;
+        String m_name[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
+        String m_comment[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
     };
     struct ImportSetting {
         enum FileType {

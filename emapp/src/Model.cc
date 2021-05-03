@@ -774,17 +774,14 @@ Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_stri
         nanoemMutableModelSetAdditionalUVSize(mutableModel, 0);
         nanoemMutableModelSetCodecType(mutableModel, NANOEM_CODEC_TYPE_UTF16);
         nanoemMutableModelSetFormatType(mutableModel, NANOEM_MODEL_FORMAT_TYPE_PMX_2_0);
-        if (StringUtils::tryGetString(factory, desc.m_nameInJapanese, scope)) {
-            nanoemMutableModelSetName(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-        }
-        if (StringUtils::tryGetString(factory, desc.m_nameInEnglish, scope)) {
-            nanoemMutableModelSetName(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
-        }
-        if (StringUtils::tryGetString(factory, desc.m_commentInJapanese, scope)) {
-            nanoemMutableModelSetComment(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-        }
-        if (StringUtils::tryGetString(factory, desc.m_commentInEnglish, scope)) {
-            nanoemMutableModelSetComment(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        for (int i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
+            const nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
+            if (StringUtils::tryGetString(factory, desc.m_name[i], scope)) {
+                nanoemMutableModelSetName(mutableModel, scope.value(), language, &status);
+            }
+            if (StringUtils::tryGetString(factory, desc.m_comment[i], scope)) {
+                nanoemMutableModelSetComment(mutableModel, scope.value(), language, &status);
+            }
         }
     }
     nanoem_mutable_model_bone_t *mutableCenterBone = nanoemMutableModelBoneCreate(originModel, &status);
