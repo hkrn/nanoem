@@ -16,6 +16,7 @@
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
+#include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
@@ -1911,8 +1912,10 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         }
     }
     {
-        const model::Bone *parentBone = model::Bone::cast(nanoemModelBoneGetParentBoneObject(bonePtr));
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.parent"));
+        const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr);
+        const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
+        layoutTextWithParentBoneValidation(bonePtr, parentBonePtr, "nanoem.gui.model.edit.bone.parent",
+            "nanoem.model.validator.bone.transform-before-parent");
         if (ImGui::BeginCombo("##parent", parentBone ? parentBone->nameConstString() : "(none)")) {
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -2052,8 +2055,10 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         {
             if (nanoemModelBoneHasInherentTranslation(bonePtr) || nanoemModelBoneHasInherentOrientation(bonePtr)) {
                 ImGui::Separator();
-                const model::Bone *parentBone = model::Bone::cast(nanoemModelBoneGetInherentParentBoneObject(bonePtr));
-                ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.inherent.parent-bone"));
+                const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
+                const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
+                layoutTextWithParentBoneValidation(bonePtr, parentBonePtr, "nanoem.gui.model.edit.bone.inherent.parent-bone",
+                    "nanoem.model.validator.bone.inherent.transform-before-parent");
                 if (ImGui::BeginCombo("##parent.inherent", parentBone ? parentBone->nameConstString() : "(none)")) {
                     for (nanoem_rsize_t i = 0; i < numBones; i++) {
                         const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -2211,9 +2216,11 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             }
 #endif
         {
-            const model::Bone *effectorBone =
-                model::Bone::cast(nanoemModelConstraintGetEffectorBoneObject(constraintPtr));
-            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.effector"));
+            const nanoem_model_bone_t *effectorBonePtr = nanoemModelConstraintGetEffectorBoneObject(constraintPtr);
+            const model::Bone *effectorBone = model::Bone::cast(effectorBonePtr);
+            layoutTextWithParentBoneValidation(bonePtr, effectorBonePtr,
+                "nanoem.gui.model.edit.bone.constraint.effector",
+                "nanoem.model.validator.bone.constraint.transform-before-parent");
             if (ImGui::BeginCombo("##constriant.effector", effectorBone ? effectorBone->nameConstString() : "(none)")) {
                 for (nanoem_rsize_t i = 0; i < numBones; i++) {
                     const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -5048,6 +5055,23 @@ ModelParameterDialog::layoutName(
         changed = true;
     }
     return changed;
+}
+
+void
+ModelParameterDialog::layoutTextWithParentBoneValidation(const nanoem_model_bone_t *bonePtr,
+    const nanoem_model_bone_t *parentBonePtr, const char *titleID, const char *validationMessageID)
+{
+    if (model::Validator::validateParentBone(bonePtr, parentBonePtr)) {
+        ImGui::TextUnformatted(tr(titleID));
+    }
+    else {
+        ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
+        ImGui::TextUnformatted(tr(titleID));
+        ImGui::PopStyleColor();
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("%s", tr(validationMessageID));
+        }
+    }
 }
 
 void

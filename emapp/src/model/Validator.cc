@@ -23,7 +23,186 @@ namespace {
 
 static const char kUnknownName[] = "(unknown)";
 
-} /* anonymous */
+} /* anonymous namespace */
+
+bool
+Validator::validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr)
+{
+    Diagnostics diag;
+    const nanoem_u32_t severity = kSeverityTypeInfo | kSeverityTypeWarning | kSeverityTypeError;
+    return parentBonePtr ? validateParentBone(
+        bonePtr, parentBonePtr, kMessageTypeBoneTransformBeforeParent, severity, &diag) : true;
+}
+
+bool
+Validator::validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr,
+    MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    if (parentBonePtr) {
+        if (nanoemModelBoneIsAffectedByPhysicsSimulation(parentBonePtr) &&
+            !nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr) &&
+            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+            diag->m_message = type;
+        }
+        else {
+            int parentBoneIndex = model::Bone::index(parentBonePtr), boneIndex = model::Bone::index(bonePtr),
+                parentBoneStageIndex = nanoemModelBoneGetStageIndex(parentBonePtr),
+                boneStageIndex = nanoemModelBoneGetStageIndex(bonePtr);
+            if (parentBoneIndex < boneIndex && parentBoneStageIndex > boneStageIndex &&
+                testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+                diag->m_message = type;
+            }
+            else if (parentBoneIndex > boneIndex && parentBoneStageIndex >= boneStageIndex &&
+                testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+                diag->m_message = type;
+            }
+        }
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::validateVector3(const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    for (nanoem_rsize_t i = 0; i < 3; i++) {
+        const float component = value[i];
+        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatNaN;
+            break;
+        }
+        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatInfinity;
+            break;
+        }
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::validateNormal(
+    const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    if (glm::abs(glm::length(glm::make_vec3(value)) < Constants::kEpsilon) &&
+        testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+        diag->m_message = type;
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::validateTexCoord(
+    const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    for (nanoem_rsize_t i = 0; i < 2; i++) {
+        const float component = value[i];
+        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatNaN;
+            break;
+        }
+        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatInfinity;
+            break;
+        }
+        else if ((component < -1.0f || component > 1.0f) && testDiagnosticsSeverity(kSeverityTypeInfo, filter, diag)) {
+            diag->m_message = type;
+            break;
+        }
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::validateEulerAngles(
+    const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    for (nanoem_rsize_t i = 0; i < 3; i++) {
+        const float component = value[i];
+        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatNaN;
+            break;
+        }
+        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatInfinity;
+            break;
+        }
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::validateColor(
+    const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    for (nanoem_rsize_t i = 0; i < 3; i++) {
+        const float component = value[i];
+        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatNaN;
+            break;
+        }
+        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+            diag->m_message = kMessageTypePrimitiveFloatInfinity;
+            break;
+        }
+        else if ((component < 0.0f || component > 1.0f) &&
+            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+            diag->m_message = type;
+            break;
+        }
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::validateOpacity(
+    const nanoem_f32_t value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    diag->m_message = kMessageTypeNone;
+    if (glm::isnan(value) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+        diag->m_message = kMessageTypePrimitiveFloatNaN;
+    }
+    else if (glm::isinf(value) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
+        diag->m_message = kMessageTypePrimitiveFloatInfinity;
+    }
+    else if ((value < 0.0f || value > 1.0f) && testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+        diag->m_message = type;
+    }
+    return diag->m_message == kMessageTypeNone;
+}
+
+bool
+Validator::testDiagnosticsSeverity(
+    SeverityType severity, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+{
+    bool result = false;
+    if (EnumUtils::isEnabled(severity, filter)) {
+        diag->m_severity = severity;
+        result = true;
+    }
+    return result;
+}
+
+bool
+Validator::validateNameInShiftJIS(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
+    nanoem_u32_t filter, nanoem_unicode_string_factory_t *factory, Diagnostics *diag)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoem_rsize_t length = 0;
+    diag->m_message = kMessageTypeNone;
+    if (nanoem_u8_t *bytes =
+            nanoemUnicodeStringFactoryGetByteArrayEncoding(factory, value, &length, NANOEM_CODEC_TYPE_SJIS, &status)) {
+        nanoemUnicodeStringFactoryDestroyByteArray(factory, bytes);
+    }
+    if (length > expected && testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
+        diag->m_message = type;
+    }
+    return diag->m_message == kMessageTypeNone;
+}
 
 Validator::Validator()
 {
@@ -560,7 +739,8 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
                 result.push_back(diag);
             }
         }
-        if (!validateParentBone(bonePtr, kMessageTypeBoneTransformBeforeParent, filter, &diag)) {
+        const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr);
+        if (!validateParentBone(bonePtr, parentBonePtr, kMessageTypeBoneTransformBeforeParent, filter, &diag)) {
             result.push_back(diag);
         }
         if (!validateVector3(nanoemModelBoneGetOrigin(bonePtr), filter, &diag)) {
@@ -572,7 +752,8 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
                 diag.m_message = kMessageTypeBoneInherentBoneNullBoneObject;
                 result.push_back(diag);
             }
-            else if (!validateParentBone(bonePtr, kMessageTypeBoneTransformBeforeInherentParent, filter, &diag)) {
+            else if (!validateParentBone(
+                         bonePtr, inherentParentBonePtr, kMessageTypeBoneTransformBeforeInherentParent, filter, &diag)) {
                 result.push_back(diag);
             }
         }
@@ -824,185 +1005,6 @@ Validator::validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, D
             result.push_back(diag);
         }
     }
-}
-
-bool
-Validator::validateParentBone(
-    const nanoem_model_bone_t *bonePtr, MessageType type, nanoem_u32_t filter, Diagnostics *diag)
-{
-    bool result = true;
-    if (const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr)) {
-        result = validateParentBone(bonePtr, parentBonePtr, type, filter, diag);
-    }
-    return result;
-}
-
-bool
-Validator::validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr,
-    MessageType type, nanoem_u32_t filter, Diagnostics *diag)
-{
-    diag->m_message = kMessageTypeNone;
-    if (nanoemModelBoneIsAffectedByPhysicsSimulation(parentBonePtr) &&
-        !nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr) &&
-        testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-        diag->m_message = type;
-    }
-    else {
-        int parentBoneIndex = model::Bone::index(parentBonePtr), boneIndex = model::Bone::index(bonePtr),
-            parentBoneStageIndex = nanoemModelBoneGetStageIndex(parentBonePtr),
-            boneStageIndex = nanoemModelBoneGetStageIndex(bonePtr);
-        if (parentBoneIndex < boneIndex && parentBoneStageIndex > boneStageIndex &&
-            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-            diag->m_message = type;
-        }
-        else if (parentBoneIndex > boneIndex && parentBoneStageIndex >= boneStageIndex &&
-            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-            diag->m_message = type;
-        }
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateNameInShiftJIS(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
-    nanoem_u32_t filter, nanoem_unicode_string_factory_t *factory, Diagnostics *diag)
-{
-    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    nanoem_rsize_t length = 0;
-    diag->m_message = kMessageTypeNone;
-    if (nanoem_u8_t *bytes =
-            nanoemUnicodeStringFactoryGetByteArrayEncoding(factory, value, &length, NANOEM_CODEC_TYPE_SJIS, &status)) {
-        nanoemUnicodeStringFactoryDestroyByteArray(factory, bytes);
-    }
-    if (length > expected && testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-        diag->m_message = type;
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateVector3(const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    diag->m_message = kMessageTypeNone;
-    for (nanoem_rsize_t i = 0; i < 3; i++) {
-        const float component = value[i];
-        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatNaN;
-            break;
-        }
-        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatInfinity;
-            break;
-        }
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateNormal(
-    const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    diag->m_message = kMessageTypeNone;
-    if (glm::abs(glm::length(glm::make_vec3(value)) < Constants::kEpsilon) &&
-        testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-        diag->m_message = type;
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateTexCoord(
-    const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    diag->m_message = kMessageTypeNone;
-    for (nanoem_rsize_t i = 0; i < 2; i++) {
-        const float component = value[i];
-        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatNaN;
-            break;
-        }
-        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatInfinity;
-            break;
-        }
-        else if ((component < -1.0f || component > 1.0f) && testDiagnosticsSeverity(kSeverityTypeInfo, filter, diag)) {
-            diag->m_message = type;
-            break;
-        }
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateEulerAngles(
-    const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    diag->m_message = kMessageTypeNone;
-    for (nanoem_rsize_t i = 0; i < 3; i++) {
-        const float component = value[i];
-        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatNaN;
-            break;
-        }
-        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatInfinity;
-            break;
-        }
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateColor(
-    const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    diag->m_message = kMessageTypeNone;
-    for (nanoem_rsize_t i = 0; i < 3; i++) {
-        const float component = value[i];
-        if (glm::isnan(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatNaN;
-            break;
-        }
-        else if (glm::isinf(component) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-            diag->m_message = kMessageTypePrimitiveFloatInfinity;
-            break;
-        }
-        else if ((component < 0.0f || component > 1.0f) &&
-            testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-            diag->m_message = type;
-            break;
-        }
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::validateOpacity(
-    const nanoem_f32_t value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    diag->m_message = kMessageTypeNone;
-    if (glm::isnan(value) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-        diag->m_message = kMessageTypePrimitiveFloatNaN;
-    }
-    else if (glm::isinf(value) && testDiagnosticsSeverity(kSeverityTypeError, filter, diag)) {
-        diag->m_message = kMessageTypePrimitiveFloatInfinity;
-    }
-    else if ((value < 0.0f || value > 1.0f) && testDiagnosticsSeverity(kSeverityTypeWarning, filter, diag)) {
-        diag->m_message = type;
-    }
-    return diag->m_message == kMessageTypeNone;
-}
-
-bool
-Validator::testDiagnosticsSeverity(
-    SeverityType severity, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT
-{
-    bool result = false;
-    if (EnumUtils::isEnabled(severity, filter)) {
-        diag->m_severity = severity;
-        result = true;
-    }
-    return result;
 }
 
 } /* namespace model */

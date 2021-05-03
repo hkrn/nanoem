@@ -87,6 +87,8 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutAllSoftBodies(Project *project);
     void layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softBodyPtr, Project *project);
     bool layoutName(const nanoem_unicode_string_t *namePtr, Project *project, StringUtils::UnicodeStringScope &scope);
+    void layoutTextWithParentBoneValidation(const nanoem_model_bone_t *bonePtr,
+        const nanoem_model_bone_t *parentBonePtr, const char *titleID, const char *validationMessageID);
 
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);

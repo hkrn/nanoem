@@ -103,6 +103,26 @@ public:
     };
     typedef tinystl::vector<Diagnostics, TinySTLAllocator> DiagnosticsList;
 
+    static bool validateParentBone(
+        const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr) NANOEM_DECL_NOEXCEPT;
+    static bool validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr,
+        MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateVector3(const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateNormal(
+        const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateTexCoord(
+        const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateEulerAngles(
+        const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateColor(
+        const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateOpacity(
+        const nanoem_f32_t value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool testDiagnosticsSeverity(
+        SeverityType severity, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT;
+    static bool validateNameInShiftJIS(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
+        nanoem_u32_t filter, nanoem_unicode_string_factory_t *factory, Diagnostics *diag);
+
     Validator();
     ~Validator() NANOEM_DECL_NOEXCEPT;
 
@@ -119,25 +139,6 @@ private:
     void validateAllRigidBodyObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllJointObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllSoftBodyObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
-    bool validateParentBone(
-        const nanoem_model_bone_t *bonePtr, MessageType type, nanoem_u32_t filter, Diagnostics *diag);
-    bool validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr,
-        MessageType type, nanoem_u32_t filter, Diagnostics *diag);
-    bool validateNameInShiftJIS(const nanoem_unicode_string_t *value, nanoem_rsize_t expected, MessageType type,
-        nanoem_u32_t filter, nanoem_unicode_string_factory_t *factory, Diagnostics *diag);
-    bool validateVector3(const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
-    bool validateNormal(
-        const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
-    bool validateTexCoord(
-        const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
-    bool validateEulerAngles(
-        const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
-    bool validateColor(
-        const nanoem_f32_t *value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
-    bool validateOpacity(
-        const nanoem_f32_t value, MessageType type, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
-    bool testDiagnosticsSeverity(
-        SeverityType severity, nanoem_u32_t filter, Diagnostics *diag) const NANOEM_DECL_NOEXCEPT;
 };
 
 } /* namespace model */
