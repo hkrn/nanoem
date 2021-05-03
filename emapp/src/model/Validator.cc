@@ -26,7 +26,8 @@ static const char kUnknownName[] = "(unknown)";
 } /* anonymous namespace */
 
 bool
-Validator::validateParentBone(const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr)
+Validator::validateParentBone(
+    const nanoem_model_bone_t *bonePtr, const nanoem_model_bone_t *parentBonePtr) NANOEM_DECL_NOEXCEPT
 {
     Diagnostics diag;
     const nanoem_u32_t severity = kSeverityTypeInfo | kSeverityTypeWarning | kSeverityTypeError;
