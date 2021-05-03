@@ -9,6 +9,7 @@
 #include "emapp/Constants.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/StringUtils.h"
+#include "emapp/model/Bone.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtc/matrix_inverse.hpp"
@@ -119,15 +120,15 @@ Constraint::hasUnitXConstraint(
 {
     nanoem_parameter_assert(bone, "must not be nullptr");
     nanoem_parameter_assert(factory, "must not be nullptr");
-    static const nanoem_u8_t kLeftKnee[] = { 0xe5, 0xb7, 0xa6, 0xe3, 0x81, 0xb2, 0xe3, 0x81, 0x96, 0x0 },
-                             kRightKnee[] = { 0xe5, 0x8f, 0xb3, 0xe3, 0x81, 0xb2, 0xe3, 0x81, 0x96, 0x0 };
     const nanoem_unicode_string_t *name = nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
     nanoem_u8_t buffer[Inline::kNameStackBufferSize];
     nanoem_rsize_t length;
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemUnicodeStringFactoryToUtf8OnStackEXT(factory, name, &length, buffer, sizeof(buffer), &status);
-    return StringUtils::equals(reinterpret_cast<const char *>(buffer), reinterpret_cast<const char *>(kLeftKnee)) ||
-        StringUtils::equals(reinterpret_cast<const char *>(buffer), reinterpret_cast<const char *>(kRightKnee));
+    return StringUtils::equals(reinterpret_cast<const char *>(buffer),
+               reinterpret_cast<const char *>(model::Bone::kLeftKneeInJapanese)) ||
+        StringUtils::equals(
+            reinterpret_cast<const char *>(buffer), reinterpret_cast<const char *>(model::Bone::kRightKneeInJapanese));
 }
 
 void

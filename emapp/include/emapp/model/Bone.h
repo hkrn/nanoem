@@ -31,6 +31,14 @@ public:
     typedef tinystl::unordered_set<nanoem_model_bone_t *, TinySTLAllocator> MutableSet;
     static const Vector4U8 kDefaultBezierControlPoint;
     static const Vector4U8 kDefaultAutomaticBezierControlPoint;
+    static const nanoem_u8_t kNameRootParentInJapanese[];
+    static const nanoem_u8_t kNameCenterInJapanese[];
+    static const nanoem_u8_t kNameCenterOfViewportInJapanese[];
+    static const nanoem_u8_t kNameCenterOffsetInJapanese[];
+    static const nanoem_u8_t kNameLeftInJapanese[];
+    static const nanoem_u8_t kNameRightInJapanese[];
+    static const nanoem_u8_t kLeftKneeInJapanese[];
+    static const nanoem_u8_t kRightKneeInJapanese[];
 
     typedef tinystl::pair<int, int> IndexPair;
     typedef tinystl::vector<IndexPair, TinySTLAllocator> IndexSet;

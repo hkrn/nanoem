@@ -6551,21 +6551,21 @@ Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
                     if (model::Bone *bone = model::Bone::cast(originBone)) {
                         const Vector3 translation(glm::make_vec3(nanoemModelMorphBoneGetTranslation(boneMorph)));
                         const Quaternion orientation(glm::make_quat(nanoemModelMorphBoneGetOrientation(boneMorph)));
-                        static const nanoem_u8_t kJapaneseLeft[] = { 0xe5, 0xb7, 0xa6, 0x0 },
-                                                 kJapaneseRight[] = { 0xe5, 0x8f, 0xb3, 0x0 };
                         const char *namePtr = bone->canonicalNameConstString();
                         if (reverse) {
-                            if (StringUtils::hasPrefix(namePtr, reinterpret_cast<const char *>(kJapaneseLeft))) {
-                                const String &newName = StringUtils::substitutedPrefixString(
-                                    reinterpret_cast<const char *>(kJapaneseRight), namePtr);
+                            if (StringUtils::hasPrefix(
+                                    namePtr, reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese))) {
+                                const String newName(StringUtils::substitutedPrefixString(
+                                    reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese), namePtr));
                                 if (reversedBoneNameSet.find(newName) == reversedBoneNameSet.end()) {
                                     reverseLocalTransformBone(newName, translation, orientation, model);
                                     reversedBoneNameSet.insert(newName);
                                 }
                             }
-                            if (StringUtils::hasPrefix(namePtr, reinterpret_cast<const char *>(kJapaneseRight))) {
-                                const String &newName = StringUtils::substitutedPrefixString(
-                                    reinterpret_cast<const char *>(kJapaneseLeft), namePtr);
+                            if (StringUtils::hasPrefix(
+                                    namePtr, reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese))) {
+                                const String newName(StringUtils::substitutedPrefixString(
+                                    reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese), namePtr));
                                 if (reversedBoneNameSet.find(newName) == reversedBoneNameSet.end()) {
                                     reverseLocalTransformBone(newName, translation, orientation, model);
                                     reversedBoneNameSet.insert(newName);

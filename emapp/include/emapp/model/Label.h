@@ -20,6 +20,8 @@ public:
     typedef tinystl::unordered_set<const nanoem_model_label_t *, TinySTLAllocator> Set;
     typedef tinystl::vector<nanoem_model_label_t *, TinySTLAllocator> MutableList;
     typedef tinystl::unordered_set<nanoem_model_label_t *, TinySTLAllocator> MutableSet;
+    static const nanoem_u8_t kNameExpressionInJapanese[];
+
     ~Label() NANOEM_DECL_NOEXCEPT;
 
     void bind(nanoem_model_label_t *label);

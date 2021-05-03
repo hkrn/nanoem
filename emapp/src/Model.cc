@@ -786,9 +786,7 @@ Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_stri
     }
     nanoem_mutable_model_bone_t *mutableCenterBone = nanoemMutableModelBoneCreate(originModel, &status);
     {
-        static const nanoem_u8_t kCenterName[] = { 0xe3, 0x82, 0xbb, 0xe3, 0x83, 0xb3, 0xe3, 0x82, 0xbf, 0xe3, 0x83,
-            0xbc, 0 };
-        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kCenterName), scope)) {
+        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(model::Bone::kNameCenterInJapanese), scope)) {
             nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
         }
         if (StringUtils::tryGetString(factory, "Center", scope)) {
@@ -815,9 +813,9 @@ Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_stri
         nanoemMutableModelLabelDestroy(mutableRootLabel);
     }
     {
-        static const nanoem_u8_t kExpressionName[] = { 0xe8, 0xa1, 0xa8, 0xe6, 0x83, 0x85, 0 };
         nanoem_mutable_model_label_t *mutableExpressionLabel = nanoemMutableModelLabelCreate(originModel, &status);
-        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kExpressionName), scope)) {
+        if (StringUtils::tryGetString(
+                factory, reinterpret_cast<const char *>(model::Label::kNameExpressionInJapanese), scope)) {
             nanoemMutableModelLabelSetName(
                 mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
         }

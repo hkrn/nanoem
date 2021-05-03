@@ -12,6 +12,8 @@
 namespace nanoem {
 namespace model {
 
+const nanoem_u8_t Label::kNameExpressionInJapanese[] = { 0xe8, 0xa1, 0xa8, 0xe6, 0x83, 0x85, 0 };
+
 Label::~Label() NANOEM_DECL_NOEXCEPT
 {
 }

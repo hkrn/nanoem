@@ -390,17 +390,13 @@ PerspectiveCamera::lookAt() const NANOEM_DECL_NOEXCEPT
         break;
     }
     case kFollowingTypeModel: {
-        static const nanoem_u8_t kCenterOfViewport[] = { 0xe6, 0x93, 0x8d, 0xe4, 0xbd, 0x9c, 0xe4, 0xb8, 0xad, 0xe5,
-            0xbf, 0x83, 0 };
-        static const nanoem_u8_t kCenterOffset[] = { 0xe3, 0x82, 0xbb, 0xe3, 0x83, 0xb3, 0xe3, 0x82, 0xbf, 0xe3, 0x83,
-            0xbc, 0xe5, 0x85, 0x88, 0 };
         if (const Model *model = m_project->activeModel()) {
             if (const nanoem_model_bone_t *bonePtr =
-                    model->findBone(reinterpret_cast<const char *>(kCenterOfViewport))) {
+                    model->findBone(reinterpret_cast<const char *>(model::Bone::kNameCenterOfViewportInJapanese))) {
                 at = m_lookAt + bonePosition(bonePtr);
             }
             else if (const nanoem_model_bone_t *bonePtr =
-                         model->findBone(reinterpret_cast<const char *>(kCenterOffset))) {
+                         model->findBone(reinterpret_cast<const char *>(model::Bone::kNameCenterOffsetInJapanese))) {
                 at = m_lookAt + bonePosition(nanoemModelBoneGetParentBoneObject(bonePtr));
             }
             else {
