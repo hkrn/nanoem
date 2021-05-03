@@ -9,6 +9,7 @@
 #include "emapp/Error.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"
+#include "emapp/model/Label.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/vector_query.hpp"
@@ -203,12 +204,12 @@ Importer::handleDirectXMeshDocument(
             IndexList indices;
             VertexMap vertexMap;
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            nanoem_mutable_model_t *model = nanoemMutableModelCreateAsReference(m_model->data(), &status);
+            nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreateAsReference(m_model->data(), &status);
             Project *project = m_model->project();
             nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
             nanoem_rsize_t vertexOffset = 0;
             StringUtils::UnicodeStringScope us(factory);
-            setModelNameAndComment(model, desc, &status);
+            setupModelNameAndComment(mutableModel, factory, desc, &status);
             Vector3List normals;
             normals.resize(faceNormalList.size());
             for (FaceNormalList::const_iterator it = faceNormalList.begin(), end = faceNormalList.end(); it != end;
@@ -226,25 +227,27 @@ Importer::handleDirectXMeshDocument(
             for (MaterialVertexListMap::const_iterator it = materialMap.begin(), end = materialMap.end(); it != end;
                  ++it) {
                 const nanodxm_material_t *m = it->first;
-                nanoem_mutable_model_material_t *material = nanoemMutableModelMaterialCreate(m_model->data(), &status);
+                nanoem_mutable_model_material_t *mutableMaterialPtr =
+                    nanoemMutableModelMaterialCreate(m_model->data(), &status);
                 const VertexUnitList &vl = it->second;
                 for (VertexUnitList::const_iterator it3 = vl.begin(), end3 = vl.end(); it3 != end3; ++it3) {
                     const VertexUnit &v = *it3;
                     VertexMap::const_iterator it = vertexMap.find(v.m_index);
                     if (it == vertexMap.end()) {
                         const Vector4 origin(desc.m_transform * Vector4(v.m_origin, 1)), uv(v.m_uv, 0, 0);
-                        nanoem_mutable_model_vertex_t *vertex =
+                        nanoem_mutable_model_vertex_t *mutableVertexPtr =
                             nanoemMutableModelVertexCreate(m_model->data(), &status);
-                        nanoemMutableModelVertexSetOrigin(vertex, glm::value_ptr(origin));
-                        nanoemMutableModelVertexSetNormal(vertex, glm::value_ptr(Vector4(normals[v.m_index], 0)));
-                        nanoemMutableModelVertexSetTexCoord(vertex, glm::value_ptr(uv));
-                        nanoemMutableModelVertexSetType(vertex, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
-                        nanoemMutableModelInsertVertexObject(model, vertex, -1, &status);
-                        nanoem_model_vertex_t *vo = nanoemMutableModelVertexGetOriginObject(vertex);
+                        nanoemMutableModelVertexSetOrigin(mutableVertexPtr, glm::value_ptr(origin));
+                        nanoemMutableModelVertexSetNormal(
+                            mutableVertexPtr, glm::value_ptr(Vector4(normals[v.m_index], 0)));
+                        nanoemMutableModelVertexSetTexCoord(mutableVertexPtr, glm::value_ptr(uv));
+                        nanoemMutableModelVertexSetType(mutableVertexPtr, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
+                        nanoemMutableModelInsertVertexObject(mutableModel, mutableVertexPtr, -1, &status);
+                        nanoem_model_vertex_t *vo = nanoemMutableModelVertexGetOriginObject(mutableVertexPtr);
                         model::Vertex *vu = model::Vertex::create();
                         vu->bind(vo);
-                        vu->setMaterial(nanoemMutableModelMaterialGetOriginObject(material));
-                        nanoemMutableModelVertexDestroy(vertex);
+                        vu->setMaterial(nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr));
+                        nanoemMutableModelVertexDestroy(mutableVertexPtr);
                         it = vertexMap.insert(tinystl::make_pair(v.m_index, vertexOffset++)).first;
                     }
                     indices.push_back(Inline::saturateInt32(it->second));
@@ -254,18 +257,19 @@ Importer::handleDirectXMeshDocument(
                 if (nanoem_unicode_string_t *s = nanoemUnicodeStringFactoryCreateStringWithEncoding(factory,
                         reinterpret_cast<const nanoem_u8_t *>(name.c_str()), name.size(), NANOEM_CODEC_TYPE_SJIS,
                         &status)) {
-                    nanoemMutableModelMaterialSetName(material, s, NANOEM_LANGUAGE_TYPE_FIRST_ENUM, &status);
+                    nanoemMutableModelMaterialSetName(mutableMaterialPtr, s, NANOEM_LANGUAGE_TYPE_FIRST_ENUM, &status);
                     nanoemUnicodeStringFactoryDestroyString(factory, s);
                 }
                 if (const nanodxm_uint8_t *texturePathPtr = nanodxmMaterialGetTextureFilename(m)) {
                     if (nanoem_unicode_string_t *s = nanoemUnicodeStringFactoryCreateStringWithEncoding(factory,
                             texturePathPtr, StringUtils::length(reinterpret_cast<const char *>(texturePathPtr)),
                             NANOEM_CODEC_TYPE_SJIS, &status)) {
-                        nanoem_mutable_model_texture_t *texture =
+                        nanoem_mutable_model_texture_t *mutableTexturePtr =
                             nanoemMutableModelTextureCreate(m_model->data(), &status);
-                        nanoemMutableModelTextureSetPath(texture, s, &status);
-                        setMaterialTexture(material, texture, reinterpret_cast<const char *>(texturePathPtr), &status);
-                        nanoemMutableModelTextureDestroy(texture);
+                        nanoemMutableModelTextureSetPath(mutableTexturePtr, s, &status);
+                        setupMaterialTexture(mutableMaterialPtr, mutableTexturePtr,
+                            reinterpret_cast<const char *>(texturePathPtr), &status);
+                        nanoemMutableModelTextureDestroy(mutableTexturePtr);
                         nanoemUnicodeStringFactoryDestroyString(factory, s);
                     }
                 }
@@ -273,22 +277,24 @@ Importer::handleDirectXMeshDocument(
                                       &sc = nanodxmMaterialGetSpecular(m);
                 const Vector4 ambient(ac.r, ac.g, ac.b, ac.a), diffuse(dc.r, dc.g, dc.b, dc.a),
                     specular(sc.r, sc.g, sc.b, sc.a);
-                nanoemMutableModelMaterialSetAmbientColor(material, glm::value_ptr(ambient));
-                nanoemMutableModelMaterialSetDiffuseColor(material, glm::value_ptr(diffuse));
-                nanoemMutableModelMaterialSetDiffuseOpacity(material, diffuse.w);
-                nanoemMutableModelMaterialSetSpecularColor(material, glm::value_ptr(specular));
-                nanoemMutableModelMaterialSetSpecularPower(material, nanodxmMaterialGetShininess(m));
-                nanoemMutableModelMaterialSetCullingDisabled(material, 0);
-                nanoemMutableModelInsertMaterialObject(model, material, -1, &status);
-                nanoemMutableModelMaterialSetNumVertexIndices(material, vl.size());
-                nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(material);
+                nanoemMutableModelMaterialSetAmbientColor(mutableMaterialPtr, glm::value_ptr(ambient));
+                nanoemMutableModelMaterialSetDiffuseColor(mutableMaterialPtr, glm::value_ptr(diffuse));
+                nanoemMutableModelMaterialSetDiffuseOpacity(mutableMaterialPtr, diffuse.w);
+                nanoemMutableModelMaterialSetSpecularColor(mutableMaterialPtr, glm::value_ptr(specular));
+                nanoemMutableModelMaterialSetSpecularPower(mutableMaterialPtr, nanodxmMaterialGetShininess(m));
+                nanoemMutableModelMaterialSetCullingDisabled(mutableMaterialPtr, 0);
+                nanoemMutableModelInsertMaterialObject(mutableModel, mutableMaterialPtr, -1, &status);
+                nanoemMutableModelMaterialSetNumVertexIndices(mutableMaterialPtr, vl.size());
+                nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr);
                 model::Material *mu = model::Material::create(project->sharedFallbackImage());
                 mu->bind(origin);
                 mu->resetLanguage(origin, factory, project->castLanguage());
-                nanoemMutableModelMaterialDestroy(material);
+                nanoemMutableModelMaterialDestroy(mutableMaterialPtr);
             }
-            nanoemMutableModelSetVertexIndices(model, indices.data(), indices.size(), &status);
-            nanoemMutableModelDestroy(model);
+            nanoemMutableModelSetVertexIndices(mutableModel, indices.data(), indices.size(), &status);
+            setupRootParentBoneAndLabel(mutableModel, factory, &status);
+            bindAllVerticesWithRootParentBone(mutableModel, &status);
+            nanoemMutableModelDestroy(mutableModel);
         }
     }
     else {
@@ -414,12 +420,12 @@ Importer::handleMetasequoiaDocument(
             IndexList indices;
             VertexMap vertexMap;
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            nanoem_mutable_model_t *model = nanoemMutableModelCreateAsReference(m_model->data(), &status);
+            nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreateAsReference(m_model->data(), &status);
             nanoem_rsize_t vertexOffset = 0;
             Project *project = m_model->project();
             nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
             StringUtils::UnicodeStringScope us(factory);
-            setModelNameAndComment(model, desc, &status);
+            setupModelNameAndComment(mutableModel, factory, desc, &status);
             for (ObjectList::const_iterator it = map.begin(), end = map.end(); it != end; ++it) {
                 const nanomqo_object_t *o = objects[it - map.begin()];
                 const MaterialVertexListMap &materialMap = *it;
@@ -440,7 +446,7 @@ Importer::handleMetasequoiaDocument(
                 for (MaterialVertexListMap::const_iterator it2 = materialMap.begin(), end2 = materialMap.end();
                      it2 != end2; ++it2) {
                     const nanomqo_material_t *m = it2->first;
-                    nanoem_mutable_model_material_t *material =
+                    nanoem_mutable_model_material_t *mutableMaterialPtr =
                         nanoemMutableModelMaterialCreate(m_model->data(), &status);
                     const VertexUnitList &vl = it2->second;
                     for (VertexUnitList::const_iterator it3 = vl.begin(), end3 = vl.end(); it3 != end3; ++it3) {
@@ -453,18 +459,20 @@ Importer::handleMetasequoiaDocument(
                                 origin(desc.m_transform *
                                     (orientation * ((Vector4(v.m_origin, 1) + translation) * scale))),
                                 uv(v.m_uv, 0, 0);
-                            nanoem_mutable_model_vertex_t *vertex =
+                            nanoem_mutable_model_vertex_t *mutableVeretxPtr =
                                 nanoemMutableModelVertexCreate(m_model->data(), &status);
-                            nanoemMutableModelVertexSetOrigin(vertex, glm::value_ptr(origin * Vector4(1, 1, -1, 1)));
-                            nanoemMutableModelVertexSetNormal(vertex, glm::value_ptr(Vector4(normals[v.m_index], 0)));
-                            nanoemMutableModelVertexSetTexCoord(vertex, glm::value_ptr(uv));
-                            nanoemMutableModelVertexSetType(vertex, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
-                            nanoemMutableModelInsertVertexObject(model, vertex, -1, &status);
-                            nanoem_model_vertex_t *vo = nanoemMutableModelVertexGetOriginObject(vertex);
+                            nanoemMutableModelVertexSetOrigin(
+                                mutableVeretxPtr, glm::value_ptr(origin * Vector4(1, 1, -1, 1)));
+                            nanoemMutableModelVertexSetNormal(
+                                mutableVeretxPtr, glm::value_ptr(Vector4(normals[v.m_index], 0)));
+                            nanoemMutableModelVertexSetTexCoord(mutableVeretxPtr, glm::value_ptr(uv));
+                            nanoemMutableModelVertexSetType(mutableVeretxPtr, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
+                            nanoemMutableModelInsertVertexObject(mutableModel, mutableVeretxPtr, -1, &status);
+                            nanoem_model_vertex_t *vo = nanoemMutableModelVertexGetOriginObject(mutableVeretxPtr);
                             model::Vertex *vu = model::Vertex::create();
                             vu->bind(vo);
-                            vu->setMaterial(nanoemMutableModelMaterialGetOriginObject(material));
-                            nanoemMutableModelVertexDestroy(vertex);
+                            vu->setMaterial(nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr));
+                            nanoemMutableModelVertexDestroy(mutableVeretxPtr);
                             it = vertexMap.insert(tinystl::make_pair(v.m_index, vertexOffset++)).first;
                         }
                         indices.push_back(Inline::saturateInt32(it->second));
@@ -479,18 +487,19 @@ Importer::handleMetasequoiaDocument(
                     if (nanoem_unicode_string_t *s = nanoemUnicodeStringFactoryCreateStringWithEncoding(factory,
                             reinterpret_cast<const nanoem_u8_t *>(name.c_str()), name.size(), NANOEM_CODEC_TYPE_SJIS,
                             &status)) {
-                        nanoemMutableModelMaterialSetName(material, s, NANOEM_LANGUAGE_TYPE_FIRST_ENUM, &status);
+                        nanoemMutableModelMaterialSetName(
+                            mutableMaterialPtr, s, NANOEM_LANGUAGE_TYPE_FIRST_ENUM, &status);
                         nanoemUnicodeStringFactoryDestroyString(factory, s);
                     }
                     if (const char *texturePathPtr = nanomqoMaterialGetTexturePath(m)) {
                         if (nanoem_unicode_string_t *s = nanoemUnicodeStringFactoryCreateStringWithEncoding(factory,
                                 reinterpret_cast<const nanoem_u8_t *>(texturePathPtr),
                                 StringUtils::length(texturePathPtr), NANOEM_CODEC_TYPE_SJIS, &status)) {
-                            nanoem_mutable_model_texture_t *texture =
+                            nanoem_mutable_model_texture_t *mutableTexturePtr =
                                 nanoemMutableModelTextureCreate(m_model->data(), &status);
-                            nanoemMutableModelTextureSetPath(texture, s, &status);
-                            setMaterialTexture(material, texture, texturePathPtr, &status);
-                            nanoemMutableModelTextureDestroy(texture);
+                            nanoemMutableModelTextureSetPath(mutableTexturePtr, s, &status);
+                            setupMaterialTexture(mutableMaterialPtr, mutableTexturePtr, texturePathPtr, &status);
+                            nanoemMutableModelTextureDestroy(mutableTexturePtr);
                             nanoemUnicodeStringFactoryDestroyString(factory, s);
                         }
                     }
@@ -498,24 +507,27 @@ Importer::handleMetasequoiaDocument(
                         ambient(nanomqoMaterialGetAmbient(m) * baseColor),
                         diffuse(nanomqoMaterialGetDiffuse(m) * baseColor),
                         specular(nanomqoMaterialGetSpecular(m) * baseColor);
-                    nanoemMutableModelMaterialSetAmbientColor(material, glm::value_ptr(ambient));
-                    nanoemMutableModelMaterialSetDiffuseColor(material, glm::value_ptr(diffuse));
-                    nanoemMutableModelMaterialSetDiffuseOpacity(material, baseColor.w);
-                    nanoemMutableModelMaterialSetSpecularColor(material, glm::value_ptr(specular));
-                    nanoemMutableModelMaterialSetSpecularPower(material, nanomqoMaterialGetPower(m));
-                    nanoemMutableModelMaterialSetCullingDisabled(material, nanomqoMaterialIsCullingDisabled(m));
-                    nanoemMutableModelInsertMaterialObject(model, material, -1, &status);
-                    nanoemMutableModelMaterialSetNumVertexIndices(material, vl.size());
-                    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(material);
+                    nanoemMutableModelMaterialSetAmbientColor(mutableMaterialPtr, glm::value_ptr(ambient));
+                    nanoemMutableModelMaterialSetDiffuseColor(mutableMaterialPtr, glm::value_ptr(diffuse));
+                    nanoemMutableModelMaterialSetDiffuseOpacity(mutableMaterialPtr, baseColor.w);
+                    nanoemMutableModelMaterialSetSpecularColor(mutableMaterialPtr, glm::value_ptr(specular));
+                    nanoemMutableModelMaterialSetSpecularPower(mutableMaterialPtr, nanomqoMaterialGetPower(m));
+                    nanoemMutableModelMaterialSetCullingDisabled(
+                        mutableMaterialPtr, nanomqoMaterialIsCullingDisabled(m));
+                    nanoemMutableModelInsertMaterialObject(mutableModel, mutableMaterialPtr, -1, &status);
+                    nanoemMutableModelMaterialSetNumVertexIndices(mutableMaterialPtr, vl.size());
+                    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr);
                     model::Material *mu = model::Material::create(project->sharedFallbackImage());
                     mu->bind(origin);
                     mu->resetLanguage(origin, factory, project->castLanguage());
-                    nanoemMutableModelMaterialDestroy(material);
+                    nanoemMutableModelMaterialDestroy(mutableMaterialPtr);
                 }
                 vertexMap.clear();
             }
-            nanoemMutableModelSetVertexIndices(model, indices.data(), indices.size(), &status);
-            nanoemMutableModelDestroy(model);
+            nanoemMutableModelSetVertexIndices(mutableModel, indices.data(), indices.size(), &status);
+            setupRootParentBoneAndLabel(mutableModel, factory, &status);
+            bindAllVerticesWithRootParentBone(mutableModel, &status);
+            nanoemMutableModelDestroy(mutableModel);
             if (status != NANOEM_STATUS_SUCCESS) {
                 const char *message = Error::convertStatusToMessage(status, project->translator());
                 error = Error(message, status, Error::kDomainTypeNanoem);
@@ -531,44 +543,110 @@ Importer::handleMetasequoiaDocument(
 }
 
 void
-Importer::setModelNameAndComment(
-    nanoem_mutable_model_t *model, const Model::ImportDescription &desc, nanoem_status_t *status)
+Importer::setupModelNameAndComment(nanoem_mutable_model_t *mutableModel, nanoem_unicode_string_factory_t *factory,
+    const Model::ImportDescription &desc, nanoem_status_t *status)
 {
-    Project *project = m_model->project();
-    nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
     for (int i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
         nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
         if (StringUtils::tryGetString(factory, desc.m_name[language], us)) {
-            nanoemMutableModelSetName(model, us.value(), language, status);
+            nanoemMutableModelSetName(mutableModel, us.value(), language, status);
         }
         if (StringUtils::tryGetString(factory, desc.m_comment[language], us)) {
-            nanoemMutableModelSetComment(model, us.value(), language, status);
+            nanoemMutableModelSetComment(mutableModel, us.value(), language, status);
         }
     }
 }
 
 void
-Importer::setMaterialTexture(nanoem_mutable_model_material_t *material, nanoem_mutable_model_texture_t *texture,
-    const char *texturePathPtr, nanoem_status_t *status)
+Importer::setupMaterialTexture(nanoem_mutable_model_material_t *mutableMaterialPtr,
+    nanoem_mutable_model_texture_t *texture, const char *texturePathPtr, nanoem_status_t *status)
 {
     if (const char *p = StringUtils::indexOf(texturePathPtr, '.')) {
         if (StringUtils::equals(p, ".spa")) {
             nanoemMutableModelMaterialSetSphereMapTextureType(
-                material, NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD);
-            nanoemMutableModelMaterialSetSphereMapTextureObject(material, texture, status);
+                mutableMaterialPtr, NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD);
+            nanoemMutableModelMaterialSetSphereMapTextureObject(mutableMaterialPtr, texture, status);
         }
         else if (StringUtils::equals(p, ".sph")) {
             nanoemMutableModelMaterialSetSphereMapTextureType(
-                material, NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MULTIPLY);
-            nanoemMutableModelMaterialSetSphereMapTextureObject(material, texture, status);
+                mutableMaterialPtr, NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MULTIPLY);
+            nanoemMutableModelMaterialSetSphereMapTextureObject(mutableMaterialPtr, texture, status);
         }
         else {
-            nanoemMutableModelMaterialSetDiffuseTextureObject(material, texture, status);
+            nanoemMutableModelMaterialSetDiffuseTextureObject(mutableMaterialPtr, texture, status);
         }
     }
     else {
-        nanoemMutableModelMaterialSetDiffuseTextureObject(material, texture, status);
+        nanoemMutableModelMaterialSetDiffuseTextureObject(mutableMaterialPtr, texture, status);
+    }
+}
+
+void
+Importer::setupRootParentBoneAndLabel(
+    nanoem_mutable_model_t *mutableModel, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
+{
+    nanoem_model_t *originModel = nanoemMutableModelGetOriginObject(mutableModel);
+    nanoem_mutable_model_bone_t *mutableCenterBone = nanoemMutableModelBoneCreate(originModel, status);
+    StringUtils::UnicodeStringScope scope(factory);
+    {
+        if (StringUtils::tryGetString(
+                factory, reinterpret_cast<const char *>(model::Bone::kNameRootParentInJapanese), scope)) {
+            nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, status);
+        }
+        if (StringUtils::tryGetString(factory, "Root", scope)) {
+            nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, status);
+        }
+        nanoemMutableModelBoneSetVisible(mutableCenterBone, true);
+        nanoemMutableModelBoneSetMovable(mutableCenterBone, true);
+        nanoemMutableModelBoneSetRotateable(mutableCenterBone, true);
+        nanoemMutableModelBoneSetUserHandleable(mutableCenterBone, true);
+        nanoemMutableModelInsertBoneObject(mutableModel, mutableCenterBone, -1, status);
+    }
+    {
+        nanoem_mutable_model_label_t *mutableRootLabel = nanoemMutableModelLabelCreate(originModel, status);
+        if (StringUtils::tryGetString(factory, "Root", scope)) {
+            nanoemMutableModelLabelSetName(mutableRootLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, status);
+            nanoemMutableModelLabelSetName(mutableRootLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, status);
+        }
+        nanoem_mutable_model_label_item_t *mutableLabelItem = nanoemMutableModelLabelItemCreateFromBoneObject(
+            mutableRootLabel, nanoemMutableModelBoneGetOriginObject(mutableCenterBone), status);
+        nanoemMutableModelLabelInsertItemObject(mutableRootLabel, mutableLabelItem, -1, status);
+        nanoemMutableModelLabelItemDestroy(mutableLabelItem);
+        nanoemMutableModelLabelSetSpecial(mutableRootLabel, 1);
+        nanoemMutableModelInsertLabelObject(mutableModel, mutableRootLabel, -1, status);
+        nanoemMutableModelLabelDestroy(mutableRootLabel);
+    }
+    {
+        nanoem_mutable_model_label_t *mutableExpressionLabel = nanoemMutableModelLabelCreate(originModel, status);
+        if (StringUtils::tryGetString(
+                factory, reinterpret_cast<const char *>(model::Label::kNameExpressionInJapanese), scope)) {
+            nanoemMutableModelLabelSetName(
+                mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, status);
+        }
+        if (StringUtils::tryGetString(factory, "Expression", scope)) {
+            nanoemMutableModelLabelSetName(mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, status);
+        }
+        nanoemMutableModelLabelSetSpecial(mutableExpressionLabel, 1);
+        nanoemMutableModelInsertLabelObject(mutableModel, mutableExpressionLabel, -1, status);
+        nanoemMutableModelLabelDestroy(mutableExpressionLabel);
+    }
+    nanoemMutableModelBoneDestroy(mutableCenterBone);
+}
+
+void
+Importer::bindAllVerticesWithRootParentBone(nanoem_mutable_model_t *model, nanoem_status_t *status)
+{
+    nanoem_rsize_t numBones, numVertices;
+    nanoem_model_t *originModel = nanoemMutableModelGetOriginObject(model);
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(originModel, &numBones);
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(originModel, &numVertices);
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        nanoem_model_vertex_t *vertexPtr = vertices[i];
+        nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
+        nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, bones[0], 0);
+        nanoemMutableModelVertexSetType(mutableVertexPtr, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
+        nanoemMutableModelVertexDestroy(mutableVertexPtr);
     }
 }
 
