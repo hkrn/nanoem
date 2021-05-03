@@ -6,6 +6,8 @@
 
 #include "emapp/UUID.h"
 
+#include "emapp/private/CommonInclude.h"
+
 namespace nanoem {
 namespace {
 
@@ -24,6 +26,16 @@ fillBuffer(const nanoem_u8_t *p, int s, int e, char *&ptr)
 }
 
 } /* namespace anonymous */
+
+UUID::UUID()
+{
+    Inline::clearZeroMemory(m_value);
+}
+
+UUID::UUID(const UUID &uuid)
+{
+    memcpy(m_value, uuid.m_value, sizeof(m_value));
+}
 
 UUID::~UUID() NANOEM_DECL_NOEXCEPT
 {
@@ -51,10 +63,6 @@ UUID::toString() const
     fillBuffer(m_value, 19, 31, ptr);
     *ptr++ = 0;
     return String(buffer, sizeof(buffer));
-}
-
-UUID::UUID()
-{
 }
 
 } /* namespace nanoem */

@@ -29,12 +29,14 @@ public:
         }
         return uuid;
     }
+    explicit UUID();
+    UUID(const UUID &uuid);
     ~UUID() NANOEM_DECL_NOEXCEPT;
+
     const nanoem_u8_t *bytes() const NANOEM_DECL_NOEXCEPT;
     String toString() const;
 
 private:
-    UUID();
     nanoem_u8_t m_value[31];
 };
 

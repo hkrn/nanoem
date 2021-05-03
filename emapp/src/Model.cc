@@ -27,6 +27,7 @@
 #include "emapp/Project.h"
 #include "emapp/ResourceBundle.h"
 #include "emapp/StringUtils.h"
+#include "emapp/UUID.h"
 #include "emapp/command/TransformBoneCommand.h"
 #include "emapp/command/TransformMorphCommand.h"
 #include "emapp/internal/DebugDrawer.h"
@@ -759,6 +760,86 @@ Model::setEdgePipelineDescription(sg_pipeline_desc &desc)
     sg_layout_desc &ld = desc.layout;
     ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_edge), SG_VERTEXFORMAT_FLOAT3 };
     ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_info), SG_VERTEXFORMAT_FLOAT4 };
+}
+
+void
+Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_string_factory_t *factory,
+    ByteArray &bytes, nanoem_status_t &status)
+{
+    nanoem_mutable_buffer_t *mutableBuffer = nanoemMutableBufferCreate(&status);
+    nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreate(factory, &status);
+    nanoem_model_t *originModel = nanoemMutableModelGetOriginObject(mutableModel);
+    StringUtils::UnicodeStringScope scope(factory);
+    {
+        nanoemMutableModelSetAdditionalUVSize(mutableModel, 0);
+        nanoemMutableModelSetCodecType(mutableModel, NANOEM_CODEC_TYPE_UTF16);
+        nanoemMutableModelSetFormatType(mutableModel, NANOEM_MODEL_FORMAT_TYPE_PMX_2_0);
+        if (StringUtils::tryGetString(factory, desc.m_nameInJapanese, scope)) {
+            nanoemMutableModelSetName(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, desc.m_nameInEnglish, scope)) {
+            nanoemMutableModelSetName(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        if (StringUtils::tryGetString(factory, desc.m_commentInJapanese, scope)) {
+            nanoemMutableModelSetComment(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, desc.m_commentInEnglish, scope)) {
+            nanoemMutableModelSetComment(mutableModel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+    }
+    nanoem_mutable_model_bone_t *mutableCenterBone = nanoemMutableModelBoneCreate(originModel, &status);
+    {
+        static const nanoem_u8_t kCenterName[] = { 0xe3, 0x82, 0xbb, 0xe3, 0x83, 0xb3, 0xe3, 0x82, 0xbf, 0xe3, 0x83,
+            0xbc, 0 };
+        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kCenterName), scope)) {
+            nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, "Center", scope)) {
+            nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        nanoemMutableModelBoneSetVisible(mutableCenterBone, true);
+        nanoemMutableModelBoneSetMovable(mutableCenterBone, true);
+        nanoemMutableModelBoneSetRotateable(mutableCenterBone, true);
+        nanoemMutableModelBoneSetUserHandleable(mutableCenterBone, true);
+        nanoemMutableModelInsertBoneObject(mutableModel, mutableCenterBone, -1, &status);
+    }
+    {
+        nanoem_mutable_model_label_t *mutableRootLabel = nanoemMutableModelLabelCreate(originModel, &status);
+        if (StringUtils::tryGetString(factory, "Root", scope)) {
+            nanoemMutableModelLabelSetName(mutableRootLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+            nanoemMutableModelLabelSetName(mutableRootLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        nanoem_mutable_model_label_item_t *mutableLabelItem = nanoemMutableModelLabelItemCreateFromBoneObject(
+            mutableRootLabel, nanoemMutableModelBoneGetOriginObject(mutableCenterBone), &status);
+        nanoemMutableModelLabelInsertItemObject(mutableRootLabel, mutableLabelItem, -1, &status);
+        nanoemMutableModelLabelItemDestroy(mutableLabelItem);
+        nanoemMutableModelLabelSetSpecial(mutableRootLabel, 1);
+        nanoemMutableModelInsertLabelObject(mutableModel, mutableRootLabel, -1, &status);
+        nanoemMutableModelLabelDestroy(mutableRootLabel);
+    }
+    {
+        static const nanoem_u8_t kExpressionName[] = { 0xe8, 0xa1, 0xa8, 0xe6, 0x83, 0x85, 0 };
+        nanoem_mutable_model_label_t *mutableExpressionLabel = nanoemMutableModelLabelCreate(originModel, &status);
+        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kExpressionName), scope)) {
+            nanoemMutableModelLabelSetName(
+                mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, "Expression", scope)) {
+            nanoemMutableModelLabelSetName(
+                mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        nanoemMutableModelLabelSetSpecial(mutableExpressionLabel, 1);
+        nanoemMutableModelInsertLabelObject(mutableModel, mutableExpressionLabel, -1, &status);
+        nanoemMutableModelLabelDestroy(mutableExpressionLabel);
+    }
+    nanoemMutableModelBoneDestroy(mutableCenterBone);
+    nanoemMutableModelSaveToBuffer(mutableModel, mutableBuffer, &status);
+    nanoem_buffer_t *buffer = nanoemMutableBufferCreateBufferObject(mutableBuffer, &status);
+    const nanoem_u8_t *dataPtr = nanoemBufferGetDataPtr(buffer);
+    bytes.assign(dataPtr, dataPtr + nanoemBufferGetLength(buffer));
+    nanoemBufferDestroy(buffer);
+    nanoemMutableModelDestroy(mutableModel);
+    nanoemMutableBufferDestroy(mutableBuffer);
 }
 
 Model::Model(Project *project, nanoem_u16_t handle)
