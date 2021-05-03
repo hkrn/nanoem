@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -618,8 +618,9 @@ $nanoem.window.progress.capture-image%s に画像を出力中...L
 $nanoem.window.progress.capture-video$%s に動画を出力中... (%u FPS)/
 nanoem.window.scheme.finderFinder で開く?
 !nanoem.window.title.confirm.modelモデル「%s」の確認*
-nanoem.menu.file.titleファイル(&F)4
-nanoem.menu.file.new新規プロジェクト(&N)8
+nanoem.menu.file.titleファイル(&F)<
+nanoem.menu.file.new.project新規プロジェクト(&N)-
+nanoem.menu.file.new.model新規モデル8
 nanoem.menu.file.openプロジェクトを開く(&O).
 nanoem.menu.file.import.modelモデル(&M)8
 !nanoem.menu.file.import.accessoryアクセサリ(&A)6
@@ -763,8 +764,8 @@ $nanoem.menu.model.select.morph.title	モーフL
 6nanoem.menu.model.preference.enable.show-vertex-points頂点の点を表示するz
 :nanoem.menu.model.preference.enable.vertex-shader-skinning<頂点シェーダによるスキニングを有効にする)
 nanoem.menu.model.edgeエッジ設定'
-nanoem.menu.model.resetリセットN
-nanoem.menu.model.delete-active+選択されているモデルを削除(&D)(
+nanoem.menu.model.resetリセットK
+nanoem.menu.model.delete-active(現在選択中のモデルを削除(&D)(
 nanoem.menu.model.titleモデル(&M)L
 'nanoem.menu.accessory.draw-order-dialog!描画順ダイアログを開く>
 "nanoem.menu.accessory.select.titleアクセサリを選択J
@@ -773,8 +774,9 @@ $nanoem.menu.model.select.morph.title	モーフL
 &nanoem.menu.accessory.enable.add-blend(加算ブレンドを有効にする(&A)F
 #nanoem.menu.accessory.enable.shadow地面影を有効にする(&S)D
 $nanoem.menu.accessory.enable.visible表示を有効にする(&V)+
-nanoem.menu.accessory.resetリセットX
-#nanoem.menu.accessory.delete-active1選択されているアクセサリを削除(&D)2
+nanoem.menu.accessory.resetリセット`
+&nanoem.menu.accessory.convert-to-model6現在選択中のアクセサリをモデルに変換U
+#nanoem.menu.accessory.delete-active.現在選択中のアクセサリを削除(&D)2
 nanoem.menu.accessory.titleアクセサリ(&A)T
 2nanoem.menu.project.motion.shift-keyframes-forward現在のフレームを削除O
 3nanoem.menu.project.motion.shift-keyframes-backward空フレームを挿入1
@@ -1019,7 +1021,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1654,8 +1656,9 @@ $nanoem.window.progress.capture-imageCapturing Image as %s...I
 $nanoem.window.progress.capture-video!Capturing Video as %s... (%u FPS)
 nanoem.window.scheme.finder :
 !nanoem.window.title.confirm.modelConfirm Loading of %s
-nanoem.menu.file.title&File$
-nanoem.menu.file.new&New Project&
+nanoem.menu.file.title&File,
+nanoem.menu.file.new.project&New Project'
+nanoem.menu.file.new.model	New Model&
 nanoem.menu.file.open&Open Project'
 nanoem.menu.file.import.model&Model/
 !nanoem.menu.file.import.accessory
@@ -1803,7 +1806,8 @@ $nanoem.menu.model.select.morph.titleMorph?
 &nanoem.menu.accessory.enable.add-blendEnable &Add Blend<
 #nanoem.menu.accessory.enable.shadowEnable Ground &Shadow7
 $nanoem.menu.accessory.enable.visibleEnable &Visible$
-nanoem.menu.accessory.resetReset?
+nanoem.menu.accessory.resetResetK
+&nanoem.menu.accessory.convert-to-model!Convert Active Accessory to Model?
 #nanoem.menu.accessory.delete-active&Delete Active Accessory)
 nanoem.menu.accessory.title
 &AccessoryJ

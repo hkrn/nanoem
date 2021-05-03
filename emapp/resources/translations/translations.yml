@@ -2537,10 +2537,15 @@
     en_US: '&File'
     ja_JP: 'ファイル(&F)'
   description: ''
-- key: nanoem.menu.file.new
+- key: nanoem.menu.file.new.project
   phrase:
     en_US: '&New Project'
     ja_JP: '新規プロジェクト(&N)'
+  description: ''
+- key: nanoem.menu.file.new.model
+  phrase:
+    en_US: 'New Model'
+    ja_JP: '新規モデル'
   description: ''
 - key: nanoem.menu.file.open
   phrase:
@@ -3218,7 +3223,7 @@
 - key: nanoem.menu.model.delete-active
   phrase:
     en_US: '&Delete Active Model'
-    ja_JP: '選択されているモデルを削除(&D)'
+    ja_JP: '現在選択中のモデルを削除(&D)'
   description: ''
 - key: nanoem.menu.model.title
   phrase:
@@ -3265,10 +3270,15 @@
     en_US: 'Reset'
     ja_JP: 'リセット'
   description: ''
+- key: nanoem.menu.accessory.convert-to-model
+  phrase:
+    en_US: 'Convert Active Accessory to Model'
+    ja_JP: '現在選択中のアクセサリをモデルに変換'
+  description: ''
 - key: nanoem.menu.accessory.delete-active
   phrase:
     en_US: '&Delete Active Accessory'
-    ja_JP: '選択されているアクセサリを削除(&D)'
+    ja_JP: '現在選択中のアクセサリを削除(&D)'
   description: ''
 - key: nanoem.menu.accessory.title
   phrase:

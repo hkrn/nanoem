@@ -43,7 +43,10 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
         text = "nanoem.menu.file.title";
         break;
     case kMenuItemTypeFileNewProject:
-        text = "nanoem.menu.file.new";
+        text = "nanoem.menu.file.new.project";
+        break;
+    case kMenuItemTypeFileNewModel:
+        text = "nanoem.menu.file.new.model";
         break;
     case kMenuItemTypeFileOpenProject:
         text = "nanoem.menu.file.open";
@@ -510,6 +513,9 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
     case kMenuItemTypeAccessoryReset:
         text = "nanoem.menu.accessory.reset";
         break;
+    case kMenuItemTypeAccessoryConvertToModel:
+        text = "nanoem.menu.accessory.convert-to-model";
+        break;
     case kMenuItemTypeAccessoryDelete:
         text = "nanoem.menu.accessory.delete-active";
         break;
@@ -896,6 +902,9 @@ ApplicationMenuBuilder::createFileMenu(MainMenuBarHandle mainMenu)
     m_fileMenu = createMenuBar(kMenuItemTypeFileTitle);
     setParentMenu(fileMenu, m_fileMenu);
     appendMenuItem(m_fileMenu, kMenuItemTypeFileNewProject);
+    if (m_enableModelEditing) {
+        appendMenuItem(m_fileMenu, kMenuItemTypeFileNewModel);
+    }
     appendMenuSeparator(m_fileMenu);
     appendMenuItem(m_fileMenu, kMenuItemTypeFileOpenProject);
     m_importMenu = createMenuBar();
@@ -1229,6 +1238,9 @@ ApplicationMenuBuilder::createAccessoryMenu(MainMenuBarHandle bar)
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryEnableVisible);
     appendMenuSeparator(m_accessoryMenu);
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryReset);
+    if (m_enableModelEditing) {
+        appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryConvertToModel);
+    }
     appendMenuSeparator(m_accessoryMenu);
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryDelete);
     setAllAccessoryMenuItemsEnabled(false);
