@@ -319,6 +319,7 @@ public:
     const nanoem_model_bone_t *resolveBone(const StringPair &value) const NANOEM_DECL_NOEXCEPT;
     bool containsMotion(const Motion *value) const NANOEM_DECL_NOEXCEPT;
 
+    void newModel(Error &error);
     void addModel(Model *model);
     void addAccessory(Accessory *accessory);
     void performModelSkinDeformer(Model *model);
