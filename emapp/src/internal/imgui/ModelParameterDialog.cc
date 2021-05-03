@@ -2191,8 +2191,7 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
 {
     nanoem_model_constraint_t *constraintPtr =
         const_cast<nanoem_model_constraint_t *>(nanoemModelBoneGetConstraintObject(bonePtr));
-    if (constraintPtr && ImGui::TreeNode(constraintPtr, "%s", tr("nanoem.gui.model.edit.bone.inverse-kinematics"))) {
-        ImGui::Unindent();
+    if (constraintPtr && ImGui::CollapsingHeader(tr("nanoem.gui.model.edit.bone.inverse-kinematics"))) {
         char buffer[Inline::kNameStackBufferSize];
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
@@ -2359,8 +2358,6 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
         }
         ImGui::PopItemWidth();
         ImGui::EndChild();
-        ImGui::Indent();
-        ImGui::TreePop();
     }
 }
 
