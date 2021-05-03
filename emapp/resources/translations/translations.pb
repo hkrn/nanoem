@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -314,9 +314,9 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 %nanoem.gui.model.edit.bone.rotateable回転可能,
 "nanoem.gui.model.edit.bone.visible可視:
 *nanoem.gui.model.edit.bone.user-handleable操作可能:
--nanoem.gui.model.edit.bone.inverse-kinematics	IK 制約Y
-.nanoem.gui.model.edit.bone.constraint.effector'エフェクター（作用）ボーンT
-,nanoem.gui.model.edit.bone.constraint.target$ターゲット（終点）ボーン5
+-nanoem.gui.model.edit.bone.inverse-kinematics	IK 制約M
+.nanoem.gui.model.edit.bone.constraint.effectorIK ターゲットボーン?
+,nanoem.gui.model.edit.bone.constraint.targetIK 元ボーン5
 +nanoem.gui.model.edit.bone.constraint.angle角度E
 ,nanoem.gui.model.edit.bone.constraint.jointsIK リンクボーン:
 0nanoem.gui.model.edit.bone.constraint.joints.add追加=
@@ -1021,7 +1021,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1346,9 +1346,9 @@ Properties-
 Rotateable-
 "nanoem.gui.model.edit.bone.visibleVisible=
 *nanoem.gui.model.edit.bone.user-handleableUser Handleable>
--nanoem.gui.model.edit.bone.inverse-kinematicsIK Constraint?
-.nanoem.gui.model.edit.bone.constraint.effectorEffector Bone;
-,nanoem.gui.model.edit.bone.constraint.targetTarget Bone4
+-nanoem.gui.model.edit.bone.inverse-kinematicsIK Constraint@
+.nanoem.gui.model.edit.bone.constraint.effectorIK Target Bone<
+,nanoem.gui.model.edit.bone.constraint.targetIK Base Bone4
 +nanoem.gui.model.edit.bone.constraint.angleAngle=
 ,nanoem.gui.model.edit.bone.constraint.jointsIK Link Bones7
 0nanoem.gui.model.edit.bone.constraint.joints.addAdd=

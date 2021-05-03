@@ -1261,12 +1261,12 @@
     ja_JP: 'IK 制約'
 - key: nanoem.gui.model.edit.bone.constraint.effector
   phrase:
-    en_US: 'Effector Bone'
-    ja_JP: 'エフェクター（作用）ボーン'
+    en_US: 'IK Target Bone'
+    ja_JP: 'IK ターゲットボーン'
 - key: nanoem.gui.model.edit.bone.constraint.target
   phrase:
-    en_US: 'Target Bone'
-    ja_JP: 'ターゲット（終点）ボーン'
+    en_US: 'IK Base Bone'
+    ja_JP: 'IK 元ボーン'
 - key: nanoem.gui.model.edit.bone.constraint.angle
   phrase:
     en_US: 'Angle'
