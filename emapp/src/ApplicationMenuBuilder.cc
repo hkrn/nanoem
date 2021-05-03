@@ -1238,10 +1238,10 @@ ApplicationMenuBuilder::createAccessoryMenu(MainMenuBarHandle bar)
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryEnableVisible);
     appendMenuSeparator(m_accessoryMenu);
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryReset);
+    appendMenuSeparator(m_accessoryMenu);
     if (m_enableModelEditing) {
         appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryConvertToModel);
     }
-    appendMenuSeparator(m_accessoryMenu);
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryDelete);
     setAllAccessoryMenuItemsEnabled(false);
 }

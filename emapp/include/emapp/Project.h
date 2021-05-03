@@ -322,6 +322,7 @@ public:
     void newModel(Error &error);
     void addModel(Model *model);
     void addAccessory(Accessory *accessory);
+    void convertAccessoryToModel(Accessory *accessory, Error &error);
     void performModelSkinDeformer(Model *model);
     bool loadAttachedDrawableEffect(IDrawable *drawable, Progress &progress, Error &error);
     bool reloadAllDrawableEffects(Progress &progress, Error &error);

@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -568,7 +568,9 @@ $nanoem.window.dialog.buttons.discard破棄6
 8nanoem.window.dialog.capture-video.caution.uncancellable�* 出力中はキャンセル出来ません（アプリケーション終了させた場合は終了直前までが出力されます）�
 5nanoem.window.dialog.capture-video.caution.resolutionn* 画面解像度を超える出力は出来ません（超える場合は縮小されて出力されます）�
 /nanoem.window.dialog.deleting-accessory.messageN一度削除すると戻せません。アクセサリを削除しますか？O
--nanoem.window.dialog.deleting-accessory.titleアクセサリ削除の確認w
+-nanoem.window.dialog.deleting-accessory.titleアクセサリ削除の確認�
+1nanoem.window.dialog.converting-accessory.message�変換するとアクセサリが削除されてモデルとして追加されます。アクセサリをモデルに変換しますか？]
+/nanoem.window.dialog.converting-accessory.title*アクセサリのモデル変換の確認w
 +nanoem.window.dialog.deleting-model.messageH一度削除すると戻せません。モデルを削除しますか？E
 )nanoem.window.dialog.deleting-model.titleモデル削除の確認�
 3nanoem.window.dialog.enabling-effect-plugin.message�エフェクトプラグイン無効状態のまま fx 形式のファイル読み込もうとしました。エフェクトプラグインを有効にしますか？e
@@ -1021,7 +1023,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1606,7 +1608,9 @@ $nanoem.window.dialog.buttons.discardDiscard-
 8nanoem.window.dialog.capture-video.caution.uncancellable5* Exporting a video cannot cancel while it's running.}
 5nanoem.window.dialog.capture-video.caution.resolutionD* Exporting a video exceed of screen resolution cannot be performed.u
 /nanoem.window.dialog.deleting-accessory.messageBThis action cannot be undone. Do you want to delete the accessory?K
--nanoem.window.dialog.deleting-accessory.titleConfirm Deleting Accessorym
+-nanoem.window.dialog.deleting-accessory.titleConfirm Deleting Accessory�
+1nanoem.window.dialog.converting-accessory.messagekThis action will delete the accessory and add it as a model. Do you want to convert the accessory to model?X
+/nanoem.window.dialog.converting-accessory.title%Confirm Converting Accessory to Modelm
 +nanoem.window.dialog.deleting-model.message>This action cannot be undone. Do you want to delete the model?C
 )nanoem.window.dialog.deleting-model.titleConfirm Deleting Model�
 3nanoem.window.dialog.enabling-effect-plugin.message}Tried loading the effect file with .fx extension even the effect plugin is disabled. Do you want to enable the effect plugin?S

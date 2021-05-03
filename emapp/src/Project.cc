@@ -1850,6 +1850,57 @@ Project::addAccessory(Accessory *accessory)
 }
 
 void
+Project::convertAccessoryToModel(Accessory *accessory, Error &error)
+{
+    FileReaderScope scope(translator());
+    const URI accessoryFileURI(accessory->fileURI());
+    if (scope.open(accessoryFileURI, error)) {
+        const String name(URI::lastPathComponent(accessoryFileURI.absolutePath()));
+        ByteArray accessoryData, modelData;
+        Model::ImportDescription desc(accessoryFileURI);
+        desc.m_name[NANOEM_LANGUAGE_TYPE_JAPANESE] = name;
+        desc.m_name[NANOEM_LANGUAGE_TYPE_ENGLISH] = name;
+        desc.m_transform = Accessory::kInitialWorldMatrix;
+        FileUtils::read(scope.reader(), accessoryData, error);
+        if (!error.hasReason()) {
+            Model *model = createModel();
+            if (model->load(accessoryData, desc, error)) {
+                String newModelPath(accessoryFileURI.absolutePathByDeletingLastPathComponent()),
+                    filenameWithoutExtension(URI::stringByDeletingPathExtension(accessoryFileURI.lastPathComponent()));
+                newModelPath.append("/");
+                newModelPath.append(filenameWithoutExtension.c_str());
+                newModelPath.append(".pmx");
+                const URI modelFileURI(URI::createFromFilePath(newModelPath));
+                FileWriterScope scope;
+                if (model->save(modelData, error) && scope.open(modelFileURI, error)) {
+                    FileUtils::write(scope.writer(), modelData, error);
+                    model->setupAllBindings();
+                    Progress progress(this, model->createAllImages());
+                    model->upload();
+                    model->loadAllImages(progress, error);
+                    addModel(model);
+                    setActiveModel(model);
+                    model->writeLoadCommandMessage(error);
+                    scope.commit(error);
+                    model->setVisible(true);
+                    removeAccessory(accessory);
+                    accessory->writeDeleteCommandMessage(error);
+                    destroyAccessory(accessory);
+                    progress.complete();
+                }
+                else {
+                    destroyModel(model);
+                    scope.rollback(error);
+                }
+            }
+            else {
+                destroyModel(model);
+            }
+        }
+    }
+}
+
+void
 Project::performModelSkinDeformer(Model *model)
 {
     if (m_skinDeformerFactory) {

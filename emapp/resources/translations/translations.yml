@@ -2286,6 +2286,16 @@
     en_US: Confirm Deleting Accessory
     ja_JP: アクセサリ削除の確認
   description: ''
+- key: nanoem.window.dialog.converting-accessory.message
+  phrase:
+    en_US: This action will delete the accessory and add it as a model. Do you want to convert the accessory to model?
+    ja_JP: 変換するとアクセサリが削除されてモデルとして追加されます。アクセサリをモデルに変換しますか？
+  description: ''
+- key: nanoem.window.dialog.converting-accessory.title
+  phrase:
+    en_US: Confirm Converting Accessory to Model
+    ja_JP: アクセサリのモデル変換の確認
+  description: ''
 - key: nanoem.window.dialog.deleting-model.message
   phrase:
     en_US: This action cannot be undone. Do you want to delete the model?

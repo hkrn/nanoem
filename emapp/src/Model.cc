@@ -466,7 +466,7 @@ Model::VertexUnit::performSkinningByType(
     s_funcs[type](vertex, bx::simd_add(vertex->m_simd.m_origin, vertex->m_simd.m_delta), vertex->m_simd.m_normal, p, n);
 }
 
-Model::ImportSetting::ImportSetting(const URI &fileURI)
+Model::ImportDescription::ImportDescription(const URI &fileURI)
     : m_fileURI(fileURI)
     , m_transform(1)
     , m_fileType(kFileTypeNone)
@@ -503,16 +503,16 @@ Model::ImportSetting::ImportSetting(const URI &fileURI)
     m_comment[NANOEM_LANGUAGE_TYPE_JAPANESE] = m_comment[NANOEM_LANGUAGE_TYPE_ENGLISH] = comment;
 }
 
-Model::ImportSetting::~ImportSetting() NANOEM_DECL_NOEXCEPT
+Model::ImportDescription::~ImportDescription() NANOEM_DECL_NOEXCEPT
 {
 }
 
-Model::ExportSetting::ExportSetting()
+Model::ExportDescription::ExportDescription()
     : m_transform(1)
 {
 }
 
-Model::ExportSetting::~ExportSetting() NANOEM_DECL_NOEXCEPT
+Model::ExportDescription::~ExportDescription() NANOEM_DECL_NOEXCEPT
 {
 }
 
@@ -954,16 +954,25 @@ Model::load(const ByteArray &bytes, Error &error)
 }
 
 bool
-Model::load(const nanoem_u8_t *bytes, size_t length, const ImportSetting &setting, Error &error)
+Model::load(const nanoem_u8_t *bytes, size_t length, const ImportDescription &desc, Error &error)
 {
     model::Importer importer(this);
-    return importer.execute(bytes, length, setting, error);
+    bool succeeded = importer.execute(bytes, length, desc, error);
+    if (succeeded) {
+        const nanoem_language_type_t language = m_project->castLanguage();
+        m_name = m_canonicalName = desc.m_name[language];
+        m_comment = desc.m_comment[language];
+        if (m_canonicalName.empty()) {
+            m_canonicalName = desc.m_name[NANOEM_LANGUAGE_TYPE_FIRST_ENUM];
+        }
+    }
+    return succeeded;
 }
 
 bool
-Model::load(const ByteArray &bytes, const ImportSetting &setting, Error &error)
+Model::load(const ByteArray &bytes, const ImportDescription &desc, Error &error)
 {
-    return load(bytes.data(), bytes.size(), setting, error);
+    return load(bytes.data(), bytes.size(), desc, error);
 }
 
 bool
@@ -1065,17 +1074,17 @@ Model::save(ByteArray &bytes, Error &error) const
 }
 
 bool
-Model::save(IWriter *writer, const ExportSetting &setting, Error &error) const
+Model::save(IWriter *writer, const ExportDescription &desc, Error &error) const
 {
     model::Exporter exporter(this);
-    return exporter.execute(writer, setting, error);
+    return exporter.execute(writer, desc, error);
 }
 
 bool
-Model::save(ByteArray &bytes, const ExportSetting &setting, Error &error) const
+Model::save(ByteArray &bytes, const ExportDescription &desc, Error &error) const
 {
     MemoryWriter writer(&bytes);
-    return save(&writer, setting, error);
+    return save(&writer, desc, error);
 }
 
 bool

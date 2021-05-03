@@ -20,17 +20,17 @@ public:
     Importer(Model *model);
     ~Importer() NANOEM_DECL_NOEXCEPT;
 
-    bool execute(const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error);
+    bool execute(const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error);
 
 private:
     bool handleWavefrontObjDocument(
-        const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error);
+        const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error);
     bool handleDirectXMeshDocument(
-        const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error);
+        const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error);
     bool handleMetasequoiaDocument(
-        const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error);
+        const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error);
     void setModelNameAndComment(
-        nanoem_mutable_model_t *model, const Model::ImportSetting &setting, nanoem_status_t *status);
+        nanoem_mutable_model_t *model, const Model::ImportDescription &desc, nanoem_status_t *status);
     void setMaterialTexture(nanoem_mutable_model_material_t *material, nanoem_mutable_model_texture_t *texture,
         const char *texturePathPtr, nanoem_status_t *status);
 

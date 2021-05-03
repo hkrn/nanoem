@@ -54,6 +54,7 @@ Importer::Importer(Model *model)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_mutable_model_t *m = nanoemMutableModelCreateAsReference(model->data(), &status);
+    nanoemMutableModelSetCodecType(m, NANOEM_CODEC_TYPE_UTF16);
     nanoemMutableModelSetFormatType(m, NANOEM_MODEL_FORMAT_TYPE_PMX_2_0);
     nanoemMutableModelDestroy(m);
 }
@@ -63,23 +64,23 @@ Importer::~Importer() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-Importer::execute(const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error)
+Importer::execute(const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error)
 {
     bool result = false;
-    switch (setting.m_fileType) {
-    case Model::ImportSetting::kFileTypeWaveFrontObj: {
-        result = handleWavefrontObjDocument(bytes, length, setting, error);
+    switch (desc.m_fileType) {
+    case Model::ImportDescription::kFileTypeWaveFrontObj: {
+        result = handleWavefrontObjDocument(bytes, length, desc, error);
         break;
     }
-    case Model::ImportSetting::kFileTypeDirectX: {
-        result = handleDirectXMeshDocument(bytes, length, setting, error);
+    case Model::ImportDescription::kFileTypeDirectX: {
+        result = handleDirectXMeshDocument(bytes, length, desc, error);
         break;
     }
-    case Model::ImportSetting::kFileTypeMetasequoia: {
-        result = handleMetasequoiaDocument(bytes, length, setting, error);
+    case Model::ImportDescription::kFileTypeMetasequoia: {
+        result = handleMetasequoiaDocument(bytes, length, desc, error);
         break;
     }
-    case Model::ImportSetting::kFileTypeNone:
+    case Model::ImportDescription::kFileTypeNone:
     default:
         error = Error("Not supported file type", nullptr, Error::kDomainTypeApplication);
         break;
@@ -89,15 +90,15 @@ Importer::execute(const nanoem_u8_t *bytes, size_t length, const Model::ImportSe
 
 bool
 Importer::handleWavefrontObjDocument(
-    const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error)
+    const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error)
 {
-    BX_UNUSED_4(bytes, length, setting, error);
+    BX_UNUSED_4(bytes, length, desc, error);
     return false;
 }
 
 bool
 Importer::handleDirectXMeshDocument(
-    const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error)
+    const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error)
 {
     nanodxm_document_t *document = nanodxmDocumentCreate();
     nanodxm_buffer_t *buffer = nanodxmBufferCreate(bytes, length);
@@ -207,7 +208,7 @@ Importer::handleDirectXMeshDocument(
             nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
             nanoem_rsize_t vertexOffset = 0;
             StringUtils::UnicodeStringScope us(factory);
-            setModelNameAndComment(model, setting, &status);
+            setModelNameAndComment(model, desc, &status);
             Vector3List normals;
             normals.resize(faceNormalList.size());
             for (FaceNormalList::const_iterator it = faceNormalList.begin(), end = faceNormalList.end(); it != end;
@@ -231,7 +232,7 @@ Importer::handleDirectXMeshDocument(
                     const VertexUnit &v = *it3;
                     VertexMap::const_iterator it = vertexMap.find(v.m_index);
                     if (it == vertexMap.end()) {
-                        const Vector4 origin(setting.m_transform * Vector4(v.m_origin, 1)), uv(v.m_uv, 0, 0);
+                        const Vector4 origin(desc.m_transform * Vector4(v.m_origin, 1)), uv(v.m_uv, 0, 0);
                         nanoem_mutable_model_vertex_t *vertex =
                             nanoemMutableModelVertexCreate(m_model->data(), &status);
                         nanoemMutableModelVertexSetOrigin(vertex, glm::value_ptr(origin));
@@ -300,7 +301,7 @@ Importer::handleDirectXMeshDocument(
 
 bool
 Importer::handleMetasequoiaDocument(
-    const nanoem_u8_t *bytes, size_t length, const Model::ImportSetting &setting, Error &error)
+    const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error)
 {
     nanomqo_document_t *document = nanomqoDocumentCreate();
     nanomqo_buffer_t *buffer = nanomqoBufferCreate(bytes, length);
@@ -418,7 +419,7 @@ Importer::handleMetasequoiaDocument(
             Project *project = m_model->project();
             nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
             StringUtils::UnicodeStringScope us(factory);
-            setModelNameAndComment(model, setting, &status);
+            setModelNameAndComment(model, desc, &status);
             for (ObjectList::const_iterator it = map.begin(), end = map.end(); it != end; ++it) {
                 const nanomqo_object_t *o = objects[it - map.begin()];
                 const MaterialVertexListMap &materialMap = *it;
@@ -449,7 +450,7 @@ Importer::handleMetasequoiaDocument(
                             const glm::quat orientation(glm::make_vec3(nanomqoObjectGetOrientation(o)));
                             const Vector4 translation(glm::make_vec4(nanomqoObjectGetTranslation(o))),
                                 scale(glm::make_vec3(nanomqoObjectGetScale(o)), 1),
-                                origin(setting.m_transform *
+                                origin(desc.m_transform *
                                     (orientation * ((Vector4(v.m_origin, 1) + translation) * scale))),
                                 uv(v.m_uv, 0, 0);
                             nanoem_mutable_model_vertex_t *vertex =
@@ -531,17 +532,17 @@ Importer::handleMetasequoiaDocument(
 
 void
 Importer::setModelNameAndComment(
-    nanoem_mutable_model_t *model, const Model::ImportSetting &setting, nanoem_status_t *status)
+    nanoem_mutable_model_t *model, const Model::ImportDescription &desc, nanoem_status_t *status)
 {
     Project *project = m_model->project();
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
     for (int i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
         nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
-        if (StringUtils::tryGetString(factory, setting.m_name[language], us)) {
+        if (StringUtils::tryGetString(factory, desc.m_name[language], us)) {
             nanoemMutableModelSetName(model, us.value(), language, status);
         }
-        if (StringUtils::tryGetString(factory, setting.m_comment[language], us)) {
+        if (StringUtils::tryGetString(factory, desc.m_comment[language], us)) {
             nanoemMutableModelSetComment(model, us.value(), language, status);
         }
     }

@@ -597,6 +597,44 @@ ConfirmSavingDialog::onDiscarded(Project *project)
     return dialog;
 }
 
+struct ConvertingAccessoryConfirmDialogUserData {
+    ConvertingAccessoryConfirmDialogUserData(Accessory *accessory, BaseApplicationService *applicationPtr);
+
+    static IModalDialog *onAccepted(void *userData, Project *project);
+    static IModalDialog *onCancelled(void *userData, Project *project);
+
+    BaseApplicationService *m_applicationPtr;
+    Accessory *m_accessory;
+};
+
+ConvertingAccessoryConfirmDialogUserData::ConvertingAccessoryConfirmDialogUserData(
+    Accessory *accessory, BaseApplicationService *applicationPtr)
+    : m_applicationPtr(applicationPtr)
+    , m_accessory(accessory)
+{
+}
+
+IModalDialog *
+ConvertingAccessoryConfirmDialogUserData::onAccepted(void *userData, Project *project)
+{
+    ConvertingAccessoryConfirmDialogUserData *self = static_cast<ConvertingAccessoryConfirmDialogUserData *>(userData);
+    if (!project->isPlaying()) {
+        Error error;
+        project->convertAccessoryToModel(self->m_accessory, error);
+        error.notify(self->m_applicationPtr->eventPublisher());
+    }
+    nanoem_delete(self);
+    return nullptr;
+}
+
+IModalDialog *
+ConvertingAccessoryConfirmDialogUserData::onCancelled(void *userData, Project *project)
+{
+    BX_UNUSED_1(project);
+    nanoem_delete(static_cast<ConvertingAccessoryConfirmDialogUserData *>(userData));
+    return nullptr;
+}
+
 struct DeletingAccessoryConfirmDialogUserData {
     DeletingAccessoryConfirmDialogUserData(Accessory *accessory, BaseApplicationService *applicationPtr);
 
@@ -620,9 +658,10 @@ DeletingAccessoryConfirmDialogUserData::onAccepted(void *userData, Project *proj
     DeletingAccessoryConfirmDialogUserData *self = static_cast<DeletingAccessoryConfirmDialogUserData *>(userData);
     if (!project->isPlaying()) {
         Error error;
-        project->removeAccessory(self->m_accessory);
-        self->m_accessory->writeDeleteCommandMessage(error);
-        project->destroyAccessory(self->m_accessory);
+        Accessory *accessory = self->m_accessory;
+        project->removeAccessory(accessory);
+        accessory->writeDeleteCommandMessage(error);
+        project->destroyAccessory(accessory);
         error.notify(self->m_applicationPtr->eventPublisher());
     }
     nanoem_delete(self);
@@ -660,9 +699,10 @@ DeletingModelConfirmDialogUserData::onAccepted(void *userData, Project *project)
     DeletingModelConfirmDialogUserData *self = static_cast<DeletingModelConfirmDialogUserData *>(userData);
     if (!project->isPlaying()) {
         Error error;
-        project->removeModel(self->m_model);
-        self->m_model->writeDeleteCommandMessage(error);
-        project->destroyModel(self->m_model);
+        Model *model = self->m_model;
+        project->removeModel(model);
+        model->writeDeleteCommandMessage(error);
+        project->destroyModel(model);
         error.notify(self->m_applicationPtr->eventPublisher());
     }
     nanoem_delete(self);
@@ -906,6 +946,21 @@ ModalDialogFactory::createConfirmSavingDialog(BaseApplicationService *applicatio
 {
     nanoem_parameter_assert(applicationPtr, "must NOT be nullptr");
     return nanoem_new(ConfirmSavingDialog(applicationPtr, title, message, callbacks, userData));
+}
+
+IModalDialog *
+ModalDialogFactory::createConfirmConvertingAccessoryToModelDialog(Accessory *accessory, BaseApplicationService *applicationPtr)
+{
+    nanoem_parameter_assert(accessory, "must NOT be nullptr");
+    nanoem_parameter_assert(applicationPtr, "must NOT be nullptr");
+    ConvertingAccessoryConfirmDialogUserData *self =
+        nanoem_new(ConvertingAccessoryConfirmDialogUserData(accessory, applicationPtr));
+    const ModalDialogFactory::StandardConfirmDialogCallbackPair pair(
+        ConvertingAccessoryConfirmDialogUserData::onAccepted, ConvertingAccessoryConfirmDialogUserData::onCancelled);
+    const ITranslator *translator = applicationPtr->translator();
+    return ModalDialogFactory::createStandardConfirmDialog(applicationPtr,
+        translator->translate("nanoem.window.dialog.converting-accessory.title"),
+        translator->translate("nanoem.window.dialog.converting-accessory.message"), pair, self);
 }
 
 IModalDialog *

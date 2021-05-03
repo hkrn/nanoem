@@ -120,7 +120,7 @@ public:
         String m_name[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
         String m_comment[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
     };
-    struct ImportSetting {
+    struct ImportDescription {
         enum FileType {
             kFileTypeFirstEnum,
             kFileTypeNone = kFileTypeFirstEnum,
@@ -129,17 +129,17 @@ public:
             kFileTypeMetasequoia,
             kFileTypeMaxEnum
         };
-        ImportSetting(const URI &fileURI);
-        ~ImportSetting() NANOEM_DECL_NOEXCEPT;
+        ImportDescription(const URI &fileURI);
+        ~ImportDescription() NANOEM_DECL_NOEXCEPT;
         const URI m_fileURI;
         String m_name[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
         String m_comment[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
         Matrix4x4 m_transform;
         FileType m_fileType;
     };
-    struct ExportSetting {
-        ExportSetting();
-        ~ExportSetting() NANOEM_DECL_NOEXCEPT;
+    struct ExportDescription {
+        ExportDescription();
+        ~ExportDescription() NANOEM_DECL_NOEXCEPT;
         Matrix4x4 m_transform;
     };
 
@@ -158,8 +158,8 @@ public:
 
     bool load(const nanoem_u8_t *bytes, size_t length, Error &error);
     bool load(const ByteArray &bytes, Error &error);
-    bool load(const nanoem_u8_t *bytes, size_t length, const ImportSetting &setting, Error &error);
-    bool load(const ByteArray &bytes, const ImportSetting &setting, Error &error);
+    bool load(const nanoem_u8_t *bytes, size_t length, const ImportDescription &desc, Error &error);
+    bool load(const ByteArray &bytes, const ImportDescription &desc, Error &error);
     bool loadPose(const nanoem_u8_t *bytes, size_t length, Error &error);
     bool loadPose(const ByteArray &bytes, Error &error);
     bool loadArchive(const String &entryPoint, const Archiver &archiver, Error &error);
@@ -167,8 +167,8 @@ public:
     bool loadArchive(ISeekableReader *reader, Progress &progress, Error &error);
     bool save(IWriter *writer, Error &error) const;
     bool save(ByteArray &bytes, Error &error) const;
-    bool save(IWriter *writer, const ExportSetting &setting, Error &error) const;
-    bool save(ByteArray &bytes, const ExportSetting &setting, Error &error) const;
+    bool save(IWriter *writer, const ExportDescription &desc, Error &error) const;
+    bool save(ByteArray &bytes, const ExportDescription &desc, Error &error) const;
     bool savePose(IWriter *writer, Error &error);
     bool savePose(ByteArray &bytes, Error &error);
     bool saveArchive(const String &prefix, Archiver &archiver, Error &error);

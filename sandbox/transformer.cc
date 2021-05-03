@@ -103,8 +103,8 @@ run(const bx::CommandLine &command)
                 Model *model = project->createModel();
                 project->addModel(model);
                 model::Importer importer(model);
-                Model::ImportSetting setting(fileURI);
-                importer.execute(bytes.data(), bytes.size(), setting, error);
+                Model::ImportDescription desc(fileURI);
+                importer.execute(bytes.data(), bytes.size(), desc, error);
                 if (error.hasReason()) {
                     fprintf(stderr, "[ERROR] Failed executing conversion: %s\n", error.reasonConstString());
                 }

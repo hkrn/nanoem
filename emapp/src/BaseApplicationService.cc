@@ -2373,6 +2373,12 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         }
         break;
     }
+    case ApplicationMenuBuilder::kMenuItemTypeAccessoryConvertToModel: {
+        if (Accessory *activeAccessory = project->activeAccessory()) {
+            addModalDialog(ModalDialogFactory::createConfirmConvertingAccessoryToModelDialog(activeAccessory, this));
+        }
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeAccessoryDelete: {
         if (Accessory *activeAccessory = project->activeAccessory()) {
             addModalDialog(ModalDialogFactory::createConfirmDeletingAccessoryDialog(activeAccessory, this));
