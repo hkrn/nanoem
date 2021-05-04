@@ -5324,6 +5324,7 @@ Effect::destroyAllTechniques()
     for (TechniqueList::iterator it = m_allTechniques.begin(), end = m_allTechniques.end(); it != end; ++it) {
         Technique *technique = *it;
         technique->destroy();
+        nanoem_delete(technique);
     }
     m_allTechniques.clear();
     SG_POP_GROUP();

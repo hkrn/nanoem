@@ -257,6 +257,11 @@ Technique::Technique(Effect *effect, const String &name, const AnnotationMap &an
 
 Technique::~Technique() NANOEM_DECL_NOEXCEPT
 {
+    for (PassList::iterator it = m_passes.begin(), end = m_passes.end(); it != end; ++it) {
+        Pass *pass = *it;
+        nanoem_delete(pass);
+    }
+    m_passes.clear();
 }
 
 void
