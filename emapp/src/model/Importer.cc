@@ -243,10 +243,6 @@ Importer::handleDirectXMeshDocument(
                         nanoemMutableModelVertexSetTexCoord(mutableVertexPtr, glm::value_ptr(uv));
                         nanoemMutableModelVertexSetType(mutableVertexPtr, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
                         nanoemMutableModelInsertVertexObject(mutableModel, mutableVertexPtr, -1, &status);
-                        nanoem_model_vertex_t *vo = nanoemMutableModelVertexGetOriginObject(mutableVertexPtr);
-                        model::Vertex *vu = model::Vertex::create();
-                        vu->bind(vo);
-                        vu->setMaterial(nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr));
                         nanoemMutableModelVertexDestroy(mutableVertexPtr);
                         it = vertexMap.insert(tinystl::make_pair(v.m_index, vertexOffset++)).first;
                     }
@@ -285,10 +281,6 @@ Importer::handleDirectXMeshDocument(
                 nanoemMutableModelMaterialSetCullingDisabled(mutableMaterialPtr, 0);
                 nanoemMutableModelInsertMaterialObject(mutableModel, mutableMaterialPtr, -1, &status);
                 nanoemMutableModelMaterialSetNumVertexIndices(mutableMaterialPtr, vl.size());
-                nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr);
-                model::Material *mu = model::Material::create(project->sharedFallbackImage());
-                mu->bind(origin);
-                mu->resetLanguage(origin, factory, project->castLanguage());
                 nanoemMutableModelMaterialDestroy(mutableMaterialPtr);
             }
             nanoemMutableModelSetVertexIndices(mutableModel, indices.data(), indices.size(), &status);
@@ -468,10 +460,6 @@ Importer::handleMetasequoiaDocument(
                             nanoemMutableModelVertexSetTexCoord(mutableVeretxPtr, glm::value_ptr(uv));
                             nanoemMutableModelVertexSetType(mutableVeretxPtr, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
                             nanoemMutableModelInsertVertexObject(mutableModel, mutableVeretxPtr, -1, &status);
-                            nanoem_model_vertex_t *vo = nanoemMutableModelVertexGetOriginObject(mutableVeretxPtr);
-                            model::Vertex *vu = model::Vertex::create();
-                            vu->bind(vo);
-                            vu->setMaterial(nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr));
                             nanoemMutableModelVertexDestroy(mutableVeretxPtr);
                             it = vertexMap.insert(tinystl::make_pair(v.m_index, vertexOffset++)).first;
                         }
@@ -516,10 +504,6 @@ Importer::handleMetasequoiaDocument(
                         mutableMaterialPtr, nanomqoMaterialIsCullingDisabled(m));
                     nanoemMutableModelInsertMaterialObject(mutableModel, mutableMaterialPtr, -1, &status);
                     nanoemMutableModelMaterialSetNumVertexIndices(mutableMaterialPtr, vl.size());
-                    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(mutableMaterialPtr);
-                    model::Material *mu = model::Material::create(project->sharedFallbackImage());
-                    mu->bind(origin);
-                    mu->resetLanguage(origin, factory, project->castLanguage());
                     nanoemMutableModelMaterialDestroy(mutableMaterialPtr);
                 }
                 vertexMap.clear();
