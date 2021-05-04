@@ -382,7 +382,7 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
         const String title(translator->translate("nanoem.window.dialog.error.title"));
         String buffer;
         buffer.append(translator->translate("nanoem.window.dialog.error.message.reason"));
-        buffer.append("\n");
+        buffer.append("\n\n");
         int c = code();
         if (c != 0) {
             char partial[16];
@@ -393,7 +393,7 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
         if (hasRecoverySuggestion()) {
             buffer.append("\n\n");
             buffer.append(translator->translate("nanoem.window.dialog.error.message.recovery-suggestion"));
-            buffer.append("\n");
+            buffer.append("\n\n");
             buffer.append(recoverySuggestionConstString());
         }
         dialog = ModalDialogFactory::createDisplayPlainTextDialog(applicationPtr, title, buffer);
