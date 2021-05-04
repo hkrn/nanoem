@@ -1804,6 +1804,9 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
     switch (type) {
     case ApplicationMenuBuilder::kMenuItemTypeFileNewModel: {
         project->newModel(error);
+        if (error.hasReason()) {
+            error.addModalDialog(this);
+        }
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeEditUndo: {
