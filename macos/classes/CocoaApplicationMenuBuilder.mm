@@ -543,6 +543,9 @@ CocoaApplicationMenuBuilder::createFileMenu(NSMenu *bar)
                 this);
         },
         @"n");
+    if (m_preference->applicationPreference()->isModelEditingEnabled()) {
+        appendMenuItem(m_fileMenu, kMenuItemTypeFileNewModel);
+    }
     [m_fileMenu addSeparator];
     appendMenuItem(
         m_fileMenu, kMenuItemTypeFileOpenProject,
