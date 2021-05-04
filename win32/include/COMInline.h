@@ -7,8 +7,7 @@
 #pragma once
 #include "emapp/Error.h"
 #include "emapp/Forward.h"
-
-#include <comdef.h>
+#include "emapp/StringUtils.h"
 
 namespace nanoem {
 namespace win32 {
@@ -28,8 +27,11 @@ public:
     wrapCall(HRESULT result, Error &error)
     {
         if (FAILED(result) && !error.hasReason()) {
-            _com_error err(result);
-            error = Error(err.ErrorMessage(), result, Error::kDomainTypeOS);
+            wchar_t buffer[Error::kMaxReasonLength];
+            MutableString msg;
+            FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, result, LANG_USER_DEFAULT, buffer, ARRAYSIZE(buffer), 0);
+            StringUtils::getMultiBytesString(buffer, msg);
+            error = Error(msg.data(), result, Error::kDomainTypeOS);
         }
     }
 };
