@@ -51,8 +51,9 @@ void
 BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, const sg::NamedImage &source,
     const Vector4 &rect, const PixelFormat &format)
 {
-    SG_INSERT_MARKERF("BlitPass::blit(dest=%s, source=%s, x=%.0f, y=%.0f, width=%.0f, height=%.0f)", dest.second,
-        source.second, rect.x, rect.y, rect.z, rect.w);
+    SG_INSERT_MARKERF("BlitPass::blit(destHandle=%d, destPass=%s, sourceHandle=%d, sourceImage=%s, x=%.0f, y=%.0f, "
+                      "width=%.0f, height=%.0f)",
+        dest.first, dest.second, source.first, source.second, rect.x, rect.y, rect.z, rect.w);
     if (m_dirty) {
         setupVertexBuffer(rect);
         m_dirty = false;
@@ -66,8 +67,9 @@ void
 BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, const sg::NamedImage &source,
     const Vector4 &rect, const PixelFormat &format, const Vector4 &viewport)
 {
-    SG_INSERT_MARKERF("BlitPass::blit(dest=%s, source=%s, x=%.0f, y=%.0f, width=%.0f, height=%.0f)", dest.second,
-        source.second, rect.x, rect.y, rect.z, rect.w);
+    SG_INSERT_MARKERF("BlitPass::blit(destHandle=%d, destPass=%s, sourceHandle=%d, sourceImage=%s, x=%.0f, y=%.0f, "
+                      "width=%.0f, height=%.0f)",
+        dest.first, dest.second, source.first, source.second, rect.x, rect.y, rect.z, rect.w);
     if (m_dirty) {
         setupVertexBuffer(rect);
         m_dirty = false;

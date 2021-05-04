@@ -702,6 +702,7 @@ Project::BatchDrawQueue::draw(int offset, int count)
 {
     CommandBufferMap::iterator it = m_batch.find(m_pass.id);
     if (it != m_batch.end()) {
+        SG_INSERT_MARKERF("Project::BatchDrawQueue::draw(offset=%d, count=%d)", offset, count);
         DrawQueue::draw(*it->second, offset, count);
     }
 }
@@ -785,6 +786,11 @@ Project::SerialDrawQueue::beginPass(sg_pass pass, const sg_pass_action &action)
         }
     }
     if (!mergeable) {
+        SG_INSERT_MARKERF(
+            "Project::SerialDrawQueue::beginPass(offset=%d, handle=%d, name=%s, color=%s, depth=%s, stencil=%s)",
+            Inline::saturateInt32(buffers.size() + 1), pass, m_drawQueue->m_project->findRenderPassName(pass),
+            EnumStringifyUtils::toString(action.colors[0].action), EnumStringifyUtils::toString(action.depth.action),
+            EnumStringifyUtils::toString(action.stencil.action));
         DrawQueue::PassCommandBuffer buffer;
         DrawQueue::Command item;
         item.m_type = DrawQueue::kCommandTypeSetPassAction;
@@ -834,6 +840,7 @@ Project::SerialDrawQueue::applyUniformBlock(sg_shader_stage stage, const void *d
 void
 Project::SerialDrawQueue::draw(int offset, int count)
 {
+    SG_INSERT_MARKERF("Project::SerialDrawQueue::draw(offset=%d, count=%d)", offset, count);
     DrawQueue::draw(*m_drawQueue->m_commandBuffers.back().m_items, offset, count);
 }
 
@@ -7023,7 +7030,7 @@ Project::blitRenderPass(
     if (sourceRenderPass.id != destRenderPass.id) {
         RenderPassBundleMap::const_iterator source = m_renderPassBundleMap.find(sourceRenderPass.id);
         if (source != m_renderPassBundleMap.end()) {
-            sg_image image = source->second.m_desciption.color_attachments[0].image;
+            const sg_image image = source->second.m_desciption.color_attachments[0].image;
             const PixelFormat format(findRenderPassPixelFormat(destRenderPass));
             blitter->blit(drawQueue,
                 tinystl::make_pair(destRenderPass, findRenderPassName(destRenderPass, "(unknown)")),

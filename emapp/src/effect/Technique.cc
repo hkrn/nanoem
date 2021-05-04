@@ -185,8 +185,10 @@ Technique::ScriptExternal::save(const IDrawable *drawable, const char *name)
     Project *project = effect->project();
     sg_pass pass = effect->resetRenderPass(drawable);
     m_destinationPass = pass;
+    SG_PUSH_GROUPF("Technique::ScriptExternal::save(pass=%s)", project->findRenderPassName(pass));
     project->setRenderPassName(pass, name);
     project->setScriptExternalRenderPass(pass, effect->clearColor(), effect->clearDepth());
+    SG_POP_GROUP();
 }
 
 void
