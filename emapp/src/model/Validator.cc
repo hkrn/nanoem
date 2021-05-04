@@ -31,8 +31,9 @@ Validator::validateParentBone(
 {
     Diagnostics diag;
     const nanoem_u32_t severity = kSeverityTypeInfo | kSeverityTypeWarning | kSeverityTypeError;
-    return parentBonePtr ? validateParentBone(
-        bonePtr, parentBonePtr, kMessageTypeBoneTransformBeforeParent, severity, &diag) : true;
+    return parentBonePtr
+        ? validateParentBone(bonePtr, parentBonePtr, kMessageTypeBoneTransformBeforeParent, severity, &diag)
+        : true;
 }
 
 bool
@@ -117,8 +118,7 @@ Validator::validateTexCoord(
 }
 
 bool
-Validator::validateEulerAngles(
-    const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+Validator::validateEulerAngles(const nanoem_f32_t *value, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
 {
     diag->m_message = kMessageTypeNone;
     for (nanoem_rsize_t i = 0; i < 3; i++) {
@@ -177,8 +177,7 @@ Validator::validateOpacity(
 }
 
 bool
-Validator::testDiagnosticsSeverity(
-    SeverityType severity, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
+Validator::testDiagnosticsSeverity(SeverityType severity, nanoem_u32_t filter, Diagnostics *diag) NANOEM_DECL_NOEXCEPT
 {
     bool result = false;
     if (EnumUtils::isEnabled(severity, filter)) {
@@ -753,8 +752,8 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
                 diag.m_message = kMessageTypeBoneInherentBoneNullBoneObject;
                 result.push_back(diag);
             }
-            else if (!validateParentBone(
-                         bonePtr, inherentParentBonePtr, kMessageTypeBoneTransformBeforeInherentParent, filter, &diag)) {
+            else if (!validateParentBone(bonePtr, inherentParentBonePtr, kMessageTypeBoneTransformBeforeInherentParent,
+                         filter, &diag)) {
                 result.push_back(diag);
             }
         }

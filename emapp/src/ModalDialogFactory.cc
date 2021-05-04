@@ -949,7 +949,8 @@ ModalDialogFactory::createConfirmSavingDialog(BaseApplicationService *applicatio
 }
 
 IModalDialog *
-ModalDialogFactory::createConfirmConvertingAccessoryToModelDialog(Accessory *accessory, BaseApplicationService *applicationPtr)
+ModalDialogFactory::createConfirmConvertingAccessoryToModelDialog(
+    Accessory *accessory, BaseApplicationService *applicationPtr)
 {
     nanoem_parameter_assert(accessory, "must NOT be nullptr");
     nanoem_parameter_assert(applicationPtr, "must NOT be nullptr");

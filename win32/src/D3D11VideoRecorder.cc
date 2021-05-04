@@ -15,13 +15,13 @@
 #include "emapp/internal/BlitPass.h"
 #include "emapp/private/CommonInclude.h"
 
-#include <stdio.h>
 #include <d3d11.h>
 #include <dxgi.h>
 #include <evr.h>
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <stdio.h>
 
 namespace nanoem {
 namespace win32 {

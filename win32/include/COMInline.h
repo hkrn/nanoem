@@ -29,7 +29,8 @@ public:
         if (FAILED(result) && !error.hasReason()) {
             wchar_t buffer[Error::kMaxReasonLength];
             MutableString msg;
-            FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, result, LANG_USER_DEFAULT, buffer, ARRAYSIZE(buffer), 0);
+            FormatMessageW(
+                FORMAT_MESSAGE_FROM_SYSTEM, nullptr, result, LANG_USER_DEFAULT, buffer, ARRAYSIZE(buffer), 0);
             StringUtils::getMultiBytesString(buffer, msg);
             error = Error(msg.data(), result, Error::kDomainTypeOS);
         }

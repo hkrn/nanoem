@@ -411,7 +411,8 @@ ModelParameterDialog::layoutAllVertices(Project *project)
                     const nanoem_model_morph_t *morphPtr = morphs[i];
                     if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_VERTEX) {
                         nanoem_rsize_t numItems;
-                        nanoem_model_morph_vertex_t *const *items = nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
+                        nanoem_model_morph_vertex_t *const *items =
+                            nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
                         for (nanoem_rsize_t j = 0; j < numItems; j++) {
                             const nanoem_model_morph_vertex_t *item = items[j];
                             if (vertexSet.find(nanoemModelMorphVertexGetVertexObject(item)) != vertexSet.end()) {
@@ -431,7 +432,8 @@ ModelParameterDialog::layoutAllVertices(Project *project)
                     const nanoem_model_morph_t *morphPtr = morphs[i];
                     if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_TEXTURE) {
                         nanoem_rsize_t numItems;
-                        nanoem_model_morph_uv_t *const *items = nanoemModelMorphGetAllUVMorphObjects(morphPtr, &numItems);
+                        nanoem_model_morph_uv_t *const *items =
+                            nanoemModelMorphGetAllUVMorphObjects(morphPtr, &numItems);
                         for (nanoem_rsize_t j = 0; j < numItems; j++) {
                             const nanoem_model_morph_uv_t *item = items[j];
                             if (vertexSet.find(nanoemModelMorphUVGetVertexObject(item)) != vertexSet.end()) {
@@ -463,7 +465,8 @@ ModelParameterDialog::layoutAllVertices(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.masking.vertex.enable-all"))) {
                 const model::Vertex::Set vertexSet(selection->allVertexSet());
-                for (model::Vertex::Set::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end; ++it) {
+                for (model::Vertex::Set::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end;
+                     ++it) {
                     const nanoem_model_vertex_t *vertexPtr = *it;
                     if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
                         vertex->setEditingMasked(true);
@@ -472,7 +475,8 @@ ModelParameterDialog::layoutAllVertices(Project *project)
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.masking.vertex.disable-all"))) {
                 const model::Vertex::Set vertexSet(selection->allVertexSet());
-                for (model::Vertex::Set::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end; ++it) {
+                for (model::Vertex::Set::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end;
+                     ++it) {
                     const nanoem_model_vertex_t *vertexPtr = *it;
                     if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
                         vertex->setEditingMasked(false);
@@ -494,8 +498,7 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     }
     ImGui::SameLine();
     ImGui::Text("%lu / %lu", m_vertexIndex + 1, numVertices);
-    ImGui::BeginChild(
-        "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
+    ImGui::BeginChild("left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
     ImGuiListClipper clipper;
     nanoem_model_vertex_t *hoveredVertexPtr = nullptr;
     bool up, down;
@@ -778,8 +781,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     }
     ImGui::SameLine();
     ImGui::Text("%lu / %lu", m_faceIndex + 1, numFaces);
-    ImGui::BeginChild(
-        "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
+    ImGui::BeginChild("left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
     ImGuiListClipper clipper;
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
@@ -1649,7 +1651,8 @@ ModelParameterDialog::layoutAllBones(Project *project)
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.bone.enable-all-vertices"))) {
                 const model::Bone::Set boneSet(selection->allBoneSet());
                 nanoem_rsize_t numVertices;
-                nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
                 removeAllVertexSelectionIfNeeded(selection);
                 for (nanoem_rsize_t i = 0; i < numVertices; i++) {
                     const nanoem_model_vertex_t *vertexPtr = vertices[i];
@@ -2057,7 +2060,8 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 ImGui::Separator();
                 const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
                 const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
-                layoutTextWithParentBoneValidation(bonePtr, parentBonePtr, "nanoem.gui.model.edit.bone.inherent.parent-bone",
+                layoutTextWithParentBoneValidation(bonePtr, parentBonePtr,
+                    "nanoem.gui.model.edit.bone.inherent.parent-bone",
                     "nanoem.model.validator.bone.inherent.transform-before-parent");
                 if (ImGui::BeginCombo("##parent.inherent", parentBone ? parentBone->nameConstString() : "(none)")) {
                     for (nanoem_rsize_t i = 0; i < numBones; i++) {
@@ -3818,8 +3822,8 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones"))) {
                 const model::RigidBody::Set rigidBodySet(selection->allRigidBodySet());
                 removeAllBoneSelectionIfNeeded(selection);
-                for (model::RigidBody::Set::const_iterator it = rigidBodySet.begin(), end = rigidBodySet.end(); it != end;
-                     ++it) {
+                for (model::RigidBody::Set::const_iterator it = rigidBodySet.begin(), end = rigidBodySet.end();
+                     it != end; ++it) {
                     const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                     const nanoem_model_bone_t *bonePtr = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
                     selection->addBone(bonePtr);
@@ -3830,8 +3834,8 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.masking.rigid-body.enable-all"))) {
                 const model::RigidBody::Set rigidBodySet(selection->allRigidBodySet());
-                for (model::RigidBody::Set::const_iterator it = rigidBodySet.begin(), end = rigidBodySet.end(); it != end;
-                     ++it) {
+                for (model::RigidBody::Set::const_iterator it = rigidBodySet.begin(), end = rigidBodySet.end();
+                     it != end; ++it) {
                     const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                     if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
                         rigidBody->setEditingMasked(true);
@@ -3840,8 +3844,8 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.masking.rigid-body.disable-all"))) {
                 const model::RigidBody::Set rigidBodySet(selection->allRigidBodySet());
-                for (model::RigidBody::Set::const_iterator it = rigidBodySet.begin(), end = rigidBodySet.end(); it != end;
-                     ++it) {
+                for (model::RigidBody::Set::const_iterator it = rigidBodySet.begin(), end = rigidBodySet.end();
+                     it != end; ++it) {
                     const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                     if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
                         rigidBody->setEditingMasked(false);

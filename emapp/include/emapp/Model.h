@@ -150,8 +150,8 @@ public:
     static bool isLoadableExtension(const URI &fileURI);
     static void setStandardPipelineDescription(sg_pipeline_desc &desc);
     static void setEdgePipelineDescription(sg_pipeline_desc &desc);
-    static void generateNewModelData(const NewModelDescription &desc,
-        nanoem_unicode_string_factory_t *factory, ByteArray &bytes, nanoem_status_t &status);
+    static void generateNewModelData(const NewModelDescription &desc, nanoem_unicode_string_factory_t *factory,
+        ByteArray &bytes, nanoem_status_t &status);
 
     Model(Project *project, nanoem_u16_t handle);
     ~Model() NANOEM_DECL_NOEXCEPT;

@@ -763,8 +763,8 @@ Model::setEdgePipelineDescription(sg_pipeline_desc &desc)
 }
 
 void
-Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_string_factory_t *factory,
-    ByteArray &bytes, nanoem_status_t &status)
+Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_string_factory_t *factory, ByteArray &bytes,
+    nanoem_status_t &status)
 {
     nanoem_mutable_buffer_t *mutableBuffer = nanoemMutableBufferCreate(&status);
     nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreate(factory, &status);
@@ -786,7 +786,8 @@ Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_stri
     }
     nanoem_mutable_model_bone_t *mutableCenterBone = nanoemMutableModelBoneCreate(originModel, &status);
     {
-        if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(model::Bone::kNameCenterInJapanese), scope)) {
+        if (StringUtils::tryGetString(
+                factory, reinterpret_cast<const char *>(model::Bone::kNameCenterInJapanese), scope)) {
             nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
         }
         if (StringUtils::tryGetString(factory, "Center", scope)) {

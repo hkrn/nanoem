@@ -464,8 +464,8 @@ compareKeyframeDescend(
 
 const String Motion::kNMDFormatExtension = String("nmd");
 const String Motion::kVMDFormatExtension = String("vmd");
-const nanoem_u8_t Motion::kCameraAndLightTargetModelName[] = { 0xe3, 0x82, 0xab, 0xe3, 0x83, 0xa1, 0xe3, 0x83, 0xa9, 0xe3,
-    0x83, 0xbb, 0xe7, 0x85, 0xa7, 0xe6, 0x98, 0x8e, 0 }; /* "Camera and Light" in Japanese */
+const nanoem_u8_t Motion::kCameraAndLightTargetModelName[] = { 0xe3, 0x82, 0xab, 0xe3, 0x83, 0xa1, 0xe3, 0x83, 0xa9,
+    0xe3, 0x83, 0xbb, 0xe7, 0x85, 0xa7, 0xe6, 0x98, 0x8e, 0 }; /* "Camera and Light" in Japanese */
 const nanoem_frame_index_t Motion::kMaxFrameIndex = nanoem_frame_index_t(~0);
 
 struct Motion::SelectionState NANOEM_DECL_SEALED {
