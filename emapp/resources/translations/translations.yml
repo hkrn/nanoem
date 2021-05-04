@@ -3586,6 +3586,10 @@
   phrase:
     en_US: 'The loading motion is not intended for camera/light'
     ja_JP: '読み込まれたモーションはカメラ及び照明用ではありません'
+- key: nanoem.error.project.new-model.empty-file-uri.reason
+  phrase:
+    en_US: 'Saving the project is required to create a new model'
+    ja_JP: '新規モデルを作成するにはプロジェクトの保存が必要です'
 
 - key: nanoem.project.diagnostics.title
   phrase:

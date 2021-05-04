@@ -1793,27 +1793,33 @@ Project::newModel(Error &error)
     Model::generateNewModelData(desc, factory, bytes, status);
     if (status == NANOEM_STATUS_SUCCESS) {
         FileWriterScope scope;
-        String newModelPath(fileURI().absolutePathByDeletingLastPathComponent());
-        newModelPath.append("/");
-        const char *filename = desc.m_name[castLanguage()].c_str();
-        newModelPath.append(filename);
-        newModelPath.append(".pmx");
-        const URI fileURI(URI::createFromFilePath(newModelPath.c_str()));
-        if (scope.open(fileURI, error)) {
-            FileUtils::write(scope.writer(), bytes, error);
-            Model *model = createModel();
-            if (model->load(bytes, error)) {
-                model->setupAllBindings();
-                model->upload();
-                addModel(model);
-                setActiveModel(model);
-                model->writeLoadCommandMessage(error);
-                scope.commit(error);
+        const URI projectFileURI(fileURI());
+        if (!projectFileURI.isEmpty()) {
+            String newModelPath(fileURI().absolutePathByDeletingLastPathComponent());
+            newModelPath.append("/");
+            const char *filename = desc.m_name[castLanguage()].c_str();
+            newModelPath.append(filename);
+            newModelPath.append(".pmx");
+            const URI fileURI(URI::createFromFilePath(newModelPath.c_str()));
+            if (scope.open(fileURI, error)) {
+                FileUtils::write(scope.writer(), bytes, error);
+                Model *model = createModel();
+                if (model->load(bytes, error)) {
+                    model->setupAllBindings();
+                    model->upload();
+                    addModel(model);
+                    setActiveModel(model);
+                    model->writeLoadCommandMessage(error);
+                    scope.commit(error);
+                }
+                else {
+                    destroyModel(model);
+                    scope.rollback(error);
+                }
             }
-            else {
-                destroyModel(model);
-                scope.rollback(error);
-            }
+        }
+        else {
+            error = Error(translator()->translate("nanoem.error.project.new-model.empty-file-uri.reason"), "", Error::kDomainTypeApplication);
         }
     }
     else {
