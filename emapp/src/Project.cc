@@ -7030,12 +7030,19 @@ Project::blitRenderPass(
     if (sourceRenderPass.id != destRenderPass.id) {
         RenderPassBundleMap::const_iterator source = m_renderPassBundleMap.find(sourceRenderPass.id);
         if (source != m_renderPassBundleMap.end()) {
-            const sg_image image = source->second.m_desciption.color_attachments[0].image;
-            const PixelFormat format(findRenderPassPixelFormat(destRenderPass));
+            sg_image sourceColorImage = source->second.m_desciption.color_attachments[0].image;
+            /* prevent blitting dest(viewportPrimaryPass) == source(viewportPrimaryPass) */
+            if (sourceColorImage.id == m_viewportPrimaryPass.m_colorImage.id &&
+                destRenderPass.id != m_viewportSecondaryPass.m_handle.id) {
+                blitter->blit(drawQueue, tinystl::make_pair(m_viewportSecondaryPass.m_handle, kViewportSecondaryName),
+                    tinystl::make_pair(sourceColorImage, kViewportPrimaryName), kRectCoordination,
+                    findRenderPassPixelFormat(m_viewportSecondaryPass.m_handle));
+                sourceColorImage = m_viewportSecondaryPass.m_colorImage;
+            }
             blitter->blit(drawQueue,
                 tinystl::make_pair(destRenderPass, findRenderPassName(destRenderPass, "(unknown)")),
-                tinystl::make_pair(image, findRenderPassName(sourceRenderPass, "(unknown)")), kRectCoordination,
-                format);
+                tinystl::make_pair(sourceColorImage, findRenderPassName(sourceRenderPass, "(unknown)")),
+                kRectCoordination, findRenderPassPixelFormat(destRenderPass));
         }
     }
 }
