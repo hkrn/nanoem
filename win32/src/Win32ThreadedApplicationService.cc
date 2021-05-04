@@ -84,7 +84,7 @@ Win32BackgroundVideoRendererProxy::load(const URI &fileURI, Error &error)
             nanoem_delete_safe(m_d3d11BackgroundVideoDrawer);
         }
     }
-#endif /* WINVER >= _WIN32_WINNT_WIN7 */
+#else
     Error error2;
     m_decoderPluginBasedBackgroundVideoRenderer =
         nanoem_new(internal::DecoderPluginBasedBackgroundVideoRenderer(m_service->defaultFileManager()));
@@ -95,8 +95,11 @@ Win32BackgroundVideoRendererProxy::load(const URI &fileURI, Error &error)
     else {
         m_decoderPluginBasedBackgroundVideoRenderer->destroy();
         nanoem_delete_safe(m_decoderPluginBasedBackgroundVideoRenderer);
-        error = error2;
+        if (!error.hasReason()) {
+            error = error2;
+        }
     }
+#endif /* WINVER >= _WIN32_WINNT_WIN7 */
     return playable;
 }
 

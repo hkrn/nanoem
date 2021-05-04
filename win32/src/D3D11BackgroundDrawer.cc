@@ -9,6 +9,16 @@
 
 #include "COMInline.h"
 
+/* include system header first due to UUID type confliction problem */
+#include <Mferror.h>
+#include <d3d11.h>
+#include <dxgi.h>
+#include <evr.h>
+#include <mfapi.h>
+#include <mfidl.h>
+#include <mfreadwrite.h>
+#include <propvarutil.h>
+
 #include "emapp/Constants.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/Error.h"
@@ -18,15 +28,6 @@
 #include "emapp/internal/BlitPass.h"
 #include "emapp/internal/DecoderPluginBasedBackgroundVideoRenderer.h"
 #include "emapp/private/CommonInclude.h"
-
-#include <Mferror.h>
-#include <d3d11.h>
-#include <dxgi.h>
-#include <evr.h>
-#include <mfapi.h>
-#include <mfidl.h>
-#include <mfreadwrite.h>
-#include <propvarutil.h>
 
 namespace nanoem {
 namespace win32 {
@@ -120,7 +121,9 @@ D3D11BackgroundVideoDrawer::load(const URI &fileURI, Error &error)
         else {
             m_decoderPluginBasedBackgroundVideoRenderer->destroy();
             nanoem_delete_safe(m_decoderPluginBasedBackgroundVideoRenderer);
-            error = error2;
+            if (!error.hasReason()) {
+                error = error2;
+            }
         }
     }
     return !error.hasReason();

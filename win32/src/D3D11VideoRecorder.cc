@@ -15,6 +15,7 @@
 #include "emapp/internal/BlitPass.h"
 #include "emapp/private/CommonInclude.h"
 
+#include <stdio.h>
 #include <d3d11.h>
 #include <dxgi.h>
 #include <evr.h>
