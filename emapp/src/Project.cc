@@ -6645,17 +6645,18 @@ Project::destroyDetachedEffect(Effect *effect)
 void
 Project::synchronizeCamera(nanoem_frame_index_t frameIndex, nanoem_f32_t amount)
 {
+    static const Vector3 kCamraDirection(-1, 1, 1);
     PerspectiveCamera camera0(this), camera1(this);
     camera0.synchronizeParameters(m_cameraMotionPtr, frameIndex);
     if (amount > 0 && !m_cameraMotionPtr->findCameraKeyframe(frameIndex + 1)) {
         camera1.synchronizeParameters(m_cameraMotionPtr, frameIndex + 1);
-        m_camera->setAngle(glm::mix(camera0.angle(), camera1.angle(), amount));
+        m_camera->setAngle(glm::mix(camera0.angle(), camera1.angle(), amount) * kCamraDirection);
         m_camera->setDistance(glm::mix(camera0.distance(), camera1.distance(), amount));
         m_camera->setFovRadians(glm::mix(camera0.fovRadians(), camera1.fovRadians(), amount));
         m_camera->setLookAt(glm::mix(camera0.lookAt(), camera1.lookAt(), amount));
     }
     else {
-        m_camera->setAngle(camera0.angle());
+        m_camera->setAngle(camera0.angle() * kCamraDirection);
         m_camera->setDistance(camera0.distance());
         m_camera->setFovRadians(camera0.fovRadians());
         m_camera->setLookAt(camera0.lookAt());

@@ -39,7 +39,6 @@ namespace {
 
 static const char kUserFileNeedleType1[] = "/UserFile/";
 static const char kUserFileNeedleType2[] = "UserFile/";
-static const Vector3 kCameraDirection = Vector3(-1, 1, 1);
 
 static URI
 concatFileURI(const URI &fileURI, const char *appendPath)
@@ -1184,7 +1183,7 @@ PMM::Context::loadCamera(
     const nanoem_document_camera_t *camera = nanoemDocumentGetCameraObject(document);
     ICamera *globalCamera = m_project->globalCamera();
     globalCamera->setLookAt(glm::make_vec3(nanoemDocumentCameraGetLookAt(camera)));
-    globalCamera->setAngle(glm::make_vec3(nanoemDocumentCameraGetAngle(camera)) * kCameraDirection);
+    globalCamera->setAngle(glm::make_vec3(nanoemDocumentCameraGetAngle(camera)));
     globalCamera->setDistance(nanoemDocumentCameraGetDistance(camera));
     globalCamera->setFov(int(nanoemDocumentCameraGetFov(camera)));
     globalCamera->setPerspective(nanoemDocumentCameraIsPerspectiveEnabled(camera) != 0);
@@ -1201,8 +1200,8 @@ PMM::Context::loadCamera(
             nanoemMutableMotionAddCameraKeyframe(mutableCameraMotion, keyframe, frameIndex, status);
         }
         nanoemMutableMotionCameraKeyframeSetLookAt(keyframe, nanoemDocumentCameraKeyframeGetLookAt(ko));
-        nanoemMutableMotionCameraKeyframeSetAngle(keyframe,
-            glm::value_ptr(glm::make_vec4(nanoemDocumentCameraKeyframeGetAngle(ko)) * Vector4(kCameraDirection, 0)));
+        nanoemMutableMotionCameraKeyframeSetAngle(
+            keyframe, glm::value_ptr(glm::make_vec4(nanoemDocumentCameraKeyframeGetAngle(ko))));
         nanoemMutableMotionCameraKeyframeSetFov(keyframe, nanoemDocumentCameraKeyframeGetFov(ko));
         nanoemMutableMotionCameraKeyframeSetDistance(keyframe, nanoemDocumentCameraKeyframeGetDistance(ko));
         nanoemMutableMotionCameraKeyframeSetPerspectiveView(
@@ -1590,7 +1589,7 @@ PMM::Context::saveCamera(
     nanoem_mutable_document_camera_t *co = nanoemMutableDocumentCameraCreate(document, status);
     const ICamera *globalCamera = m_project->globalCamera();
     nanoemMutableDocumentCameraSetLookAt(co, glm::value_ptr(glm::vec4(globalCamera->lookAt(), 0)));
-    nanoemMutableDocumentCameraSetAngle(co, glm::value_ptr(glm::vec4(globalCamera->angle() * kCameraDirection, 0)));
+    nanoemMutableDocumentCameraSetAngle(co, glm::value_ptr(glm::vec4(globalCamera->angle(), 0)));
     nanoemMutableDocumentCameraSetPosition(co, glm::value_ptr(glm::vec4(0, 0, -globalCamera->distance(), 0)));
     nanoemMutableDocumentCameraSetFov(co, globalCamera->fov());
     nanoemMutableDocumentCameraSetPerspectiveEnabled(co, globalCamera->isPerspective());
@@ -1603,9 +1602,8 @@ PMM::Context::saveCamera(
             nanoemMotionKeyframeObjectGetFrameIndex(nanoemMotionCameraKeyframeGetKeyframeObject(keyframe));
         nanoem_mutable_document_camera_keyframe_t *ko = nanoemMutableDocumentCameraKeyframeCreate(co, status);
         nanoemMutableDocumentCameraKeyframeSetLookAt(ko, nanoemMotionCameraKeyframeGetLookAt(keyframe));
-        nanoemMutableDocumentCameraKeyframeSetAngle(ko,
-            glm::value_ptr(
-                glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) * Vector4(kCameraDirection, 0)));
+        nanoemMutableDocumentCameraKeyframeSetAngle(
+            ko, glm::value_ptr(glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe))));
         nanoemMutableDocumentCameraKeyframeSetFov(ko, nanoemMotionCameraKeyframeGetFov(keyframe));
         nanoemMutableDocumentCameraKeyframeSetDistance(ko, nanoemMotionCameraKeyframeGetDistance(keyframe));
         if (const nanoem_motion_outside_parent_t *outsideParent =

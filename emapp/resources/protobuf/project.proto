@@ -93,6 +93,7 @@ message Camera {
   required float fov = 5;
   required bool is_perspective = 6;
   required bool is_shared = 7;
+  optional bool angle_correction = 8;
 };
 
 message Light {
