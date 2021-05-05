@@ -1149,11 +1149,14 @@ Native::Context::loadMotion(
             if (!item->has_angle_x_axis_correction || item->angle_x_axis_correction == 0) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 nanoem_rsize_t numKeyframes;
-                nanoem_motion_camera_keyframe_t *const *keyframes = nanoemMotionGetAllCameraKeyframeObjects(motion->data(), &numKeyframes);
+                nanoem_motion_camera_keyframe_t *const *keyframes =
+                    nanoemMotionGetAllCameraKeyframeObjects(motion->data(), &numKeyframes);
                 for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
                     nanoem_motion_camera_keyframe_t *keyframe = keyframes[i];
-                    const Vector4 angle(glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) * Vector4(-1, 1, 1, 1));
-                    nanoem_mutable_motion_camera_keyframe_t *mutableKeyframe = nanoemMutableMotionCameraKeyframeCreateAsReference(keyframe, &status);
+                    const Vector4 angle(
+                        glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) * Vector4(-1, 1, 1, 1));
+                    nanoem_mutable_motion_camera_keyframe_t *mutableKeyframe =
+                        nanoemMutableMotionCameraKeyframeCreateAsReference(keyframe, &status);
                     nanoemMutableMotionCameraKeyframeSetAngle(mutableKeyframe, glm::value_ptr(angle));
                     nanoemMutableMotionCameraKeyframeDestroy(mutableKeyframe);
                 }
