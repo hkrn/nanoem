@@ -18,9 +18,8 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtc/matrix_inverse.hpp"
-#include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "glm/gtx/closest_point.hpp"
+#include "glm/gtx/quaternion.hpp"
 
 namespace nanoem {
 namespace internal {
@@ -280,11 +279,11 @@ TranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     else {
         localTranslation += cursorMoveDelta(logicalCursorPosition);
     }
-    const nanoem_model_bone_t *activeBone = model->activeBone();
+    const nanoem_model_bone_t *activeBonePtr = model->activeBone();
     const model::Bone::List &bones =
         ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet());
     if (!bones.empty()) {
-        performTranslationTransform(tinystl::make_pair(localTranslation, activeBone), bones);
+        performTranslationTransform(tinystl::make_pair(localTranslation, activeBonePtr), bones);
     }
 }
 
@@ -304,7 +303,7 @@ void
 OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Model *model = activeModel();
-    const nanoem_model_bone_t *activeBone = model->activeBone();
+    const nanoem_model_bone_t *activeBonePtr = model->activeBone();
     Quaternion orientation;
     switch (model->transformAxisType()) {
     case Model::kAxisCenter: {
@@ -313,19 +312,19 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     }
     case Model::kAxisX: {
         const Vector2 delta(logicalCursorPosition - pressedLogicalCursorPosition());
-        const Vector3 axisX(handleDragAxis(activeBone, 0));
+        const Vector3 axisX(handleDragAxis(activeBonePtr, 0));
         orientation = glm::angleAxis(glm::radians(delta).y, axisX);
         break;
     }
     case Model::kAxisY: {
         const nanoem_f32_t angle(angleCursorFromBone(logicalCursorPosition));
-        const Vector3 axisY(handleDragAxis(activeBone, 1));
+        const Vector3 axisY(handleDragAxis(activeBonePtr, 1));
         orientation = glm::angleAxis(angle, axisY);
         break;
     }
     case Model::kAxisZ: {
         const Vector2 delta(logicalCursorPosition - pressedLogicalCursorPosition());
-        const Vector3 axisZ(handleDragAxis(activeBone, 2));
+        const Vector3 axisZ(handleDragAxis(activeBonePtr, 2));
         orientation = glm::angleAxis(-glm::radians(delta).x, axisZ);
         break;
     }
@@ -335,7 +334,7 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     const model::Bone::List &bones =
         ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet());
     if (!bones.empty()) {
-        performOrientationTransform(tinystl::make_pair(orientation, activeBone), bones);
+        performOrientationTransform(tinystl::make_pair(orientation, activeBonePtr), bones);
     }
 }
 
@@ -368,22 +367,22 @@ AxisAlignedTranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorP
 {
     const Model *model = activeModel();
     const Model::TransformCoordinateType transformCoordinateType = model->transformCoordinateType();
-    const nanoem_model_bone_t *activeBone = model->activeBone();
-    const Vector3 axis(handleDragAxis(activeBone, transformCoordinateType, m_axisIndex));
-    const model::BindPose::Parameter &parameter = findBindPoseParameter(activeBone, model);
+    const nanoem_model_bone_t *activeBonePtr = model->activeBone();
+    const Vector3 axis(handleDragAxis(activeBonePtr, transformCoordinateType, m_axisIndex));
+    const model::BindPose::Parameter &parameter = findBindPoseParameter(activeBonePtr, model);
     const Vector3 delta(cursorDelta(logicalCursorPosition).y * axis);
     switch (transformCoordinateType) {
     case Model::kTransformCoordinateTypeGlobal: {
         const Vector3 translation(accumulatedDeltaPosition() + delta + parameter.m_localUserTranslation);
-        performTranslationTransform(tinystl::make_pair(translation, activeBone), createBoneList(activeBone));
+        performTranslationTransform(tinystl::make_pair(translation, activeBonePtr), createBoneList(activeBonePtr));
         break;
     }
     case Model::kTransformCoordinateTypeLocal: {
-        const model::Bone *bone = model::Bone::cast(activeBone);
+        const model::Bone *bone = model::Bone::cast(activeBonePtr);
         const Quaternion &orientation = bone->localOrientation();
         const Vector3 translation(
             (orientation * (accumulatedDeltaPosition() + delta)) + parameter.m_localUserTranslation);
-        performTranslationTransform(tinystl::make_pair(translation, activeBone), createBoneList(activeBone));
+        performTranslationTransform(tinystl::make_pair(translation, activeBonePtr), createBoneList(activeBonePtr));
         break;
     }
     case Model::kTransformCoordinateTypeMaxEnum:
@@ -412,12 +411,12 @@ AxisAlignedOrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorP
 {
     const Model *model = activeModel();
     const Model::TransformCoordinateType transformCoordinateType = model->transformCoordinateType();
-    const nanoem_model_bone_t *activeBone = model->activeBone();
-    const Vector3 axis(handleDragAxis(activeBone, transformCoordinateType, m_axisIndex) * Vector3(-1, -1, 1));
+    const nanoem_model_bone_t *activeBonePtr = model->activeBone();
+    const Vector3 axis(handleDragAxis(activeBonePtr, transformCoordinateType, m_axisIndex) * Vector3(-1, -1, 1));
     const Vector3 delta(cursorDelta(logicalCursorPosition), 0);
     nanoem_f32_t angle = glm::radians(accumulatedDeltaPosition().y + delta.y);
     const Quaternion &orientation = glm::angleAxis(angle, axis);
-    performOrientationTransform(tinystl::make_pair(orientation, activeBone), createBoneList(activeBone));
+    performOrientationTransform(tinystl::make_pair(orientation, activeBonePtr), createBoneList(activeBonePtr));
     updateLastCursorPosition(logicalCursorPosition, delta);
 }
 
@@ -425,6 +424,43 @@ const char *
 AxisAlignedOrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
 {
     return "nanoem.gui.viewport.bone.axis-aligned-orientate";
+}
+
+
+DirectionalOrientateActiveBoneState::DirectionalOrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
+    const Vector2SI32 &activeBoneLogicalCursorPosition)
+    : DraggingBoneState(project, model, pressedLogicalCursorPosition, activeBoneLogicalCursorPosition)
+    , m_activeBoneWorldTransformOrigin(model::Bone::cast(model->activeBone())->worldTransformOrigin())
+    , m_parentBoneWorldTransformOrigin(0)
+    , m_direction(Constants::kUnitY)
+{
+    if (const model::Bone *parentBone = model::Bone::cast(nanoemModelBoneGetParentBoneObject(model->activeBone()))) {
+        m_parentBoneWorldTransformOrigin = parentBone->worldTransformOrigin();
+        m_direction = glm::normalize(m_activeBoneWorldTransformOrigin - m_parentBoneWorldTransformOrigin);
+    }
+}
+
+void
+DirectionalOrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
+{
+    const Model *model = activeModel();
+    const nanoem_model_bone_t *activeBonePtr = model->activeBone(),
+            *parentActiveBonePtr = nanoemModelBoneGetParentBoneObject(activeBonePtr);
+    Quaternion orientation(Constants::kZeroQ);
+    Vector3 intersection;
+    if (model->localCamera()->castRay(logicalCursorPosition, intersection)) {
+        const Vector3 destination(glm::normalize(intersection - m_parentBoneWorldTransformOrigin));
+        orientation = glm::rotation(m_direction, destination);
+    }
+    model::Bone::List bones;
+    bones.push_back(parentActiveBonePtr);
+    performOrientationTransform(tinystl::make_pair(orientation, activeBonePtr), bones);
+}
+
+const char *
+DirectionalOrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "nanoem.gui.viewport.bone.directional-orientate";
 }
 
 } /* namespace internal */

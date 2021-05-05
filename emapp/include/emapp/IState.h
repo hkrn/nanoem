@@ -22,6 +22,7 @@ public:
         kTypeDraggingBoneOrientateActiveBoneState,
         kTypeDraggingBoneAxisAlignedTranslateActiveBoneState,
         kTypeDraggingBoneAxisAlignedOrientateActiveBoneState,
+        kTypeDraggingBoneDirectionalOrientateActiveBoneState,
         kTypeDraggingCameraLookAtState,
         kTypeDraggingCameraZoomState,
         kTypeDraggingCameraAxisAlignedTranslateCameraState,

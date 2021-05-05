@@ -113,6 +113,20 @@ private:
     const int m_axisIndex;
 };
 
+class DirectionalOrientateActiveBoneState NANOEM_DECL_SEALED : public DraggingBoneState {
+public:
+    DirectionalOrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
+        const Vector2SI32 &activeBoneLogicalCursorPosition);
+
+    void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Vector3 m_activeBoneWorldTransformOrigin;
+    Vector3 m_parentBoneWorldTransformOrigin;
+    Vector3 m_direction;
+};
+
 } /* namespace internal */
 } /* namespace nanoem */
 

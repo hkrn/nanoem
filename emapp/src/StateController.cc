@@ -109,7 +109,7 @@ protected:
     virtual internal::IDraggingState *createCameraZoomState(
         const Vector3SI32 &logicalScaleCursorPosition, Project *project) = 0;
 
-    internal::IDraggingState *createDraggingState(
+    internal::IDraggingState *createTransformHandleDraggingState(
         Project::RectangleType rectangleType, const Vector3SI32 &logicalScaleCursorPosition, Project *project);
     void setDraggingState(internal::IDraggingState *draggingState, const Vector3SI32 &logicalScaleCursorPosition);
     void updateCameraAngle(const Vector2SI32 &delta);
@@ -175,7 +175,7 @@ BaseDraggingObjectState::onRelease(const Vector3SI32 &logicalScaleCursorPosition
 }
 
 internal::IDraggingState *
-BaseDraggingObjectState::createDraggingState(
+BaseDraggingObjectState::createTransformHandleDraggingState(
     Project::RectangleType rectangleType, const Vector3SI32 &logicalScaleCursorPosition, Project *project)
 {
     int axisIndex;
@@ -367,23 +367,32 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
         /* do nothing */
     }
     else if (project->intersectsTransformHandle(logicalScaleCursorPosition, rectangleType)) {
-        draggingState = createDraggingState(rectangleType, logicalScaleCursorPosition, project);
+        draggingState = createTransformHandleDraggingState(rectangleType, logicalScaleCursorPosition, project);
     }
     else if (const nanoem_model_bone_t *bonePtr = model->activeBone()) {
         const model::Bone *bone = model::Bone::cast(bonePtr);
         const Vector2SI32 activeBoneCursorPosition(logicalScaleCursorActiveBoneInWindow(project));
-        if (!bone->isEditingMasked() && model->transformAxisType() != Model::kAxisTypeMaxEnum) {
+        if (!bone->isEditingMasked()) {
             const Project::EditingMode editingMode = project->editingMode();
             const IModelObjectSelection *selection = model->selection();
-            if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
-                draggingState = nanoem_new(internal::OrientateActiveBoneState(
-                    project, model, logicalScaleCursorPosition, activeBoneCursorPosition));
-                setType(IState::kTypeDraggingBoneOrientateActiveBoneState);
+            if (model->transformAxisType() != Model::kAxisTypeMaxEnum) {
+                if (editingMode == Project::kEditingModeRotate && selection->areAllBonesRotateable()) {
+                    draggingState = nanoem_new(internal::OrientateActiveBoneState(
+                        project, model, logicalScaleCursorPosition, activeBoneCursorPosition));
+                    setType(IState::kTypeDraggingBoneOrientateActiveBoneState);
+                }
+                else if (editingMode == Project::kEditingModeMove && selection->areAllBonesMovable()) {
+                    draggingState = nanoem_new(internal::TranslateActiveBoneState(
+                        project, model, logicalScaleCursorPosition, activeBoneCursorPosition));
+                    setType(IState::kTypeDraggingBoneTranslateActiveBoneState);
+                }
             }
-            else if (editingMode == Project::kEditingModeMove && selection->areAllBonesMovable()) {
-                draggingState = nanoem_new(internal::TranslateActiveBoneState(
+            else if (editingMode == Project::kEditingModeSelect &&
+                     EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeAlt | Project::kCursorModifierTypeShift, logicalScaleCursorPosition.z) &&
+                     nanoemModelBoneGetParentBoneObject(bonePtr) != nullptr) {
+                draggingState = nanoem_new(internal::DirectionalOrientateActiveBoneState(
                     project, model, logicalScaleCursorPosition, activeBoneCursorPosition));
-                setType(IState::kTypeDraggingBoneTranslateActiveBoneState);
+                setType(IState::kTypeDraggingBoneDirectionalOrientateActiveBoneState);
             }
         }
     }
@@ -576,8 +585,9 @@ DraggingCameraState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
     Project *project = m_stateControllerPtr->currentProject();
     if (project && !project->isPlaying() &&
         project->intersectsTransformHandle(logicalScaleCursorPosition, rectangleType)) {
-        setDraggingState(
-            createDraggingState(rectangleType, logicalScaleCursorPosition, project), logicalScaleCursorPosition);
+        internal::IDraggingState *draggingState =
+            createTransformHandleDraggingState(rectangleType, logicalScaleCursorPosition, project);
+        setDraggingState(draggingState, logicalScaleCursorPosition);
     }
 }
 
@@ -968,8 +978,9 @@ BaseSelectionState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
             /* do nothing */
         }
         else if (project->intersectsTransformHandle(logicalScaleCursorPosition, rectangleType)) {
-            setDraggingState(
-                createDraggingState(rectangleType, logicalScaleCursorPosition, project), logicalScaleCursorPosition);
+            internal::IDraggingState *draggingState =
+                createTransformHandleDraggingState(rectangleType, logicalScaleCursorPosition, project);
+            setDraggingState(draggingState, logicalScaleCursorPosition);
         }
         else {
             const Vector4SI32 rect(logicalScaleCursorPosition.x, logicalScaleCursorPosition.y, 0, 0);
