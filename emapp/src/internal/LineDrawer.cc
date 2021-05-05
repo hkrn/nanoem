@@ -67,9 +67,9 @@ LineDrawer::initialize()
     Inline::clearZeroMemory(sd);
     sd.vs.uniform_blocks[0].size = sizeof(Uniform);
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
-    sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_30", SG_UNIFORMTYPE_FLOAT4, 4 };
+    sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_30", SG_UNIFORMTYPE_FLOAT4, 5 };
 #else
-    sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "grid_parameters_t", SG_UNIFORMTYPE_FLOAT4, 4 };
+    sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "grid_parameters_t", SG_UNIFORMTYPE_FLOAT4, 5 };
 #endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     const sg_backend backend = sg::query_backend();
     if (backend == SG_BACKEND_D3D11) {
