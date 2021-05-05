@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -668,10 +668,10 @@ $nanoem.menu.file.export.motion.light照明モーション(&L)*
 停止(&S)P
 nanoem.menu.project.viewport0ビューポート設定ダイアログを開くC
 nanoem.menu.project.order.draw!描画順ダイアログを開くH
-#nanoem.menu.project.order.transform!変形順ダイアログを開くQ
-#nanoem.menu.project.viewport.detach*ビューポートウィンドウを分離H
-nanoem.menu.project.enable.loop%ループ再生を有効にする(&L)>
-nanoem.menu.project.enable.grid地面軸を有効にするG
+#nanoem.menu.project.order.transform!変形順ダイアログを開くU
+#nanoem.menu.project.viewport.detach.ビューポートウィンドウを分離(&D)H
+nanoem.menu.project.enable.loop%ループ再生を有効にする(&L)B
+nanoem.menu.project.enable.grid地面軸を有効にする(&G)G
 (nanoem.menu.project.enable.ground-shadow地面影を有効にするJ
 !nanoem.menu.project.enable.effect%エフェクトを有効にする(&E)k
 3nanoem.menu.project.enable.high-resolution-viewport4高解像度ビューポートを有効にする(&H)~
@@ -1024,7 +1024,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-�F
+�F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1704,10 +1704,10 @@ $nanoem.menu.file.export.motion.light&Light Motion&
 nanoem.menu.project.stop&Stop<
 nanoem.menu.project.viewportOpen Viewport Setting Dialog8
 nanoem.menu.project.order.drawOpen Draw Order DialogB
-#nanoem.menu.project.order.transformOpen Transform Order Dialog=
-#nanoem.menu.project.viewport.detachDetach Viewport Window<
-nanoem.menu.project.enable.loopEnable Playing with &Loop.
-nanoem.menu.project.enable.gridEnable Grid@
+#nanoem.menu.project.order.transformOpen Transform Order Dialog>
+#nanoem.menu.project.viewport.detach&Detach Viewport Window<
+nanoem.menu.project.enable.loopEnable Playing with &Loop/
+nanoem.menu.project.enable.gridEnable &Grid@
 (nanoem.menu.project.enable.ground-shadowEnable Ground Shadow3
 !nanoem.menu.project.enable.effectEnable &EffectW
 3nanoem.menu.project.enable.high-resolution-viewport Enable &High Resolution ViewportT

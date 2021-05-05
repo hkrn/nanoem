@@ -2748,8 +2748,8 @@
   description: ''
 - key: nanoem.menu.project.viewport.detach
   phrase:
-    en_US: 'Detach Viewport Window'
-    ja_JP: 'ビューポートウィンドウを分離'
+    en_US: '&Detach Viewport Window'
+    ja_JP: 'ビューポートウィンドウを分離(&D)'
   description: ''
 - key: nanoem.menu.project.enable.loop
   phrase:
@@ -2758,8 +2758,8 @@
   description: ''
 - key: nanoem.menu.project.enable.grid
   phrase:
-    en_US: 'Enable Grid'
-    ja_JP: '地面軸を有効にする'
+    en_US: 'Enable &Grid'
+    ja_JP: '地面軸を有効にする(&G)'
   description: ''
 - key: nanoem.menu.project.enable.ground-shadow
   phrase:
