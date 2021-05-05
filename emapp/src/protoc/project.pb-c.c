@@ -1985,7 +1985,7 @@ const ProtobufCMessageDescriptor nanoem__project__light__descriptor =
   (ProtobufCMessageInit) nanoem__project__light__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__project__motion__camera__field_descriptors[1] =
+static const ProtobufCFieldDescriptor nanoem__project__motion__camera__field_descriptors[2] =
 {
   {
     "payload",
@@ -1999,14 +1999,27 @@ static const ProtobufCFieldDescriptor nanoem__project__motion__camera__field_des
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "angle_x_axis_correction",
+    2,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_BOOL,
+    offsetof(Nanoem__Project__Motion__Camera, has_angle_x_axis_correction),
+    offsetof(Nanoem__Project__Motion__Camera, angle_x_axis_correction),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned nanoem__project__motion__camera__field_indices_by_name[] = {
+  1,   /* field[1] = angle_x_axis_correction */
   0,   /* field[0] = payload */
 };
 static const ProtobufCIntRange nanoem__project__motion__camera__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 1 }
+  { 0, 2 }
 };
 const ProtobufCMessageDescriptor nanoem__project__motion__camera__descriptor =
 {
@@ -2016,7 +2029,7 @@ const ProtobufCMessageDescriptor nanoem__project__motion__camera__descriptor =
   "Nanoem__Project__Motion__Camera",
   "nanoem.project",
   sizeof(Nanoem__Project__Motion__Camera),
-  1,
+  2,
   nanoem__project__motion__camera__field_descriptors,
   nanoem__project__motion__camera__field_indices_by_name,
   1,  nanoem__project__motion__camera__number_ranges,

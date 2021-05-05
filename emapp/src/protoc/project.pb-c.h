@@ -245,10 +245,12 @@ struct  _Nanoem__Project__Motion__Camera
   ProtobufCMessage base;
   protobuf_c_boolean has_payload;
   ProtobufCBinaryData payload;
+  protobuf_c_boolean has_angle_x_axis_correction;
+  protobuf_c_boolean angle_x_axis_correction;
 };
 #define NANOEM__PROJECT__MOTION__CAMERA__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__camera__descriptor) \
-    , 0, {0,NULL} }
+    , 0, {0,NULL}, 0, 0 }
 
 
 struct  _Nanoem__Project__Motion__Light
