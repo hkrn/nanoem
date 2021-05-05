@@ -53,6 +53,10 @@ public:
     static const nanoem_f32_t kTimelineMinWidthRatio;
     static const nanoem_f32_t kTimelineMaxWidthRatio;
     static const nanoem_f32_t kTimelineSnapGridRatio;
+    static const nanoem_f32_t kTimelineSeekerPanelWidth;
+    static const nanoem_f32_t kTimelineUndoPanelWidth;
+    static const nanoem_f32_t kTimelineTrackMaxWidth;
+    static const nanoem_f32_t kTimelineKeyframeActionPanelWidth;
     static const nanoem_f32_t kDrawCircleSegmentCount;
     static const ImGuiDataType kFrameIndexDataType;
     static const ImU32 kMainWindowFlags;
@@ -337,9 +341,9 @@ private:
     void toggleEditingMode(Project *project, Project::EditingMode mode);
     void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, const IState *state, bool &seekable);
     void drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project);
-    void drawSeekerPanel(
-        Project *project, nanoem_frame_index_t &frameIndex, bool &frameIndexChanged, bool &forward, bool &backward);
-    void drawUndoPanel(Project *project);
+    void drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_frame_index_t &frameIndex,
+        bool &frameIndexChanged, bool &forward, bool &backward);
+    void drawUndoPanel(Project *project, nanoem_f32_t padding);
     void drawWavePanel(nanoem_f32_t tracksWidth, Project *project, nanoem_u32_t &numVisibleMarkers);
     void drawAllTracksPanel(const ImVec2 &panelSize, Project::TrackList &tracks, Project *project);
     void drawTrack(ITrack *track, int i, Model *activeModel, TrackSet &selectedTracks);
@@ -348,8 +352,8 @@ private:
         const ImVec2 &panelSize, const Project::TrackList &tracks, nanoem_u32_t numVisibleMarkers, Project *project);
     RhombusReactionType drawMarkerRhombus(nanoem_frame_index_t frameIndex, ITrack *track, nanoem_f32_t extent,
         nanoem_f32_t radius, IMotionKeyframeSelection *source, Project *project);
-    void drawKeyframeActionPanel(Project *project);
-    void drawKeyframeSelectionPanel(Project *project);
+    void drawKeyframeActionPanel(Project *project, nanoem_f32_t padding);
+    void drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t padding, Project *project);
     void drawViewport(nanoem_f32_t viewportHeight, Project *project, const IState *state);
     void drawViewportParameterBox(Project *project);

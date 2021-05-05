@@ -161,6 +161,10 @@ const nanoem_f32_t ImGuiWindow::kTimelineDefaultWidthRatio = 0.3f;
 const nanoem_f32_t ImGuiWindow::kTimelineMinWidthRatio = 0.25f;
 const nanoem_f32_t ImGuiWindow::kTimelineMaxWidthRatio = 0.75f;
 const nanoem_f32_t ImGuiWindow::kTimelineSnapGridRatio = 0.02f;
+const nanoem_f32_t ImGuiWindow::kTimelineSeekerPanelWidth = 240.0f;
+const nanoem_f32_t ImGuiWindow::kTimelineUndoPanelWidth = 180.0f;
+const nanoem_f32_t ImGuiWindow::kTimelineTrackMaxWidth = 150.0f;
+const nanoem_f32_t ImGuiWindow::kTimelineKeyframeActionPanelWidth = 320.0f;
 const nanoem_f32_t ImGuiWindow::kDrawCircleSegmentCount = 24.0f;
 const ImGuiDataType ImGuiWindow::kFrameIndexDataType = ImGuiDataType_U32;
 const ImU32 ImGuiWindow::kMainWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
@@ -1856,21 +1860,48 @@ void
 ImGuiWindow::drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project)
 {
     ImGui::BeginChild("timeline", ImVec2(timelineWidth, viewportHeight), true);
-    const nanoem_f32_t tracksWidth = m_defaultTimelineWidth * 0.3f;
+    const nanoem_f32_t devicePixelRatio = project->windowDevicePixelRatio();
     nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
     bool frameIndexChanged = false, forward = false, backward = false;
-    drawSeekerPanel(project, frameIndex, frameIndexChanged, forward, backward);
-    drawUndoPanel(project);
-    nanoem_u32_t numVisibleMarkers;
-    drawWavePanel(tracksWidth, project, numVisibleMarkers);
-    const nanoem_f32_t tracksHeight = ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing() * 4;
-    Project::TrackList tracks;
-    drawAllTracksPanel(ImVec2(tracksWidth, tracksHeight), tracks, project);
-    handleTrackSelection(tracks, project);
-    ImGui::SameLine();
-    drawAllMarkersPanel(ImVec2(ImGui::GetContentRegionAvail().x, tracksHeight), tracks, numVisibleMarkers, project);
-    drawKeyframeActionPanel(project);
-    drawKeyframeSelectionPanel(project);
+    {
+        const nanoem_f32_t seekerPanelWidth = kTimelineSeekerPanelWidth * devicePixelRatio;
+        nanoem_f32_t padding = 0;
+        if (timelineWidth > seekerPanelWidth) {
+            padding += (timelineWidth - seekerPanelWidth - 10) * 0.5f;
+        }
+        drawSeekerPanel(project, padding, frameIndex, frameIndexChanged, forward, backward);
+    }
+    {
+        const nanoem_f32_t undoPanelWidth = kTimelineUndoPanelWidth * devicePixelRatio;
+        nanoem_f32_t padding = 0;
+        if (timelineWidth > undoPanelWidth) {
+            padding += (timelineWidth - undoPanelWidth - 10) * 0.5f;
+        }
+        drawUndoPanel(project, padding);
+    }
+    {
+        const nanoem_f32_t tracksWidth =
+            glm::min(m_defaultTimelineWidth * 0.3f, kTimelineTrackMaxWidth * devicePixelRatio);
+        nanoem_u32_t numVisibleMarkers;
+        drawWavePanel(tracksWidth, project, numVisibleMarkers);
+        const nanoem_f32_t tracksHeight = ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing() * 4;
+        Project::TrackList tracks;
+        drawAllTracksPanel(ImVec2(tracksWidth, tracksHeight), tracks, project);
+        handleTrackSelection(tracks, project);
+        ImGui::SameLine();
+        drawAllMarkersPanel(ImVec2(ImGui::GetContentRegionAvail().x, tracksHeight), tracks, numVisibleMarkers, project);
+    }
+    {
+        const nanoem_f32_t keyframeActionPanelWidth = kTimelineKeyframeActionPanelWidth * devicePixelRatio;
+        nanoem_f32_t padding = 0;
+        if (timelineWidth > keyframeActionPanelWidth) {
+            padding = (timelineWidth - keyframeActionPanelWidth - 10) * 0.5f;
+            ImGui::Dummy(ImVec2(padding, 0));
+            ImGui::SameLine();
+        }
+        drawKeyframeActionPanel(project, padding);
+        drawKeyframeSelectionPanel(project, padding);
+    }
     ImGui::EndChild();
     nanoem_frame_index_t newFrameIndex;
     if (frameIndexChanged) {
@@ -1885,13 +1916,9 @@ ImGuiWindow::drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeigh
 }
 
 void
-ImGuiWindow::drawSeekerPanel(
-    Project *project, nanoem_frame_index_t &frameIndex, bool &frameIndexChanged, bool &forward, bool &backward)
+ImGuiWindow::drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_frame_index_t &frameIndex,
+    bool &frameIndexChanged, bool &forward, bool &backward)
 {
-    nanoem_f32_t padding = m_defaultTimelineWidth * 0.125f;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding += (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
-    }
     ImGui::Dummy(ImVec2(padding, 0));
     ImGui::SameLine();
     ImGui::PushButtonRepeat(true);
@@ -1924,12 +1951,8 @@ ImGuiWindow::drawSeekerPanel(
 }
 
 void
-ImGuiWindow::drawUndoPanel(Project *project)
+ImGuiWindow::drawUndoPanel(Project *project, nanoem_f32_t padding)
 {
-    nanoem_f32_t padding = m_defaultTimelineWidth * 0.2f;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding += (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
-    }
     ImGui::Dummy(ImVec2(padding, 0));
     ImGui::SameLine();
     if (handleTranslatedButton(
@@ -2634,7 +2657,7 @@ ImGuiWindow::drawMarkerRhombus(nanoem_frame_index_t frameIndex, ITrack *track, n
 }
 
 void
-ImGuiWindow::drawKeyframeActionPanel(Project *project)
+ImGuiWindow::drawKeyframeActionPanel(Project *project, nanoem_f32_t padding)
 {
     const bool buttonEnabled = !project->isPlaying(),
                hasKeyframeSelection = buttonEnabled && project->hasKeyframeSelection(),
@@ -2646,12 +2669,6 @@ ImGuiWindow::drawKeyframeActionPanel(Project *project)
     if (hasKeyframeCopied != m_lastKeyframeCopied) {
         addLazyExecutionCommand(nanoem_new(LazyPublishCanPasteEventCommand(hasKeyframeCopied)));
         m_lastKeyframeCopied = hasKeyframeCopied;
-    }
-    nanoem_f32_t padding = 0;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding = (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
-        ImGui::Dummy(ImVec2(padding, 0));
-        ImGui::SameLine();
     }
     if (handleButton(tr("nanoem.gui.keyframe.copy"), (ImGui::GetContentRegionAvail().x - padding) / 3.0f,
             hasKeyframeSelection)) {
@@ -2705,11 +2722,9 @@ ImGuiWindow::drawKeyframeActionPanel(Project *project)
 }
 
 void
-ImGuiWindow::drawKeyframeSelectionPanel(Project *project)
+ImGuiWindow::drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding)
 {
-    nanoem_f32_t padding = 0;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding = (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
+    if (padding > 0) {
         ImGui::Dummy(ImVec2(padding, 0));
         ImGui::SameLine();
     }
