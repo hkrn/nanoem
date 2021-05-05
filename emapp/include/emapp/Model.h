@@ -191,6 +191,7 @@ public:
         PhysicsEngine::SimulationTimingType timing);
     void synchronizeAllRigidBodiesTransformFeedbackFromSimulation(PhysicsEngine::RigidBodyFollowBoneType followType);
     void synchronizeAllRigidBodiesTransformFeedbackToSimulation();
+    void rebuildAllVertexBuffers(bool enableSkinFactory);
     void performAllBonesTransform();
     void resetAllMorphDeformStates();
     void deformAllMorphs(bool checkDirty);
@@ -485,9 +486,10 @@ private:
     void applyAllBonesTransform(PhysicsEngine::SimulationTimingType timing);
     void internalClear();
     void internalSetOutsideParent(const nanoem_model_bone_t *key, const StringPair &value);
-    void createVertexIndexBuffers();
-    void initializeVertexBuffers();
+    void initializeAllStagingVertexAndIndexBuffers();
+    void initializeAllStagingVertexBuffers();
     void initializeVertexBufferByteArray();
+    void createAllStagingVertexBuffers();
     void internalUpdateStagingVertexBuffer(nanoem_u8_t *ptr, nanoem_rsize_t numVertices);
     void clearAllLoadingImageItems();
     void setAllPhysicsObjectsEnabled(bool value);

@@ -41,6 +41,22 @@ struct UndoCommand : ImGuiWindow::ILazyExecutionCommand {
     undo_command_t *m_command;
 };
 
+struct SetModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
+    SetModelEditingCommand(bool value)
+        : m_value(value)
+    {
+    }
+    ~SetModelEditingCommand() NANOEM_DECL_NOEXCEPT
+    {
+    }
+    void
+    execute(Project *project)
+    {
+        project->setModelEditingEnabled(m_value);
+    }
+    const bool m_value;
+};
+
 } /* namespace anonymous */
 
 const char *const ModelParameterDialog::kIdentifier = "dialog.project.model";
@@ -126,6 +142,7 @@ ModelParameterDialog::ModelParameterDialog(
     project->activeLight()->reset();
     project->grid()->setVisible(true);
     setActiveModel(model, project);
+    parent->addLazyExecutionCommand(nanoem_new(SetModelEditingCommand(true)));
 }
 
 bool
@@ -225,7 +242,9 @@ ModelParameterDialog::draw(Project *project)
         toggleTab(kTabTypeInfo, project);
     }
     close();
-    project->setModelEditingEnabled(visible);
+    if (!visible) {
+        m_parent->addLazyExecutionCommand(nanoem_new(SetModelEditingCommand(false)));
+    }
     if (!visible) {
         restoreProjectState(project);
     }

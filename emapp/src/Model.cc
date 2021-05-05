@@ -1332,7 +1332,7 @@ Model::upload()
 {
     SG_PUSH_GROUPF("Model::upload(name=%s)", canonicalNameConstString());
     model::Material::IndexHashMap materialIndexHash;
-    createVertexIndexBuffers();
+    initializeAllStagingVertexAndIndexBuffers();
     setActiveEffect(m_project->sharedResourceRepository()->modelProgramBundle());
 #if defined(__APPLE__)
 #ifdef NDEBUG
@@ -1698,6 +1698,28 @@ Model::synchronizeAllRigidBodiesTransformFeedbackToSimulation()
             rigidBody->synchronizeTransformFeedbackToSimulation(rigidBodyPtr);
         }
     }
+}
+
+void
+Model::rebuildAllVertexBuffers(bool enableSkinFactory)
+{
+    if (m_skinDeformer) {
+        m_skinDeformer->destroy(m_vertexBuffers[0], 0);
+        m_skinDeformer->destroy(m_vertexBuffers[1], 1);
+        nanoem_delete_safe(m_skinDeformer);
+    }
+    else {
+        sg::destroy_buffer(m_vertexBuffers[0]);
+        sg::destroy_buffer(m_vertexBuffers[1]);
+    }
+    if (enableSkinFactory) {
+        initializeAllStagingVertexBuffers();
+    }
+    else {
+        initializeVertexBufferByteArray();
+        createAllStagingVertexBuffers();
+    }
+    markStagingVertexBufferDirty();
 }
 
 void
@@ -3131,9 +3153,9 @@ Model::internalSetOutsideParent(const nanoem_model_bone_t *key, const StringPair
 }
 
 void
-Model::createVertexIndexBuffers()
+Model::initializeAllStagingVertexAndIndexBuffers()
 {
-    initializeVertexBuffers();
+    initializeAllStagingVertexBuffers();
     nanoem_rsize_t numIndices;
     const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numIndices);
     sg_buffer_desc desc;
@@ -3165,7 +3187,7 @@ Model::createVertexIndexBuffers()
 }
 
 void
-Model::initializeVertexBuffers()
+Model::initializeAllStagingVertexBuffers()
 {
     nanoem_rsize_t numVertices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
@@ -3174,7 +3196,6 @@ Model::initializeVertexBuffers()
     Inline::clearZeroMemory(desc);
     desc.usage = SG_USAGE_STREAM;
     if (numVertices > 0 && !initialized) {
-        char label[Inline::kMarkerStringLength];
         Project::ISkinDeformerFactory *factory = m_project->skinDeformerFactory();
         nanoem_rsize_t numSoftBodies;
         nanoemModelGetAllSoftBodyObjects(m_opaque, &numSoftBodies);
@@ -3182,6 +3203,7 @@ Model::initializeVertexBuffers()
         if (factory && numSoftBodies == 0) {
             if (model::ISkinDeformer *skinDeformer = factory->create(this)) {
                 ByteArray vertexBufferData(numVertices * sizeof(VertexUnit));
+                char label[Inline::kMarkerStringLength];
                 for (nanoem_rsize_t i = 0; i < numVertices; i++) {
                     if (const model::Vertex *v = model::Vertex::cast(vertices[i])) {
                         VertexUnit &unit = reinterpret_cast<VertexUnit *>(vertexBufferData.data())[i];
@@ -3218,22 +3240,7 @@ Model::initializeVertexBuffers()
         }
         if (!m_skinDeformer) {
             initializeVertexBufferByteArray();
-            desc.size = m_vertexBufferData.size();
-            if (Inline::isDebugLabelEnabled()) {
-                StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Even", canonicalNameConstString());
-                desc.label = label;
-            }
-            else {
-                *label = 0;
-            }
-            m_vertexBuffers[0] = sg::make_buffer(&desc);
-            SG_LABEL_BUFFER(m_vertexBuffers[0], label);
-            if (Inline::isDebugLabelEnabled()) {
-                StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Odd", canonicalNameConstString());
-                desc.label = label;
-            }
-            m_vertexBuffers[1] = sg::make_buffer(&desc);
-            SG_LABEL_BUFFER(m_vertexBuffers[1], label);
+            createAllStagingVertexBuffers();
         }
         nanoem_assert(
             sg::query_buffer_state(m_vertexBuffers[0]) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
@@ -3254,6 +3261,31 @@ Model::initializeVertexBufferByteArray()
     m_vertexBufferData.resize(sizeof(Model::VertexUnit) * glm::max(s.m_numVertices, nanoem_rsize_t(1)));
     s.m_output = m_vertexBufferData.data();
     dispatchParallelTasks(&Model::handlePerformSkinningVertexTransform, &s, s.m_numVertices);
+}
+
+void
+Model::createAllStagingVertexBuffers()
+{
+    char label[Inline::kMarkerStringLength];
+    sg_buffer_desc desc;
+    Inline::clearZeroMemory(desc);
+    desc.usage = SG_USAGE_STREAM;
+    desc.size = m_vertexBufferData.size();
+    if (Inline::isDebugLabelEnabled()) {
+        StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Even", canonicalNameConstString());
+        desc.label = label;
+    }
+    else {
+        *label = 0;
+    }
+    m_vertexBuffers[0] = sg::make_buffer(&desc);
+    SG_LABEL_BUFFER(m_vertexBuffers[0], label);
+    if (Inline::isDebugLabelEnabled()) {
+        StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Odd", canonicalNameConstString());
+        desc.label = label;
+    }
+    m_vertexBuffers[1] = sg::make_buffer(&desc);
+    SG_LABEL_BUFFER(m_vertexBuffers[1], label);
 }
 
 void

@@ -6138,7 +6138,9 @@ Project::isModelEditingEnabled() const NANOEM_DECL_NOEXCEPT
 void
 Project::setModelEditingEnabled(bool value)
 {
-    if (isModelEditingEnabled() != value) {
+    Model *model = activeModel();
+    if (model && isModelEditingEnabled() != value) {
+        model->rebuildAllVertexBuffers(value ? false : true);
         EnumUtils::setEnabled(kEnableModelEditing, m_stateFlags, value);
         eventPublisher()->publishToggleModelEditingEnabledEvent(value);
     }
