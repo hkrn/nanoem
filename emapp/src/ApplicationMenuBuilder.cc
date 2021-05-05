@@ -216,6 +216,9 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
     case kMenuItemTypeProjectOpenTransformOrderDialog:
         text = "nanoem.menu.project.order.transform";
         break;
+    case kMenuItemTypeProjectDetachViewportWindow:
+        text = "nanoem.menu.project.viewport.detach";
+        break;
     case kMenuItemTypeProjectEnableLoop:
         text = "nanoem.menu.project.enable.loop";
         break;
@@ -1258,6 +1261,7 @@ ApplicationMenuBuilder::createProjectMenu(MainMenuBarHandle bar)
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectOpenViewportDialog);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectOpenDrawOrderDialog);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectOpenTransformOrderDialog);
+    appendMenuItem(m_projectMenu, kMenuItemTypeProjectDetachViewportWindow);
     appendMenuSeparator(m_projectMenu);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectEnableLoop);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectEnableGrid);

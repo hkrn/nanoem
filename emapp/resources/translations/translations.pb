@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -124,9 +124,8 @@ $nanoem.gui.panel.morph.weight.formatウェイト: %.2f
 nanoem.gui.panel.view.up上面
 nanoem.gui.redoやり直し)
 nanoem.gui.timelineタイムライン
-nanoem.gui.undo元に戻すf
-nanoem.gui.viewport.globalHビューポート - カメラ、照明、アクセサリ / ステージ4
-nanoem.gui.viewport.modelビューポート - %sB
+nanoem.gui.undo元に戻す/
+nanoem.gui.viewport.titleビューポートB
 #nanoem.gui.viewport.model-with-boneビューポート - %s: %s1
 $nanoem.gui.viewport.parameter.camera	カメラ4
 *nanoem.gui.viewport.parameter.camera.angle角度=
@@ -669,7 +668,8 @@ $nanoem.menu.file.export.motion.light照明モーション(&L)*
 停止(&S)P
 nanoem.menu.project.viewport0ビューポート設定ダイアログを開くC
 nanoem.menu.project.order.draw!描画順ダイアログを開くH
-#nanoem.menu.project.order.transform!変形順ダイアログを開くH
+#nanoem.menu.project.order.transform!変形順ダイアログを開くQ
+#nanoem.menu.project.viewport.detach*ビューポートウィンドウを分離H
 nanoem.menu.project.enable.loop%ループ再生を有効にする(&L)>
 nanoem.menu.project.enable.grid地面軸を有効にするG
 (nanoem.menu.project.enable.ground-shadow地面影を有効にするJ
@@ -1024,7 +1024,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+�F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1151,9 +1151,8 @@ $nanoem.gui.panel.morph.weight.formatWeight: %.2f
 nanoem.gui.panel.view.upUp
 nanoem.gui.redoRedo
 nanoem.gui.timelineTimeline
-nanoem.gui.undoUndoI
-nanoem.gui.viewport.global+Viewport - Camera, Light, Accessory / Stage*
-nanoem.gui.viewport.modelViewport - %s8
+nanoem.gui.undoUndo%
+nanoem.gui.viewport.titleViewport8
 #nanoem.gui.viewport.model-with-boneViewport - %s: %s.
 $nanoem.gui.viewport.parameter.cameraCamera3
 *nanoem.gui.viewport.parameter.camera.angleAngle9
@@ -1705,7 +1704,8 @@ $nanoem.menu.file.export.motion.light&Light Motion&
 nanoem.menu.project.stop&Stop<
 nanoem.menu.project.viewportOpen Viewport Setting Dialog8
 nanoem.menu.project.order.drawOpen Draw Order DialogB
-#nanoem.menu.project.order.transformOpen Transform Order Dialog<
+#nanoem.menu.project.order.transformOpen Transform Order Dialog=
+#nanoem.menu.project.viewport.detachDetach Viewport Window<
 nanoem.menu.project.enable.loopEnable Playing with &Loop.
 nanoem.menu.project.enable.gridEnable Grid@
 (nanoem.menu.project.enable.ground-shadowEnable Ground Shadow3

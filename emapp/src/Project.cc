@@ -101,6 +101,7 @@ static const nanoem_u64_t kEnableImageAnisotropy = 1ull << 27;
 static const nanoem_u64_t kEnableImageMipmap = 1ull << 28;
 static const nanoem_u64_t kEnablePowerSaving = 1ull << 29;
 static const nanoem_u64_t kEnableModelEditing = 1ull << 30;
+static const nanoem_u64_t kViewportWindowDetached = 1ull << 31;
 
 static const nanoem_u64_t kPrivateStateInitialValue = kDisplayTransformHandle | kDisplayUserInterface |
     kEnableMotionMerge | kEnableUniformedViewportImageSize | kEnableFPSCounter | kEnablePerformanceMonitor |
@@ -5951,6 +5952,20 @@ Project::setViewportHovered(bool value)
 {
     if (isViewportHovered() != value) {
         EnumUtils::setEnabled(kViewportHovered, m_stateFlags, value);
+    }
+}
+
+bool
+Project::isViewportWindowDetached() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kViewportWindowDetached, m_stateFlags);
+}
+
+void
+Project::setViewportWindowDetached(bool value)
+{
+    if (isViewportWindowDetached() != value) {
+        EnumUtils::setEnabled(kViewportWindowDetached, m_stateFlags, value);
     }
 }
 

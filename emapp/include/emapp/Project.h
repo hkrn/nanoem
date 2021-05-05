@@ -724,6 +724,8 @@ public:
     void setViewportCaptured(bool value);
     bool isViewportHovered() const NANOEM_DECL_NOEXCEPT;
     void setViewportHovered(bool value);
+    bool isViewportWindowDetached() const NANOEM_DECL_NOEXCEPT;
+    void setViewportWindowDetached(bool value);
     bool isPrimaryCursorTypeLeft() const NANOEM_DECL_NOEXCEPT;
     void setPrimaryCursorTypeLeft(bool value);
     bool isPlayingAudioPartEnabled() const NANOEM_DECL_NOEXCEPT;

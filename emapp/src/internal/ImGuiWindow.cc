@@ -1789,18 +1789,25 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         const nanoem_f32_t panelHeight =
             (ImGui::GetFrameHeightWithSpacing() * 8 + style.ItemSpacing.y * 6 + style.WindowPadding.y * 2) *
             (1.0f / deviceScaleRatio);
-        bool detached = false;
-        if (detached) {
+        bool viewportWindowDetached = project->isViewportWindowDetached();
+        if (viewportWindowDetached) {
             const ImVec2 minimumViewportSize(
                 kMinimumViewportWindowSize.x * deviceScaleRatio, kMinimumViewportWindowSize.y * deviceScaleRatio);
-            const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
+            const nanoem_f32_t timelineWidth = size.x,
                                viewportHeight = size.y - (panelHeight * deviceScaleRatio);
+            m_defaultTimelineWidth = size.x;
             drawTimeline(timelineWidth, viewportHeight, project);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);
             ImGui::SetNextWindowSizeConstraints(minimumViewportSize, ImVec2(FLT_MAX, FLT_MAX));
-            if (ImGui::Begin("viewport")) {
+            if (ImGui::Begin(tr("nanoem.gui.viewport.title"), &viewportWindowDetached)) {
                 drawViewport(ImGui::GetContentRegionAvail().y, project, state);
             }
             ImGui::End();
+            ImGui::PopStyleVar();
+            if (!viewportWindowDetached) {
+                project->setViewportWindowDetached(viewportWindowDetached);
+                m_defaultTimelineWidth = 0;
+            }
         }
         else {
             const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),

@@ -498,14 +498,10 @@
   phrase:
     en_US: Undo
     ja_JP: 元に戻す
-- key: nanoem.gui.viewport.global
+- key: nanoem.gui.viewport.title
   phrase:
-    en_US: Viewport - Camera, Light, Accessory / Stage
-    ja_JP: ビューポート - カメラ、照明、アクセサリ / ステージ
-- key: nanoem.gui.viewport.model
-  phrase:
-    en_US: Viewport - %s
-    ja_JP: ビューポート - %s
+    en_US: Viewport
+    ja_JP: ビューポート
 - key: nanoem.gui.viewport.model-with-bone
   phrase:
     en_US: "Viewport - %s: %s"
@@ -2749,6 +2745,11 @@
   phrase:
     en_US: 'Open Transform Order Dialog'
     ja_JP: '変形順ダイアログを開く'
+  description: ''
+- key: nanoem.menu.project.viewport.detach
+  phrase:
+    en_US: 'Detach Viewport Window'
+    ja_JP: 'ビューポートウィンドウを分離'
   description: ''
 - key: nanoem.menu.project.enable.loop
   phrase:

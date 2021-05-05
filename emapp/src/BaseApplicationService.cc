@@ -1945,6 +1945,10 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         m_window->openModelTransformOrderDialog(project);
         break;
     }
+    case ApplicationMenuBuilder::kMenuItemTypeProjectDetachViewportWindow: {
+        project->setViewportWindowDetached(true);
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableLoop: {
         project->setLoopEnabled(project->isLoopEnabled() ? false : true);
         break;
