@@ -857,10 +857,12 @@ struct Project::SaveState {
         , m_activeAccessory(nullptr)
         , m_camera(project)
         , m_light(project)
+        , m_physicsSimulationMode(PhysicsEngine::kSimulationModeDisable)
         , m_localFrameIndex(0)
         , m_stateFlags(0)
         , m_confirmSeekFlags(0)
         , m_lastPhysicsDebugFlags(0)
+        , m_visibleGrid(false)
     {
     }
     ~SaveState() NANOEM_DECL_NOEXCEPT
@@ -870,10 +872,12 @@ struct Project::SaveState {
     Accessory *m_activeAccessory;
     PerspectiveCamera m_camera;
     DirectionalLight m_light;
+    PhysicsEngine::SimulationModeType m_physicsSimulationMode;
     nanoem_frame_index_t m_localFrameIndex;
     nanoem_u64_t m_stateFlags;
     nanoem_u64_t m_confirmSeekFlags;
     nanoem_u32_t m_lastPhysicsDebugFlags;
+    bool m_visibleGrid;
 };
 
 Project::Pass::Pass(Project *project, const char *name)
@@ -2271,10 +2275,12 @@ Project::saveState(SaveState *&state)
     l.setDirection(light->direction());
     state->m_activeAccessory = m_activeAccessoryPtr;
     state->m_activeModel = m_activeModelPairPtr.first;
+    state->m_physicsSimulationMode = physicsEngine()->simulationMode();
     state->m_localFrameIndex = currentLocalFrameIndex();
     state->m_stateFlags = m_stateFlags;
     state->m_confirmSeekFlags = m_confirmSeekFlags;
     state->m_lastPhysicsDebugFlags = m_lastPhysicsDebugFlags;
+    state->m_visibleGrid = grid()->isVisible();
 }
 
 void
@@ -2300,6 +2306,8 @@ Project::restoreState(const SaveState *state, bool forceSeek)
         m_stateFlags = state->m_stateFlags;
         m_confirmSeekFlags = state->m_confirmSeekFlags;
         m_lastPhysicsDebugFlags = state->m_lastPhysicsDebugFlags;
+        setPhysicsSimulationMode(state->m_physicsSimulationMode);
+        grid()->setVisible(state->m_visibleGrid);
     }
 }
 
