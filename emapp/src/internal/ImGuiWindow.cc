@@ -202,7 +202,7 @@ WaveFormPanelDrawer::plot24(int offset) const NANOEM_DECL_NOEXCEPT
 {
     nanoem_f32_t value = 0;
     const nanoem_rsize_t bytesOffset = currentBytesOffset(offset);
-    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size()) {
+    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size() - 3) {
         const nanoem_u8_t *ptr = m_linearPCMSamplesPtr->data() + bytesOffset;
         int v = 0;
         if ((ptr[2] & 0x80) != 0) {
@@ -221,7 +221,7 @@ WaveFormPanelDrawer::plot16(int offset) const NANOEM_DECL_NOEXCEPT
 {
     nanoem_f32_t value = 0;
     const nanoem_rsize_t bytesOffset = currentBytesOffset(offset);
-    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size()) {
+    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size() - 2) {
         value = *reinterpret_cast<const nanoem_i16_t *>(m_linearPCMSamplesPtr->data() + bytesOffset) / 32767.0f;
     }
     return value;
@@ -232,7 +232,7 @@ WaveFormPanelDrawer::plot8(int offset) const NANOEM_DECL_NOEXCEPT
 {
     nanoem_f32_t value = 0;
     const nanoem_rsize_t bytesOffset = currentBytesOffset(offset);
-    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size()) {
+    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size() - 1) {
         value = *reinterpret_cast<const char *>(m_linearPCMSamplesPtr->data() + bytesOffset) / 127.0f;
     }
     return value;
