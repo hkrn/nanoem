@@ -94,7 +94,6 @@ protected:
     ImageBlitter *m_blitter;
     Project *m_project;
     Project::SaveState *m_saveState;
-    PhysicsEngine::SimulationModeType m_lastPhysicsSimulationMode;
     StateTransition m_state;
     ByteArray m_frameImageData;
     sg_buffer m_frameStagingBuffer;
