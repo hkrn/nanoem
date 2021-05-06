@@ -375,6 +375,8 @@ public:
     void setMorphWeightFocused(bool value);
     bool isShowAllBones() const NANOEM_DECL_NOEXCEPT;
     void setShowAllBones(bool value);
+    bool isShowAllVertexNormals() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllVertexNormals(bool value);
     bool isShowAllVertexPoints() const NANOEM_DECL_NOEXCEPT;
     void setShowAllVertexPoints(bool value);
     bool isShowAllVertexFaces() const NANOEM_DECL_NOEXCEPT;
@@ -518,6 +520,7 @@ private:
     void drawAllJointShapes();
     void drawAllRigidBodyShapes();
     void drawAllMaterialOverlays();
+    void drawAllVertexNormals();
     void drawAllVertexPoints();
     void drawAllVertexFaces();
     void drawAllVertexWeights();
@@ -536,6 +539,7 @@ private:
     internal::LineDrawer *m_drawer;
     model::ISkinDeformer *m_skinDeformer;
     OffscreenPassiveRenderTargetEffectMap m_offscreenPassiveRenderTargetEffects;
+    DrawArrayBuffer m_drawAllVertexNormals;
     DrawArrayBuffer m_drawAllVertexPoints;
     DrawIndexedBuffer m_drawAllVertexFaces;
     DrawIndexedBuffer m_drawAllVertexWeights;

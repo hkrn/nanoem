@@ -65,6 +65,7 @@ namespace nanoem {
 namespace {
 
 static const nanoem_f32_t kDrawBoneConnectionThickness = 1.0f;
+static const nanoem_f32_t kDrawVertexNormalScaleFactor = 0.1f;
 static const int kMaxBoneUniforms = 55;
 
 enum PrivateStateFlags {
@@ -90,6 +91,7 @@ enum PrivateStateFlags {
     kPrivateStateShowAllMaterialShapes = 1 << 20,
     kPrivateStateShowAllVertexWeights = 1 << 21,
     kPrivateStateBlendingVertexWeightsEnabled = 1 << 22,
+    kPrivateStateShowAllVertexNormals = 1 << 23,
     kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStatePhysicsSimulation | kPrivateStateEnableGroundShadow;
@@ -550,8 +552,11 @@ void
 Model::DrawArrayBuffer::destroy()
 {
     SG_INSERT_MARKERF("Model::DrawArrayBuffer::destroy(vertex=%d", m_buffer.id);
-    sg::destroy_buffer(m_buffer);
-    m_buffer = { SG_INVALID_ID };
+    if (sg::is_valid(m_buffer)) {
+        sg::destroy_buffer(m_buffer);
+        m_buffer = { SG_INVALID_ID };
+    }
+    m_vertices.clear();
 }
 
 Model::DrawIndexedBuffer::DrawIndexedBuffer()
@@ -716,6 +721,8 @@ Model::DrawIndexedBuffer::destroy()
         sg::destroy_buffer(m_activeIndexBuffer);
         m_activeIndexBuffer = { SG_INVALID_ID };
     }
+    m_vertices.clear();
+    m_activeIndices.clear();
 }
 
 StringList
@@ -2242,6 +2249,9 @@ Model::draw(DrawType type)
             if (isShowAllVertexPoints()) {
                 drawAllVertexPoints();
             }
+            if (isShowAllVertexNormals()) {
+                drawAllVertexNormals();
+            }
             if (isShowAllMaterialOverlays()) {
                 drawAllMaterialOverlays();
             }
@@ -3132,6 +3142,8 @@ Model::internalClear()
     sg::destroy_buffer(m_indexBuffer);
     m_indexBuffer = { SG_INVALID_ID };
     m_drawAllVertexFaces.destroy();
+    m_drawAllVertexWeights.destroy();
+    m_drawAllVertexNormals.destroy();
     m_drawAllVertexPoints.destroy();
     for (RigidBodyBuffers::iterator it = m_drawRigidBody.begin(), end = m_drawRigidBody.end(); it != end; ++it) {
         it->second.destroy();
@@ -4145,6 +4157,79 @@ Model::drawAllMaterialOverlays()
 }
 
 void
+Model::drawAllVertexNormals()
+{
+    nanoem_rsize_t numVertices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+    model::Vertex::List newVertices;
+    numVertices *= 2;
+    if (!m_activeMaterialPtr) {
+        newVertices.resize(numVertices);
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            newVertices[i] = vertices[i / 2];
+        }
+    }
+    else {
+        newVertices.reserve(numVertices);
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            const nanoem_model_vertex_t *vertexPtr = vertices[i];
+            const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            if (vertex && isMaterialSelected(vertex->material())) {
+                newVertices.push_back(vertexPtr);
+            }
+        }
+    }
+    const size_t numNewVertices = newVertices.size();
+    if (!sg::is_valid(m_drawAllVertexNormals.m_buffer)) {
+        sg_buffer_desc bd;
+        Inline::clearZeroMemory(bd);
+        bd.size = sizeof(m_drawAllVertexNormals.m_vertices[0]) * glm::max(numNewVertices, size_t(1));
+        bd.usage = SG_USAGE_DYNAMIC;
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/Normals/VertexBuffer", canonicalNameConstString());
+            bd.label = label;
+        }
+        m_drawAllVertexNormals.m_buffer = sg::make_buffer(&bd);
+        m_drawAllVertexNormals.m_vertices.resize(numNewVertices);
+        nanoem_assert(sg::query_buffer_state(m_drawAllVertexNormals.m_buffer) == SG_RESOURCESTATE_VALID,
+            "vertex buffer must be valid");
+        SG_LABEL_BUFFER(m_drawAllVertexNormals.m_buffer, bd.label);
+    }
+    bx::simd128_t normal = bx::simd_zero();
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexNormals.m_vertices.data();
+    for (size_t i = 0; i < numNewVertices; i += 2) {
+        const nanoem_model_vertex_t *vertexPtr = newVertices[i];
+        const int index = model::Vertex::index(vertexPtr) * 2;
+        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        sg::LineVertexUnit &vertexUnit = vertexUnits[index];
+        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+            bx::simd128_t position;
+            softBody->getVertexPosition(vertexPtr, &position);
+            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        }
+        else {
+            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+        }
+        const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
+        vertexUnit.m_color = m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity)
+                                                                    : Vector4U8(0x7f, 0x7f, 0x7f, opacity);
+        sg::LineVertexUnit &vertexUnit2 = vertexUnits[index + 1];
+        vertexUnit2 = vertexUnit;
+        vertexUnit2.m_position += glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&normal)) * kDrawVertexNormalScaleFactor;
+    }
+    const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
+    if (size > 0) {
+        sg::update_buffer(m_drawAllVertexNormals.m_buffer, vertexUnits, size);
+    }
+    internal::LineDrawer *drawer = lineDrawer();
+    internal::LineDrawer::Option option(m_drawAllVertexNormals.m_buffer, numNewVertices);
+    option.m_primitiveType = SG_PRIMITIVETYPE_LINES;
+    drawer->drawPass(option);
+}
+
+void
 Model::drawAllVertexPoints()
 {
     nanoem_rsize_t numVertices;
@@ -4895,6 +4980,8 @@ void
 Model::setActiveMaterial(const nanoem_model_material_t *value)
 {
     if (m_activeMaterialPtr != value) {
+        m_drawAllVertexNormals.destroy();
+        m_drawAllVertexPoints.destroy();
         m_activeMaterialPtr = value;
     }
 }
@@ -5476,6 +5563,20 @@ Model::setShowAllBones(bool value)
         if (m_project->activeModel() == this) {
             m_project->eventPublisher()->publishToggleActiveModelShowAllBonesEvent(value);
         }
+    }
+}
+
+bool
+Model::isShowAllVertexNormals() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateShowAllVertexNormals, m_states);
+}
+
+void
+Model::setShowAllVertexNormals(bool value)
+{
+    if (isShowAllVertexNormals() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllVertexNormals, m_states, value);
     }
 }
 
