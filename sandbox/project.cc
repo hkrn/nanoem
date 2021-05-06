@@ -132,7 +132,7 @@ run(const bx::CommandLine &command)
         internal::project::PMM pmm(project);
         ByteArray bytes;
         FileUtils::read(scope, bytes, error);
-        pmm.load(bytes.data(), bytes.size(), error);
+        pmm.load(bytes.data(), bytes.size(), error, nullptr);
         {
             FileReaderScope scope(service.translator());
             const URI &fileURI2 = URI::createFromFilePath(command.findOption('p', "pose", "pose.vpd"));
