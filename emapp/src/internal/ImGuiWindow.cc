@@ -146,6 +146,104 @@ isDraggingBoneAxisAlignedState(const IState *state) NANOEM_DECL_NOEXCEPT
     return result;
 }
 
+struct WaveFormPanelDrawer {
+    typedef nanoem_f32_t (*CallbackHandler)(void *data, int idx);
+
+    static nanoem_f32_t callback(void *userData, int offset) NANOEM_DECL_NOEXCEPT;
+    WaveFormPanelDrawer(const Project *project, nanoem_u32_t numVisibleMarkers);
+
+    nanoem_f32_t plot24(int offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_f32_t plot16(int offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_f32_t plot8(int offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_rsize_t currentBytesOffset(int offset) const NANOEM_DECL_NOEXCEPT;
+
+    const ByteArray *m_linearPCMSamplesPtr;
+    nanoem_rsize_t m_offset;
+    nanoem_rsize_t m_length;
+    nanoem_u32_t m_bytesPerSample;
+};
+
+nanoem_f32_t
+WaveFormPanelDrawer::callback(void *userData, int offset) NANOEM_DECL_NOEXCEPT
+{
+    const WaveFormPanelDrawer *drawer = static_cast<const WaveFormPanelDrawer *>(userData);
+    switch (drawer->m_bytesPerSample) {
+    case 3:
+        return drawer->plot24(offset);
+    case 2:
+        return drawer->plot16(offset);
+    case 1:
+        return drawer->plot8(offset);
+    default:
+        return 0;
+    }
+}
+
+WaveFormPanelDrawer::WaveFormPanelDrawer(const Project *project, nanoem_u32_t numVisibleMarkers)
+    : m_linearPCMSamplesPtr(nullptr)
+    , m_offset(0)
+    , m_length(0)
+    , m_bytesPerSample(0)
+{
+    const IAudioPlayer *player = project->audioPlayer();
+    if (player->isLoaded()) {
+        const nanoem_f64_t denominator(project->baseFPS());
+        const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
+        const nanoem_u32_t bytesPerSample = m_bytesPerSample = player->bitsPerSample() / 8,
+                           bytesPerSecond = player->sampleRate() * player->numChannels() * bytesPerSample;
+        m_linearPCMSamplesPtr = player->linearPCMSamples();
+        m_length = static_cast<nanoem_rsize_t>((numVisibleMarkers / denominator) * bytesPerSecond);
+        m_offset = static_cast<nanoem_rsize_t>((frameIndex / denominator) * bytesPerSecond);
+    }
+}
+
+nanoem_f32_t
+WaveFormPanelDrawer::plot24(int offset) const NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t value = 0;
+    const nanoem_rsize_t bytesOffset = currentBytesOffset(offset);
+    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size()) {
+        const nanoem_u8_t *ptr = m_linearPCMSamplesPtr->data() + bytesOffset;
+        int v = 0;
+        if ((ptr[2] & 0x80) != 0) {
+            v = (0xff << 24) | (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+        }
+        else {
+            v = (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+        }
+        value = v / 8388607.0f;
+    }
+    return value;
+}
+
+nanoem_f32_t
+WaveFormPanelDrawer::plot16(int offset) const NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t value = 0;
+    const nanoem_rsize_t bytesOffset = currentBytesOffset(offset);
+    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size()) {
+        value = *reinterpret_cast<const nanoem_i16_t *>(m_linearPCMSamplesPtr->data() + bytesOffset) / 32767.0f;
+    }
+    return value;
+}
+
+nanoem_f32_t
+WaveFormPanelDrawer::plot8(int offset) const NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t value = 0;
+    const nanoem_rsize_t bytesOffset = currentBytesOffset(offset);
+    if (m_linearPCMSamplesPtr && bytesOffset < m_linearPCMSamplesPtr->size()) {
+        value = *reinterpret_cast<const char *>(m_linearPCMSamplesPtr->data() + bytesOffset) / 127.0f;
+    }
+    return value;
+}
+
+nanoem_rsize_t
+WaveFormPanelDrawer::currentBytesOffset(int offset) const NANOEM_DECL_NOEXCEPT
+{
+    return (m_offset + nanoem_rsize_t(offset)) * m_bytesPerSample;
+}
+
 } /* namespace anonymous */
 
 using namespace imgui;
@@ -1974,71 +2072,10 @@ ImGuiWindow::drawWavePanel(nanoem_f32_t tracksWidth, Project *project, nanoem_u3
         (ImGui::GetContentRegionAvail().x - tracksWidth - ImGui::GetStyle().ScrollbarSize) /
         (ImGui::GetTextLineHeight());
     numVisibleMarkers = nanoem_u32_t(numVisibleMarkersWidth) - 1;
-    struct WaveDrawer {
-        typedef nanoem_f32_t (*CallbackHandler)(void *data, int idx);
-        static nanoem_f32_t
-        callback(void *userData, int offset)
-        {
-            const WaveDrawer *drawer = static_cast<const WaveDrawer *>(userData);
-            switch (drawer->m_bytesPerSample) {
-            case 2:
-                return drawer->plot16(offset);
-            case 1:
-                return drawer->plot8(offset);
-            default:
-                return 0;
-            }
-        }
-        WaveDrawer(const Project *project, nanoem_u32_t numVisibleMarkers)
-            : m_linearPCMSamplesPtr(nullptr)
-            , m_offset(0)
-            , m_length(0)
-        {
-            const IAudioPlayer *player = project->audioPlayer();
-            if (player->isLoaded()) {
-                const nanoem_f64_t denominator(project->baseFPS());
-                const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-                const nanoem_u32_t bytesPerSample = m_bytesPerSample = player->bitsPerSample() / 8;
-                const nanoem_u32_t bytesPerSecond = player->sampleRate() * player->numChannels() * bytesPerSample;
-                m_linearPCMSamplesPtr = player->linearPCMSamples();
-                m_length = static_cast<nanoem_rsize_t>((numVisibleMarkers / denominator) * bytesPerSecond);
-                m_offset = static_cast<nanoem_rsize_t>((frameIndex / denominator) * bytesPerSecond);
-                switch (bytesPerSample) {
-                case 2:
-                    break;
-                case 1:
-                    break;
-                }
-            }
-        }
-        nanoem_f32_t
-        plot16(int offset) const
-        {
-            nanoem_f32_t value = 0;
-            const nanoem_rsize_t actual = m_offset + nanoem_rsize_t(offset);
-            if (m_linearPCMSamplesPtr && actual < m_linearPCMSamplesPtr->size() && actual % sizeof(nanoem_i16_t) == 0) {
-                value = *reinterpret_cast<const nanoem_i16_t *>(m_linearPCMSamplesPtr->data() + actual) / 32767.0f;
-            }
-            return value;
-        }
-        nanoem_f32_t
-        plot8(int offset) const
-        {
-            nanoem_f32_t value = 0;
-            const nanoem_rsize_t actual = m_offset + nanoem_rsize_t(offset);
-            if (m_linearPCMSamplesPtr && actual < m_linearPCMSamplesPtr->size()) {
-                value = *reinterpret_cast<const char *>(m_linearPCMSamplesPtr->data() + actual) / 255.0f;
-            }
-            return value;
-        }
-        const ByteArray *m_linearPCMSamplesPtr;
-        nanoem_rsize_t m_offset;
-        nanoem_rsize_t m_length;
-        nanoem_u32_t m_bytesPerSample;
-    };
-    WaveDrawer drawer(project, numVisibleMarkers);
-    ImGui::PlotHistogram("##timeline.wave", WaveDrawer::callback, &drawer, Inline::saturateInt32(drawer.m_length), 0,
-        nullptr, -1, 1, ImVec2(ImGui::GetContentRegionAvail().x, histogramHeight));
+    WaveFormPanelDrawer drawer(project, numVisibleMarkers);
+    ImGui::PlotHistogram("##timeline.wave", WaveFormPanelDrawer::callback, &drawer,
+        Inline::saturateInt32(drawer.m_length), 0, nullptr, -1, 1,
+        ImVec2(ImGui::GetContentRegionAvail().x, histogramHeight));
 }
 
 void
