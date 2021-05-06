@@ -4217,7 +4217,8 @@ Model::drawAllVertexNormals()
                                                                     : Vector4U8(0x7f, 0x7f, 0x7f, opacity);
         sg::LineVertexUnit &vertexUnit2 = vertexUnits[index + 1];
         vertexUnit2 = vertexUnit;
-        vertexUnit2.m_position += glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&normal)) * kDrawVertexNormalScaleFactor;
+        vertexUnit2.m_position +=
+            glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&normal)) * kDrawVertexNormalScaleFactor;
     }
     const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
