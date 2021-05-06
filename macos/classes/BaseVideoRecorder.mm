@@ -100,7 +100,7 @@ BaseVideoRecorder::start(Error &error)
                     m_lastActiveModel = m_project->activeModel();
                     m_lastFrameIndex = m_project->currentLocalFrameIndex();
                     m_lastPixelFormat = m_project->viewportPixelFormat();
-                    m_lastPhysicsSimulationMode = m_project->physicsEngine()->mode();
+                    m_lastPhysicsSimulationMode = m_project->physicsEngine()->simulationMode();
                     m_duration = m_project->duration();
                     m_project->setActiveAccessory(0);
                     m_project->setActiveModel(0);
