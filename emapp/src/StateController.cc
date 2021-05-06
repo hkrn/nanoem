@@ -388,8 +388,9 @@ DraggingBoneState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
                 }
             }
             else if (editingMode == Project::kEditingModeSelect &&
-                     EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeAlt | Project::kCursorModifierTypeShift, logicalScaleCursorPosition.z) &&
-                     nanoemModelBoneGetParentBoneObject(bonePtr) != nullptr) {
+                EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeAlt | Project::kCursorModifierTypeShift,
+                    logicalScaleCursorPosition.z) &&
+                nanoemModelBoneGetParentBoneObject(bonePtr) != nullptr) {
                 draggingState = nanoem_new(internal::DirectionalOrientateActiveBoneState(
                     project, model, logicalScaleCursorPosition, activeBoneCursorPosition));
                 setType(IState::kTypeDraggingBoneDirectionalOrientateActiveBoneState);

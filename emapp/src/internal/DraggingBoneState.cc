@@ -426,9 +426,8 @@ AxisAlignedOrientateActiveBoneState::name() const NANOEM_DECL_NOEXCEPT
     return "nanoem.gui.viewport.bone.axis-aligned-orientate";
 }
 
-
-DirectionalOrientateActiveBoneState::DirectionalOrientateActiveBoneState(Project *project, Model *model, const Vector2SI32 &pressedLogicalCursorPosition,
-    const Vector2SI32 &activeBoneLogicalCursorPosition)
+DirectionalOrientateActiveBoneState::DirectionalOrientateActiveBoneState(Project *project, Model *model,
+    const Vector2SI32 &pressedLogicalCursorPosition, const Vector2SI32 &activeBoneLogicalCursorPosition)
     : DraggingBoneState(project, model, pressedLogicalCursorPosition, activeBoneLogicalCursorPosition)
     , m_activeBoneWorldTransformOrigin(model::Bone::cast(model->activeBone())->worldTransformOrigin())
     , m_parentBoneWorldTransformOrigin(0)
@@ -445,7 +444,7 @@ DirectionalOrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorP
 {
     const Model *model = activeModel();
     const nanoem_model_bone_t *activeBonePtr = model->activeBone(),
-            *parentActiveBonePtr = nanoemModelBoneGetParentBoneObject(activeBonePtr);
+                              *parentActiveBonePtr = nanoemModelBoneGetParentBoneObject(activeBonePtr);
     Quaternion orientation(Constants::kZeroQ);
     Vector3 intersection;
     if (model->localCamera()->castRay(logicalCursorPosition, intersection)) {

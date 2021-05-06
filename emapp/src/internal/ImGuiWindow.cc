@@ -1797,8 +1797,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         if (viewportWindowDetached) {
             const ImVec2 minimumViewportSize(
                 kMinimumViewportWindowSize.x * deviceScaleRatio, kMinimumViewportWindowSize.y * deviceScaleRatio);
-            const nanoem_f32_t timelineWidth = size.x,
-                               viewportHeight = size.y - (panelHeight * deviceScaleRatio);
+            const nanoem_f32_t timelineWidth = size.x, viewportHeight = size.y - (panelHeight * deviceScaleRatio);
             m_defaultTimelineWidth = size.x;
             drawTimeline(timelineWidth, viewportHeight, project);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);

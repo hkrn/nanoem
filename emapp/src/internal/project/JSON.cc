@@ -118,7 +118,8 @@ JSON::save(JSON_Value *value)
     json_object_dotset_boolean(root, "loop", m_project->isLoopEnabled());
     PhysicsEngine *engine = m_project->physicsEngine();
     json_object_dotset_number(root, "physics.debug", engine->debugGeometryFlags());
-    json_object_dotset_boolean(root, "physics.active", engine->simulationMode() != PhysicsEngine::kSimulationModeDisable);
+    json_object_dotset_boolean(
+        root, "physics.active", engine->simulationMode() != PhysicsEngine::kSimulationModeDisable);
     json_object_dotset_number(root, "fps", m_project->preferredMotionFPS());
     json_object_dotset_number(root, "seek", m_project->currentLocalFrameIndex());
     const Grid *grid = m_project->grid();

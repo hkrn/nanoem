@@ -74,7 +74,7 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
         const Project::DrawableList drawables(project->drawableOrderList());
         Error error;
         for (ModelParameterDialog::SavedState::ModelStateMap::const_iterator it = m_state->m_modelStates.begin(),
-                                                                      end = m_state->m_modelStates.end();
+                                                                             end = m_state->m_modelStates.end();
              it != end; ++it) {
             const ModelParameterDialog::SavedState::ModelState &state = it->second;
             Model *model = it->first;
