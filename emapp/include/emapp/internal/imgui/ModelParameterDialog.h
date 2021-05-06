@@ -43,6 +43,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     static void formatVertexText(char *buffer, nanoem_rsize_t size, const nanoem_model_vertex_t *vertexPtr);
 
     ModelParameterDialog(Model *model, Project *project, BaseApplicationService *applicationPtr, ImGuiWindow *parent);
+    ~ModelParameterDialog();
 
     bool draw(Project *project);
     void layoutInformation(Project *project);
@@ -93,6 +94,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
     void setActiveModel(Model *model, Project *project);
+    void saveProjectState(Project *project);
     void restoreProjectState(Project *project);
 
     void removeAllVertexSelectionIfNeeded(IModelObjectSelection *selection);
@@ -119,19 +121,29 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     const char *selectedSoftBodyAeroMdoelType(
         const nanoem_model_soft_body_aero_model_type_t type) const NANOEM_DECL_NOEXCEPT;
 
-    struct SavedModelState {
-        const nanoem_model_bone_t *m_activeBone;
-        const nanoem_model_morph_t *m_activeMorph;
-        ByteArray m_motion;
+    struct SavedState {
+        struct ModelState {
+            const nanoem_model_bone_t *m_activeBone;
+            const nanoem_model_morph_t *m_activeMorph;
+            ByteArray m_motion;
+        };
+        SavedState()
+            : m_activeModel(nullptr)
+            , m_state(nullptr)
+            , m_lastEditingMode(Project::kEditingModeNone)
+        {
+        }
+        typedef tinystl::unordered_map<Model *, ModelState, TinySTLAllocator> ModelStateMap;
+        Model *m_activeModel;
+        Project::SaveState *m_state;
+        Project::EditingMode m_lastEditingMode;
+        ModelStateMap m_modelStates;
+        model::BindPose m_bindPose;
     };
-    typedef tinystl::unordered_map<Model *, SavedModelState, TinySTLAllocator> SavedModelStateMap;
 
     ImGuiWindow *m_parent;
     Model *m_activeModel;
-    Project::SaveState *m_saveState;
-    Project::EditingMode m_lastEditingMode;
-    SavedModelStateMap m_savedModelStates;
-    model::BindPose m_bindPose;
+    SavedState *m_savedState;
     int m_language;
     TabType m_tabType;
     TabType m_explicitTabType;

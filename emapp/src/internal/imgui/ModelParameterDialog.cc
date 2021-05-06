@@ -41,20 +41,65 @@ struct UndoCommand : ImGuiWindow::ILazyExecutionCommand {
     undo_command_t *m_command;
 };
 
-struct SetModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
-    SetModelEditingCommand(bool value)
-        : m_value(value)
+struct EnableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
+    EnableModelEditingCommand(ModelParameterDialog *parent)
+        : m_parent(parent)
     {
     }
-    ~SetModelEditingCommand() NANOEM_DECL_NOEXCEPT
+    ~EnableModelEditingCommand() NANOEM_DECL_NOEXCEPT
     {
     }
     void
     execute(Project *project)
     {
-        project->setModelEditingEnabled(m_value);
+        project->setModelEditingEnabled(true);
+        m_parent->saveProjectState(project);
     }
-    const bool m_value;
+    ModelParameterDialog *m_parent;
+};
+
+struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
+    DisableModelEditingCommand(ModelParameterDialog::SavedState *state)
+        : m_state(state)
+    {
+    }
+    ~DisableModelEditingCommand() NANOEM_DECL_NOEXCEPT
+    {
+        nanoem_delete_safe(m_state);
+    }
+
+    void
+    execute(Project *project)
+    {
+        const Project::DrawableList drawables(project->drawableOrderList());
+        Error error;
+        for (ModelParameterDialog::SavedState::ModelStateMap::const_iterator it = m_state->m_modelStates.begin(),
+                                                                      end = m_state->m_modelStates.end();
+             it != end; ++it) {
+            const ModelParameterDialog::SavedState::ModelState &state = it->second;
+            Model *model = it->first;
+            model->setActiveBone(state.m_activeBone);
+            model->setActiveMorph(state.m_activeMorph);
+            if (Motion *motion = project->resolveMotion(model)) {
+                motion->load(state.m_motion, 0, error);
+            }
+        }
+        Model *activeModel = m_state->m_activeModel;
+        for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+            IDrawable *drawable = *it;
+            if (drawable != activeModel) {
+                drawable->setVisible(true);
+            }
+        }
+        activeModel->restoreBindPose(m_state->m_bindPose);
+        project->restoreState(m_state->m_state, true);
+        project->destroyState(m_state->m_state);
+        project->setEditingMode(m_state->m_lastEditingMode);
+        project->setModelEditingEnabled(false);
+    }
+
+    Model *m_activeModel;
+    ModelParameterDialog::SavedState *m_state;
 };
 
 } /* namespace anonymous */
@@ -104,8 +149,7 @@ ModelParameterDialog::ModelParameterDialog(
     : BaseNonModalDialogWindow(applicationPtr)
     , m_parent(parent)
     , m_activeModel(model)
-    , m_saveState(nullptr)
-    , m_lastEditingMode(project->editingMode())
+    , m_savedState(nullptr)
     , m_language(project->castLanguage())
     , m_tabType(kTabTypeFirstEnum)
     , m_explicitTabType(kTabTypeMaxEnum)
@@ -137,12 +181,15 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllSoftBodies(false)
 {
     ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kEditingTypeNone, m_activeModel, project);
-    project->saveState(m_saveState);
-    project->activeCamera()->reset();
-    project->activeLight()->reset();
-    project->grid()->setVisible(true);
-    setActiveModel(model, project);
-    parent->addLazyExecutionCommand(nanoem_new(SetModelEditingCommand(true)));
+    m_savedState = nanoem_new(SavedState);
+    parent->addLazyExecutionCommand(nanoem_new(EnableModelEditingCommand(this)));
+}
+
+ModelParameterDialog::~ModelParameterDialog()
+{
+    if (m_savedState) {
+        nanoem_delete_safe(m_savedState);
+    }
 }
 
 bool
@@ -243,10 +290,8 @@ ModelParameterDialog::draw(Project *project)
     }
     close();
     if (!visible) {
-        m_parent->addLazyExecutionCommand(nanoem_new(SetModelEditingCommand(false)));
-    }
-    if (!visible) {
-        restoreProjectState(project);
+        m_parent->addLazyExecutionCommand(nanoem_new(DisableModelEditingCommand(m_savedState)));
+        m_savedState = nullptr;
     }
     return visible;
 }
@@ -5128,14 +5173,14 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
     }
     if (Motion *motion = project->resolveMotion(model)) {
         Error error;
-        SavedModelStateMap::const_iterator it = m_savedModelStates.find(model);
-        if (it == m_savedModelStates.end()) {
-            SavedModelState state;
+        SavedState::ModelStateMap::const_iterator it = m_savedState->m_modelStates.find(model);
+        if (it == m_savedState->m_modelStates.end()) {
+            SavedState::ModelState state;
             if (motion->save(state.m_motion, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
                 motion->clearAllKeyframes();
                 state.m_activeBone = model->activeBone();
                 state.m_activeMorph = model->activeMorph();
-                m_savedModelStates.insert(tinystl::make_pair(model, state));
+                m_savedState->m_modelStates.insert(tinystl::make_pair(model, state));
             }
         }
     }
@@ -5154,31 +5199,15 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
 }
 
 void
-ModelParameterDialog::restoreProjectState(Project *project)
+ModelParameterDialog::saveProjectState(Project *project)
 {
-    const Project::DrawableList drawables(project->drawableOrderList());
-    Error error;
-    for (SavedModelStateMap::const_iterator it = m_savedModelStates.begin(), end = m_savedModelStates.end(); it != end;
-         ++it) {
-        const SavedModelState &state = it->second;
-        Model *model = it->first;
-        model->setActiveBone(state.m_activeBone);
-        model->setActiveMorph(state.m_activeMorph);
-        if (Motion *motion = project->resolveMotion(model)) {
-            motion->load(state.m_motion, 0, error);
-        }
-    }
-    m_savedModelStates.clear();
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
-        IDrawable *drawable = *it;
-        if (drawable != m_activeModel) {
-            drawable->setVisible(true);
-        }
-    }
-    project->restoreState(m_saveState, true);
-    project->setEditingMode(m_lastEditingMode);
-    m_activeModel->restoreBindPose(m_bindPose);
-    m_saveState = nullptr;
+    m_savedState->m_activeModel = m_activeModel;
+    project->saveState(m_savedState->m_state);
+    project->activeCamera()->reset();
+    project->activeLight()->reset();
+    project->grid()->setVisible(true);
+    project->setPhysicsSimulationMode(PhysicsEngine::kSimulationModeDisable);
+    setActiveModel(m_activeModel, project);
 }
 
 void
