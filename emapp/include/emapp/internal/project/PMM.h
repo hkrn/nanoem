@@ -8,8 +8,7 @@
 #ifndef NANOEM_EMAPP_INTERNAL_PROJECT_PMM_H_
 #define NANOEM_EMAPP_INTERNAL_PROJECT_PMM_H_
 
-#include "emapp/Forward.h"
-#include "emapp/URI.h"
+#include "emapp/Project.h"
 
 struct nanoem_document_t;
 struct nanoem_document_accessory_t;
@@ -17,16 +16,6 @@ struct nanoem_document_model_t;
 struct ini_t;
 
 namespace nanoem {
-
-class Accessory;
-class Effect;
-class Error;
-class IDrawable;
-class Model;
-class Motion;
-class Progress;
-class Project;
-
 namespace internal {
 namespace project {
 
@@ -35,7 +24,7 @@ public:
     PMM(Project *project);
     ~PMM() NANOEM_DECL_NOEXCEPT;
 
-    bool load(const nanoem_u8_t *data, size_t size, Error &error);
+    bool load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics);
     bool save(ByteArray &bytes, Error &error);
 
     URI fileURI() const;

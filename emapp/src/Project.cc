@@ -1438,7 +1438,7 @@ Project::loadFromBinary(
     }
     case kBinaryFormatPMM: {
         internal::project::PMM loader(this);
-        succeeded = loader.load(data, size, error);
+        succeeded = loader.load(data, size, error, diagnostics);
         break;
     }
     default:

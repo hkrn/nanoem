@@ -106,7 +106,7 @@ struct PMM::Context {
     Context(Project *project);
     ~Context() NANOEM_DECL_NOEXCEPT;
 
-    bool load(const nanoem_u8_t *data, size_t size, Error &error);
+    bool load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics);
     bool save(ByteArray &bytes, Error &error);
     URI fileURI() const;
     void setFileURI(const URI &value);
@@ -117,12 +117,12 @@ struct PMM::Context {
     void loadDefaultEffect(Progress &progress, Error &error, EffectMap &effectMap);
     void loadAllAccessories(const nanoem_document_t *document, OrderedDrawableList &drawables,
         PMMAccessoryHandleMap &accessoryHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet,
-        Error &error);
+        Error &error, Project::IDiagnostics *diagnostics);
     void loadAccessory(const nanoem_document_accessory_t *ao, Accessory *accessory, StringSet &reservedNameSet,
         nanoem_status_t *mutableStatus);
     void loadAllModels(const nanoem_document_t *document, OrderedDrawableList &drawables,
         PMMModelHandleMap &modelHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet,
-        Error &error);
+        Error &error, Project::IDiagnostics *diagnostics);
     void loadModel(
         const nanoem_document_model_t *mo, Model *model, StringSet &reservedNameSet, nanoem_status_t *mutableStatus);
     void loadCamera(
@@ -141,9 +141,12 @@ struct PMM::Context {
     void configureModelOutsideParentKeyframes(const nanoem_document_model_t *mo, Motion *subjectModelMotion,
         const nanoem_unicode_string_t *subjectBoneName, const StringPair &outsideParentStringPair,
         nanoem_status_t *mutableStatus);
-    void loadAudio(const nanoem_document_t *document, Progress &progress, Error &error);
-    void loadBackgroundImage(const nanoem_document_t *document, Progress &progress, Error &error);
-    void loadBackgroundVideo(const nanoem_document_t *document, Progress &progress, Error &error);
+    void loadAudio(
+        const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics);
+    void loadBackgroundImage(
+        const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics);
+    void loadBackgroundVideo(
+        const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics);
 
     void saveAudioSource(nanoem_mutable_document_t *document, nanoem_status_t *status);
     void saveBackgroundVideo(nanoem_mutable_document_t *document, nanoem_status_t *status);
@@ -574,7 +577,7 @@ PMM::Context::~Context() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error)
+PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
@@ -598,8 +601,9 @@ PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error)
             m_project, Inline::saturateInt32U(numAccessories + numModels + kAdditionalProgressLoadingItems));
         Context::EffectMap effectMap(m_project);
         isEffectPluginEnabled |= loadEffectMetadata(error, effectMap);
-        loadAllAccessories(document, drawables, accessoryHandles, effectMap, progress, reservedNameSet, error);
-        loadAllModels(document, drawables, modelHandles, effectMap, progress, reservedNameSet, error);
+        loadAllAccessories(
+            document, drawables, accessoryHandles, effectMap, progress, reservedNameSet, error, diagnostics);
+        loadAllModels(document, drawables, modelHandles, effectMap, progress, reservedNameSet, error, diagnostics);
         loadDefaultEffect(progress, error, effectMap);
         loadCamera(document, modelHandles, &status);
         loadLight(document, &status);
@@ -623,9 +627,9 @@ PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error)
                 transformOrderList.push_back(static_cast<Model *>(drawable));
             }
         }
-        loadAudio(document, progress, error);
-        loadBackgroundImage(document, progress, error);
-        loadBackgroundVideo(document, progress, error);
+        loadAudio(document, progress, error, diagnostics);
+        loadBackgroundImage(document, progress, error, diagnostics);
+        loadBackgroundVideo(document, progress, error, diagnostics);
         if (nanoemDocumentIsBlackBackgroundEnabled(document)) {
             m_project->setViewportBackgroundColor(Vector4(0, 0, 0, 1));
         }
@@ -947,7 +951,7 @@ PMM::Context::loadDefaultEffect(Progress &progress, Error &error, EffectMap &eff
 void
 PMM::Context::loadAllAccessories(const nanoem_document_t *document, OrderedDrawableList &drawables,
     PMMAccessoryHandleMap &accessoryHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet,
-    Error &error)
+    Error &error, Project::IDiagnostics *diagnostics)
 {
     nanoem_rsize_t numAccessories, numModels;
     nanoem_document_accessory_t *const *accessories = nanoemDocumentGetAllAccessoryObjects(document, &numAccessories);
@@ -962,9 +966,13 @@ PMM::Context::loadAllAccessories(const nanoem_document_t *document, OrderedDrawa
         const URI &fileURI = resolveFileURI(nanoemDocumentAccessoryGetPath(ao));
         Error innerError;
         if (fileURI.isEmpty()) {
+            /* do nothing */
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
+        }
+        else if (!FileUtils::exists(fileURI)) {
+            diagnostics->addNotFoundFileURI(fileURI);
         }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
             const Project::AccessoryList &allAccessories = m_project->allAccessories();
@@ -1044,7 +1052,8 @@ PMM::Context::loadAccessory(
 
 void
 PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableList &drawables,
-    PMMModelHandleMap &modelHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet, Error &error)
+    PMMModelHandleMap &modelHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet, Error &error,
+    Project::IDiagnostics *diagnostics)
 {
     nanoem_rsize_t numModels;
     nanoem_document_model_t *const *modelItems = nanoemDocumentGetAllModelObjects(document, &numModels);
@@ -1062,6 +1071,9 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
+        }
+        else if (!FileUtils::exists(fileURI)) {
+            diagnostics->addNotFoundFileURI(fileURI);
         }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
             const Project::ModelList &allModels = m_project->allModels();
@@ -1493,7 +1505,8 @@ PMM::Context::configureModelOutsideParentKeyframes(const nanoem_document_model_t
 }
 
 void
-PMM::Context::loadAudio(const nanoem_document_t *document, Progress &progress, Error &error)
+PMM::Context::loadAudio(
+    const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics)
 {
     if (nanoemDocumentIsAudioEnabled(document)) {
         FileReaderScope scope(m_project->translator());
@@ -1504,6 +1517,9 @@ PMM::Context::loadAudio(const nanoem_document_t *document, Progress &progress, E
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
         }
+        else if (!FileUtils::exists(fileURI)) {
+            diagnostics->addNotFoundFileURI(fileURI);
+        }
         else if (fileManager->loadAudioFile(fileURI, m_project, error)) {
         }
     }
@@ -1511,7 +1527,8 @@ PMM::Context::loadAudio(const nanoem_document_t *document, Progress &progress, E
 }
 
 void
-PMM::Context::loadBackgroundImage(const nanoem_document_t *document, Progress &progress, Error &error)
+PMM::Context::loadBackgroundImage(
+    const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics)
 {
     if (nanoemDocumentIsBackgroundImageEnabled(document)) {
         const URI &fileURI = resolveFileURI(nanoemDocumentGetBackgroundImagePath(document));
@@ -1520,6 +1537,9 @@ PMM::Context::loadBackgroundImage(const nanoem_document_t *document, Progress &p
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
+        }
+        else if (!FileUtils::exists(fileURI)) {
+            diagnostics->addNotFoundFileURI(fileURI);
         }
         else if (fileManager->loadVideoFile(fileURI, m_project, error)) {
             const Vector4SI32 rect(nanoemDocumentGetBackgroundVideoOffsetX(document),
@@ -1531,7 +1551,8 @@ PMM::Context::loadBackgroundImage(const nanoem_document_t *document, Progress &p
 }
 
 void
-PMM::Context::loadBackgroundVideo(const nanoem_document_t *document, Progress &progress, Error &error)
+PMM::Context::loadBackgroundVideo(
+    const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics)
 {
     if (nanoemDocumentIsBackgroundVideoEnabled(document)) {
         const URI &fileURI = resolveFileURI(nanoemDocumentGetBackgroundVideoPath(document));
@@ -1540,6 +1561,9 @@ PMM::Context::loadBackgroundVideo(const nanoem_document_t *document, Progress &p
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
+        }
+        else if (!FileUtils::exists(fileURI)) {
+            diagnostics->addNotFoundFileURI(fileURI);
         }
         else if (fileManager->loadVideoFile(fileURI, m_project, error)) {
             int x = nanoemDocumentGetBackgroundVideoOffsetX(document),
@@ -2100,9 +2124,9 @@ PMM::~PMM() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-PMM::load(const nanoem_u8_t *data, size_t size, Error &error)
+PMM::load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics)
 {
-    return m_context->load(data, size, error);
+    return m_context->load(data, size, error, diagnostics);
 }
 
 bool

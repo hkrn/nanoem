@@ -872,9 +872,6 @@ Native::Context::loadAccessoryFromFile(const Nanoem__Project__Accessory *a, nano
                 loadAccessory(a, accessory, Inline::saturateInt32(numDrawables), drawableOrderList, activeAccessoryPtr);
                 handles.insert(tinystl::make_pair(static_cast<nanoem_u16_t>(a->accessory_handle), accessory->handle()));
             }
-            else if (diagnostics) {
-                diagnostics->addNotFoundFileURI(fileURI);
-            }
         }
         else if (diagnostics) {
             diagnostics->addDigestMismatchFileURI(fileURI);

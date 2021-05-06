@@ -11,10 +11,6 @@
 #include "emapp/Project.h"
 
 namespace nanoem {
-
-class IDrawable;
-class Project;
-
 namespace internal {
 namespace project {
 
