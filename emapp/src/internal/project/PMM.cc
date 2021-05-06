@@ -751,7 +751,7 @@ PMM::Context::save(ByteArray &bytes, Error &error)
     nanoemMutableDocumentSetViewportWidth(document, viewportImageSize.x);
     nanoemMutableDocumentSetViewportHeight(document, viewportImageSize.y);
     const PhysicsEngine *engine = m_project->physicsEngine();
-    switch (engine->mode()) {
+    switch (engine->simulationMode()) {
     case PhysicsEngine::kSimulationModeDisable:
     default: {
         nanoemMutableDocumentSetPhysicsSimulationMode(document, NANOEM_DOCUMENT_PHYSICS_SIMULATION_MODE_DISABLE);

@@ -451,13 +451,13 @@ PhysicsEngine::stepSimulation(nanoem_f32_t delta)
 }
 
 PhysicsEngine::SimulationModeType
-PhysicsEngine::mode() const NANOEM_DECL_NOEXCEPT
+PhysicsEngine::simulationMode() const NANOEM_DECL_NOEXCEPT
 {
     return m_context->m_mode;
 }
 
 void
-PhysicsEngine::setMode(SimulationModeType value)
+PhysicsEngine::setSimulationMode(SimulationModeType value)
 {
     if (m_context->m_mode != value) {
         setActive(value > PhysicsEngine::kSimulationModeDisable);

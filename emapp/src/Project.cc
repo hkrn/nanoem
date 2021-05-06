@@ -2627,7 +2627,7 @@ Project::update()
             : 0;
         internalSeek(frameIndex * invertFPSRate, amount, delta);
     }
-    else if (m_physicsEngine->mode() == PhysicsEngine::kSimulationModeEnableAnytime) {
+    else if (m_physicsEngine->simulationMode() == PhysicsEngine::kSimulationModeEnableAnytime) {
         for (ModelList::const_iterator it = m_allModelPtrs.begin(), end = m_allModelPtrs.end(); it != end; ++it) {
             Model *model = *it;
             model->synchronizeAllRigidBodiesTransformFeedbackToSimulation();
@@ -5429,7 +5429,7 @@ Project::setFilePathMode(FilePathMode value)
 bool
 Project::isPhysicsSimulationEnabled() const NANOEM_DECL_NOEXCEPT
 {
-    switch (m_physicsEngine->mode()) {
+    switch (m_physicsEngine->simulationMode()) {
     case PhysicsEngine::kSimulationModeDisable:
     case PhysicsEngine::kSimulationModeMaxEnum:
     default:
@@ -5445,9 +5445,9 @@ Project::isPhysicsSimulationEnabled() const NANOEM_DECL_NOEXCEPT
 void
 Project::setPhysicsSimulationMode(PhysicsEngine::SimulationModeType value)
 {
-    if (m_physicsEngine->mode() != value) {
+    if (m_physicsEngine->simulationMode() != value) {
         m_physicsEngine->setDebugGeometryFlags(value ? m_lastPhysicsDebugFlags : 0);
-        m_physicsEngine->setMode(value);
+        m_physicsEngine->setSimulationMode(value);
         resetPhysicsSimulation();
         restart(currentLocalFrameIndex());
         eventPublisher()->publishSetPhysicsSimulationModeEvent(static_cast<nanoem_u32_t>(value));

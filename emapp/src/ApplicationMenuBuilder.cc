@@ -656,21 +656,21 @@ ApplicationMenuBuilder::validateMenuItem(const Project *project, MenuItemType ty
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime: {
             state =
-                convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableAnytime);
+                convertCheckedState(project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableAnytime);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnablePlaying: {
             state =
-                convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnablePlaying);
+                convertCheckedState(project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnablePlaying);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableTracing: {
             state =
-                convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+                convertCheckedState(project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationDisable: {
-            state = convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeDisable);
+            state = convertCheckedState(project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeDisable);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableDrawingWireframe: {

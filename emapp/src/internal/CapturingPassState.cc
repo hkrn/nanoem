@@ -910,7 +910,7 @@ CapturingPassState::save(Project *project)
     m_outputPass = sg::make_pass(&m_outputPassDescription);
     m_lastLogicalScaleUniformedViewportImageSize = project->logicalScaleUniformedViewportImageSize();
     m_lastViewportDevicePixelRatio = project->viewportDevicePixelRatio();
-    m_lastPhysicsSimulationMode = project->physicsEngine()->mode();
+    m_lastPhysicsSimulationMode = project->physicsEngine()->simulationMode();
     m_lastPreferredMotionFPS = project->preferredMotionFPS();
     m_lastSampleLevel = project->sampleLevel();
     m_displaySyncDisabled = project->isDisplaySyncDisabled();

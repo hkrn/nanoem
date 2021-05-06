@@ -63,8 +63,8 @@ public:
     void destroy() NANOEM_DECL_NOEXCEPT;
     void reset() NANOEM_DECL_NOEXCEPT;
     void stepSimulation(nanoem_f32_t delta);
-    SimulationModeType mode() const NANOEM_DECL_NOEXCEPT;
-    void setMode(SimulationModeType value);
+    SimulationModeType simulationMode() const NANOEM_DECL_NOEXCEPT;
+    void setSimulationMode(SimulationModeType value);
 
     const nanoem_physics_world_t *worldOpaque() const NANOEM_DECL_NOEXCEPT;
     nanoem_physics_world_t *worldOpaque();

@@ -107,7 +107,7 @@ TEST_CASE("project_save_and_load_archive_should_same_content", "[emapp][project]
         // CHECK(newProject->shadowMapSize() == Vector2UI16(512 == 512));
         // CHECK(newProject->isShadowMapEnabled());
         CHECK(newProject->shadowCamera()->coverageMode() == 2);
-        CHECK(newProject->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+        CHECK(newProject->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
         CHECK(newProject->physicsEngine()->debugGeometryFlags() == (1 | 2 | 4 | 16 | 64));
         CHECK_THAT(newProject->viewportBackgroundColor(), Equals(Vector4(0)));
         CHECK(newProject->sampleLevel() == 2);

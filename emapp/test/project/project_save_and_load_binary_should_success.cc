@@ -222,7 +222,7 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             project->physicsEngine()->setGroundEnabled(false);
         });
         LoadBlock(scope, bytes, [](Project *newProject) {
-            CHECK(newProject->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+            CHECK(newProject->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
             CHECK(newProject->physicsEngine()->debugGeometryFlags() == (1 | 2 | 4 | 16 | 64));
             CHECK(newProject->physicsEngine()->acceleration() == 0.42f);
             CHECK_THAT(newProject->physicsEngine()->direction(), Equals(glm::normalize(Vector3(0.1, 0.2, 0.3))));

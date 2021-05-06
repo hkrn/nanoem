@@ -1513,7 +1513,7 @@ Native::Context::savePhysicsSimulation()
     ps->noise = engine->noise();
     ps->has_is_ground_enabled = 1;
     ps->is_ground_enabled = engine->isGroundEnabled();
-    ps->mode = engine->mode();
+    ps->mode = engine->simulationMode();
     ps->has_mode = 1;
     return ps;
 }

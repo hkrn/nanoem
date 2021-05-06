@@ -1729,7 +1729,7 @@ Model::performAllBonesTransform()
     applyAllBonesTransform(PhysicsEngine::kSimulationTimingBefore);
     solveAllConstraints();
     PhysicsEngine *engine = m_project->physicsEngine();
-    if (engine->mode() == PhysicsEngine::kSimulationModeEnableAnytime) {
+    if (engine->simulationMode() == PhysicsEngine::kSimulationModeEnableAnytime) {
         synchronizeAllRigidBodiesTransformFeedbackToSimulation();
         engine->stepSimulation(m_project->physicsSimulationTimeStep());
         synchronizeAllRigidBodiesTransformFeedbackFromSimulation(PhysicsEngine::kRigidBodyFollowBoneSkip);

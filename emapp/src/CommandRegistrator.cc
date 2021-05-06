@@ -859,7 +859,7 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
         ResolveInherentParentBoneMap;
     const nanoem_frame_index_t duration = m_project->duration(),
                                lastLocalFrameIndex = m_project->currentLocalFrameIndex();
-    const PhysicsEngine::SimulationModeType lastSimulationMode = m_project->physicsEngine()->mode();
+    const PhysicsEngine::SimulationModeType lastSimulationMode = m_project->physicsEngine()->simulationMode();
     const ITranslator *translator = m_project->translator();
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     AllModelConstraintBoneSet allConstraintBoneSets;
