@@ -1712,6 +1712,7 @@ Model::rebuildAllVertexBuffers(bool enableSkinFactory)
         sg::destroy_buffer(m_vertexBuffers[0]);
         sg::destroy_buffer(m_vertexBuffers[1]);
     }
+    m_vertexBuffers[0] = m_vertexBuffers[1] = { SG_INVALID_ID };
     if (enableSkinFactory) {
         initializeAllStagingVertexBuffers();
     }
