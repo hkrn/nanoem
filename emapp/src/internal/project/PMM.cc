@@ -972,7 +972,9 @@ PMM::Context::loadAllAccessories(const nanoem_document_t *document, OrderedDrawa
             error = Error::cancelled();
         }
         else if (!FileUtils::exists(fileURI)) {
-            diagnostics->addNotFoundFileURI(fileURI);
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
             const Project::AccessoryList &allAccessories = m_project->allAccessories();
@@ -1073,7 +1075,9 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
             error = Error::cancelled();
         }
         else if (!FileUtils::exists(fileURI)) {
-            diagnostics->addNotFoundFileURI(fileURI);
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
             const Project::ModelList &allModels = m_project->allModels();
@@ -1518,7 +1522,9 @@ PMM::Context::loadAudio(
             error = Error::cancelled();
         }
         else if (!FileUtils::exists(fileURI)) {
-            diagnostics->addNotFoundFileURI(fileURI);
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadAudioFile(fileURI, m_project, error)) {
         }
@@ -1539,7 +1545,9 @@ PMM::Context::loadBackgroundImage(
             error = Error::cancelled();
         }
         else if (!FileUtils::exists(fileURI)) {
-            diagnostics->addNotFoundFileURI(fileURI);
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadVideoFile(fileURI, m_project, error)) {
             const Vector4SI32 rect(nanoemDocumentGetBackgroundVideoOffsetX(document),
@@ -1563,7 +1571,9 @@ PMM::Context::loadBackgroundVideo(
             error = Error::cancelled();
         }
         else if (!FileUtils::exists(fileURI)) {
-            diagnostics->addNotFoundFileURI(fileURI);
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadVideoFile(fileURI, m_project, error)) {
             int x = nanoemDocumentGetBackgroundVideoOffsetX(document),
