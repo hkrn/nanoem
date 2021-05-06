@@ -363,12 +363,15 @@ struct Project::DrawQueue {
     static void registerCallback(CommandBuffer &buffer, sg::PassBlock::Callback callback, void *userData);
     static void drawPass(const PassCommandBuffer *pass, Project *project, bx::HashMurmur2A &hasher);
 
+    DrawQueue();
+    ~DrawQueue() NANOEM_DECL_NOEXCEPT;
+
     size_t size() const NANOEM_DECL_NOEXCEPT;
     void flush(Project *project);
 
     Project *m_project;
     PassCommandBufferList m_commandBuffers;
-    int m_counts = 0;
+    int m_counts;
 };
 
 void
@@ -571,6 +574,20 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
     sg::end_pass();
     SG_INSERT_MARKER("Project::DrawQueue::endPass()");
     SG_POP_GROUP();
+}
+
+Project::DrawQueue::DrawQueue()
+    : m_counts(0)
+{
+}
+
+Project::DrawQueue::~DrawQueue() NANOEM_DECL_NOEXCEPT
+{
+    for (PassCommandBufferList::const_iterator it = m_commandBuffers.begin(), end = m_commandBuffers.end(); it != end;
+         ++it) {
+        nanoem_delete(it->m_items);
+    }
+    m_commandBuffers.clear();
 }
 
 size_t
