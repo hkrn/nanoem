@@ -443,7 +443,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
     list(APPEND _ffmpeg_build_options "--enable-swscale")
     list(APPEND _ffmpeg_build_options "--enable-demuxer=avi,matroska")
     list(APPEND _ffmpeg_build_options "--enable-muxer=avi,matroska")
-    list(APPEND _ffmpeg_build_options "--enable-decoder=flac,pcm_s16le,rawvideo,utvideo")
+    list(APPEND _ffmpeg_build_options "--enable-decoder=flac,hq_hqa,hqx,pcm_s16le,rawvideo,utvideo")
     list(APPEND _ffmpeg_build_options "--enable-encoder=flac,pcm_s16le,rawvideo,utvideo")
     list(APPEND _ffmpeg_build_options "--enable-protocol=file")
     list(APPEND _ffmpeg_build_options "--enable-cross-compile")
