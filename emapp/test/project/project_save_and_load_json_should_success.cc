@@ -145,8 +145,8 @@ TEST_CASE("project_save_and_load_json_should_success", "[emapp][project]")
         // CHECK(newProject->currentLocalFrameIndex() == 864);
         CHECK(newProject->preferredMotionFPS() == 60);
         CHECK(newProject->isLoopEnabled());
-        CHECK(newProject->drawableOrderList().size() == 25);
-        CHECK(newProject->transformOrderList().size() == 8);
+        CHECK(newProject->drawableOrderList()->size() == 25);
+        CHECK(newProject->transformOrderList()->size() == 8);
         // CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisY);
         CHECK(newProject->coordinationSystem() == GLM_LEFT_HANDED);
     }

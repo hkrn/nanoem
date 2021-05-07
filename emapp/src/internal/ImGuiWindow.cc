@@ -1769,8 +1769,8 @@ ImGuiWindow::clearAllKeyframeSelection(Project *project)
         project->cameraMotion()->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
         project->lightMotion()->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
         project->selfShadowMotion()->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
-        Project::AccessoryList accessories(project->allAccessories());
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        const Project::AccessoryList *accessories = project->allAccessories();
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             Motion *motion = project->resolveMotion(*it);
             motion->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
@@ -1825,8 +1825,8 @@ ImGuiWindow::copyAllKeyframeSelection(const IMotionKeyframeSelection *selection,
              it != end; ++it) {
             destSelfShadow->add(*it);
         }
-        Project::AccessoryList accessories(project->allAccessories());
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        const Project::AccessoryList *accessories = project->allAccessories();
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             Motion *motion = project->resolveMotion(*it);
             Motion::AccessoryKeyframeList accessoryKeyframes;
@@ -2099,8 +2099,8 @@ ImGuiWindow::drawAllTracksPanel(const ImVec2 &panelSize, Project::TrackList &tra
     else {
         ImGui::SetScrollY(m_scrollTimelineY);
     }
-    Project::TrackList allTracks(project->allTracks());
-    for (Project::TrackList::const_iterator it = allTracks.begin(), end = allTracks.end(); it != end; ++it) {
+    const Project::TrackList *allTracks = project->allTracks();
+    for (Project::TrackList::const_iterator it = allTracks->begin(), end = allTracks->end(); it != end; ++it) {
         ITrack *track = *it;
         tracks.push_back(track);
         if (track->isExpanded()) {
@@ -2132,7 +2132,7 @@ ImGuiWindow::drawAllTracksPanel(const ImVec2 &panelSize, Project::TrackList &tra
         }
     }
     if (!selectedTracks.empty()) {
-        for (Project::TrackList::const_iterator it = allTracks.begin(), end = allTracks.end(); it != end; ++it) {
+        for (Project::TrackList::const_iterator it = allTracks->begin(), end = allTracks->end(); it != end; ++it) {
             ITrack *track = *it;
             if (selectedTracks.find(track) == selectedTracks.end()) {
                 track->setSelected(false);

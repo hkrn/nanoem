@@ -511,8 +511,8 @@ CommandRegistrator::registerInsertEmptyTimelineFrameCommand()
             }
         }
         else {
-            const Project::AccessoryList accessories(m_project->allAccessories());
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            const Project::AccessoryList *accessories = m_project->allAccessories();
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 if (Motion *motion = m_project->resolveMotion(*it)) {
                     commands.push_back(command::InsertEmptyTimelineFrameCommand::create(
@@ -561,8 +561,8 @@ CommandRegistrator::registerRemoveTimelineFrameCommand()
             }
         }
         else {
-            const Project::AccessoryList accessories(m_project->allAccessories());
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            const Project::AccessoryList *accessories = m_project->allAccessories();
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 if (Motion *motion = m_project->resolveMotion(*it)) {
                     commands.push_back(command::RemoveTimelineFrameCommand::create(
@@ -735,8 +735,8 @@ CommandRegistrator::registerRemoveAllSelectedKeyframesCommand(Model *model)
                 selfShadowKeyframes, m_project->shadowCamera(), motion));
             selection->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
         }
-        const Project::AccessoryList accessories(m_project->allAccessories());
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        const Project::AccessoryList *accessories = m_project->allAccessories();
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             Accessory *accessory = *it;
             if (Motion *motion = m_project->resolveMotion(accessory)) {
@@ -869,10 +869,10 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
     Model *lastActiveModel = m_project->activeModel();
     m_project->seek(0, true);
     m_project->setPhysicsSimulationMode(PhysicsEngine::kSimulationModeEnableTracing);
-    Project::ModelList models(m_project->allModels());
+    const Project::ModelList *models = m_project->allModels();
     Project::MotionList motions;
-    motions.reserve(models.size());
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    motions.reserve(models->size());
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         Motion *motion = m_project->createMotion();
         motion->initialize(model);
@@ -880,7 +880,7 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
     }
     if (enableBakingConstraint) {
         ResolveInherentParentBoneMap resolveInherentParentBones;
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             Model *model = *it;
             nanoem_rsize_t numBones;
             nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
@@ -921,9 +921,9 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
     }
     model::Bone::Set constraintBoneSet;
     for (nanoem_frame_index_t frameIndex = 0; frameIndex <= duration;) {
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             Model *model = *it;
-            nanoem_rsize_t offset = it - models.begin(), numBones, numConstraints, numMorphs;
+            nanoem_rsize_t offset = it - models->begin(), numBones, numConstraints, numMorphs;
             Motion *sourceMotion = m_project->resolveMotion(model), *destMotion = motions[offset];
             nanoem_motion_t *sourceMotionPtr = sourceMotion->data(), *dstMotionPtr = destMotion->data();
             nanoem_mutable_motion_t *m = nanoemMutableMotionCreateAsReference(dstMotionPtr, &status);
@@ -1066,10 +1066,10 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
         m_project->seek(++frameIndex, true);
     }
     command::BatchUndoCommandListCommand::UndoCommandList commands;
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         ByteArray snapshot, bytes;
-        Motion *newMotion = motions[it - models.begin()];
+        Motion *newMotion = motions[it - models->begin()];
         nanoem_mutable_motion_t *m = nanoemMutableMotionCreateAsReference(newMotion->data(), &status);
         nanoemMutableMotionSortAllKeyframes(m);
         nanoemMutableMotionDestroy(m);
@@ -1138,8 +1138,8 @@ CommandRegistrator::internalMoveAllSelectedAccessoryKeyframes(
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_frame_index_t newFrameIndex;
     ByteArray bytes;
-    const Project::AccessoryList accessories(m_project->allAccessories());
-    for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end; ++it) {
+    const Project::AccessoryList *accessories = m_project->allAccessories();
+    for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end; ++it) {
         Accessory *accessory = *it;
         if (Motion *motion = m_project->resolveMotion(accessory)) {
             Motion::AccessoryKeyframeList keyframes;

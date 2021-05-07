@@ -76,10 +76,10 @@ TEST_CASE("project_remove_drawable", "[emapp][project]")
         ProjectPtr second = scope.createProject();
         Project *secondProject = second.get()->m_project;
         scope.recover(secondProject);
-        CHECK(secondProject->allAccessories().size() == 1);
-        CHECK(secondProject->allModels().size() == 1);
+        CHECK(secondProject->allAccessories()->size() == 1);
+        CHECK(secondProject->allModels()->size() == 1);
         {
-            Accessory *accessory = secondProject->allAccessories()[0];
+            Accessory *accessory = secondProject->allAccessories()->data()[0];
             const nanoem_motion_accessory_keyframe_t *keyframe = second->findAccessoryKeyframe(accessory, 1337);
             CHECK_THAT(
                 glm::make_vec3(nanoemMotionAccessoryKeyframeGetTranslation(keyframe)), Equals(Vector3(42, 84, 126)));
@@ -93,7 +93,7 @@ TEST_CASE("project_remove_drawable", "[emapp][project]")
             CHECK(second->motionDuration(accessory) == 1337);
         }
         {
-            Model *model = secondProject->allModels()[0];
+            Model *model = secondProject->allModels()->data()[0];
             const nanoem_unicode_string_t *name =
                 nanoemModelBoneGetName(model->activeBone(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
             CHECK(second->countAllBoneKeyframes(model) == 141);
@@ -137,7 +137,7 @@ TEST_CASE("project_remove_null_accessory", "[emapp][project]")
         ProjectPtr second = scope.createProject();
         Project *secondProject = second.get()->m_project;
         scope.recover(secondProject);
-        CHECK(secondProject->allAccessories().size() == 0);
+        CHECK(secondProject->allAccessories()->size() == 0);
     }
 }
 
@@ -163,6 +163,6 @@ TEST_CASE("project_remove_null_model", "[emapp][project]")
         ProjectPtr second = scope.createProject();
         Project *secondProject = second.get()->m_project;
         scope.recover(secondProject);
-        CHECK(secondProject->allModels().size() == 0);
+        CHECK(secondProject->allModels()->size() == 0);
     }
 }

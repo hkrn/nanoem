@@ -24,7 +24,7 @@ ActiveAccessorySelector::callback(void *userData, int index, const char **out) N
 
 ActiveAccessorySelector::ActiveAccessorySelector(const Project *project)
     : m_translator(project->translator())
-    , m_accessories(project->isPlaying() ? Project::AccessoryList() : project->allAccessories())
+    , m_accessories(project->isPlaying() ? Project::AccessoryList() : *project->allAccessories())
 {
 }
 

@@ -140,7 +140,7 @@ run(const bx::CommandLine &command)
                 model::BindPose pose;
                 ByteArray bytes;
                 FileUtils::read(scope, bytes, error);
-                pose.load(project->allModels()[0], bytes, error);
+                pose.load(project->allModels()->data()[0], bytes, error);
             }
         }
         service.destroyProject(project);

@@ -50,10 +50,10 @@ TEST_CASE("project_import_archive_and_save_should_same_content", "[emapp][projec
         }
         CHECK_FALSE(newProject->isDirty());
         CHECK(newProject->coordinationSystem() == GLM_LEFT_HANDED);
-        CHECK(newProject->allAccessories().size() == 1);
-        CHECK(newProject->allModels().size() == 1);
-        CHECK(newProject->drawableOrderList().size() == 2);
-        CHECK(newProject->transformOrderList().size() == 1);
+        CHECK(newProject->allAccessories()->size() == 1);
+        CHECK(newProject->allModels()->size() == 1);
+        CHECK(newProject->drawableOrderList()->size() == 2);
+        CHECK(newProject->transformOrderList()->size() == 1);
         const Project::AccessoryList &allAccessories = first->allAccessories();
         const Project::ModelList &allModels = first->allModels();
         REQUIRE(allAccessories.size() == 1);

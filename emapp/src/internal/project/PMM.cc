@@ -928,8 +928,8 @@ PMM::Context::loadDefaultEffect(Progress &progress, Error &error, EffectMap &eff
                             m_project->sharedResourceRepository();
                         IEffect *defaultModelEffect = sharedResourceRepository->modelProgramBundle(),
                                 *defaultAccessoryEffect = sharedResourceRepository->accessoryProgramBundle();
-                        const Project::DrawableList allDrawables(m_project->drawableOrderList());
-                        for (Project::DrawableList::const_iterator it = allDrawables.begin(), end = allDrawables.end();
+                        const Project::DrawableList *allDrawables = m_project->drawableOrderList();
+                        for (Project::DrawableList::const_iterator it = allDrawables->begin(), end = allDrawables->end();
                              it != end; ++it) {
                             IDrawable *drawable = *it;
                             IEffect *activeEffect = drawable->activeEffect();
@@ -977,9 +977,9 @@ PMM::Context::loadAllAccessories(const nanoem_document_t *document, OrderedDrawa
             }
         }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
-            const Project::AccessoryList &allAccessories = m_project->allAccessories();
-            if (!allAccessories.empty()) {
-                Accessory *accessory = allAccessories.back();
+            const Project::AccessoryList *allAccessories = m_project->allAccessories();
+            if (!allAccessories->empty()) {
+                Accessory *accessory = allAccessories->back();
                 accessoryHandles.insert(tinystl::make_pair(nanoemDocumentAccessoryGetIndex(ao), accessory));
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 loadAccessory(ao, accessory, reservedNameSet, &status);
@@ -1080,9 +1080,9 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
             }
         }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
-            const Project::ModelList &allModels = m_project->allModels();
-            if (!allModels.empty()) {
-                Model *model = allModels.back();
+            const Project::ModelList *allModels = m_project->allModels();
+            if (!allModels->empty()) {
+                Model *model = allModels->back();
                 modelHandles.insert(tinystl::make_pair(nanoemDocumentModelGetIndex(mo), model));
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 loadModel(mo, model, reservedNameSet, &status);
@@ -1736,11 +1736,11 @@ void
 PMM::Context::saveAllAccessories(
     nanoem_mutable_document_t *document, const ModelResolveMap &resolveMap, nanoem_status_t *status)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
     tinystl::unordered_set<Accessory *, TinySTLAllocator> allAccessories(
-        ListUtils::toSetFromList(m_project->allAccessories()));
+        ListUtils::toSetFromList(*m_project->allAccessories()));
     Project::AccessoryList accessories;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         Accessory *accessory = static_cast<Accessory *>(*it);
         if (allAccessories.find(accessory) != allAccessories.end()) {
             accessories.push_back(accessory);
@@ -1762,12 +1762,12 @@ PMM::Context::saveAllAccessories(
 void
 PMM::Context::saveAllModels(nanoem_mutable_document_t *document, ModelResolveMap &resolveMap, nanoem_status_t *status)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
-    const Project::ModelList transforms(m_project->transformOrderList());
-    tinystl::unordered_set<Model *, TinySTLAllocator> allModels(ListUtils::toSetFromList(m_project->allModels()));
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
+    const Project::ModelList *transforms = m_project->transformOrderList();
+    tinystl::unordered_set<Model *, TinySTLAllocator> allModels(ListUtils::toSetFromList(*m_project->allModels()));
     Project::ModelList models;
     int drawOrderIndex = 0, selectedModelIndex = 0;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         Model *model = static_cast<Model *>(*it);
         if (allModels.find(model) != allModels.end()) {
             models.push_back(model);
@@ -1775,7 +1775,7 @@ PMM::Context::saveAllModels(nanoem_mutable_document_t *document, ModelResolveMap
     }
     const Model *activeModel = m_project->activeModel();
     for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
-        int transformOrder = ListUtils::indexOf(*it, transforms);
+        int transformOrder = ListUtils::indexOf(*it, *transforms);
         if (activeModel == *it) {
             selectedModelIndex = it - models.begin();
         }

@@ -116,10 +116,10 @@ TEST_CASE("project_save_and_load_archive_should_same_content", "[emapp][project]
         CHECK(newProject->currentLocalFrameIndex() == 864);
         CHECK(newProject->preferredMotionFPS() == 60);
         CHECK(newProject->isLoopEnabled());
-        CHECK(newProject->allAccessories().size() == 3);
-        CHECK(newProject->allModels().size() == 3);
-        CHECK(newProject->drawableOrderList().size() == 6);
-        CHECK(newProject->transformOrderList().size() == 3);
+        CHECK(newProject->allAccessories()->size() == 3);
+        CHECK(newProject->allModels()->size() == 3);
+        CHECK(newProject->drawableOrderList()->size() == 6);
+        CHECK(newProject->transformOrderList()->size() == 3);
         CHECK_THAT(newProject->activeCamera()->angle(), Equals(Vector3(0.2, 0.4, 0.6)));
         CHECK_THAT(newProject->activeCamera()->lookAt(), Equals(Vector3(42, 84, 126)));
         CHECK(newProject->activeCamera()->distance() == 576);

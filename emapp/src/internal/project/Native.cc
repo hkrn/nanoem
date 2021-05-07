@@ -868,7 +868,7 @@ Native::Context::loadAccessoryFromFile(const Nanoem__Project__Accessory *a, nano
         IFileManager *manager = m_project->fileManager();
         if (testFileContentDigest(fileURI, a->file_checksum, error)) {
             if (manager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, error)) {
-                Accessory *accessory = m_project->allAccessories().back();
+                Accessory *accessory = m_project->allAccessories()->back();
                 loadAccessory(a, accessory, Inline::saturateInt32(numDrawables), drawableOrderList, activeAccessoryPtr);
                 handles.insert(tinystl::make_pair(static_cast<nanoem_u16_t>(a->accessory_handle), accessory->handle()));
             }
@@ -1023,7 +1023,7 @@ Native::Context::loadModelFromFile(const Nanoem__Project__Model *m, nanoem_rsize
         IFileManager *manager = m_project->fileManager();
         if (testFileContentDigest(fileURI, m->file_checksum, error) &&
             manager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, error)) {
-            Model *model = m_project->allModels().back();
+            Model *model = m_project->allModels()->back();
             loadModel(m, model, Inline::saturateInt32(numDrawables), drawableOrderList, transformOrderList,
                 activeModelPtr, error, diagnostics);
             handles.insert(tinystl::make_pair(static_cast<nanoem_u16_t>(m->model_handle), model->handle()));
@@ -1639,12 +1639,12 @@ void
 Native::Context::saveAllAccessories(
     Nanoem__Project__Project *p, FileType fileType, MotionAccessoryMap &m2a, Error &error)
 {
-    const Project::AccessoryList accessories(m_project->allAccessories());
-    if (!accessories.empty()) {
-        p->n_accessories = accessories.size();
+    const Project::AccessoryList *accessories = m_project->allAccessories();
+    if (!accessories->empty()) {
+        p->n_accessories = accessories->size();
         p->accessories = new Nanoem__Project__Accessory *[p->n_accessories];
         nanoem_rsize_t index = 0;
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             const Accessory *accessory = *it;
             p->accessories[index++] = saveAccessory(*it, fileType, error);
@@ -1747,12 +1747,12 @@ Native::Context::saveModel(Model *model, FileType fileType, Error &error)
 void
 Native::Context::saveAllModels(Nanoem__Project__Project *p, FileType fileType, MotionModelMap &m2m, Error &error)
 {
-    const Project::ModelList models(m_project->allModels());
-    if (!models.empty()) {
-        p->n_models = models.size();
+    const Project::ModelList *models = m_project->allModels();
+    if (!models->empty()) {
+        p->n_models = models->size();
         p->models = new Nanoem__Project__Model *[p->n_models];
         nanoem_rsize_t index = 0;
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             const Model *model = *it;
             p->models[index++] = saveModel(*it, fileType, error);
             m2m.insert(tinystl::make_pair(m_project->resolveMotion(model), model));
@@ -1779,14 +1779,14 @@ void
 Native::Context::saveAllMotions(Nanoem__Project__Project *p, FileType fileType, const MotionAccessoryMap &m2a,
     const MotionModelMap &m2m, Error &error)
 {
-    const Project::MotionList motions(m_project->allMotions());
-    if (!motions.empty()) {
+    const Project::MotionList *motions = m_project->allMotions();
+    if (!motions->empty()) {
         const bool fillPayload = fileType == kFileTypeData;
-        p->n_motions = motions.size();
+        p->n_motions = motions->size();
         p->motions = new Nanoem__Project__Motion *[p->n_motions];
         nanoem_rsize_t index = 0;
         ByteArray bytes;
-        for (Project::MotionList::const_iterator it = motions.begin(), end = motions.end(); it != end; ++it) {
+        for (Project::MotionList::const_iterator it = motions->begin(), end = motions->end(); it != end; ++it) {
             const Model *model = nullptr;
             const Motion *motion = *it;
             Nanoem__Project__Motion *m = p->motions[index++] = saveMotion(*it);
@@ -1885,9 +1885,9 @@ Native::Context::saveOffscreenRenderTargetEffect(
         e->has_owner_handle = 1;
         e->owner_handle = ownerEffect->handle();
     }
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
     nanoem_rsize_t actualItems = 0, index = 0;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
         const Effect *effect = m_project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(ownerName));
         if (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard) {
@@ -1897,7 +1897,7 @@ Native::Context::saveOffscreenRenderTargetEffect(
     if (actualItems > 0) {
         e->n_attachments = actualItems;
         e->attachments = new Nanoem__Project__OffscreenRenderTargetEffect__Attachment *[e->n_attachments];
-        for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
             const IDrawable *drawable = *it;
             const Effect *effect = m_project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(ownerName));
             if (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard) {
@@ -1935,11 +1935,11 @@ Native::Context::saveOffscreenRenderTargetEffect(
 void
 Native::Context::saveAllEffects(Nanoem__Project__Project *p, FileType fileType, Error &error)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
     typedef tinystl::vector<tinystl::pair<effect::OffscreenRenderTargetOption, const IDrawable *>, TinySTLAllocator>
         OffscreenRenderTargetPairList;
     OffscreenRenderTargetPairList allOptions;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
         if (const Effect *effect = m_project->resolveEffect(drawable)) {
             effect::OffscreenRenderTargetOptionList options;

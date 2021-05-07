@@ -5504,16 +5504,16 @@ Effect::findOffscreenOwnerObject(const IDrawable *ownerDrawable, const Project *
 {
     tinystl::pair<const Model *, const Accessory *> pair(nullptr, nullptr);
     const IEffect *ownerEffect = ownerDrawable->activeEffect();
-    const Project::ModelList &models = project->allModels();
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    const Project::ModelList *models = project->allModels();
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         if (model != ownerDrawable && model->activeEffect() == ownerEffect) {
             pair.first = model;
             break;
         }
     }
-    const Project::AccessoryList &accessories = project->allAccessories();
-    for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end; ++it) {
+    const Project::AccessoryList *accessories = project->allAccessories();
+    for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end; ++it) {
         Accessory *accessory = *it;
         if (accessory != ownerDrawable && accessory->activeEffect() == ownerEffect) {
             pair.second = accessory;

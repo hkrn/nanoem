@@ -71,7 +71,7 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
     void
     execute(Project *project)
     {
-        const Project::DrawableList drawables(project->drawableOrderList());
+        const Project::DrawableList *drawables = project->drawableOrderList();
         Error error;
         for (ModelParameterDialog::SavedState::ModelStateMap::const_iterator it = m_state->m_modelStates.begin(),
                                                                              end = m_state->m_modelStates.end();
@@ -85,7 +85,7 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
             }
         }
         Model *activeModel = m_state->m_activeModel;
-        for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
             IDrawable *drawable = *it;
             if (drawable != activeModel) {
                 drawable->setVisible(true);
@@ -5166,8 +5166,8 @@ ModelParameterDialog::forceUpdateMorph(model::Morph *morph, Project *project)
 void
 ModelParameterDialog::setActiveModel(Model *model, Project *project)
 {
-    const Project::DrawableList drawables(project->drawableOrderList());
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    const Project::DrawableList *drawables = project->drawableOrderList();
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         drawable->setVisible(false);
     }

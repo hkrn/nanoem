@@ -121,12 +121,12 @@ EffectParameterDialog::draw(Project *project)
 void
 EffectParameterDialog::layoutAllOffscreenRenderTargets(Project *project)
 {
-    const Project::DrawableList &drawables = project->drawableOrderList();
+    const Project::DrawableList *drawables = project->drawableOrderList();
     typedef tinystl::pair<effect::OffscreenRenderTargetOption, const Effect *> OffscreenRenderTargetPair;
     typedef tinystl::vector<OffscreenRenderTargetPair, TinySTLAllocator> OffscreenRenderTargetPairList;
     OffscreenRenderTargetPairList allOptions;
     nanoem_f32_t maxTextWidth = 0;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
         if (const Effect *effect = project->resolveEffect(drawable)) {
             effect::OffscreenRenderTargetOptionList options;
@@ -185,8 +185,8 @@ EffectParameterDialog::layoutOffscreenMainRenderTargetAttachments(Project *proje
     ImGui::InputTextMultiline("##desc", desc.data(), desc.size(), ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 3),
         ImGuiInputTextFlags_ReadOnly);
     layoutDefaultOffscreenRenderTargetAttachment(project, Effect::kOffscreenOwnerNameMain);
-    const Project::DrawableList &drawables = project->drawableOrderList();
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    const Project::DrawableList *drawables = project->drawableOrderList();
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         char buffer[Inline::kLongNameStackBufferSize];
         StringUtils::format(
@@ -209,8 +209,8 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     ImGui::InputTextMultiline("##desc", desc.data(), desc.size(), ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 3),
         ImGuiInputTextFlags_ReadOnly);
     layoutDefaultOffscreenRenderTargetAttachment(project, option.m_name);
-    const Project::DrawableList &drawables = project->drawableOrderList();
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    const Project::DrawableList *drawables = project->drawableOrderList();
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         const IEffect *activeEffect = drawable->activeEffect();
         bool show = true;
@@ -351,8 +351,8 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
 void
 EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
 {
-    Project::ModelList models(project->allModels());
-    const nanoem_rsize_t numModels = models.size();
+    const Project::ModelList *models = project->allModels();
+    const nanoem_rsize_t numModels = models->size();
     const float width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
     float height = ImGui::GetContentRegionAvail().y;
@@ -361,12 +361,12 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     ImGuiListClipper clipper;
     bool up, down;
     detectUpDown(up, down);
-    selectIndex(up, down, models.size(), m_activeModelTargetIndex);
+    selectIndex(up, down, models->size(), m_activeModelTargetIndex);
     clipper.Begin(Inline::saturateInt32(numModels));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const bool selected = m_activeModelTargetIndex == i;
-            if (ImGui::Selectable(models[i]->nameConstString(), selected) || ((up || down) && selected)) {
+            if (ImGui::Selectable(models->data()[i]->nameConstString(), selected) || ((up || down) && selected)) {
                 ImGui::SetScrollHereY();
                 m_activeModelTargetIndex = i;
             }
@@ -376,7 +376,7 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     bool isModelSelected = m_activeModelTargetIndex >= 0 && m_activeModelTargetIndex < Inline::saturateInt32(numModels);
     if (ImGuiWindow::handleButton(tr("nanoem.gui.window.project.effect.emd.load"),
             ImGui::GetContentRegionAvail().x * 0.5f, isModelSelected)) {
-        Model *model = models[m_activeModelTargetIndex];
+        Model *model = models->data()[m_activeModelTargetIndex];
         const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleLoadingModelEffectSetting, nullptr };
         project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
@@ -387,7 +387,7 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             tr("nanoem.gui.window.project.effect.emd.save"), ImGui::GetContentRegionAvail().x, isModelSelected)) {
-        Model *model = models[m_activeModelTargetIndex];
+        Model *model = models->data()[m_activeModelTargetIndex];
         const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleSaveingModelEffectSetting, nullptr };
         project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
@@ -402,7 +402,7 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     if (isModelSelected) {
         static const nanoem_u8_t kClearIcon[] = { 0xEF, 0x84, 0xAD, 0x0 };
         const ImGuiStyle &style = ImGui::GetStyle();
-        Model *model = models[m_activeModelTargetIndex];
+        Model *model = models->data()[m_activeModelTargetIndex];
         nanoem_rsize_t numMaterials;
         nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
         nanoem_f32_t maxTextWidth = 0;

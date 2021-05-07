@@ -29,8 +29,8 @@ createSegment()
 static ITrack *
 findTrack(const void *opaque, const Project *project)
 {
-    const Project::TrackList &tracks = project->allTracks();
-    for (const auto &it : tracks) {
+    const Project::TrackList *tracks = project->allTracks();
+    for (const auto it : *tracks) {
         for (const auto &it2 : it->children()) {
             const ITrack *track = it2;
             if (track->opaque() == opaque) {
@@ -54,7 +54,7 @@ TEST_CASE("project_copy_paste_motion_keyframes", "[emapp][project]")
             project->seek(it, true);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        project->setSelectedTrack(project->allTracks()[0]);
+        project->setSelectedTrack(project->allTracks()->data()[0]);
         project->selectAllMotionKeyframesIn(createSegment());
         CHECK(project->isMotionClipboardEmpty());
         project->copyAllSelectedKeyframes(error);
@@ -82,7 +82,7 @@ TEST_CASE("project_copy_paste_motion_keyframes", "[emapp][project]")
             project->seek(it, true);
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        project->setSelectedTrack(project->allTracks()[1]);
+        project->setSelectedTrack(project->allTracks()->data()[1]);
         project->selectAllMotionKeyframesIn(createSegment());
         CHECK(project->isMotionClipboardEmpty());
         project->copyAllSelectedKeyframes(error);
@@ -110,7 +110,7 @@ TEST_CASE("project_copy_paste_motion_keyframes", "[emapp][project]")
             project->seek(it, true);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        project->setSelectedTrack(project->allTracks()[2]);
+        project->setSelectedTrack(project->allTracks()->data()[2]);
         project->selectAllMotionKeyframesIn(createSegment());
         CHECK(project->isMotionClipboardEmpty());
         project->copyAllSelectedKeyframes(error);
@@ -141,7 +141,7 @@ TEST_CASE("project_copy_paste_motion_keyframes", "[emapp][project]")
             project->seek(it, true);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        project->setSelectedTrack(project->allTracks()[3]);
+        project->setSelectedTrack(project->allTracks()->data()[3]);
         project->selectAllMotionKeyframesIn(createSegment());
         CHECK(project->isMotionClipboardEmpty());
         project->copyAllSelectedKeyframes(error);
@@ -207,7 +207,7 @@ TEST_CASE("project_copy_paste_motion_keyframes", "[emapp][project]")
             project->seek(it, true);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex(activeModel);
         }
-        project->setSelectedTrack(project->allTracks()[0]);
+        project->setSelectedTrack(project->allTracks()->data()[0]);
         project->selectAllMotionKeyframesIn(createSegment());
         CHECK(project->isMotionClipboardEmpty());
         project->copyAllSelectedKeyframes(error);
@@ -288,7 +288,7 @@ TEST_CASE("project_copy_paste_motion_keyframes_redo", "[emapp][project]")
             firstProject->seek(it, true);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        firstProject->setSelectedTrack(firstProject->allTracks()[0]);
+        firstProject->setSelectedTrack(firstProject->allTracks()->data()[0]);
         ACTION(firstProject);
         ProjectPtr second = scope.createProject();
         Project *secondProject = second->m_project;
@@ -308,7 +308,7 @@ TEST_CASE("project_copy_paste_motion_keyframes_redo", "[emapp][project]")
             firstProject->seek(it, true);
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        firstProject->setSelectedTrack(firstProject->allTracks()[1]);
+        firstProject->setSelectedTrack(firstProject->allTracks()->data()[1]);
         ACTION(firstProject);
         ProjectPtr second = scope.createProject();
         Project *secondProject = second->m_project;
@@ -328,7 +328,7 @@ TEST_CASE("project_copy_paste_motion_keyframes_redo", "[emapp][project]")
             firstProject->seek(it, true);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        firstProject->setSelectedTrack(firstProject->allTracks()[2]);
+        firstProject->setSelectedTrack(firstProject->allTracks()->data()[2]);
         ACTION(firstProject);
         ProjectPtr second = scope.createProject();
         Project *secondProject = second->m_project;
@@ -351,12 +351,12 @@ TEST_CASE("project_copy_paste_motion_keyframes_redo", "[emapp][project]")
             firstProject->seek(it, true);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        firstProject->setSelectedTrack(firstProject->allTracks()[3]);
+        firstProject->setSelectedTrack(firstProject->allTracks()->data()[3]);
         ACTION(firstProject);
         ProjectPtr second = scope.createProject();
         Project *secondProject = second->m_project;
         scope.recover(secondProject);
-        Motion *motion = secondProject->resolveMotion(secondProject->allAccessories()[0]);
+        Motion *motion = secondProject->resolveMotion(secondProject->allAccessories()->data()[0]);
         CHECK_FALSE(motion->findAccessoryKeyframe(2671));
         CHECK(motion->findAccessoryKeyframe(2672));
         CHECK(motion->findAccessoryKeyframe(2673));
@@ -402,7 +402,7 @@ TEST_CASE("project_copy_paste_motion_keyframes_redo", "[emapp][project]")
             firstProject->seek(it, true);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex(activeModel);
         }
-        firstProject->setSelectedTrack(firstProject->allTracks()[0]);
+        firstProject->setSelectedTrack(firstProject->allTracks()->data()[0]);
         ACTION(firstProject);
         ProjectPtr second = scope.createProject();
         Project *secondProject = second->m_project;

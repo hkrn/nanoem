@@ -4033,10 +4033,10 @@ Project::motionFPSScaleFactor() const NANOEM_DECL_NOEXCEPT
     return preferredMotionFPS() / nanoem_f32_t(baseFPS());
 }
 
-Project::DrawableList
-Project::drawableOrderList() const
+const Project::DrawableList *
+Project::drawableOrderList() const NANOEM_DECL_NOEXCEPT
 {
-    return m_drawableOrderList;
+    return &m_drawableOrderList;
 }
 
 void
@@ -4063,10 +4063,10 @@ Project::setDrawableOrderList(const DrawableList &value)
     m_drawableOrderList = v;
 }
 
-Project::ModelList
-Project::transformOrderList() const
+const Project::ModelList *
+Project::transformOrderList() const NANOEM_DECL_NOEXCEPT
 {
-    return m_transformModelOrderList;
+    return &m_transformModelOrderList;
 }
 
 void
@@ -4086,28 +4086,28 @@ Project::setTransformOrderList(const ModelList &value)
     m_transformModelOrderList = v;
 }
 
-Project::ModelList
-Project::allModels() const
+const Project::ModelList *
+Project::allModels() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allModelPtrs;
+    return &m_allModelPtrs;
 }
 
-Project::AccessoryList
-Project::allAccessories() const
+const Project::AccessoryList *
+Project::allAccessories() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allAccessoryPtrs;
+    return &m_allAccessoryPtrs;
 }
 
-Project::MotionList
-Project::allMotions() const
+const Project::MotionList *
+Project::allMotions() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allMotions;
+    return &m_allMotions;
 }
 
-Project::TrackList
-Project::allTracks() const
+const Project::TrackList *
+Project::allTracks() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allTracks;
+    return &m_allTracks;
 }
 
 Project::TrackList

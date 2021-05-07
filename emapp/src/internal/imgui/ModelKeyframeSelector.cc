@@ -30,8 +30,8 @@ ModelKeyframeSelector::ModelKeyframeSelector(Project *project)
     : m_rootTrack(nullptr)
     , m_project(project)
 {
-    const TrackList tracks(project->allTracks());
-    for (Project::TrackList::const_iterator it = tracks.begin(), end = tracks.end(); it != end; ++it) {
+    const TrackList *tracks = project->allTracks();
+    for (Project::TrackList::const_iterator it = tracks->begin(), end = tracks->end(); it != end; ++it) {
         const ITrack *track = *it;
         if (track->isExpandable()) {
             const Project::TrackList children(track->children());

@@ -455,10 +455,10 @@ TestScope::createSourceEffect(Project *project, IDrawable *drawable, const char 
 Project::AccessoryList
 TestScope::allAccessories(Project *project)
 {
-    Project::DrawableList allDrawables = project->drawableOrderList();
+    const Project::DrawableList *allDrawables = project->drawableOrderList();
     Project::AccessoryList allAccessories;
     const StringSet &loadables = Accessory::loadableExtensionsSet();
-    for (Project::DrawableList::const_iterator it = allDrawables.begin(), end = allDrawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = allDrawables->begin(), end = allDrawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         const URI &fileURI = drawable->fileURI();
         if (loadables.find(fileURI.pathExtension()) != loadables.end() ||
@@ -472,10 +472,10 @@ TestScope::allAccessories(Project *project)
 Project::ModelList
 TestScope::allModels(Project *project)
 {
-    Project::DrawableList allDrawables = project->drawableOrderList();
+    const Project::DrawableList *allDrawables = project->drawableOrderList();
     Project::ModelList allModels;
     const StringSet &loadables = Model::loadableExtensionsSet();
-    for (Project::DrawableList::const_iterator it = allDrawables.begin(), end = allDrawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = allDrawables->begin(), end = allDrawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         const URI &fileURI = drawable->fileURI();
         if (loadables.find(fileURI.pathExtension()) != loadables.end() ||

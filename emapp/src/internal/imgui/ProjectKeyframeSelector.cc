@@ -28,8 +28,8 @@ ProjectKeyframeSelector::callback(void *userData, int index, const char **out) N
 ProjectKeyframeSelector::ProjectKeyframeSelector(Project *project)
     : m_project(project)
 {
-    TrackList tracks(project->allTracks());
-    for (Project::TrackList::const_iterator it = tracks.begin(), end = tracks.end(); it != end; ++it) {
+    const TrackList *tracks = project->allTracks();
+    for (Project::TrackList::const_iterator it = tracks->begin(), end = tracks->end(); it != end; ++it) {
         ITrack *track = *it;
         if (track->type() == ITrack::kTypeAccessory) {
             m_accessories.push_back(static_cast<Accessory *>(track->opaque()));

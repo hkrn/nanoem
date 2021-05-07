@@ -3275,9 +3275,9 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REQUEST_EXPORT_IMAGE_CONFIGURATION: {
         if (nanoem_likely(project)) {
-            const Project::ModelList models(project->allModels());
+            const Project::ModelList *models = project->allModels();
             bool dirty = false;
-            for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+            for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
                 const Model *model = *it;
                 dirty |= model->hasAnyDirtyBone() || model->hasAnyDirtyMorph();
             }
@@ -3390,13 +3390,13 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_ACCESSORIES: {
         if (nanoem_likely(project)) {
-            const Project::AccessoryList &accessories = project->allAccessories();
-            nanoem_rsize_t numItems = accessories.size();
+            const Project::AccessoryList *accessories = project->allAccessories();
+            nanoem_rsize_t numItems = accessories->size();
             Nanoem__Application__GetAllAccessoriesResponseEvent__Item **items =
                 new Nanoem__Application__GetAllAccessoriesResponseEvent__Item *[numItems];
             nanoem_rsize_t i = 0;
             MutableStringList names(numItems);
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 const Accessory *accessory = *it;
                 Nanoem__Application__GetAllAccessoriesResponseEvent__Item *item = items[i] =
@@ -3425,13 +3425,13 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_MODELS: {
         if (nanoem_likely(project)) {
-            const Project::ModelList &accessories = project->allModels();
-            nanoem_rsize_t numItems = accessories.size();
+            const Project::ModelList *accessories = project->allModels();
+            nanoem_rsize_t numItems = accessories->size();
             Nanoem__Application__GetAllModelsResponseEvent__Item **items =
                 new Nanoem__Application__GetAllModelsResponseEvent__Item *[numItems];
             nanoem_rsize_t i = 0;
             MutableStringList names(numItems);
-            for (Project::ModelList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            for (Project::ModelList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 const Model *model = *it;
                 Nanoem__Application__GetAllModelsResponseEvent__Item *item = items[i] =
@@ -4446,7 +4446,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
                 const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
                 if (project->fileManager()->loadFromFile(
                         fileURI, IFileManager::kDialogTypeLoadModelFile, project, error)) {
-                    Accessory *accessory = project->allAccessories().back();
+                    Accessory *accessory = project->allAccessories()->back();
                     project->setRedoDrawable(c->accessory_handle, accessory);
                 }
                 else {

@@ -67,8 +67,8 @@ ModelOutsideParentDialog::draw(Project *project)
             if (ImGui::Selectable(tr("nanoem.gui.window.op.model.target.model.none"))) {
                 m_activeModel->setOutsideParent(subjectBonePtr, StringPair());
             }
-            const Project::ModelList models(project->allModels());
-            for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+            const Project::ModelList *models = project->allModels();
+            for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
                 Model *model = *it;
                 if (ImGui::Selectable(model->nameConstString())) {
                     StringPair newTargetName(targetName);
