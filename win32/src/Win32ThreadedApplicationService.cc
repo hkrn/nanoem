@@ -47,7 +47,7 @@ public:
     ~Win32BackgroundVideoRendererProxy() noexcept override;
 
     bool load(const URI &fileURI, Error &error) override;
-    void draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
+    void draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
     void seek(nanoem_f64_t value) override;
     void flush() override;
     void destroy() override;
@@ -85,32 +85,25 @@ Win32BackgroundVideoRendererProxy::load(const URI &fileURI, Error &error)
         }
     }
 #else
-    Error error2;
     m_decoderPluginBasedBackgroundVideoRenderer =
         nanoem_new(internal::DecoderPluginBasedBackgroundVideoRenderer(m_service->defaultFileManager()));
-    playable = m_decoderPluginBasedBackgroundVideoRenderer->load(fileURI, error2);
-    if (playable) {
-        error = Error();
-    }
-    else {
+    playable = m_decoderPluginBasedBackgroundVideoRenderer->load(fileURI, error);
+    if (!playable) {
         m_decoderPluginBasedBackgroundVideoRenderer->destroy();
         nanoem_delete_safe(m_decoderPluginBasedBackgroundVideoRenderer);
-        if (!error.hasReason()) {
-            error = error2;
-        }
     }
 #endif /* WINVER >= _WIN32_WINNT_WIN7 */
     return playable;
 }
 
 void
-Win32BackgroundVideoRendererProxy::draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
+Win32BackgroundVideoRendererProxy::draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
 {
     if (m_d3d11BackgroundVideoDrawer) {
-        m_d3d11BackgroundVideoDrawer->draw(rect, scaleFactor, project);
+        m_d3d11BackgroundVideoDrawer->draw(pass, rect, scaleFactor, project);
     }
     else if (m_decoderPluginBasedBackgroundVideoRenderer) {
-        m_decoderPluginBasedBackgroundVideoRenderer->draw(rect, scaleFactor, project);
+        m_decoderPluginBasedBackgroundVideoRenderer->draw(pass, rect, scaleFactor, project);
     }
 }
 

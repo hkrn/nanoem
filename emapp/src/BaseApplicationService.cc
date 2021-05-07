@@ -238,7 +238,8 @@ struct StubBackgroundVideoRenderer : IBackgroundVideoRenderer {
         return true;
     }
     void
-    draw(const Vector4 & /* rect */, nanoem_f32_t /* scaleFactor */, Project * /* project */) NANOEM_DECL_OVERRIDE
+    draw(sg_pass /* pass */, const Vector4 & /* rect */, nanoem_f32_t /* scaleFactor */,
+        Project * /* project */) NANOEM_DECL_OVERRIDE
     {
     }
     void seek(nanoem_f64_t /* seconds */) NANOEM_DECL_OVERRIDE

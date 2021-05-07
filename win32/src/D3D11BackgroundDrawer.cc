@@ -130,15 +130,14 @@ D3D11BackgroundVideoDrawer::load(const URI &fileURI, Error &error)
 }
 
 void
-D3D11BackgroundVideoDrawer::draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
+D3D11BackgroundVideoDrawer::draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
 {
     Error error;
     if (m_reader && sg::is_valid(m_image)) {
-        sg_pass pass = project->viewportPrimaryPass();
-        const sg::NamedPass &namedPass = tinystl::make_pair(pass, Project::kViewportPrimaryName);
-        const sg::NamedImage &namedImage = tinystl::make_pair(m_image, kLabelPrefix);
+        const sg::NamedPass namedPass(tinystl::make_pair(pass, Project::kViewportPrimaryName));
+        const sg::NamedImage namedImage(tinystl::make_pair(m_image, kLabelPrefix));
         const PixelFormat format(project->findRenderPassPixelFormat(pass));
-        project->sharedImageBlitter()->blit(project->sharedSerialDrawQueue(), namedPass, namedImage, rect, format);
+        project->sharedImageBlitter()->blit(project->sharedBatchDrawQueue(), namedPass, namedImage, rect, format);
         if (!m_durationUpdated) {
             PROPVARIANT pd;
             PropVariantInit(&pd);
@@ -149,7 +148,7 @@ D3D11BackgroundVideoDrawer::draw(const Vector4 &rect, nanoem_f32_t scaleFactor, 
         }
     }
     else if (m_decoderPluginBasedBackgroundVideoRenderer) {
-        m_decoderPluginBasedBackgroundVideoRenderer->draw(rect, scaleFactor, project);
+        m_decoderPluginBasedBackgroundVideoRenderer->draw(pass, rect, scaleFactor, project);
     }
 }
 

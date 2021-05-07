@@ -33,7 +33,7 @@ MetalBackgroundRenderer::~MetalBackgroundRenderer() noexcept
 }
 
 void
-MetalBackgroundRenderer::draw(const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer)
+MetalBackgroundRenderer::draw(sg_pass pass, const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer)
 {
     SG_PUSH_GROUP("macos::MetalBackgroundRenderer::draw");
     sg_image_desc desc;
@@ -52,7 +52,6 @@ MetalBackgroundRenderer::draw(const Vector4 &rect, Project *project, CVPixelBuff
         blitter->markAsDirty();
         m_lastRect = rect;
     }
-    sg_pass pass = project->viewportPrimaryPass();
     const sg::NamedPass namedPass(tinystl::make_pair(pass, Project::kViewportPrimaryName));
     const sg::NamedImage namedImage(tinystl::make_pair(m_imageHandle, kLabelPrefix));
     const PixelFormat format(project->findRenderPassPixelFormat(pass));

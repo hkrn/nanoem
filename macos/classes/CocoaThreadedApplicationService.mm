@@ -279,7 +279,7 @@ public:
     ~CocoaBackgroundVideoRendererProxy() noexcept;
 
     bool load(const URI &fileURI, Error &error) override;
-    void draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
+    void draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
     void seek(nanoem_f64_t value) override;
     void flush() override;
     void destroy() override;
@@ -371,14 +371,14 @@ CocoaBackgroundVideoRendererProxy::load(const URI &fileURI, Error &error)
 }
 
 void
-CocoaBackgroundVideoRendererProxy::draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
+CocoaBackgroundVideoRendererProxy::draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
 {
     if (m_player) {
         CMTime outputTime;
         if (CVPixelBufferRef pixelBuffer = [m_videoOutput copyPixelBufferForItemTime:m_currentTime
                                                                   itemTimeForDisplay:&outputTime]) {
             SG_PUSH_GROUP("macos::CocoaBackgroundVideoRendererProxy::draw");
-            m_cocoaBackgroundVideoRenderer->draw(rect, project, pixelBuffer);
+            m_cocoaBackgroundVideoRenderer->draw(pass, rect, project, pixelBuffer);
             if (m_playerItem.status == AVPlayerItemStatusReadyToPlay && !m_durationUpdated) {
                 const CMTime &duration = m_playerItem.duration;
                 project->setBaseDuration(
@@ -390,7 +390,7 @@ CocoaBackgroundVideoRendererProxy::draw(const Vector4 &rect, nanoem_f32_t scaleF
         }
     }
     else if (m_decoderPluginBasedBackgroundVideoRenderer) {
-        m_decoderPluginBasedBackgroundVideoRenderer->draw(rect, scaleFactor, project);
+        m_decoderPluginBasedBackgroundVideoRenderer->draw(pass, rect, scaleFactor, project);
     }
 }
 

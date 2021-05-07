@@ -28,7 +28,7 @@ public:
     MetalBackgroundRenderer(id<MTLDevice> device);
     ~MetalBackgroundRenderer() noexcept;
 
-    void draw(const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer) override;
+    void draw(sg_pass pass, const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer) override;
 
 private:
     static const char *const kLabelPrefix;

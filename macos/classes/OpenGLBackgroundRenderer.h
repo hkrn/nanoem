@@ -24,7 +24,7 @@ public:
     OpenGLBackgroundRenderer(NSOpenGLContext *context, void *func);
     ~OpenGLBackgroundRenderer() noexcept override;
 
-    void draw(const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer) override;
+    void draw(sg_pass pass, const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer) override;
 
 private:
     typedef intptr_t (*PFN_sgx_get_native_pass_handle)(sg_pass);

@@ -73,12 +73,12 @@ DecoderPluginBasedBackgroundVideoRenderer::load(const URI &fileURI, Error &error
 }
 
 void
-DecoderPluginBasedBackgroundVideoRenderer::draw(const Vector4 &rect, nanoem_f32_t /* scaleFactor */, Project *project)
+DecoderPluginBasedBackgroundVideoRenderer::draw(
+    sg_pass pass, const Vector4 &rect, nanoem_f32_t /* scaleFactor */, Project *project)
 {
-    sg_pass pass = project->viewportPrimaryPass();
     if (sg::is_valid(pass) && sg::is_valid(m_image)) {
-        const sg::NamedPass &namedPass = tinystl::make_pair(pass, Project::kViewportPrimaryName);
-        const sg::NamedImage &namedImage = tinystl::make_pair(m_image, kLabelPrefix);
+        const sg::NamedPass namedPass(tinystl::make_pair(pass, Project::kViewportPrimaryName));
+        const sg::NamedImage namedImage(tinystl::make_pair(m_image, kLabelPrefix));
         if (!m_blitter) {
             m_blitter = nanoem_new(BlitPass(project, false));
             project->setBaseDuration(m_plugin->videoDuration());

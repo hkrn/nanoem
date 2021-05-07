@@ -23,7 +23,7 @@ public:
     {
     }
 
-    virtual void draw(const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer) = 0;
+    virtual void draw(sg_pass pass, const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer) = 0;
 };
 
 } /* namespace macos */

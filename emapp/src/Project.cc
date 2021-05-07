@@ -7025,13 +7025,14 @@ Project::clearViewportPrimaryPass()
 void
 Project::drawBackgroundVideo()
 {
+    const sg_pass pass = currentRenderPass();
     if (m_backgroundVideoRect == Vector4SI32()) {
-        m_backgroundVideoRenderer->draw(kRectCoordination, m_backgroundVideoScaleFactor, this);
+        m_backgroundVideoRenderer->draw(pass, kRectCoordination, m_backgroundVideoScaleFactor, this);
     }
     else {
         const Vector4 base(deviceScaleUniformedViewportLayoutRect()), den(base.z, base.w, base.z, base.w);
         const Vector4 rect(Vector4(m_backgroundVideoRect) / den);
-        m_backgroundVideoRenderer->draw(rect, m_backgroundVideoScaleFactor, this);
+        m_backgroundVideoRenderer->draw(pass, rect, m_backgroundVideoScaleFactor, this);
     }
 }
 
