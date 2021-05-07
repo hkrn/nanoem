@@ -57,7 +57,6 @@ private:
     Win32ThreadedApplicationService *m_service;
     D3D11BackgroundVideoDrawer *m_d3d11BackgroundVideoDrawer = nullptr;
     internal::DecoderPluginBasedBackgroundVideoRenderer *m_decoderPluginBasedBackgroundVideoRenderer = nullptr;
-    URI m_fileURI;
     bool m_durationUpdated = false;
 };
 
@@ -146,8 +145,14 @@ Win32BackgroundVideoRendererProxy::destroy()
 URI
 Win32BackgroundVideoRendererProxy::fileURI() const noexcept
 {
-    return m_decoderPluginBasedBackgroundVideoRenderer ? m_decoderPluginBasedBackgroundVideoRenderer->fileURI()
-                                                       : m_fileURI;
+    URI fileURI;
+    if (m_d3d11BackgroundVideoDrawer) {
+        fileURI = m_d3d11BackgroundVideoDrawer->fileURI();
+    }
+    else if (m_decoderPluginBasedBackgroundVideoRenderer) {
+        fileURI = m_decoderPluginBasedBackgroundVideoRenderer->fileURI();
+    }
+    return fileURI;
 }
 
 struct D3D11RendererCapability : Project::IRendererCapability {
