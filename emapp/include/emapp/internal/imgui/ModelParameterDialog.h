@@ -40,6 +40,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     };
 
     static IModelObjectSelection::EditingType convertToEditingType(TabType tab) NANOEM_DECL_NOEXCEPT;
+    static bool hasMorphType(const Model *model, nanoem_model_morph_type_t type) NANOEM_DECL_NOEXCEPT;
     static void formatVertexText(char *buffer, nanoem_rsize_t size, const nanoem_model_vertex_t *vertexPtr);
 
     ModelParameterDialog(Model *model, Project *project, BaseApplicationService *applicationPtr, ImGuiWindow *parent);
@@ -120,6 +121,8 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     const char *selectedJointType(nanoem_model_joint_type_t value) const NANOEM_DECL_NOEXCEPT;
     const char *selectedSoftBodyAeroMdoelType(
         const nanoem_model_soft_body_aero_model_type_t type) const NANOEM_DECL_NOEXCEPT;
+    bool hasMorphType(nanoem_model_morph_type_t type) const NANOEM_DECL_NOEXCEPT;
+    bool hasModelWithMaterial(const Project *project) const NANOEM_DECL_NOEXCEPT;
 
     struct SavedState {
         struct ModelState {
