@@ -685,6 +685,8 @@ NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetTargetBoneObject(const nanoem_model_bone_t *bone);
 NANOEM_DECL_API const nanoem_model_constraint_t *APIENTRY
 nanoemModelBoneGetConstraintObject(const nanoem_model_bone_t *bone);
+NANOEM_DECL_API nanoem_model_constraint_t *APIENTRY
+nanoemModelBoneGetConstraintObjectMuable(nanoem_model_bone_t *bone);
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetOrigin(const nanoem_model_bone_t *bone);
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY

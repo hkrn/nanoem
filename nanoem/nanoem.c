@@ -3654,6 +3654,12 @@ nanoemModelBoneGetConstraintObject(const nanoem_model_bone_t *bone)
     return nanoem_is_not_null(bone) ? bone->constraint : NULL;
 }
 
+nanoem_model_constraint_t *APIENTRY
+nanoemModelBoneGetConstraintObjectMuable(nanoem_model_bone_t *bone)
+{
+    return nanoem_is_not_null(bone) ? bone->constraint : NULL;
+}
+
 const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetOrigin(const nanoem_model_bone_t *bone)
 {

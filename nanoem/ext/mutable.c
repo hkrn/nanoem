@@ -4033,6 +4033,16 @@ nanoemMutableModelBoneSetConstraintObject(nanoem_mutable_model_bone_t *bone, nan
 }
 
 void APIENTRY
+nanoemMutableModelBoneRemoveConstraintObject(nanoem_mutable_model_bone_t *bone, nanoem_mutable_model_constraint_t *value)
+{
+    if (nanoem_is_not_null(bone) && nanoem_is_not_null(value) && bone->origin->constraint == value->origin) {
+        bone->origin->constraint = NULL;
+        bone->origin->u.flags.has_constraint = 0;
+        value->base.is_in_model = nanoem_false;
+    }
+}
+
+void APIENTRY
 nanoemMutableModelBoneSetOrigin(nanoem_mutable_model_bone_t *bone, const nanoem_f32_t *value)
 {
     if (nanoem_is_not_null(bone) && nanoem_is_not_null(value) && bone->origin->origin.values != value) {
