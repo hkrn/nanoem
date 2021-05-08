@@ -834,9 +834,9 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
 
 - (void)serializeDrawableOrderSettingAsJson:(JSON_Object *)root
 {
-    const Project::DrawableList &allDrawables = m_projectHolderPtr->currentProject()->drawableOrderList();
+    const Project::DrawableList *allDrawables = m_projectHolderPtr->currentProject()->drawableOrderList();
     JSON_Value *drawables = json_value_init_array();
-    for (Project::DrawableList::const_iterator it = allDrawables.begin(), end = allDrawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = allDrawables->begin(), end = allDrawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
         NSValue *value = [NSValue valueWithPointer:drawable];
         if (DocumentUUID *uuid = [m_modelUUIDDictionary objectForKey:value]) {
@@ -851,9 +851,9 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
 
 - (void)serializeTransformOrderSettingAsJson:(JSON_Object *)root
 {
-    const Project::ModelList &allModels = m_projectHolderPtr->currentProject()->transformOrderList();
+    const Project::ModelList *allModels = m_projectHolderPtr->currentProject()->transformOrderList();
     JSON_Value *transformables = json_value_init_array();
-    for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end(); it != end; ++it) {
+    for (Project::ModelList::const_iterator it = allModels->begin(), end = allModels->end(); it != end; ++it) {
         const Model *model = *it;
         if (DocumentUUID *uuid = [self resolveUUIDFromModel:model]) {
             json_array_append_string(json_array(transformables), uuid.string.UTF8String);
@@ -1625,18 +1625,18 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
         }
     }
     Project *projectPtr = m_projectHolderPtr->currentProject();
-    const Project::AccessoryList &allAccessories = projectPtr->allAccessories();
-    const Project::ModelList &allModels = projectPtr->allModels();
-    if (allModels.size() + allAccessories.size() == drawables.size()) {
+    const Project::AccessoryList *allAccessories = projectPtr->allAccessories();
+    const Project::ModelList *allModels = projectPtr->allModels();
+    if (allModels->size() + allAccessories->size() == drawables.size()) {
         projectPtr->setDrawableOrderList(drawables);
     }
     else {
         drawables.clear();
-        for (Project::AccessoryList::const_iterator it = allAccessories.begin(), end = allAccessories.end(); it != end;
+        for (Project::AccessoryList::const_iterator it = allAccessories->begin(), end = allAccessories->end(); it != end;
              ++it) {
             drawables.push_back(*it);
         }
-        for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = allModels->begin(), end = allModels->end(); it != end; ++it) {
             drawables.push_back(*it);
         }
         projectPtr->setDrawableOrderList(drawables);
@@ -1657,12 +1657,12 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
         }
     }
     Project *projectPtr = m_projectHolderPtr->currentProject();
-    const Project::ModelList &allModels = projectPtr->allModels();
-    if (allModels.size() == transformables.size()) {
+    const Project::ModelList *allModels = projectPtr->allModels();
+    if (allModels->size() == transformables.size()) {
         projectPtr->setTransformOrderList(transformables);
     }
     else {
-        projectPtr->setTransformOrderList(allModels);
+        projectPtr->setTransformOrderList(*allModels);
     }
 }
 
@@ -1904,8 +1904,8 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
     }
     Project *projectPtr = m_projectHolderPtr->currentProject();
     NSFileWrapper *accessoryDirectoryWrapper = [self addDirectoryFileWrapper:@"Accessory" parent:rootFileWrapper];
-    const Project::AccessoryList &accessories = projectPtr->allAccessories();
-    for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end; ++it) {
+    const Project::AccessoryList *accessories = projectPtr->allAccessories();
+    for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end; ++it) {
         Accessory *accessory = *it;
         if ([self addAccessoryFileWrapper:accessory parent:accessoryDirectoryWrapper error:outError] == nil) {
             return nil;
@@ -1926,20 +1926,20 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
     [self addDirectoryFileWrapper:@"Data" parent:rootFileWrapper];
     [self addDirectoryFileWrapper:@"Effect" parent:rootFileWrapper];
     NSFileWrapper *modelDirectoryWrapper = [self addDirectoryFileWrapper:@"Model" parent:rootFileWrapper];
-    const Project::ModelList &models = projectPtr->allModels();
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    const Project::ModelList *models = projectPtr->allModels();
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         if ([self addModelFileWrapper:model parent:modelDirectoryWrapper error:outError] == nil) {
             return nil;
         }
     }
     NSFileWrapper *motionDirectoryWrapper = [self addDirectoryFileWrapper:@"Motion" parent:rootFileWrapper];
-    for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end; ++it) {
+    for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end; ++it) {
         Accessory *accessory = *it;
         Motion *motion = projectPtr->resolveMotion(accessory);
         [self addMotionFileWrapper:motion accessory:accessory parent:motionDirectoryWrapper];
     }
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         Motion *motion = projectPtr->resolveMotion(model);
         [self addMotionFileWrapper:motion model:model parent:motionDirectoryWrapper];
