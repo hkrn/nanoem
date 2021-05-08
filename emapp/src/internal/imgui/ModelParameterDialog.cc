@@ -419,8 +419,7 @@ ModelParameterDialog::layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, 
         const nanoem_model_bone_t *bonePtr = nanoemModelVertexGetBoneObject(vertexPtr, i);
         StringUtils::format(label, sizeof(label), "%s##toggle%jd", ImGuiWindow::kFALink, i);
         if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
-            m_explicitTabType = kTabTypeBone;
-            m_boneIndex = model::Bone::index(bonePtr);
+            toggleBone(bonePtr);
         }
         ImGui::SameLine();
         StringUtils::format(label, sizeof(label), "##bone%jd", i);
@@ -733,8 +732,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         const nanoem_model_material_t *materialPtr = vertex->material();
         StringUtils::format(label, sizeof(label), "%s##material", ImGuiWindow::kFALink);
         if (ImGuiWindow::handleButton(label, 0, materialPtr != nullptr)) {
-            m_explicitTabType = kTabTypeMaterial;
-            m_materialIndex = model::Material::index(materialPtr);
+            toggleMaterial(materialPtr);
         }
         ImGui::SameLine();
         ImGui::TextUnformatted(model::Material::nameConstString(materialPtr, "(none)"));
@@ -768,8 +766,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
             const nanoem_model_bone_t *bonePtr = nanoemModelVertexGetBoneObject(vertexPtr, 0);
             StringUtils::format(label, sizeof(label), "%s##toggle0", ImGuiWindow::kFALink);
             if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
-                m_explicitTabType = kTabTypeBone;
-                m_boneIndex = model::Bone::index(bonePtr);
+                toggleBone(bonePtr);
             }
             ImGui::SameLine();
             layoutVertexBoneSelection("##bone", vertexPtr, 0, bones, numBones);
@@ -972,8 +969,7 @@ ModelParameterDialog::layoutFacePropertyPane(const Vector3UI32 &face)
         const nanoem_model_material_t *materialPtr = vertex->material();
         StringUtils::format(label, sizeof(label), "%s##material", ImGuiWindow::kFALink);
         if (ImGuiWindow::handleButton(label, 0, materialPtr != nullptr)) {
-            m_explicitTabType = kTabTypeMaterial;
-            m_materialIndex = model::Material::index(materialPtr);
+            toggleMaterial(materialPtr);
         }
         ImGui::SameLine();
         ImGui::TextUnformatted(model::Material::nameConstString(materialPtr, "(none)"));
@@ -986,8 +982,7 @@ ModelParameterDialog::layoutFacePropertyPane(const Vector3UI32 &face)
             StringUtils::format(label, sizeof(label), "%s##vertex[%d]", ImGuiWindow::kFALink, i);
             int vertexIndex = model::Vertex::index(vertexPtr);
             if (ImGuiWindow::handleButton(label, 0, vertexPtr != nullptr)) {
-                m_explicitTabType = kTabTypeVertex;
-                m_vertexIndex = nanoem_rsize_t(vertexIndex);
+                toggleVertex(vertexPtr);
             }
             ImGui::SameLine();
             StringUtils::format(label, sizeof(label), "Vertex%d", vertexIndex);
@@ -2080,6 +2075,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
 void
 ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Project *project)
 {
+    char buffer[Inline::kNameStackBufferSize];
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
     nanoem_language_type_t language = static_cast<nanoem_language_type_t>(m_language);
@@ -2104,6 +2100,11 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
         layoutTextWithParentBoneValidation(bonePtr, parentBonePtr, "nanoem.gui.model.edit.bone.parent",
             "nanoem.model.validator.bone.transform-before-parent");
+        StringUtils::format(buffer, sizeof(buffer), "%s##parent.bone.toggle", ImGuiWindow::kFALink);
+        if (ImGuiWindow::handleButton(buffer, 0, parentBonePtr != nullptr)) {
+            toggleBone(parentBonePtr);
+        }
+        ImGui::SameLine();
         if (ImGui::BeginCombo("##parent", parentBone ? parentBone->nameConstString() : "(none)")) {
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -2129,13 +2130,19 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
             nanoemMutableModelBoneSetDestinationOrigin(scoped, glm::value_ptr(copy));
         }
         if (value) {
-            const model::Bone *targetbone = model::Bone::cast(nanoemModelBoneGetTargetBoneObject(bonePtr));
-            if (ImGui::BeginCombo("##destination.bone", targetbone ? targetbone->nameConstString() : "(none)")) {
+            const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
+            const model::Bone *targetBone = model::Bone::cast(targetBonePtr);
+            StringUtils::format(buffer, sizeof(buffer), "%s##target.bone.toggle", ImGuiWindow::kFALink);
+            if (ImGuiWindow::handleButton(buffer, 0, targetBonePtr != nullptr)) {
+                toggleBone(targetBonePtr);
+            }
+            ImGui::SameLine();
+            if (ImGui::BeginCombo("##target.bone", targetBone ? targetBone->nameConstString() : "(none)")) {
                 for (nanoem_rsize_t i = 0; i < numBones; i++) {
                     const nanoem_model_bone_t *candidateBonePtr = bones[i];
                     const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
                     if (candidateBone &&
-                        ImGui::Selectable(candidateBone->nameConstString(), targetbone == candidateBone)) {
+                        ImGui::Selectable(candidateBone->nameConstString(), targetBone == candidateBone)) {
                         command::ScopedMutableBone scoped(bonePtr);
                         nanoemMutableModelBoneSetTargetBoneObject(scoped, candidateBonePtr);
                     }
@@ -2160,7 +2167,6 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         }
     }
     addSeparator();
-    char buffer[Inline::kNameStackBufferSize];
     StringUtils::format(buffer, sizeof(buffer), "%s##properties", tr("nanoem.gui.model.edit.bone.properties"));
     if (ImGui::CollapsingHeader(buffer)) {
         {
@@ -2248,6 +2254,11 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 layoutTextWithParentBoneValidation(bonePtr, parentBonePtr,
                     "nanoem.gui.model.edit.bone.inherent.parent-bone",
                     "nanoem.model.validator.bone.inherent.transform-before-parent");
+                StringUtils::format(buffer, sizeof(buffer), "%s##parent.inherent.toggle", ImGuiWindow::kFALink);
+                if (ImGuiWindow::handleButton(buffer, 0, parentBonePtr != nullptr)) {
+                    toggleBone(parentBonePtr);
+                }
+                ImGui::SameLine();
                 if (ImGui::BeginCombo("##parent.inherent", parentBone ? parentBone->nameConstString() : "(none)")) {
                     for (nanoem_rsize_t i = 0; i < numBones; i++) {
                         const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -2409,6 +2420,11 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             layoutTextWithParentBoneValidation(bonePtr, effectorBonePtr,
                 "nanoem.gui.model.edit.bone.constraint.effector",
                 "nanoem.model.validator.bone.constraint.transform-before-parent");
+            StringUtils::format(buffer, sizeof(buffer), "%s##constraint.effector.toggle", ImGuiWindow::kFALink);
+            if (ImGuiWindow::handleButton(buffer, 0, effectorBonePtr != nullptr)) {
+                toggleBone(effectorBonePtr);
+            }
+            ImGui::SameLine();
             if (ImGui::BeginCombo("##constriant.effector", effectorBone ? effectorBone->nameConstString() : "(none)")) {
                 for (nanoem_rsize_t i = 0; i < numBones; i++) {
                     const nanoem_model_bone_t *candidateBonePtr = bones[i];
@@ -3097,8 +3113,7 @@ ModelParameterDialog::layoutMorphBonePropertyPane(
         StringUtils::format(buffer, sizeof(buffer), "%s##bone.toggle", ImGuiWindow::kFALink);
         const nanoem_model_bone_t *bonePtr = nanoemModelMorphBoneGetBoneObject(morphBonePtr);
         if (ImGuiWindow::handleButton(buffer, 0, morphBonePtr != nullptr)) {
-            m_explicitTabType = kTabTypeBone;
-            m_morphIndex = model::Bone::index(bonePtr);
+            toggleBone(bonePtr);
         }
         ImGui::SameLine();
         ImGui::TextUnformatted(model::Bone::nameConstString(bonePtr, "(none)"));
@@ -3399,8 +3414,7 @@ ModelParameterDialog::layoutMorphImpulsePropertyPane(
         StringUtils::format(buffer, sizeof(buffer), "%s##impulse.toggle", ImGuiWindow::kFALink);
         const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemModelMorphImpulseGetRigidBodyObject(morphImpulsePtr);
         if (ImGuiWindow::handleButton(buffer, 0, morphImpulsePtr != nullptr)) {
-            m_explicitTabType = kTabTypeRigidBody;
-            m_rigidBodyIndex = model::RigidBody::index(rigidBodyPtr);
+            toggleRigidBody(rigidBodyPtr);
         }
         ImGui::SameLine();
         ImGui::TextUnformatted(model::RigidBody::nameConstString(rigidBodyPtr, "(none)"));
@@ -3512,8 +3526,7 @@ ModelParameterDialog::layoutMorphMaterialPropertyPane(
         StringUtils::format(buffer, sizeof(buffer), "%s##material.toggle", ImGuiWindow::kFALink);
         const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(morphMaterialPtr);
         if (ImGuiWindow::handleButton(buffer, 0, morphMaterialPtr != nullptr)) {
-            m_explicitTabType = kTabTypeMaterial;
-            m_materialIndex = model::Material::index(materialPtr);
+            toggleMaterial(materialPtr);
         }
         ImGui::SameLine();
         ImGui::TextUnformatted(model::Material::nameConstString(materialPtr, "(none)"));
@@ -3645,8 +3658,7 @@ ModelParameterDialog::layoutMorphUVPropertyPane(
         StringUtils::format(buffer, sizeof(buffer), "%s##uv.toggle", ImGuiWindow::kFALink);
         const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphUVGetVertexObject(morphUVPtr);
         if (ImGuiWindow::handleButton(buffer, 0, morphUVPtr != nullptr)) {
-            m_explicitTabType = kTabTypeVertex;
-            m_vertexIndex = model::Vertex::index(vertexPtr);
+            toggleVertex(vertexPtr);
         }
         ImGui::SameLine();
         formatVertexText(buffer, sizeof(buffer), vertexPtr);
@@ -3693,8 +3705,7 @@ ModelParameterDialog::layoutMorphVertexPropertyPane(
         StringUtils::format(buffer, sizeof(buffer), "%s##vertex.toggle", ImGuiWindow::kFALink);
         const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphVertexGetVertexObject(morphVertexPtr);
         if (ImGuiWindow::handleButton(buffer, 0, morphVertexPtr != nullptr)) {
-            m_explicitTabType = kTabTypeVertex;
-            m_vertexIndex = model::Vertex::index(vertexPtr);
+            toggleVertex(vertexPtr);
         }
         ImGui::SameLine();
         formatVertexText(buffer, sizeof(buffer), vertexPtr);
@@ -4257,8 +4268,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         const nanoem_model_bone_t *bonePtr = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
         StringUtils::format(label, sizeof(label), "%s##toggle", ImGuiWindow::kFALink);
         if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
-            m_explicitTabType = kTabTypeBone;
-            m_boneIndex = model::Bone::index(bonePtr);
+            toggleBone(bonePtr);
         }
         ImGui::SameLine();
         const model::Bone *bone = model::Bone::cast(bonePtr);
@@ -4651,8 +4661,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         const nanoem_model_rigid_body_t *rigidBodyAPtr = nanoemModelJointGetRigidBodyAObject(jointPtr);
         StringUtils::format(label, sizeof(label), "%s##toggle-a", ImGuiWindow::kFALink);
         if (ImGuiWindow::handleButton(label, 0, rigidBodyAPtr != nullptr)) {
-            m_explicitTabType = kTabTypeRigidBody;
-            m_rigidBodyIndex = model::RigidBody::index(rigidBodyAPtr);
+            toggleRigidBody(rigidBodyAPtr);
         }
         ImGui::SameLine();
         const model::RigidBody *rigidBodyA = model::RigidBody::cast(rigidBodyAPtr);
@@ -4674,8 +4683,7 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         StringUtils::format(label, sizeof(label), "%s##toggle-b", ImGuiWindow::kFALink);
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.rigid-body.b"));
         if (ImGuiWindow::handleButton(label, 0, rigidBodyBPtr != nullptr)) {
-            m_explicitTabType = kTabTypeRigidBody;
-            m_rigidBodyIndex = model::RigidBody::index(rigidBodyBPtr);
+            toggleRigidBody(rigidBodyBPtr);
         }
         ImGui::SameLine();
         const model::RigidBody *rigidBodyB = model::RigidBody::cast(rigidBodyBPtr);
@@ -4940,16 +4948,22 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
     }
     addSeparator();
     {
-        const model::Material *material = model::Material::cast(nanoemModelSoftBodyGetMaterialObject(softBodyPtr));
+        const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
+        const model::Material *material = model::Material::cast(materialPtr);
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.material"));
+        StringUtils::format(buffer, sizeof(buffer), "%s##material.toggle", ImGuiWindow::kFALink);
+        if (ImGuiWindow::handleButton(buffer, 0, materialPtr != nullptr)) {
+            toggleMaterial(materialPtr);
+        }
+        ImGui::SameLine();
         nanoem_rsize_t numMaterials;
         nanoem_model_material_t *const *materials =
             nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
-        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.soft-body.material"));
         if (ImGui::BeginCombo("##material", material ? material->nameConstString() : "(none)")) {
             for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
                 const nanoem_model_material_t *candidateMaterialPtr = materials[i];
                 if (const model::Material *candidateMaterial = model::Material::cast(candidateMaterialPtr)) {
-                    StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", material->nameConstString(), i);
+                    StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", candidateMaterial->nameConstString(), i);
                     if (ImGui::Selectable(candidateMaterial->nameConstString(), candidateMaterial == material)) {
                         command::ScopedMutableSoftBody scoped(softBodyPtr);
                         nanoemMutableModelSoftBodySetMaterialObject(scoped, candidateMaterialPtr);
@@ -5468,6 +5482,34 @@ ModelParameterDialog::selectAllVerticesByType(IModelObjectSelection *selection, 
             selection->addVertex(vertexPtr);
         }
     }
+}
+
+void
+ModelParameterDialog::toggleBone(const nanoem_model_bone_t *bonePtr)
+{
+    m_explicitTabType = kTabTypeBone;
+    m_boneIndex = model::Bone::index(bonePtr);
+}
+
+void
+ModelParameterDialog::toggleMaterial(const nanoem_model_material_t *materialPtr)
+{
+    m_explicitTabType = kTabTypeMaterial;
+    m_materialIndex = model::Material::index(materialPtr);
+}
+
+void
+ModelParameterDialog::toggleRigidBody(const nanoem_model_rigid_body_t *rigidBodyPtr)
+{
+    m_explicitTabType = kTabTypeRigidBody;
+    m_rigidBodyIndex = model::RigidBody::index(rigidBodyPtr);
+}
+
+void
+ModelParameterDialog::toggleVertex(const nanoem_model_vertex_t *vertexPtr)
+{
+    m_explicitTabType = kTabTypeVertex;
+    m_vertexIndex = model::Vertex::index(vertexPtr);
 }
 
 const char *

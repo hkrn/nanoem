@@ -108,6 +108,10 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void removeAllJointSelectionIfNeeded(IModelObjectSelection *selection);
     void removeAllSoftBodySelectionIfNeeded(IModelObjectSelection *selection);
     void selectAllVerticesByType(IModelObjectSelection *selection, nanoem_model_vertex_type_t type);
+    void toggleBone(const nanoem_model_bone_t *bonePtr);
+    void toggleMaterial(const nanoem_model_material_t *materialPtr);
+    void toggleRigidBody(const nanoem_model_rigid_body_t *rigidBodyPtr);
+    void toggleVertex(const nanoem_model_vertex_t *vertexPtr);
 
     const char *selectedCodecType(const nanoem_codec_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedVertexType(const nanoem_model_vertex_type_t type) const NANOEM_DECL_NOEXCEPT;
