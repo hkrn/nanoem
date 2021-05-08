@@ -686,8 +686,8 @@ Archive::saveAllMotions(Error &error)
     const Project::MotionList *allMotions = m_project->allMotions();
     ByteArray bytes;
     bool continuable = true;
-    for (Project::MotionList::const_iterator it = allMotions->begin(), end = allMotions->end(); it != end && continuable;
-         ++it) {
+    for (Project::MotionList::const_iterator it = allMotions->begin(), end = allMotions->end();
+         it != end && continuable; ++it) {
         Motion *motion = *it;
         String path("Motion/");
         bool saved = false;

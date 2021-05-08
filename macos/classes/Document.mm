@@ -1632,8 +1632,8 @@ typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
     }
     else {
         drawables.clear();
-        for (Project::AccessoryList::const_iterator it = allAccessories->begin(), end = allAccessories->end(); it != end;
-             ++it) {
+        for (Project::AccessoryList::const_iterator it = allAccessories->begin(), end = allAccessories->end();
+             it != end; ++it) {
             drawables.push_back(*it);
         }
         for (Project::ModelList::const_iterator it = allModels->begin(), end = allModels->end(); it != end; ++it) {

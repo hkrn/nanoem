@@ -509,7 +509,8 @@ TEST_CASE("document_import_archive_and_save", "[emapp][project][macos]")
         const Project::ModelList *allModels = newProject->transformOrderList();
         REQUIRE(allModels->size() == 1);
         CHECK_FALSE(newProject->isDirty());
-        CHECK(allAccessories->data()[0]->fileURI().lastPathComponent() == String("document_import_archive_and_save.nanoem"));
+        CHECK(allAccessories->data()[0]->fileURI().lastPathComponent() ==
+            String("document_import_archive_and_save.nanoem"));
         CHECK(URI::lastPathComponent(allAccessories->data()[0]->fileURI().fragment()) == String("test.x"));
         CHECK(allModels->data()[0]->fileURI().lastPathComponent() == String("document_import_archive_and_save.nanoem"));
         CHECK(URI::lastPathComponent(allModels->data()[0]->fileURI().fragment()) == String("test.pmx"));

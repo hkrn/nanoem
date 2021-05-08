@@ -1235,17 +1235,18 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                 const Model *model = *it;
                 if (model != m_activeModel) {
                     nanoem_rsize_t numInnerMaterials;
-                    nanoem_model_material_t *const *innerMaterials = nanoemModelGetAllMaterialObjects(model->data(), &numInnerMaterials);
+                    nanoem_model_material_t *const *innerMaterials =
+                        nanoemModelGetAllMaterialObjects(model->data(), &numInnerMaterials);
                     if (numInnerMaterials > 0 && ImGui::BeginMenu(model->nameConstString())) {
                         for (nanoem_rsize_t i = 0; i < numInnerMaterials; i++) {
                             const nanoem_model_material_t *materialPtr = innerMaterials[i];
                             const model::Material *material = model::Material::cast(materialPtr);
                             if (ImGui::MenuItem(material->nameConstString())) {
-                                #if 0
+#if 0
                                 undo_command_t *command =
                                     command::CreateMaterialCommand::create(project, materials, m_materialIndex);
                                 m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
-                                #endif
+#endif
                             }
                         }
                         ImGui::EndMenu();

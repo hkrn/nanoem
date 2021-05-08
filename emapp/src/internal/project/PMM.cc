@@ -929,7 +929,8 @@ PMM::Context::loadDefaultEffect(Progress &progress, Error &error, EffectMap &eff
                         IEffect *defaultModelEffect = sharedResourceRepository->modelProgramBundle(),
                                 *defaultAccessoryEffect = sharedResourceRepository->accessoryProgramBundle();
                         const Project::DrawableList *allDrawables = m_project->drawableOrderList();
-                        for (Project::DrawableList::const_iterator it = allDrawables->begin(), end = allDrawables->end();
+                        for (Project::DrawableList::const_iterator it = allDrawables->begin(),
+                                                                   end = allDrawables->end();
                              it != end; ++it) {
                             IDrawable *drawable = *it;
                             IEffect *activeEffect = drawable->activeEffect();
