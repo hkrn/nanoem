@@ -137,6 +137,21 @@ public:
     static bool handleArrowButton(const char *label, ImGuiDir dir, bool enabled);
     static bool handleRadioButton(const char *label, bool value, bool enabled);
     static bool handleCheckBox(const char *label, bool *value, bool enabled);
+    static bool handleDragFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+        nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleDragFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+        nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleDragScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
+        bool enabled, nanoem_f32_t factor, const void *min, const void *max, const char *format,
+        ImGuiSliderFlags flags);
+    static bool handleSliderFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min,
+        nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleSliderFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min,
+        nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleSliderInt(
+        const char *label, int *value, bool enabled, int min, int max, const char *format, ImGuiSliderFlags flags);
+    static bool handleSliderScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
+        bool enabled, const void *min, const void *max, const char *format, ImGuiSliderFlags flags);
     static void saveDefaultStyle(nanoem_f32_t devicePixelRatio);
     static void restoreDefaultStyle();
 

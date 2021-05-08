@@ -411,6 +411,75 @@ ImGuiWindow::handleCheckBox(const char *label, bool *value, bool enabled)
     return pressed;
 }
 
+bool
+ImGuiWindow::handleDragFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+    nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleDragScalarN(label, ImGuiDataType_Float, value, 3, enabled, factor, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleDragFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+    nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleDragScalarN(label, ImGuiDataType_Float, value, 1, enabled, factor, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleDragScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents, bool enabled,
+    nanoem_f32_t factor, const void *min, const void *max, const char *format, ImGuiSliderFlags flags)
+{
+    bool reacted = false;
+    if (enabled) {
+        reacted = ImGui::DragScalarN(label, dataType, value, numComponents, factor, min, max, format, flags);
+    }
+    else {
+        ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
+        ImGui::InputScalarN(
+            label, dataType, value, numComponents, nullptr, nullptr, format, ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopStyleColor();
+    }
+    return reacted;
+}
+
+bool
+ImGuiWindow::handleSliderFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min,
+    nanoem_f32_t max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleSliderScalarN(label, ImGuiDataType_Float, value, 3, enabled, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleSliderFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min, nanoem_f32_t max,
+    const char *format, ImGuiSliderFlags flags)
+{
+    return handleSliderScalarN(label, ImGuiDataType_Float, value, 1, enabled, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleSliderInt(
+    const char *label, int *value, bool enabled, int min, int max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleSliderScalarN(label, ImGuiDataType_S32, value, 1, enabled, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleSliderScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
+    bool enabled, const void *min, const void *max, const char *format, ImGuiSliderFlags flags)
+{
+    bool reacted = false;
+    if (enabled) {
+        reacted = ImGui::SliderScalarN(label, dataType, value, numComponents, min, max, format, flags);
+    }
+    else {
+        ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
+        ImGui::InputScalarN(
+            label, dataType, value, numComponents, nullptr, nullptr, format, ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopStyleColor();
+    }
+    return reacted;
+}
+
 void
 ImGuiWindow::saveDefaultStyle(nanoem_f32_t deviceScaleRatio)
 {
@@ -2796,17 +2865,18 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     const nanoem_frame_index_t duration = project->duration();
+    const bool playing = project->isPlaying();
     TimelineSegment segment = project->selectionSegment();
     ImGui::PushItemWidth((ImGui::GetContentRegionAvail().x - padding) / 2.0f);
-    if (ImGui::DragScalar("##timeline.select.range.from", kFrameIndexDataType, &segment.m_from, 1.0f, nullptr,
-            &segment.m_to, "From: %u")) {
+    if (handleDragScalarN("##timeline.select.range.from", kFrameIndexDataType, &segment.m_from, 1, !playing, 1.0f,
+            nullptr, &segment.m_to, "From: %u", ImGuiSliderFlags_None)) {
         project->setSelectionSegment(segment);
     }
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - padding);
-    if (ImGui::DragScalar("##timeline.select.range.to", kFrameIndexDataType, &segment.m_to, 1.0f, &segment.m_from,
-            &duration, "To: %u")) {
+    if (handleDragScalarN("##timeline.select.range.to", kFrameIndexDataType, &segment.m_to, 1, !playing, 1.0f,
+            &segment.m_from, &duration, "To: %u", ImGuiSliderFlags_None)) {
         project->setSelectionSegment(segment);
     }
     ImGui::PopItemWidth();
@@ -2931,21 +3001,12 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 translation(activeBone ? activeBone->localUserTranslation() : Constants::kZeroV3);
-        if (model::Bone::isMovable(activeBonePtr)) {
-            if (ImGui::DragFloat3(
-                    "##viewport.bone.translation", glm::value_ptr(translation), kTranslationStepFactor, 0, 0, "%.2f") &&
-                activeBone) {
-                setModelBoneTranslation(translation, activeBonePtr, activeModel, project);
-            }
-            if (handleVectorValueState(m_boneTranslationValueState)) {
-                nanoem_delete_safe(m_boneTranslationValueState);
-            }
+        if (handleDragFloat3("##viewport.bone.translation", glm::value_ptr(translation),
+                model::Bone::isMovable(activeBonePtr), kTranslationStepFactor, 0, 0, "%.2f", ImGuiSliderFlags_None)) {
+            setModelBoneTranslation(translation, activeBonePtr, activeModel, project);
         }
-        else {
-            ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
-            ImGui::InputFloat3(
-                "##viewport.bone.translation", glm::value_ptr(translation), "%.2f", ImGuiInputTextFlags_ReadOnly);
-            ImGui::PopStyleColor();
+        if (handleVectorValueState(m_boneTranslationValueState)) {
+            nanoem_delete_safe(m_boneTranslationValueState);
         }
         ImGui::PopItemWidth();
         ImGui::SameLine();
@@ -2956,25 +3017,18 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 orientation(
             activeBone ? glm::degrees(glm::eulerAngles(activeBone->localUserOrientation())) : Constants::kZeroV3);
-        if (model::Bone::isRotateable(activeBonePtr)) {
-            if (ImGui::DragFloat3("##viewport.bone.orientation", glm::value_ptr(orientation), kOrientationStepFactor,
-                    -180, 180, "%.1f") &&
-                activeBone) {
-                setModelBoneOrientation(glm::radians(orientation), activeBonePtr, activeModel, project);
-            }
-            if (handleVectorValueState(m_boneOrientationValueState)) {
-                nanoem_delete_safe(m_boneOrientationValueState);
-            }
+        if (handleDragFloat3("##viewport.bone.orientation", glm::value_ptr(orientation),
+                model::Bone::isRotateable(activeBonePtr), kOrientationStepFactor, -180, 180, "%.1f",
+                ImGuiSliderFlags_None)) {
+            setModelBoneOrientation(glm::radians(orientation), activeBonePtr, activeModel, project);
         }
-        else {
-            ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
-            ImGui::InputFloat3(
-                "##viewport.bone.orientation", glm::value_ptr(orientation), "%.1f", ImGuiInputTextFlags_ReadOnly);
-            ImGui::PopStyleColor();
+        if (handleVectorValueState(m_boneOrientationValueState)) {
+            nanoem_delete_safe(m_boneOrientationValueState);
         }
         ImGui::PopItemWidth();
     }
     else {
+        const bool playing = project->isPlaying();
         ICamera *camera = project->activeCamera();
         ImGui::PushItemWidth(width * 0.2f);
         ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.look-at"));
@@ -2982,8 +3036,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 lookAt(camera->lookAt());
-        if (ImGui::DragFloat3(
-                "##viewport.camera.look-at", glm::value_ptr(lookAt), kTranslationStepFactor, 0, 0, "%.2f")) {
+        if (handleDragFloat3("##viewport.camera.look-at", glm::value_ptr(lookAt), !playing, kTranslationStepFactor, 0,
+                0, "%.2f", ImGuiSliderFlags_None)) {
             setCameraLookAt(lookAt, camera, project);
         }
         if (handleVectorValueState(m_cameraLookAtVectorValueState)) {
@@ -2997,8 +3051,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 angle(glm::degrees(camera->angle()));
-        if (ImGui::DragFloat3(
-                "##viewport.camera.angle", glm::value_ptr(angle), kOrientationStepFactor, -180, 180, "%.1f")) {
+        if (handleDragFloat3("##viewport.camera.angle", glm::value_ptr(angle), !playing, kOrientationStepFactor, -180,
+                180, "%.1f", ImGuiSliderFlags_None)) {
             setCameraAngle(angle, camera, project);
         }
         if (handleVectorValueState(m_cameraAngleVectorValueState)) {
@@ -3012,7 +3066,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::PushItemWidth(width * 0.2f);
         ImGui::SameLine();
         nanoem_f32_t distance(camera->distance());
-        if (ImGui::DragFloat("##viewport.camera.distance", &distance, 1.0f, 1, 100000.0f, "%.1f")) {
+        if (handleDragFloat(
+                "##viewport.camera.distance", &distance, !playing, 1.0f, 1, 100000.0f, "%.1f", ImGuiSliderFlags_None)) {
             setCameraDistance(distance, camera, project);
         }
         if (handleVectorValueState(m_cameraDistanceVectorValueState)) {
@@ -3087,9 +3142,9 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
         ImGui::EndCombo();
     }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x0", ImGuiDataType_U8, &controlPoint.x, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X0: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.x0", ImGuiDataType_U8, &controlPoint.x, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X0: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3097,18 +3152,18 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y0", ImGuiDataType_U8, &controlPoint.y, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y0: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.y0", ImGuiDataType_U8, &controlPoint.y, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y0: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
     }
     ImGui::PopItemWidth();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x1", ImGuiDataType_U8, &controlPoint.z, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X1: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.x1", ImGuiDataType_U8, &controlPoint.z, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X1: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3116,9 +3171,9 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y1", ImGuiDataType_U8, &controlPoint.w, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y1: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.y1", ImGuiDataType_U8, &controlPoint.w, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y1: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3133,6 +3188,7 @@ void
 ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *project)
 {
     static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
+    const bool playing = project->isPlaying();
     ImGui::BeginChild("interpolation", panelSize, true);
     ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
     ImGui::Separator();
@@ -3158,8 +3214,9 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
         ImGui::EndCombo();
     }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x0", ImGuiDataType_U8, &controlPoint.x, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X0: %d")) {
+    if (handleSliderScalarN("##curve.x0", ImGuiDataType_U8, &controlPoint.x, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X0: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3167,16 +3224,18 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y0", ImGuiDataType_U8, &controlPoint.y, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y0: %d")) {
+    if (handleSliderScalarN("##curve.y0", ImGuiDataType_U8, &controlPoint.y, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y0: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
     }
     ImGui::PopItemWidth();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x1", ImGuiDataType_U8, &controlPoint.z, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X1: %d")) {
+    if (handleSliderScalarN("##curve.x1", ImGuiDataType_U8, &controlPoint.z, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X1: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3184,8 +3243,9 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y1", ImGuiDataType_U8, &controlPoint.w, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y1: %d")) {
+    if (handleSliderScalarN("##curve.y1", ImGuiDataType_U8, &controlPoint.w, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y1: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3333,7 +3393,8 @@ ImGuiWindow::drawCameraPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PushItemWidth(-1);
     int fov = activeCamera->fov();
-    if (ImGui::SliderInt("##fov", &fov, 1, 135, tr("nanoem.gui.panel.camera.fov.format"))) {
+    if (handleSliderInt(
+            "##fov", &fov, buttonEnabled, 1, 135, tr("nanoem.gui.panel.camera.fov.format"), ImGuiSliderFlags_None)) {
         setCameraFov(static_cast<nanoem_f32_t>(fov), activeCamera, project);
     }
     if (handleVectorValueState(m_cameraFovVectorValueState)) {
@@ -3384,7 +3445,8 @@ ImGuiWindow::drawLightPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::TextUnformatted(tr("nanoem.gui.panel.light.direction"));
     Vector3 direction(activeLight->direction());
-    if (ImGui::SliderFloat3("##light.direction", glm::value_ptr(direction), -1.0f, 1.0f, "%.2f")) {
+    if (handleSliderFloat3("##light.direction", glm::value_ptr(direction), buttonEnabled, -1.0f, 1.0f, "%.2f",
+            ImGuiSliderFlags_None)) {
         setLightDirection(direction, activeLight, project);
     }
     if (handleVectorValueState(m_lightDirectionVectorValueState)) {
@@ -3435,7 +3497,7 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
         }
     }
     ImGui::PopItemWidth();
-    bool buttonEnabled = !project->isPlaying();
+    const bool buttonEnabled = !project->isPlaying();
     if (handleTranslatedButton(
             "nanoem.gui.panel.accessory.load", ImGui::GetContentRegionAvail().x * 0.5f, buttonEnabled)) {
         StringList extensions(Accessory::loadableExtensions());
@@ -3463,8 +3525,8 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PushItemWidth(-1);
     Vector3 translation(activeAccessory ? activeAccessory->translation() : Constants::kZeroV3);
-    if (ImGui::DragFloat3(
-            "##accessory.translation", glm::value_ptr(translation), kTranslationStepFactor, 0.0f, 0.0f, "%.2f")) {
+    if (handleDragFloat3("##accessory.translation", glm::value_ptr(translation), activeAccessory && buttonEnabled,
+            kTranslationStepFactor, 0.0f, 0.0f, "%.2f", ImGuiSliderFlags_None)) {
         setAccessoryTranslation(translation, activeAccessory);
     }
     if (handleVectorValueState(m_accessoryTranslationVectorValueState)) {
@@ -3474,8 +3536,8 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
         drawTextTooltip(project->translator()->translate("nanoem.gui.panel.accessory.translation"));
     }
     Vector3 orientation(glm::degrees(activeAccessory ? activeAccessory->orientation() : Constants::kZeroV3));
-    if (ImGui::DragFloat3(
-            "##accessory.orientation", glm::value_ptr(orientation), kOrientationStepFactor, -180.0f, 180.0f, "%.1f")) {
+    if (handleDragFloat3("##accessory.orientation", glm::value_ptr(orientation), activeAccessory && buttonEnabled,
+            kOrientationStepFactor, -180.0f, 180.0f, "%.1f", ImGuiSliderFlags_None)) {
         setAccessoryOrientation(glm::radians(orientation), activeAccessory);
     }
     if (handleVectorValueState(m_accessoryOrientationVectorValueState)) {
@@ -3487,7 +3549,9 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
     ImGui::PopItemWidth();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
     nanoem_f32_t scaleFactor = activeAccessory ? activeAccessory->scaleFactor() : 0.0f;
-    if (ImGui::DragFloat("##accessory.scale", &scaleFactor, 0.0025f, 0.01f, FLT_MAX, "Si: %.2f") && activeAccessory) {
+    if (handleDragFloat("##accessory.scale", &scaleFactor, activeAccessory && buttonEnabled, 0.0025f, 0.01f, FLT_MAX,
+            "Si: %.2f", ImGuiSliderFlags_None) &&
+        activeAccessory) {
         setAccessoryScaleFactor(scaleFactor, activeAccessory);
     }
     if (handleVectorValueState(m_accessoryScaleFactorValueState)) {
@@ -3500,7 +3564,8 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     nanoem_f32_t opacity = activeAccessory ? activeAccessory->opacity() : 0.0f;
-    if (ImGui::SliderFloat("##accessory.opacity", &opacity, 0.0f, 1.0f, "Tr: %.2f") && activeAccessory) {
+    if (handleSliderFloat("##accessory.opacity", &opacity, activeAccessory && buttonEnabled, 0.0f, 1.0f, "Tr: %.2f",
+            ImGuiSliderFlags_None)) {
         setAccessoryOpacity(opacity, activeAccessory);
     }
     if (handleVectorValueState(m_accessoryOpacityValueState)) {
@@ -3778,24 +3843,24 @@ ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PopItemWidth();
     TimelineSegment segment(project->playingSegment());
-    if (handleCheckBox("##play.start.enabled", &segment.m_enableFrom, true)) {
+    if (handleCheckBox("##play.start.enabled", &segment.m_enableFrom, !isPlaying)) {
         project->setPlayingSegment(segment);
     }
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     const nanoem_frame_index_t duration = project->duration();
-    if (ImGui::DragScalar(
-            "##play.start.value", kFrameIndexDataType, &segment.m_from, 1.0f, nullptr, &segment.m_to, "From: %u")) {
+    if (handleDragScalarN("##play.start.value", kFrameIndexDataType, &segment.m_from, 1, !isPlaying, 1.0f, nullptr,
+            &segment.m_to, "From: %u", ImGuiSliderFlags_None)) {
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();
-    if (handleCheckBox("##play.end.enabled", &segment.m_enableTo, true)) {
+    if (handleCheckBox("##play.end.enabled", &segment.m_enableTo, !isPlaying)) {
         project->setPlayingSegment(segment);
     }
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::DragScalar(
-            "##play.end.value", kFrameIndexDataType, &segment.m_to, 1.0f, &segment.m_from, &duration, "To: %u")) {
+    if (handleDragScalarN("##play.end.value", kFrameIndexDataType, &segment.m_to, 1, !isPlaying, 1.0f, &segment.m_from,
+            &duration, "To: %u", ImGuiSliderFlags_None)) {
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();
