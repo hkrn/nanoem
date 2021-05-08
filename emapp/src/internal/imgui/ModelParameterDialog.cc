@@ -16,6 +16,7 @@
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
+#include "emapp/internal/imgui/UVEditDialog.h"
 #include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
