@@ -19,6 +19,9 @@ namespace internal {
 namespace imgui {
 
 struct ModelParameterDialog : BaseNonModalDialogWindow {
+    typedef void (*PFN_nanoemMutableModelSetBoneObject)(nanoem_mutable_model_bone_t *, const nanoem_model_bone_t *);
+    typedef void (*PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
+
     static const char *const kIdentifier;
     static const nanoem_f32_t kMinimumWindowWidth;
     static const int kWindowFrameHeightRowCount;
@@ -65,6 +68,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void layoutAllBones(Project *project);
     void layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Project *project);
     void layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Project *project);
+    void layoutBoneInternalParametersPanel(const nanoem_model_bone_t *bonePtr);
     void layoutAllMorphs(Project *project);
     void layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Project *project);
     void layoutMorphBonePropertyPane(
@@ -91,6 +95,9 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     bool layoutName(const nanoem_unicode_string_t *namePtr, Project *project, StringUtils::UnicodeStringScope &scope);
     void layoutTextWithParentBoneValidation(const nanoem_model_bone_t *bonePtr,
         const nanoem_model_bone_t *parentBonePtr, const char *titleID, const char *validationMessageID);
+    void layoutBoneComboBox(const char *id, const nanoem_model_bone_t *baseBonePtr, nanoem_model_bone_t *bonePtr,
+        PFN_nanoemMutableModelSetBoneObject setBoneCallback);
+    void layoutBoneAxisMenuItems(nanoem_model_bone_t *bonePtr, PFN_nanoemMutableModelSetBoneAxis setBoneAxisCallback);
 
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);

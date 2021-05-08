@@ -2076,8 +2076,6 @@ void
 ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Project *project)
 {
     char buffer[Inline::kNameStackBufferSize];
-    nanoem_rsize_t numBones;
-    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
     nanoem_language_type_t language = static_cast<nanoem_language_type_t>(m_language);
     StringUtils::UnicodeStringScope scope(project->unicodeStringFactory());
     ImGui::PushItemWidth(-1);
@@ -2097,25 +2095,9 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
     }
     {
         const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr);
-        const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
         layoutTextWithParentBoneValidation(bonePtr, parentBonePtr, "nanoem.gui.model.edit.bone.parent",
             "nanoem.model.validator.bone.transform-before-parent");
-        StringUtils::format(buffer, sizeof(buffer), "%s##parent.bone.toggle", ImGuiWindow::kFALink);
-        if (ImGuiWindow::handleButton(buffer, 0, parentBonePtr != nullptr)) {
-            toggleBone(parentBonePtr);
-        }
-        ImGui::SameLine();
-        if (ImGui::BeginCombo("##parent", parentBone ? parentBone->nameConstString() : "(none)")) {
-            for (nanoem_rsize_t i = 0; i < numBones; i++) {
-                const nanoem_model_bone_t *candidateBonePtr = bones[i];
-                const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
-                if (candidateBone && ImGui::Selectable(candidateBone->nameConstString(), parentBone == candidateBone)) {
-                    command::ScopedMutableBone scoped(bonePtr);
-                    nanoemMutableModelBoneSetParentBoneObject(scoped, candidateBonePtr);
-                }
-            }
-            ImGui::EndCombo();
-        }
+        layoutBoneComboBox("parent", parentBonePtr, bonePtr, nanoemMutableModelBoneSetParentBoneObject);
     }
     {
         bool value = nanoemModelBoneHasDestinationBone(bonePtr) != 0;
@@ -2131,24 +2113,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         }
         if (value) {
             const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
-            const model::Bone *targetBone = model::Bone::cast(targetBonePtr);
-            StringUtils::format(buffer, sizeof(buffer), "%s##target.bone.toggle", ImGuiWindow::kFALink);
-            if (ImGuiWindow::handleButton(buffer, 0, targetBonePtr != nullptr)) {
-                toggleBone(targetBonePtr);
-            }
-            ImGui::SameLine();
-            if (ImGui::BeginCombo("##target.bone", targetBone ? targetBone->nameConstString() : "(none)")) {
-                for (nanoem_rsize_t i = 0; i < numBones; i++) {
-                    const nanoem_model_bone_t *candidateBonePtr = bones[i];
-                    const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
-                    if (candidateBone &&
-                        ImGui::Selectable(candidateBone->nameConstString(), targetBone == candidateBone)) {
-                        command::ScopedMutableBone scoped(bonePtr);
-                        nanoemMutableModelBoneSetTargetBoneObject(scoped, candidateBonePtr);
-                    }
-                }
-                ImGui::EndCombo();
-            }
+            layoutBoneComboBox("target.bone", targetBonePtr, bonePtr, nanoemMutableModelBoneSetTargetBoneObject);
         }
         else {
             Vector3 origin(glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr)));
@@ -2242,157 +2207,110 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         {
             bool value = nanoemModelBoneHasConstraint(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.inverse-kinematics"), &value)) {
+                nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                command::ScopedMutableModel sm(m_activeModel);
                 command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetConstraintEnabled(scoped, value);
+                nanoem_mutable_model_constraint_t *constraint = nullptr;
+                if (value) {
+                    constraint = nanoemMutableModelConstraintCreate(m_activeModel->data(), &status);
+                    nanoemMutableModelConstraintSetTargetBoneObject(constraint, bonePtr);
+                    nanoemMutableModelBoneSetConstraintObject(scoped, constraint);
+                }
+                else {
+                    nanoem_model_constraint_t *c = nanoemModelBoneGetConstraintObjectMuable(bonePtr);
+                    constraint = nanoemMutableModelConstraintCreateAsReference(c, &status);
+                    nanoemMutableModelBoneRemoveConstraintObject(scoped, constraint);
+                }
+                nanoemMutableModelConstraintDestroy(constraint);
             }
         }
-        {
-            if (nanoemModelBoneHasInherentTranslation(bonePtr) || nanoemModelBoneHasInherentOrientation(bonePtr)) {
-                ImGui::Separator();
-                const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
-                const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
-                layoutTextWithParentBoneValidation(bonePtr, parentBonePtr,
-                    "nanoem.gui.model.edit.bone.inherent.parent-bone",
-                    "nanoem.model.validator.bone.inherent.transform-before-parent");
-                StringUtils::format(buffer, sizeof(buffer), "%s##parent.inherent.toggle", ImGuiWindow::kFALink);
-                if (ImGuiWindow::handleButton(buffer, 0, parentBonePtr != nullptr)) {
-                    toggleBone(parentBonePtr);
-                }
-                ImGui::SameLine();
-                if (ImGui::BeginCombo("##parent.inherent", parentBone ? parentBone->nameConstString() : "(none)")) {
-                    for (nanoem_rsize_t i = 0; i < numBones; i++) {
-                        const nanoem_model_bone_t *candidateBonePtr = bones[i];
-                        const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
-                        if (candidateBone &&
-                            ImGui::Selectable(candidateBone->nameConstString(), candidateBone == parentBone)) {
-                            command::ScopedMutableBone scoped(bonePtr);
-                            nanoemMutableModelBoneSetInherentParentBoneObject(scoped, candidateBonePtr);
-                        }
-                    }
-                    ImGui::EndCombo();
-                }
-                nanoem_f32_t coefficient = nanoemModelBoneGetInherentCoefficient(bonePtr);
-                ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.inherent.coefficient"));
-                if (ImGui::DragFloat("##coefficient", &coefficient)) {
-                    command::ScopedMutableBone scoped(bonePtr);
-                    nanoemMutableModelBoneSetInherentCoefficient(scoped, coefficient);
-                }
+        StringUtils::format(
+            buffer, sizeof(buffer), "%s##properties.inherent", tr("nanoem.gui.model.edit.bone.inherent.title"));
+        if ((nanoemModelBoneHasInherentTranslation(bonePtr) || nanoemModelBoneHasInherentOrientation(bonePtr)) &&
+            ImGui::CollapsingHeader(buffer)) {
+            const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
+            layoutTextWithParentBoneValidation(bonePtr, parentBonePtr,
+                "nanoem.gui.model.edit.bone.inherent.parent-bone",
+                "nanoem.model.validator.bone.inherent.transform-before-parent");
+            layoutBoneComboBox(
+                "parent.inherent", parentBonePtr, bonePtr, nanoemMutableModelBoneSetInherentParentBoneObject);
+            nanoem_f32_t coefficient = nanoemModelBoneGetInherentCoefficient(bonePtr);
+            StringUtils::format(
+                buffer, sizeof(buffer), "%s: %%.2f", tr("nanoem.gui.model.edit.bone.inherent.coefficient"));
+            if (ImGui::DragFloat("##coefficient", &coefficient, 1.0f, 0.0, 0.0f, buffer)) {
+                command::ScopedMutableBone scoped(bonePtr);
+                nanoemMutableModelBoneSetInherentCoefficient(scoped, coefficient);
             }
         }
-        {
-            if (nanoemModelBoneHasFixedAxis(bonePtr)) {
-                Vector3 axis(glm::make_vec3(nanoemModelBoneGetFixedAxis(bonePtr)));
-                ImGui::TextUnformatted("Fixed Axis");
-                if (ImGui::DragFloat3("##axis", glm::value_ptr(axis), 1.0f, 0.0f, 1.0f)) {
-                    command::ScopedMutableBone scoped(bonePtr);
-                    nanoemMutableModelBoneSetFixedAxis(scoped, glm::value_ptr(axis));
-                }
+        StringUtils::format(
+            buffer, sizeof(buffer), "%s##properties.fixed-axis", tr("nanoem.gui.model.edit.bone.fixed-axis.title"));
+        if (nanoemModelBoneHasFixedAxis(bonePtr) && ImGui::CollapsingHeader(buffer)) {
+            StringUtils::format(buffer, sizeof(buffer), "%s##properties.fixed-axis.op.button", ImGuiWindow::kFACogs);
+            if (ImGui::Button(buffer)) {
+                ImGui::OpenPopup("fixed-axis.op");
+            }
+            if (ImGui::BeginPopup("fixed-axis.op")) {
+                layoutBoneAxisMenuItems(bonePtr, nanoemMutableModelBoneSetFixedAxis);
+                ImGui::EndPopup();
+            }
+            ImGui::SameLine();
+            Vector3 axis(glm::make_vec3(nanoemModelBoneGetFixedAxis(bonePtr)));
+            if (ImGui::DragFloat3("##axis", glm::value_ptr(axis), 1.0f, 0.0f, 1.0f)) {
+                command::ScopedMutableBone scoped(bonePtr);
+                nanoemMutableModelBoneSetFixedAxis(scoped, glm::value_ptr(axis));
             }
         }
-        {
-            if (nanoemModelBoneHasLocalAxes(bonePtr)) {
-                ImGui::Separator();
-                Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr)));
-                ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.local-axis.x"));
-                if (ImGui::DragFloat3("##axis.x", glm::value_ptr(axisX), 1.0f, 0.0f, 1.0f)) {
-                    command::ScopedMutableBone scoped(bonePtr);
-                    nanoemMutableModelBoneSetLocalXAxis(scoped, glm::value_ptr(axisX));
-                }
-                ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.local-axis.z"));
-                Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr)));
-                if (ImGui::DragFloat3("##axis.z", glm::value_ptr(axisZ), 1.0f, 0.0f, 1.0f)) {
-                    command::ScopedMutableBone scoped(bonePtr);
-                    nanoemMutableModelBoneSetLocalZAxis(scoped, glm::value_ptr(axisZ));
-                }
+        StringUtils::format(
+            buffer, sizeof(buffer), "%s##properties.local-axes", tr("nanoem.gui.model.edit.bone.local-axes.title"));
+        if (nanoemModelBoneHasLocalAxes(bonePtr) && ImGui::CollapsingHeader(buffer)) {
+            StringUtils::format(buffer, sizeof(buffer), "%s##properties.local-axes.x.op.button", ImGuiWindow::kFACogs);
+            if (ImGui::Button(buffer)) {
+                ImGui::OpenPopup("local-axes.x.op");
+            }
+            if (ImGui::BeginPopup("local-axes.x.op")) {
+                layoutBoneAxisMenuItems(bonePtr, nanoemMutableModelBoneSetLocalXAxis);
+                ImGui::EndPopup();
+            }
+            ImGui::SameLine();
+            Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr)));
+            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.local-axis.x"));
+            if (ImGui::DragFloat3("##axis.x", glm::value_ptr(axisX), 1.0f, 0.0f, 1.0f)) {
+                command::ScopedMutableBone scoped(bonePtr);
+                nanoemMutableModelBoneSetLocalXAxis(scoped, glm::value_ptr(axisX));
+            }
+            StringUtils::format(buffer, sizeof(buffer), "%s##properties.local-axes.z.op.button", ImGuiWindow::kFACogs);
+            if (ImGui::Button(buffer)) {
+                ImGui::OpenPopup("local-axes.z.op");
+            }
+            if (ImGui::BeginPopup("local-axes.z.op")) {
+                layoutBoneAxisMenuItems(bonePtr, nanoemMutableModelBoneSetLocalZAxis);
+                ImGui::EndPopup();
+            }
+            ImGui::SameLine();
+            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.local-axis.z"));
+            Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr)));
+            if (ImGui::DragFloat3("##axis.z", glm::value_ptr(axisZ), 1.0f, 0.0f, 1.0f)) {
+                command::ScopedMutableBone scoped(bonePtr);
+                nanoemMutableModelBoneSetLocalZAxis(scoped, glm::value_ptr(axisZ));
             }
         }
     }
     layoutBoneConstraintPanel(bonePtr, project);
-    if (ImGui::CollapsingHeader("Internal Parameters##properties.internal")) {
-        model::Bone *bone = model::Bone::cast(bonePtr);
-        {
-            Vector3 worldTransformOrigin(bone->worldTransformOrigin());
-            ImGui::TextUnformatted("Global Transform Origin");
-            ImGui::InputFloat3(
-                "##tranform.origin.global", glm::value_ptr(worldTransformOrigin), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 worldTransformOrientation(glm::degrees(glm::eulerAngles(glm::quat_cast(bone->worldTransform()))));
-            ImGui::TextUnformatted("Global Transform Orientation");
-            ImGui::InputFloat3("##tranform.orientation", glm::value_ptr(worldTransformOrientation), "%.3f",
-                ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localTransformOrigin(bone->localTransformOrigin());
-            ImGui::TextUnformatted("Local Transform Origin");
-            ImGui::InputFloat3(
-                "##tranform.origin.local", glm::value_ptr(localTransformOrigin), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localUserTranslation(bone->localUserTranslation());
-            ImGui::TextUnformatted("Local User Translation");
-            ImGui::InputFloat3(
-                "##translation.user", glm::value_ptr(localUserTranslation), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localUserOrientation(glm::degrees(glm::eulerAngles(bone->localUserOrientation())));
-            ImGui::TextUnformatted("Local User Orientation");
-            ImGui::InputFloat3(
-                "##orientation.user", glm::value_ptr(localUserOrientation), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localTranslation(bone->localTranslation());
-            ImGui::TextUnformatted("Local Translation");
-            ImGui::InputFloat3(
-                "##translation.local", glm::value_ptr(localTranslation), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localOrientation(glm::degrees(glm::eulerAngles(bone->localOrientation())));
-            ImGui::TextUnformatted("Local Orientation");
-            ImGui::InputFloat3(
-                "##orientation.local", glm::value_ptr(localOrientation), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 constraintJointOrientation(glm::degrees(glm::eulerAngles(bone->constraintJointOrientation())));
-            ImGui::TextUnformatted("Constraint Joint Orientation");
-            ImGui::InputFloat3("##orientation.joint", glm::value_ptr(constraintJointOrientation), "%.3f",
-                ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 morphTranslation(bone->localMorphTranslation());
-            ImGui::TextUnformatted("Local Morph Translation");
-            ImGui::InputFloat3(
-                "##translation.morph", glm::value_ptr(morphTranslation), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 morphOrientation(glm::degrees(glm::eulerAngles(bone->localMorphOrientation())));
-            ImGui::TextUnformatted("Local Morph Orientation");
-            ImGui::InputFloat3(
-                "##orientation.morph", glm::value_ptr(morphOrientation), "%.3f", ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localInherentTranslation(bone->localInherentTranslation());
-            ImGui::TextUnformatted("Inherent Translation");
-            ImGui::InputFloat3("##translation.inherent", glm::value_ptr(localInherentTranslation), "%.3f",
-                ImGuiInputTextFlags_ReadOnly);
-        }
-        {
-            Vector3 localInherentOrientation(glm::degrees(glm::eulerAngles(bone->localInherentOrientation())));
-            ImGui::TextUnformatted("Inherent Orientation");
-            ImGui::InputFloat3("##orientation.inherent", glm::value_ptr(localInherentOrientation), "%.3f",
-                ImGuiInputTextFlags_ReadOnly);
-        }
-    }
+    addSeparator();
+    layoutBoneInternalParametersPanel(bonePtr);
     ImGui::PopItemWidth();
 }
 
 void
 ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Project *project)
 {
+    char buffer[Inline::kNameStackBufferSize];
     nanoem_model_constraint_t *constraintPtr =
         const_cast<nanoem_model_constraint_t *>(nanoemModelBoneGetConstraintObject(bonePtr));
-    if (constraintPtr && ImGui::CollapsingHeader(tr("nanoem.gui.model.edit.bone.inverse-kinematics"))) {
-        char buffer[Inline::kNameStackBufferSize];
+    StringUtils::format(
+        buffer, sizeof(buffer), "%s##properties.constraint", tr("nanoem.gui.model.edit.bone.inverse-kinematics"));
+    if (constraintPtr && ImGui::CollapsingHeader(buffer)) {
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
 #if 0 /* same as bone */
@@ -2426,6 +2344,10 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             }
             ImGui::SameLine();
             if (ImGui::BeginCombo("##constriant.effector", effectorBone ? effectorBone->nameConstString() : "(none)")) {
+                if (ImGui::Selectable("(none)", !effectorBone)) {
+                    command::ScopedMutableConstraint scoped(constraintPtr);
+                    nanoemMutableModelConstraintSetEffectorBoneObject(scoped, nullptr);
+                }
                 for (nanoem_rsize_t i = 0; i < numBones; i++) {
                     const nanoem_model_bone_t *candidateBonePtr = bones[i];
                     const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
@@ -2440,8 +2362,9 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
         }
         {
             int value = nanoemModelConstraintGetNumIterations(constraintPtr);
-            ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.constraint.iteration"));
-            if (ImGui::DragInt("##constraint.iterations", &value)) {
+            StringUtils::format(
+                buffer, sizeof(buffer), "%s: %%d", tr("nanoem.gui.model.edit.bone.constraint.iteration"));
+            if (ImGui::DragInt("##constraint.iterations", &value, 1.0f, 0, 0xff, buffer)) {
                 command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoemMutableModelConstraintSetNumIterations(scoped, value);
             }
@@ -2563,6 +2486,86 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
         }
         ImGui::PopItemWidth();
         ImGui::EndChild();
+    }
+}
+
+void
+ModelParameterDialog::layoutBoneInternalParametersPanel(const nanoem_model_bone_t *bonePtr)
+{
+    if (ImGui::CollapsingHeader("Internal Parameters##properties.internal")) {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        {
+            Vector3 worldTransformOrigin(bone->worldTransformOrigin());
+            ImGui::TextUnformatted("Global Transform Origin");
+            ImGui::InputFloat3(
+                "##tranform.origin.global", glm::value_ptr(worldTransformOrigin), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 worldTransformOrientation(glm::degrees(glm::eulerAngles(glm::quat_cast(bone->worldTransform()))));
+            ImGui::TextUnformatted("Global Transform Orientation");
+            ImGui::InputFloat3("##tranform.orientation", glm::value_ptr(worldTransformOrientation), "%.3f",
+                ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localTransformOrigin(bone->localTransformOrigin());
+            ImGui::TextUnformatted("Local Transform Origin");
+            ImGui::InputFloat3(
+                "##tranform.origin.local", glm::value_ptr(localTransformOrigin), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localUserTranslation(bone->localUserTranslation());
+            ImGui::TextUnformatted("Local User Translation");
+            ImGui::InputFloat3(
+                "##translation.user", glm::value_ptr(localUserTranslation), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localUserOrientation(glm::degrees(glm::eulerAngles(bone->localUserOrientation())));
+            ImGui::TextUnformatted("Local User Orientation");
+            ImGui::InputFloat3(
+                "##orientation.user", glm::value_ptr(localUserOrientation), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localTranslation(bone->localTranslation());
+            ImGui::TextUnformatted("Local Translation");
+            ImGui::InputFloat3(
+                "##translation.local", glm::value_ptr(localTranslation), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localOrientation(glm::degrees(glm::eulerAngles(bone->localOrientation())));
+            ImGui::TextUnformatted("Local Orientation");
+            ImGui::InputFloat3(
+                "##orientation.local", glm::value_ptr(localOrientation), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 constraintJointOrientation(glm::degrees(glm::eulerAngles(bone->constraintJointOrientation())));
+            ImGui::TextUnformatted("Constraint Joint Orientation");
+            ImGui::InputFloat3("##orientation.joint", glm::value_ptr(constraintJointOrientation), "%.3f",
+                ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 morphTranslation(bone->localMorphTranslation());
+            ImGui::TextUnformatted("Local Morph Translation");
+            ImGui::InputFloat3(
+                "##translation.morph", glm::value_ptr(morphTranslation), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 morphOrientation(glm::degrees(glm::eulerAngles(bone->localMorphOrientation())));
+            ImGui::TextUnformatted("Local Morph Orientation");
+            ImGui::InputFloat3(
+                "##orientation.morph", glm::value_ptr(morphOrientation), "%.3f", ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localInherentTranslation(bone->localInherentTranslation());
+            ImGui::TextUnformatted("Inherent Translation");
+            ImGui::InputFloat3("##translation.inherent", glm::value_ptr(localInherentTranslation), "%.3f",
+                ImGuiInputTextFlags_ReadOnly);
+        }
+        {
+            Vector3 localInherentOrientation(glm::degrees(glm::eulerAngles(bone->localInherentOrientation())));
+            ImGui::TextUnformatted("Inherent Orientation");
+            ImGui::InputFloat3("##orientation.inherent", glm::value_ptr(localInherentOrientation), "%.3f",
+                ImGuiInputTextFlags_ReadOnly);
+        }
     }
 }
 
@@ -4278,7 +4281,8 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 const nanoem_model_bone_t *candidateBonePtr = bones[i];
                 if (const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr)) {
-                    StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", bone->nameConstString(), i);
+                    StringUtils::format(
+                        buffer, sizeof(buffer), "%s##item[%lu].name", candidateBone->nameConstString(), i);
                     if (ImGui::Selectable(candidateBone->nameConstString(), candidateBone == bone)) {
                         command::ScopedMutableRigidBody scoped(rigidBodyPtr);
                         nanoemMutableModelRigidBodySetBoneObject(scoped, candidateBonePtr);
@@ -4963,7 +4967,8 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
             for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
                 const nanoem_model_material_t *candidateMaterialPtr = materials[i];
                 if (const model::Material *candidateMaterial = model::Material::cast(candidateMaterialPtr)) {
-                    StringUtils::format(buffer, sizeof(buffer), "%s##item[%lu].name", candidateMaterial->nameConstString(), i);
+                    StringUtils::format(
+                        buffer, sizeof(buffer), "%s##item[%lu].name", candidateMaterial->nameConstString(), i);
                     if (ImGui::Selectable(candidateMaterial->nameConstString(), candidateMaterial == material)) {
                         command::ScopedMutableSoftBody scoped(softBodyPtr);
                         nanoemMutableModelSoftBodySetMaterialObject(scoped, candidateMaterialPtr);
@@ -5325,6 +5330,77 @@ ModelParameterDialog::layoutTextWithParentBoneValidation(const nanoem_model_bone
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("%s", tr(validationMessageID));
         }
+    }
+}
+
+void
+ModelParameterDialog::layoutBoneComboBox(const char *id, const nanoem_model_bone_t *baseBonePtr,
+    nanoem_model_bone_t *bonePtr, PFN_nanoemMutableModelSetBoneObject setBoneCallback)
+{
+    const model::Bone *baseBone = model::Bone::cast(baseBonePtr);
+    char buffer[Inline::kNameStackBufferSize];
+    bool hasBone = baseBonePtr != nullptr;
+    StringUtils::format(buffer, sizeof(buffer), "%s##%s.toggle", ImGuiWindow::kFALink, id);
+    if (ImGuiWindow::handleButton(buffer, 0, hasBone)) {
+        toggleBone(baseBonePtr);
+    }
+    ImGui::SameLine();
+    StringUtils::format(buffer, sizeof(buffer), "##%s", id);
+    if (ImGui::BeginCombo(buffer, hasBone ? baseBone->nameConstString() : "(none)")) {
+        nanoem_rsize_t numBones;
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+        if (ImGui::Selectable("(none)", !hasBone)) {
+            command::ScopedMutableBone scoped(bonePtr);
+            setBoneCallback(scoped, nullptr);
+        }
+        for (nanoem_rsize_t i = 0; i < numBones; i++) {
+            const nanoem_model_bone_t *candidateBonePtr = bones[i];
+            const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
+            if (candidateBone && ImGui::Selectable(candidateBone->nameConstString(), candidateBone == baseBone)) {
+                command::ScopedMutableBone scoped(bonePtr);
+                setBoneCallback(scoped, candidateBonePtr);
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
+
+void
+ModelParameterDialog::layoutBoneAxisMenuItems(
+    nanoem_model_bone_t *bonePtr, PFN_nanoemMutableModelSetBoneAxis setBoneAxisCallback)
+{
+    const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr);
+    if (ImGui::MenuItem("Set from Parent", nullptr, false, parentBonePtr != nullptr)) {
+        const Vector4 direction(glm::normalize(glm::make_vec3(nanoemModelBoneGetOrigin(parentBonePtr)) -
+                                    glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr))),
+            0);
+        command::ScopedMutableBone scoped(bonePtr);
+        setBoneAxisCallback(scoped, glm::value_ptr(direction));
+    }
+    const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
+    if (ImGui::MenuItem("Set from Target")) {
+        const Vector4 direction(glm::normalize(glm::make_vec3(nanoemModelBoneGetOrigin(targetBonePtr)) -
+                                    glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr))),
+            0);
+        command::ScopedMutableBone scoped(bonePtr);
+        setBoneAxisCallback(scoped, glm::value_ptr(direction));
+    }
+    if (ImGui::BeginMenu("Set from Bone with ...")) {
+        nanoem_rsize_t numBones;
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+        for (nanoem_rsize_t i = 0; i < numBones; i++) {
+            const nanoem_model_bone_t *candidateBonePtr = bones[i];
+            const model::Bone *candidateBone = model::Bone::cast(candidateBonePtr);
+            if (candidateBone &&
+                ImGui::MenuItem(candidateBone->nameConstString(), nullptr, false, candidateBonePtr != bonePtr)) {
+                const Vector4 direction(glm::normalize(glm::make_vec3(nanoemModelBoneGetOrigin(candidateBonePtr)) -
+                                            glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr))),
+                    0);
+                command::ScopedMutableBone scoped(bonePtr);
+                setBoneAxisCallback(scoped, glm::value_ptr(glm::vec4(0)));
+            }
+        }
+        ImGui::EndMenu();
     }
 }
 

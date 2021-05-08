@@ -1295,6 +1295,10 @@
   phrase:
     en_US: 'Iteration'
     ja_JP: '試行回数'
+- key: nanoem.gui.model.edit.bone.inherent.title
+  phrase:
+    en_US: 'Inherent Bone'
+    ja_JP: '付与ボーン'
 - key: nanoem.gui.model.edit.bone.inherent.translation
   phrase:
     en_US: 'Inherent Translation'
@@ -1315,11 +1319,15 @@
   phrase:
     en_US: 'Fixed Axis'
     ja_JP: '固定軸'
-- key: nanoem.gui.model.edit.bone.fixed-axis
+- key: nanoem.gui.model.edit.bone.fixed-axis.title
   phrase:
     en_US: 'Fixed Axis'
     ja_JP: '固定軸'
 - key: nanoem.gui.model.edit.bone.has-local-axes
+  phrase:
+    en_US: 'Local Axes'
+    ja_JP: 'ローカル軸'
+- key: nanoem.gui.model.edit.bone.local-axes.title
   phrase:
     en_US: 'Local Axes'
     ja_JP: 'ローカル軸'

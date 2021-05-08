@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -323,14 +323,16 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 7nanoem.gui.model.edit.bone.constraint.joint.angle-limit角度制限を有効にするM
 =nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower角度下限M
 =nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper角度上限?
-/nanoem.gui.model.edit.bone.constraint.iteration試行回数?
+/nanoem.gui.model.edit.bone.constraint.iteration試行回数<
+)nanoem.gui.model.edit.bone.inherent.title付与ボーン?
 /nanoem.gui.model.edit.bone.inherent.translation移動付与?
 /nanoem.gui.model.edit.bone.inherent.orientation回転付与E
 /nanoem.gui.model.edit.bone.inherent.parent-bone付与親ボーン<
 /nanoem.gui.model.edit.bone.inherent.coefficient	付与率6
-)nanoem.gui.model.edit.bone.has-fixed-axis	固定軸2
-%nanoem.gui.model.edit.bone.fixed-axis	固定軸<
+)nanoem.gui.model.edit.bone.has-fixed-axis	固定軸8
++nanoem.gui.model.edit.bone.fixed-axis.title	固定軸<
 )nanoem.gui.model.edit.bone.has-local-axesローカル軸>
++nanoem.gui.model.edit.bone.local-axes.titleローカル軸>
 'nanoem.gui.model.edit.bone.local-axis.xローカル軸 (X)>
 'nanoem.gui.model.edit.bone.local-axis.zローカル軸 (Z)?
 )nanoem.gui.model.edit.bone.inherent.localローカル付与R
@@ -1024,7 +1026,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-�F
+�F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1358,16 +1360,19 @@ Rotateable-
 7nanoem.gui.model.edit.bone.constraint.joint.angle-limitEnable Angle LimitL
 =nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lowerLower LimitL
 =nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upperUpper Limit<
-/nanoem.gui.model.edit.bone.constraint.iteration	IterationG
+/nanoem.gui.model.edit.bone.constraint.iteration	Iteration:
+)nanoem.gui.model.edit.bone.inherent.titleInherent BoneG
 /nanoem.gui.model.edit.bone.inherent.translationInherent TranslationG
 /nanoem.gui.model.edit.bone.inherent.orientationInherent OrientationG
 /nanoem.gui.model.edit.bone.inherent.parent-boneInherent Parent BoneG
 /nanoem.gui.model.edit.bone.inherent.coefficientInherent Coefficient7
 )nanoem.gui.model.edit.bone.has-fixed-axis
-Fixed Axis3
-%nanoem.gui.model.edit.bone.fixed-axis
+Fixed Axis9
++nanoem.gui.model.edit.bone.fixed-axis.title
 Fixed Axis7
 )nanoem.gui.model.edit.bone.has-local-axes
+Local Axes9
++nanoem.gui.model.edit.bone.local-axes.title
 Local Axes9
 'nanoem.gui.model.edit.bone.local-axis.xLocal Axis (X)9
 'nanoem.gui.model.edit.bone.local-axis.zLocal Axis (Z);
