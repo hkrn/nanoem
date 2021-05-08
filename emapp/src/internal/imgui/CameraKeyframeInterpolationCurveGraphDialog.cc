@@ -85,12 +85,16 @@ CameraKeyframeInterpolationCurveGraphDialog::draw(Project *project)
 #endif
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeCancel: {
-            project->globalCamera()->setBezierControlPoints(m_type, m_controlPoint);
+            if (!project->isPlaying()) {
+                project->globalCamera()->setBezierControlPoints(m_type, m_controlPoint);
+            }
             break;
         }
         case kResponseTypeOK:
         default:
-            project->globalCamera()->setBezierControlPoints(m_type, controlPoint);
+            if (!project->isPlaying()) {
+                project->globalCamera()->setBezierControlPoints(m_type, controlPoint);
+            }
             break;
         }
     }
