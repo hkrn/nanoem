@@ -1460,10 +1460,11 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
             {
                 BaseUserData *userData = static_cast<BaseUserData *>(opaque);
                 Model *model = userData->m_model;
-                const String filePath(FileUtils::relativePath(fileURI.absolutePath(), model->fileURI().absolutePath()));
+                const String modelBasePath(URI::stringByDeletingLastPathComponent(model->fileURI().absolutePath())),
+                        textureFilePath(FileUtils::relativePath(fileURI.absolutePath(), modelBasePath));
                 nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
                 StringUtils::UnicodeStringScope scope(factory);
-                if (StringUtils::tryGetString(factory, filePath, scope)) {
+                if (StringUtils::tryGetString(factory, textureFilePath, scope)) {
                     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                     nanoem_mutable_model_material_t *material =
                         nanoemMutableModelMaterialCreateAsReference(userData->m_material, &status);
