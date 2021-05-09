@@ -63,7 +63,7 @@ Windows メインで macOS をたまに動かす程度ならこの方法が最�
 .. note::
    BootCamp とは理由が異なりますがこちらも Intel Mac でのみ利用可能な方法になります。Apple Silicon Mac にも対応する可能性はありますが、仮に対応したとしても
    
-   * 2021年3月現在で単体販売されていない ARM 版 Windows を利用する必要がある
+   * 2021年3月現在で単体販売されておらずかつ Insider のみ提供の ARM 版 Windows を利用する必要がある
 
      * x86 版の Windows を利用することが出来ない [#f2]_
 
