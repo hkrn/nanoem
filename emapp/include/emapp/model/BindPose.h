@@ -20,6 +20,9 @@ class URI;
 namespace model {
 
 struct BindPose {
+    typedef tinystl::unordered_map<String, tinystl::pair<Vector3, Quaternion>, TinySTLAllocator> BoneTransformMap;
+    typedef tinystl::unordered_map<String, nanoem_f32_t, TinySTLAllocator> MorphWeightMap;
+
     static StringList loadableExtensions();
     static StringSet loadableExtensionsSet();
     static bool isLoadableExtension(const String &extension);
@@ -30,8 +33,10 @@ struct BindPose {
     BindPose(const BindPose &value);
     ~BindPose() NANOEM_DECL_NOEXCEPT;
 
-    bool load(Model *model, const nanoem_u8_t *data, nanoem_rsize_t size, Error &error) const;
-    bool load(Model *model, const ByteArray &bytes, Error &error) const;
+    bool load(const nanoem_u8_t *data, nanoem_rsize_t size, nanoem_unicode_string_factory_t *factory,
+        BoneTransformMap &transforms, MorphWeightMap &weights, Error &error) const;
+    bool load(const ByteArray &bytes, nanoem_unicode_string_factory_t *factory, BoneTransformMap &transforms,
+        MorphWeightMap &weights, Error &error) const;
     bool save(const Model *model, IWriter *writer, Error &error) const;
     void saveAllMessages(void *states, size_t &numStates) const;
     void restoreAllMessages(const Model *model, void *states, size_t numStates);

@@ -985,8 +985,25 @@ bool
 Model::loadPose(const nanoem_u8_t *bytes, size_t length, Error &error)
 {
     model::BindPose pose;
-    bool result = pose.load(this, bytes, length, error);
+    model::BindPose::BoneTransformMap transforms;
+    model::BindPose::MorphWeightMap weights;
+    bool result = pose.load(bytes, length, project()->unicodeStringFactory(), transforms, weights, error);
     if (result) {
+        for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(), end = transforms.end();
+             it != end; ++it) {
+            if (model::Bone *bone = model::Bone::cast(findBone(it->first))) {
+                bone->setLocalUserTranslation(it->second.first);
+                bone->setLocalUserOrientation(it->second.second);
+                bone->setDirty(true);
+            }
+        }
+        for (model::BindPose::MorphWeightMap::const_iterator it = weights.begin(), end = weights.end(); it != end;
+             ++it) {
+            if (model::Morph *morph = model::Morph::cast(findMorph(it->first))) {
+                morph->setWeight(it->second);
+                morph->setDirty(true);
+            }
+        }
         deformAllMorphs(true);
         performAllBonesTransform();
     }
