@@ -870,7 +870,8 @@ Project::SerialDrawQueue::registerCallback(sg::PassBlock::Callback callback, voi
 
 struct Project::SaveState {
     SaveState(Project *project)
-        : m_activeModel(nullptr)
+        : m_tag(project)
+        , m_activeModel(nullptr)
         , m_activeAccessory(nullptr)
         , m_camera(project)
         , m_light(project)
@@ -884,7 +885,15 @@ struct Project::SaveState {
     }
     ~SaveState() NANOEM_DECL_NOEXCEPT
     {
+        m_tag = nullptr;
+        m_activeModel = nullptr;
+        m_activeAccessory = nullptr;
+        m_localFrameIndex = 0;
+        m_stateFlags = 0;
+        m_confirmSeekFlags = 0;
+        m_visibleGrid = false;
     }
+    const Project *m_tag;
     Model *m_activeModel;
     Accessory *m_activeAccessory;
     PerspectiveCamera m_camera;
@@ -2303,7 +2312,7 @@ Project::saveState(SaveState *&state)
 void
 Project::restoreState(const SaveState *state, bool forceSeek)
 {
-    if (state) {
+    if (state && state->m_tag == this) {
         setActiveAccessory(state->m_activeAccessory);
         setActiveModel(state->m_activeModel);
         const PerspectiveCamera &c = state->m_camera;
