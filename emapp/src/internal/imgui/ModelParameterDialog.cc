@@ -1585,13 +1585,22 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
             ImGui::Separator();
         }
         if (diffuseImage && ImGui::MenuItem("Clear Diffuse Texture")) {
-            // TODO: implement
+            command::ScopedMutableMaterial scoped(materialPtr);
+            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            nanoemMutableModelMaterialSetDiffuseTextureObject(scoped, nullptr, &status);
+            material->setDiffuseImage(nullptr);
         }
         if (sphereMapImage && ImGui::MenuItem("Clear SphereMap Texture")) {
-            // TODO: implement
+            command::ScopedMutableMaterial scoped(materialPtr);
+            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            nanoemMutableModelMaterialSetSphereMapTextureObject(scoped, nullptr, &status);
+            material->setSphereMapImage(nullptr);
         }
         if (hasOwnToonTexture && ImGui::MenuItem("Clear Toon Texture")) {
-            // TODO: implement
+            command::ScopedMutableMaterial scoped(materialPtr);
+            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            nanoemMutableModelMaterialSetToonTextureObject(scoped, nullptr, &status);
+            material->setToonImage(nullptr);
         }
         ImGui::EndPopup();
     }
