@@ -19,8 +19,9 @@ namespace internal {
 namespace imgui {
 
 struct ModelParameterDialog : BaseNonModalDialogWindow {
-    typedef void (*PFN_nanoemMutableModelSetBoneObject)(nanoem_mutable_model_bone_t *, const nanoem_model_bone_t *);
-    typedef void (*PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
+    typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneObject)(
+        nanoem_mutable_model_bone_t *, const nanoem_model_bone_t *);
+    typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
 
     static const char *const kIdentifier;
     static const nanoem_f32_t kMinimumWindowWidth;
