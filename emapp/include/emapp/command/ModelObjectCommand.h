@@ -90,6 +90,7 @@ struct ScopedMutableMorph {
 };
 
 struct ScopedMutableMorphBone {
+    ScopedMutableMorphBone(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphBone(nanoem_model_morph_bone_t *morphPtr);
     ~ScopedMutableMorphBone() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_bone_t *() NANOEM_DECL_NOEXCEPT;
@@ -97,6 +98,7 @@ struct ScopedMutableMorphBone {
 };
 
 struct ScopedMutableMorphFlip {
+    ScopedMutableMorphFlip(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphFlip(nanoem_model_morph_flip_t *morphPtr);
     ~ScopedMutableMorphFlip() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_flip_t *() NANOEM_DECL_NOEXCEPT;
@@ -104,6 +106,7 @@ struct ScopedMutableMorphFlip {
 };
 
 struct ScopedMutableMorphGroup {
+    ScopedMutableMorphGroup(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphGroup(nanoem_model_morph_group_t *morphPtr);
     ~ScopedMutableMorphGroup() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_group_t *() NANOEM_DECL_NOEXCEPT;
@@ -111,6 +114,7 @@ struct ScopedMutableMorphGroup {
 };
 
 struct ScopedMutableMorphImpulse {
+    ScopedMutableMorphImpulse(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphImpulse(nanoem_model_morph_impulse_t *morphPtr);
     ~ScopedMutableMorphImpulse() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_impulse_t *() NANOEM_DECL_NOEXCEPT;
@@ -118,6 +122,7 @@ struct ScopedMutableMorphImpulse {
 };
 
 struct ScopedMutableMorphMaterial {
+    ScopedMutableMorphMaterial(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphMaterial(nanoem_model_morph_material_t *morphPtr);
     ~ScopedMutableMorphMaterial() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_material_t *() NANOEM_DECL_NOEXCEPT;
@@ -125,6 +130,7 @@ struct ScopedMutableMorphMaterial {
 };
 
 struct ScopedMutableMorphUV {
+    ScopedMutableMorphUV(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphUV(nanoem_model_morph_uv_t *morphPtr);
     ~ScopedMutableMorphUV() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_uv_t *() NANOEM_DECL_NOEXCEPT;
@@ -132,6 +138,7 @@ struct ScopedMutableMorphUV {
 };
 
 struct ScopedMutableMorphVertex {
+    ScopedMutableMorphVertex(nanoem_mutable_model_morph_t *morphPtr);
     ScopedMutableMorphVertex(nanoem_model_morph_vertex_t *morphPtr);
     ~ScopedMutableMorphVertex() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_morph_vertex_t *() NANOEM_DECL_NOEXCEPT;

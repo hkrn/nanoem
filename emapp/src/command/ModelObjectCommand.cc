@@ -193,6 +193,13 @@ nanoem::command::ScopedMutableMorph::operator nanoem_mutable_model_morph_t *() N
     return m_morph;
 }
 
+ScopedMutableMorphBone::ScopedMutableMorphBone(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphBoneCreate(morphPtr, &status);
+}
+
 ScopedMutableMorphBone::ScopedMutableMorphBone(nanoem_model_morph_bone_t *morphPtr)
     : m_morph(nullptr)
 {
@@ -209,6 +216,13 @@ ScopedMutableMorphBone::~ScopedMutableMorphBone() NANOEM_DECL_NOEXCEPT
 nanoem::command::ScopedMutableMorphBone::operator nanoem_mutable_model_morph_bone_t *() NANOEM_DECL_NOEXCEPT
 {
     return m_morph;
+}
+
+ScopedMutableMorphFlip::ScopedMutableMorphFlip(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphFlipCreate(morphPtr, &status);
 }
 
 ScopedMutableMorphFlip::ScopedMutableMorphFlip(nanoem_model_morph_flip_t *morphPtr)
@@ -229,6 +243,13 @@ nanoem::command::ScopedMutableMorphFlip::operator nanoem_mutable_model_morph_fli
     return m_morph;
 }
 
+ScopedMutableMorphGroup::ScopedMutableMorphGroup(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphGroupCreate(morphPtr, &status);
+}
+
 ScopedMutableMorphGroup::ScopedMutableMorphGroup(nanoem_model_morph_group_t *morphPtr)
     : m_morph(nullptr)
 {
@@ -245,6 +266,13 @@ ScopedMutableMorphGroup::~ScopedMutableMorphGroup() NANOEM_DECL_NOEXCEPT
 nanoem::command::ScopedMutableMorphGroup::operator nanoem_mutable_model_morph_group_t *() NANOEM_DECL_NOEXCEPT
 {
     return m_morph;
+}
+
+ScopedMutableMorphImpulse::ScopedMutableMorphImpulse(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphImpulseCreate(morphPtr, &status);
 }
 
 ScopedMutableMorphImpulse::ScopedMutableMorphImpulse(nanoem_model_morph_impulse_t *morphPtr)
@@ -265,6 +293,13 @@ nanoem::command::ScopedMutableMorphImpulse::operator nanoem_mutable_model_morph_
     return m_morph;
 }
 
+ScopedMutableMorphMaterial::ScopedMutableMorphMaterial(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphMaterialCreate(morphPtr, &status);
+}
+
 ScopedMutableMorphMaterial::ScopedMutableMorphMaterial(nanoem_model_morph_material_t *morphPtr)
     : m_morph(nullptr)
 {
@@ -283,6 +318,13 @@ nanoem::command::ScopedMutableMorphMaterial::operator nanoem_mutable_model_morph
     return m_morph;
 }
 
+ScopedMutableMorphUV::ScopedMutableMorphUV(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphUVCreate(morphPtr, &status);
+}
+
 ScopedMutableMorphUV::ScopedMutableMorphUV(nanoem_model_morph_uv_t *morphPtr)
     : m_morph(nullptr)
 {
@@ -299,6 +341,13 @@ ScopedMutableMorphUV::~ScopedMutableMorphUV() NANOEM_DECL_NOEXCEPT
 nanoem::command::ScopedMutableMorphUV::operator nanoem_mutable_model_morph_uv_t *() NANOEM_DECL_NOEXCEPT
 {
     return m_morph;
+}
+
+ScopedMutableMorphVertex::ScopedMutableMorphVertex(nanoem_mutable_model_morph_t *morphPtr)
+    : m_morph(nullptr)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    m_morph = nanoemMutableModelMorphVertexCreate(morphPtr, &status);
 }
 
 ScopedMutableMorphVertex::ScopedMutableMorphVertex(nanoem_model_morph_vertex_t *morphPtr)
