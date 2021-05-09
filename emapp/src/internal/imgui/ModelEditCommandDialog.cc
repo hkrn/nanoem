@@ -146,7 +146,7 @@ ModelEditCommandDialog::draw(Project *project)
     const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 3;
     if (open(tr("Model Commands"), kIdentifier, &visible, height)) {
         const bool available = project->isModelEditingEnabled(),
-                enabled = available && !glm::isNull(m_activeModel->pivotMatrix(), Constants::kEpsilon);
+                   enabled = available && !glm::isNull(m_activeModel->pivotMatrix(), Constants::kEpsilon);
         if (ImGui::CollapsingHeader("Gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::Text("Operation Type");
             addGizmoOperationButton("Translate", Model::kGizmoOperationTypeTranslate, enabled);
