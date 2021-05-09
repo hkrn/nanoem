@@ -363,10 +363,9 @@ Error::Error(const char *reason, const char *recoverySuggestion, DomainType doma
     StringUtils::copyString(m_recoverySuggestion, recoverySuggestion, sizeof(m_recoverySuggestion));
 }
 
-Error::Error(const Error &value) NANOEM_DECL_NOEXCEPT : m_domain(value.m_domain), m_code(value.m_code)
+Error::Error(const Error &value) NANOEM_DECL_NOEXCEPT
 {
-    StringUtils::copyString(m_reason, value.m_reason, sizeof(m_reason));
-    StringUtils::copyString(m_recoverySuggestion, value.m_recoverySuggestion, sizeof(m_recoverySuggestion));
+    this->operator=(value);
 }
 
 Error::~Error() NANOEM_DECL_NOEXCEPT
@@ -459,6 +458,15 @@ bool
 Error::isCancelled() const NANOEM_DECL_NOEXCEPT
 {
     return m_domain == kDomainTypeCancel;
+}
+
+void
+Error::operator=(const Error &value) NANOEM_DECL_NOEXCEPT
+{
+    m_domain = value.m_domain;
+    m_code = value.m_code;
+    StringUtils::copyString(m_reason, value.m_reason, sizeof(m_reason));
+    StringUtils::copyString(m_recoverySuggestion, value.m_recoverySuggestion, sizeof(m_recoverySuggestion));
 }
 
 } /* namespace nanoem */
