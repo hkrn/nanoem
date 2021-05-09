@@ -6,6 +6,8 @@
 
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
 
+#include "emapp/ICamera.h"
+#include "emapp/ILight.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/private/CommonInclude.h"
@@ -143,7 +145,8 @@ ModelEditCommandDialog::draw(Project *project)
     }
     const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 3;
     if (open(tr("Model Commands"), kIdentifier, &visible, height)) {
-        bool enabled = !glm::isNull(m_activeModel->pivotMatrix(), Constants::kEpsilon);
+        const bool available = project->isModelEditingEnabled(),
+                enabled = available && !glm::isNull(m_activeModel->pivotMatrix(), Constants::kEpsilon);
         if (ImGui::CollapsingHeader("Gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
             ImGui::Text("Operation Type");
             addGizmoOperationButton("Translate", Model::kGizmoOperationTypeTranslate, enabled);
@@ -157,7 +160,7 @@ ModelEditCommandDialog::draw(Project *project)
             ImGui::SameLine();
             addGizmoCoordinationButton("Local", Model::kTransformCoordinateTypeLocal, enabled);
         }
-        if (ImGui::CollapsingHeader("Selection", ImGuiTreeNodeFlags_DefaultOpen)) {
+        if (ImGui::CollapsingHeader("Selection")) {
             addSelectionButton("(none)", IModelObjectSelection::kEditingTypeNone, project);
             addSelectionButton(
                 tr("nanoem.gui.window.model.tab.vertex"), IModelObjectSelection::kEditingTypeVertex, project);
@@ -171,6 +174,62 @@ ModelEditCommandDialog::draw(Project *project)
                 tr("nanoem.gui.window.model.tab.rigid-body"), IModelObjectSelection::kEditingTypeRigidBody, project);
             addSelectionButton(
                 tr("nanoem.gui.window.model.tab.joint"), IModelObjectSelection::kEditingTypeJoint, project);
+        }
+        if (ImGui::CollapsingHeader("Camera##camera")) {
+            ICamera *camera = project->activeCamera();
+            Vector3 lookAt(camera->lookAt()), angle(glm::degrees(camera->angle()));
+            nanoem_f32_t distance = camera->distance();
+            int fov = camera->fov();
+            bool perspective = camera->isPerspective(), changed = false;
+            ImGui::PushItemWidth(-1);
+            ImGui::TextUnformatted("LookAt");
+            if (ImGui::DragFloat3("##look-at", glm::value_ptr(lookAt))) {
+                camera->setLookAt(glm::radians(lookAt));
+                changed = true;
+            }
+            ImGui::TextUnformatted("Angle");
+            if (ImGui::DragFloat3("##angle", glm::value_ptr(angle))) {
+                camera->setAngle(glm::radians(angle));
+                changed = true;
+            }
+            if (ImGui::DragFloat("##distance", &distance, 0.1f, 0.0f, 0.0f, "Distance: %.1f")) {
+                camera->setDistance(distance);
+                changed = true;
+            }
+            if (ImGui::DragInt("##fov", &fov, 0.1f, 1, 135, "Fov: %d")) {
+                camera->setFov(fov);
+                changed = true;
+            }
+            if (ImGui::Checkbox("Perspective##perspective", &perspective)) {
+                camera->setPerspective(perspective);
+                changed = true;
+            }
+            if (ImGui::Button("Initialize##initialize", ImVec2(-1, 0))) {
+                camera->reset();
+                changed = true;
+            }
+            ImGui::PopItemWidth();
+            if (changed) {
+                camera->update();
+                project->resetAllModelEdges();
+            }
+        }
+        if (ImGui::CollapsingHeader("Light##light")) {
+            ILight *light = project->activeLight();
+            Vector3 color(light->color()), direction(light->direction());
+            ImGui::PushItemWidth(-1);
+            ImGui::TextUnformatted("Color");
+            if (ImGui::ColorEdit3("##color", glm::value_ptr(color))) {
+                light->setColor(color);
+            }
+            ImGui::TextUnformatted("Direction");
+            if (ImGui::DragFloat3("##direction", glm::value_ptr(direction), 0.01f, -1.0f, 1.0f)) {
+                light->setDirection(direction);
+            }
+            if (ImGui::Button("Initialize##initialize", ImVec2(-1, 0))) {
+                light->reset();
+            }
+            ImGui::PopItemWidth();
         }
     }
     close();
