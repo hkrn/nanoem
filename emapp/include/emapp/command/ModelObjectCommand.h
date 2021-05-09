@@ -653,7 +653,7 @@ public:
     static undo_command_t *create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
 
     MoveJointUpCommand(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
-    ~MoveJointUpCommand();
+    ~MoveJointUpCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
     void redo(Error &error) NANOEM_DECL_OVERRIDE;

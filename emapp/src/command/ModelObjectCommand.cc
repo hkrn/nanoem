@@ -1328,7 +1328,6 @@ CreateLabelCommand::~CreateLabelCommand() NANOEM_DECL_NOEXCEPT
 void
 CreateLabelCommand::undo(Error &error)
 {
-    const nanoem_model_label_t *labelPtr = nanoemMutableModelLabelGetOriginObject(m_mutableLabel);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelRemoveLabelObject(model, m_mutableLabel, &status);
@@ -1339,7 +1338,6 @@ CreateLabelCommand::undo(Error &error)
 void
 CreateLabelCommand::redo(Error &error)
 {
-    const nanoem_model_label_t *labelPtr = nanoemMutableModelLabelGetOriginObject(m_mutableLabel);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelInsertLabelObject(model, m_mutableLabel, m_offset, &status);
@@ -1400,7 +1398,6 @@ DeleteLabelCommand::~DeleteLabelCommand() NANOEM_DECL_NOEXCEPT
 void
 DeleteLabelCommand::undo(Error &error)
 {
-    const nanoem_model_label_t *labelPtr = nanoemMutableModelLabelGetOriginObject(m_mutableLabel);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelInsertLabelObject(model, m_mutableLabel, Inline::saturateInt32(m_labelIndex), &status);
@@ -1465,6 +1462,7 @@ BaseMoveLabelCommand::move(int delta, Error &error)
     m_labelIndex += delta;
     nanoemMutableModelInsertLabelObject(model, label, Inline::saturateInt32(m_labelIndex), &status);
     currentProject()->rebuildAllTracks();
+    assignError(status, error);
 }
 
 undo_command_t *
@@ -1620,7 +1618,6 @@ CreateRigidBodyCommand::~CreateRigidBodyCommand() NANOEM_DECL_NOEXCEPT
 void
 CreateRigidBodyCommand::undo(Error &error)
 {
-    const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelRemoveRigidBodyObject(model, m_mutableRigidBody, &status);
@@ -1630,7 +1627,6 @@ CreateRigidBodyCommand::undo(Error &error)
 void
 CreateRigidBodyCommand::redo(Error &error)
 {
-    const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelInsertRigidBodyObject(model, m_mutableRigidBody, m_offset, &status);
@@ -1690,7 +1686,6 @@ DeleteRigidBodyCommand::~DeleteRigidBodyCommand() NANOEM_DECL_NOEXCEPT
 void
 DeleteRigidBodyCommand::undo(Error &error)
 {
-    const nanoem_model_rigid_body_t *labelPtr = nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelInsertRigidBodyObject(
@@ -1746,12 +1741,13 @@ BaseMoveRigidBodyCommand::BaseMoveRigidBodyCommand(
 void
 BaseMoveRigidBodyCommand::move(int delta, Error &error)
 {
-    ScopedMutableRigidBody rigid_body(m_rigidBodies[m_rigidBodyIndex]);
+    ScopedMutableRigidBody rigidBody(m_rigidBodies[m_rigidBodyIndex]);
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    nanoemMutableModelRemoveRigidBodyObject(model, rigid_body, &status);
+    nanoemMutableModelRemoveRigidBodyObject(model, rigidBody, &status);
     m_rigidBodyIndex += delta;
-    nanoemMutableModelInsertRigidBodyObject(model, rigid_body, Inline::saturateInt32(m_rigidBodyIndex), &status);
+    nanoemMutableModelInsertRigidBodyObject(model, rigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
+    assignError(status, error);
 }
 
 undo_command_t *
@@ -2037,6 +2033,7 @@ BaseMoveJointCommand::move(int delta, Error &error)
     nanoemMutableModelRemoveJointObject(model, joint, &status);
     m_jointIndex += delta;
     nanoemMutableModelInsertJointObject(model, joint, Inline::saturateInt32(m_jointIndex), &status);
+    assignError(status, error);
 }
 
 undo_command_t *
@@ -2322,6 +2319,7 @@ BaseMoveSoftBodyCommand::move(int delta, Error &error)
     nanoemMutableModelRemoveSoftBodyObject(model, softBody, &status);
     m_softBodyIndex += delta;
     nanoemMutableModelInsertSoftBodyObject(model, softBody, Inline::saturateInt32(m_softBodyIndex), &status);
+    assignError(status, error);
 }
 
 undo_command_t *

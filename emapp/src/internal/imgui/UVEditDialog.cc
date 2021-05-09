@@ -75,7 +75,7 @@ void
 UVEditDialog::State::transform(const Matrix4x4 &delta, Model *activeModel)
 {
     Vector4 perspective;
-    Vector3 scale, translation, skew;
+    Vector3 scale(1), translation(0), skew;
     Quaternion orientation;
     glm::decompose(delta, scale, orientation, translation, skew, perspective);
     if (m_operation == kOperationTypeTranslate) {
