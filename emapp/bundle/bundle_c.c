@@ -61,3 +61,7 @@ extern void __stb_free(void *ptr, const char *file, int line);
 /* sokol_time */
 #define SOKOL_IMPL
 #include "sokol/sokol_time.h"
+
+/* tinyobjcloader-c */
+#define TINYOBJ_LOADER_C_IMPLEMENTATION
+#include "tinyobjloader-c/tinyobj_loader_c.h"

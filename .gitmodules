@@ -73,3 +73,6 @@
 [submodule "dependencies/imguifiledialog"]
 	path = dependencies/imguifiledialog
 	url = https://github.com/aiekick/ImGuiFileDialog
+[submodule "dependencies/tinyobjloader-c"]
+	path = dependencies/tinyobjloader-c
+	url = https://github.com/syoyo/tinyobjloader-c
