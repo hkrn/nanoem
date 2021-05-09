@@ -23,6 +23,12 @@ LazyPublishCanCopyEventCommand::execute(Project *project)
     project->eventPublisher()->publishCanCopyEvent(m_value);
 }
 
+void
+LazyPublishCanCopyEventCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

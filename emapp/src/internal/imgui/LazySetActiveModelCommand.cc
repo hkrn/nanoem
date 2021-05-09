@@ -24,6 +24,12 @@ LazySetActiveModelCommand::execute(Project *project)
     m_parent->resetSelectionIndex();
 }
 
+void
+LazySetActiveModelCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

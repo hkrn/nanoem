@@ -31,6 +31,8 @@ struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
     BaseNonModalDialogWindow(BaseApplicationService *applicationPtr);
     ~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT;
 
+    virtual void destroy(Project *project);
+
     bool open(const char *title, const char *id, bool *visible, const ImVec2 size,
         ImGuiWindowFlags flagss = ImGuiWindowFlags_None, ImGuiSizeCallback sizeCB = nullptr,
         void *sizeCBOpaque = nullptr);
@@ -38,6 +40,7 @@ struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
         ImGuiWindowFlags flags = ImGuiWindowFlags_None, ImGuiSizeCallback sizeCB = nullptr,
         void *sizeCBOpaque = nullptr);
     void close();
+
     ResponseType layoutCommonButtons(bool *visible);
     const char *tr(const char *text) const NANOEM_DECL_NOEXCEPT;
 

@@ -16,7 +16,9 @@ namespace imgui {
 
 struct LazySetFrameIndexCommand : ImGuiWindow::ILazyExecutionCommand {
     LazySetFrameIndexCommand(const nanoem_frame_index_t value);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     const nanoem_frame_index_t m_value;
 };

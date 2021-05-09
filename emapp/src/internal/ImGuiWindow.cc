@@ -603,7 +603,6 @@ ImGuiWindow::~ImGuiWindow()
     m_allModalDialogs.clear();
     nanoem_delete_safe(m_menu);
     nanoem_delete_safe(m_gizmoController);
-    reset();
 }
 
 bool
@@ -893,13 +892,14 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
 }
 
 void
-ImGuiWindow::reset()
+ImGuiWindow::reset(Project *project)
 {
     if (!m_lazyExecutionCommands.empty()) {
         for (LazyExecutionCommandList::const_iterator it = m_lazyExecutionCommands.begin(),
                                                       end = m_lazyExecutionCommands.end();
              it != end; ++it) {
             ILazyExecutionCommand *command = *it;
+            command->destroy(project);
             nanoem_delete(command);
         }
         m_lazyExecutionCommands.clear();
@@ -908,6 +908,7 @@ ImGuiWindow::reset()
         for (NoModalDialogWindowList::const_iterator it = m_dialogWindows.begin(), end = m_dialogWindows.end();
              it != end; ++it) {
             INoModalDialogWindow *window = it->second;
+            window->destroy(project);
             nanoem_delete(window);
         }
         m_dialogWindows.clear();
@@ -3351,10 +3352,15 @@ ImGuiWindow::drawModelPanel(const ImVec2 &panelSize, Project *project)
         {
         }
         void
-        execute(Project * /* project */)
+        execute(Project * /* project */) NANOEM_DECL_OVERRIDE
         {
             m_constraint->setEnabled(m_enabled);
             m_model->performAllBonesTransform();
+        }
+        void
+        destroy(Project *project) NANOEM_DECL_OVERRIDE
+        {
+            BX_UNUSED_1(project);
         }
         Model *m_model;
         model::Constraint *m_constraint;
@@ -3888,6 +3894,7 @@ ImGuiWindow::drawAllNonModalWindows(Project *project)
                 NoModalDialogWindowList::const_iterator it2 = m_dialogWindows.find(*it);
                 if (it2 != m_dialogWindows.end()) {
                     INoModalDialogWindow *window = it2->second;
+                    window->destroy(project);
                     m_dialogWindows.erase(it2);
                     nanoem_delete(window);
                 }

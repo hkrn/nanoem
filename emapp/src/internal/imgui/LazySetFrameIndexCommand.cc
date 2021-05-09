@@ -21,6 +21,12 @@ LazySetFrameIndexCommand::execute(Project *project)
     project->seek(m_value, false);
 }
 
+void
+LazySetFrameIndexCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

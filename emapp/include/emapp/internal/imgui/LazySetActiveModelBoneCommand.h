@@ -16,7 +16,9 @@ namespace imgui {
 
 struct LazySetActiveModelBoneCommand : ImGuiWindow::ILazyExecutionCommand {
     LazySetActiveModelBoneCommand(const nanoem_model_bone_t *bone);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     const nanoem_model_bone_t *m_value;
 };

@@ -49,7 +49,9 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     ModelParameterDialog(Model *model, Project *project, BaseApplicationService *applicationPtr, ImGuiWindow *parent);
     ~ModelParameterDialog();
 
-    bool draw(Project *project);
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
+
     void layoutInformation(Project *project);
     void layoutVertexBoneSelection(const char *label, nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t i,
         nanoem_model_bone_t *const *bones, nanoem_rsize_t numBones);

@@ -89,6 +89,12 @@ BaseNonModalDialogWindow::~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT
 {
 }
 
+void
+BaseNonModalDialogWindow::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 bool
 BaseNonModalDialogWindow::open(const char *title, const char *id, bool *visible, const ImVec2 size,
     ImGuiWindowFlags flags, ImGuiSizeCallback sizeCB, void *sizeCBOpaque)

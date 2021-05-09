@@ -32,7 +32,7 @@ public:
     }
 
     virtual void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) = 0;
-    virtual void reset() = 0;
+    virtual void reset(Project *project) = 0;
     virtual void destroy() NANOEM_DECL_NOEXCEPT = 0;
 
     virtual void setFontPointSize(nanoem_f32_t pointSize) = 0;

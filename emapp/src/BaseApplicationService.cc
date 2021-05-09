@@ -1703,7 +1703,6 @@ BaseApplicationService::createProject(const Vector2UI16 &logicalPixelWindowSize,
     ApplicationPreference preference(this);
     m_eventPublisherPtr->publishSetupProjectEvent(
         logicalPixelWindowSize, windowDevicePixelRatio, viewportDevicePixelRatio);
-    m_window->reset();
     Error error;
     Project::Injector injector;
     injector.m_audioPlayer = createAudioPlayer();
@@ -1750,6 +1749,7 @@ void
 BaseApplicationService::destroyProject(Project *project)
 {
     if (nanoem_likely(project)) {
+        m_window->reset(project);
         project->stop();
         if (project->hasTransientPath()) {
             FileUtils::TransientPath path(project->transientPath());

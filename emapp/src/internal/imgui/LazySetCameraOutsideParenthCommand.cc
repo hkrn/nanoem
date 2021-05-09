@@ -23,6 +23,12 @@ LazySetCameraOutsideParenthCommand::execute(Project *project)
     project->activeCamera()->setOutsideParent(m_value);
 }
 
+void
+LazySetCameraOutsideParenthCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

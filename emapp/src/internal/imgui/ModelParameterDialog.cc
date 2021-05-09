@@ -36,9 +36,14 @@ struct UndoCommand : ImGuiWindow::ILazyExecutionCommand {
         m_command = nullptr;
     }
     void
-    execute(Project *project)
+    execute(Project *project) NANOEM_DECL_OVERRIDE
     {
         project->activeModel()->pushUndo(m_command);
+    }
+    void
+    destroy(Project *project) NANOEM_DECL_OVERRIDE
+    {
+        BX_UNUSED_1(project);
     }
     undo_command_t *m_command;
 };
@@ -119,12 +124,19 @@ struct EnableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
     ~EnableModelEditingCommand() NANOEM_DECL_NOEXCEPT
     {
     }
+
     void
-    execute(Project *project)
+    execute(Project *project) NANOEM_DECL_OVERRIDE
     {
         project->setModelEditingEnabled(true);
         m_parent->saveProjectState(project);
     }
+    void
+    destroy(Project *project) NANOEM_DECL_OVERRIDE
+    {
+        BX_UNUSED_1(project);
+    }
+
     ModelParameterDialog *m_parent;
 };
 
@@ -139,7 +151,7 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
     }
 
     void
-    execute(Project *project)
+    execute(Project *project) NANOEM_DECL_OVERRIDE
     {
         const Project::DrawableList *drawables = project->drawableOrderList();
         Error error;
@@ -166,6 +178,11 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
         project->destroyState(m_state->m_state);
         project->setEditingMode(m_state->m_lastEditingMode);
         project->setModelEditingEnabled(false);
+    }
+    void
+    destroy(Project *project) NANOEM_DECL_OVERRIDE
+    {
+        BX_UNUSED_1(project);
     }
 
     Model *m_activeModel;
@@ -378,6 +395,14 @@ ModelParameterDialog::draw(Project *project)
         m_savedState = nullptr;
     }
     return visible;
+}
+
+void
+ModelParameterDialog::destroy(Project *project)
+{
+    if (m_savedState) {
+        project->destroyState(m_savedState->m_state);
+    }
 }
 
 void

@@ -122,6 +122,7 @@ public:
         {
         }
         virtual void execute(Project *project) = 0;
+        virtual void destroy(Project *project) = 0;
     };
     typedef tinystl::vector<ILazyExecutionCommand *, TinySTLAllocator> LazyExecutionCommandList;
     struct INoModalDialogWindow {
@@ -129,6 +130,7 @@ public:
         {
         }
         virtual bool draw(Project *project) = 0;
+        virtual void destroy(Project *project) = 0;
     };
     typedef tinystl::unordered_map<const char *, INoModalDialogWindow *, TinySTLAllocator> NoModalDialogWindowList;
 
@@ -173,7 +175,7 @@ public:
     void openUVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel);
 
     void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) NANOEM_DECL_OVERRIDE;
-    void reset() NANOEM_DECL_OVERRIDE;
+    void reset(Project *project) NANOEM_DECL_OVERRIDE;
     void destroy() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setFontPointSize(nanoem_f32_t pointSize) NANOEM_DECL_OVERRIDE;
     void setKeyPressed(BaseApplicationService::KeyType key) NANOEM_DECL_OVERRIDE;
