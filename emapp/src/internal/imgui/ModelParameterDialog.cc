@@ -13,6 +13,7 @@
 #include "emapp/IFileManager.h"
 #include "emapp/IImageView.h"
 #include "emapp/ILight.h"
+#include "emapp/ListUtils.h"
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
@@ -606,33 +607,6 @@ ModelParameterDialog::layoutAllVertices(Project *project)
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef"))) {
                 selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_QDEF);
             }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Add to the Vertex Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_VERTEX))) {
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                    nanoem_model_morph_t *morphPtr = morphs[i];
-                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_VERTEX) {
-                        const model::Morph *morph = model::Morph::cast(morphPtr);
-                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Add to the Texture Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_TEXTURE))) {
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                    nanoem_model_morph_t *morphPtr = morphs[i];
-                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_TEXTURE) {
-                        const model::Morph *morph = model::Morph::cast(morphPtr);
-                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
@@ -664,6 +638,36 @@ ModelParameterDialog::layoutAllVertices(Project *project)
                         vertex->setEditingMasked(!vertex->isEditingMasked());
                     }
                 }
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Morph")) {
+            if (ImGui::BeginMenu("Add Selected to the Vertex Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_VERTEX))) {
+                nanoem_rsize_t numMorphs;
+                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+                    nanoem_model_morph_t *morphPtr = morphs[i];
+                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_VERTEX) {
+                        const model::Morph *morph = model::Morph::cast(morphPtr);
+                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Add Selected to the Texture Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_TEXTURE))) {
+                nanoem_rsize_t numMorphs;
+                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+                    nanoem_model_morph_t *morphPtr = morphs[i];
+                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_TEXTURE) {
+                        const model::Morph *morph = model::Morph::cast(morphPtr);
+                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
@@ -1177,20 +1181,6 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     }
                 }
             }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Add to the Material Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_MATERIAL))) {
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                    nanoem_model_morph_t *morphPtr = morphs[i];
-                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_MATERIAL) {
-                        const model::Morph *morph = model::Morph::cast(morphPtr);
-                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
@@ -1222,6 +1212,24 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                         material->setVisible(!material->isVisible());
                     }
                 }
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Morph")) {
+            if (ImGui::BeginMenu(
+                    "Add Selected to the Material Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_MATERIAL))) {
+                nanoem_rsize_t numMorphs;
+                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+                    nanoem_model_morph_t *morphPtr = morphs[i];
+                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_MATERIAL) {
+                        const model::Morph *morph = model::Morph::cast(morphPtr);
+                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
@@ -1327,6 +1335,31 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
             if (ImGui::MenuItem("Faces/Morphs/Vertices")) {
             }
             ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Create Material from Model File")) {
+            struct CreateMaterialFromFileCallback : IFileManager::QueryFileDialogCallbacks {
+                static void
+                handleAccept(const URI &fileURI, Project *project, void * /* opaque */)
+                {
+                    BX_UNUSED_2(fileURI, project);
+                }
+                CreateMaterialFromFileCallback()
+                {
+                    m_accept = handleAccept;
+                    m_cancel = nullptr;
+                    m_destory = nullptr;
+                    m_opaque = nullptr;
+                }
+            };
+            CreateMaterialFromFileCallback callback;
+            IEventPublisher *eventPublisher = project->eventPublisher();
+            IFileManager *fileManager = m_applicationPtr->fileManager();
+            fileManager->setTransientQueryFileDialogCallback(callback);
+            StringSet extensions(Model::loadableExtensionsSet());
+            extensions.insert("obj");
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(
+                IFileManager::kDialogTypeUserCallback, ListUtils::toListFromSet(extensions));
         }
         ImGui::EndPopup();
     }
@@ -1900,33 +1933,6 @@ ModelParameterDialog::layoutAllBones(Project *project)
                     }
                 }
             }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Add to the Label")) {
-                nanoem_rsize_t numLabels;
-                nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
-                for (nanoem_rsize_t i = 0; i < numLabels; i++) {
-                    nanoem_model_label_t *labelPtr = labels[i];
-                    if (!nanoemModelLabelIsSpecial(labelPtr)) {
-                        const model::Label *label = model::Label::cast(labelPtr);
-                        if (label && ImGui::MenuItem(label->nameConstString())) {
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Add to the Bone Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_BONE))) {
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                    nanoem_model_morph_t *morphPtr = morphs[i];
-                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE) {
-                        const model::Morph *morph = model::Morph::cast(morphPtr);
-                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
@@ -1966,6 +1972,53 @@ ModelParameterDialog::layoutAllBones(Project *project)
                         bone->setEditingMasked(!bone->isEditingMasked());
                     }
                 }
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Bone")) {
+            if (ImGui::BeginMenu("Add Selected to the IK")) {
+                for (nanoem_rsize_t i = 0; i < numBones; i++) {
+                    nanoem_model_bone_t *bonePtr = bones[i];
+                    if (const nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObject(bonePtr)) {
+                        const model::Constraint *constraint = model::Constraint::cast(constraintPtr);
+                        if (constraint && ImGui::MenuItem(constraint->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Label")) {
+            if (ImGui::BeginMenu("Add Selected to the Label")) {
+                nanoem_rsize_t numLabels;
+                nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
+                for (nanoem_rsize_t i = 0; i < numLabels; i++) {
+                    nanoem_model_label_t *labelPtr = labels[i];
+                    if (!nanoemModelLabelIsSpecial(labelPtr)) {
+                        const model::Label *label = model::Label::cast(labelPtr);
+                        if (label && ImGui::MenuItem(label->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Morph")) {
+            if (ImGui::BeginMenu("Add Selected to the Bone Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_BONE))) {
+                nanoem_rsize_t numMorphs;
+                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+                    nanoem_model_morph_t *morphPtr = morphs[i];
+                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE) {
+                        const model::Morph *morph = model::Morph::cast(morphPtr);
+                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
@@ -2715,8 +2768,11 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                     }
                 }
             }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Add to the Label")) {
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Label")) {
+            if (ImGui::BeginMenu("Add Selected to the Label")) {
                 nanoem_rsize_t numLabels;
                 nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
                 for (nanoem_rsize_t i = 0; i < numLabels; i++) {
@@ -2729,7 +2785,10 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Add to the Group Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_GROUP))) {
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Morph")) {
+            if (ImGui::BeginMenu("Add Selected to the Group Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_GROUP))) {
                 nanoem_rsize_t numMorphs;
                 nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
                 for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -2742,7 +2801,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Add to the Flip Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_FLIP))) {
+            if (ImGui::BeginMenu("Add Selected to the Flip Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_FLIP))) {
                 nanoem_rsize_t numMorphs;
                 nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
                 for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -2938,6 +2997,77 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                 m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
             }
             ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem("Create Bone Morph from Pose File")) {
+            struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallbacks {
+                static void
+                handleAccept(const URI &fileURI, Project *project, void * /* opaque */)
+                {
+                    model::BindPose bindPose;
+                    model::BindPose::BoneTransformMap transforms;
+                    model::BindPose::MorphWeightMap weights;
+                    FileReaderScope scope(project->translator());
+                    Error error;
+                    if (scope.open(fileURI, error)) {
+                        ByteArray bytes;
+                        FileUtils::read(scope, bytes, error);
+                        nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+                        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                        Model *model = project->activeModel();
+                        if (bindPose.load(bytes, factory, transforms, weights, error)) {
+                            command::ScopedMutableMorph parent(model);
+                            StringUtils::UnicodeStringScope us(factory);
+                            if (StringUtils::tryGetString(factory, fileURI.lastPathComponent(), us)) {
+                                nanoemMutableModelMorphSetName(parent, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+                                nanoemMutableModelMorphSetName(parent, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+                            }
+                            nanoemMutableModelMorphSetType(parent, NANOEM_MODEL_MORPH_TYPE_BONE);
+                            nanoemMutableModelMorphSetCategory(parent, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
+                            for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(),
+                                                                                   end = transforms.end();
+                                 it != end; ++it) {
+                                if (const nanoem_model_bone_t *bonePtr = model->findBone(it->first)) {
+                                    const Vector3 &translation = it->second.first;
+                                    const Quaternion &orientation = it->second.second;
+                                    if (glm::all(glm::epsilonNotEqual(translation, Constants::kZeroV3, Constants::kEpsilon)) ||
+                                        glm::all(glm::epsilonNotEqual(orientation, Constants::kZeroQ, Constants::kEpsilon))) {
+                                        command::ScopedMutableMorphBone scoped(parent);
+                                        nanoemMutableModelMorphBoneSetBoneObject(scoped, bonePtr);
+                                        nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(Vector4(translation, 0)));
+                                        nanoemMutableModelMorphBoneSetOrientation(scoped, glm::value_ptr(orientation));
+                                        nanoemMutableModelMorphInsertBoneMorphObject(parent, scoped, -1, &status);
+                                    }
+                                }
+                            }
+                            nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(parent);
+                            command::ScopedMutableModel m(model);
+                            model::Morph *morph = model::Morph::create();
+                            morph->bind(morphPtr);
+                            morph->resetLanguage(morphPtr, factory, project->castLanguage());
+                            model->addMorphReference(morphPtr);
+                            nanoemMutableModelInsertMorphObject(m, parent, -1, &status);
+                        }
+                    }
+                }
+                CreateBoneMorphFromBindPoseCallback()
+                {
+                    m_accept = handleAccept;
+                    m_cancel = nullptr;
+                    m_destory = nullptr;
+                    m_opaque = nullptr;
+                }
+            };
+            CreateBoneMorphFromBindPoseCallback callback;
+            IEventPublisher *eventPublisher = project->eventPublisher();
+            IFileManager *fileManager = m_applicationPtr->fileManager();
+            fileManager->setTransientQueryFileDialogCallback(callback);
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(
+                IFileManager::kDialogTypeUserCallback, model::BindPose::loadableExtensions());
+        }
+        if (ImGui::MenuItem("Create Texture Morph from Model File")) {
+        }
+        if (ImGui::MenuItem("Create Vertex Morph from Model File")) {
         }
         ImGui::EndPopup();
     }
@@ -4089,20 +4219,6 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
                     selection->addBone(bonePtr);
                 }
             }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Add to the Impulse Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_IMPULUSE))) {
-                nanoem_rsize_t numMorphs;
-                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
-                    nanoem_model_morph_t *morphPtr = morphs[i];
-                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_IMPULUSE) {
-                        const model::Morph *morph = model::Morph::cast(morphPtr);
-                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        }
-                    }
-                }
-                ImGui::EndMenu();
-            }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
@@ -4134,6 +4250,23 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
                         rigidBody->setEditingMasked(!rigidBody->isEditingMasked());
                     }
                 }
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu("Morph")) {
+            if (ImGui::BeginMenu("Add Selected to the Impulse Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_IMPULUSE))) {
+                nanoem_rsize_t numMorphs;
+                nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+                for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+                    nanoem_model_morph_t *morphPtr = morphs[i];
+                    if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_IMPULUSE) {
+                        const model::Morph *morph = model::Morph::cast(morphPtr);
+                        if (morph && ImGui::MenuItem(morph->nameConstString())) {
+                        }
+                    }
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
