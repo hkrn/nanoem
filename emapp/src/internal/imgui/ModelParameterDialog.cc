@@ -1655,7 +1655,8 @@ ModelParameterDialog::layoutMaterialDiffuseImage(
             m_parent->openUVEditDialog(activeMaterialPtr, m_activeModel);
         }
         ImGui::SameLine();
-        if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
+        StringUtils::format(label, sizeof(label), "%s##%s.expand", tr("nanoem.gui.model.edit.material.texture.display-uv-mesh"), id);
+        if (ImGui::Checkbox(label, &displayUVMeshEnabled)) {
             material->setDisplayDiffuseTextureUVMeshEnabled(displayUVMeshEnabled);
         }
         const ImVec2 offset(ImGui::GetCursorScreenPos());
@@ -1688,7 +1689,8 @@ ModelParameterDialog::layoutMaterialSphereMapImage(
     if (ImGui::CollapsingHeader(label)) {
         model::Material *material = model::Material::cast(activeMaterialPtr);
         bool displayUVMeshEnabled = material->isDisplaySphereMapTextureUVMeshEnabled();
-        if (ImGui::Checkbox("Display UV Mesh", &displayUVMeshEnabled)) {
+        StringUtils::format(label, sizeof(label), "%s##%s.expand", tr("nanoem.gui.model.edit.material.texture.display-uv-mesh"), id);
+        if (ImGui::Checkbox(label, &displayUVMeshEnabled)) {
             material->setDisplaySphereMapTextureUVMeshEnabled(displayUVMeshEnabled);
         }
         const ImVec2 offset(ImGui::GetCursorScreenPos());

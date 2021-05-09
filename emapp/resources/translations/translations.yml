@@ -1123,6 +1123,10 @@
   phrase:
     en_US: 'Toon Texture'
     ja_JP: 'トゥーンテクスチャ'
+- key: nanoem.gui.model.edit.material.texture.display-uv-mesh
+  phrase:
+    en_US: 'Display UV Mesh'
+    ja_JP: 'UV メッシュを表示する'
 - key: nanoem.gui.model.edit.material.properties
   phrase:
     en_US: 'Properties'

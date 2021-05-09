@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -280,7 +280,8 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 (nanoem.gui.model.edit.material.edge.sizeエッジ幅J
 .nanoem.gui.model.edit.material.texture.diffuse拡散光テクスチャU
 -nanoem.gui.model.edit.material.texture.sphere$スフィアマップテクスチャJ
-+nanoem.gui.model.edit.material.texture.toonトゥーンテクスチャ<
++nanoem.gui.model.edit.material.texture.toonトゥーンテクスチャX
+6nanoem.gui.model.edit.material.texture.display-uv-meshUV メッシュを表示する<
 )nanoem.gui.model.edit.material.propertiesプロパティX
 3nanoem.gui.model.edit.material.property.shared-toon!共有トゥーンテクスチャ_
 7nanoem.gui.model.edit.material.property.disable-culling$カリング無効（両面描画）R
@@ -1026,7 +1027,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-�F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1314,7 +1315,8 @@ Edge Color;
 Edge WidthA
 .nanoem.gui.model.edit.material.texture.diffuseDiffuse TextureC
 -nanoem.gui.model.edit.material.texture.sphereSphere Map Texture;
-+nanoem.gui.model.edit.material.texture.toonToon Texture7
++nanoem.gui.model.edit.material.texture.toonToon TextureI
+6nanoem.gui.model.edit.material.texture.display-uv-meshDisplay UV Mesh7
 )nanoem.gui.model.edit.material.properties
 PropertiesQ
 3nanoem.gui.model.edit.material.property.shared-toonEnable Shared Toon TextureJ
