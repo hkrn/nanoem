@@ -42,6 +42,66 @@ struct UndoCommand : ImGuiWindow::ILazyExecutionCommand {
     undo_command_t *m_command;
 };
 
+struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
+    struct BaseUserData {
+        BaseUserData(nanoem_model_material_t *material, Model *model)
+            : m_model(model)
+            , m_material(material)
+        {
+        }
+        virtual void upload(const URI &fileURI, BaseUserData *userData, nanoem_mutable_model_material_t *material,
+            nanoem_mutable_model_texture_t *texture, Error &error) = 0;
+        Model *m_model;
+        nanoem_model_material_t *m_material;
+    };
+    static void
+    accept(const URI &fileURI, Project * /* project */, void *opaque)
+    {
+        BaseUserData *userData = static_cast<BaseUserData *>(opaque);
+        Model *model = userData->m_model;
+        const String modelBasePath(URI::stringByDeletingLastPathComponent(model->fileURI().absolutePath())),
+            textureFilePath(FileUtils::relativePath(fileURI.absolutePath(), modelBasePath));
+        nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
+        StringUtils::UnicodeStringScope scope(factory);
+        if (StringUtils::tryGetString(factory, textureFilePath, scope)) {
+            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            nanoem_mutable_model_material_t *material =
+                nanoemMutableModelMaterialCreateAsReference(userData->m_material, &status);
+            nanoem_mutable_model_texture_t *texture = nanoemMutableModelTextureCreate(model->data(), &status);
+            nanoemMutableModelTextureSetPath(texture, scope.value(), &status);
+            Error error;
+            userData->upload(fileURI, userData, material, texture, error);
+            nanoemMutableModelTextureDestroy(texture);
+            nanoemMutableModelMaterialDestroy(material);
+        }
+    }
+    static void
+    destroy(void *opaque)
+    {
+        BaseUserData *userData = static_cast<BaseUserData *>(opaque);
+        nanoem_delete(userData);
+    }
+    BaseSetTextureCallback()
+    {
+        m_accept = accept;
+        m_destory = destroy;
+        m_cancel = nullptr;
+    }
+    void
+    open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model)
+    {
+        StringList extensions;
+        extensions.push_back("png");
+        extensions.push_back("jpg");
+        extensions.push_back("bmp");
+        extensions.push_back("tga");
+        m_opaque = createUserData(material, model);
+        fileManager->setTransientQueryFileDialogCallback(*this);
+        eventPublisher->publishQueryOpenSingleFileDialogEvent(IFileManager::kDialogTypeUserCallback, extensions);
+    }
+    virtual BaseUserData *createUserData(nanoem_model_material_t *material, Model *model) = 0;
+};
+
 struct EnableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
     EnableModelEditingCommand(ModelParameterDialog *parent)
         : m_parent(parent)
@@ -1442,68 +1502,6 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     if (ImGui::BeginPopupContextItem("material.texture.menu")) {
         IEventPublisher *eventPublisher = project->eventPublisher();
         IFileManager *fileManager = m_applicationPtr->fileManager();
-        struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
-            struct BaseUserData {
-                BaseUserData(nanoem_model_material_t *material, Model *model)
-                    : m_model(model)
-                    , m_material(material)
-                {
-                }
-                virtual void upload(const URI &fileURI, BaseUserData *userData,
-                    nanoem_mutable_model_material_t *material, nanoem_mutable_model_texture_t *texture,
-                    Error &error) = 0;
-                Model *m_model;
-                nanoem_model_material_t *m_material;
-            };
-            static void
-            accept(const URI &fileURI, Project * /* project */, void *opaque)
-            {
-                BaseUserData *userData = static_cast<BaseUserData *>(opaque);
-                Model *model = userData->m_model;
-                const String modelBasePath(URI::stringByDeletingLastPathComponent(model->fileURI().absolutePath())),
-                        textureFilePath(FileUtils::relativePath(fileURI.absolutePath(), modelBasePath));
-                nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
-                StringUtils::UnicodeStringScope scope(factory);
-                if (StringUtils::tryGetString(factory, textureFilePath, scope)) {
-                    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                    nanoem_mutable_model_material_t *material =
-                        nanoemMutableModelMaterialCreateAsReference(userData->m_material, &status);
-                    nanoem_mutable_model_texture_t *texture = nanoemMutableModelTextureCreate(model->data(), &status);
-                    nanoemMutableModelTextureSetPath(texture, scope.value(), &status);
-                    Error error;
-                    userData->upload(fileURI, userData, material, texture, error);
-                    nanoemMutableModelTextureDestroy(texture);
-                    nanoemMutableModelMaterialDestroy(material);
-                }
-            }
-            static void
-            destroy(void *opaque)
-            {
-                BaseUserData *userData = static_cast<BaseUserData *>(opaque);
-                nanoem_delete(userData);
-            }
-            BaseSetTextureCallback()
-            {
-                m_accept = accept;
-                m_destory = destroy;
-                m_cancel = nullptr;
-            }
-            void
-            open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material,
-                Model *model)
-            {
-                StringList extensions;
-                extensions.push_back("png");
-                extensions.push_back("jpg");
-                extensions.push_back("bmp");
-                extensions.push_back("tga");
-                m_opaque = createUserData(material, model);
-                fileManager->setTransientQueryFileDialogCallback(*this);
-                eventPublisher->publishQueryOpenSingleFileDialogEvent(
-                    IFileManager::kDialogTypeUserCallback, extensions);
-            }
-            virtual BaseUserData *createUserData(nanoem_model_material_t *material, Model *model) = 0;
-        };
         if (ImGui::MenuItem("Set Diffuse Texture") && !fileManager->hasTransientQueryFileDialogCallback()) {
             struct SetDiffuseTextureCallback : BaseSetTextureCallback {
                 struct PrivateUserData : BaseUserData {
@@ -1665,7 +1663,8 @@ ModelParameterDialog::layoutMaterialDiffuseImage(
             m_parent->openUVEditDialog(activeMaterialPtr, m_activeModel);
         }
         ImGui::SameLine();
-        StringUtils::format(label, sizeof(label), "%s##%s.expand", tr("nanoem.gui.model.edit.material.texture.display-uv-mesh"), id);
+        StringUtils::format(
+            label, sizeof(label), "%s##%s.expand", tr("nanoem.gui.model.edit.material.texture.display-uv-mesh"), id);
         if (ImGui::Checkbox(label, &displayUVMeshEnabled)) {
             material->setDisplayDiffuseTextureUVMeshEnabled(displayUVMeshEnabled);
         }
@@ -1699,7 +1698,8 @@ ModelParameterDialog::layoutMaterialSphereMapImage(
     if (ImGui::CollapsingHeader(label)) {
         model::Material *material = model::Material::cast(activeMaterialPtr);
         bool displayUVMeshEnabled = material->isDisplaySphereMapTextureUVMeshEnabled();
-        StringUtils::format(label, sizeof(label), "%s##%s.expand", tr("nanoem.gui.model.edit.material.texture.display-uv-mesh"), id);
+        StringUtils::format(
+            label, sizeof(label), "%s##%s.expand", tr("nanoem.gui.model.edit.material.texture.display-uv-mesh"), id);
         if (ImGui::Checkbox(label, &displayUVMeshEnabled)) {
             material->setDisplaySphereMapTextureUVMeshEnabled(displayUVMeshEnabled);
         }
