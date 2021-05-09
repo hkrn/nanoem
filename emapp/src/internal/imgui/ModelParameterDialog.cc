@@ -49,6 +49,9 @@ struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
             , m_material(material)
         {
         }
+        virtual ~BaseUserData() NANOEM_DECL_NOEXCEPT
+        {
+        }
         virtual void upload(const URI &fileURI, BaseUserData *userData, nanoem_mutable_model_material_t *material,
             nanoem_mutable_model_texture_t *texture, Error &error) = 0;
         Model *m_model;
@@ -81,12 +84,17 @@ struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
         BaseUserData *userData = static_cast<BaseUserData *>(opaque);
         nanoem_delete(userData);
     }
+
     BaseSetTextureCallback()
     {
         m_accept = accept;
         m_destory = destroy;
         m_cancel = nullptr;
     }
+    virtual ~BaseSetTextureCallback() NANOEM_DECL_NOEXCEPT
+    {
+    }
+
     void
     open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model)
     {
