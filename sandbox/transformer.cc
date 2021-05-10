@@ -52,6 +52,8 @@ run(const bx::CommandLine &command)
     ThreadedApplicationService service(0);
     internal::StubEventPublisher publisher;
     Error error;
+    sg_desc desc = {};
+    sg::setup(&desc);
     service.setEventPublisher(&publisher);
     service.initialize(1.0f, 1.0f);
     Project *project = service.createProject(glm::vec2(1), SG_PIXELFORMAT_RGBA8, 1.0f, 1.0f, 0);
@@ -68,7 +70,7 @@ run(const bx::CommandLine &command)
                 FileUtils::read(modelScope, bytes, error);
                 Model *model = project->createModel();
                 if (model->load(bytes, error)) {
-                    fprintf(stderr, "Loaded Mdoel %s\n", inputPath);
+                    fprintf(stderr, "Loaded Model %s\n", inputPath);
                     model->upload();
                     project->addModel(model);
                     Motion *motion = 0;
@@ -123,7 +125,7 @@ main(int argc, char *argv[])
 {
     Allocator::initialize();
     ThreadedApplicationService::setup();
-    void *dllHandle = sg::openSharedLibrary("../emapp/sokol_noop." BX_DL_EXT);
+    void *dllHandle = sg::openSharedLibrary("../emapp/bundle/sokol/sokol_noop." BX_DL_EXT);
     bx::CommandLine command(argc, argv);
     run(command);
     sg::closeSharedLibrary(dllHandle);
