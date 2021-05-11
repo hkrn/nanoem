@@ -3633,6 +3633,18 @@
   phrase:
     en_US: '%zu validation problem(s) found'
     ja_JP: '検証した結果 %zu 件の問題が見つかりました'
+- key: nanoem.model.validator.vertex.model.name.empty
+  phrase:
+    en_US: 'The model name is empty'
+    ja_JP: 'モデル名が空です'
+- key: nanoem.model.validator.vertex.model.comment.empty
+  phrase:
+    en_US: 'Comment of the model is empty'
+    ja_JP: 'モデルのコメントが空です'
+- key: nanoem.model.validator.vertex.normal.invalid
+  phrase:
+    en_US: 'Normal of the vertex is invalid'
+    ja_JP: '頂点の法線が不正です'
 - key: nanoem.model.validator.vertex.texcoord.oob
   phrase:
     en_US: 'Texture coordinate of the vertex is out of bound'

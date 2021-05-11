@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -853,7 +853,10 @@ $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモ�
 2nanoem.project.diagnostics.message.digest-mismatchQ次のファイルは保存時から変更があったため読み込めません>
 #nanoem.model.validator.result.title「%s」の検証結果\
 %nanoem.model.validator.result.success3検証した結果問題はありませんでしたd
-%nanoem.model.validator.result.failure;検証した結果 %zu 件の問題が見つかりました^
+%nanoem.model.validator.result.failure;検証した結果 %zu 件の問題が見つかりましたJ
+.nanoem.model.validator.vertex.model.name.emptyモデル名が空ですY
+1nanoem.model.validator.vertex.model.comment.empty$モデルのコメントが空ですN
+,nanoem.model.validator.vertex.normal.invalid頂点の法線が不正です^
 *nanoem.model.validator.vertex.texcoord.oob0頂点のテクスチャ座標が範囲外ですg
 'nanoem.model.validator.vertex.bone.null<頂点に対応するボーンが設定されていませんv
 3nanoem.model.validator.vertex.weight.not-normalized?頂点のボーンウェイトが正規化されていませんL
@@ -1027,7 +1030,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1895,7 +1898,10 @@ $nanoem.error.motion.not-model.reason,The loading motion is not intended for mo
 2nanoem.project.diagnostics.message.digest-mismatch6Below files cannot be loaded due to file modification.>
 #nanoem.model.validator.result.titleValidation result of %sD
 %nanoem.model.validator.result.successNo validation problem foundH
-%nanoem.model.validator.result.failure%zu validation problem(s) found^
+%nanoem.model.validator.result.failure%zu validation problem(s) foundI
+.nanoem.model.validator.vertex.model.name.emptyThe model name is emptyR
+1nanoem.model.validator.vertex.model.comment.emptyComment of the model is emptyO
+,nanoem.model.validator.vertex.normal.invalidNormal of the vertex is invalid^
 *nanoem.model.validator.vertex.texcoord.oob0Texture coordinate of the vertex is out of boundL
 'nanoem.model.validator.vertex.bone.null!The bone of the vertex is not setf
 3nanoem.model.validator.vertex.weight.not-normalized/The bone weight of the vertex is not normalizedH

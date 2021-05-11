@@ -24,6 +24,8 @@ public:
         kMessageTypeNone = kMessageTypeFirstEnum,
         kMessageTypePrimitiveFloatNaN,
         kMessageTypePrimitiveFloatInfinity,
+        kMessageTypeModelEmptyName,
+        kMessageTypeModelEmptyComment,
         kMessageTypeVertexNormalInvalid,
         kMessageTypeVertexTexCoordOutOfBound,
         kMessageTypeVertexNullBoneObject,
@@ -130,6 +132,7 @@ public:
     void format(const Diagnostics &diag, const ITranslator *translator, String &text);
 
 private:
+    void validateModelInfo(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllVertexObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllFaces(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);
     void validateAllMaterialObjects(const Model *model, nanoem_u32_t filter, DiagnosticsList &result);

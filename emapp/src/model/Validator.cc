@@ -215,6 +215,7 @@ Validator::~Validator() NANOEM_DECL_NOEXCEPT
 void
 Validator::validate(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
 {
+    validateModelInfo(model, filter, result);
     validateAllVertexObjects(model, filter, result);
     validateAllFaces(model, filter, result);
     validateAllMaterialObjects(model, filter, result);
@@ -241,6 +242,14 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     case kMessageTypeVertexNormalInvalid: {
         StringUtils::format(text, "* %s: %d\n", translator->translate("nanoem.model.validator.vertex.normal.invalid"),
             model::Vertex::index(diag.u.m_vertexPtr));
+        break;
+    }
+    case kMessageTypeModelEmptyName: {
+        StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.model.name.empty"));
+        break;
+    }
+    case kMessageTypeModelEmptyComment: {
+        StringUtils::format(text, "* %s\n", translator->translate("nanoem.model.validator.model.comment.empty"));
         break;
     }
     case kMessageTypeVertexTexCoordOutOfBound: {
@@ -502,6 +511,28 @@ Validator::format(const Diagnostics &diag, const ITranslator *translator, String
     }
     default:
         break;
+    }
+}
+
+void
+Validator::validateModelInfo(const Model *model, nanoem_u32_t filter, DiagnosticsList &result)
+{
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
+    Diagnostics diag;
+    diag.u.m_bonePtr = nullptr;
+    for (nanoem_u32_t i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
+        String utf8Name, utf8Comment;
+        nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
+        StringUtils::getUtf8String(nanoemModelGetName(model->data(), language), factory, utf8Name);
+        if (utf8Name.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
+            diag.m_message = kMessageTypeModelEmptyName;
+            result.push_back(diag);
+        }
+        StringUtils::getUtf8String(nanoemModelGetName(model->data(), language), factory, utf8Comment);
+        if (utf8Comment.empty() && testDiagnosticsSeverity(kSeverityTypeWarning, filter, &diag)) {
+            diag.m_message = kMessageTypeModelEmptyComment;
+            result.push_back(diag);
+        }
     }
 }
 
