@@ -37,7 +37,6 @@ output(const bx::CommandLine &command, Model *model, Error &error)
                 fprintf(stderr, "[ERROR] Failed saving model(%llu): %s\n", error.code(), error.reasonConstString());
             }
             modelWriter->commit(error);
-            FileUtils::destroyFileWriter(modelWriter);
         }
         else {
             fprintf(stderr, "[ERROR] Failed saving model(%llu): %s\n", error.code(), error.reasonConstString());
