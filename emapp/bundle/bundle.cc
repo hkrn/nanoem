@@ -45,6 +45,7 @@ extern bx::AllocatorI *g_dd_allocator;
 extern bx::AllocatorI *g_par_allocator;
 extern bx::AllocatorI *g_sokol_allocator;
 extern bx::AllocatorI *g_stb_allocator;
+extern bx::AllocatorI *g_tinyobj_allocator;
 #include "sha256.c"
 }
 
@@ -205,6 +206,30 @@ extern "C" void
 __dd_free(void *ptr, const char *file, int line)
 {
     bx::free(g_dd_allocator, ptr, 0, file, line);
+}
+
+extern "C" void *
+__tinyobj_malloc(size_t size, const char *file, int line)
+{
+    return bx::alloc(g_tinyobj_allocator, size, 0, file, line);
+}
+extern "C" void *
+__tinyobj_calloc(size_t size, size_t count, const char *file, int line)
+{
+    const size_t allocateSize = size * count;
+    void *ptr = __tinyobj_malloc(allocateSize, file, line);
+    SecureZeroMemory(ptr, allocateSize);
+    return ptr;
+}
+extern "C" void *
+__tinyobj_realloc(void *ptr, size_t size, const char *file, int line)
+{
+    return bx::realloc(g_tinyobj_allocator, ptr, size, 0, file, line);
+}
+extern "C" void
+__tinyobj_free(void *ptr, const char *file, int line)
+{
+    bx::free(g_tinyobj_allocator, ptr, 0, file, line);
 }
 
 /* Debug Draw */

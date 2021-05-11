@@ -46,6 +46,7 @@ bx::AllocatorI *g_emapp_allocator = nullptr;
 bx::AllocatorI *g_par_allocator = nullptr;
 bx::AllocatorI *g_sokol_allocator = nullptr;
 bx::AllocatorI *g_stb_allocator = nullptr;
+bx::AllocatorI *g_tinyobj_allocator = nullptr;
 bx::AllocatorI *g_tinystl_allocator = nullptr;
 ProtobufCAllocator *g_protobufc_allocator = nullptr;
 
@@ -114,6 +115,7 @@ Allocator::initialize()
     g_sokol_allocator = &g_instance_for_sokol;
     g_stb_allocator = &g_instance_for_stb;
     g_protobufc_allocator = &g_pb_allocator;
+    g_tinyobj_allocator = &g_instance_for_tinyobj;
     g_tinystl_allocator = &g_instance_for_tinystl;
     json_set_allocation_functions(allocateJson, releaseJson);
     nanodxmGlobalSetCustomAllocator(&g_nanodxm_allocator);
@@ -437,6 +439,7 @@ Allocator Allocator::g_instance_for_parson("parson");
 Allocator Allocator::g_instance_for_protobuf("protobuf-c");
 Allocator Allocator::g_instance_for_sokol("sokol");
 Allocator Allocator::g_instance_for_stb("stb");
+Allocator Allocator::g_instance_for_tinyobj("tinyobjc");
 Allocator Allocator::g_instance_for_tinystl("tinystl");
 Allocator Allocator::g_instance_for_undo("undo");
 

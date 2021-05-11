@@ -17,6 +17,10 @@
 #include "nanodxm/nanodxm.h"
 #include "nanomqo/nanomqo.h"
 
+extern "C" {
+#include "tinyobjloader-c/tinyobj_loader_c.h"
+}
+
 namespace nanoem {
 namespace model {
 namespace {
@@ -94,7 +98,62 @@ Importer::handleWavefrontObjDocument(
     const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error)
 {
     BX_UNUSED_4(bytes, length, desc, error);
-    return false;
+    tinyobj_attrib_t attr;
+    tinyobj_shape_t *shapes = nullptr;
+    tinyobj_material_t *materials = nullptr;
+    nanoem_rsize_t numShapes, numMaterials;
+    int ret = tinyobj_parse_obj(&attr, &shapes, &numShapes, &materials, &numMaterials,
+        desc.m_fileURI.absolutePathConstString(), handleLoadingTinyOBJCallback, this, TINYOBJ_FLAG_TRIANGULATE);
+    bool result = false;
+    if (ret == TINYOBJ_SUCCESS) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreateAsReference(m_model->data(), &status);
+        nanoem_unicode_string_factory_t *factory = m_model->project()->unicodeStringFactory();
+        nanoem_model_t *originModel = nanoemMutableModelGetOriginObject(mutableModel);
+        const bool hasNormals = attr.num_normals > 0 && attr.num_vertices == attr.num_normals,
+                hasTexCoords = attr.num_texcoords > 0 && attr.num_vertices == attr.num_texcoords;
+        for (nanoem_rsize_t i = 0, numVertices = attr.num_vertices; i < numVertices; i++) {
+            const nanoem_f32_t *originPtr = &attr.vertices[i * 3];
+            const Vector4 origin(originPtr[0], originPtr[1], originPtr[2], 1);
+            nanoem_mutable_model_vertex_t *vertexPtr = nanoemMutableModelVertexCreate(originModel, &status);
+            nanoemMutableModelVertexSetOrigin(vertexPtr, glm::value_ptr(origin));
+            if (hasNormals) {
+                const nanoem_f32_t *normalPtr = &attr.normals[i * 3];
+                const Vector4 normal(normalPtr[0], normalPtr[1], normalPtr[2], 0);
+                nanoemMutableModelVertexSetNormal(vertexPtr, glm::value_ptr(normal));
+            }
+            if (hasTexCoords) {
+                const nanoem_f32_t *texCoordPtr = &attr.texcoords[i * 2];
+                const Vector4 texCoord(texCoordPtr[0], texCoordPtr[1], 0, 0);
+                nanoemMutableModelVertexSetTexCoord(vertexPtr, glm::value_ptr(texCoord));
+            }
+            nanoemMutableModelInsertVertexObject(mutableModel, vertexPtr, -1, &status);
+            nanoemMutableModelVertexDestroy(vertexPtr);
+        }
+        const nanoem_rsize_t numFaces = attr.num_faces;
+        IndexList indices(numFaces);
+        for (nanoem_rsize_t i = 0; i < numFaces; i++) {
+            const tinyobj_vertex_index_t &face = attr.faces[i];
+            indices[i] = face.v_idx;
+        }
+        nanoemMutableModelSetVertexIndices(mutableModel, indices.data(), indices.size(), &status);
+        {
+            nanoem_mutable_model_material_t *materialPtr = nanoemMutableModelMaterialCreate(originModel, &status);
+            nanoemMutableModelMaterialSetAmbientColor(materialPtr, glm::value_ptr(Vector4(1)));
+            nanoemMutableModelMaterialSetDiffuseColor(materialPtr, glm::value_ptr(Vector4(1)));
+            nanoemMutableModelMaterialSetSpecularColor(materialPtr, glm::value_ptr(Vector4(1)));
+            nanoemMutableModelMaterialSetDiffuseOpacity(materialPtr, 1.0f);
+            nanoemMutableModelMaterialSetSpecularPower(materialPtr, 1.0f);
+            nanoemMutableModelMaterialSetNumVertexIndices(materialPtr, numFaces);
+            nanoemMutableModelInsertMaterialObject(mutableModel, materialPtr, -1, &status);
+            nanoemMutableModelMaterialDestroy(materialPtr);
+        }
+        setupRootParentBoneAndLabel(mutableModel, factory, &status);
+        bindAllVerticesWithRootParentBone(mutableModel, &status);
+        nanoemMutableModelDestroy(mutableModel);
+        result = status == NANOEM_STATUS_SUCCESS;
+    }
+    return result;
 }
 
 bool
@@ -524,6 +583,39 @@ Importer::handleMetasequoiaDocument(
     nanomqoDocumentDestroy(document);
     nanomqoBufferDestroy(buffer);
     return !error.hasReason();
+}
+
+void
+Importer::handleLoadingTinyOBJCallback(
+    void *ctx, const char *filename, const int is_mtl, const char *obj_filename, char **data, size_t *len)
+{
+    BX_UNUSED_1(obj_filename);
+    Importer *self = static_cast<Importer *>(ctx);
+    FileReaderScope reader(self->m_model->project()->translator());
+    Error error;
+    char *bytesPtr = nullptr;
+    nanoem_rsize_t length = 0;
+    URI fileURI;
+#if 0 /* disable loading material file due to infinite loop at hash construction in tinyobjloader */
+    if (is_mtl && obj_filename) {
+        String path(URI::stringByDeletingLastPathComponent(obj_filename));
+        path.append("/");
+        path.append(filename);
+        fileURI = URI::createFromFilePath(path);
+    }
+    else
+#endif
+    {
+        fileURI = URI::createFromFilePath(filename);
+    }
+    if (reader.open(fileURI, error)) {
+        ByteArray &bytes = self->m_bytes[fileURI.absolutePath()];
+        FileUtils::read(reader, bytes, error);
+        bytesPtr = reinterpret_cast<char *>(bytes.data());
+        length = bytes.size();
+    }
+    *data = bytesPtr;
+    *len = length;
 }
 
 void
