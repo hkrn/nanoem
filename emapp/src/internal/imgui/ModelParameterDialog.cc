@@ -3044,8 +3044,10 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                             command::ScopedMutableMorph parent(model);
                             StringUtils::UnicodeStringScope us(factory);
                             if (StringUtils::tryGetString(factory, fileURI.lastPathComponent(), us)) {
-                                nanoemMutableModelMorphSetName(parent, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-                                nanoemMutableModelMorphSetName(parent, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+                                nanoemMutableModelMorphSetName(
+                                    parent, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+                                nanoemMutableModelMorphSetName(
+                                    parent, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
                             }
                             nanoemMutableModelMorphSetType(parent, NANOEM_MODEL_MORPH_TYPE_BONE);
                             nanoemMutableModelMorphSetCategory(parent, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
@@ -3055,11 +3057,14 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                                 if (const nanoem_model_bone_t *bonePtr = model->findBone(it->first)) {
                                     const Vector3 &translation = it->second.first;
                                     const Quaternion &orientation = it->second.second;
-                                    if (glm::all(glm::epsilonNotEqual(translation, Constants::kZeroV3, Constants::kEpsilon)) ||
-                                        glm::all(glm::epsilonNotEqual(orientation, Constants::kZeroQ, Constants::kEpsilon))) {
+                                    if (glm::all(glm::epsilonNotEqual(
+                                            translation, Constants::kZeroV3, Constants::kEpsilon)) ||
+                                        glm::all(glm::epsilonNotEqual(
+                                            orientation, Constants::kZeroQ, Constants::kEpsilon))) {
                                         command::ScopedMutableMorphBone scoped(parent);
                                         nanoemMutableModelMorphBoneSetBoneObject(scoped, bonePtr);
-                                        nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(Vector4(translation, 0)));
+                                        nanoemMutableModelMorphBoneSetTranslation(
+                                            scoped, glm::value_ptr(Vector4(translation, 0)));
                                         nanoemMutableModelMorphBoneSetOrientation(scoped, glm::value_ptr(orientation));
                                         nanoemMutableModelMorphInsertBoneMorphObject(parent, scoped, -1, &status);
                                     }

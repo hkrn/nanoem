@@ -111,7 +111,7 @@ Importer::handleWavefrontObjDocument(
         nanoem_unicode_string_factory_t *factory = m_model->project()->unicodeStringFactory();
         nanoem_model_t *originModel = nanoemMutableModelGetOriginObject(mutableModel);
         const bool hasNormals = attr.num_normals > 0 && attr.num_vertices == attr.num_normals,
-                hasTexCoords = attr.num_texcoords > 0 && attr.num_vertices == attr.num_texcoords;
+                   hasTexCoords = attr.num_texcoords > 0 && attr.num_vertices == attr.num_texcoords;
         for (nanoem_rsize_t i = 0, numVertices = attr.num_vertices; i < numVertices; i++) {
             const nanoem_f32_t *originPtr = &attr.vertices[i * 3];
             const Vector4 origin(originPtr[0], originPtr[1], originPtr[2], 1);
