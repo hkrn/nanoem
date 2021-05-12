@@ -763,6 +763,7 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numVertices > 0 && m_vertexIndex < numVertices) {
         nanoem_model_vertex_t *vertexPtr = vertices[m_vertexIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutVertexPropertyPane(vertexPtr);
     }
     ImGui::EndChild(); /* right-pane */
@@ -1049,6 +1050,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
         const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0], vertexIndex1 = vertexIndices[offset + 1],
                            vertexIndex2 = vertexIndices[offset + 2];
         const Vector3UI32 face(vertexIndex0, vertexIndex1, vertexIndex2);
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutFacePropertyPane(face);
     }
     ImGui::EndChild(); /* right-pane */
@@ -1060,31 +1062,30 @@ ModelParameterDialog::layoutFacePropertyPane(const Vector3UI32 &face)
     char label[Inline::kNameStackBufferSize];
     nanoem_rsize_t numVertices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-    nanoem_u32_t vertexIndex = face[0];
-    if (vertexIndex < numVertices) {
-        const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndex];
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        const nanoem_model_material_t *materialPtr = vertex->material();
-        StringUtils::format(label, sizeof(label), "%s##material", ImGuiWindow::kFALink);
-        if (ImGuiWindow::handleButton(label, 0, materialPtr != nullptr)) {
-            toggleMaterial(materialPtr);
-        }
-        ImGui::SameLine();
-        ImGui::TextUnformatted(model::Material::nameConstString(materialPtr, "(none)"));
-    }
-    addSeparator();
     for (int i = 0; i < 3; i++) {
         nanoem_u32_t vertexIndex = face[i];
         if (vertexIndex < numVertices) {
             const nanoem_model_vertex_t *vertexPtr = vertices[vertexIndex];
             StringUtils::format(label, sizeof(label), "%s##vertex[%d]", ImGuiWindow::kFALink, i);
-            int vertexIndex = model::Vertex::index(vertexPtr);
             if (ImGuiWindow::handleButton(label, 0, vertexPtr != nullptr)) {
                 toggleVertex(vertexPtr);
             }
             ImGui::SameLine();
+            int vertexIndex = model::Vertex::index(vertexPtr);
             StringUtils::format(label, sizeof(label), "Vertex%d", vertexIndex);
             ImGui::TextUnformatted(label);
+            if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                const nanoem_model_material_t *materialPtr = vertex->material();
+                if (const model::Material *material = model::Material::cast(materialPtr)) {
+                    StringUtils::format(label, sizeof(label), "%s##material[%d]", ImGuiWindow::kFALink, i);
+                    ImGui::SameLine();
+                    if (ImGuiWindow::handleButton(label, 0, vertexPtr != nullptr)) {
+                        toggleMaterial(materialPtr);
+                    }
+                    ImGui::SameLine();
+                    ImGui::TextUnformatted(material->nameConstString());
+                }
+            }
         }
     }
 }
@@ -1412,6 +1413,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numMaterials > 0 && m_materialIndex < numMaterials) {
         nanoem_model_material_t *materialPtr = materials[m_materialIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutMaterialPropertyPane(materialPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
@@ -2166,6 +2168,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numBones > 0 && m_boneIndex < numBones) {
         nanoem_model_bone_t *bonePtr = bones[m_boneIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutBonePropertyPane(bonePtr, project);
     }
     ImGui::EndChild(); /* right-pane */
@@ -3125,6 +3128,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numMorphs > 0 && m_morphIndex < numMorphs) {
         nanoem_model_morph_t *morphPtr = morphs[m_morphIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutMorphPropertyPane(morphPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
@@ -4082,6 +4086,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numLabels > 0 && m_labelIndex < numLabels) {
         nanoem_model_label_t *labelPtr = labels[m_labelIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutLabelPropertyPane(labelPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
@@ -4431,6 +4436,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies) {
         nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[m_rigidBodyIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutRigidBodyPropertyPane(rigidBodyPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
@@ -4822,6 +4828,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numJoints > 0 && m_jointIndex < numJoints) {
         nanoem_model_joint_t *jointPtr = joints[m_jointIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutJointPropertyPane(jointPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
@@ -5117,6 +5124,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (numSoftBodies > 0 && m_softBodyIndex < numSoftBodies) {
         nanoem_model_soft_body_t *softBodyPtr = softBodies[m_softBodyIndex];
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutSoftBodyPropertyPane(softBodyPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
