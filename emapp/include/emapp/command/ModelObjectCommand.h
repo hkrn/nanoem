@@ -9,6 +9,7 @@
 #define NANOEM_EMAPP_COMMAND_MODELOBJECTCOMMAND_H_
 
 #include "emapp/command/BaseUndoCommand.h"
+#include "emapp/model/BindPose.h"
 
 struct nanoem_mutable_model_t;
 struct nanoem_mutable_model_vertex_t;
@@ -207,7 +208,7 @@ public:
     ~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT;
 
 protected:
-    void move(int destination, const LayoutPosition &from, const LayoutPosition &to, Model *activeModel);
+    void move(int destination, const LayoutPosition &from, const LayoutPosition &to, Model *activeModel, nanoem_status_t *status);
 
     nanoem_model_material_t *const *m_materials;
     nanoem_rsize_t &m_materialIndex;
@@ -249,6 +250,7 @@ class CreateBoneCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base);
+    static void setup(nanoem_model_bone_t *bonePtr, Project *project);
 
     CreateBoneCommand(Project *project, nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base);
     ~CreateBoneCommand() NANOEM_DECL_NOEXCEPT;
@@ -265,6 +267,30 @@ private:
     const nanoem_rsize_t m_numBones;
     const int m_offset;
     Model *m_activeModel;
+    ScopedMutableBone m_mutableBone;
+};
+
+class CreateStagingBoneCommand : public BaseUndoCommand {
+public:
+    static undo_command_t *create(
+        Project *project, nanoem_model_bone_t *base);
+    static void setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
+    static void setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_language_type_t language, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
+
+    CreateStagingBoneCommand(Project *project, nanoem_model_bone_t *base);
+    ~CreateStagingBoneCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    const nanoem_model_bone_t *m_parent;
+    Model *m_activeModel;
+    ScopedMutableBone m_base;
     ScopedMutableBone m_mutableBone;
 };
 
@@ -352,6 +378,25 @@ private:
     const nanoem_model_morph_type_t m_type;
     const nanoem_rsize_t m_numMorphs;
     const int m_offset;
+    Model *m_activeModel;
+    ScopedMutableMorph m_mutableMorph;
+};
+
+class CreateBoneMorphFromPoseCommand : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project, const model::BindPose::BoneTransformMap &transforms, const model::BindPose::MorphWeightMap &weights, const String &filename);
+
+    CreateBoneMorphFromPoseCommand(Project *project, const model::BindPose::BoneTransformMap &transforms, const model::BindPose::MorphWeightMap &weights, const String &filename);
+    ~CreateBoneMorphFromPoseCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
     Model *m_activeModel;
     ScopedMutableMorph m_mutableMorph;
 };

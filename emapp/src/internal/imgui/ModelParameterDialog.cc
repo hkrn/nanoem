@@ -2119,8 +2119,8 @@ ModelParameterDialog::layoutAllBones(Project *project)
         ImGui::OpenPopup("bone-create-menu");
     }
     if (ImGui::BeginPopup("bone-create-menu")) {
-        const nanoem_model_bone_t *selectedBone = numBones > 0 ? bones[m_boneIndex] : nullptr;
-        int selectedBoneIndex = model::Bone::index(selectedBone);
+        nanoem_model_bone_t *selectedBonePtr = numBones > 0 ? bones[m_boneIndex] : nullptr;
+        int selectedBoneIndex = model::Bone::index(selectedBonePtr);
         if (ImGui::BeginMenu("Insert New")) {
             if (ImGui::MenuItem("at Last")) {
                 undo_command_t *command = command::CreateBoneCommand::create(project, numBones, -1, nullptr);
@@ -2135,15 +2135,24 @@ ModelParameterDialog::layoutAllBones(Project *project)
         }
         if (ImGui::BeginMenu("Insert Copy", m_boneIndex < numBones)) {
             if (ImGui::MenuItem("at Last")) {
-                undo_command_t *command = command::CreateBoneCommand::create(project, numBones, -1, selectedBone);
+                undo_command_t *command = command::CreateBoneCommand::create(project, numBones, -1, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
             }
             if (ImGui::MenuItem("at Next")) {
                 undo_command_t *command =
-                    command::CreateBoneCommand::create(project, numBones, selectedBoneIndex + 1, selectedBone);
+                    command::CreateBoneCommand::create(project, numBones, selectedBoneIndex + 1, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
             }
             ImGui::EndMenu();
+        }
+        if (const model::Bone *selectedBone = model::Bone::cast(selectedBonePtr)) {
+            ImGui::Separator();
+            StringUtils::format(buffer, sizeof(buffer), "Creating Staging Bone of %s", selectedBone->nameConstString());
+            if (ImGui::MenuItem(buffer, nullptr, false, nanoemModelBoneGetParentBoneObject(selectedBonePtr) != nullptr)) {
+                undo_command_t *command =
+                    command::CreateStagingBoneCommand::create(project, selectedBonePtr);
+                m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+            }
         }
         ImGui::EndPopup();
     }
@@ -3036,7 +3045,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
         if (ImGui::MenuItem("Create Bone Morph from Pose File")) {
             struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallbacks {
                 static void
-                handleAccept(const URI &fileURI, Project *project, void * /* opaque */)
+                handleAccept(const URI &fileURI, Project *project, void *opaque)
                 {
                     model::BindPose bindPose;
                     model::BindPose::BoneTransformMap transforms;
@@ -3047,57 +3056,23 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                         ByteArray bytes;
                         FileUtils::read(scope, bytes, error);
                         nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-                        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                        Model *model = project->activeModel();
                         if (bindPose.load(bytes, factory, transforms, weights, error)) {
-                            command::ScopedMutableMorph parent(model);
-                            StringUtils::UnicodeStringScope us(factory);
-                            if (StringUtils::tryGetString(factory, fileURI.lastPathComponent(), us)) {
-                                nanoemMutableModelMorphSetName(
-                                    parent, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-                                nanoemMutableModelMorphSetName(
-                                    parent, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
-                            }
-                            nanoemMutableModelMorphSetType(parent, NANOEM_MODEL_MORPH_TYPE_BONE);
-                            nanoemMutableModelMorphSetCategory(parent, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
-                            for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(),
-                                                                                   end = transforms.end();
-                                 it != end; ++it) {
-                                if (const nanoem_model_bone_t *bonePtr = model->findBone(it->first)) {
-                                    const Vector3 &translation = it->second.first;
-                                    const Quaternion &orientation = it->second.second;
-                                    if (glm::all(glm::epsilonNotEqual(
-                                            translation, Constants::kZeroV3, Constants::kEpsilon)) ||
-                                        glm::all(glm::epsilonNotEqual(
-                                            orientation, Constants::kZeroQ, Constants::kEpsilon))) {
-                                        command::ScopedMutableMorphBone scoped(parent);
-                                        nanoemMutableModelMorphBoneSetBoneObject(scoped, bonePtr);
-                                        nanoemMutableModelMorphBoneSetTranslation(
-                                            scoped, glm::value_ptr(Vector4(translation, 0)));
-                                        nanoemMutableModelMorphBoneSetOrientation(scoped, glm::value_ptr(orientation));
-                                        nanoemMutableModelMorphInsertBoneMorphObject(parent, scoped, -1, &status);
-                                    }
-                                }
-                            }
-                            nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(parent);
-                            command::ScopedMutableModel m(model);
-                            model::Morph *morph = model::Morph::create();
-                            morph->bind(morphPtr);
-                            morph->resetLanguage(morphPtr, factory, project->castLanguage());
-                            model->addMorphReference(morphPtr);
-                            nanoemMutableModelInsertMorphObject(m, parent, -1, &status);
+                            ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+                            undo_command_t *command = command::CreateBoneMorphFromPoseCommand::create(
+                                project, transforms, weights, fileURI.lastPathComponent());
+                            parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
                         }
                     }
                 }
-                CreateBoneMorphFromBindPoseCallback()
+                CreateBoneMorphFromBindPoseCallback(ImGuiWindow *parent)
                 {
                     m_accept = handleAccept;
                     m_cancel = nullptr;
                     m_destory = nullptr;
-                    m_opaque = nullptr;
+                    m_opaque = parent;
                 }
             };
-            CreateBoneMorphFromBindPoseCallback callback;
+            CreateBoneMorphFromBindPoseCallback callback(m_parent);
             IEventPublisher *eventPublisher = project->eventPublisher();
             IFileManager *fileManager = m_applicationPtr->fileManager();
             fileManager->setTransientQueryFileDialogCallback(callback);
@@ -5614,6 +5589,19 @@ ModelParameterDialog::layoutBoneAxisMenuItems(
             }
         }
         ImGui::EndMenu();
+    }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Set Global X Axis")) {
+        command::ScopedMutableBone scoped(bonePtr);
+        setBoneAxisCallback(scoped, glm::value_ptr(Vector4(Constants::kUnitX, 0)));
+    }
+    if (ImGui::MenuItem("Set Global Y Axis")) {
+        command::ScopedMutableBone scoped(bonePtr);
+        setBoneAxisCallback(scoped, glm::value_ptr(Vector4(Constants::kUnitY, 0)));
+    }
+    if (ImGui::MenuItem("Set Global Z Axis")) {
+        command::ScopedMutableBone scoped(bonePtr);
+        setBoneAxisCallback(scoped, glm::value_ptr(Vector4(Constants::kUnitZ, 0)));
     }
 }
 
