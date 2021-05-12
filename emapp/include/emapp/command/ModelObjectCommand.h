@@ -270,15 +270,15 @@ private:
     ScopedMutableBone m_mutableBone;
 };
 
-class CreateStagingBoneCommand : public BaseUndoCommand {
+class CreateBoneAsStagingParentCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_bone_t *base);
+        Project *project, const nanoem_model_bone_t *base);
     static void setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
     static void setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_language_type_t language, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
 
-    CreateStagingBoneCommand(Project *project, nanoem_model_bone_t *base);
-    ~CreateStagingBoneCommand() NANOEM_DECL_NOEXCEPT;
+    CreateBoneAsStagingParentCommand(Project *project, const nanoem_model_bone_t *base);
+    ~CreateBoneAsStagingParentCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
     void redo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -288,10 +288,12 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
+    typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
-    ScopedMutableBone m_base;
+    BoneList m_bones;
     ScopedMutableBone m_mutableBone;
+    int m_boneIndex;
 };
 
 class DeleteBoneCommand : public BaseUndoCommand {

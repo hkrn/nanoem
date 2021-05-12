@@ -840,22 +840,22 @@ CreateBoneCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateStagingBoneCommand::create(
-    Project *project, nanoem_model_bone_t *base)
+CreateBoneAsStagingParentCommand::create(
+    Project *project, const nanoem_model_bone_t *base)
 {
-    CreateStagingBoneCommand *command = nanoem_new(CreateStagingBoneCommand(project, base));
+    CreateBoneAsStagingParentCommand *command = nanoem_new(CreateBoneAsStagingParentCommand(project, base));
     return command->createCommand();
 }
 
 void
-CreateStagingBoneCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
+CreateBoneAsStagingParentCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
 {
     setNameSuffix(bone, suffix, NANOEM_LANGUAGE_TYPE_JAPANESE, factory, status);
     setNameSuffix(bone, suffix, NANOEM_LANGUAGE_TYPE_ENGLISH, factory, status);
 }
 
 void
-CreateStagingBoneCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_language_type_t language, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
+CreateBoneAsStagingParentCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_language_type_t language, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
 {
     String result;
     const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(bone);
@@ -867,71 +867,88 @@ CreateStagingBoneCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const
     }
 }
 
-CreateStagingBoneCommand::CreateStagingBoneCommand(Project *project, nanoem_model_bone_t *base)
+CreateBoneAsStagingParentCommand::CreateBoneAsStagingParentCommand(Project *project, const nanoem_model_bone_t *base)
     : BaseUndoCommand(project)
     , m_parent(nanoemModelBoneGetParentBoneObject(base))
     , m_activeModel(project->activeModel())
-    , m_base(base)
     , m_mutableBone(m_activeModel)
+    , m_boneIndex(model::Bone::index(base) + 1)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    const nanoem_model_bone_t *baseBone = nanoemMutableModelBoneGetOriginObject(m_base);
-    nanoemMutableModelBoneCopy(m_mutableBone, baseBone, &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_mutableBone, m_parent);
+    nanoemMutableModelBoneCopy(m_mutableBone, base, &status);
+    nanoemMutableModelBoneSetParentBoneObject(m_mutableBone, base);
     setNameSuffix(m_mutableBone, "+", factory, &status);
     CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_mutableBone), project);
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        nanoem_model_bone_t *bonePtr = bones[i];
+        if (nanoemModelBoneGetParentBoneObject(bonePtr) == base) {
+            nanoem_mutable_model_bone_t *mutableBone = nanoemMutableModelBoneCreateAsReference(bonePtr, &status);
+            m_bones.push_back(mutableBone);
+            break;
+        }
+    }
 }
 
-CreateStagingBoneCommand::~CreateStagingBoneCommand() NANOEM_DECL_NOEXCEPT
+CreateBoneAsStagingParentCommand::~CreateBoneAsStagingParentCommand() NANOEM_DECL_NOEXCEPT
 {
+    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+        nanoemMutableModelBoneDestroy(*it);
+    }
+    m_bones.clear();
 }
 
 void
-CreateStagingBoneCommand::undo(Error &error)
+CreateBoneAsStagingParentCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel);
     m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
     nanoemMutableModelRemoveBoneObject(model, m_mutableBone, &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_base, m_parent);
+    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+        nanoemMutableModelBoneSetParentBoneObject(*it, m_parent);
+    }
     assignError(status, error);
 }
 
 void
-CreateStagingBoneCommand::redo(Error &error)
+CreateBoneAsStagingParentCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel);
-    const nanoem_model_bone_t *baseBone = nanoemMutableModelBoneGetOriginObject(m_base);
-    nanoemMutableModelInsertBoneObject(model, m_mutableBone, model::Bone::index(baseBone), &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_base, nanoemMutableModelBoneGetOriginObject(m_mutableBone));
+    nanoemMutableModelInsertBoneObject(model, m_mutableBone, m_boneIndex, &status);
+    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
+    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+        nanoemMutableModelBoneSetParentBoneObject(*it, origin);
+    }
     m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
     assignError(status, error);
 }
 
 void
-CreateStagingBoneCommand::read(const void *messagePtr)
+CreateBoneAsStagingParentCommand::read(const void *messagePtr)
 {
     BX_UNUSED_1(messagePtr);
 }
 
 void
-CreateStagingBoneCommand::write(void *messagePtr)
+CreateBoneAsStagingParentCommand::write(void *messagePtr)
 {
     BX_UNUSED_1(messagePtr);
 }
 
 void
-CreateStagingBoneCommand::release(void *messagePtr)
+CreateBoneAsStagingParentCommand::release(void *messagePtr)
 {
     BX_UNUSED_1(messagePtr);
 }
 
 const char *
-CreateStagingBoneCommand::name() const NANOEM_DECL_NOEXCEPT
+CreateBoneAsStagingParentCommand::name() const NANOEM_DECL_NOEXCEPT
 {
-    return "CreateStagingBoneCommand";
+    return "CreateBoneAsStagingParentCommand";
 }
 
 undo_command_t *

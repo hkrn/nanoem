@@ -2150,7 +2150,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
             StringUtils::format(buffer, sizeof(buffer), "Creating Staging Bone of %s", selectedBone->nameConstString());
             if (ImGui::MenuItem(buffer, nullptr, false, nanoemModelBoneGetParentBoneObject(selectedBonePtr) != nullptr)) {
                 undo_command_t *command =
-                    command::CreateStagingBoneCommand::create(project, selectedBonePtr);
+                    command::CreateBoneAsStagingParentCommand::create(project, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
             }
         }
