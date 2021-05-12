@@ -1429,6 +1429,9 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableMaterial scoped(materialPtr);
         nanoemMutableModelMaterialSetName(scoped, scope.value(), language, &status);
+        if (model::Material *material = model::Material::cast(materialPtr)) {
+            material->resetLanguage(materialPtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
@@ -2185,6 +2188,9 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableBone scoped(bonePtr);
         nanoemMutableModelBoneSetName(scoped, scope.value(), language, &status);
+        if (model::Bone *bone = model::Bone::cast(bonePtr)) {
+            bone->resetLanguage(bonePtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
@@ -3144,6 +3150,9 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableMorph scoped(morphPtr);
         nanoemMutableModelMorphSetName(scoped, scope.value(), language, &status);
+        if (model::Morph *morph = model::Morph::cast(morphPtr)) {
+            morph->resetLanguage(morphPtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
@@ -4103,6 +4112,9 @@ ModelParameterDialog::layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Pr
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableLabel scoped(labelPtr);
         nanoemMutableModelLabelSetName(scoped, scope.value(), language, &status);
+        if (model::Label *label = model::Label::cast(labelPtr)) {
+            label->resetLanguage(labelPtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
@@ -4453,6 +4465,9 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableRigidBody scoped(rigidBodyPtr);
         nanoemMutableModelRigidBodySetName(scoped, scope.value(), language, &status);
+        if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+            rigidBody->resetLanguage(rigidBodyPtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
@@ -4845,6 +4860,9 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableJoint scoped(jointPtr);
         nanoemMutableModelJointSetName(scoped, scope.value(), language, &status);
+        if (model::Joint *joint = model::Joint::cast(jointPtr)) {
+            joint->resetLanguage(jointPtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
@@ -5141,6 +5159,9 @@ ModelParameterDialog::layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softB
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         command::ScopedMutableSoftBody scoped(softBodyPtr);
         nanoemMutableModelSoftBodySetName(scoped, scope.value(), language, &status);
+        if (model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr)) {
+            softBody->resetLanguage(softBodyPtr, project->unicodeStringFactory(), language);
+        }
     }
     addSeparator();
     {
