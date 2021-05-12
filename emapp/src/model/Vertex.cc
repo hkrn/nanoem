@@ -42,7 +42,17 @@ void
 Vertex::bind(nanoem_model_vertex_t *vertexPtr)
 {
     nanoem_parameter_assert(vertexPtr, "must not be nullptr");
+    initialize(vertexPtr);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoem_user_data_t *userData = nanoemUserDataCreate(&status);
+    nanoemUserDataSetOnDestroyModelObjectCallback(userData, &Vertex::destroy);
+    nanoemUserDataSetOpaqueData(userData, this);
+    nanoemModelObjectSetUserData(nanoemModelVertexGetModelObjectMutable(vertexPtr), userData);
+}
+
+void
+Vertex::initialize(const nanoem_model_vertex_t *vertexPtr)
+{
     const bx::simd128_t direction = bx::simd_ld(glm::value_ptr(Vector4(Constants::kTranslateDirection, 1)));
     m_simd.m_origin = bx::simd_mul(bx::simd_ld(nanoemModelVertexGetOrigin(vertexPtr)), direction);
     m_simd.m_normal = bx::simd_mul(bx::simd_ld(nanoemModelVertexGetNormal(vertexPtr)), direction);
@@ -66,10 +76,6 @@ Vertex::bind(nanoem_model_vertex_t *vertexPtr)
     m_simd.m_deltaUVA[2] = bx::simd_zero();
     m_simd.m_deltaUVA[3] = bx::simd_zero();
     m_simd.m_deltaUVA[4] = bx::simd_zero();
-    nanoem_user_data_t *userData = nanoemUserDataCreate(&status);
-    nanoemUserDataSetOnDestroyModelObjectCallback(userData, &Vertex::destroy);
-    nanoemUserDataSetOpaqueData(userData, this);
-    nanoemModelObjectSetUserData(nanoemModelVertexGetModelObjectMutable(vertexPtr), userData);
 }
 
 void

@@ -1737,6 +1737,15 @@ Model::rebuildAllVertexBuffers(bool enableSkinFactory)
         sg::destroy_buffer(m_vertexBuffers[1]);
     }
     m_vertexBuffers[0] = m_vertexBuffers[1] = { SG_INVALID_ID };
+    {
+        nanoem_rsize_t numVertices;
+        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            const nanoem_model_vertex_t *vertexPtr = vertices[i];
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            vertex->initialize(vertexPtr);
+        }
+    }
     if (enableSkinFactory) {
         initializeAllStagingVertexBuffers();
     }

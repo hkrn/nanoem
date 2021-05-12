@@ -29,6 +29,7 @@ public:
     ~Vertex() NANOEM_DECL_NOEXCEPT;
 
     void bind(nanoem_model_vertex_t *vertexPtr);
+    void initialize(const nanoem_model_vertex_t *vertexPtr);
     void setupBoneBinding(nanoem_model_vertex_t *vertexPtr, Model *model);
 
     static int index(const nanoem_model_vertex_t *vertexPtr);
