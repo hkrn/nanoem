@@ -264,7 +264,6 @@ public:
 
 private:
     const nanoem_model_bone_t *m_base;
-    const nanoem_rsize_t m_numBones;
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableBone m_mutableBone;
@@ -298,9 +297,9 @@ private:
 
 class DeleteBoneCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t boneIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
-    DeleteBoneCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
+    DeleteBoneCommand(Project *project, nanoem_rsize_t &boneIndex);
     ~DeleteBoneCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -311,33 +310,34 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_bone_t *const *m_bones;
-    nanoem_rsize_t &m_boneIndex;
+    const nanoem_rsize_t m_boneIndex;
     Model *m_activeModel;
     nanoem_mutable_model_bone_t *m_mutableBone;
 };
 
 class BaseMoveBoneCommand : public BaseUndoCommand {
-protected:
-    BaseMoveBoneCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
+public:
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
 
-    void move(int delta, Error &error);
+protected:
+    BaseMoveBoneCommand(Project *project, nanoem_rsize_t fromBoneIndex, nanoem_rsize_t toBoneIndex);
 
 private:
-    nanoem_model_bone_t *const *m_bones;
-    nanoem_rsize_t &m_boneIndex;
+    void move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, Error &error);
+
+    const nanoem_rsize_t m_fromBoneIndex;
+    const nanoem_rsize_t m_toBoneIndex;
     Model *m_activeModel;
 };
 
 class MoveBoneDownCommand : public BaseMoveBoneCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
-    MoveBoneDownCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
+    MoveBoneDownCommand(Project *project, nanoem_rsize_t boneIndex);
     ~MoveBoneDownCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -346,13 +346,11 @@ public:
 
 class MoveBoneUpCommand : public BaseMoveBoneCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
-    MoveBoneUpCommand(Project *project, nanoem_model_bone_t *const *bones, nanoem_rsize_t &boneIndex);
+    MoveBoneUpCommand(Project *project, nanoem_rsize_t boneIndex);
     ~MoveBoneUpCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -378,7 +376,6 @@ public:
 private:
     const nanoem_model_morph_t *m_base;
     const nanoem_model_morph_type_t m_type;
-    const nanoem_rsize_t m_numMorphs;
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableMorph m_mutableMorph;
@@ -405,9 +402,9 @@ private:
 
 class DeleteMorphCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t morphIndex);
 
-    DeleteMorphCommand(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+    DeleteMorphCommand(Project *project, nanoem_rsize_t morphIndex);
     ~DeleteMorphCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -418,33 +415,34 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_morph_t *const *m_morphs;
-    nanoem_rsize_t &m_morphIndex;
+    const nanoem_rsize_t m_morphIndex;
     Model *m_activeModel;
     nanoem_mutable_model_morph_t *m_mutableMorph;
 };
 
 class BaseMoveMorphCommand : public BaseUndoCommand {
-protected:
-    BaseMoveMorphCommand(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+public:
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
 
-    void move(int delta, Error &error);
+protected:
+    BaseMoveMorphCommand(Project *project, nanoem_rsize_t fromMorphIndex, nanoem_rsize_t toMorphIndex);
 
 private:
-    nanoem_model_morph_t *const *m_morphs;
-    nanoem_rsize_t &m_morphIndex;
+    void move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, Error &error);
+
+    const nanoem_rsize_t m_fromMorphIndex;
+    const nanoem_rsize_t m_toMorphIndex;
     Model *m_activeModel;
 };
 
 class MoveMorphUpCommand : public BaseMoveMorphCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t morphIndex);
 
-    MoveMorphUpCommand(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+    MoveMorphUpCommand(Project *project, nanoem_rsize_t morphIndex);
     ~MoveMorphUpCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -453,13 +451,11 @@ public:
 
 class MoveMorphDownCommand : public BaseMoveMorphCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t morphIndex);
 
-    MoveMorphDownCommand(Project *project, nanoem_model_morph_t *const *morphs, nanoem_rsize_t &morphIndex);
+    MoveMorphDownCommand(Project *project, nanoem_rsize_t morphIndex);
     ~MoveMorphDownCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -483,7 +479,6 @@ public:
 
 private:
     const nanoem_model_label_t *m_base;
-    const nanoem_rsize_t m_numLabels;
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableLabel m_mutableLabel;
@@ -491,9 +486,9 @@ private:
 
 class DeleteLabelCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t labelIndex);
 
-    DeleteLabelCommand(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+    DeleteLabelCommand(Project *project, nanoem_rsize_t labelIndex);
     ~DeleteLabelCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -504,33 +499,34 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_label_t *const *m_labels;
-    nanoem_rsize_t m_labelIndex;
+    const nanoem_rsize_t m_labelIndex;
     Model *m_activeModel;
     nanoem_mutable_model_label_t *m_mutableLabel;
 };
 
 class BaseMoveLabelCommand : public BaseUndoCommand {
-protected:
-    BaseMoveLabelCommand(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+public:
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
 
-    void move(int delta, Error &error);
+protected:
+    BaseMoveLabelCommand(Project *project, nanoem_rsize_t fromLabelIndex, nanoem_rsize_t toLabelIndex);
 
 private:
-    nanoem_model_label_t *const *m_labels;
-    nanoem_rsize_t &m_labelIndex;
+    void move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, Error &error);
+
+    const nanoem_rsize_t m_fromLabelIndex;
+    const nanoem_rsize_t m_toLabelIndex;
     Model *m_activeModel;
 };
 
 class MoveLabelUpCommand : public BaseMoveLabelCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t labelIndex);
 
-    MoveLabelUpCommand(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+    MoveLabelUpCommand(Project *project, nanoem_rsize_t labelIndex);
     ~MoveLabelUpCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -539,13 +535,11 @@ public:
 
 class MoveLabelDownCommand : public BaseMoveLabelCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t labelIndex);
 
-    MoveLabelDownCommand(Project *project, nanoem_model_label_t *const *labels, nanoem_rsize_t &labelIndex);
+    MoveLabelDownCommand(Project *project, nanoem_rsize_t labelIndex);
     ~MoveLabelDownCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -570,7 +564,6 @@ public:
 
 private:
     const nanoem_model_rigid_body_t *m_base;
-    const nanoem_rsize_t m_numRigidBodies;
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableRigidBody m_mutableRigidBody;
@@ -579,10 +572,10 @@ private:
 class DeleteRigidBodyCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+        Project *project, nanoem_rsize_t rigidBodyIndex);
 
     DeleteRigidBodyCommand(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+        Project *project, nanoem_rsize_t rigidBodyIndex);
     ~DeleteRigidBodyCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -593,36 +586,36 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_rigid_body_t *const *m_rigidBodies;
-    nanoem_rsize_t &m_rigidBodyIndex;
+    const nanoem_rsize_t m_rigidBodyIndex;
     Model *m_activeModel;
     nanoem_mutable_model_rigid_body_t *m_mutableRigidBody;
 };
 
 class BaseMoveRigidBodyCommand : public BaseUndoCommand {
-protected:
-    BaseMoveRigidBodyCommand(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+public:
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
 
-    void move(int delta, Error &error);
+protected:
+    BaseMoveRigidBodyCommand(Project *project, nanoem_rsize_t fromRigidBodyIndex, nanoem_rsize_t toRigidBodyIndex);
 
 private:
-    nanoem_model_rigid_body_t *const *m_rigidBodies;
-    nanoem_rsize_t &m_rigidBodyIndex;
+    void move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, Error &error);
+
+    const nanoem_rsize_t m_fromRigidBodyIndex;
+    const nanoem_rsize_t m_toRigidBodyIndex;
     Model *m_activeModel;
 };
 
 class MoveRigidBodyUpCommand : public BaseMoveRigidBodyCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+        Project *project, nanoem_rsize_t rigidBodyIndex);
 
     MoveRigidBodyUpCommand(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+        Project *project, nanoem_rsize_t rigidBodyIndex);
     ~MoveRigidBodyUpCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -632,14 +625,12 @@ public:
 class MoveRigidBodyDownCommand : public BaseMoveRigidBodyCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+        Project *project, nanoem_rsize_t rigidBodyIndex);
 
     MoveRigidBodyDownCommand(
-        Project *project, nanoem_model_rigid_body_t *const *rigidBodies, nanoem_rsize_t &rigidBodyIndex);
+        Project *project, nanoem_rsize_t rigidBodyIndex);
     ~MoveRigidBodyDownCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -663,7 +654,6 @@ public:
 
 private:
     const nanoem_model_joint_t *m_base;
-    const nanoem_rsize_t m_numJoints;
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableJoint m_mutableJoint;
@@ -671,9 +661,9 @@ private:
 
 class DeleteJointCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t jointIndex);
 
-    DeleteJointCommand(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+    DeleteJointCommand(Project *project, nanoem_rsize_t jointIndex);
     ~DeleteJointCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -684,33 +674,34 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_joint_t *const *m_joints;
-    nanoem_rsize_t &m_jointIndex;
+    const nanoem_rsize_t m_jointIndex;
     Model *m_activeModel;
     nanoem_mutable_model_joint_t *m_mutableJoint;
 };
 
 class BaseMoveJointCommand : public BaseUndoCommand {
-protected:
-    BaseMoveJointCommand(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+public:
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
 
-    void move(int delta, Error &error);
+protected:
+    BaseMoveJointCommand(Project *project, nanoem_rsize_t fromJointIndex, nanoem_rsize_t toJointIndex);
 
 private:
-    nanoem_model_joint_t *const *m_joints;
-    nanoem_rsize_t &m_jointIndex;
+    void move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, Error &error);
+
+    const nanoem_rsize_t m_fromJointIndex;
+    const nanoem_rsize_t m_toJointIndex;
     Model *m_activeModel;
 };
 
 class MoveJointUpCommand : public BaseMoveJointCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t jointIndex);
 
-    MoveJointUpCommand(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+    MoveJointUpCommand(Project *project, nanoem_rsize_t jointIndex);
     ~MoveJointUpCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -719,13 +710,11 @@ public:
 
 class MoveJointDownCommand : public BaseMoveJointCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t jointIndex);
 
-    MoveJointDownCommand(Project *project, nanoem_model_joint_t *const *joints, nanoem_rsize_t &jointIndex);
+    MoveJointDownCommand(Project *project, nanoem_rsize_t jointIndex);
     ~MoveJointDownCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -750,7 +739,6 @@ public:
 
 private:
     const nanoem_model_soft_body_t *m_base;
-    const nanoem_rsize_t m_numSoftBodies;
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableSoftBody m_mutableSoftBody;
@@ -758,11 +746,10 @@ private:
 
 class DeleteSoftBodyCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex);
+    static undo_command_t *create(Project *project, nanoem_rsize_t softBodyIndex);
 
     DeleteSoftBodyCommand(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &soft_bodyIndex);
+        Project *project, nanoem_rsize_t softBodyIndex);
     ~DeleteSoftBodyCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -773,35 +760,35 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_soft_body_t *const *m_softBodies;
-    nanoem_rsize_t &m_softBodyIndex;
+    const nanoem_rsize_t m_softBodyIndex;
     Model *m_activeModel;
     nanoem_mutable_model_soft_body_t *m_mutableSoftBody;
 };
 
 class BaseMoveSoftBodyCommand : public BaseUndoCommand {
-protected:
-    BaseMoveSoftBodyCommand(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
+public:
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
 
-    void move(int delta, Error &error);
+protected:
+    BaseMoveSoftBodyCommand(Project *project, nanoem_rsize_t fromSoftBodyIndex, nanoem_rsize_t toSoftBodyIndex);
 
 private:
-    nanoem_model_soft_body_t *const *m_softBodies;
-    nanoem_rsize_t &m_softBodyIndex;
+    void move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, Error &error);
+
+    const nanoem_rsize_t m_fromSoftBodyIndex;
+    const nanoem_rsize_t m_toSoftBodyIndex;
     Model *m_activeModel;
 };
 
 class MoveSoftBodyUpCommand : public BaseMoveSoftBodyCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
+        Project *project, nanoem_rsize_t softBodyIndex);
 
-    MoveSoftBodyUpCommand(Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
+    MoveSoftBodyUpCommand(Project *project, nanoem_rsize_t softBodyIndex);
     ~MoveSoftBodyUpCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
@@ -811,14 +798,12 @@ public:
 class MoveSoftBodyDownCommand : public BaseMoveSoftBodyCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
+        Project *project, nanoem_rsize_t softBodyIndex);
 
     MoveSoftBodyDownCommand(
-        Project *project, nanoem_model_soft_body_t *const *softBodies, nanoem_rsize_t &softBodyIndex);
+        Project *project, nanoem_rsize_t softBodyIndex);
     ~MoveSoftBodyDownCommand() NANOEM_DECL_NOEXCEPT;
 
-    void undo(Error &error) NANOEM_DECL_OVERRIDE;
-    void redo(Error &error) NANOEM_DECL_OVERRIDE;
     void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
     void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
     void release(void *messagePtr) NANOEM_DECL_OVERRIDE;

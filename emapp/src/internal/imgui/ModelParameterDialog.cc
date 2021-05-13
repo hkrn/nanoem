@@ -2160,19 +2160,19 @@ ModelParameterDialog::layoutAllBones(Project *project)
     const bool isSingleBoneSelected = selection->countAllBones() == 1;
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, m_boneIndex < numBones && isSingleBoneSelected)) {
-        undo_command_t *command = command::DeleteBoneCommand::create(project, bones, m_boneIndex);
+        undo_command_t *command = command::DeleteBoneCommand::create(project, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_boneIndex > 0 && isSingleBoneSelected)) {
-        undo_command_t *command = command::MoveBoneUpCommand::create(project, bones, m_boneIndex);
+        undo_command_t *command = command::MoveBoneUpCommand::create(project, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numBones > 0 && m_boneIndex < numBones - 1 && isSingleBoneSelected)) {
-        undo_command_t *command = command::MoveBoneDownCommand::create(project, bones, m_boneIndex);
+        undo_command_t *command = command::MoveBoneDownCommand::create(project, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -3089,19 +3089,19 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     const bool isSingleMorphSelected = selection->countAllMorphs() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_morphIndex < numMorphs && isSingleMorphSelected)) {
-        undo_command_t *command = command::DeleteMorphCommand::create(project, morphs, m_morphIndex);
+        undo_command_t *command = command::DeleteMorphCommand::create(project, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_morphIndex > 0 && isSingleMorphSelected)) {
-        undo_command_t *command = command::MoveMorphUpCommand::create(project, morphs, m_morphIndex);
+        undo_command_t *command = command::MoveMorphUpCommand::create(project, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numMorphs > 0 && m_morphIndex < numMorphs - 1 && isSingleMorphSelected)) {
-        undo_command_t *command = command::MoveMorphDownCommand::create(project, morphs, m_morphIndex);
+        undo_command_t *command = command::MoveMorphDownCommand::create(project, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4050,19 +4050,19 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     const bool isSingleLabelSelected = selection->countAllLabels() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             isEditable && m_labelIndex < numLabels && isSingleLabelSelected)) {
-        undo_command_t *command = command::DeleteLabelCommand::create(project, labels, m_labelIndex);
+        undo_command_t *command = command::DeleteLabelCommand::create(project, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, isEditable && isSingleLabelSelected)) {
-        undo_command_t *command = command::MoveLabelUpCommand::create(project, labels, m_labelIndex);
+        undo_command_t *command = command::MoveLabelUpCommand::create(project, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             isEditable && numLabels > 0 && m_labelIndex < numLabels - 1 && isSingleLabelSelected)) {
-        undo_command_t *command = command::MoveLabelDownCommand::create(project, labels, m_labelIndex);
+        undo_command_t *command = command::MoveLabelDownCommand::create(project, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4403,19 +4403,19 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     const bool isSingleRigidBodySelected = selection->countAllRigidBodies() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_rigidBodyIndex < numRigidBodies && isSingleRigidBodySelected)) {
-        undo_command_t *command = command::DeleteRigidBodyCommand::create(project, rigidBodies, m_rigidBodyIndex);
+        undo_command_t *command = command::DeleteRigidBodyCommand::create(project, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0,
             m_rigidBodyIndex > 0 && isSingleRigidBodySelected)) {
-        undo_command_t *command = command::MoveRigidBodyUpCommand::create(project, rigidBodies, m_rigidBodyIndex);
+        undo_command_t *command = command::MoveRigidBodyUpCommand::create(project, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies - 1 && isSingleRigidBodySelected)) {
-        undo_command_t *command = command::MoveRigidBodyDownCommand::create(project, rigidBodies, m_rigidBodyIndex);
+        undo_command_t *command = command::MoveRigidBodyDownCommand::create(project, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4798,19 +4798,19 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     const bool isSingleJointSelected = selection->countAllJoints() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_jointIndex < numJoints && isSingleJointSelected)) {
-        undo_command_t *command = command::DeleteJointCommand::create(project, joints, m_jointIndex);
+        undo_command_t *command = command::DeleteJointCommand::create(project, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_jointIndex > 0 && isSingleJointSelected)) {
-        undo_command_t *command = command::MoveJointUpCommand::create(project, joints, m_jointIndex);
+        undo_command_t *command = command::MoveJointUpCommand::create(project, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numJoints > 0 && m_jointIndex < numJoints - 1 && isSingleJointSelected)) {
-        undo_command_t *command = command::MoveJointDownCommand::create(project, joints, m_jointIndex);
+        undo_command_t *command = command::MoveJointDownCommand::create(project, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -5097,19 +5097,19 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     const bool isSingleSoftBodySelected = selection->countAllSoftBodies() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_softBodyIndex < numSoftBodies && isSingleSoftBodySelected)) {
-        undo_command_t *command = command::DeleteSoftBodyCommand::create(project, softBodies, m_softBodyIndex);
+        undo_command_t *command = command::DeleteSoftBodyCommand::create(project, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0,
             m_softBodyIndex > 0 && isSingleSoftBodySelected)) {
-        undo_command_t *command = command::MoveSoftBodyUpCommand::create(project, softBodies, m_softBodyIndex);
+        undo_command_t *command = command::MoveSoftBodyUpCommand::create(project, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numSoftBodies > 0 && m_softBodyIndex < numSoftBodies - 1 && isSingleSoftBodySelected)) {
-        undo_command_t *command = command::MoveSoftBodyDownCommand::create(project, softBodies, m_softBodyIndex);
+        undo_command_t *command = command::MoveSoftBodyDownCommand::create(project, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
