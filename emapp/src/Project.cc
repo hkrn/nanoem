@@ -4385,7 +4385,7 @@ void
 Project::setActiveModel(Model *value)
 {
     Model *lastActiveModel = activeModel();
-    if (value != lastActiveModel) {
+    if (value != lastActiveModel && !isModelEditingEnabled()) {
         m_activeModelPairPtr = tinystl::make_pair(value, lastActiveModel);
         if (m_editingMode == kEditingModeNone) {
             m_editingMode = kEditingModeSelect;

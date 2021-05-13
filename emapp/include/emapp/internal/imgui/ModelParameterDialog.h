@@ -144,10 +144,10 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
             const nanoem_model_morph_t *m_activeMorph;
             ByteArray m_motion;
         };
-        SavedState()
+        SavedState(Project::EditingMode editingMode)
             : m_activeModel(nullptr)
             , m_state(nullptr)
-            , m_lastEditingMode(Project::kEditingModeNone)
+            , m_lastEditingMode(editingMode)
         {
         }
         typedef tinystl::unordered_map<Model *, ModelState, TinySTLAllocator> ModelStateMap;

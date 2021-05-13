@@ -282,7 +282,7 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllSoftBodies(false)
 {
     ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kEditingTypeNone, m_activeModel, project);
-    m_savedState = nanoem_new(SavedState);
+    m_savedState = nanoem_new(SavedState(m_editingMode));
     parent->addLazyExecutionCommand(nanoem_new(EnableModelEditingCommand(this)));
 }
 
