@@ -2147,11 +2147,22 @@ ModelParameterDialog::layoutAllBones(Project *project)
         }
         if (const model::Bone *selectedBone = model::Bone::cast(selectedBonePtr)) {
             ImGui::Separator();
-            StringUtils::format(buffer, sizeof(buffer), "Creating Staging Bone of %s", selectedBone->nameConstString());
-            if (ImGui::MenuItem(buffer, nullptr, false, nanoemModelBoneGetParentBoneObject(selectedBonePtr) != nullptr)) {
-                undo_command_t *command =
-                    command::CreateBoneAsStagingParentCommand::create(project, selectedBonePtr);
-                m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+            if (ImGui::BeginMenu("Creating Staging Bone")) {
+                const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(selectedBonePtr);
+                StringUtils::format(
+                    buffer, sizeof(buffer), "as Parent of %s", selectedBone->nameConstString());
+                if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
+                    undo_command_t *command =
+                        command::CreateBoneAsStagingParentCommand::create(project, selectedBonePtr);
+                    m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+                }
+                StringUtils::format(buffer, sizeof(buffer), "as Child of %s", selectedBone->nameConstString());
+                if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
+                    undo_command_t *command =
+                        command::CreateBoneAsStagingChildCommand::create(project, selectedBonePtr);
+                    m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+                }
+                ImGui::EndMenu();
             }
         }
         ImGui::EndPopup();
