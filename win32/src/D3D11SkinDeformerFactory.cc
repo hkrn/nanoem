@@ -207,6 +207,7 @@ D3D11SkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) no
 {
     sg::destroy_buffer(value);
     COMInline::safeRelease(m_outputBuffers[bufferIndex]);
+    COMInline::safeRelease(m_outputBuffersView[bufferIndex]);
 }
 
 void
