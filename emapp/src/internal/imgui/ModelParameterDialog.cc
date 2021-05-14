@@ -2149,8 +2149,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
             ImGui::Separator();
             if (ImGui::BeginMenu("Creating Staging Bone")) {
                 const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(selectedBonePtr);
-                StringUtils::format(
-                    buffer, sizeof(buffer), "as Parent of %s", selectedBone->nameConstString());
+                StringUtils::format(buffer, sizeof(buffer), "as Parent of %s", selectedBone->nameConstString());
                 if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
                     undo_command_t *command =
                         command::CreateBoneAsStagingParentCommand::create(project, selectedBonePtr);

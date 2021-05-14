@@ -773,8 +773,8 @@ CreateBoneCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *
 }
 
 void
-CreateBoneCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix,
-    nanoem_language_type_t language, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
+CreateBoneCommand::setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_language_type_t language,
+    nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
 {
     String result;
     const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(bone);
@@ -864,8 +864,7 @@ CreateBoneCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateBoneAsStagingParentCommand::create(
-    Project *project, const nanoem_model_bone_t *base)
+CreateBoneAsStagingParentCommand::create(Project *project, const nanoem_model_bone_t *base)
 {
     CreateBoneAsStagingParentCommand *command = nanoem_new(CreateBoneAsStagingParentCommand(project, base));
     return command->createCommand();
@@ -1310,13 +1309,17 @@ CreateMorphCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateBoneMorphFromPoseCommand::create(Project *project, const model::BindPose::BoneTransformMap &transforms, const model::BindPose::MorphWeightMap &weights, const String &filename)
+CreateBoneMorphFromPoseCommand::create(Project *project, const model::BindPose::BoneTransformMap &transforms,
+    const model::BindPose::MorphWeightMap &weights, const String &filename)
 {
-    CreateBoneMorphFromPoseCommand *command = nanoem_new(CreateBoneMorphFromPoseCommand(project, transforms, weights, filename));
+    CreateBoneMorphFromPoseCommand *command =
+        nanoem_new(CreateBoneMorphFromPoseCommand(project, transforms, weights, filename));
     return command->createCommand();
 }
 
-CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(Project *project, const model::BindPose::BoneTransformMap &transforms, const model::BindPose::MorphWeightMap &weights, const String &filename)
+CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(Project *project,
+    const model::BindPose::BoneTransformMap &transforms, const model::BindPose::MorphWeightMap &weights,
+    const String &filename)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
     , m_mutableMorph(m_activeModel)
@@ -1325,27 +1328,21 @@ CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(Project *project,
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
     if (StringUtils::tryGetString(factory, filename, us)) {
-        nanoemMutableModelMorphSetName(
-            m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-        nanoemMutableModelMorphSetName(
-            m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
     nanoemMutableModelMorphSetType(m_mutableMorph, NANOEM_MODEL_MORPH_TYPE_BONE);
     nanoemMutableModelMorphSetCategory(m_mutableMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
-    for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(),
-                                                           end = transforms.end();
-         it != end; ++it) {
+    for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(), end = transforms.end(); it != end;
+         ++it) {
         if (const nanoem_model_bone_t *bonePtr = m_activeModel->findBone(it->first)) {
             const Vector3 &translation = it->second.first;
             const Quaternion &orientation = it->second.second;
-            if (glm::all(glm::epsilonNotEqual(
-                    translation, Constants::kZeroV3, Constants::kEpsilon)) ||
-                glm::all(glm::epsilonNotEqual(
-                    orientation, Constants::kZeroQ, Constants::kEpsilon))) {
+            if (glm::all(glm::epsilonNotEqual(translation, Constants::kZeroV3, Constants::kEpsilon)) ||
+                glm::all(glm::epsilonNotEqual(orientation, Constants::kZeroQ, Constants::kEpsilon))) {
                 command::ScopedMutableMorphBone scoped(m_mutableMorph);
                 nanoemMutableModelMorphBoneSetBoneObject(scoped, bonePtr);
-                nanoemMutableModelMorphBoneSetTranslation(
-                    scoped, glm::value_ptr(Vector4(translation, 0)));
+                nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(Vector4(translation, 0)));
                 nanoemMutableModelMorphBoneSetOrientation(scoped, glm::value_ptr(orientation));
                 nanoemMutableModelMorphInsertBoneMorphObject(m_mutableMorph, scoped, -1, &status);
             }
@@ -1412,8 +1409,7 @@ DeleteMorphCommand::create(Project *project, nanoem_rsize_t morphIndex)
     return command->createCommand();
 }
 
-DeleteMorphCommand::DeleteMorphCommand(
-    Project *project, nanoem_rsize_t morphIndex)
+DeleteMorphCommand::DeleteMorphCommand(Project *project, nanoem_rsize_t morphIndex)
     : BaseUndoCommand(project)
     , m_morphIndex(morphIndex)
     , m_activeModel(project->activeModel())
@@ -1525,8 +1521,7 @@ MoveMorphUpCommand::create(Project *project, nanoem_rsize_t morphIndex)
     return command->createCommand();
 }
 
-MoveMorphUpCommand::MoveMorphUpCommand(
-    Project *project, nanoem_rsize_t morphIndex)
+MoveMorphUpCommand::MoveMorphUpCommand(Project *project, nanoem_rsize_t morphIndex)
     : BaseMoveMorphCommand(project, morphIndex, morphIndex > 0 ? morphIndex - 1 : 0)
 {
 }
@@ -1566,8 +1561,7 @@ MoveMorphDownCommand::create(Project *project, nanoem_rsize_t morphIndex)
     return command->createCommand();
 }
 
-MoveMorphDownCommand::MoveMorphDownCommand(
-    Project *project, nanoem_rsize_t morphIndex)
+MoveMorphDownCommand::MoveMorphDownCommand(Project *project, nanoem_rsize_t morphIndex)
     : BaseMoveMorphCommand(project, morphIndex, morphIndex + 1)
 {
 }
@@ -1691,8 +1685,7 @@ DeleteLabelCommand::create(Project *project, nanoem_rsize_t labelIndex)
     return command->createCommand();
 }
 
-DeleteLabelCommand::DeleteLabelCommand(
-    Project *project,  nanoem_rsize_t labelIndex)
+DeleteLabelCommand::DeleteLabelCommand(Project *project, nanoem_rsize_t labelIndex)
     : BaseUndoCommand(project)
     , m_labelIndex(labelIndex)
     , m_activeModel(project->activeModel())
@@ -1767,8 +1760,7 @@ BaseMoveLabelCommand::redo(Error &error)
     move(m_toLabelIndex, m_fromLabelIndex, error);
 }
 
-BaseMoveLabelCommand::BaseMoveLabelCommand(
-    Project *project, nanoem_rsize_t fromLabelIndex, nanoem_rsize_t toLabelIndex)
+BaseMoveLabelCommand::BaseMoveLabelCommand(Project *project, nanoem_rsize_t fromLabelIndex, nanoem_rsize_t toLabelIndex)
     : BaseUndoCommand(project)
     , m_fromLabelIndex(fromLabelIndex)
     , m_toLabelIndex(toLabelIndex)
@@ -1798,8 +1790,7 @@ MoveLabelUpCommand::create(Project *project, nanoem_rsize_t labelIndex)
     return command->createCommand();
 }
 
-MoveLabelUpCommand::MoveLabelUpCommand(
-    Project *project, nanoem_rsize_t labelIndex)
+MoveLabelUpCommand::MoveLabelUpCommand(Project *project, nanoem_rsize_t labelIndex)
     : BaseMoveLabelCommand(project, labelIndex, labelIndex > 0 ? labelIndex - 1 : 0)
 {
 }
@@ -1958,22 +1949,21 @@ CreateRigidBodyCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-DeleteRigidBodyCommand::create(
-    Project *project, nanoem_rsize_t rigidBodyIndex)
+DeleteRigidBodyCommand::create(Project *project, nanoem_rsize_t rigidBodyIndex)
 {
     DeleteRigidBodyCommand *command = nanoem_new(DeleteRigidBodyCommand(project, rigidBodyIndex));
     return command->createCommand();
 }
 
-DeleteRigidBodyCommand::DeleteRigidBodyCommand(
-    Project *project, nanoem_rsize_t rigidBodyIndex)
+DeleteRigidBodyCommand::DeleteRigidBodyCommand(Project *project, nanoem_rsize_t rigidBodyIndex)
     : BaseUndoCommand(project)
     , m_rigidBodyIndex(rigidBodyIndex)
     , m_activeModel(project->activeModel())
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_rsize_t numRigidBodies;
-    nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
+    nanoem_model_rigid_body_t *const *rigidBodies =
+        nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
     m_mutableRigidBody = nanoemMutableModelRigidBodyCreateAsReference(rigidBodies[m_rigidBodyIndex], &status);
 }
 
@@ -1989,7 +1979,8 @@ DeleteRigidBodyCommand::undo(Error &error)
 {
     ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    nanoemMutableModelInsertRigidBodyObject(model, m_mutableRigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
+    nanoemMutableModelInsertRigidBodyObject(
+        model, m_mutableRigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
     assignError(status, error);
 }
 
@@ -2063,15 +2054,13 @@ BaseMoveRigidBodyCommand::move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex,
 }
 
 undo_command_t *
-MoveRigidBodyUpCommand::create(
-    Project *project, nanoem_rsize_t rigidBodyIndex)
+MoveRigidBodyUpCommand::create(Project *project, nanoem_rsize_t rigidBodyIndex)
 {
     MoveRigidBodyUpCommand *command = nanoem_new(MoveRigidBodyUpCommand(project, rigidBodyIndex));
     return command->createCommand();
 }
 
-MoveRigidBodyUpCommand::MoveRigidBodyUpCommand(
-    Project *project, nanoem_rsize_t rigidBodyIndex)
+MoveRigidBodyUpCommand::MoveRigidBodyUpCommand(Project *project, nanoem_rsize_t rigidBodyIndex)
     : BaseMoveRigidBodyCommand(project, rigidBodyIndex, rigidBodyIndex > 0 ? rigidBodyIndex - 1 : 0)
 {
 }
@@ -2105,15 +2094,13 @@ MoveRigidBodyUpCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-MoveRigidBodyDownCommand::create(
-    Project *project, nanoem_rsize_t rigidBodyIndex)
+MoveRigidBodyDownCommand::create(Project *project, nanoem_rsize_t rigidBodyIndex)
 {
     MoveRigidBodyDownCommand *command = nanoem_new(MoveRigidBodyDownCommand(project, rigidBodyIndex));
     return command->createCommand();
 }
 
-MoveRigidBodyDownCommand::MoveRigidBodyDownCommand(
-    Project *project, nanoem_rsize_t rigidBodyIndex)
+MoveRigidBodyDownCommand::MoveRigidBodyDownCommand(Project *project, nanoem_rsize_t rigidBodyIndex)
     : BaseMoveRigidBodyCommand(project, rigidBodyIndex, rigidBodyIndex + 1)
 {
 }
@@ -2237,8 +2224,7 @@ DeleteJointCommand::create(Project *project, nanoem_rsize_t jointIndex)
     return command->createCommand();
 }
 
-DeleteJointCommand::DeleteJointCommand(
-    Project *project, nanoem_rsize_t jointIndex)
+DeleteJointCommand::DeleteJointCommand(Project *project, nanoem_rsize_t jointIndex)
     : BaseUndoCommand(project)
     , m_jointIndex(jointIndex)
     , m_activeModel(project->activeModel())
@@ -2311,8 +2297,7 @@ BaseMoveJointCommand::redo(Error &error)
     move(m_toJointIndex, m_fromJointIndex, error);
 }
 
-BaseMoveJointCommand::BaseMoveJointCommand(
-    Project *project, nanoem_rsize_t fromJointIndex, nanoem_rsize_t toJointIndex)
+BaseMoveJointCommand::BaseMoveJointCommand(Project *project, nanoem_rsize_t fromJointIndex, nanoem_rsize_t toJointIndex)
     : BaseUndoCommand(project)
     , m_fromJointIndex(fromJointIndex)
     , m_toJointIndex(toJointIndex)
@@ -2341,8 +2326,7 @@ MoveJointUpCommand::create(Project *project, nanoem_rsize_t jointIndex)
     return command->createCommand();
 }
 
-MoveJointUpCommand::MoveJointUpCommand(
-    Project *project, nanoem_rsize_t jointIndex)
+MoveJointUpCommand::MoveJointUpCommand(Project *project, nanoem_rsize_t jointIndex)
     : BaseMoveJointCommand(project, jointIndex, jointIndex > 0 ? jointIndex - 1 : 0)
 {
 }
@@ -2382,8 +2366,7 @@ MoveJointDownCommand::create(Project *project, nanoem_rsize_t jointIndex)
     return command->createCommand();
 }
 
-MoveJointDownCommand::MoveJointDownCommand(
-    Project *project, nanoem_rsize_t jointIndex)
+MoveJointDownCommand::MoveJointDownCommand(Project *project, nanoem_rsize_t jointIndex)
     : BaseMoveJointCommand(project, jointIndex, jointIndex + 1)
 {
 }
@@ -2607,15 +2590,13 @@ BaseMoveSoftBodyCommand::move(nanoem_rsize_t fromIndex, nanoem_rsize_t toIndex, 
 }
 
 undo_command_t *
-MoveSoftBodyUpCommand::create(
-    Project *project, nanoem_rsize_t softBodyIndex)
+MoveSoftBodyUpCommand::create(Project *project, nanoem_rsize_t softBodyIndex)
 {
     MoveSoftBodyUpCommand *command = nanoem_new(MoveSoftBodyUpCommand(project, softBodyIndex));
     return command->createCommand();
 }
 
-MoveSoftBodyUpCommand::MoveSoftBodyUpCommand(
-    Project *project, nanoem_rsize_t softBodyIndex)
+MoveSoftBodyUpCommand::MoveSoftBodyUpCommand(Project *project, nanoem_rsize_t softBodyIndex)
     : BaseMoveSoftBodyCommand(project, softBodyIndex, softBodyIndex > 0 ? softBodyIndex - 1 : 0)
 {
 }
@@ -2649,15 +2630,13 @@ MoveSoftBodyUpCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-MoveSoftBodyDownCommand::create(
-    Project *project, nanoem_rsize_t softBodyIndex)
+MoveSoftBodyDownCommand::create(Project *project, nanoem_rsize_t softBodyIndex)
 {
     MoveSoftBodyDownCommand *command = nanoem_new(MoveSoftBodyDownCommand(project, softBodyIndex));
     return command->createCommand();
 }
 
-MoveSoftBodyDownCommand::MoveSoftBodyDownCommand(
-    Project *project, nanoem_rsize_t softBodyIndex)
+MoveSoftBodyDownCommand::MoveSoftBodyDownCommand(Project *project, nanoem_rsize_t softBodyIndex)
     : BaseMoveSoftBodyCommand(project, softBodyIndex, softBodyIndex + 1)
 {
 }
