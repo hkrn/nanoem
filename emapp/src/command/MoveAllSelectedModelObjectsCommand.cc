@@ -12,12 +12,17 @@
 
 namespace nanoem {
 namespace command {
+namespace {
+
+typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
+typedef tinystl::unordered_set<nanoem_model_vertex_t *, TinySTLAllocator> MutableVertexSet;
+
+} /* namespace anonymous */
 
 MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
     : m_activeModel(activeModel)
     , m_editingType(activeModel->selection()->editingType())
 {
-    typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
     const IModelObjectSelection *selection = activeModel->selection();
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     switch (selection->editingType()) {
@@ -31,13 +36,15 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             nanoem_model_bone_t *mutableBonePtr = bones[model::Bone::index(bonePtr)];
             nanoem_mutable_model_bone_t *item = nanoemMutableModelBoneCreateAsReference(mutableBonePtr, &status);
             const Vector4 origin(glm::make_vec4(nanoemModelBoneGetOrigin(bonePtr)));
-            m_bones.push_back(tinystl::make_pair(item, origin));
+            const MutableOffsetBone bone = { item, origin };
+            m_bones.push_back(bone);
         }
         activeModel->performAllBonesTransform();
         break;
     }
     case IModelObjectSelection::kEditingTypeFace: {
         const IModelObjectSelection::FaceList selectedFaces(selection->allFaces());
+        MutableVertexSet vertexSet;
         nanoem_rsize_t numVertices;
         nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
         for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(), end = selectedFaces.end();
@@ -45,11 +52,15 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             const Vector4UI32 &face = *it;
             for (nanoem_rsize_t i = 1; i < 4; i++) {
                 nanoem_model_vertex_t *mutableVertexPtr = vertices[face[i]];
-                nanoem_mutable_model_vertex_t *item =
-                    nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
-                const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
-                m_vertices.push_back(tinystl::make_pair(item, origin));
+                vertexSet.insert(mutableVertexPtr);
             }
+        }
+        for (MutableVertexSet::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end; ++it) {
+            nanoem_model_vertex_t *mutableVertexPtr = *it;
+            nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
+            const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
+            const MutableOffsetVertex vertex = { item, origin };
+            m_vertices.push_back(vertex);
         }
         break;
     }
@@ -63,12 +74,14 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             nanoem_model_joint_t *mutableJointPtr = joints[model::Joint::index(jointPtr)];
             nanoem_mutable_model_joint_t *item = nanoemMutableModelJointCreateAsReference(mutableJointPtr, &status);
             const Vector4 origin(glm::make_vec4(nanoemModelJointGetOrigin(jointPtr)));
-            m_joints.push_back(tinystl::make_pair(item, origin));
+            const MutableOffsetJoint joint = { item, origin };
+            m_joints.push_back(joint);
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeMaterial: {
         const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
+        MutableVertexSet vertexSet;
         nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
         const nanoem_model_t *opaque = activeModel->data();
         nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
@@ -89,12 +102,16 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
                 for (nanoem_rsize_t i = 0; i < indices; i++) {
                     const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
                     nanoem_model_vertex_t *mutableVertexPtr = vertices[vertexIndex];
-                    nanoem_mutable_model_vertex_t *item =
-                        nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
-                    const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
-                    m_vertices.push_back(tinystl::make_pair(item, origin));
+                    vertexSet.insert(mutableVertexPtr);
                 }
             }
+        }
+        for (MutableVertexSet::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end; ++it) {
+            nanoem_model_vertex_t *mutableVertexPtr = *it;
+            nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
+            const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
+            const MutableOffsetVertex vertex = { item, origin };
+            m_vertices.push_back(vertex);
         }
         break;
     }
@@ -110,12 +127,14 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             nanoem_mutable_model_rigid_body_t *item =
                 nanoemMutableModelRigidBodyCreateAsReference(mutableRigidBodyPtr, &status);
             const Vector4 origin(glm::make_vec4(nanoemModelRigidBodyGetOrigin(mutableRigidBodyPtr)));
-            m_rigidBodies.push_back(tinystl::make_pair(item, origin));
+            const MutableOffsetRigidBody rigidBody = { item, rigidBodyWorldTransform(rigidBodyPtr), origin };
+            m_rigidBodies.push_back(rigidBody);
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeSoftBody: {
         const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
+        MutableVertexSet vertexSet;
         nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
         const nanoem_model_t *opaque = activeModel->data();
         nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
@@ -137,12 +156,16 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
                 for (nanoem_rsize_t i = 0; i < indices; i++) {
                     const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
                     nanoem_model_vertex_t *mutableVertexPtr = vertices[vertexIndex];
-                    nanoem_mutable_model_vertex_t *item =
-                        nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
-                    const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
-                    m_vertices.push_back(tinystl::make_pair(item, origin));
+                    vertexSet.insert(mutableVertexPtr);
                 }
             }
+        }
+        for (MutableVertexSet::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end; ++it) {
+            nanoem_model_vertex_t *mutableVertexPtr = *it;
+            nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
+            const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
+            const MutableOffsetVertex vertex = { item, origin };
+            m_vertices.push_back(vertex);
         }
         break;
     }
@@ -156,7 +179,8 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             nanoem_model_vertex_t *mutableVertexPtr = vertices[model::Vertex::index(vertexPtr)];
             nanoem_mutable_model_vertex_t *item = nanoemMutableModelVertexCreateAsReference(mutableVertexPtr, &status);
             const Vector4 origin(glm::make_vec4(nanoemModelVertexGetOrigin(mutableVertexPtr)));
-            m_vertices.push_back(tinystl::make_pair(item, origin));
+            const MutableOffsetVertex vertex = { item, origin };
+            m_vertices.push_back(vertex);
         }
         break;
     }
@@ -168,20 +192,20 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
 MoveAllSelectedModelObjectsCommand::State::~State() NANOEM_DECL_NOEXCEPT
 {
     for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
-        nanoemMutableModelBoneDestroy(it->first);
+        nanoemMutableModelBoneDestroy(it->m_opaque);
     }
     m_bones.clear();
     for (MutableOffsetJointList::const_iterator it = m_joints.begin(), end = m_joints.end(); it != end; ++it) {
-        nanoemMutableModelJointDestroy(it->first);
+        nanoemMutableModelJointDestroy(it->m_opaque);
     }
     m_joints.clear();
     for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end(); it != end;
          ++it) {
-        nanoemMutableModelRigidBodyDestroy(it->first);
+        nanoemMutableModelRigidBodyDestroy(it->m_opaque);
     }
     m_rigidBodies.clear();
     for (MutableOffsetVertexList::const_iterator it = m_vertices.begin(), end = m_vertices.end(); it != end; ++it) {
-        nanoemMutableModelVertexDestroy(it->first);
+        nanoemMutableModelVertexDestroy(it->m_opaque);
     }
     m_vertices.clear();
     m_activeModel = nullptr;
@@ -193,27 +217,28 @@ MoveAllSelectedModelObjectsCommand::State::transform(const Matrix4x4 &delta)
     switch (m_editingType) {
     case IModelObjectSelection::kEditingTypeBone: {
         for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
-            const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(it->first);
+            const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(it->m_opaque);
             const Vector4 newOrigin(delta * Vector4(glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr)), 1));
-            nanoemMutableModelBoneSetOrigin(it->first, glm::value_ptr(newOrigin));
+            nanoemMutableModelBoneSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
         }
         m_activeModel->performAllBonesTransform();
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
         for (MutableOffsetJointList::const_iterator it = m_joints.begin(), end = m_joints.end(); it != end; ++it) {
-            const nanoem_model_joint_t *jointPtr = nanoemMutableModelJointGetOriginObject(it->first);
+            const nanoem_model_joint_t *jointPtr = nanoemMutableModelJointGetOriginObject(it->m_opaque);
             const Vector4 newOrigin(delta * Vector4(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)), 1));
-            nanoemMutableModelJointSetOrigin(it->first, glm::value_ptr(newOrigin));
+            nanoemMutableModelJointSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeRigidBody: {
         for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end();
              it != end; ++it) {
-            const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(it->first);
+            const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(it->m_opaque);
             const Vector4 newOrigin(delta * Vector4(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)), 1));
-            nanoemMutableModelRigidBodySetOrigin(it->first, glm::value_ptr(newOrigin));
+            nanoemMutableModelRigidBodySetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
+            updateRigidBody(delta, rigidBodyWorldTransform(rigidBodyPtr), rigidBodyPtr);
         }
         break;
     }
@@ -222,9 +247,9 @@ MoveAllSelectedModelObjectsCommand::State::transform(const Matrix4x4 &delta)
     case IModelObjectSelection::kEditingTypeSoftBody:
     case IModelObjectSelection::kEditingTypeVertex: {
         for (MutableOffsetVertexList::const_iterator it = m_vertices.begin(), end = m_vertices.end(); it != end; ++it) {
-            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(it->first);
+            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(it->m_opaque);
             const Vector4 newOrigin(delta * Vector4(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)), 1));
-            nanoemMutableModelVertexSetOrigin(it->first, glm::value_ptr(newOrigin));
+            nanoemMutableModelVertexSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
             model::Vertex *vertex = model::Vertex::cast(vertexPtr);
             vertex->m_simd.m_origin = bx::simd_ld(glm::value_ptr(newOrigin));
         }
@@ -243,23 +268,25 @@ MoveAllSelectedModelObjectsCommand::State::commit(const Matrix4x4 &delta)
     switch (m_editingType) {
     case IModelObjectSelection::kEditingTypeBone: {
         for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
-            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
-            nanoemMutableModelBoneSetOrigin(it->first, glm::value_ptr(newOrigin));
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->m_origin), 1));
+            nanoemMutableModelBoneSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
         for (MutableOffsetJointList::const_iterator it = m_joints.begin(), end = m_joints.end(); it != end; ++it) {
-            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
-            nanoemMutableModelJointSetOrigin(it->first, glm::value_ptr(newOrigin));
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->m_origin), 1));
+            nanoemMutableModelJointSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeRigidBody: {
         for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end();
              it != end; ++it) {
-            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
-            nanoemMutableModelRigidBodySetOrigin(it->first, glm::value_ptr(newOrigin));
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->m_origin), 1));
+            nanoemMutableModelRigidBodySetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
+            const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(it->m_opaque);
+            updateRigidBody(delta, it->m_worldTransform, rigidBodyPtr);
         }
         break;
     }
@@ -268,9 +295,14 @@ MoveAllSelectedModelObjectsCommand::State::commit(const Matrix4x4 &delta)
     case IModelObjectSelection::kEditingTypeSoftBody:
     case IModelObjectSelection::kEditingTypeVertex: {
         for (MutableOffsetVertexList::const_iterator it = m_vertices.begin(), end = m_vertices.end(); it != end; ++it) {
-            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
-            nanoemMutableModelVertexSetOrigin(it->first, glm::value_ptr(newOrigin));
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->m_origin), 1));
+            nanoemMutableModelVertexSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
+            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(it->m_opaque);
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            vertex->m_simd.m_origin = bx::simd_ld(glm::value_ptr(newOrigin));
         }
+        m_activeModel->markStagingVertexBufferDirty();
+        m_activeModel->updateStagingVertexBuffer();
         break;
     }
     default:
@@ -284,20 +316,22 @@ MoveAllSelectedModelObjectsCommand::State::reset()
     switch (m_editingType) {
     case IModelObjectSelection::kEditingTypeBone: {
         for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
-            nanoemMutableModelBoneSetOrigin(it->first, glm::value_ptr(it->second));
+            nanoemMutableModelBoneSetOrigin(it->m_opaque, glm::value_ptr(it->m_origin));
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
         for (MutableOffsetJointList::const_iterator it = m_joints.begin(), end = m_joints.end(); it != end; ++it) {
-            nanoemMutableModelJointSetOrigin(it->first, glm::value_ptr(it->second));
+            nanoemMutableModelJointSetOrigin(it->m_opaque, glm::value_ptr(it->m_origin));
         }
         break;
     }
     case IModelObjectSelection::kEditingTypeRigidBody: {
         for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end();
              it != end; ++it) {
-            nanoemMutableModelRigidBodySetOrigin(it->first, glm::value_ptr(it->second));
+            nanoemMutableModelRigidBodySetOrigin(it->m_opaque, glm::value_ptr(it->m_origin));
+            const nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(it->m_opaque);
+            updateRigidBody(Constants::kIdentity, it->m_worldTransform, rigidBodyPtr);
         }
         break;
     }
@@ -306,8 +340,13 @@ MoveAllSelectedModelObjectsCommand::State::reset()
     case IModelObjectSelection::kEditingTypeSoftBody:
     case IModelObjectSelection::kEditingTypeVertex: {
         for (MutableOffsetVertexList::const_iterator it = m_vertices.begin(), end = m_vertices.end(); it != end; ++it) {
-            nanoemMutableModelVertexSetOrigin(it->first, glm::value_ptr(it->second));
+            nanoemMutableModelVertexSetOrigin(it->m_opaque, glm::value_ptr(it->m_origin));
+            const nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(it->m_opaque);
+            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            vertex->m_simd.m_origin = bx::simd_ld(glm::value_ptr(it->m_origin));
         }
+        m_activeModel->markStagingVertexBufferDirty();
+        m_activeModel->updateStagingVertexBuffer();
         break;
     }
     default:
@@ -319,6 +358,29 @@ void
 MoveAllSelectedModelObjectsCommand::State::setPivotMatrix(const Matrix4x4 &value)
 {
     m_activeModel->setPivotMatrix(value);
+}
+
+Matrix4x4
+MoveAllSelectedModelObjectsCommand::State::rigidBodyWorldTransform(const nanoem_model_rigid_body_t *rigidBodyPtr) const
+{
+    Matrix4x4 worldTransform(Constants::kIdentity);
+    if (const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+        PhysicsEngine *engine = rigidBody->physicsEngine();
+        const nanoem_physics_motion_state_t *state = engine->motionState(rigidBody->physicsRigidBody());
+        engine->getWorldTransform(state, glm::value_ptr(worldTransform));
+    }
+    return worldTransform;
+}
+
+void
+MoveAllSelectedModelObjectsCommand::State::updateRigidBody(
+    const Matrix4x4 &delta, const Matrix4x4 &worldTransform, const nanoem_model_rigid_body_t *rigidBodyPtr)
+{
+    if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+        PhysicsEngine *engine = rigidBody->physicsEngine();
+        nanoem_physics_motion_state_t *state = engine->motionState(rigidBody->physicsRigidBody());
+        engine->setWorldTransform(state, glm::value_ptr(delta * worldTransform));
+    }
 }
 
 undo_command_t *

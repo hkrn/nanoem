@@ -4520,7 +4520,7 @@ void
 Model::drawJointShape(const nanoem_model_joint_t *jointPtr)
 {
     model::Joint *joint = model::Joint::cast(jointPtr);
-    if (joint->isEditingMasked()) {
+    if (!joint || joint->isEditingMasked()) {
         /* do nothing */
     }
     else if (const par_shapes_mesh_s *shape = joint->sharedShapeMesh(jointPtr)) {
@@ -4544,7 +4544,7 @@ void
 Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
 {
     model::RigidBody *rigidBody = model::RigidBody::cast(bodyPtr);
-    if (rigidBody->isEditingMasked()) {
+    if (!rigidBody || rigidBody->isEditingMasked()) {
         /* do nothing */
     }
     else if (const par_shapes_mesh_s *shape = rigidBody->sharedShapeMesh(bodyPtr)) {

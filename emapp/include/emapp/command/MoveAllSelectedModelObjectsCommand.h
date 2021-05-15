@@ -36,14 +36,30 @@ public:
         void setPivotMatrix(const Matrix4x4 &value);
 
     private:
-        typedef tinystl::pair<nanoem_mutable_model_bone_t *, Vector4> MutableOffsetBone;
+        struct MutableOffsetBone {
+            nanoem_mutable_model_bone_t *m_opaque;
+            Vector4 m_origin;
+        };
+        struct MutableOffsetJoint {
+            nanoem_mutable_model_joint_t *m_opaque;
+            Vector4 m_origin;
+        };
+        struct MutableOffsetRigidBody {
+            nanoem_mutable_model_rigid_body_t *m_opaque;
+            Matrix4x4 m_worldTransform;
+            Vector4 m_origin;
+        };
+        struct MutableOffsetVertex {
+            nanoem_mutable_model_vertex_t *m_opaque;
+            Vector4 m_origin;
+        };
         typedef tinystl::vector<MutableOffsetBone, TinySTLAllocator> MutableOffsetBoneList;
-        typedef tinystl::pair<nanoem_mutable_model_joint_t *, Vector4> MutableOffsetJoint;
         typedef tinystl::vector<MutableOffsetJoint, TinySTLAllocator> MutableOffsetJointList;
-        typedef tinystl::pair<nanoem_mutable_model_rigid_body_t *, Vector4> MutableOffsetRigidBody;
         typedef tinystl::vector<MutableOffsetRigidBody, TinySTLAllocator> MutableOffsetRigidBodyList;
-        typedef tinystl::pair<nanoem_mutable_model_vertex_t *, Vector4> MutableOffsetVertex;
         typedef tinystl::vector<MutableOffsetVertex, TinySTLAllocator> MutableOffsetVertexList;
+
+        Matrix4x4 rigidBodyWorldTransform(const nanoem_model_rigid_body_t *rigidBodyPtr) const;
+        void updateRigidBody(const Matrix4x4 &delta, const Matrix4x4 &worldTransform, const nanoem_model_rigid_body_t *rigidBodyPtr);
 
         Model *m_activeModel;
         MutableOffsetBoneList m_bones;
