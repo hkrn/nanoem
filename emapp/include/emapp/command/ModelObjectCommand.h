@@ -26,6 +26,7 @@ struct nanoem_mutable_model_morph_material_t;
 struct nanoem_mutable_model_morph_uv_t;
 struct nanoem_mutable_model_morph_vertex_t;
 struct nanoem_mutable_model_label_t;
+struct nanoem_mutable_model_label_item_t;
 struct nanoem_mutable_model_rigid_body_t;
 struct nanoem_mutable_model_joint_t;
 struct nanoem_mutable_model_soft_body_t;
@@ -249,15 +250,15 @@ public:
 
 class CreateBoneCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base);
+    static undo_command_t *create(Project *project, const Vector3 &origin);
+    static undo_command_t *create(Project *project, int offset, const nanoem_model_bone_t *base);
     static void setup(nanoem_model_bone_t *bonePtr, Project *project);
     static void setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix,
         nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
     static void setNameSuffix(nanoem_mutable_model_bone_t *bone, const char *suffix, nanoem_language_type_t language,
         nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
 
-    CreateBoneCommand(Project *project, nanoem_rsize_t numBones, int offset, const nanoem_model_bone_t *base);
+    CreateBoneCommand(Project *project, int offset, const nanoem_model_bone_t *base, const Vector3 *origin);
     ~CreateBoneCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -320,11 +321,32 @@ private:
     int m_boneIndex;
 };
 
+class AddBoneToConstraintCommand : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_constraint_t *constraintPtr);
+
+    AddBoneToConstraintCommand(Project *project, nanoem_model_constraint_t *constraintPtr);
+    ~AddBoneToConstraintCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_constraint_joint_t *, TinySTLAllocator> ConstraintJointList;
+    Model *m_activeModel;
+    ScopedMutableConstraint m_mutableConstraint;
+    ConstraintJointList m_joints;
+};
+
 class DeleteBoneCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
-    DeleteBoneCommand(Project *project, nanoem_rsize_t &boneIndex);
+    DeleteBoneCommand(Project *project, nanoem_rsize_t boneIndex);
     ~DeleteBoneCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -384,10 +406,10 @@ public:
 
 class CreateMorphCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, nanoem_rsize_t numMorphs, int offset,
+    static undo_command_t *create(Project *project, int offset,
         const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
 
-    CreateMorphCommand(Project *project, nanoem_rsize_t numMorphs, int offset, const nanoem_model_morph_t *base,
+    CreateMorphCommand(Project *project, int offset, const nanoem_model_morph_t *base,
         nanoem_model_morph_type_t type);
     ~CreateMorphCommand() NANOEM_DECL_NOEXCEPT;
 
@@ -425,6 +447,129 @@ public:
 private:
     Model *m_activeModel;
     ScopedMutableMorph m_mutableMorph;
+};
+
+class BaseAddToMorphCommand : public BaseUndoCommand {
+public:
+    BaseAddToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+
+protected:
+    Model *m_activeModel;
+    ScopedMutableMorph m_mutableMorph;
+};
+
+class AddVertexToMorphCommand : public BaseAddToMorphCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
+
+    AddVertexToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+    ~AddVertexToMorphCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_vertex_t *, TinySTLAllocator> VertexList;
+    VertexList m_vertices;
+};
+
+class AddMaterialToMorphCommand : public BaseAddToMorphCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
+
+    AddMaterialToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+    ~AddMaterialToMorphCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_material_t *, TinySTLAllocator> MaterialList;
+    MaterialList m_materials;
+};
+
+class AddBoneToMorphCommand : public BaseAddToMorphCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
+
+    AddBoneToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+    ~AddBoneToMorphCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_bone_t *, TinySTLAllocator> BoneList;
+    BoneList m_bones;
+};
+
+class AddGroupToMorphCommand : public BaseAddToMorphCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
+
+    AddGroupToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+    ~AddGroupToMorphCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_group_t *, TinySTLAllocator> GroupList;
+    GroupList m_groups;
+};
+
+class AddFlipToMorphCommand : public BaseAddToMorphCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
+
+    AddFlipToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+    ~AddFlipToMorphCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_flip_t *, TinySTLAllocator> FlipList;
+    FlipList m_flips;
+};
+
+class AddRigidBodyToMorphCommand : public BaseAddToMorphCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
+
+    AddRigidBodyToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr);
+    ~AddRigidBodyToMorphCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_impulse_t *, TinySTLAllocator> RigidBodyList;
+    RigidBodyList m_rigidBodies;
 };
 
 class DeleteMorphCommand : public BaseUndoCommand {
@@ -492,9 +637,9 @@ public:
 class CreateLabelCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base);
+        Project *project, int offset, const nanoem_model_label_t *base);
 
-    CreateLabelCommand(Project *project, nanoem_rsize_t numLabels, int offset, const nanoem_model_label_t *base);
+    CreateLabelCommand(Project *project, int offset, const nanoem_model_label_t *base);
     ~CreateLabelCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -509,6 +654,48 @@ private:
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableLabel m_mutableLabel;
+};
+
+class BaseAddToLabelCommand : public BaseUndoCommand {
+public:
+    BaseAddToLabelCommand(Project *project, nanoem_model_label_t *labelPtr);
+
+protected:
+    typedef tinystl::vector<nanoem_mutable_model_label_item_t *, TinySTLAllocator> ItemList;
+
+    Model *m_activeModel;
+    ItemList m_items;
+    ScopedMutableLabel m_mutableLabel;
+};
+
+class AddBoneToLabelCommand : public BaseAddToLabelCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_label_t *labelPtr);
+
+    AddBoneToLabelCommand(Project *project, nanoem_model_label_t *labelPtr);
+    ~AddBoneToLabelCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+};
+
+class AddMorphToLabelCommand : public BaseAddToLabelCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_model_label_t *labelPtr);
+
+    AddMorphToLabelCommand(Project *project, nanoem_model_label_t *labelPtr);
+    ~AddMorphToLabelCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
 class DeleteLabelCommand : public BaseUndoCommand {
@@ -576,10 +763,10 @@ public:
 class CreateRigidBodyCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_rsize_t numRigidBodies, int offset, const nanoem_model_rigid_body_t *base);
+        Project *project, int offset, const nanoem_model_rigid_body_t *base);
 
     CreateRigidBodyCommand(
-        Project *project, nanoem_rsize_t numRigidBodies, int offset, const nanoem_model_rigid_body_t *base);
+        Project *project, int offset, const nanoem_model_rigid_body_t *base);
     ~CreateRigidBodyCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -661,9 +848,9 @@ public:
 class CreateJointCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_rsize_t numJoints, int offset, const nanoem_model_joint_t *base);
+        Project *project, int offset, const nanoem_model_joint_t *base);
 
-    CreateJointCommand(Project *project, nanoem_rsize_t numJoints, int offset, const nanoem_model_joint_t *base);
+    CreateJointCommand(Project *project, int offset, const nanoem_model_joint_t *base);
     ~CreateJointCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -745,10 +932,10 @@ public:
 class CreateSoftBodyCommand : public BaseUndoCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_rsize_t numSoftBodies, int offset, const nanoem_model_soft_body_t *base);
+        Project *project, int offset, const nanoem_model_soft_body_t *base);
 
     CreateSoftBodyCommand(
-        Project *project, nanoem_rsize_t numSoftBodies, int offset, const nanoem_model_soft_body_t *base);
+        Project *project, int offset, const nanoem_model_soft_body_t *base);
     ~CreateSoftBodyCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;

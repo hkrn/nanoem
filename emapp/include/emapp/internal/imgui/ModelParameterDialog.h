@@ -102,6 +102,22 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
         PFN_nanoemMutableModelSetBoneObject setBoneCallback);
     void layoutBoneAxisMenuItems(nanoem_model_bone_t *bonePtr, PFN_nanoemMutableModelSetBoneAxis setBoneAxisCallback);
 
+    void layoutManipulateVertexMenu(Project *project);
+    void layoutCreateMaterialMenu(Project *project);
+    void layoutManipulateMaterialMenu(Project *project);
+    void layoutCreateBoneMenu(Project *project);
+    void layoutManipulateBoneMenu(Project *project);
+    void layoutCreateMorphMenu(Project *project);
+    void layoutManipulateMorphMenu(Project *project);
+    void layoutCreateLabelMenu(Project *project, const nanoem_model_label_t *selectedLabel);
+    void layoutManipulateLabelMenu(Project *project);
+    void layoutCreateRigidBodyMenu(Project *project);
+    void layoutManipulateRigidBodyMenu(Project *project);
+    void layoutCreateJointMenu(Project *project);
+    void layoutManipulateJointMenu(Project *project);
+    void layoutCreateSoftBodyMenu(Project *project);
+    void layoutManipulateSoftBodyMenu(Project *project);
+
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
     void setActiveModel(Model *model, Project *project);
