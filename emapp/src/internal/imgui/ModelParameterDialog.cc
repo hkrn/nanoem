@@ -320,7 +320,8 @@ ModelParameterDialog::draw(Project *project)
                 layoutManipulateVertexMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.tab.material"));
+            StringUtils::format(
+                buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.tab.material"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateMaterialMenu(project);
                 ImGui::Separator();
@@ -346,7 +347,8 @@ ModelParameterDialog::draw(Project *project)
                 layoutManipulateLabelMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.tab.rigid-body"));
+            StringUtils::format(
+                buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.tab.rigid-body"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateRigidBodyMenu(project);
                 ImGui::Separator();
@@ -360,8 +362,9 @@ ModelParameterDialog::draw(Project *project)
                 layoutCreateJointMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.tab.soft-body"));
-            if (ImGui::BeginMenu(buffer)) {
+            StringUtils::format(
+                buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.tab.soft-body"));
+            if (ImGui::BeginMenu(buffer, isPMX21())) {
                 layoutManipulateSoftBodyMenu(project);
                 ImGui::Separator();
                 layoutCreateSoftBodyMenu(project);
@@ -435,7 +438,7 @@ ModelParameterDialog::draw(Project *project)
             toggleTab(kTabTypeJoint, project);
         }
         StringUtils::format(buffer, sizeof(buffer), "%s##tab.soft-body", tr("nanoem.gui.window.model.tab.soft-body"));
-        if (ImGui::BeginTabItem(
+        if (isPMX21() && ImGui::BeginTabItem(
                 buffer, nullptr, explicitTabType == kTabTypeSoftBody ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllSoftBodies(project);
             ImGui::EndTabItem();
@@ -5201,7 +5204,7 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
             ImGui::EndMenu();
         }
         ImGui::Separator();
-        if (ImGui::BeginMenu("Flip Morph")) {
+        if (ImGui::BeginMenu("Flip Morph", isPMX21())) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_FLIP;
             if (ImGui::MenuItem("at Last")) {
                 undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
@@ -5214,7 +5217,7 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Impulse Morph")) {
+        if (ImGui::BeginMenu("Impulse Morph", isPMX21())) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_IMPULUSE;
             if (ImGui::MenuItem("at Last")) {
                 undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
@@ -5440,7 +5443,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Add Selected to the Flip Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_FLIP))) {
+        if (ImGui::BeginMenu("Add Selected to the Flip Morph", isPMX21() && hasMorphType(NANOEM_MODEL_MORPH_TYPE_FLIP))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -5639,7 +5642,7 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::BeginMenu("Morph")) {
+    if (ImGui::BeginMenu("Morph", isPMX21())) {
         if (ImGui::BeginMenu("Add Selected to the Impulse Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_IMPULUSE))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -6207,6 +6210,12 @@ ModelParameterDialog::hasModelWithMaterial(const Project *project) const NANOEM_
         }
     }
     return result;
+}
+
+bool
+ModelParameterDialog::isPMX21() const NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelGetFormatType(m_activeModel->data()) == NANOEM_MODEL_FORMAT_TYPE_PMX_2_1;
 }
 
 } /* namespace imgui */

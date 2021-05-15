@@ -153,6 +153,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
         const nanoem_model_soft_body_aero_model_type_t type) const NANOEM_DECL_NOEXCEPT;
     bool hasMorphType(nanoem_model_morph_type_t type) const NANOEM_DECL_NOEXCEPT;
     bool hasModelWithMaterial(const Project *project) const NANOEM_DECL_NOEXCEPT;
+    bool isPMX21() const NANOEM_DECL_NOEXCEPT;
 
     struct SavedState {
         struct ModelState {
