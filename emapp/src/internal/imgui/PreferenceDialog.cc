@@ -137,12 +137,14 @@ PreferenceDialog::draw(Project *project)
                 ApplicationMenuBuilder::kMenuItemTypeProjectEnableGroundShadow,
                 ApplicationMenuBuilder::kMenuItemTypeProjectEnableEffect,
             };
+            char buffer[Inline::kNameStackBufferSize];
             for (nanoem_rsize_t i = 0; i < BX_COUNTOF(itemTypes); i++) {
                 ApplicationMenuBuilder::MenuItemType itemType = itemTypes[i];
                 ApplicationMenuBuilder::MenuItemCheckedState state;
                 ApplicationMenuBuilder::validateMenuItem(project, itemType, state);
                 bool checked = state == ApplicationMenuBuilder::kMenuItemCheckedStateTrue;
-                if (ImGui::Checkbox(m_applicationPtr->translateMenuItem(itemType), &checked)) {
+                ApplicationMenuBuilder::stripMnemonic(buffer, sizeof(buffer), m_applicationPtr->translateMenuItem(itemType));
+                if (ImGui::Checkbox(buffer, &checked)) {
                     Error error;
                     m_applicationPtr->dispatchMenuItemAction(project, itemType, error);
                     error.notify(m_applicationPtr->eventPublisher());
