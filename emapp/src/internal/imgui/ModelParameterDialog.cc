@@ -1708,19 +1708,19 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
     }
     {
         bool value = nanoemModelBoneHasDestinationBone(bonePtr) != 0;
-        if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.target"), value)) {
+        if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.destination.bone"), value)) {
             command::ScopedMutableBone scoped(bonePtr);
             nanoemMutableModelBoneSetTargetBoneObject(scoped, nanoemModelBoneGetTargetBoneObject(bonePtr));
         }
         ImGui::SameLine();
-        if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.destination-origin"), value ? false : true)) {
+        if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.destination.origin"), value ? false : true)) {
             command::ScopedMutableBone scoped(bonePtr);
             const Vector4 copy(glm::make_vec4(nanoemModelBoneGetDestinationOrigin(bonePtr)));
             nanoemMutableModelBoneSetDestinationOrigin(scoped, glm::value_ptr(copy));
         }
         if (value) {
             const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
-            layoutBoneComboBox("target.bone", targetBonePtr, bonePtr, nanoemMutableModelBoneSetTargetBoneObject);
+            layoutBoneComboBox("destination.bone", targetBonePtr, bonePtr, nanoemMutableModelBoneSetTargetBoneObject);
         }
         else {
             Vector3 origin(glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr)));
@@ -4922,6 +4922,11 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
     }
     if (const model::Bone *selectedBone = model::Bone::cast(selectedBonePtr)) {
         ImGui::Separator();
+        StringUtils::format(buffer, sizeof(buffer), "Creating Destination Bone of %s", selectedBone->nameConstString());
+        if (ImGui::MenuItem(buffer)) {
+            undo_command_t *command = command::CreateBoneAsDestinationCommand::create(project, selectedBonePtr);
+            m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+        }
         if (ImGui::BeginMenu("Creating Staging Bone")) {
             const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(selectedBonePtr);
             StringUtils::format(buffer, sizeof(buffer), "as Parent of %s", selectedBone->nameConstString());

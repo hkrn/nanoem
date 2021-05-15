@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -305,9 +305,9 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 (nanoem.gui.model.edit.bone.name.japanese名称（日本語）=
 'nanoem.gui.model.edit.bone.name.english名称（英語）1
 !nanoem.gui.model.edit.bone.origin原点座標1
-!nanoem.gui.model.edit.bone.parent親ボーン7
-!nanoem.gui.model.edit.bone.target接続先ボーンF
--nanoem.gui.model.edit.bone.destination-origin接続先原点座標0
+!nanoem.gui.model.edit.bone.parent親ボーンA
++nanoem.gui.model.edit.bone.destination.bone接続先ボーンF
+-nanoem.gui.model.edit.bone.destination.origin接続先原点座標0
  nanoem.gui.model.edit.bone.stage変形階層8
 %nanoem.gui.model.edit.bone.propertiesプロパティ2
 "nanoem.gui.model.edit.bone.movable移動可能5
@@ -1030,7 +1030,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1344,9 +1344,9 @@ PropertiesQ
 (nanoem.gui.model.edit.bone.name.japaneseName (Japanese)9
 'nanoem.gui.model.edit.bone.name.englishName (English)+
 !nanoem.gui.model.edit.bone.originOrigin0
-!nanoem.gui.model.edit.bone.parentParent Bone0
-!nanoem.gui.model.edit.bone.targetTarget BoneC
--nanoem.gui.model.edit.bone.destination-originDestination Origin3
+!nanoem.gui.model.edit.bone.parentParent Bone?
++nanoem.gui.model.edit.bone.destination.boneDestination BoneC
+-nanoem.gui.model.edit.bone.destination.originDestination Origin3
  nanoem.gui.model.edit.bone.stageTransform Stage3
 %nanoem.gui.model.edit.bone.properties
 Properties-

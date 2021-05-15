@@ -205,7 +205,7 @@ public:
         size_t m_offset;
         size_t m_size;
     };
-    BaseMoveMaterialCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
+    BaseMoveMaterialCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
     ~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT;
 
 protected:
@@ -213,13 +213,13 @@ protected:
         nanoem_status_t *status);
 
     nanoem_model_material_t *const *m_materials;
-    nanoem_rsize_t &m_materialIndex;
+    nanoem_rsize_t m_materialIndex;
 };
 
 class MoveMaterialUpCommand : public BaseMoveMaterialCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
+        Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
 
     MoveMaterialUpCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
     ~MoveMaterialUpCommand() NANOEM_DECL_NOEXCEPT;
@@ -235,7 +235,7 @@ public:
 class MoveMaterialDownCommand : public BaseMoveMaterialCommand {
 public:
     static undo_command_t *create(
-        Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
+        Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
 
     MoveMaterialDownCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
     ~MoveMaterialDownCommand() NANOEM_DECL_NOEXCEPT;
@@ -273,6 +273,28 @@ private:
     const int m_offset;
     Model *m_activeModel;
     ScopedMutableBone m_mutableBone;
+};
+
+class CreateBoneAsDestinationCommand : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project, const nanoem_model_bone_t *base);
+
+    CreateBoneAsDestinationCommand(Project *project, const nanoem_model_bone_t *base);
+    ~CreateBoneAsDestinationCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
+    const nanoem_model_bone_t *m_parent;
+    Model *m_activeModel;
+    ScopedMutableBone m_mutableBone;
+    int m_boneIndex;
 };
 
 class CreateBoneAsStagingParentCommand : public BaseUndoCommand {

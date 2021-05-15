@@ -37,6 +37,7 @@ public:
     static const nanoem_u8_t kNameCenterOffsetInJapanese[];
     static const nanoem_u8_t kNameLeftInJapanese[];
     static const nanoem_u8_t kNameRightInJapanese[];
+    static const nanoem_u8_t kNameDestinationInJapanese[];
     static const nanoem_u8_t kLeftKneeInJapanese[];
     static const nanoem_u8_t kRightKneeInJapanese[];
 

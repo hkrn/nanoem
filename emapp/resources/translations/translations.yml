@@ -1223,11 +1223,11 @@
   phrase:
     en_US: 'Parent Bone'
     ja_JP: '親ボーン'
-- key: nanoem.gui.model.edit.bone.target
+- key: nanoem.gui.model.edit.bone.destination.bone
   phrase:
-    en_US: 'Target Bone'
+    en_US: 'Destination Bone'
     ja_JP: '接続先ボーン'
-- key: nanoem.gui.model.edit.bone.destination-origin
+- key: nanoem.gui.model.edit.bone.destination.origin
   phrase:
     en_US: 'Destination Origin'
     ja_JP: '接続先原点座標'
