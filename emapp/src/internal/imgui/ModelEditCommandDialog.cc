@@ -10,6 +10,7 @@
 #include "emapp/ILight.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
+#include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/matrix_query.hpp"
@@ -136,6 +137,7 @@ ModelEditCommandDialog::ModelEditCommandDialog(Model *model, BaseApplicationServ
 bool
 ModelEditCommandDialog::draw(Project *project)
 {
+    char buffer[Inline::kNameStackBufferSize];
     bool visible = true;
     Model *currentActiveModel = project->activeModel();
     if (currentActiveModel != m_activeModel) {
@@ -175,28 +177,30 @@ ModelEditCommandDialog::draw(Project *project)
             addSelectionButton(
                 tr("nanoem.gui.window.model.tab.joint"), IModelObjectSelection::kEditingTypeJoint, project);
         }
-        if (ImGui::CollapsingHeader("Camera##camera")) {
+        StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera"));
+        if (ImGui::CollapsingHeader(buffer)) {
             ICamera *camera = project->activeCamera();
             Vector3 lookAt(camera->lookAt()), angle(glm::degrees(camera->angle()));
             nanoem_f32_t distance = camera->distance();
             int fov = camera->fov();
             bool perspective = camera->isPerspective(), changed = false;
             ImGui::PushItemWidth(-1);
-            ImGui::TextUnformatted("LookAt");
+            ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.look-at"));
             if (ImGui::DragFloat3("##look-at", glm::value_ptr(lookAt))) {
                 camera->setLookAt(glm::radians(lookAt));
                 changed = true;
             }
-            ImGui::TextUnformatted("Angle");
+            ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.angle"));
             if (ImGui::DragFloat3("##angle", glm::value_ptr(angle))) {
                 camera->setAngle(glm::radians(angle));
                 changed = true;
             }
-            if (ImGui::DragFloat("##distance", &distance, 0.1f, 0.0f, 0.0f, "Distance: %.1f")) {
+            StringUtils::format(buffer, sizeof(buffer), "%s: %%.1f", tr("nanoem.gui.viewport.parameter.camera.distance"));
+            if (ImGui::DragFloat("##distance", &distance, 0.1f, 0.0f, 0.0f, buffer)) {
                 camera->setDistance(distance);
                 changed = true;
             }
-            if (ImGui::DragInt("##fov", &fov, 0.1f, 1, 135, "Fov: %d")) {
+            if (ImGui::DragInt("##fov", &fov, 0.1f, 1, 135, tr("nanoem.gui.panel.camera.fov.format"))) {
                 camera->setFov(fov);
                 changed = true;
             }
@@ -214,19 +218,21 @@ ModelEditCommandDialog::draw(Project *project)
                 project->resetAllModelEdges();
             }
         }
-        if (ImGui::CollapsingHeader("Light##light")) {
+        StringUtils::format(buffer, sizeof(buffer), "%s##light", tr("nanoem.gui.panel.light"));
+        if (ImGui::CollapsingHeader(buffer)) {
             ILight *light = project->activeLight();
             Vector3 color(light->color()), direction(light->direction());
             ImGui::PushItemWidth(-1);
-            ImGui::TextUnformatted("Color");
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.light.color"));
             if (ImGui::ColorEdit3("##color", glm::value_ptr(color))) {
                 light->setColor(color);
             }
-            ImGui::TextUnformatted("Direction");
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.light.direction"));
             if (ImGui::DragFloat3("##direction", glm::value_ptr(direction), 0.01f, -1.0f, 1.0f)) {
                 light->setDirection(direction);
             }
-            if (ImGui::Button("Initialize##initialize", ImVec2(-1, 0))) {
+            StringUtils::format(buffer, sizeof(buffer), "%s##initialize", tr("nanoem.gui.panel.light.reset"));
+            if (ImGui::Button(buffer, ImVec2(-1, 0))) {
                 light->reset();
             }
             ImGui::PopItemWidth();
