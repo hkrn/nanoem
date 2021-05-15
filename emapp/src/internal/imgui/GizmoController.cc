@@ -93,7 +93,7 @@ GizmoController::draw(ImDrawList *drawList, const ImVec2 &offset, const ImVec2 &
     ImGuizmo::SetOrthographic(project->activeCamera()->isPerspective() ? false : true);
     project->activeCamera()->getViewTransform(view, projection);
     Model *activeModel = project->activeModel();
-    Matrix4x4 pivotMatrix(activeModel->pivotMatrix());
+    Matrix4x4 pivotMatrix(activeModel ? activeModel->pivotMatrix() : Matrix4x4(0));
     if (!glm::isNull(pivotMatrix, Constants::kEpsilon)) {
         ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(pivotMatrix), 1);
         if (ImGuizmo::IsOver()) {

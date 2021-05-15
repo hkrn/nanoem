@@ -120,11 +120,12 @@ PreferenceDialog::draw(Project *project)
             ImGui::PushItemWidth(-1);
             ImGui::TextUnformatted(tr("nanoem.gui.window.preference.project.language.title"));
             ITranslator *translator = m_applicationPtr->translator();
-            ITranslator::LanguageType language = translator->language();
+            const ITranslator::LanguageType language = translator->language();
             if (ImGui::BeginCombo("##language", selectedLanguageString(language))) {
+                const nanoem_u32_t flags = project->isModelEditingEnabled() ? ImGuiSelectableFlags_Disabled : 0;
                 for (int i = ITranslator::kLanguageTypeFirstEnum; i < ITranslator::kLanguageTypeMaxEnum; i++) {
                     ITranslator::LanguageType type = static_cast<ITranslator::LanguageType>(i);
-                    if (translator->isSupportedLanguage(type) && ImGui::Selectable(selectedLanguageString(type))) {
+                    if (translator->isSupportedLanguage(type) && ImGui::Selectable(selectedLanguageString(type), type == language, flags)) {
                         project->setLanguage(type);
                         translator->setLanguage(type);
                     }
