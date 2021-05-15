@@ -5288,8 +5288,6 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         eventPublisher->publishQueryOpenSingleFileDialogEvent(
             IFileManager::kDialogTypeUserCallback, model::BindPose::loadableExtensions());
     }
-    if (ImGui::MenuItem("Create Texture Morph from Model File")) {
-    }
     if (ImGui::MenuItem("Create Vertex Morph from Model File")) {
     }
 }
@@ -5582,6 +5580,13 @@ ModelParameterDialog::layoutCreateRigidBodyMenu(Project *project)
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
         ImGui::EndMenu();
+    }
+    ImGui::Separator();
+    const IModelObjectSelection *selection = m_activeModel->selection();
+    if (ImGui::MenuItem("Create Intermediate Joint from Two Rigid Bodies", nullptr, nullptr,
+            selection->countAllRigidBodies() == 2)) {
+        undo_command_t *command = command::CreateIntermediateJointFromTwoRigidBodiesCommand::create(project);
+        m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
     }
 }
 

@@ -8,6 +8,7 @@
 
 #include "emapp/Error.h"
 #include "emapp/IModelObjectSelection.h"
+#include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Progress.h"
 #include "emapp/Project.h"
@@ -1807,9 +1808,11 @@ AddGroupToMorphCommand::AddGroupToMorphCommand(Project *project, nanoem_model_mo
     model::Morph::Set groups(m_activeModel->selection()->allMorphSet());
     for (model::Morph::Set::const_iterator it = groups.begin(), end = groups.end(); it != end; ++it) {
         const nanoem_model_morph_t *morphPtr = *it;
-        nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(m_mutableMorph, &status);
-        nanoemMutableModelMorphGroupSetMorphObject(item, morphPtr);
-        m_groups.push_back(item);
+        if (nanoemModelMorphGetType(morphPtr) != NANOEM_MODEL_MORPH_TYPE_GROUP) {
+            nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(m_mutableMorph, &status);
+            nanoemMutableModelMorphGroupSetMorphObject(item, morphPtr);
+            m_groups.push_back(item);
+        }
     }
 }
 
@@ -2629,6 +2632,15 @@ CreateRigidBodyCommand::create(
     return command->createCommand();
 }
 
+void
+CreateRigidBodyCommand::setup(nanoem_model_rigid_body_t *rigidBodyPtr, Project *project)
+{
+    model::RigidBody *newBody = model::RigidBody::create();
+    model::RigidBody::Resolver resolver;
+    newBody->bind(rigidBodyPtr, project->physicsEngine(), false, resolver);
+    newBody->resetLanguage(rigidBodyPtr, project->unicodeStringFactory(), project->castLanguage());
+}
+
 CreateRigidBodyCommand::CreateRigidBodyCommand(
     Project *project, int offset, const nanoem_model_rigid_body_t *base)
     : BaseUndoCommand(project)
@@ -2654,11 +2666,7 @@ CreateRigidBodyCommand::CreateRigidBodyCommand(
     if (StringUtils::tryGetString(factory, buffer, scope)) {
         nanoemMutableModelRigidBodySetName(m_mutableRigidBody, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    model::RigidBody *newBody = model::RigidBody::create();
-    model::RigidBody::Resolver resolver;
-    nanoem_model_rigid_body_t *rigidBodyPtr = nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody);
-    newBody->bind(rigidBodyPtr, nullptr, false, resolver);
-    newBody->resetLanguage(rigidBodyPtr, factory, project->castLanguage());
+    setup(nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody), project);
 }
 
 CreateRigidBodyCommand::~CreateRigidBodyCommand() NANOEM_DECL_NOEXCEPT
@@ -2900,6 +2908,15 @@ CreateJointCommand::create(Project *project, int offset, const nanoem_model_join
     return command->createCommand();
 }
 
+void
+CreateJointCommand::setup(nanoem_model_joint_t *jointPtr, Project *project)
+{
+    model::Joint *newJoint = model::Joint::create();
+    model::RigidBody::Resolver resolver;
+    newJoint->bind(jointPtr, project->physicsEngine(), resolver);
+    newJoint->resetLanguage(jointPtr, project->unicodeStringFactory(), project->castLanguage());
+}
+
 CreateJointCommand::CreateJointCommand(
     Project *project, int offset, const nanoem_model_joint_t *base)
     : BaseUndoCommand(project)
@@ -2925,11 +2942,7 @@ CreateJointCommand::CreateJointCommand(
     if (StringUtils::tryGetString(factory, buffer, scope)) {
         nanoemMutableModelJointSetName(m_mutableJoint, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    model::Joint *newJoint = model::Joint::create();
-    model::RigidBody::Resolver resolver;
-    nanoem_model_joint_t *jointPtr = nanoemMutableModelJointGetOriginObject(m_mutableJoint);
-    newJoint->bind(jointPtr, nullptr, resolver);
-    newJoint->resetLanguage(jointPtr, factory, project->castLanguage());
+    setup(nanoemMutableModelJointGetOriginObject(m_mutableJoint), project);
 }
 
 CreateJointCommand::~CreateJointCommand() NANOEM_DECL_NOEXCEPT
@@ -2977,6 +2990,90 @@ const char *
 CreateJointCommand::name() const NANOEM_DECL_NOEXCEPT
 {
     return "CreateJointCommand";
+}
+
+undo_command_t *
+CreateIntermediateJointFromTwoRigidBodiesCommand::create(Project *project)
+{
+    CreateIntermediateJointFromTwoRigidBodiesCommand *command =
+        nanoem_new(CreateIntermediateJointFromTwoRigidBodiesCommand(project));
+    return command->createCommand();
+}
+
+CreateIntermediateJointFromTwoRigidBodiesCommand::CreateIntermediateJointFromTwoRigidBodiesCommand(Project *project)
+    : BaseUndoCommand(project)
+    , m_activeModel(project->activeModel())
+    , m_mutableJoint(m_activeModel)
+{
+    nanoem_assert(m_activeModel->selection()->countAllRigidBodies() == 2, "must have two rigid bodies");
+    const model::RigidBody::Set bodySet(m_activeModel->selection()->allRigidBodySet());
+    const model::RigidBody::List bodies(ListUtils::toListFromSet(bodySet));
+    int body0Index = model::RigidBody::index(bodies[0]), body1Index = model::RigidBody::index(bodies[1]);
+    const nanoem_model_rigid_body_t *bodyA = body0Index < body1Index ? bodies[0] : bodies[1],
+                                    *bodyB = body0Index < body1Index ? bodies[1] : bodies[0];
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (nanoem_rsize_t i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
+        nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
+        nanoemMutableModelJointSetName(m_mutableJoint, nanoemModelRigidBodyGetName(bodyA, language), language, &status);
+    }
+    const Vector4 origin(
+        (glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyA)) + glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyB))) * 0.5f);
+    const Vector4 orientation((glm::make_vec4(nanoemModelRigidBodyGetOrientation(bodyA)) +
+                                  glm::make_vec4(nanoemModelRigidBodyGetOrientation(bodyB))) *
+        0.5f);
+    nanoemMutableModelJointSetOrigin(m_mutableJoint, glm::value_ptr(origin));
+    nanoemMutableModelJointSetOrientation(m_mutableJoint, glm::value_ptr(orientation));
+    nanoemMutableModelJointSetType(m_mutableJoint, NANOEM_MODEL_JOINT_TYPE_GENERIC_6DOF_SPRING_CONSTRAINT);
+    nanoemMutableModelJointSetRigidBodyAObject(m_mutableJoint, bodyA);
+    nanoemMutableModelJointSetRigidBodyBObject(m_mutableJoint, bodyB);
+    CreateJointCommand::setup(nanoemMutableModelJointGetOriginObject(m_mutableJoint), project);
+}
+
+CreateIntermediateJointFromTwoRigidBodiesCommand::~CreateIntermediateJointFromTwoRigidBodiesCommand()
+    NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+CreateIntermediateJointFromTwoRigidBodiesCommand::undo(Error &error)
+{
+    ScopedMutableModel model(m_activeModel);
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoemMutableModelRemoveJointObject(model, m_mutableJoint, &status);
+    assignError(status, error);
+}
+
+void
+CreateIntermediateJointFromTwoRigidBodiesCommand::redo(Error &error)
+{
+    ScopedMutableModel model(m_activeModel);
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoemMutableModelInsertJointObject(model, m_mutableJoint, -1, &status);
+    assignError(status, error);
+}
+
+void
+CreateIntermediateJointFromTwoRigidBodiesCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateIntermediateJointFromTwoRigidBodiesCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateIntermediateJointFromTwoRigidBodiesCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateIntermediateJointFromTwoRigidBodiesCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateIntermediateJointFromTwoRigidBodiesCommand";
 }
 
 undo_command_t *

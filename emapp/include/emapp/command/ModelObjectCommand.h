@@ -33,7 +33,7 @@ struct nanoem_mutable_model_soft_body_t;
 
 namespace nanoem {
 
-class Model;
+class Model NANOEM_DECL_SEALED;
 
 namespace command {
 
@@ -179,7 +179,7 @@ struct ScopedMutableSoftBody {
     nanoem_mutable_model_soft_body_t *m_softBody;
 };
 
-class DeleteMaterialCommand : public BaseUndoCommand {
+class DeleteMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
@@ -216,7 +216,7 @@ protected:
     nanoem_rsize_t m_materialIndex;
 };
 
-class MoveMaterialUpCommand : public BaseMoveMaterialCommand {
+class MoveMaterialUpCommand NANOEM_DECL_SEALED : public BaseMoveMaterialCommand {
 public:
     static undo_command_t *create(
         Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
@@ -232,7 +232,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveMaterialDownCommand : public BaseMoveMaterialCommand {
+class MoveMaterialDownCommand NANOEM_DECL_SEALED : public BaseMoveMaterialCommand {
 public:
     static undo_command_t *create(
         Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
@@ -248,7 +248,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class CreateBoneCommand : public BaseUndoCommand {
+class CreateBoneCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, const Vector3 &origin);
     static undo_command_t *create(Project *project, int offset, const nanoem_model_bone_t *base);
@@ -275,7 +275,7 @@ private:
     ScopedMutableBone m_mutableBone;
 };
 
-class CreateBoneAsDestinationCommand : public BaseUndoCommand {
+class CreateBoneAsDestinationCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, const nanoem_model_bone_t *base);
 
@@ -297,7 +297,7 @@ private:
     int m_boneIndex;
 };
 
-class CreateBoneAsStagingParentCommand : public BaseUndoCommand {
+class CreateBoneAsStagingParentCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, const nanoem_model_bone_t *base);
 
@@ -320,7 +320,7 @@ private:
     int m_boneIndex;
 };
 
-class CreateBoneAsStagingChildCommand : public BaseUndoCommand {
+class CreateBoneAsStagingChildCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_bone_t *base);
 
@@ -343,7 +343,7 @@ private:
     int m_boneIndex;
 };
 
-class AddBoneToConstraintCommand : public BaseUndoCommand {
+class AddBoneToConstraintCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_constraint_t *constraintPtr);
 
@@ -364,7 +364,7 @@ private:
     ConstraintJointList m_joints;
 };
 
-class DeleteBoneCommand : public BaseUndoCommand {
+class DeleteBoneCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
@@ -400,7 +400,7 @@ private:
     Model *m_activeModel;
 };
 
-class MoveBoneDownCommand : public BaseMoveBoneCommand {
+class MoveBoneDownCommand NANOEM_DECL_SEALED : public BaseMoveBoneCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
@@ -413,7 +413,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveBoneUpCommand : public BaseMoveBoneCommand {
+class MoveBoneUpCommand NANOEM_DECL_SEALED : public BaseMoveBoneCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t boneIndex);
 
@@ -426,7 +426,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class CreateMorphCommand : public BaseUndoCommand {
+class CreateMorphCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, int offset,
         const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
@@ -450,7 +450,7 @@ private:
     ScopedMutableMorph m_mutableMorph;
 };
 
-class CreateBoneMorphFromPoseCommand : public BaseUndoCommand {
+class CreateBoneMorphFromPoseCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, const model::BindPose::BoneTransformMap &transforms,
         const model::BindPose::MorphWeightMap &weights, const String &filename);
@@ -480,7 +480,7 @@ protected:
     ScopedMutableMorph m_mutableMorph;
 };
 
-class AddVertexToMorphCommand : public BaseAddToMorphCommand {
+class AddVertexToMorphCommand NANOEM_DECL_SEALED : public BaseAddToMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
 
@@ -499,7 +499,7 @@ private:
     VertexList m_vertices;
 };
 
-class AddMaterialToMorphCommand : public BaseAddToMorphCommand {
+class AddMaterialToMorphCommand NANOEM_DECL_SEALED : public BaseAddToMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
 
@@ -518,7 +518,7 @@ private:
     MaterialList m_materials;
 };
 
-class AddBoneToMorphCommand : public BaseAddToMorphCommand {
+class AddBoneToMorphCommand NANOEM_DECL_SEALED : public BaseAddToMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
 
@@ -537,7 +537,7 @@ private:
     BoneList m_bones;
 };
 
-class AddGroupToMorphCommand : public BaseAddToMorphCommand {
+class AddGroupToMorphCommand NANOEM_DECL_SEALED : public BaseAddToMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
 
@@ -556,7 +556,7 @@ private:
     GroupList m_groups;
 };
 
-class AddFlipToMorphCommand : public BaseAddToMorphCommand {
+class AddFlipToMorphCommand NANOEM_DECL_SEALED : public BaseAddToMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
 
@@ -575,7 +575,7 @@ private:
     FlipList m_flips;
 };
 
-class AddRigidBodyToMorphCommand : public BaseAddToMorphCommand {
+class AddRigidBodyToMorphCommand NANOEM_DECL_SEALED : public BaseAddToMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_morph_t *morphPtr);
 
@@ -594,7 +594,7 @@ private:
     RigidBodyList m_rigidBodies;
 };
 
-class DeleteMorphCommand : public BaseUndoCommand {
+class DeleteMorphCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t morphIndex);
 
@@ -630,7 +630,7 @@ private:
     Model *m_activeModel;
 };
 
-class MoveMorphUpCommand : public BaseMoveMorphCommand {
+class MoveMorphUpCommand NANOEM_DECL_SEALED : public BaseMoveMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t morphIndex);
 
@@ -643,7 +643,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveMorphDownCommand : public BaseMoveMorphCommand {
+class MoveMorphDownCommand NANOEM_DECL_SEALED : public BaseMoveMorphCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t morphIndex);
 
@@ -656,7 +656,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class CreateLabelCommand : public BaseUndoCommand {
+class CreateLabelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, int offset, const nanoem_model_label_t *base);
@@ -690,7 +690,7 @@ protected:
     ScopedMutableLabel m_mutableLabel;
 };
 
-class AddBoneToLabelCommand : public BaseAddToLabelCommand {
+class AddBoneToLabelCommand NANOEM_DECL_SEALED : public BaseAddToLabelCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_label_t *labelPtr);
 
@@ -705,7 +705,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class AddMorphToLabelCommand : public BaseAddToLabelCommand {
+class AddMorphToLabelCommand NANOEM_DECL_SEALED : public BaseAddToLabelCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_label_t *labelPtr);
 
@@ -720,7 +720,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class DeleteLabelCommand : public BaseUndoCommand {
+class DeleteLabelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t labelIndex);
 
@@ -756,7 +756,7 @@ private:
     Model *m_activeModel;
 };
 
-class MoveLabelUpCommand : public BaseMoveLabelCommand {
+class MoveLabelUpCommand NANOEM_DECL_SEALED : public BaseMoveLabelCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t labelIndex);
 
@@ -769,7 +769,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveLabelDownCommand : public BaseMoveLabelCommand {
+class MoveLabelDownCommand NANOEM_DECL_SEALED : public BaseMoveLabelCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t labelIndex);
 
@@ -782,10 +782,11 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class CreateRigidBodyCommand : public BaseUndoCommand {
+class CreateRigidBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, int offset, const nanoem_model_rigid_body_t *base);
+    static void setup(nanoem_model_rigid_body_t *rigidBodyPtr, Project *project);
 
     CreateRigidBodyCommand(
         Project *project, int offset, const nanoem_model_rigid_body_t *base);
@@ -805,7 +806,7 @@ private:
     ScopedMutableRigidBody m_mutableRigidBody;
 };
 
-class DeleteRigidBodyCommand : public BaseUndoCommand {
+class DeleteRigidBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t rigidBodyIndex);
 
@@ -841,7 +842,7 @@ private:
     Model *m_activeModel;
 };
 
-class MoveRigidBodyUpCommand : public BaseMoveRigidBodyCommand {
+class MoveRigidBodyUpCommand NANOEM_DECL_SEALED : public BaseMoveRigidBodyCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t rigidBodyIndex);
 
@@ -854,7 +855,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveRigidBodyDownCommand : public BaseMoveRigidBodyCommand {
+class MoveRigidBodyDownCommand NANOEM_DECL_SEALED : public BaseMoveRigidBodyCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t rigidBodyIndex);
 
@@ -867,10 +868,11 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class CreateJointCommand : public BaseUndoCommand {
+class CreateJointCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, int offset, const nanoem_model_joint_t *base);
+    static void setup(nanoem_model_joint_t *jointPtr, Project *project);
 
     CreateJointCommand(Project *project, int offset, const nanoem_model_joint_t *base);
     ~CreateJointCommand() NANOEM_DECL_NOEXCEPT;
@@ -889,7 +891,26 @@ private:
     ScopedMutableJoint m_mutableJoint;
 };
 
-class DeleteJointCommand : public BaseUndoCommand {
+class CreateIntermediateJointFromTwoRigidBodiesCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project);
+
+    CreateIntermediateJointFromTwoRigidBodiesCommand(Project *project);
+    ~CreateIntermediateJointFromTwoRigidBodiesCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Model *m_activeModel;
+    ScopedMutableJoint m_mutableJoint;
+};
+
+class DeleteJointCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t jointIndex);
 
@@ -925,7 +946,7 @@ private:
     Model *m_activeModel;
 };
 
-class MoveJointUpCommand : public BaseMoveJointCommand {
+class MoveJointUpCommand NANOEM_DECL_SEALED : public BaseMoveJointCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t jointIndex);
 
@@ -938,7 +959,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveJointDownCommand : public BaseMoveJointCommand {
+class MoveJointDownCommand NANOEM_DECL_SEALED : public BaseMoveJointCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t jointIndex);
 
@@ -951,7 +972,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class CreateSoftBodyCommand : public BaseUndoCommand {
+class CreateSoftBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, int offset, const nanoem_model_soft_body_t *base);
@@ -974,7 +995,7 @@ private:
     ScopedMutableSoftBody m_mutableSoftBody;
 };
 
-class DeleteSoftBodyCommand : public BaseUndoCommand {
+class DeleteSoftBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t softBodyIndex);
 
@@ -1010,7 +1031,7 @@ private:
     Model *m_activeModel;
 };
 
-class MoveSoftBodyUpCommand : public BaseMoveSoftBodyCommand {
+class MoveSoftBodyUpCommand NANOEM_DECL_SEALED : public BaseMoveSoftBodyCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t softBodyIndex);
 
@@ -1023,7 +1044,7 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-class MoveSoftBodyDownCommand : public BaseMoveSoftBodyCommand {
+class MoveSoftBodyDownCommand NANOEM_DECL_SEALED : public BaseMoveSoftBodyCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_rsize_t softBodyIndex);
 
