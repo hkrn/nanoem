@@ -104,6 +104,7 @@ GizmoController::draw(ImDrawList *drawList, const ImVec2 &offset, const ImVec2 &
             if (!m_state) {
                 m_state = nanoem_new(command::MoveAllSelectedModelObjectsCommand::State(activeModel));
                 m_initialPivotMatrix = pivotMatrix;
+                m_transformMatrix = Constants::kIdentity;
             }
             m_state->transform(delta);
             m_transformMatrix *= delta;

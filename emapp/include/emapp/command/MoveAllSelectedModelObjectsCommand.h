@@ -31,6 +31,7 @@ public:
         ~State() NANOEM_DECL_NOEXCEPT;
 
         void transform(const Matrix4x4 &delta);
+        void commit(const Matrix4x4 &delta);
         void reset();
         void setPivotMatrix(const Matrix4x4 &value);
 

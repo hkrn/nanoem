@@ -238,6 +238,47 @@ MoveAllSelectedModelObjectsCommand::State::transform(const Matrix4x4 &delta)
 }
 
 void
+MoveAllSelectedModelObjectsCommand::State::commit(const Matrix4x4 &delta)
+{
+    switch (m_editingType) {
+    case IModelObjectSelection::kEditingTypeBone: {
+        for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
+            nanoemMutableModelBoneSetOrigin(it->first, glm::value_ptr(newOrigin));
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeJoint: {
+        for (MutableOffsetJointList::const_iterator it = m_joints.begin(), end = m_joints.end(); it != end; ++it) {
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
+            nanoemMutableModelJointSetOrigin(it->first, glm::value_ptr(newOrigin));
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeRigidBody: {
+        for (MutableOffsetRigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end();
+             it != end; ++it) {
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
+            nanoemMutableModelRigidBodySetOrigin(it->first, glm::value_ptr(newOrigin));
+        }
+        break;
+    }
+    case IModelObjectSelection::kEditingTypeFace:
+    case IModelObjectSelection::kEditingTypeMaterial:
+    case IModelObjectSelection::kEditingTypeSoftBody:
+    case IModelObjectSelection::kEditingTypeVertex: {
+        for (MutableOffsetVertexList::const_iterator it = m_vertices.begin(), end = m_vertices.end(); it != end; ++it) {
+            const Vector4 newOrigin(delta * Vector4(Vector3(it->second), 1));
+            nanoemMutableModelVertexSetOrigin(it->first, glm::value_ptr(newOrigin));
+        }
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void
 MoveAllSelectedModelObjectsCommand::State::reset()
 {
     switch (m_editingType) {
@@ -303,7 +344,7 @@ MoveAllSelectedModelObjectsCommand::undo(Error & /* error */)
 void
 MoveAllSelectedModelObjectsCommand::redo(Error & /* error */)
 {
-    m_state.transform(m_transformMatrix);
+    m_state.commit(m_transformMatrix);
     m_state.setPivotMatrix(m_currentPivotMatrix);
 }
 
