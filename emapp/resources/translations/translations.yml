@@ -1915,6 +1915,26 @@
   phrase:
     en_US: 'Cancel'
     ja_JP: 'キャンセル'
+- key: nanoem.gui.model.edit.action.insert.new.title
+  phrase:
+    en_US: 'Insert New'
+    ja_JP: '新規追加'
+- key: nanoem.gui.model.edit.action.insert.at-last
+  phrase:
+    en_US: 'at Last'
+    ja_JP: '最後尾'
+- key: nanoem.gui.model.edit.action.insert.new.after-selected
+  phrase:
+    en_US: 'after Selected'
+    ja_JP: '選択したオブジェクトの後ろ'
+- key: nanoem.gui.model.edit.action.insert.copy.title
+  phrase:
+    en_US: 'Insert Copy'
+    ja_JP: 'コピーを追加'
+- key: nanoem.gui.model.edit.action.insert.copy.at-next
+  phrase:
+    en_US: 'at Next'
+    ja_JP: '対象の次'
 - key: nanoem.gui.model.edit.action.selection.title
   phrase:
     en_US: 'Selection'

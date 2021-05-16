@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -482,7 +482,12 @@ $nanoem.gui.model.edit.material.title材質（マテリアル）-
 &nanoem.gui.model.edit.rigid-body.title剛体4
 !nanoem.gui.model.edit.joint.titleジョイント,
 "nanoem.gui.model.edit.window.apply適用6
-#nanoem.gui.model.edit.window.cancelキャンセル6
+#nanoem.gui.model.edit.window.cancelキャンセル=
+-nanoem.gui.model.edit.action.insert.new.title新規追加8
++nanoem.gui.model.edit.action.insert.at-last	最後尾a
+6nanoem.gui.model.edit.action.insert.new.after-selected'選択したオブジェクトの後ろD
+.nanoem.gui.model.edit.action.insert.copy.titleコピーを追加@
+0nanoem.gui.model.edit.action.insert.copy.at-next対象の次6
 ,nanoem.gui.model.edit.action.selection.title選択=
 *nanoem.gui.model.edit.action.masking.titleマスキングT
 8nanoem.gui.model.edit.action.selection.vertex.enable-all全ての頂点を選択d
@@ -1030,7 +1035,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+�F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1530,7 +1535,13 @@ $nanoem.gui.model.edit.material.titleMateiral(
 Rigid Body*
 !nanoem.gui.model.edit.joint.titleJoint+
 "nanoem.gui.model.edit.window.applyApply-
-#nanoem.gui.model.edit.window.cancelCancel9
+#nanoem.gui.model.edit.window.cancelCancel;
+-nanoem.gui.model.edit.action.insert.new.title
+Insert New6
++nanoem.gui.model.edit.action.insert.at-lastat LastH
+6nanoem.gui.model.edit.action.insert.new.after-selectedafter Selected=
+.nanoem.gui.model.edit.action.insert.copy.titleInsert Copy;
+0nanoem.gui.model.edit.action.insert.copy.at-nextat Next9
 ,nanoem.gui.model.edit.action.selection.title	Selection5
 *nanoem.gui.model.edit.action.masking.titleMaskingO
 8nanoem.gui.model.edit.action.selection.vertex.enable-allSelect All VerticesR
