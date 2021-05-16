@@ -271,6 +271,7 @@ MoveAllSelectedModelObjectsCommand::State::commit(const Matrix4x4 &delta)
             const Vector4 newOrigin(delta * Vector4(Vector3(it->m_origin), 1));
             nanoemMutableModelBoneSetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
         }
+        m_activeModel->performAllBonesTransform();
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
@@ -318,6 +319,7 @@ MoveAllSelectedModelObjectsCommand::State::reset()
         for (MutableOffsetBoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
             nanoemMutableModelBoneSetOrigin(it->m_opaque, glm::value_ptr(it->m_origin));
         }
+        m_activeModel->performAllBonesTransform();
         break;
     }
     case IModelObjectSelection::kEditingTypeJoint: {
