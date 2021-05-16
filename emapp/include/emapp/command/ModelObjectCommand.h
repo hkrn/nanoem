@@ -488,11 +488,10 @@ public:
 
 class CreateMorphCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, int offset,
-        const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
+    static undo_command_t *create(
+        Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
 
-    CreateMorphCommand(Project *project, int offset, const nanoem_model_morph_t *base,
-        nanoem_model_morph_type_t type);
+    CreateMorphCommand(Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
     ~CreateMorphCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -718,8 +717,7 @@ public:
 
 class CreateLabelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, int offset, const nanoem_model_label_t *base);
+    static undo_command_t *create(Project *project, int offset, const nanoem_model_label_t *base);
 
     CreateLabelCommand(Project *project, int offset, const nanoem_model_label_t *base);
     ~CreateLabelCommand() NANOEM_DECL_NOEXCEPT;
@@ -844,12 +842,10 @@ public:
 
 class CreateRigidBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, int offset, const nanoem_model_rigid_body_t *base);
+    static undo_command_t *create(Project *project, int offset, const nanoem_model_rigid_body_t *base);
     static void setup(nanoem_model_rigid_body_t *rigidBodyPtr, Project *project);
 
-    CreateRigidBodyCommand(
-        Project *project, int offset, const nanoem_model_rigid_body_t *base);
+    CreateRigidBodyCommand(Project *project, int offset, const nanoem_model_rigid_body_t *base);
     ~CreateRigidBodyCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -930,8 +926,7 @@ public:
 
 class CreateJointCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, int offset, const nanoem_model_joint_t *base);
+    static undo_command_t *create(Project *project, int offset, const nanoem_model_joint_t *base);
     static void setup(nanoem_model_joint_t *jointPtr, Project *project);
 
     CreateJointCommand(Project *project, int offset, const nanoem_model_joint_t *base);
@@ -1034,11 +1029,9 @@ public:
 
 class CreateSoftBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(
-        Project *project, int offset, const nanoem_model_soft_body_t *base);
+    static undo_command_t *create(Project *project, int offset, const nanoem_model_soft_body_t *base);
 
-    CreateSoftBodyCommand(
-        Project *project, int offset, const nanoem_model_soft_body_t *base);
+    CreateSoftBodyCommand(Project *project, int offset, const nanoem_model_soft_body_t *base);
     ~CreateSoftBodyCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;

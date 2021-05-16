@@ -403,7 +403,8 @@ ModelParameterDialog::draw(Project *project)
             m_savedModelHeight = -1;
         }
         StringUtils::format(buffer, sizeof(buffer), "%s##tab.system", tr("nanoem.gui.window.model.tab.system"));
-        if (ImGui::BeginTabItem(buffer, nullptr, explicitTabType == kTabTypeSystem ? ImGuiTabItemFlags_SetSelected : 0)) {
+        if (ImGui::BeginTabItem(
+                buffer, nullptr, explicitTabType == kTabTypeSystem ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutSystem(project);
             ImGui::EndTabItem();
             toggleTab(kTabTypeSystem, project);
@@ -463,7 +464,8 @@ ModelParameterDialog::draw(Project *project)
             toggleTab(kTabTypeJoint, project);
         }
         StringUtils::format(buffer, sizeof(buffer), "%s##tab.soft-body", tr("nanoem.gui.window.model.tab.soft-body"));
-        if (isPMX21() && ImGui::BeginTabItem(
+        if (isPMX21() &&
+            ImGui::BeginTabItem(
                 buffer, nullptr, explicitTabType == kTabTypeSoftBody ? ImGuiTabItemFlags_SetSelected : 0)) {
             layoutAllSoftBodies(project);
             ImGui::EndTabItem();
@@ -671,11 +673,12 @@ ModelParameterDialog::layoutHeightBasedBatchTransformPane(Project *project)
     ImGui::Spacing();
     char buffer[Inline::kNameStackBufferSize];
     nanoem_f32_t scaleFactor = m_savedModelHeight / modelHeightCM;
-    StringUtils::format(buffer, sizeof(buffer), "%s: %.6f", tr("nanoem.gui.model.edit.measure.transform.height-based.scale-factor"), scaleFactor);
+    StringUtils::format(buffer, sizeof(buffer), "%s: %.6f",
+        tr("nanoem.gui.model.edit.measure.transform.height-based.scale-factor"), scaleFactor);
     ImGui::TextUnformatted(buffer);
     ImGui::Spacing();
-    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.apply"), -1,
-            scaleFactor > 1.0f || scaleFactor < 1.0f)) {
+    if (ImGuiWindow::handleButton(
+            tr("nanoem.gui.model.edit.measure.transform.apply"), -1, scaleFactor > 1.0f || scaleFactor < 1.0f)) {
         const Matrix4x4 transformModelMatrix(glm::scale(Constants::kIdentity, Vector3(scaleFactor)));
         undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
         m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
@@ -5133,7 +5136,8 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
             undo_command_t *command = command::CreateBoneCommand::create(project, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr, m_boneIndex < numBones)) {
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
+                m_boneIndex < numBones)) {
             undo_command_t *command = command::CreateBoneCommand::create(project, selectedBoneIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
@@ -5677,7 +5681,8 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("Add Selected to the Flip Morph", isPMX21() && hasMorphType(NANOEM_MODEL_MORPH_TYPE_FLIP))) {
+        if (ImGui::BeginMenu(
+                "Add Selected to the Flip Morph", isPMX21() && hasMorphType(NANOEM_MODEL_MORPH_TYPE_FLIP))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -5707,7 +5712,8 @@ ModelParameterDialog::layoutCreateLabelMenu(Project *project, const nanoem_model
             undo_command_t *command = command::CreateLabelCommand::create(project, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr, m_labelIndex < numLabels)) {
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
+                m_labelIndex < numLabels)) {
             undo_command_t *command = command::CreateLabelCommand::create(project, selectedLabelIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
@@ -5793,7 +5799,8 @@ ModelParameterDialog::layoutCreateRigidBodyMenu(Project *project)
             undo_command_t *command = command::CreateRigidBodyCommand::create(project, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr, m_rigidBodyIndex < numRigidBodies)) {
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
+                m_rigidBodyIndex < numRigidBodies)) {
             undo_command_t *command =
                 command::CreateRigidBodyCommand::create(project, selectedRigidBodyIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
@@ -5825,7 +5832,8 @@ void
 ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
 {
     nanoem_rsize_t numRigidBodies;
-    nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
+    nanoem_model_rigid_body_t *const *rigidBodies =
+        nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
     IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.selection.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.rigid-body.enable-all"))) {
@@ -5915,7 +5923,8 @@ ModelParameterDialog::layoutCreateJointMenu(Project *project)
             undo_command_t *command = command::CreateJointCommand::create(project, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr, m_jointIndex < numJoints)) {
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
+                m_jointIndex < numJoints)) {
             undo_command_t *command = command::CreateJointCommand::create(project, selectedJointIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
@@ -6023,7 +6032,8 @@ ModelParameterDialog::layoutCreateSoftBodyMenu(Project *project)
             undo_command_t *command = command::CreateSoftBodyCommand::create(project, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
         }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr, m_softBodyIndex < numSoftBodies)) {
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
+                m_softBodyIndex < numSoftBodies)) {
             undo_command_t *command =
                 command::CreateSoftBodyCommand::create(project, selectedSoftBodyIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
@@ -6048,7 +6058,8 @@ void
 ModelParameterDialog::layoutManipulateSoftBodyMenu(Project *project)
 {
     nanoem_rsize_t numSoftBodies;
-    nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
+    nanoem_model_soft_body_t *const *softBodies =
+        nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
     IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.selection.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.soft-body.enable-all"))) {

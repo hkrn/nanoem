@@ -59,7 +59,8 @@ public:
         typedef tinystl::vector<MutableOffsetVertex, TinySTLAllocator> MutableOffsetVertexList;
 
         Matrix4x4 rigidBodyWorldTransform(const nanoem_model_rigid_body_t *rigidBodyPtr) const;
-        void updateRigidBody(const Matrix4x4 &delta, const Matrix4x4 &worldTransform, const nanoem_model_rigid_body_t *rigidBodyPtr);
+        void updateRigidBody(
+            const Matrix4x4 &delta, const Matrix4x4 &worldTransform, const nanoem_model_rigid_body_t *rigidBodyPtr);
 
         Model *m_activeModel;
         MutableOffsetBoneList m_bones;

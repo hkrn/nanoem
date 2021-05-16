@@ -125,7 +125,8 @@ PreferenceDialog::draw(Project *project)
                 const nanoem_u32_t flags = project->isModelEditingEnabled() ? ImGuiSelectableFlags_Disabled : 0;
                 for (int i = ITranslator::kLanguageTypeFirstEnum; i < ITranslator::kLanguageTypeMaxEnum; i++) {
                     ITranslator::LanguageType type = static_cast<ITranslator::LanguageType>(i);
-                    if (translator->isSupportedLanguage(type) && ImGui::Selectable(selectedLanguageString(type), type == language, flags)) {
+                    if (translator->isSupportedLanguage(type) &&
+                        ImGui::Selectable(selectedLanguageString(type), type == language, flags)) {
                         project->setLanguage(type);
                         translator->setLanguage(type);
                     }
@@ -144,7 +145,8 @@ PreferenceDialog::draw(Project *project)
                 ApplicationMenuBuilder::MenuItemCheckedState state;
                 ApplicationMenuBuilder::validateMenuItem(project, itemType, state);
                 bool checked = state == ApplicationMenuBuilder::kMenuItemCheckedStateTrue;
-                ApplicationMenuBuilder::stripMnemonic(buffer, sizeof(buffer), m_applicationPtr->translateMenuItem(itemType));
+                ApplicationMenuBuilder::stripMnemonic(
+                    buffer, sizeof(buffer), m_applicationPtr->translateMenuItem(itemType));
                 if (ImGui::Checkbox(buffer, &checked)) {
                     Error error;
                     m_applicationPtr->dispatchMenuItemAction(project, itemType, error);

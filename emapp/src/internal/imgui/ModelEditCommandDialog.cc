@@ -195,7 +195,8 @@ ModelEditCommandDialog::draw(Project *project)
                 camera->setAngle(glm::radians(angle));
                 changed = true;
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s: %%.1f", tr("nanoem.gui.viewport.parameter.camera.distance"));
+            StringUtils::format(
+                buffer, sizeof(buffer), "%s: %%.1f", tr("nanoem.gui.viewport.parameter.camera.distance"));
             if (ImGui::DragFloat("##distance", &distance, 0.1f, 0.0f, 0.0f, buffer)) {
                 camera->setDistance(distance);
                 changed = true;

@@ -526,7 +526,8 @@ TransformModelCommand::TransformModelCommand(Project *project, const Matrix4x4 &
         }
     }
     nanoem_rsize_t numRigidBodies;
-    nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
+    nanoem_model_rigid_body_t *const *rigidBodies =
+        nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
         RigidBody rigidBody = { nanoemMutableModelRigidBodyCreateAsReference(rigidBodyPtr, &status),
@@ -643,8 +644,8 @@ TransformModelCommand::redo(Error &error)
         nanoemMutableModelMorphBoneSetTranslation(it->m_opaque, glm::value_ptr(newTranslation));
     }
     for (RigidBodyList::const_iterator it = m_rigidBodies.begin(), end = m_rigidBodies.end(); it != end; ++it) {
-        const Vector4 origin(it->m_origin, 1), newOrigin(m_transform * origin),
-            size(it->m_size, 1), newSize(m_transform * size);
+        const Vector4 origin(it->m_origin, 1), newOrigin(m_transform * origin), size(it->m_size, 1),
+            newSize(m_transform * size);
         nanoemMutableModelRigidBodySetOrigin(it->m_opaque, glm::value_ptr(newOrigin));
         nanoemMutableModelRigidBodySetShapeSize(it->m_opaque, glm::value_ptr(newSize));
         scaleRigidBody(*it, m_transform);
@@ -828,8 +829,7 @@ BaseMoveMaterialCommand::move(int destination, const BaseMoveMaterialCommand::La
 }
 
 undo_command_t *
-MoveMaterialUpCommand::create(
-    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+MoveMaterialUpCommand::create(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
     MoveMaterialUpCommand *command = nanoem_new(MoveMaterialUpCommand(project, materials, materialIndex));
     return command->createCommand();
@@ -1361,7 +1361,8 @@ AddBoneToConstraintCommand::AddBoneToConstraintCommand(Project *project, nanoem_
     model::Bone::Set bones(m_activeModel->selection()->allBoneSet());
     for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
         const nanoem_model_bone_t *bonePtr = *it;
-        nanoem_mutable_model_constraint_joint_t *jointPtr = nanoemMutableModelConstraintJointCreate(m_mutableConstraint, &status);
+        nanoem_mutable_model_constraint_joint_t *jointPtr =
+            nanoemMutableModelConstraintJointCreate(m_mutableConstraint, &status);
         nanoemMutableModelConstraintJointSetBoneObject(jointPtr, bonePtr);
         m_joints.push_back(jointPtr);
     }
@@ -1609,15 +1610,15 @@ MoveBoneUpCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateMorphCommand::create(Project *project, int offset, const nanoem_model_morph_t *base,
-    nanoem_model_morph_type_t type)
+CreateMorphCommand::create(
+    Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type)
 {
     CreateMorphCommand *command = nanoem_new(CreateMorphCommand(project, offset, base, type));
     return command->createCommand();
 }
 
-CreateMorphCommand::CreateMorphCommand(Project *project, int offset,
-    const nanoem_model_morph_t *base, nanoem_model_morph_type_t type)
+CreateMorphCommand::CreateMorphCommand(
+    Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type)
     : BaseUndoCommand(project)
     , m_base(base)
     , m_type(type)
@@ -2443,8 +2444,7 @@ CreateLabelCommand::create(Project *project, int offset, const nanoem_model_labe
     return command->createCommand();
 }
 
-CreateLabelCommand::CreateLabelCommand(
-    Project *project, int offset, const nanoem_model_label_t *base)
+CreateLabelCommand::CreateLabelCommand(Project *project, int offset, const nanoem_model_label_t *base)
     : BaseUndoCommand(project)
     , m_base(base)
     , m_offset(offset)
@@ -2855,8 +2855,7 @@ MoveLabelDownCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateRigidBodyCommand::create(
-    Project *project, int offset, const nanoem_model_rigid_body_t *base)
+CreateRigidBodyCommand::create(Project *project, int offset, const nanoem_model_rigid_body_t *base)
 {
     CreateRigidBodyCommand *command = nanoem_new(CreateRigidBodyCommand(project, offset, base));
     return command->createCommand();
@@ -2871,8 +2870,7 @@ CreateRigidBodyCommand::setup(nanoem_model_rigid_body_t *rigidBodyPtr, Project *
     newBody->resetLanguage(rigidBodyPtr, project->unicodeStringFactory(), project->castLanguage());
 }
 
-CreateRigidBodyCommand::CreateRigidBodyCommand(
-    Project *project, int offset, const nanoem_model_rigid_body_t *base)
+CreateRigidBodyCommand::CreateRigidBodyCommand(Project *project, int offset, const nanoem_model_rigid_body_t *base)
     : BaseUndoCommand(project)
     , m_base(base)
     , m_offset(offset)
@@ -3147,8 +3145,7 @@ CreateJointCommand::setup(nanoem_model_joint_t *jointPtr, Project *project)
     newJoint->resetLanguage(jointPtr, project->unicodeStringFactory(), project->castLanguage());
 }
 
-CreateJointCommand::CreateJointCommand(
-    Project *project, int offset, const nanoem_model_joint_t *base)
+CreateJointCommand::CreateJointCommand(Project *project, int offset, const nanoem_model_joint_t *base)
     : BaseUndoCommand(project)
     , m_base(base)
     , m_offset(offset)
@@ -3247,7 +3244,8 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::CreateIntermediateJointFromTwo
         nanoemMutableModelJointSetName(m_mutableJoint, nanoemModelRigidBodyGetName(bodyA, language), language, &status);
     }
     const Vector4 origin(
-        (glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyA)) + glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyB))) * 0.5f);
+        (glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyA)) + glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyB))) *
+        0.5f);
     const Vector4 orientation((glm::make_vec4(nanoemModelRigidBodyGetOrientation(bodyA)) +
                                   glm::make_vec4(nanoemModelRigidBodyGetOrientation(bodyB))) *
         0.5f);
@@ -3489,15 +3487,13 @@ MoveJointDownCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateSoftBodyCommand::create(
-    Project *project, int offset, const nanoem_model_soft_body_t *base)
+CreateSoftBodyCommand::create(Project *project, int offset, const nanoem_model_soft_body_t *base)
 {
     CreateSoftBodyCommand *command = nanoem_new(CreateSoftBodyCommand(project, offset, base));
     return command->createCommand();
 }
 
-CreateSoftBodyCommand::CreateSoftBodyCommand(
-    Project *project, int offset, const nanoem_model_soft_body_t *base)
+CreateSoftBodyCommand::CreateSoftBodyCommand(Project *project, int offset, const nanoem_model_soft_body_t *base)
     : BaseUndoCommand(project)
     , m_base(base)
     , m_offset(offset)
