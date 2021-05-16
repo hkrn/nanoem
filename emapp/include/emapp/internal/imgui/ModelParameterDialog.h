@@ -139,6 +139,7 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void toggleRigidBody(const nanoem_model_rigid_body_t *rigidBodyPtr);
     void toggleVertex(const nanoem_model_vertex_t *vertexPtr);
 
+    const char *selectedFormatType(const nanoem_model_format_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedCodecType(const nanoem_codec_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedVertexType(const nanoem_model_vertex_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedMaterialPrimitiveType(const nanoem_model_material_t *materialPtr) const NANOEM_DECL_NOEXCEPT;

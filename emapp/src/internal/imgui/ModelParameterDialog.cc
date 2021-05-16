@@ -475,23 +475,20 @@ void
 ModelParameterDialog::layoutInformation(Project *project)
 {
     MutableString nameBuffer, commentBuffer;
-    switch (nanoemModelGetFormatType(m_activeModel->data())) {
-    case NANOEM_MODEL_FORMAT_TYPE_PMD_1_0: {
-        ImGui::Value("Version", 1.0f, "%.1f");
-        break;
+    ImGui::TextUnformatted("Version");
+    ImGui::SameLine();
+    ImGui::PushItemWidth(80 * project->windowDevicePixelRatio());
+    if (ImGui::BeginCombo("##version", selectedFormatType(nanoemModelGetFormatType(m_activeModel->data())))) {
+        for (int i = NANOEM_MODEL_FORMAT_TYPE_FIRST_ENUM; i < NANOEM_MODEL_FORMAT_TYPE_MAX_ENUM; i++) {
+            nanoem_model_format_type_t format = static_cast<nanoem_model_format_type_t>(i);
+            if (ImGui::Selectable(selectedFormatType(format))) {
+                command::ScopedMutableModel scoped(m_activeModel);
+                nanoemMutableModelSetFormatType(scoped, format);
+            }
+        }
+        ImGui::EndCombo();
     }
-    case NANOEM_MODEL_FORMAT_TYPE_PMX_2_0: {
-        ImGui::Value("Version", 2.0f, "%.1f");
-        break;
-    }
-    case NANOEM_MODEL_FORMAT_TYPE_PMX_2_1: {
-        ImGui::Value("Version", 2.1f, "%.1f");
-        break;
-    }
-    default:
-        ImGui::TextUnformatted("Version: (Unknown)");
-        break;
-    }
+    ImGui::PopItemWidth();
     ImGui::RadioButton(
         tr("nanoem.gui.window.preference.project.language.japanese"), &m_language, NANOEM_LANGUAGE_TYPE_JAPANESE);
     ImGui::SameLine();
@@ -6015,6 +6012,19 @@ ModelParameterDialog::toggleVertex(const nanoem_model_vertex_t *vertexPtr)
 {
     m_explicitTabType = kTabTypeVertex;
     m_vertexIndex = model::Vertex::index(vertexPtr);
+}
+
+const char *
+ModelParameterDialog::selectedFormatType(const nanoem_model_format_type_t type) const NANOEM_DECL_NOEXCEPT
+{
+    switch (type) {
+    case NANOEM_MODEL_FORMAT_TYPE_PMD_1_0:
+        return "PMD 1.0";
+    case NANOEM_MODEL_FORMAT_TYPE_PMX_2_0:
+        return "PMX 2.0";
+    case NANOEM_MODEL_FORMAT_TYPE_PMX_2_1:
+        return "PMX 2.1";
+    }
 }
 
 const char *
