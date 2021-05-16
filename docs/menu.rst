@@ -166,7 +166,7 @@ MikuMikuMoving が採用しているモーフ変形が追加された拡張形�
 
 音源をプロジェクトに読み込みます。
 
-.. important::
+.. note::
    プロジェクトに読み込める音源はひとつまでです。別の音源を読み込んだ場合以前の音源を削除してから読み込まれます。
 
 読み込み可能な音源ファイルは nanoem 自体のバージョン及び中に含まれるコーデックによって異なるため、実際に読み込みできるかを必ず確認してください。
@@ -187,7 +187,7 @@ MikuMikuMoving が採用しているモーフ変形が追加された拡張形�
 
 動画をプロジェクトに読み込みます。読み込まれた動画はビューポートの背景動画として表示されます。
 
-.. important::
+.. note::
    プロジェクトに読み込める動画はひとつまでです。別の動画を読み込んだ場合以前の動画を削除してから読み込まれます。
 
 .. tip::
@@ -198,8 +198,10 @@ MikuMikuMoving が採用しているモーフ変形が追加された拡張形�
 - Windows 版及び macOS 版共通で読み込み可能
 
   - RawVideo（いわゆる非圧縮の動画）
-  - UtCodec
-  - H.264
+  - `UtVideo Codec <http://umezawa.dyndns.info/wordpress/?cat=28>`_
+  - `Grass Valley HQX Codec <https://pro.grassvalley.jp/download/gv_codec_option.htm>`_
+
+    - ``UtVideo`` 及び ``Grass Valley HQX`` は圧縮動画形式であり展開するためのデコード負荷が大きいため動画によっては FPS を下げる要因になることがあります
 
 .. _8859DEE8-5813-4ED9-945E-0A01BCCF694A:
 
