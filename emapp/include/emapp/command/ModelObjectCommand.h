@@ -33,7 +33,7 @@ struct nanoem_mutable_model_soft_body_t;
 
 namespace nanoem {
 
-class Model NANOEM_DECL_SEALED;
+class Model;
 
 namespace command {
 

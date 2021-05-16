@@ -1414,7 +1414,7 @@ AddBoneToConstraintCommand::release(void *messagePtr)
 }
 
 const char *
-AddBoneToConstraintCommand::name() const
+AddBoneToConstraintCommand::name() const NANOEM_DECL_NOEXCEPT
 {
     return "AddBoneToConstraintCommand";
 }
