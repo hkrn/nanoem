@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -210,8 +210,9 @@ $nanoem.gui.viewport.parameter.camera	カメラ4
 2nanoem.gui.window.project.effect.parameter.inspect0パラメータのデバッグを有効にする3
 )nanoem.gui.window.project.effect.emd.load読込3
 )nanoem.gui.window.project.effect.emd.save保存*
-nanoem.gui.window.model.title	モデル*
- nanoem.gui.window.model.tab.info情報,
+nanoem.gui.window.model.title	モデル-
+#nanoem.gui.window.model.tab.measure測定2
+"nanoem.gui.window.model.tab.systemシステム,
 "nanoem.gui.window.model.tab.vertex頂点'
  nanoem.gui.window.model.tab.face面C
 $nanoem.gui.window.model.tab.material材質（マテリアル）-
@@ -252,11 +253,31 @@ $nanoem.gui.window.model.tab.material材質（マテリアル）-
 +nanoem.gui.window.preference.grid.size.grid地面軸セルの表示数Y
 1nanoem.gui.window.preference.file-path-mode.title$保存時のファイルパス設定D
 4nanoem.gui.window.preference.file-path-mode.absolute絶対パスD
-4nanoem.gui.window.preference.file-path-mode.relative相対パス)
-nanoem.gui.model.edit.info.name名前2
-"nanoem.gui.model.edit.info.commentコメント<
-#nanoem.gui.model.edit.info.encoding文字エンコード/
-nanoem.gui.model.edit.info.uva追加 UV 数3
+4nanoem.gui.window.preference.file-path-mode.relative相対パス1
+$nanoem.gui.model.edit.measure.vertex	頂点数,
+"nanoem.gui.model.edit.measure.face面数3
+&nanoem.gui.model.edit.measure.material	材質数;
+%nanoem.gui.model.edit.measure.textureテクスチャ数2
+"nanoem.gui.model.edit.measure.boneボーン数:
+(nanoem.gui.model.edit.measure.constraintIKボーン数3
+#nanoem.gui.model.edit.measure.morphモーフ数3
+#nanoem.gui.model.edit.measure.label表情枠数5
+(nanoem.gui.model.edit.measure.rigid-body	剛体数9
+#nanoem.gui.model.edit.measure.jointジョイント数@
+'nanoem.gui.model.edit.measure.soft-bodyソフトボディ数F
+-nanoem.gui.model.edit.measure.transform.title一括モデル変形7
+-nanoem.gui.model.edit.measure.transform.apply適用M
+:nanoem.gui.model.edit.measure.transform.height-based.title身長ベースa
+6nanoem.gui.model.edit.measure.transform.height-based.a'(A): MMD におけるモデルの身長m
+6nanoem.gui.model.edit.measure.transform.height-based.b3(B): MMD におけるセンチメートルの単位c
+6nanoem.gui.model.edit.measure.transform.height-based.c)(C): 補正用途のセンチメートル}
+;nanoem.gui.model.edit.measure.transform.height-based.result>センチメートル単位のモデルの身長 = (A / B) + CN
+Ananoem.gui.model.edit.measure.transform.height-based.scale-factor	拡大率K
+;nanoem.gui.model.edit.measure.transform.numeric-input.title数値入力+
+!nanoem.gui.model.edit.system.name名前4
+$nanoem.gui.model.edit.system.commentコメント>
+%nanoem.gui.model.edit.system.encoding文字エンコード1
+ nanoem.gui.model.edit.system.uva追加 UV 数3
 #nanoem.gui.model.edit.vertex.origin頂点座標3
 #nanoem.gui.model.edit.vertex.normal法線座標1
 %nanoem.gui.model.edit.vertex.texcoordUV座標C
@@ -1035,7 +1056,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-�F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1249,8 +1270,9 @@ Initialize5
 2nanoem.gui.window.project.effect.parameter.inspectEnable Parameter Inspection1
 )nanoem.gui.window.project.effect.emd.loadLoad1
 )nanoem.gui.window.project.effect.emd.saveSave&
-nanoem.gui.window.model.titleModel/
- nanoem.gui.window.model.tab.infoInformation,
+nanoem.gui.window.model.titleModel.
+#nanoem.gui.window.model.tab.measureMeasure,
+"nanoem.gui.window.model.tab.systemSystem,
 "nanoem.gui.window.model.tab.vertexVertex(
  nanoem.gui.window.model.tab.faceFace0
 $nanoem.gui.window.model.tab.materialMaterial(
@@ -1292,11 +1314,31 @@ Rigid Body*
 +nanoem.gui.window.preference.grid.size.gridNumber of CellI
 1nanoem.gui.window.preference.file-path-mode.titleFile Path in ProjectE
 4nanoem.gui.window.preference.file-path-mode.absoluteAbsolute PathE
-4nanoem.gui.window.preference.file-path-mode.relativeRelative Path'
-nanoem.gui.model.edit.info.nameName-
-"nanoem.gui.model.edit.info.commentComment9
-#nanoem.gui.model.edit.info.encodingCharacter Encoding5
-nanoem.gui.model.edit.info.uvaAdditional UV Count-
+4nanoem.gui.window.preference.file-path-mode.relativeRelative Path0
+$nanoem.gui.model.edit.measure.vertexVertices+
+"nanoem.gui.model.edit.measure.faceFaces3
+&nanoem.gui.model.edit.measure.material	Materials1
+%nanoem.gui.model.edit.measure.textureTextures+
+"nanoem.gui.model.edit.measure.boneBones4
+(nanoem.gui.model.edit.measure.constraintIK Bones-
+#nanoem.gui.model.edit.measure.morphMorphs-
+#nanoem.gui.model.edit.measure.labelLabels8
+(nanoem.gui.model.edit.measure.rigid-bodyRigid Bodies-
+#nanoem.gui.model.edit.measure.jointJoints6
+'nanoem.gui.model.edit.measure.soft-bodySoft BodiesF
+-nanoem.gui.model.edit.measure.transform.titleBatch Model Transform6
+-nanoem.gui.model.edit.measure.transform.applyApplyJ
+:nanoem.gui.model.edit.measure.transform.height-based.titleHeight BasedR
+6nanoem.gui.model.edit.measure.transform.height-based.a(A): Model Height on MMDU
+6nanoem.gui.model.edit.measure.transform.height-based.b(B): Centimeter unit on MMDX
+6nanoem.gui.model.edit.measure.transform.height-based.c(C): Centimeter for Correctionn
+;nanoem.gui.model.edit.measure.transform.height-based.result/Model Height with Centimeter Unit = (A / B) + C\
+Ananoem.gui.model.edit.measure.transform.height-based.scale-factorCalculated Scale FactorL
+;nanoem.gui.model.edit.measure.transform.numeric-input.titleNumeric Input)
+!nanoem.gui.model.edit.system.nameName/
+$nanoem.gui.model.edit.system.commentComment;
+%nanoem.gui.model.edit.system.encodingCharacter Encoding7
+ nanoem.gui.model.edit.system.uvaAdditional UV Count-
 #nanoem.gui.model.edit.vertex.originOrigin-
 #nanoem.gui.model.edit.vertex.normalNormal+
 %nanoem.gui.model.edit.vertex.texcoordUVE

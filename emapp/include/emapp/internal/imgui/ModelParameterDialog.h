@@ -18,10 +18,31 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-struct ModelParameterDialog : BaseNonModalDialogWindow {
+class ModelParameterDialog : public BaseNonModalDialogWindow {
+public:
     typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneObject)(
         nanoem_mutable_model_bone_t *, const nanoem_model_bone_t *);
     typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
+
+    struct SavedState {
+        struct ModelState {
+            const nanoem_model_bone_t *m_activeBone;
+            const nanoem_model_morph_t *m_activeMorph;
+            ByteArray m_motion;
+        };
+        SavedState(Project::EditingMode editingMode)
+            : m_activeModel(nullptr)
+            , m_state(nullptr)
+            , m_lastEditingMode(editingMode)
+        {
+        }
+        typedef tinystl::unordered_map<Model *, ModelState, TinySTLAllocator> ModelStateMap;
+        Model *m_activeModel;
+        Project::SaveState *m_state;
+        Project::EditingMode m_lastEditingMode;
+        ModelStateMap m_modelStates;
+        model::BindPose m_bindPose;
+    };
 
     static const char *const kIdentifier;
     static const nanoem_f32_t kMinimumWindowWidth;
@@ -30,7 +51,8 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
 
     enum TabType {
         kTabTypeFirstEnum,
-        kTabTypeInfo = kTabTypeFirstEnum,
+        kTabTypeMeasure = kTabTypeFirstEnum,
+        kTabTypeSystem,
         kTabTypeVertex,
         kTabTypeFace,
         kTabTypeMaterial,
@@ -53,7 +75,14 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     bool draw(Project *project) NANOEM_DECL_OVERRIDE;
     void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
-    void layoutInformation(Project *project);
+    void saveProjectState(Project *project);
+    void restoreProjectState(Project *project);
+
+private:
+    void layoutMeasure(Project *project);
+    void layoutHeightBasedBatchTransformPane(Project *project);
+    void layoutNumericInputBatchTransformPane(Project *project);
+    void layoutSystem(Project *project);
     void layoutVertexBoneSelection(const char *label, nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t i,
         nanoem_model_bone_t *const *bones, nanoem_rsize_t numBones);
     void layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t numItems);
@@ -121,8 +150,6 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
     void setActiveModel(Model *model, Project *project);
-    void saveProjectState(Project *project);
-    void restoreProjectState(Project *project);
 
     void removeAllVertexSelectionIfNeeded(IModelObjectSelection *selection);
     void removeAllFaceSelectionIfNeeded(IModelObjectSelection *selection);
@@ -156,26 +183,6 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     bool hasModelWithMaterial(const Project *project) const NANOEM_DECL_NOEXCEPT;
     bool isPMX21() const NANOEM_DECL_NOEXCEPT;
 
-    struct SavedState {
-        struct ModelState {
-            const nanoem_model_bone_t *m_activeBone;
-            const nanoem_model_morph_t *m_activeMorph;
-            ByteArray m_motion;
-        };
-        SavedState(Project::EditingMode editingMode)
-            : m_activeModel(nullptr)
-            , m_state(nullptr)
-            , m_lastEditingMode(editingMode)
-        {
-        }
-        typedef tinystl::unordered_map<Model *, ModelState, TinySTLAllocator> ModelStateMap;
-        Model *m_activeModel;
-        Project::SaveState *m_state;
-        Project::EditingMode m_lastEditingMode;
-        ModelStateMap m_modelStates;
-        model::BindPose m_bindPose;
-    };
-
     ImGuiWindow *m_parent;
     Model *m_activeModel;
     SavedState *m_savedState;
@@ -201,7 +208,14 @@ struct ModelParameterDialog : BaseNonModalDialogWindow {
     nanoem_rsize_t m_rigidBodyIndex;
     nanoem_rsize_t m_jointIndex;
     nanoem_rsize_t m_softBodyIndex;
+    Vector3 m_savedTranslation;
+    Vector3 m_savedRotation;
+    Vector3 m_savedScale;
+    nanoem_f32_t m_savedCMScaleFactor;
+    nanoem_f32_t m_savedModelCorrectionHeight;
+    nanoem_f32_t m_savedModelHeight;
     Project::EditingMode m_editingMode;
+    bool m_heightBased;
     bool m_showAllVertexPoints;
     bool m_showAllVertexFaces;
     bool m_showAllBones;

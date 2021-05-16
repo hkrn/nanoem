@@ -26,6 +26,9 @@ namespace internal {
 namespace imgui {
 namespace {
 
+static const nanoem_f32_t kDefaultCMScaleFactor = 0.1259496f;
+static const nanoem_f32_t kDefaultModelCorrectionHeight = -2.0f;
+
 struct UndoCommand : ImGuiWindow::ILazyExecutionCommand {
     UndoCommand(undo_command_t *command)
         : m_command(command)
@@ -273,6 +276,13 @@ ModelParameterDialog::ModelParameterDialog(
     , m_rigidBodyIndex(0)
     , m_jointIndex(0)
     , m_softBodyIndex(0)
+    , m_savedTranslation(0)
+    , m_savedRotation(0)
+    , m_savedScale(1)
+    , m_savedCMScaleFactor(kDefaultCMScaleFactor)
+    , m_savedModelCorrectionHeight(kDefaultModelCorrectionHeight)
+    , m_savedModelHeight(-1)
+    , m_heightBased(true)
     , m_editingMode(project->editingMode())
     , m_showAllVertexPoints(model->isShowAllVertexPoints())
     , m_showAllVertexFaces(model->isShowAllVertexFaces())
@@ -377,11 +387,26 @@ ModelParameterDialog::draw(Project *project)
             m_explicitTabType = kTabTypeMaxEnum;
         }
         ImGui::BeginTabBar("tabbar", ImGuiTabBarFlags_NoCloseWithMiddleMouseButton);
-        StringUtils::format(buffer, sizeof(buffer), "%s##tab.info", tr("nanoem.gui.window.model.tab.info"));
-        if (ImGui::BeginTabItem(buffer, nullptr, explicitTabType == kTabTypeInfo ? ImGuiTabItemFlags_SetSelected : 0)) {
-            layoutInformation(project);
+        StringUtils::format(buffer, sizeof(buffer), "%s##tab.measure", tr("nanoem.gui.window.model.tab.measure"));
+        if (ImGui::BeginTabItem(
+                buffer, nullptr, explicitTabType == kTabTypeMeasure ? ImGuiTabItemFlags_SetSelected : 0)) {
+            layoutMeasure(project);
             ImGui::EndTabItem();
-            toggleTab(kTabTypeInfo, project);
+            toggleTab(kTabTypeMeasure, project);
+        }
+        else {
+            m_savedCMScaleFactor = kDefaultCMScaleFactor;
+            m_savedModelCorrectionHeight = kDefaultModelCorrectionHeight;
+            m_savedTranslation = Constants::kZeroV3;
+            m_savedRotation = Constants::kZeroV3;
+            m_savedScale = Vector3(1);
+            m_savedModelHeight = -1;
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##tab.system", tr("nanoem.gui.window.model.tab.system"));
+        if (ImGui::BeginTabItem(buffer, nullptr, explicitTabType == kTabTypeSystem ? ImGuiTabItemFlags_SetSelected : 0)) {
+            layoutSystem(project);
+            ImGui::EndTabItem();
+            toggleTab(kTabTypeSystem, project);
         }
         StringUtils::format(buffer, sizeof(buffer), "%s##tab.vertex", tr("nanoem.gui.window.model.tab.vertex"));
         if (ImGui::BeginTabItem(
@@ -453,7 +478,7 @@ ModelParameterDialog::draw(Project *project)
         m_activeModel->setShowAllBones(m_showAllBones);
         m_activeModel->setShowAllRigidBodyShapes(m_showAllRigidBodies);
         m_activeModel->setShowAllJointShapes(m_showAllJoints);
-        toggleTab(kTabTypeInfo, project);
+        toggleTab(kTabTypeSystem, project);
     }
     close();
     if (!visible) {
@@ -472,7 +497,216 @@ ModelParameterDialog::destroy(Project *project)
 }
 
 void
-ModelParameterDialog::layoutInformation(Project *project)
+ModelParameterDialog::layoutMeasure(Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    ImGui::BeginChild("left-pane", ImVec2(ImGui::GetContentRegionAvail().x * 0.35f, 0), true);
+    ImGui::Columns(2, nullptr);
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.vertex"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numVertices;
+        nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numVertices);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.face"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numIndices;
+        nanoemModelGetAllVertexIndices(m_activeModel->data(), &numIndices);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numIndices / 3);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.material"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numMaterials;
+        nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numMaterials);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.texture"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numTextures;
+        nanoemModelGetAllTextureObjects(m_activeModel->data(), &numTextures);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numTextures);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.bone"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numBones;
+        nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numBones);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.constraint"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numBones, numConstraints = 0;
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+        for (nanoem_rsize_t i = 0; i < numBones; i++) {
+            if (nanoemModelBoneHasConstraint(bones[i])) {
+                numConstraints++;
+            }
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numConstraints);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.morph"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numMorphs;
+        nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numMorphs);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.label"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numLabels;
+        nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numLabels);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.rigid-body"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numRigidBodies;
+        nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numRigidBodies);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.joint"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numJoints;
+        nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numJoints);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.soft-body"));
+    ImGui::NextColumn();
+    {
+        nanoem_rsize_t numSoftBodies;
+        nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
+        StringUtils::format(buffer, sizeof(buffer), "%lu", numSoftBodies);
+        ImGui::TextUnformatted(buffer);
+    }
+    ImGui::NextColumn();
+    ImGui::Separator();
+    ImGui::Columns(1);
+    ImGui::EndChild();
+    ImGui::SameLine();
+    ImGui::BeginChild("right-pane", ImVec2(ImGui::GetContentRegionAvail().x, 0.0f));
+    ImGui::PushItemWidth(-1);
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.title"));
+    if (ImGui::RadioButton(tr("nanoem.gui.model.edit.measure.transform.height-based.title"), m_heightBased)) {
+        m_heightBased = true;
+    }
+    ImGui::SameLine();
+    if (ImGui::RadioButton(tr("nanoem.gui.model.edit.measure.transform.numeric-input.title"), !m_heightBased)) {
+        m_heightBased = false;
+    }
+    addSeparator();
+    if (m_heightBased) {
+        layoutHeightBasedBatchTransformPane(project);
+    }
+    else {
+        layoutNumericInputBatchTransformPane(project);
+    }
+    ImGui::PopItemWidth();
+    ImGui::EndChild();
+}
+
+void
+ModelParameterDialog::layoutHeightBasedBatchTransformPane(Project *project)
+{
+    nanoem_rsize_t numVertices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+    Vector3 min(FLT_MAX), max(-FLT_MAX);
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[i];
+        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+        max = glm::max(max, origin);
+        min = glm::min(min, origin);
+    }
+    nanoem_f32_t modelHeight = max.y - min.y;
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.height-based.a"));
+    ImGui::InputFloat("##model.height.unit", &modelHeight, 0.0f, 0.0f, "%.6f pt", ImGuiInputTextFlags_ReadOnly);
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.height-based.b"));
+    ImGui::InputFloat("##model.unit", &m_savedCMScaleFactor, 0.0f, 0.0f, "%.6f pt");
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.height-based.c"));
+    if (ImGui::InputFloat("##model.adjustment", &m_savedModelCorrectionHeight, 0.0f, 0.0f, "%.3f cm")) {
+        m_savedModelHeight = -1;
+    }
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.height-based.result"));
+    float modelHeightCM = (modelHeight / m_savedCMScaleFactor) + m_savedModelCorrectionHeight;
+    if (m_savedModelHeight < 0.0f) {
+        m_savedModelHeight = modelHeightCM;
+    }
+    ImGui::InputFloat("##model.height.cm", &m_savedModelHeight, 0.0f, 0.0f, "%.3f cm");
+    ImGui::Spacing();
+    char buffer[Inline::kNameStackBufferSize];
+    nanoem_f32_t scaleFactor = m_savedModelHeight / modelHeightCM;
+    StringUtils::format(buffer, sizeof(buffer), "%s: %.6f", tr("nanoem.gui.model.edit.measure.transform.height-based.scale-factor"), scaleFactor);
+    ImGui::TextUnformatted(buffer);
+    ImGui::Spacing();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.apply"), -1,
+            scaleFactor > 1.0f || scaleFactor < 1.0f)) {
+        const Matrix4x4 transformModelMatrix(glm::scale(Constants::kIdentity, Vector3(scaleFactor)));
+        undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
+        m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+    }
+}
+
+void
+ModelParameterDialog::layoutNumericInputBatchTransformPane(Project *project)
+{
+    ImGui::TextUnformatted("Translation");
+    ImGui::InputFloat3("##translation", glm::value_ptr(m_savedTranslation));
+    ImGui::TextUnformatted("Rotation");
+    ImGui::InputFloat3("##rotation", glm::value_ptr(m_savedRotation));
+    ImGui::TextUnformatted("Scale");
+    ImGui::InputFloat3("##scale", glm::value_ptr(m_savedScale));
+    ImGui::Spacing();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.apply"), -1, true)) {
+        const Matrix4x4 scaleMatrix(glm::scale(Constants::kIdentity, m_savedScale)),
+            rotateX(glm::rotate(Constants::kIdentity, m_savedRotation.x, Constants::kUnitX)),
+            rotateY(glm::rotate(Constants::kIdentity, m_savedRotation.y, Constants::kUnitY)),
+            rotateZ(glm::rotate(Constants::kIdentity, m_savedRotation.z, Constants::kUnitZ)),
+            rotateMatrix(rotateZ * rotateY * rotateX),
+            translateMatrix(glm::translate(Constants::kIdentity, m_savedTranslation)),
+            transformModelMatrix(scaleMatrix * rotateMatrix * translateMatrix);
+        undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
+        m_parent->addLazyExecutionCommand(nanoem_new(UndoCommand(command)));
+    }
+}
+
+void
+ModelParameterDialog::layoutSystem(Project *project)
 {
     MutableString nameBuffer, commentBuffer;
     ImGui::TextUnformatted("Version");
@@ -495,7 +729,7 @@ ModelParameterDialog::layoutInformation(Project *project)
     ImGui::RadioButton(
         tr("nanoem.gui.window.preference.project.language.english"), &m_language, NANOEM_LANGUAGE_TYPE_ENGLISH);
     ImGui::PushItemWidth(-1);
-    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.info.name"));
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.name"));
     String name, comment;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     nanoem_language_type_t language = static_cast<nanoem_language_type_t>(m_language);
@@ -513,7 +747,7 @@ ModelParameterDialog::layoutInformation(Project *project)
     StringUtils::getUtf8String(nanoemModelGetComment(m_activeModel->data(), language), factory, comment);
     commentBuffer.assign(comment.c_str(), comment.c_str() + comment.size());
     commentBuffer.push_back(0);
-    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.info.comment"));
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.comment"));
     ImVec2 avail(ImGui::GetContentRegionAvail());
     avail.y -= ImGui::GetFrameHeightWithSpacing();
     if (ImGui::InputTextMultiline("##comment", commentBuffer.data(), commentBuffer.capacity(), avail)) {
@@ -526,7 +760,7 @@ ModelParameterDialog::layoutInformation(Project *project)
     }
     ImGui::PopItemWidth();
     ImGui::Columns(4, nullptr, false);
-    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.info.encoding"));
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.encoding"));
     ImGui::NextColumn();
     if (ImGui::BeginCombo("##encoding", selectedCodecType(nanoemModelGetCodecType(m_activeModel->data())))) {
         for (int i = NANOEM_CODEC_TYPE_FIRST_ENUM; i < NANOEM_CODEC_TYPE_MAX_ENUM; i++) {
@@ -539,7 +773,7 @@ ModelParameterDialog::layoutInformation(Project *project)
         ImGui::EndCombo();
     }
     ImGui::NextColumn();
-    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.info.uva"));
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.uva"));
     ImGui::NextColumn();
     int uva = 0;
     if (ImGui::DragInt("##uva", &uva, 0.01f, 0, 4)) {

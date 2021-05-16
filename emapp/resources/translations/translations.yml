@@ -842,10 +842,14 @@
   phrase:
     en_US: Model
     ja_JP: モデル
-- key: nanoem.gui.window.model.tab.info
+- key: nanoem.gui.window.model.tab.measure
   phrase:
-    en_US: Information
-    ja_JP: 情報
+    en_US: Measure
+    ja_JP: 測定
+- key: nanoem.gui.window.model.tab.system
+  phrase:
+    en_US: System
+    ja_JP: システム
 - key: nanoem.gui.window.model.tab.vertex
   phrase:
     en_US: Vertex
@@ -1011,19 +1015,99 @@
     en_US: Relative Path
     ja_JP: 相対パス
 
-- key: nanoem.gui.model.edit.info.name
+- key: nanoem.gui.model.edit.measure.vertex
+  phrase:
+    en_US: Vertices
+    ja_JP: 頂点数
+- key: nanoem.gui.model.edit.measure.face
+  phrase:
+    en_US: Faces
+    ja_JP: 面数
+- key: nanoem.gui.model.edit.measure.material
+  phrase:
+    en_US: Materials
+    ja_JP: 材質数
+- key: nanoem.gui.model.edit.measure.texture
+  phrase:
+    en_US: Textures
+    ja_JP: テクスチャ数
+- key: nanoem.gui.model.edit.measure.bone
+  phrase:
+    en_US: Bones
+    ja_JP: ボーン数
+- key: nanoem.gui.model.edit.measure.constraint
+  phrase:
+    en_US: IK Bones
+    ja_JP: IKボーン数
+- key: nanoem.gui.model.edit.measure.morph
+  phrase:
+    en_US: Morphs
+    ja_JP: モーフ数
+- key: nanoem.gui.model.edit.measure.label
+  phrase:
+    en_US: Labels
+    ja_JP: 表情枠数
+- key: nanoem.gui.model.edit.measure.rigid-body
+  phrase:
+    en_US: Rigid Bodies
+    ja_JP: 剛体数
+- key: nanoem.gui.model.edit.measure.joint
+  phrase:
+    en_US: Joints
+    ja_JP: ジョイント数
+- key: nanoem.gui.model.edit.measure.soft-body
+  phrase:
+    en_US: Soft Bodies
+    ja_JP: ソフトボディ数
+- key: nanoem.gui.model.edit.measure.transform.title
+  phrase:
+    en_US: Batch Model Transform
+    ja_JP: 一括モデル変形
+- key: nanoem.gui.model.edit.measure.transform.apply
+  phrase:
+    en_US: Apply
+    ja_JP: 適用
+- key: nanoem.gui.model.edit.measure.transform.height-based.title
+  phrase:
+    en_US: Height Based
+    ja_JP: 身長ベース
+- key: nanoem.gui.model.edit.measure.transform.height-based.a
+  phrase:
+    en_US: "(A): Model Height on MMD"
+    ja_JP: "(A): MMD におけるモデルの身長"
+- key: nanoem.gui.model.edit.measure.transform.height-based.b
+  phrase:
+    en_US: "(B): Centimeter unit on MMD"
+    ja_JP: "(B): MMD におけるセンチメートルの単位"
+- key: nanoem.gui.model.edit.measure.transform.height-based.c
+  phrase:
+    en_US: "(C): Centimeter for Correction"
+    ja_JP: "(C): 補正用途のセンチメートル"
+- key: nanoem.gui.model.edit.measure.transform.height-based.result
+  phrase:
+    en_US: Model Height with Centimeter Unit = (A / B) + C
+    ja_JP: センチメートル単位のモデルの身長 = (A / B) + C
+- key: nanoem.gui.model.edit.measure.transform.height-based.scale-factor
+  phrase:
+    en_US: Calculated Scale Factor
+    ja_JP: 拡大率
+- key: nanoem.gui.model.edit.measure.transform.numeric-input.title
+  phrase:
+    en_US: Numeric Input
+    ja_JP: 数値入力
+- key: nanoem.gui.model.edit.system.name
   phrase:
     en_US: 'Name'
     ja_JP: '名前'
-- key: nanoem.gui.model.edit.info.comment
+- key: nanoem.gui.model.edit.system.comment
   phrase:
     en_US: 'Comment'
     ja_JP: 'コメント'
-- key: nanoem.gui.model.edit.info.encoding
+- key: nanoem.gui.model.edit.system.encoding
   phrase:
     en_US: 'Character Encoding'
     ja_JP: '文字エンコード'
-- key: nanoem.gui.model.edit.info.uva
+- key: nanoem.gui.model.edit.system.uva
   phrase:
     en_US: 'Additional UV Count'
     ja_JP: '追加 UV 数'
