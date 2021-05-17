@@ -217,8 +217,10 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    nanoem_model_material_t *const *m_materials;
-    nanoem_rsize_t m_materialIndex;
+    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
+
+    Model *m_activeModel;
+    ScopedMutableMaterial m_mutableMaterial;
 };
 
 class BaseMoveMaterialCommand : public BaseUndoCommand {
@@ -231,11 +233,15 @@ public:
     ~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT;
 
 protected:
-    void move(int destination, const LayoutPosition &from, const LayoutPosition &to, Model *activeModel,
-        nanoem_status_t *status);
+    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
+    static void move(ScopedMutableMaterial &material, int destination, const LayoutPosition &from,
+        const LayoutPosition &to, Model *activeModel, nanoem_status_t *status);
 
-    nanoem_model_material_t *const *m_materials;
-    nanoem_rsize_t m_materialIndex;
+    void moveUp(nanoem_status_t *status);
+    void moveDown(nanoem_status_t *status);
+
+    Model *m_activeModel;
+    ScopedMutableMaterial m_mutableMaterial;
 };
 
 class MoveMaterialUpCommand NANOEM_DECL_SEALED : public BaseMoveMaterialCommand {
