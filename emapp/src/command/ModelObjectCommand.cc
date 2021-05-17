@@ -503,6 +503,10 @@ CopyMaterialFromModelCommand::CopyMaterialFromModelCommand(
         }
         offset += numMaterialVertexIndices;
     }
+    model::Material *material = model::Material::create(project->sharedFallbackImage());
+    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    material->bind(origin);
+    material->resetLanguage(origin, project->unicodeStringFactory(), project->castLanguage());
 }
 
 CopyMaterialFromModelCommand::~CopyMaterialFromModelCommand() NANOEM_DECL_NOEXCEPT
