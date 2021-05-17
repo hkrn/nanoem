@@ -4967,11 +4967,9 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
                         const nanoem_model_material_t *materialPtr = innerMaterials[i];
                         const model::Material *material = model::Material::cast(materialPtr);
                         if (ImGui::MenuItem(material->nameConstString())) {
-#if 0
-                                undo_command_t *command =
-                                    command::CreateMaterialCommand::create(project, materials, m_materialIndex);
-                                m_parent->addLazyExecutionCommand(nanoem_new(LazyUndoCommand(command)));
-#endif
+                            undo_command_t *command =
+                                command::CopyMaterialFromModelCommand::create(project, model, materialPtr);
+                            m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                         }
                     }
                     ImGui::EndMenu();
@@ -4982,10 +4980,13 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
     }
     if (ImGui::BeginMenu("Duplicate with")) {
         if (ImGui::MenuItem("Faces")) {
+            // TODO: implement
         }
         if (ImGui::MenuItem("Faces/Vertices")) {
+            // TODO: implement
         }
         if (ImGui::MenuItem("Faces/Morphs/Vertices")) {
+            // TODO: implement
         }
         ImGui::EndMenu();
     }

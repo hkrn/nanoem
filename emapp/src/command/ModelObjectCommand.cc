@@ -471,6 +471,98 @@ nanoem::command::ScopedMutableSoftBody::operator nanoem_mutable_model_soft_body_
 }
 
 undo_command_t *
+CopyMaterialFromModelCommand::create(
+    Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr)
+{
+    CopyMaterialFromModelCommand *command =
+        nanoem_new(CopyMaterialFromModelCommand(project, baseModel, baseMaterialPtr));
+    return command->createCommand();
+}
+
+CopyMaterialFromModelCommand::CopyMaterialFromModelCommand(
+    Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr)
+    : BaseUndoCommand(project)
+    , m_activeModel(project->activeModel())
+    , m_mutableMaterial(m_activeModel)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoemMutableModelMaterialCopy(m_mutableMaterial, baseMaterialPtr, &status);
+    nanoem_rsize_t numMaterials, numVertexIndices;
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(baseModel->data(), &numMaterials);
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(baseModel->data(), &numVertexIndices);
+    for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_rsize_t numMaterialVertexIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        if (materialPtr == baseMaterialPtr) {
+            const nanoem_rsize_t to = offset + numMaterialVertexIndices;
+            m_vertexIndices.reserve(numMaterialVertexIndices);
+            for (nanoem_rsize_t j = offset; j < to; j++) {
+                m_vertexIndices.push_back(vertexIndices[j]);
+            }
+            break;
+        }
+        offset += numMaterialVertexIndices;
+    }
+}
+
+CopyMaterialFromModelCommand::~CopyMaterialFromModelCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+CopyMaterialFromModelCommand::undo(Error &error)
+{
+    ScopedMutableModel model(m_activeModel);
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
+    VertexIndexList workingBuffer;
+    nanoem_rsize_t numVertexIndices;
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+    workingBuffer.assign(vertexIndices, vertexIndices + numVertexIndices - m_vertexIndices.size());
+    nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
+    assignError(status, error);
+}
+
+void
+CopyMaterialFromModelCommand::redo(Error &error)
+{
+    ScopedMutableModel model(m_activeModel);
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoem_rsize_t numVertexIndices;
+    VertexIndexList workingBuffer;
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+    workingBuffer.assign(vertexIndices, vertexIndices + numVertexIndices);
+    workingBuffer.insert(workingBuffer.end(), m_vertexIndices.begin(), m_vertexIndices.end());
+    nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
+    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, -1, &status);
+    assignError(status, error);
+}
+
+void
+CopyMaterialFromModelCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CopyMaterialFromModelCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CopyMaterialFromModelCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CopyMaterialFromModelCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CopyMaterialFromModelCommand";
+}
+
+undo_command_t *
 DeleteMaterialCommand::create(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
     DeleteMaterialCommand *command = nanoem_new(DeleteMaterialCommand(project, materials, materialIndex));

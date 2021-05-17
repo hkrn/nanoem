@@ -179,6 +179,28 @@ struct ScopedMutableSoftBody {
     nanoem_mutable_model_soft_body_t *m_softBody;
 };
 
+class CopyMaterialFromModelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr);
+
+    CopyMaterialFromModelCommand(
+        Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr);
+    ~CopyMaterialFromModelCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
+    Model *m_activeModel;
+    ScopedMutableMaterial m_mutableMaterial;
+    VertexIndexList m_vertexIndices;
+};
+
 class DeleteMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
