@@ -430,6 +430,7 @@ class CreateMorphCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
         Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
+    static void setup(nanoem_model_morph_t *morphPtr, Project *project);
 
     CreateMorphCommand(Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
     ~CreateMorphCommand() NANOEM_DECL_NOEXCEPT;
@@ -457,6 +458,25 @@ public:
     CreateBoneMorphFromPoseCommand(Project *project, const model::BindPose::BoneTransformMap &transforms,
         const model::BindPose::MorphWeightMap &weights, const String &filename);
     ~CreateBoneMorphFromPoseCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Model *m_activeModel;
+    ScopedMutableMorph m_mutableMorph;
+};
+
+class CreateVertexMorphFromModelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project, const nanoem_model_t *modelPtr, const String &filename);
+
+    CreateVertexMorphFromModelCommand(Project *project, const nanoem_model_t *modelPtr, const String &filename);
+    ~CreateVertexMorphFromModelCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
     void redo(Error &error) NANOEM_DECL_OVERRIDE;

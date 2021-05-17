@@ -1386,6 +1386,14 @@ CreateMorphCommand::create(
     return command->createCommand();
 }
 
+void
+CreateMorphCommand::setup(nanoem_model_morph_t *morphPtr, Project *project)
+{
+    model::Morph *newMorph = model::Morph::create();
+    newMorph->bind(morphPtr);
+    newMorph->resetLanguage(morphPtr, project->unicodeStringFactory(), project->castLanguage());
+}
+
 CreateMorphCommand::CreateMorphCommand(
     Project *project, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type)
     : BaseUndoCommand(project)
@@ -1415,9 +1423,7 @@ CreateMorphCommand::CreateMorphCommand(
     if (StringUtils::tryGetString(factory, buffer, scope)) {
         nanoemMutableModelMorphSetName(m_mutableMorph, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    model::Morph *newMorph = model::Morph::create();
-    newMorph->bind(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
-    newMorph->resetLanguage(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), factory, project->castLanguage());
+    setup(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), project);
 }
 
 CreateMorphCommand::~CreateMorphCommand() NANOEM_DECL_NOEXCEPT
@@ -1511,10 +1517,7 @@ CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(Project *project,
             }
         }
     }
-    nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_mutableMorph);
-    model::Morph *morph = model::Morph::create();
-    morph->bind(morphPtr);
-    morph->resetLanguage(morphPtr, factory, project->castLanguage());
+    CreateMorphCommand::setup(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), project);
 }
 
 CreateBoneMorphFromPoseCommand::~CreateBoneMorphFromPoseCommand() NANOEM_DECL_NOEXCEPT
@@ -1563,6 +1566,99 @@ const char *
 CreateBoneMorphFromPoseCommand::name() const NANOEM_DECL_NOEXCEPT
 {
     return "CreateBoneMorphFromPoseCommand";
+}
+
+undo_command_t *
+CreateVertexMorphFromModelCommand::create(Project *project, const nanoem_model_t *modelPtr, const String &filename)
+{
+    CreateVertexMorphFromModelCommand *command =
+        nanoem_new(CreateVertexMorphFromModelCommand(project, modelPtr, filename));
+    return command->createCommand();
+}
+
+CreateVertexMorphFromModelCommand::CreateVertexMorphFromModelCommand(
+    Project *project, const nanoem_model_t *modelPtr, const String &filename)
+    : BaseUndoCommand(project)
+    , m_activeModel(project->activeModel())
+    , m_mutableMorph(m_activeModel)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+    StringUtils::UnicodeStringScope us(factory);
+    if (StringUtils::tryGetString(factory, filename, us)) {
+        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+    }
+    nanoemMutableModelMorphSetType(m_mutableMorph, NANOEM_MODEL_MORPH_TYPE_VERTEX);
+    nanoemMutableModelMorphSetCategory(m_mutableMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
+    {
+        nanoem_rsize_t numRightVertices, numLeftVertices;
+        nanoem_model_vertex_t *const *rightVertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numLeftVertices);
+        nanoem_model_vertex_t *const *leftVertices = nanoemModelGetAllVertexObjects(modelPtr, &numRightVertices);
+        for (nanoem_rsize_t i = 0; i < numRightVertices; i++) {
+            const nanoem_model_vertex_t *leftVertex = leftVertices[i];
+            nanoem_model_vertex_t *rightVertex = rightVertices[i];
+            const Vector3 leftOrigin(glm::make_vec3(nanoemModelVertexGetOrigin(leftVertex))),
+                rightOrigin(glm::make_vec3(nanoemModelVertexGetOrigin(rightVertex)));
+            if (glm::abs(glm::distance(rightOrigin, leftOrigin)) > 0) {
+                nanoem_mutable_model_morph_vertex_t *item =
+                    nanoemMutableModelMorphVertexCreate(m_mutableMorph, &status);
+                nanoemMutableModelMorphVertexSetVertexObject(item, rightVertex);
+                nanoemMutableModelMorphVertexSetPosition(item, glm::value_ptr(Vector4(leftOrigin - rightOrigin, 0)));
+                nanoemMutableModelMorphInsertVertexMorphObject(m_mutableMorph, item, -1, &status);
+                nanoemMutableModelMorphVertexDestroy(item);
+            }
+        }
+    }
+    CreateMorphCommand::setup(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), project);
+}
+
+CreateVertexMorphFromModelCommand::~CreateVertexMorphFromModelCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+CreateVertexMorphFromModelCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    command::ScopedMutableModel m(m_activeModel);
+    m_activeModel->removeMorphReference(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
+    nanoemMutableModelRemoveMorphObject(m, m_mutableMorph, &status);
+    assignError(status, error);
+}
+
+void
+CreateVertexMorphFromModelCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    command::ScopedMutableModel m(m_activeModel);
+    nanoemMutableModelInsertMorphObject(m, m_mutableMorph, -1, &status);
+    m_activeModel->addMorphReference(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
+    assignError(status, error);
+}
+
+void
+CreateVertexMorphFromModelCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateVertexMorphFromModelCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+CreateVertexMorphFromModelCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+CreateVertexMorphFromModelCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "CreateVertexMorphFromModelCommand";
 }
 
 BaseAddToMorphCommand::BaseAddToMorphCommand(Project *project, nanoem_model_morph_t *morphPtr)

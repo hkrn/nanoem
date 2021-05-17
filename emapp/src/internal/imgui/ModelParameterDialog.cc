@@ -99,6 +99,76 @@ struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
     virtual BaseUserData *createUserData(nanoem_model_material_t *material, Model *model) = 0;
 };
 
+struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallbacks {
+    static void
+    handleAccept(const URI &fileURI, Project *project, void *opaque)
+    {
+        model::BindPose bindPose;
+        model::BindPose::BoneTransformMap transforms;
+        model::BindPose::MorphWeightMap weights;
+        FileReaderScope scope(project->translator());
+        Error error;
+        if (scope.open(fileURI, error)) {
+            ByteArray bytes;
+            FileUtils::read(scope, bytes, error);
+            nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+            if (bindPose.load(bytes, factory, transforms, weights, error)) {
+                ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+                undo_command_t *command = command::CreateBoneMorphFromPoseCommand::create(
+                    project, transforms, weights, fileURI.lastPathComponent());
+                parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+            }
+        }
+    }
+    CreateBoneMorphFromBindPoseCallback(ImGuiWindow *parent)
+    {
+        m_accept = handleAccept;
+        m_cancel = nullptr;
+        m_destory = nullptr;
+        m_opaque = parent;
+    }
+};
+
+struct CreateVertexMorphFromModelCallback : IFileManager::QueryFileDialogCallbacks {
+    static void
+    handleAccept(const URI &fileURI, Project *project, void *opaque)
+    {
+        const ITranslator *translator = project->translator();
+        FileReaderScope scope(translator);
+        Error error;
+        if (scope.open(fileURI, error)) {
+            ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            ByteArray bytes;
+            FileUtils::read(scope, bytes, error);
+            nanoem_buffer_t *buffer = nanoemBufferCreate(bytes.data(), bytes.size(), &status);
+            nanoem_model_t *model = nanoemModelCreate(project->unicodeStringFactory(), &status);
+            if (nanoemModelLoadFromBuffer(model, buffer, &status)) {
+                nanoem_rsize_t numVertices, numActualVertices;
+                nanoemModelGetAllVertexObjects(model, &numVertices);
+                nanoemModelGetAllVertexObjects(project->activeModel()->data(), &numActualVertices);
+                if (numVertices == numActualVertices) {
+                    undo_command_t *command =
+                        command::CreateVertexMorphFromModelCommand::create(project, model, fileURI.lastPathComponent());
+                    parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+                }
+            }
+            else {
+                // Error error(Error::convertStatusToMessage(status, translator), status, Error::kDomainTypeNanoem);
+            }
+            nanoemModelDestroy(model);
+            nanoemBufferDestroy(buffer);
+        }
+    }
+    CreateVertexMorphFromModelCallback(ImGuiWindow *parent)
+    {
+        m_accept = handleAccept;
+        m_cancel = nullptr;
+        m_destory = nullptr;
+        m_opaque = parent;
+    }
+};
+
 struct EnableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
     EnableModelEditingCommand(ModelParameterDialog *parent)
         : m_parent(parent)
@@ -695,10 +765,12 @@ ModelParameterDialog::layoutSystem(Project *project)
     ImGui::TextUnformatted("Version");
     ImGui::SameLine();
     ImGui::PushItemWidth(80 * project->windowDevicePixelRatio());
-    if (ImGui::BeginCombo("##version", selectedFormatType(nanoemModelGetFormatType(m_activeModel->data())))) {
+    nanoem_model_format_type_t currentFormat = nanoemModelGetFormatType(m_activeModel->data());
+    if (ImGui::BeginCombo("##version", selectedFormatType(currentFormat))) {
         for (int i = NANOEM_MODEL_FORMAT_TYPE_FIRST_ENUM; i < NANOEM_MODEL_FORMAT_TYPE_MAX_ENUM; i++) {
             nanoem_model_format_type_t format = static_cast<nanoem_model_format_type_t>(i);
-            if (ImGui::Selectable(selectedFormatType(format))) {
+            nanoem_u32_t flags = format == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
+            if (ImGui::Selectable(selectedFormatType(format), format == currentFormat, flags)) {
                 command::ScopedMutableModel scoped(m_activeModel);
                 nanoemMutableModelSetFormatType(scoped, format);
             }
@@ -745,10 +817,14 @@ ModelParameterDialog::layoutSystem(Project *project)
     ImGui::Columns(4, nullptr, false);
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.encoding"));
     ImGui::NextColumn();
-    if (ImGui::BeginCombo("##encoding", selectedCodecType(nanoemModelGetCodecType(m_activeModel->data())))) {
+    nanoem_codec_type_t currentCodec =
+        nanoemModelGetCodecType(m_activeModel->data());
+    if (ImGui::BeginCombo("##encoding", selectedCodecType(currentCodec))) {
         for (int i = NANOEM_CODEC_TYPE_FIRST_ENUM; i < NANOEM_CODEC_TYPE_MAX_ENUM; i++) {
             nanoem_codec_type_t codec = static_cast<nanoem_codec_type_t>(i);
-            if (ImGui::Selectable(selectedCodecType(codec))) {
+            nanoem_u32_t flags =
+                codec == NANOEM_CODEC_TYPE_SJIS ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
+            if (ImGui::Selectable(selectedCodecType(codec), codec == currentCodec, flags)) {
                 command::ScopedMutableModel scoped(m_activeModel);
                 nanoemMutableModelSetCodecType(scoped, codec);
             }
@@ -5467,35 +5543,6 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Create Bone Morph from Pose File")) {
-        struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallbacks {
-            static void
-            handleAccept(const URI &fileURI, Project *project, void *opaque)
-            {
-                model::BindPose bindPose;
-                model::BindPose::BoneTransformMap transforms;
-                model::BindPose::MorphWeightMap weights;
-                FileReaderScope scope(project->translator());
-                Error error;
-                if (scope.open(fileURI, error)) {
-                    ByteArray bytes;
-                    FileUtils::read(scope, bytes, error);
-                    nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-                    if (bindPose.load(bytes, factory, transforms, weights, error)) {
-                        ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
-                        undo_command_t *command = command::CreateBoneMorphFromPoseCommand::create(
-                            project, transforms, weights, fileURI.lastPathComponent());
-                        parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
-                    }
-                }
-            }
-            CreateBoneMorphFromBindPoseCallback(ImGuiWindow *parent)
-            {
-                m_accept = handleAccept;
-                m_cancel = nullptr;
-                m_destory = nullptr;
-                m_opaque = parent;
-            }
-        };
         CreateBoneMorphFromBindPoseCallback callback(m_parent);
         IEventPublisher *eventPublisher = project->eventPublisher();
         IFileManager *fileManager = m_applicationPtr->fileManager();
@@ -5504,6 +5551,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
             IFileManager::kDialogTypeUserCallback, model::BindPose::loadableExtensions());
     }
     if (ImGui::MenuItem("Create Vertex Morph from Model File")) {
+        CreateVertexMorphFromModelCallback callback(m_parent);
+        IEventPublisher *eventPublisher = project->eventPublisher();
+        IFileManager *fileManager = m_applicationPtr->fileManager();
+        fileManager->setTransientQueryFileDialogCallback(callback);
+        eventPublisher->publishQueryOpenSingleFileDialogEvent(
+            IFileManager::kDialogTypeUserCallback, Model::loadableExtensions());
     }
 }
 
