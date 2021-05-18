@@ -609,7 +609,9 @@ DeleteMaterialCommand::~DeleteMaterialCommand() NANOEM_DECL_NOEXCEPT
 void
 DeleteMaterialCommand::undo(Error &error)
 {
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     /* TODO: implement */
+    assignError(status, error);
 }
 
 void
@@ -639,6 +641,7 @@ DeleteMaterialCommand::redo(Error &error)
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices - size, &status);
     nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
     // reloadModel(m_activeModel, error);
+    assignError(status, error);
 }
 
 void
@@ -679,8 +682,8 @@ BaseMoveMaterialCommand::~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT
 
 void
 BaseMoveMaterialCommand::move(ScopedMutableMaterial &material, int destination,
-    const BaseMoveMaterialCommand::LayoutPosition &from,
-    const BaseMoveMaterialCommand::LayoutPosition &to, Model *activeModel, nanoem_status_t *status)
+    const BaseMoveMaterialCommand::LayoutPosition &from, const BaseMoveMaterialCommand::LayoutPosition &to,
+    Model *activeModel, nanoem_status_t *status)
 {
     ScopedMutableModel model(activeModel);
     nanoem_rsize_t numIndices;
@@ -1590,17 +1593,15 @@ CreateMorphCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreateBoneMorphFromPoseCommand::create(Project *project, const model::BindPose::BoneTransformMap &transforms,
-    const model::BindPose::MorphWeightMap &weights, const String &filename)
+CreateBoneMorphFromPoseCommand::create(
+    Project *project, const model::BindPose::BoneTransformMap &transforms, const String &filename)
 {
-    CreateBoneMorphFromPoseCommand *command =
-        nanoem_new(CreateBoneMorphFromPoseCommand(project, transforms, weights, filename));
+    CreateBoneMorphFromPoseCommand *command = nanoem_new(CreateBoneMorphFromPoseCommand(project, transforms, filename));
     return command->createCommand();
 }
 
-CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(Project *project,
-    const model::BindPose::BoneTransformMap &transforms, const model::BindPose::MorphWeightMap &weights,
-    const String &filename)
+CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(
+    Project *project, const model::BindPose::BoneTransformMap &transforms, const String &filename)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
     , m_mutableMorph(m_activeModel)
@@ -1705,7 +1706,8 @@ CreateVertexMorphFromModelCommand::CreateVertexMorphFromModelCommand(
     nanoemMutableModelMorphSetCategory(m_mutableMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
     {
         nanoem_rsize_t numRightVertices, numLeftVertices;
-        nanoem_model_vertex_t *const *rightVertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numLeftVertices);
+        nanoem_model_vertex_t *const *rightVertices =
+            nanoemModelGetAllVertexObjects(m_activeModel->data(), &numLeftVertices);
         nanoem_model_vertex_t *const *leftVertices = nanoemModelGetAllVertexObjects(modelPtr, &numRightVertices);
         for (nanoem_rsize_t i = 0; i < numRightVertices; i++) {
             const nanoem_model_vertex_t *leftVertex = leftVertices[i];

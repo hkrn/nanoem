@@ -181,7 +181,8 @@ struct ScopedMutableSoftBody {
 
 class CopyMaterialFromModelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr);
+    static undo_command_t *create(
+        Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr);
 
     CopyMaterialFromModelCommand(
         Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr);
@@ -480,11 +481,11 @@ private:
 
 class CreateBoneMorphFromPoseCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, const model::BindPose::BoneTransformMap &transforms,
-        const model::BindPose::MorphWeightMap &weights, const String &filename);
+    static undo_command_t *create(
+        Project *project, const model::BindPose::BoneTransformMap &transforms, const String &filename);
 
-    CreateBoneMorphFromPoseCommand(Project *project, const model::BindPose::BoneTransformMap &transforms,
-        const model::BindPose::MorphWeightMap &weights, const String &filename);
+    CreateBoneMorphFromPoseCommand(
+        Project *project, const model::BindPose::BoneTransformMap &transforms, const String &filename);
     ~CreateBoneMorphFromPoseCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;

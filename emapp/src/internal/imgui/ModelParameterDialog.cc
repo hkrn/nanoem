@@ -115,7 +115,7 @@ struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallba
             if (bindPose.load(bytes, factory, transforms, weights, error)) {
                 ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
                 undo_command_t *command = command::CreateBoneMorphFromPoseCommand::create(
-                    project, transforms, weights, fileURI.lastPathComponent());
+                    project, transforms, fileURI.lastPathComponent());
                 parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
         }
@@ -332,8 +332,8 @@ ModelParameterDialog::ModelParameterDialog(
     , m_savedCMScaleFactor(kDefaultCMScaleFactor)
     , m_savedModelCorrectionHeight(kDefaultModelCorrectionHeight)
     , m_savedModelHeight(-1)
-    , m_heightBased(true)
     , m_editingMode(project->editingMode())
+    , m_heightBased(true)
     , m_showAllVertexPoints(model->isShowAllVertexPoints())
     , m_showAllVertexFaces(model->isShowAllVertexFaces())
     , m_showAllBones(model->isShowAllBones())
@@ -769,7 +769,8 @@ ModelParameterDialog::layoutSystem(Project *project)
     if (ImGui::BeginCombo("##version", selectedFormatType(currentFormat))) {
         for (int i = NANOEM_MODEL_FORMAT_TYPE_FIRST_ENUM; i < NANOEM_MODEL_FORMAT_TYPE_MAX_ENUM; i++) {
             nanoem_model_format_type_t format = static_cast<nanoem_model_format_type_t>(i);
-            nanoem_u32_t flags = format == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
+            nanoem_u32_t flags =
+                format == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
             if (ImGui::Selectable(selectedFormatType(format), format == currentFormat, flags)) {
                 command::ScopedMutableModel scoped(m_activeModel);
                 nanoemMutableModelSetFormatType(scoped, format);
@@ -817,8 +818,7 @@ ModelParameterDialog::layoutSystem(Project *project)
     ImGui::Columns(4, nullptr, false);
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.encoding"));
     ImGui::NextColumn();
-    nanoem_codec_type_t currentCodec =
-        nanoemModelGetCodecType(m_activeModel->data());
+    nanoem_codec_type_t currentCodec = nanoemModelGetCodecType(m_activeModel->data());
     if (ImGui::BeginCombo("##encoding", selectedCodecType(currentCodec))) {
         for (int i = NANOEM_CODEC_TYPE_FIRST_ENUM; i < NANOEM_CODEC_TYPE_MAX_ENUM; i++) {
             nanoem_codec_type_t codec = static_cast<nanoem_codec_type_t>(i);
@@ -6303,6 +6303,8 @@ ModelParameterDialog::selectedFormatType(const nanoem_model_format_type_t type) 
         return "PMX 2.0";
     case NANOEM_MODEL_FORMAT_TYPE_PMX_2_1:
         return "PMX 2.1";
+    default:
+        return "(Unknown)";
     }
 }
 
