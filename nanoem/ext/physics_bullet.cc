@@ -757,102 +757,104 @@ struct nanoem_physics_soft_body_t {
         const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(model, &numIndices);
         const nanoem_model_material_t *material = nanoemModelSoftBodyGetMaterialObject(value);
         int offsetVertexIndices = 0, numVertexIndices = nanoemModelMaterialGetNumVertexIndices(material);
-        switch (nanoemModelSoftBodyGetShapeType(value)) {
-        case NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_TRI_MESH: {
-            m_points = new btAlignedObjectArray<btScalar>;
-            m_indices = new btAlignedObjectArray<int>;
-            m_points->reserve(numVertexIndices * 3);
-            m_indices->reserve(numVertexIndices);
-            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *item = materials[i];
-                if (item == material) {
-                    break;
+        if (numVertexIndices > 0) {
+            switch (nanoemModelSoftBodyGetShapeType(value)) {
+            case NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_TRI_MESH: {
+                m_points = new btAlignedObjectArray<btScalar>;
+                m_indices = new btAlignedObjectArray<int>;
+                m_points->reserve(numVertexIndices * 3);
+                m_indices->reserve(numVertexIndices);
+                for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *item = materials[i];
+                    if (item == material) {
+                        break;
+                    }
+                    offsetVertexIndices += nanoemModelMaterialGetNumVertexIndices(item);
                 }
-                offsetVertexIndices += nanoemModelMaterialGetNumVertexIndices(item);
-            }
-            for (int i = 0, offset = 0; i < numVertexIndices; i++) {
-                const nanoem_u32_t vertexIndex = indices[i + offsetVertexIndices];
-                const nanoem_model_vertex_t *vertex = vertices[vertexIndex];
-                khiter_t it;
-                int ret;
-                it = kh_get_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex));
-                if (it != kh_end(verticesMap)) {
-                    int index = kh_value(verticesMap, it);
-                    m_indices->push_back(index);
-                }
-                else {
-                    it = kh_put_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex), &ret);
-                    if (ret >= 0) {
-                        const nanoem_f32_t *origin = nanoemModelVertexGetOrigin(vertex);
-                        m_indices->push_back(offset);
-                        m_points->push_back(origin[0]);
-                        m_points->push_back(origin[1]);
-                        m_points->push_back(origin[2]);
-                        kh_value(verticesMap, it) = offset;
-                        offset++;
+                for (int i = 0, offset = 0; i < numVertexIndices; i++) {
+                    const nanoem_u32_t vertexIndex = indices[i + offsetVertexIndices];
+                    const nanoem_model_vertex_t *vertex = vertices[vertexIndex];
+                    khiter_t it;
+                    int ret;
+                    it = kh_get_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex));
+                    if (it != kh_end(verticesMap)) {
+                        int index = kh_value(verticesMap, it);
+                        m_indices->push_back(index);
+                    }
+                    else {
+                        it = kh_put_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex), &ret);
+                        if (ret >= 0) {
+                            const nanoem_f32_t *origin = nanoemModelVertexGetOrigin(vertex);
+                            m_indices->push_back(offset);
+                            m_points->push_back(origin[0]);
+                            m_points->push_back(origin[1]);
+                            m_points->push_back(origin[2]);
+                            kh_value(verticesMap, it) = offset;
+                            offset++;
+                        }
                     }
                 }
-            }
-            m_internalSoftBody = btSoftBodyHelpers::CreateFromTriMesh(*world->m_worldInfo,
-                &m_points->at(0),
-                &m_indices->at(0),
-                m_indices->size() / 3, false);
-            for (khiter_t it = kh_begin(verticesMap), end = kh_end(verticesMap); it != end; ++it) {
-                if (kh_exist(verticesMap, it)) {
-                    nanoem_model_vertex_t *vertex = reinterpret_cast<nanoem_model_vertex_t *>(kh_key(verticesMap, it));
-                    int value = kh_value(verticesMap, it);
-                    m_internalSoftBody->m_nodes[value].m_tag = vertex;
-                }
-            }
-            break;
-        }
-        case NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_ROPE: {
-            m_points = new btAlignedObjectArray<btScalar>;
-            m_points->reserve(numVertexIndices * 3);
-            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *item = materials[i];
-                if (item == material) {
-                    break;
-                }
-                offsetVertexIndices += nanoemModelMaterialGetNumVertexIndices(item);
-            }
-            for (int i = 0, offset = 0; i < numVertexIndices; i++) {
-                const nanoem_u32_t vertexIndex = indices[i + offsetVertexIndices];
-                const nanoem_model_vertex_t *vertex = vertices[vertexIndex];
-                khiter_t it;
-                int ret;
-                it = kh_get_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex));
-                if (it == kh_end(verticesMap)) {
-                    it = kh_put_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex), &ret);
-                    if (ret >= 0) {
-                        const nanoem_f32_t *origin = nanoemModelVertexGetOrigin(vertex);
-                        m_points->push_back(origin[0]);
-                        m_points->push_back(origin[1]);
-                        m_points->push_back(origin[2]);
-                        kh_value(verticesMap, it) = offset;
-                        offset++;
+                m_internalSoftBody = btSoftBodyHelpers::CreateFromTriMesh(*world->m_worldInfo,
+                    &m_points->at(0),
+                    &m_indices->at(0),
+                    m_indices->size() / 3, false);
+                for (khiter_t it = kh_begin(verticesMap), end = kh_end(verticesMap); it != end; ++it) {
+                    if (kh_exist(verticesMap, it)) {
+                        nanoem_model_vertex_t *vertex = reinterpret_cast<nanoem_model_vertex_t *>(kh_key(verticesMap, it));
+                        int value = kh_value(verticesMap, it);
+                        m_internalSoftBody->m_nodes[value].m_tag = vertex;
                     }
                 }
+                break;
             }
-            const nanoem_f32_t *fromOrigin = nanoemModelVertexGetOrigin(vertices[0]),
-                    *toOrigin = nanoemModelVertexGetOrigin(vertices[numVertices - 1]);
-            m_internalSoftBody = btSoftBodyHelpers::CreateRope(*world->m_worldInfo, btVector3(fromOrigin[0], fromOrigin[1], fromOrigin[2]), btVector3(toOrigin[0], toOrigin[1], toOrigin[2]), numVertices - 2, 0);
-            for (khiter_t it = kh_begin(verticesMap), end = kh_end(verticesMap); it != end; ++it) {
-                if (kh_exist(verticesMap, it)) {
-                    nanoem_model_vertex_t *vertex = reinterpret_cast<nanoem_model_vertex_t *>(kh_key(verticesMap, it));
-                    int value = kh_value(verticesMap, it), offset = value * 3;
-                    btSoftBody::Node &node = m_internalSoftBody->m_nodes[value];
-                    node.m_x = btVector3(m_points->at(offset), m_points->at(offset + 1), m_points->at(offset + 2));
-                    node.m_tag = vertex;
+            case NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_ROPE: {
+                m_points = new btAlignedObjectArray<btScalar>;
+                m_points->reserve(numVertexIndices * 3);
+                for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                    const nanoem_model_material_t *item = materials[i];
+                    if (item == material) {
+                        break;
+                    }
+                    offsetVertexIndices += nanoemModelMaterialGetNumVertexIndices(item);
                 }
+                for (int i = 0, offset = 0; i < numVertexIndices; i++) {
+                    const nanoem_u32_t vertexIndex = indices[i + offsetVertexIndices];
+                    const nanoem_model_vertex_t *vertex = vertices[vertexIndex];
+                    khiter_t it;
+                    int ret;
+                    it = kh_get_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex));
+                    if (it == kh_end(verticesMap)) {
+                        it = kh_put_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex), &ret);
+                        if (ret >= 0) {
+                            const nanoem_f32_t *origin = nanoemModelVertexGetOrigin(vertex);
+                            m_points->push_back(origin[0]);
+                            m_points->push_back(origin[1]);
+                            m_points->push_back(origin[2]);
+                            kh_value(verticesMap, it) = offset;
+                            offset++;
+                        }
+                    }
+                }
+                const nanoem_f32_t *fromOrigin = nanoemModelVertexGetOrigin(vertices[0]),
+                        *toOrigin = nanoemModelVertexGetOrigin(vertices[numVertices - 1]);
+                m_internalSoftBody = btSoftBodyHelpers::CreateRope(*world->m_worldInfo, btVector3(fromOrigin[0], fromOrigin[1], fromOrigin[2]), btVector3(toOrigin[0], toOrigin[1], toOrigin[2]), numVertices - 2, 0);
+                for (khiter_t it = kh_begin(verticesMap), end = kh_end(verticesMap); it != end; ++it) {
+                    if (kh_exist(verticesMap, it)) {
+                        nanoem_model_vertex_t *vertex = reinterpret_cast<nanoem_model_vertex_t *>(kh_key(verticesMap, it));
+                        int value = kh_value(verticesMap, it), offset = value * 3;
+                        btSoftBody::Node &node = m_internalSoftBody->m_nodes[value];
+                        node.m_x = btVector3(m_points->at(offset), m_points->at(offset + 1), m_points->at(offset + 2));
+                        node.m_tag = vertex;
+                    }
+                }
+                break;
             }
-            break;
-        }
-        default:
-            m_internalSoftBody = 0;
-            m_points = 0;
-            m_indices = 0;
-            break;
+            default:
+                m_internalSoftBody = 0;
+                m_points = 0;
+                m_indices = 0;
+                break;
+            }
         }
         if (m_internalSoftBody) {
             kh_rigid_bodies_t *rigidBodiesMap = kh_init_rigid_bodies();
@@ -939,9 +941,9 @@ struct nanoem_physics_soft_body_t {
                 const nanoem_model_rigid_body_t *body = nanoemModelSoftBodyAnchorGetRigidBodyObject(anchor);
                 const nanoem_model_vertex_t *vertex = nanoemModelSoftBodyAnchorGetVertexObject(anchor);
                 khiter_t it = kh_get_vertices(verticesMap, reinterpret_cast<khint64_t>(vertex));
-                int nodeIndex = kh_exist(verticesMap, it) ? kh_value(verticesMap, it) : -1;
+                int nodeIndex = it != kh_end(verticesMap) ? kh_value(verticesMap, it) : -1;
                 khiter_t it2 = kh_get_rigid_bodies(rigidBodiesMap, reinterpret_cast<khint64_t>(body));
-                btRigidBody *rigidBody = kh_exist(rigidBodiesMap, it2) ? kh_value(rigidBodiesMap, it2) : 0;
+                btRigidBody *rigidBody = it2 != kh_end(rigidBodiesMap) ? kh_value(rigidBodiesMap, it2) : 0;
                 if (nodeIndex != -1 && rigidBody) {
                     m_internalSoftBody->appendAnchor(nodeIndex, rigidBody);
                 }
@@ -1064,7 +1066,7 @@ nanoemPhysicsWorldCreate(void * /* opaque */, nanoem_status_t *status)
 void APIENTRY
 nanoemPhysicsWorldAddRigidBody(nanoem_physics_world_t *world, nanoem_physics_rigid_body_t *rigid_body)
 {
-    if (nanoem_is_not_null(world) && nanoem_is_not_null(rigid_body)) {
+    if (nanoem_is_not_null(world) && nanoem_is_not_null(rigid_body) && nanoem_is_not_null(rigid_body->m_internalRigidBody)) {
         world->m_world->addRigidBody(
             rigid_body->m_internalRigidBody, static_cast<short>(rigid_body->m_group), static_cast<short>(rigid_body->m_mask));
         rigid_body->m_parentWorld = world;
@@ -1074,7 +1076,7 @@ nanoemPhysicsWorldAddRigidBody(nanoem_physics_world_t *world, nanoem_physics_rig
 void APIENTRY
 nanoemPhysicsWorldAddSoftBody(nanoem_physics_world_t *world, nanoem_physics_soft_body_t *soft_body)
 {
-    if (nanoem_is_not_null(world) && nanoem_is_not_null(soft_body)) {
+    if (nanoem_is_not_null(world) && nanoem_is_not_null(soft_body) && nanoem_is_not_null(soft_body->m_internalSoftBody)) {
         world->m_world->addSoftBody(
             soft_body->m_internalSoftBody, static_cast<short>(soft_body->m_group), static_cast<short>(soft_body->m_mask));
     }
@@ -1091,7 +1093,7 @@ nanoemPhysicsWorldAddJoint(nanoem_physics_world_t *world, nanoem_physics_joint_t
 void APIENTRY
 nanoemPhysicsWorldRemoveRigidBody(nanoem_physics_world_t *world, nanoem_physics_rigid_body_t *rigid_body)
 {
-    if (nanoem_is_not_null(world) && nanoem_is_not_null(rigid_body)) {
+    if (nanoem_is_not_null(world) && nanoem_is_not_null(rigid_body) && nanoem_is_not_null(rigid_body->m_internalRigidBody)) {
         world->m_world->removeRigidBody(rigid_body->m_internalRigidBody);
         rigid_body->m_parentWorld = 0;
     }
@@ -1100,7 +1102,7 @@ nanoemPhysicsWorldRemoveRigidBody(nanoem_physics_world_t *world, nanoem_physics_
 void APIENTRY
 nanoemPhysicsWorldRemoveSoftBody(nanoem_physics_world_t *world, nanoem_physics_soft_body_t *soft_body)
 {
-    if (nanoem_is_not_null(world) && nanoem_is_not_null(soft_body)) {
+    if (nanoem_is_not_null(world) && nanoem_is_not_null(soft_body) && nanoem_is_not_null(soft_body->m_internalSoftBody)) {
         world->m_world->removeSoftBody(soft_body->m_internalSoftBody);
     }
 }
