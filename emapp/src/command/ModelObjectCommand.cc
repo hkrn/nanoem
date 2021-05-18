@@ -32,27 +32,6 @@ namespace {
 
 static const nanoem_u8_t kNewObjectPrefixName[] = { 0xe6, 0x96, 0xb0, 0xe8, 0xa6, 0x8f, 0 };
 
-static void
-reloadModel(Model *activeModel, Error &error)
-{
-    ByteArray bytes;
-    Project *project = activeModel->project();
-    activeModel->save(bytes, error);
-    Progress reloadModelProgress(project, 0);
-    activeModel->clear();
-    activeModel->load(bytes, error);
-    activeModel->setupAllBindings();
-    activeModel->upload();
-    activeModel->loadAllImages(reloadModelProgress, error);
-    if (Motion *motion = project->resolveMotion(activeModel)) {
-        motion->initialize(activeModel);
-    }
-    activeModel->updateStagingVertexBuffer();
-    project->rebuildAllTracks();
-    project->restart();
-    reloadModelProgress.complete();
-}
-
 } /* namespace anonymous */
 
 ScopedMutableModel::ScopedMutableModel(Model *model)
@@ -599,7 +578,22 @@ DeleteMaterialCommand::DeleteMaterialCommand(
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
     , m_mutableMaterial(materials[materialIndex])
+    , m_deletingVertexIndexOffset(0)
+    , m_materialIndex(materialIndex)
 {
+    nanoem_rsize_t numMaterials, numVertexIndices;
+    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
+    nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
+    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *currentMaterialPtr = materials[i];
+        const size_t innerSize = nanoemModelMaterialGetNumVertexIndices(currentMaterialPtr);
+        if (currentMaterialPtr == activeMaterial) {
+            m_deletingVertexIndices.assign(vertexIndices, vertexIndices + innerSize);
+            break;
+        }
+        m_deletingVertexIndexOffset += innerSize;
+    }
 }
 
 DeleteMaterialCommand::~DeleteMaterialCommand() NANOEM_DECL_NOEXCEPT
@@ -609,38 +603,43 @@ DeleteMaterialCommand::~DeleteMaterialCommand() NANOEM_DECL_NOEXCEPT
 void
 DeleteMaterialCommand::undo(Error &error)
 {
+    ScopedMutableModel model(m_activeModel);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    /* TODO: implement */
+    nanoem_rsize_t numIndices;
+    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
+    VertexIndexList workingBuffer(numIndices + m_deletingVertexIndices.size());
+    nanoem_u32_t *workingBufferPtr = workingBuffer.data();
+    if (m_deletingVertexIndexOffset > 0) {
+        memcpy(workingBufferPtr, indices, m_deletingVertexIndexOffset * sizeof(workingBuffer[0]));
+        workingBufferPtr += m_deletingVertexIndexOffset;
+    }
+    memcpy(workingBufferPtr, m_deletingVertexIndices.data(), m_deletingVertexIndices.size() * sizeof(workingBuffer[0]));
+    workingBufferPtr += m_deletingVertexIndices.size();
+    const nanoem_rsize_t restSize = (numIndices - m_deletingVertexIndexOffset) * sizeof(workingBuffer[0]);
+    if (restSize > 0) {
+        memcpy(workingBufferPtr, indices + m_deletingVertexIndexOffset, restSize);
+    }
+    nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
+    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, Inline::saturateInt32(m_materialIndex), &status);
+    m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
 }
 
 void
 DeleteMaterialCommand::redo(Error &error)
 {
-    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
     ScopedMutableModel model(m_activeModel);
-    nanoem_rsize_t numMaterials, offset = 0, size = 0;
-    nanoem_model_material_t *const *materials =
-        nanoemModelGetAllMaterialObjects(nanoemMutableModelGetOriginObject(model), &numMaterials);
-    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-        const nanoem_model_material_t *currentMaterialPtr = materials[i];
-        const size_t innerSize = nanoemModelMaterialGetNumVertexIndices(currentMaterialPtr);
-        if (currentMaterialPtr == activeMaterial) {
-            size = innerSize;
-            break;
-        }
-        offset += innerSize;
-    }
-    nanoem_rsize_t numIndices, rest;
+    nanoem_rsize_t numIndices, rest, size(m_deletingVertexIndices.size());
     const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
     VertexIndexList workingBuffer(numIndices);
-    rest = numIndices - offset - size;
+    rest = numIndices - m_deletingVertexIndexOffset - size;
     memcpy(workingBuffer.data(), indices, numIndices * sizeof(workingBuffer[0]));
-    memmove(workingBuffer.data() + offset, workingBuffer.data() + offset + size, rest * sizeof(workingBuffer[0]));
+    memmove(workingBuffer.data() + m_deletingVertexIndexOffset,
+        workingBuffer.data() + m_deletingVertexIndexOffset + size, rest * sizeof(workingBuffer[0]));
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices - size, &status);
     nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
-    // reloadModel(m_activeModel, error);
+    m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
 }
 
@@ -681,9 +680,8 @@ BaseMoveMaterialCommand::~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT
 }
 
 void
-BaseMoveMaterialCommand::move(ScopedMutableMaterial &material, int destination,
-    const BaseMoveMaterialCommand::LayoutPosition &from, const BaseMoveMaterialCommand::LayoutPosition &to,
-    Model *activeModel, nanoem_status_t *status)
+BaseMoveMaterialCommand::move(ScopedMutableMaterial &material, int destination, const LayoutPosition &from,
+    const LayoutPosition &to, Model *activeModel, nanoem_status_t *status)
 {
     ScopedMutableModel model(activeModel);
     nanoem_rsize_t numIndices;
@@ -698,6 +696,7 @@ BaseMoveMaterialCommand::move(ScopedMutableMaterial &material, int destination,
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices, status);
     nanoemMutableModelRemoveMaterialObject(model, material, status);
     nanoemMutableModelInsertMaterialObject(model, material, destination, status);
+    activeModel->rebuildIndexBuffer();
 }
 
 void

@@ -114,8 +114,8 @@ struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallba
             nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
             if (bindPose.load(bytes, factory, transforms, weights, error)) {
                 ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
-                undo_command_t *command = command::CreateBoneMorphFromPoseCommand::create(
-                    project, transforms, fileURI.lastPathComponent());
+                undo_command_t *command =
+                    command::CreateBoneMorphFromPoseCommand::create(project, transforms, fileURI.lastPathComponent());
                 parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
         }

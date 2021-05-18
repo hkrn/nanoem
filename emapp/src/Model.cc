@@ -1356,7 +1356,8 @@ Model::upload()
 {
     SG_PUSH_GROUPF("Model::upload(name=%s)", canonicalNameConstString());
     model::Material::IndexHashMap materialIndexHash;
-    initializeAllStagingVertexAndIndexBuffers();
+    initializeAllStagingVertexBuffers();
+    initializeStagingIndexBuffer();
     setActiveEffect(m_project->sharedResourceRepository()->modelProgramBundle());
 #if defined(__APPLE__)
 #ifdef NDEBUG
@@ -1754,6 +1755,14 @@ Model::rebuildAllVertexBuffers(bool enableSkinFactory)
         createAllStagingVertexBuffers();
     }
     markStagingVertexBufferDirty();
+}
+
+void
+Model::rebuildIndexBuffer()
+{
+    sg::destroy_buffer(m_indexBuffer);
+    m_indexBuffer = { SG_INVALID_ID };
+    initializeStagingIndexBuffer();
 }
 
 void
@@ -3192,40 +3201,6 @@ Model::internalSetOutsideParent(const nanoem_model_bone_t *key, const StringPair
 }
 
 void
-Model::initializeAllStagingVertexAndIndexBuffers()
-{
-    initializeAllStagingVertexBuffers();
-    nanoem_rsize_t numIndices;
-    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numIndices);
-    sg_buffer_desc desc;
-    Inline::clearZeroMemory(desc);
-    desc.type = SG_BUFFERTYPE_INDEXBUFFER;
-    desc.usage = SG_USAGE_IMMUTABLE;
-    sg::destroy_buffer(m_indexBuffer);
-    if (numIndices > 0) {
-        desc.data.ptr = indices;
-        desc.data.size = desc.size = numIndices * sizeof(*indices);
-        char label[Inline::kMarkerStringLength];
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(label, sizeof(label), "Models/%s/IndexBuffer", canonicalNameConstString());
-            desc.label = label;
-        }
-        else {
-            *label = 0;
-        }
-        m_indexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
-        SG_LABEL_BUFFER(m_indexBuffer, label);
-    }
-    else {
-        static const int kDummyIndex = 0;
-        desc.data.ptr = &kDummyIndex;
-        desc.data.size = desc.size = sizeof(kDummyIndex);
-        m_indexBuffer = sg::make_buffer(&desc);
-    }
-}
-
-void
 Model::initializeAllStagingVertexBuffers()
 {
     nanoem_rsize_t numVertices;
@@ -3290,6 +3265,38 @@ Model::initializeAllStagingVertexBuffers()
         desc.data.size = desc.size = sizeof(VertexUnit);
         m_vertexBuffers[0] = sg::make_buffer(&desc);
         m_vertexBuffers[1] = sg::make_buffer(&desc);
+    }
+}
+
+void
+Model::initializeStagingIndexBuffer()
+{
+    nanoem_rsize_t numIndices;
+    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numIndices);
+    sg_buffer_desc desc;
+    Inline::clearZeroMemory(desc);
+    desc.type = SG_BUFFERTYPE_INDEXBUFFER;
+    desc.usage = SG_USAGE_IMMUTABLE;
+    if (numIndices > 0) {
+        desc.data.ptr = indices;
+        desc.data.size = desc.size = numIndices * sizeof(*indices);
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/IndexBuffer", canonicalNameConstString());
+            desc.label = label;
+        }
+        else {
+            *label = 0;
+        }
+        m_indexBuffer = sg::make_buffer(&desc);
+        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
+        SG_LABEL_BUFFER(m_indexBuffer, label);
+    }
+    else {
+        static const int kDummyIndex = 0;
+        desc.data.ptr = &kDummyIndex;
+        desc.data.size = desc.size = sizeof(kDummyIndex);
+        m_indexBuffer = sg::make_buffer(&desc);
     }
 }
 

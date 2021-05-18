@@ -222,18 +222,21 @@ private:
 
     Model *m_activeModel;
     ScopedMutableMaterial m_mutableMaterial;
+    VertexIndexList m_deletingVertexIndices;
+    nanoem_rsize_t m_deletingVertexIndexOffset;
+    nanoem_rsize_t m_materialIndex;
 };
 
 class BaseMoveMaterialCommand : public BaseUndoCommand {
 public:
-    struct LayoutPosition {
-        size_t m_offset;
-        size_t m_size;
-    };
     BaseMoveMaterialCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
     ~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT;
 
 protected:
+    struct LayoutPosition {
+        size_t m_offset;
+        size_t m_size;
+    };
     typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
     static void move(ScopedMutableMaterial &material, int destination, const LayoutPosition &from,
         const LayoutPosition &to, Model *activeModel, nanoem_status_t *status);
