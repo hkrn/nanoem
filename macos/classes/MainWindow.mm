@@ -1687,6 +1687,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                 self->m_client->sendLoadAllModelPluginsMessage(plugins);
                 self->m_client->sendLoadAllMotionPluginsMessage(plugins);
             });
+#ifdef NANOEM_ENABLE_DEBUG_LABEL
             const bx::CommandLine *cmd = self->m_commandLine;
             if (cmd->hasArg("bootstrap-project-from-clipboard")) {
                 URIList plugins;
@@ -1698,7 +1699,8 @@ MainWindow::registerAllPrerequisiteEventListeners()
                 self->m_client->sendLoadAllDecoderPluginsMessage(plugins);
                 for (NSString *item in fileURLs) {
                     NSString *trimmedItem = [item stringByTrimmingCharactersInSet:characterSet];
-                    const URI &fileURI = URI::createFromFilePath(trimmedItem.UTF8String);
+                    NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:trimmedItem];
+                    const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(fileURL));
                     self->m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
                     NSString *path = [[NSString alloc] initWithUTF8String:fileURI.absolutePathConstString()];
                     self->setTitle([[NSURL alloc] initFileURLWithPath:path]);
@@ -1707,7 +1709,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
             else if (cmd->hasArg("bootstrap-project")) {
                 URIList plugins;
                 CocoaApplicationMenuBuilder::aggregateAllPlugins(plugins);
-                const URI &fileURI = URI::createFromFilePath(cmd->findOption("bootstrap-project"));
+                NSString *filePath = [[NSString alloc] initWithUTF8String:cmd->findOption("bootstrap-project")];
+                NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:filePath];
+                const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(fileURL));
                 self->m_client->sendLoadAllDecoderPluginsMessage(plugins);
                 if (FileUtils::exists(fileURI)) {
                     self->m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
@@ -1746,6 +1750,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                     self->m_client->sendRecoveryMessage(fileURI);
                 }
             }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
             self->m_client->sendActivateMessage();
         },
         this, true);
