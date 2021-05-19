@@ -4884,6 +4884,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
                     proxy.setFunction(functionIndex, error);
                     proxy.setInputData(input, error);
                     proxy.setupSelection(activeModel, error);
+                    proxy.setupEditingMask(activeModel, error);
                     proxy.setProjectDescription(project, error);
                     if (!error.hasReason()) {
                         if (proxy.getUIWindowLayout(layout, error)) {

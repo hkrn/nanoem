@@ -393,6 +393,80 @@ PluginFactory::ModelIOPluginProxy::setupSelection(const Model *model, Error &err
             indices.push_back(model::Joint::index(*it));
         }
         m_plugin->setAllSelectedJointObjectIndices(indices.data(), indices.size(), error);
+        indices.clear();
+        const model::SoftBody::Set softBodies(selection->allSoftBodySet());
+        for (model::SoftBody::Set::const_iterator it = softBodies.begin(), end = softBodies.end(); it != end; ++it) {
+            indices.push_back(model::SoftBody::index(*it));
+        }
+        m_plugin->setAllSelectedSoftBodyObjectIndices(indices.data(), indices.size(), error);
+    }
+}
+
+void
+PluginFactory::ModelIOPluginProxy::setupEditingMask(const Model *model, Error &error)
+{
+    if (m_plugin) {
+        IntList indices;
+        nanoem_rsize_t numObjects;
+        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(model->data(), &numObjects);
+        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+            const nanoem_model_vertex_t *vertexPtr = vertices[i];
+            const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            if (vertex && vertex->isEditingMasked()) {
+                indices.push_back(model::Vertex::index(vertexPtr));
+            }
+        }
+        m_plugin->setAllMaskedVertexObjectIndices(indices.data(), indices.size(), error);
+        indices.clear();
+        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numObjects);
+        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+            const nanoem_model_material_t *materialPtr = materials[i];
+            const model::Material *material = model::Material::cast(materialPtr);
+            if (material && material->isVisible()) {
+                indices.push_back(model::Material::index(materialPtr));
+            }
+        }
+        m_plugin->setAllMaskedMaterialObjectIndices(indices.data(), indices.size(), error);
+        indices.clear();
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numObjects);
+        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+            const nanoem_model_bone_t *bonePtr = bones[i];
+            const model::Bone *bone = model::Bone::cast(bonePtr);
+            if (bone && bone->isEditingMasked()) {
+                indices.push_back(model::Bone::index(bonePtr));
+            }
+        }
+        m_plugin->setAllMaskedBoneObjectIndices(indices.data(), indices.size(), error);
+        indices.clear();
+        nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(model->data(), &numObjects);
+        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+            const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
+            const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
+            if (rigidBody && rigidBody->isEditingMasked()) {
+                indices.push_back(model::RigidBody::index(rigidBodyPtr));
+            }
+        }
+        m_plugin->setAllMaskedRigidBodyObjectIndices(indices.data(), indices.size(), error);
+        indices.clear();
+        nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(model->data(), &numObjects);
+        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+            const nanoem_model_joint_t *jointPtr = joints[i];
+            const model::Joint *joint = model::Joint::cast(jointPtr);
+            if (joint && joint->isEditingMasked()) {
+                indices.push_back(model::Joint::index(jointPtr));
+            }
+        }
+        m_plugin->setAllMaskedJointObjectIndices(indices.data(), indices.size(), error);
+        indices.clear();
+        nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(model->data(), &numObjects);
+        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+            const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
+            const model::SoftBody *joint = model::SoftBody::cast(softBodyPtr);
+            if (joint && joint->isEditingMasked()) {
+                indices.push_back(model::SoftBody::index(softBodyPtr));
+            }
+        }
+        m_plugin->setAllMaskedSoftBodyObjectIndices(indices.data(), indices.size(), error);
     }
 }
 

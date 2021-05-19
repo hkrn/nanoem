@@ -38,6 +38,13 @@ ModelIOPlugin::ModelIOPlugin(IEventPublisher *publisher)
     , _modelIOSetAllSelectedLabelObjectIndices(nullptr)
     , _modelIOSetAllSelectedRigidBodyObjectIndices(nullptr)
     , _modelIOSetAllSelectedJointObjectIndices(nullptr)
+    , _modelIOSetAllSelectedSoftBodyObjectIndices(nullptr)
+    , _modelIOSetAllMaskedVertexObjectIndices(nullptr)
+    , _modelIOSetAllMaskedMaterialObjectIndices(nullptr)
+    , _modelIOSetAllMaskedBoneObjectIndices(nullptr)
+    , _modelIOSetAllMaskedRigidBodyObjectIndices(nullptr)
+    , _modelIOSetAllMaskedJointObjectIndices(nullptr)
+    , _modelIOSetAllMaskedSoftBodyObjectIndices(nullptr)
     , _modelIOSetAudioDescription(nullptr)
     , _modelIOSetCameraDescription(nullptr)
     , _modelIOSetLightDescription(nullptr)
@@ -92,6 +99,7 @@ ModelIOPlugin::load(const URI &fileURI)
                 handle, "nanoemApplicationPluginModelIOGetRecoverySuggestion", _modelIOGetRecoverySuggestion, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIODestroy", _modelIODestroy, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOTerminate", _modelIOTerminate, valid);
+            // ABI version 2.0
             if (valid && isABICompatible(_modelIOGetABIVersion(), NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION_MAJOR)) {
                 Inline::resolveSymbol(
                     handle, "nanoemApplicationPluginModelIOCreateWithLocation", _modelIOCreateWithLocation);
@@ -130,6 +138,21 @@ ModelIOPlugin::load(const URI &fileURI)
                     handle, "nanoemApplicationPluginModelIOSetCameraDescription", _modelIOSetCameraDescription);
                 Inline::resolveSymbol(
                     handle, "nanoemApplicationPluginModelIOSetLightDescription", _modelIOSetLightDescription);
+                // ABI version 2.1
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices",
+                    _modelIOSetAllSelectedSoftBodyObjectIndices);
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedVertexObjectIndices",
+                    _modelIOSetAllMaskedVertexObjectIndices);
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedMaterialObjectIndices",
+                    _modelIOSetAllMaskedMaterialObjectIndices);
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedBoneObjectIndices",
+                    _modelIOSetAllMaskedBoneObjectIndices);
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedRigidBodyObjectIndices",
+                    _modelIOSetAllMaskedRigidBodyObjectIndices);
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedJointObjectIndices",
+                    _modelIOSetAllMaskedJointObjectIndices);
+                Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices",
+                    _modelIOSetAllMaskedSoftBodyObjectIndices);
                 m_handle = handle;
                 m_name = fileURI.lastPathComponent();
                 m_fileURI = fileURI;
@@ -299,6 +322,76 @@ ModelIOPlugin::setAllSelectedJointObjectIndices(const int *indices, nanoem_rsize
     if (_modelIOSetAllSelectedJointObjectIndices) {
         int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
         _modelIOSetAllSelectedJointObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllSelectedSoftBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllSelectedSoftBodyObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllSelectedSoftBodyObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllMaskedVertexObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllMaskedVertexObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllMaskedVertexObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllMaskedMaterialObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllMaskedMaterialObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllMaskedMaterialObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllMaskedBoneObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllMaskedBoneObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllMaskedBoneObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllMaskedRigidBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllMaskedRigidBodyObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllMaskedRigidBodyObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllMaskedJointObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllMaskedJointObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllMaskedJointObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
+        handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setAllMaskedSoftBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error)
+{
+    if (_modelIOSetAllMaskedSoftBodyObjectIndices) {
+        int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
+        _modelIOSetAllMaskedSoftBodyObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
         handlePluginStatus(status, error);
     }
 }
