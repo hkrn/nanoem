@@ -597,7 +597,7 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
     }
     if (!sg::is_valid(m_indexBuffer)) {
         nanoem_u32_t numIndices = Inline::saturateInt32U(shape->ntriangles) * 3;
-        tinystl::vector<nanoem_u32_t, TinySTLAllocator> indices(numIndices);
+        VertexIndexList indices(numIndices);
         size_t size = sizeof(indices[0]) * numIndices;
         indices.resize(numIndices);
         for (nanoem_u32_t i = 0; i < numIndices; i++) {

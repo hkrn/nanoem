@@ -196,7 +196,6 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
     Model *m_activeModel;
     ScopedMutableMaterial m_mutableMaterial;
     VertexIndexList m_vertexIndices;
@@ -218,8 +217,6 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
-
     Model *m_activeModel;
     ScopedMutableMaterial m_mutableMaterial;
     VertexIndexList m_deletingVertexIndices;
@@ -237,7 +234,6 @@ protected:
         size_t m_offset;
         size_t m_size;
     };
-    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
     static void move(ScopedMutableMaterial &material, int destination, const LayoutPosition &from,
         const LayoutPosition &to, Model *activeModel, nanoem_status_t *status);
 

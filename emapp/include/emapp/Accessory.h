@@ -177,7 +177,6 @@ private:
     };
     typedef tinystl::unordered_map<String, Image *, TinySTLAllocator> ImageMap;
     typedef tinystl::vector<LoadingImageItem *, TinySTLAllocator> LoadingImageItemList;
-    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> Indices32;
     typedef tinystl::vector<nanoem_u16_t, TinySTLAllocator> Indices16;
     typedef tinystl::vector<Vector3, TinySTLAllocator> Vector3List;
     typedef tinystl::unordered_map<const nanodxm_material_t *, UInt32HashMap, TinySTLAllocator> MaterialIndexHashMap;

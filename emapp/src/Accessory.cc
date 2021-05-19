@@ -1390,8 +1390,8 @@ Accessory::createIndexBuffer(tinystl::vector<TIndex, TinySTLAllocator> &allIndic
 void
 Accessory::createIndexBuffer(Vector3List &normalSum)
 {
-    Indices32 allIndices;
-    tinystl::vector<Indices32, TinySTLAllocator> indicesPerMaterial;
+    VertexIndexList allIndices;
+    tinystl::vector<VertexIndexList, TinySTLAllocator> indicesPerMaterial;
     createIndexBuffer(allIndices, indicesPerMaterial);
     size_t size = allIndices.size() * sizeof(allIndices[0]);
     if (size > 0) {

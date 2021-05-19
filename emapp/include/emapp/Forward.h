@@ -959,6 +959,7 @@ typedef tinystl::pair<String, String> StringPair;
 typedef tinystl::vector<StringPair, TinySTLAllocator> StringPairList;
 typedef tinystl::vector<MutableString, TinySTLAllocator> MutableStringList;
 typedef tinystl::vector<nanoem_f32_t, TinySTLAllocator> FloatList;
+typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> VertexIndexList;
 typedef tinystl::unordered_map<nanoem_i32_t, nanoem_i32_t, TinySTLAllocator> Int32HashMap;
 typedef tinystl::unordered_map<nanoem_u32_t, nanoem_u32_t, TinySTLAllocator> UInt32HashMap;
 typedef tinystl::unordered_map<String, String, TinySTLAllocator> StringMap;

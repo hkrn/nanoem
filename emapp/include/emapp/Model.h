@@ -552,7 +552,7 @@ private:
     const nanoem_model_constraint_t *m_activeConstraintPtr;
     const nanoem_model_material_t *m_activeMaterialPtr;
     ByteArray m_vertexBufferData;
-    tinystl::vector<nanoem_u32_t, TinySTLAllocator> m_faceStates;
+    VertexIndexList m_faceStates;
     tinystl::pair<const nanoem_model_bone_t *, const nanoem_model_bone_t *> m_activeBonePairPtr;
     tinystl::pair<IEffect *, IEffect *> m_activeEffectPtrPair;
     Image *m_screenImage;

@@ -49,7 +49,6 @@ struct VertexUnit {
 typedef tinystl::vector<VertexUnit, TinySTLAllocator> VertexUnitList;
 typedef tinystl::vector<Vector3, TinySTLAllocator> Vector3List;
 typedef tinystl::unordered_map<nanoem_rsize_t, Vector3List, TinySTLAllocator> FaceNormalList;
-typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> IndexList;
 typedef tinystl::unordered_map<nanoem_rsize_t, nanoem_rsize_t, TinySTLAllocator> VertexMap;
 
 } /* namespace anonymous */
@@ -131,7 +130,7 @@ Importer::handleWavefrontObjDocument(
             nanoemMutableModelVertexDestroy(vertexPtr);
         }
         const nanoem_rsize_t numFaces = attr.num_faces;
-        IndexList indices(numFaces);
+        VertexIndexList indices(numFaces);
         for (nanoem_rsize_t i = 0; i < numFaces; i++) {
             const tinyobj_vertex_index_t &face = attr.faces[i];
             indices[i] = face.v_idx;
@@ -260,7 +259,7 @@ Importer::handleDirectXMeshDocument(
             }
         }
         if (!error.hasReason()) {
-            IndexList indices;
+            VertexIndexList indices;
             VertexMap vertexMap;
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
             nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreateAsReference(m_model->data(), &status);
@@ -468,7 +467,7 @@ Importer::handleMetasequoiaDocument(
             }
         }
         if (!error.hasReason()) {
-            IndexList indices;
+            VertexIndexList indices;
             VertexMap vertexMap;
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
             nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreateAsReference(m_model->data(), &status);
