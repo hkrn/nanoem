@@ -422,7 +422,7 @@ PluginFactory::ModelIOPluginProxy::setupEditingMask(const Model *model, Error &e
         for (nanoem_rsize_t i = 0; i < numObjects; i++) {
             const nanoem_model_material_t *materialPtr = materials[i];
             const model::Material *material = model::Material::cast(materialPtr);
-            if (material && material->isVisible()) {
+            if (material && material->isEditingMasked())) {
                 indices.push_back(model::Material::index(materialPtr));
             }
         }

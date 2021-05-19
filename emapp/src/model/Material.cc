@@ -373,6 +373,12 @@ Material::setDisplaySphereMapTextureUVMeshEnabled(bool value)
 }
 
 bool
+Material::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return isVisible() ? false : true;
+}
+
+bool
 Material::isVisible() const NANOEM_DECL_NOEXCEPT
 {
     return EnumUtils::isEnabled(kPrivateStateVisible, m_states);

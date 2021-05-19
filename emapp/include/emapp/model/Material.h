@@ -88,6 +88,7 @@ public:
     void setDisplayDiffuseTextureUVMeshEnabled(bool value);
     bool isDisplaySphereMapTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT;
     void setDisplaySphereMapTextureUVMeshEnabled(bool value);
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
     bool isVisible() const NANOEM_DECL_NOEXCEPT;
     void setVisible(bool value);
 
