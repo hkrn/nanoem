@@ -1067,6 +1067,10 @@
   phrase:
     en_US: Apply
     ja_JP: 適用
+- key: nanoem.gui.model.edit.measure.transform.reset
+  phrase:
+    en_US: Reset
+    ja_JP: リセット
 - key: nanoem.gui.model.edit.measure.transform.height-based.title
   phrase:
     en_US: Height Based

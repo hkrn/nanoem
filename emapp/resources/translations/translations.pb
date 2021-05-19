@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -266,7 +266,8 @@ $nanoem.gui.model.edit.measure.vertex	頂点数,
 #nanoem.gui.model.edit.measure.jointジョイント数@
 'nanoem.gui.model.edit.measure.soft-bodyソフトボディ数F
 -nanoem.gui.model.edit.measure.transform.title一括モデル変形7
--nanoem.gui.model.edit.measure.transform.apply適用M
+-nanoem.gui.model.edit.measure.transform.apply適用=
+-nanoem.gui.model.edit.measure.transform.resetリセットM
 :nanoem.gui.model.edit.measure.transform.height-based.title身長ベースa
 6nanoem.gui.model.edit.measure.transform.height-based.a'(A): MMD におけるモデルの身長m
 6nanoem.gui.model.edit.measure.transform.height-based.b3(B): MMD におけるセンチメートルの単位c
@@ -1056,7 +1057,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+�F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1327,7 +1328,8 @@ $nanoem.gui.model.edit.measure.vertexVertices+
 #nanoem.gui.model.edit.measure.jointJoints6
 'nanoem.gui.model.edit.measure.soft-bodySoft BodiesF
 -nanoem.gui.model.edit.measure.transform.titleBatch Model Transform6
--nanoem.gui.model.edit.measure.transform.applyApplyJ
+-nanoem.gui.model.edit.measure.transform.applyApply6
+-nanoem.gui.model.edit.measure.transform.resetResetJ
 :nanoem.gui.model.edit.measure.transform.height-based.titleHeight BasedR
 6nanoem.gui.model.edit.measure.transform.height-based.a(A): Model Height on MMDU
 6nanoem.gui.model.edit.measure.transform.height-based.b(B): Centimeter unit on MMDX

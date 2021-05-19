@@ -150,6 +150,7 @@ private:
     void toggleTab(TabType value, Project *project);
     void forceUpdateMorph(model::Morph *morph, Project *project);
     void setActiveModel(Model *model, Project *project);
+    void resetMeasureState();
 
     void removeAllVertexSelectionIfNeeded(IModelObjectSelection *selection);
     void removeAllFaceSelectionIfNeeded(IModelObjectSelection *selection);

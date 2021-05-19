@@ -445,12 +445,7 @@ ModelParameterDialog::draw(Project *project)
             toggleTab(kTabTypeMeasure, project);
         }
         else {
-            m_savedCMScaleFactor = kDefaultCMScaleFactor;
-            m_savedModelCorrectionHeight = kDefaultModelCorrectionHeight;
-            m_savedTranslation = Constants::kZeroV3;
-            m_savedRotation = Constants::kZeroV3;
-            m_savedScale = Vector3(1);
-            m_savedModelHeight = -1;
+            resetMeasureState();
         }
         StringUtils::format(buffer, sizeof(buffer), "%s##tab.system", tr("nanoem.gui.window.model.tab.system"));
         if (ImGui::BeginTabItem(
@@ -727,11 +722,18 @@ ModelParameterDialog::layoutHeightBasedBatchTransformPane(Project *project)
         tr("nanoem.gui.model.edit.measure.transform.height-based.scale-factor"), scaleFactor);
     ImGui::TextUnformatted(buffer);
     ImGui::Spacing();
+    const ImVec2 size(ImGui::GetContentRegionAvail().x * 0.25f, 0);
+    ImGui::Dummy(size);
+    ImGui::SameLine();
     if (ImGuiWindow::handleButton(
-            tr("nanoem.gui.model.edit.measure.transform.apply"), -1, scaleFactor > 1.0f || scaleFactor < 1.0f)) {
+            tr("nanoem.gui.model.edit.measure.transform.apply"), size.x, scaleFactor > 1.0f || scaleFactor < 1.0f)) {
         const Matrix4x4 transformModelMatrix(glm::scale(Constants::kIdentity, Vector3(scaleFactor)));
         undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.reset"), size.x, true)) {
+        resetMeasureState();
     }
 }
 
@@ -745,7 +747,10 @@ ModelParameterDialog::layoutNumericInputBatchTransformPane(Project *project)
     ImGui::TextUnformatted("Scale");
     ImGui::InputFloat3("##scale", glm::value_ptr(m_savedScale));
     ImGui::Spacing();
-    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.apply"), -1, true)) {
+    const ImVec2 size(ImGui::GetContentRegionAvail().x * 0.25f, 0);
+    ImGui::Dummy(size);
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.apply"), size.x, true)) {
         const Matrix4x4 scaleMatrix(glm::scale(Constants::kIdentity, m_savedScale)),
             rotateX(glm::rotate(Constants::kIdentity, m_savedRotation.x, Constants::kUnitX)),
             rotateY(glm::rotate(Constants::kIdentity, m_savedRotation.y, Constants::kUnitY)),
@@ -755,6 +760,10 @@ ModelParameterDialog::layoutNumericInputBatchTransformPane(Project *project)
             transformModelMatrix(scaleMatrix * rotateMatrix * translateMatrix);
         undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+    }
+    ImGui::SameLine();
+    if (ImGuiWindow::handleButton(tr("nanoem.gui.model.edit.measure.transform.reset"), size.x, true)) {
+        resetMeasureState();
     }
 }
 
@@ -6166,6 +6175,17 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
     model->updateStagingVertexBuffer();
     project->activeCamera()->reset();
     project->activeLight()->reset();
+}
+
+void
+ModelParameterDialog::resetMeasureState()
+{
+    m_savedCMScaleFactor = kDefaultCMScaleFactor;
+    m_savedModelCorrectionHeight = kDefaultModelCorrectionHeight;
+    m_savedTranslation = Constants::kZeroV3;
+    m_savedRotation = Constants::kZeroV3;
+    m_savedScale = Vector3(1);
+    m_savedModelHeight = -1;
 }
 
 void
