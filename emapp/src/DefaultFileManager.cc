@@ -770,7 +770,7 @@ DefaultFileManager::internalLoadFromFile(
         }
         case kDialogTypeUserCallback: {
             if (m_queryFileDialogCallbacks.m_accept) {
-                m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_opaque);
+                m_queryFileDialogCallbacks.m_accept(fileURI, project, error, m_queryFileDialogCallbacks.m_opaque);
             }
             resetTransientQueryFileDialogCallback();
             break;
@@ -812,7 +812,7 @@ DefaultFileManager::saveAsFile(const URI &fileURI, DialogType type, Project *pro
     }
     case kDialogTypeUserCallback: {
         if (m_queryFileDialogCallbacks.m_accept) {
-            m_queryFileDialogCallbacks.m_accept(fileURI, project, m_queryFileDialogCallbacks.m_opaque);
+            m_queryFileDialogCallbacks.m_accept(fileURI, project, error, m_queryFileDialogCallbacks.m_opaque);
         }
         resetTransientQueryFileDialogCallback();
         break;

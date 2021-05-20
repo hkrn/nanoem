@@ -96,7 +96,7 @@ bool
 Importer::handleWavefrontObjDocument(
     const nanoem_u8_t *bytes, size_t length, const Model::ImportDescription &desc, Error &error)
 {
-    BX_UNUSED_4(bytes, length, desc, error);
+    BX_UNUSED_3(bytes, length, error);
     tinyobj_attrib_t attr;
     tinyobj_shape_t *shapes = nullptr;
     tinyobj_material_t *materials = nullptr;
@@ -152,6 +152,8 @@ Importer::handleWavefrontObjDocument(
         nanoemMutableModelDestroy(mutableModel);
         result = status == NANOEM_STATUS_SUCCESS;
     }
+    tinyobj_attrib_free(&attr);
+    tinyobj_shapes_free(shapes, numShapes);
     return result;
 }
 
@@ -588,7 +590,7 @@ void
 Importer::handleLoadingTinyOBJCallback(
     void *ctx, const char *filename, const int is_mtl, const char *obj_filename, char **data, size_t *len)
 {
-    BX_UNUSED_1(obj_filename);
+    BX_UNUSED_2(obj_filename, is_mtl);
     Importer *self = static_cast<Importer *>(ctx);
     FileReaderScope reader(self->m_model->project()->translator());
     Error error;

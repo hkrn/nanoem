@@ -27,9 +27,9 @@ const char *const EffectParameterDialog::kIdentifier = "dialog.project.effect";
 const nanoem_f32_t EffectParameterDialog::kMinimumWindowWidth = 600;
 
 void
-EffectParameterDialog::handleLoadingModelEffectSetting(const URI &fileURI, Project *project, void *userData)
+EffectParameterDialog::handleLoadingModelEffectSetting(
+    const URI &fileURI, Project *project, Error &error, void *userData)
 {
-    Error error;
     FileReaderScope scope(project->translator());
     if (scope.open(fileURI, error)) {
         ByteArray bytes;
@@ -43,11 +43,11 @@ EffectParameterDialog::handleLoadingModelEffectSetting(const URI &fileURI, Proje
 }
 
 void
-EffectParameterDialog::handleSaveingModelEffectSetting(const URI &fileURI, Project *project, void *userData)
+EffectParameterDialog::handleSaveingModelEffectSetting(
+    const URI &fileURI, Project *project, Error &error, void *userData)
 {
     const Model *activeModel = static_cast<const Model *>(userData);
     internal::ModelEffectSetting settings(project);
-    Error error;
     MutableString content;
     settings.save(activeModel, content);
     FileWriterScope scope;

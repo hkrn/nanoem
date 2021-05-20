@@ -23,6 +23,10 @@
 #include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
+extern "C" {
+#include "tinyobjloader-c/tinyobj_loader_c.h"
+}
+
 namespace nanoem {
 namespace internal {
 namespace imgui {
@@ -46,201 +50,354 @@ struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
         Model *m_model;
         nanoem_model_material_t *m_material;
     };
-    static void
-    accept(const URI &fileURI, Project * /* project */, void *opaque)
-    {
-        BaseUserData *userData = static_cast<BaseUserData *>(opaque);
-        Model *model = userData->m_model;
-        const String modelBasePath(URI::stringByDeletingLastPathComponent(model->fileURI().absolutePath())),
-            textureFilePath(FileUtils::relativePath(fileURI.absolutePath(), modelBasePath));
-        nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
-        StringUtils::UnicodeStringScope scope(factory);
-        if (StringUtils::tryGetString(factory, textureFilePath, scope)) {
-            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            nanoem_mutable_model_material_t *material =
-                nanoemMutableModelMaterialCreateAsReference(userData->m_material, &status);
-            nanoem_mutable_model_texture_t *texture = nanoemMutableModelTextureCreate(model->data(), &status);
-            nanoemMutableModelTextureSetPath(texture, scope.value(), &status);
-            Error error;
-            userData->upload(fileURI, userData, material, texture, error);
-            nanoemMutableModelTextureDestroy(texture);
-            nanoemMutableModelMaterialDestroy(material);
-        }
-    }
-    static void
-    destroy(void *opaque)
-    {
-        BaseUserData *userData = static_cast<BaseUserData *>(opaque);
-        nanoem_delete(userData);
-    }
+    static void accept(const URI &fileURI, Project *project, Error &error, void *opaque);
+    static void destroy(void *opaque);
 
-    BaseSetTextureCallback()
-    {
-        m_accept = accept;
-        m_destory = destroy;
-        m_cancel = nullptr;
-    }
-    virtual ~BaseSetTextureCallback() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    BaseSetTextureCallback();
+    virtual ~BaseSetTextureCallback() NANOEM_DECL_NOEXCEPT;
 
-    void
-    open(IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model)
-    {
-        StringList extensions;
-        extensions.push_back("png");
-        extensions.push_back("jpg");
-        extensions.push_back("bmp");
-        extensions.push_back("tga");
-        m_opaque = createUserData(material, model);
-        fileManager->setTransientQueryFileDialogCallback(*this);
-        eventPublisher->publishQueryOpenSingleFileDialogEvent(IFileManager::kDialogTypeUserCallback, extensions);
-    }
+    void open(
+        IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model);
     virtual BaseUserData *createUserData(nanoem_model_material_t *material, Model *model) = 0;
 };
 
+void
+BaseSetTextureCallback::accept(const URI &fileURI, Project *project, Error &error, void *opaque)
+{
+    BX_UNUSED_1(project);
+    BaseUserData *userData = static_cast<BaseUserData *>(opaque);
+    Model *model = userData->m_model;
+    const String modelBasePath(URI::stringByDeletingLastPathComponent(model->fileURI().absolutePath())),
+        textureFilePath(FileUtils::relativePath(fileURI.absolutePath(), modelBasePath));
+    nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
+    StringUtils::UnicodeStringScope scope(factory);
+    if (StringUtils::tryGetString(factory, textureFilePath, scope)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        nanoem_mutable_model_material_t *material =
+            nanoemMutableModelMaterialCreateAsReference(userData->m_material, &status);
+        nanoem_mutable_model_texture_t *texture = nanoemMutableModelTextureCreate(model->data(), &status);
+        nanoemMutableModelTextureSetPath(texture, scope.value(), &status);
+        userData->upload(fileURI, userData, material, texture, error);
+        nanoemMutableModelTextureDestroy(texture);
+        nanoemMutableModelMaterialDestroy(material);
+    }
+}
+
+void
+BaseSetTextureCallback::destroy(void *opaque)
+{
+    BaseUserData *userData = static_cast<BaseUserData *>(opaque);
+    nanoem_delete(userData);
+}
+
+BaseSetTextureCallback::BaseSetTextureCallback()
+{
+    m_accept = accept;
+    m_destory = destroy;
+    m_cancel = nullptr;
+}
+
+BaseSetTextureCallback::~BaseSetTextureCallback() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+BaseSetTextureCallback::open(
+    IFileManager *fileManager, IEventPublisher *eventPublisher, nanoem_model_material_t *material, Model *model)
+{
+    StringList extensions;
+    extensions.push_back("png");
+    extensions.push_back("jpg");
+    extensions.push_back("bmp");
+    extensions.push_back("tga");
+    m_opaque = createUserData(material, model);
+    fileManager->setTransientQueryFileDialogCallback(*this);
+    eventPublisher->publishQueryOpenSingleFileDialogEvent(IFileManager::kDialogTypeUserCallback, extensions);
+}
+
 struct CreateBoneMorphFromBindPoseCallback : IFileManager::QueryFileDialogCallbacks {
-    static void
-    handleAccept(const URI &fileURI, Project *project, void *opaque)
-    {
-        model::BindPose bindPose;
-        model::BindPose::BoneTransformMap transforms;
-        model::BindPose::MorphWeightMap weights;
-        FileReaderScope scope(project->translator());
-        Error error;
-        if (scope.open(fileURI, error)) {
-            ByteArray bytes;
-            FileUtils::read(scope, bytes, error);
-            nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-            if (bindPose.load(bytes, factory, transforms, weights, error)) {
-                ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+    static void handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque);
+
+    CreateBoneMorphFromBindPoseCallback(ImGuiWindow *parent);
+    ~CreateBoneMorphFromBindPoseCallback() NANOEM_DECL_NOEXCEPT;
+};
+
+void
+CreateBoneMorphFromBindPoseCallback::handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque)
+{
+    model::BindPose bindPose;
+    model::BindPose::BoneTransformMap transforms;
+    model::BindPose::MorphWeightMap weights;
+    FileReaderScope scope(project->translator());
+    if (scope.open(fileURI, error)) {
+        ByteArray bytes;
+        FileUtils::read(scope, bytes, error);
+        nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+        if (bindPose.load(bytes, factory, transforms, weights, error)) {
+            ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+            undo_command_t *command =
+                command::CreateBoneMorphFromPoseCommand::create(project, transforms, fileURI.lastPathComponent());
+            parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+        }
+    }
+}
+
+CreateBoneMorphFromBindPoseCallback::CreateBoneMorphFromBindPoseCallback(ImGuiWindow *parent)
+{
+    m_accept = handleAccept;
+    m_cancel = nullptr;
+    m_destory = nullptr;
+    m_opaque = parent;
+}
+
+CreateBoneMorphFromBindPoseCallback::~CreateBoneMorphFromBindPoseCallback() NANOEM_DECL_NOEXCEPT
+{
+}
+
+struct CreateVertexMorphFromModelCallback : IFileManager::QueryFileDialogCallbacks {
+    static void handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque);
+    CreateVertexMorphFromModelCallback(ImGuiWindow *parent);
+};
+
+void
+CreateVertexMorphFromModelCallback::handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque)
+{
+    const ITranslator *translator = project->translator();
+    FileReaderScope scope(translator);
+    if (scope.open(fileURI, error)) {
+        ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        ByteArray bytes;
+        FileUtils::read(scope, bytes, error);
+        nanoem_buffer_t *buffer = nanoemBufferCreate(bytes.data(), bytes.size(), &status);
+        nanoem_model_t *model = nanoemModelCreate(project->unicodeStringFactory(), &status);
+        if (nanoemModelLoadFromBuffer(model, buffer, &status)) {
+            nanoem_rsize_t numVertices, numActualVertices;
+            nanoemModelGetAllVertexObjects(model, &numVertices);
+            nanoemModelGetAllVertexObjects(project->activeModel()->data(), &numActualVertices);
+            if (numVertices == numActualVertices) {
                 undo_command_t *command =
-                    command::CreateBoneMorphFromPoseCommand::create(project, transforms, fileURI.lastPathComponent());
+                    command::CreateVertexMorphFromModelCommand::create(project, model, fileURI.lastPathComponent());
                 parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
         }
+        else {
+            error = Error(Error::convertStatusToMessage(status, translator), status, Error::kDomainTypeNanoem);
+        }
+        nanoemModelDestroy(model);
+        nanoemBufferDestroy(buffer);
     }
-    CreateBoneMorphFromBindPoseCallback(ImGuiWindow *parent)
-    {
-        m_accept = handleAccept;
-        m_cancel = nullptr;
-        m_destory = nullptr;
-        m_opaque = parent;
-    }
+}
+
+CreateVertexMorphFromModelCallback::CreateVertexMorphFromModelCallback(ImGuiWindow *parent)
+{
+    m_accept = handleAccept;
+    m_cancel = nullptr;
+    m_destory = nullptr;
+    m_opaque = parent;
+}
+
+struct CreateMaterialFromOBJFileCallback : IFileManager::QueryFileDialogCallbacks {
+    struct Container {
+        const ITranslator *m_translator;
+        tinystl::unordered_map<String, ByteArray, TinySTLAllocator> m_bytes;
+    };
+
+    static void handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque);
+    static void handleLoadingOBJCallback(
+        void *ctx, const char *filename, const int is_mtl, const char *obj_filename, char **data, size_t *len);
+
+    CreateMaterialFromOBJFileCallback(ImGuiWindow *parent);
+    ~CreateMaterialFromOBJFileCallback() NANOEM_DECL_NOEXCEPT;
 };
 
-struct CreateVertexMorphFromModelCallback : IFileManager::QueryFileDialogCallbacks {
-    static void
-    handleAccept(const URI &fileURI, Project *project, void *opaque)
-    {
-        const ITranslator *translator = project->translator();
-        FileReaderScope scope(translator);
-        Error error;
-        if (scope.open(fileURI, error)) {
+void
+CreateMaterialFromOBJFileCallback::handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque)
+{
+    const ITranslator *translator = project->translator();
+    tinyobj_attrib_t attr;
+    tinyobj_shape_t *shapes = nullptr;
+    tinyobj_material_t *materials = nullptr;
+    nanoem_rsize_t numShapes, numMaterials;
+    Container container;
+    container.m_translator = translator;
+    int ret = tinyobj_parse_obj(&attr, &shapes, &numShapes, &materials, &numMaterials,
+        fileURI.absolutePathConstString(), handleLoadingOBJCallback, &container, TINYOBJ_FLAG_TRIANGULATE);
+    if (ret == TINYOBJ_SUCCESS) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        const bool hasNormals = attr.num_normals > 0 && attr.num_vertices == attr.num_normals,
+                   hasTexCoords = attr.num_texcoords > 0 && attr.num_vertices == attr.num_texcoords;
+        command::CreateMaterialCommand::MutableVertexList vertices;
+        for (nanoem_rsize_t i = 0, numVertices = attr.num_vertices; i < numVertices; i++) {
+            const nanoem_f32_t *originPtr = &attr.vertices[i * 3];
+            const Vector4 origin(originPtr[0], originPtr[1], originPtr[2], 1);
+            nanoem_mutable_model_vertex_t *vertexPtr = nanoemMutableModelVertexCreate(nullptr, &status);
+            nanoemMutableModelVertexSetOrigin(vertexPtr, glm::value_ptr(origin));
+            if (hasNormals) {
+                const nanoem_f32_t *normalPtr = &attr.normals[i * 3];
+                const Vector4 normal(normalPtr[0], normalPtr[1], normalPtr[2], 0);
+                nanoemMutableModelVertexSetNormal(vertexPtr, glm::value_ptr(normal));
+            }
+            if (hasTexCoords) {
+                const nanoem_f32_t *texCoordPtr = &attr.texcoords[i * 2];
+                const Vector4 texCoord(texCoordPtr[0], texCoordPtr[1], 0, 0);
+                nanoemMutableModelVertexSetTexCoord(vertexPtr, glm::value_ptr(texCoord));
+            }
+            vertices.push_back(vertexPtr);
+        }
+        const nanoem_rsize_t numFaces = attr.num_faces;
+        VertexIndexList indices(numFaces);
+        for (nanoem_rsize_t i = 0; i < numFaces; i++) {
+            const tinyobj_vertex_index_t &face = attr.faces[i];
+            indices[i] = face.v_idx;
+        }
+        if (status == NANOEM_STATUS_SUCCESS) {
             ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
-            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            ByteArray bytes;
-            FileUtils::read(scope, bytes, error);
-            nanoem_buffer_t *buffer = nanoemBufferCreate(bytes.data(), bytes.size(), &status);
-            nanoem_model_t *model = nanoemModelCreate(project->unicodeStringFactory(), &status);
-            if (nanoemModelLoadFromBuffer(model, buffer, &status)) {
-                nanoem_rsize_t numVertices, numActualVertices;
-                nanoemModelGetAllVertexObjects(model, &numVertices);
-                nanoemModelGetAllVertexObjects(project->activeModel()->data(), &numActualVertices);
-                if (numVertices == numActualVertices) {
-                    undo_command_t *command =
-                        command::CreateVertexMorphFromModelCommand::create(project, model, fileURI.lastPathComponent());
-                    parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
-                }
-            }
-            else {
-                // Error error(Error::convertStatusToMessage(status, translator), status, Error::kDomainTypeNanoem);
-            }
-            nanoemModelDestroy(model);
-            nanoemBufferDestroy(buffer);
+            undo_command_t *command =
+                command::CreateMaterialCommand::create(project, fileURI.lastPathComponent(), vertices, indices);
+            parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+        }
+        else {
+            error = Error(Error::convertStatusToMessage(status, translator), status, Error::kDomainTypeNanoem);
         }
     }
-    CreateVertexMorphFromModelCallback(ImGuiWindow *parent)
-    {
-        m_accept = handleAccept;
-        m_cancel = nullptr;
-        m_destory = nullptr;
-        m_opaque = parent;
+    tinyobj_attrib_free(&attr);
+    tinyobj_shapes_free(shapes, numShapes);
+}
+
+void
+CreateMaterialFromOBJFileCallback::handleLoadingOBJCallback(
+    void *ctx, const char *filename, const int is_mtl, const char *obj_filename, char **data, size_t *len)
+{
+    BX_UNUSED_2(obj_filename, is_mtl);
+    Container *container = static_cast<Container *>(ctx);
+    FileReaderScope reader(container->m_translator);
+    Error error;
+    char *bytesPtr = nullptr;
+    nanoem_rsize_t length = 0;
+    URI fileURI;
+#if 0 /* disable loading material file due to infinite loop at hash construction in tinyobjloader */
+    if (is_mtl && obj_filename) {
+        String path(URI::stringByDeletingLastPathComponent(obj_filename));
+        path.append("/");
+        path.append(filename);
+        fileURI = URI::createFromFilePath(path);
     }
-};
+    else
+#endif
+    {
+        fileURI = URI::createFromFilePath(filename);
+    }
+    if (reader.open(fileURI, error)) {
+        ByteArray &bytes = container->m_bytes[fileURI.absolutePath()];
+        FileUtils::read(reader, bytes, error);
+        bytesPtr = reinterpret_cast<char *>(bytes.data());
+        length = bytes.size();
+    }
+    *data = bytesPtr;
+    *len = length;
+}
+
+CreateMaterialFromOBJFileCallback::CreateMaterialFromOBJFileCallback(ImGuiWindow *parent)
+{
+    m_accept = handleAccept;
+    m_cancel = nullptr;
+    m_destory = nullptr;
+    m_opaque = parent;
+}
+
+CreateMaterialFromOBJFileCallback::~CreateMaterialFromOBJFileCallback() NANOEM_DECL_NOEXCEPT
+{
+}
 
 struct EnableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
-    EnableModelEditingCommand(ModelParameterDialog *parent)
-        : m_parent(parent)
-    {
-    }
-    ~EnableModelEditingCommand() NANOEM_DECL_NOEXCEPT
-    {
-    }
+    EnableModelEditingCommand(ModelParameterDialog *parent);
+    ~EnableModelEditingCommand() NANOEM_DECL_NOEXCEPT;
 
-    void
-    execute(Project *project) NANOEM_DECL_OVERRIDE
-    {
-        project->setModelEditingEnabled(true);
-        m_parent->saveProjectState(project);
-    }
-    void
-    destroy(Project *project) NANOEM_DECL_OVERRIDE
-    {
-        BX_UNUSED_1(project);
-    }
+    void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     ModelParameterDialog *m_parent;
 };
 
-struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
-    DisableModelEditingCommand(ModelParameterDialog::SavedState *state)
-        : m_state(state)
-    {
-    }
-    ~DisableModelEditingCommand() NANOEM_DECL_NOEXCEPT
-    {
-        nanoem_delete_safe(m_state);
-    }
+EnableModelEditingCommand::EnableModelEditingCommand(ModelParameterDialog *parent)
+    : m_parent(parent)
+{
+}
 
-    void
-    execute(Project *project) NANOEM_DECL_OVERRIDE
-    {
-        const Project::DrawableList *drawables = project->drawableOrderList();
-        Error error;
-        for (ModelParameterDialog::SavedState::ModelStateMap::const_iterator it = m_state->m_modelStates.begin(),
-                                                                             end = m_state->m_modelStates.end();
-             it != end; ++it) {
-            const ModelParameterDialog::SavedState::ModelState &state = it->second;
-            Model *model = it->first;
-            model->setActiveBone(state.m_activeBone);
-            model->setActiveMorph(state.m_activeMorph);
-            if (Motion *motion = project->resolveMotion(model)) {
-                motion->load(state.m_motion, 0, error);
-            }
-        }
-        Model *activeModel = m_state->m_activeModel;
-        for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
-            IDrawable *drawable = *it;
-            if (drawable != activeModel) {
-                drawable->setVisible(true);
-            }
-        }
-        activeModel->restoreBindPose(m_state->m_bindPose);
-        project->restoreState(m_state->m_state, true);
-        project->destroyState(m_state->m_state);
-        project->setEditingMode(m_state->m_lastEditingMode);
-        project->setModelEditingEnabled(false);
-    }
-    void
-    destroy(Project *project) NANOEM_DECL_OVERRIDE
-    {
-        BX_UNUSED_1(project);
-    }
+EnableModelEditingCommand::~EnableModelEditingCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+EnableModelEditingCommand::execute(Project *project)
+{
+    project->setModelEditingEnabled(true);
+    m_parent->saveProjectState(project);
+}
+
+void
+EnableModelEditingCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
+struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
+    DisableModelEditingCommand(ModelParameterDialog::SavedState *state);
+    ~DisableModelEditingCommand() NANOEM_DECL_NOEXCEPT;
+
+    void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     Model *m_activeModel;
     ModelParameterDialog::SavedState *m_state;
 };
+
+DisableModelEditingCommand::DisableModelEditingCommand(ModelParameterDialog::SavedState *state)
+    : m_state(state)
+{
+}
+
+DisableModelEditingCommand::~DisableModelEditingCommand() NANOEM_DECL_NOEXCEPT
+{
+    nanoem_delete_safe(m_state);
+}
+
+void
+DisableModelEditingCommand::execute(Project *project)
+{
+    const Project::DrawableList *drawables = project->drawableOrderList();
+    Error error;
+    for (ModelParameterDialog::SavedState::ModelStateMap::const_iterator it = m_state->m_modelStates.begin(),
+                                                                         end = m_state->m_modelStates.end();
+         it != end; ++it) {
+        const ModelParameterDialog::SavedState::ModelState &state = it->second;
+        Model *model = it->first;
+        model->setActiveBone(state.m_activeBone);
+        model->setActiveMorph(state.m_activeMorph);
+        if (Motion *motion = project->resolveMotion(model)) {
+            motion->load(state.m_motion, 0, error);
+        }
+    }
+    Model *activeModel = m_state->m_activeModel;
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
+        IDrawable *drawable = *it;
+        if (drawable != activeModel) {
+            drawable->setVisible(true);
+        }
+    }
+    activeModel->restoreBindPose(m_state->m_bindPose);
+    project->restoreState(m_state->m_state, true);
+    project->destroyState(m_state->m_state);
+    project->setEditingMode(m_state->m_lastEditingMode);
+    project->setModelEditingEnabled(false);
+}
+
+void
+DisableModelEditingCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
 
 } /* namespace anonymous */
 
@@ -5001,21 +5158,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
     }
     ImGui::Separator();
     if (ImGui::MenuItem("Create Material from Model File")) {
-        struct CreateMaterialFromFileCallback : IFileManager::QueryFileDialogCallbacks {
-            static void
-            handleAccept(const URI &fileURI, Project *project, void * /* opaque */)
-            {
-                BX_UNUSED_2(fileURI, project);
-            }
-            CreateMaterialFromFileCallback()
-            {
-                m_accept = handleAccept;
-                m_cancel = nullptr;
-                m_destory = nullptr;
-                m_opaque = nullptr;
-            }
-        };
-        CreateMaterialFromFileCallback callback;
+        CreateMaterialFromOBJFileCallback callback(m_parent);
         IEventPublisher *eventPublisher = project->eventPublisher();
         IFileManager *fileManager = m_applicationPtr->fileManager();
         fileManager->setTransientQueryFileDialogCallback(callback);
@@ -5748,7 +5891,7 @@ void
 ModelParameterDialog::layoutCreateLabelMenu(Project *project, const nanoem_model_label_t *selectedLabel)
 {
     nanoem_rsize_t numLabels;
-    nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
+    nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
     int selectedLabelIndex = model::Label::index(selectedLabel);
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.new.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {

@@ -175,8 +175,9 @@ struct ImGuiApplicationMenuBuilder::OpenProjectEventHandler {
 
 struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
     static void
-    handleTransientQueryFileDialog(const URI &fileURI, Project * /* project */, void *userData)
+    handleTransientQueryFileDialog(const URI &fileURI, Project *project, Error &error, void *userData)
     {
+        BX_UNUSED_2(project, error);
         ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
         builder->m_client->sendExecuteExportingImageMessage(fileURI);
     }
@@ -187,11 +188,8 @@ struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
         if (!availableExtensions.empty()) {
             IFileManager *fileManager = builder->m_fileManager;
             if (!fileManager->hasTransientQueryFileDialogCallback()) {
-                const IFileManager::QueryFileDialogCallbacks callbacks = {
-                    builder,
-                    handleTransientQueryFileDialog,
-                    nullptr,
-                };
+                const IFileManager::QueryFileDialogCallbacks callbacks = { builder, handleTransientQueryFileDialog,
+                    nullptr, nullptr };
                 fileManager->setTransientQueryFileDialogCallback(callbacks);
                 builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
                     IFileManager::kDialogTypeUserCallback, availableExtensions);
@@ -209,9 +207,9 @@ struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
         NewProjectEventHandler::saveProject(builder);
     }
     static void
-    handleCompleteSavingFile(
-        void *userData, const URI & /* fileURI */, nanoem_u32_t /* type */, nanoem_u64_t /* ticks */)
+    handleCompleteSavingFile(void *userData, const URI &fileURI, nanoem_u32_t type, nanoem_u64_t ticks)
     {
+        BX_UNUSED_3(fileURI, type, ticks);
         ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
         handleDiscardProjectAfterConfirm(builder);
     }
@@ -227,8 +225,9 @@ struct ImGuiApplicationMenuBuilder::ExportImageCallbackHandler {
 
 struct ImGuiApplicationMenuBuilder::ExportVideoCallbackHandler {
     static void
-    handleTransientQueryFileDialog(const URI &fileURI, Project * /* project */, void *userData)
+    handleTransientQueryFileDialog(const URI &fileURI, Project *project, Error &error, void *userData)
     {
+        BX_UNUSED_2(project, error);
         ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
         builder->m_client->sendExecuteExportingVideoMessage(fileURI);
     }
@@ -240,7 +239,7 @@ struct ImGuiApplicationMenuBuilder::ExportVideoCallbackHandler {
             IFileManager *fileManager = builder->m_fileManager;
             if (!fileManager->hasTransientQueryFileDialogCallback()) {
                 const IFileManager::QueryFileDialogCallbacks callbacks = { builder, handleTransientQueryFileDialog,
-                    nullptr };
+                    nullptr, nullptr };
                 fileManager->setTransientQueryFileDialogCallback(callbacks);
                 builder->m_eventPublisher->publishQuerySaveFileDialogEvent(
                     IFileManager::kDialogTypeUserCallback, availableExtensions);
@@ -258,9 +257,9 @@ struct ImGuiApplicationMenuBuilder::ExportVideoCallbackHandler {
         NewProjectEventHandler::saveProject(builder);
     }
     static void
-    handleCompleteSavingFile(
-        void *userData, const URI & /* fileURI */, nanoem_u32_t /* type */, nanoem_u64_t /* ticks */)
+    handleCompleteSavingFile(void *userData, const URI &fileURI, nanoem_u32_t type, nanoem_u64_t ticks)
     {
+        BX_UNUSED_3(fileURI, type, ticks);
         ImGuiApplicationMenuBuilder *builder = static_cast<ImGuiApplicationMenuBuilder *>(userData);
         handleDiscardProjectAfterConfirm(builder);
     }

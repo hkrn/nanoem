@@ -35,8 +35,8 @@ struct EffectParameterDialog : BaseNonModalDialogWindow {
         }
     };
 
-    static void handleLoadingModelEffectSetting(const URI &fileURI, Project *project, void *userData);
-    static void handleSaveingModelEffectSetting(const URI &fileURI, Project *project, void *userData);
+    static void handleLoadingModelEffectSetting(const URI &fileURI, Project *project, Error &error, void *userData);
+    static void handleSaveingModelEffectSetting(const URI &fileURI, Project *project, Error &error, void *userData);
 
     EffectParameterDialog(BaseApplicationService *applicationPtr, ImGuiWindow *parent);
 

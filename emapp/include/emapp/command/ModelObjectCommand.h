@@ -179,6 +179,31 @@ struct ScopedMutableSoftBody {
     nanoem_mutable_model_soft_body_t *m_softBody;
 };
 
+class CreateMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    typedef tinystl::vector<nanoem_mutable_model_vertex_t *, TinySTLAllocator> MutableVertexList;
+
+    static undo_command_t *create(
+        Project *project, const String &name, const MutableVertexList &vertices, const VertexIndexList &vertexIndices);
+
+    CreateMaterialCommand(
+        Project *project, const String &name, const MutableVertexList &vertices, const VertexIndexList &vertexIndices);
+    ~CreateMaterialCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Model *m_activeModel;
+    ScopedMutableMaterial m_mutableMaterial;
+    MutableVertexList m_mutableVertices;
+    VertexIndexList m_vertexIndices;
+};
+
 class CopyMaterialFromModelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(
@@ -318,7 +343,6 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
     ScopedMutableBone m_mutableBone;

@@ -193,6 +193,7 @@ public:
     void synchronizeAllRigidBodiesTransformFeedbackToSimulation();
     void rebuildAllVertexBuffers(bool enableSkinFactory);
     void rebuildIndexBuffer();
+    void clearAllDrawVertexBuffers();
     void performAllBonesTransform();
     void resetAllMorphDeformStates();
     void deformAllMorphs(bool checkDirty);

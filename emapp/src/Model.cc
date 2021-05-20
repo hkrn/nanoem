@@ -465,7 +465,10 @@ Model::VertexUnit::performSkinningByType(
     static pfn_performSkinning s_funcs[] = { performSkinningBdef1, performSkinningBdef2, performSkinningBdef4,
         performSkinningSdef, performSkinningQdef };
     nanoem_model_vertex_type_t type = nanoemModelVertexGetType(vertex->data());
-    s_funcs[type](vertex, bx::simd_add(vertex->m_simd.m_origin, vertex->m_simd.m_delta), vertex->m_simd.m_normal, p, n);
+    if (type >= NANOEM_MODEL_VERTEX_TYPE_FIRST_ENUM && type < NANOEM_MODEL_VERTEX_TYPE_MAX_ENUM) {
+        s_funcs[type](
+            vertex, bx::simd_add(vertex->m_simd.m_origin, vertex->m_simd.m_delta), vertex->m_simd.m_normal, p, n);
+    }
 }
 
 Model::ImportDescription::ImportDescription(const URI &fileURI)
@@ -1737,14 +1740,16 @@ Model::rebuildAllVertexBuffers(bool enableSkinFactory)
         sg::destroy_buffer(m_vertexBuffers[0]);
         sg::destroy_buffer(m_vertexBuffers[1]);
     }
+    clearAllDrawVertexBuffers();
     m_vertexBuffers[0] = m_vertexBuffers[1] = { SG_INVALID_ID };
     {
         nanoem_rsize_t numVertices;
         nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
         for (nanoem_rsize_t i = 0; i < numVertices; i++) {
             const nanoem_model_vertex_t *vertexPtr = vertices[i];
-            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-            vertex->initialize(vertexPtr);
+            if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                vertex->initialize(vertexPtr);
+            }
         }
     }
     if (enableSkinFactory) {
@@ -1763,6 +1768,15 @@ Model::rebuildIndexBuffer()
     sg::destroy_buffer(m_indexBuffer);
     m_indexBuffer = { SG_INVALID_ID };
     initializeStagingIndexBuffer();
+}
+
+void
+Model::clearAllDrawVertexBuffers()
+{
+    m_drawAllVertexFaces.destroy();
+    m_drawAllVertexNormals.destroy();
+    m_drawAllVertexPoints.destroy();
+    m_drawAllVertexWeights.destroy();
 }
 
 void
@@ -4234,24 +4248,25 @@ Model::drawAllVertexNormals()
     for (size_t i = 0; i < numNewVertices; i += 2) {
         const nanoem_model_vertex_t *vertexPtr = newVertices[i];
         const int index = model::Vertex::index(vertexPtr) * 2;
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        sg::LineVertexUnit &vertexUnit = vertexUnits[index];
-        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
-        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
-            bx::simd128_t position;
-            softBody->getVertexPosition(vertexPtr, &position);
-            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[index];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
+            vertexUnit.m_color = m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity)
+                                                                        : Vector4U8(0x7f, 0x7f, 0x7f, opacity);
+            sg::LineVertexUnit &vertexUnit2 = vertexUnits[index + 1];
+            vertexUnit2 = vertexUnit;
+            vertexUnit2.m_position +=
+                glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&normal)) * kDrawVertexNormalScaleFactor;
         }
-        else {
-            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
-        }
-        const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
-        vertexUnit.m_color = m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity)
-                                                                    : Vector4U8(0x7f, 0x7f, 0x7f, opacity);
-        sg::LineVertexUnit &vertexUnit2 = vertexUnits[index + 1];
-        vertexUnit2 = vertexUnit;
-        vertexUnit2.m_position +=
-            glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&normal)) * kDrawVertexNormalScaleFactor;
     }
     const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
@@ -4305,20 +4320,21 @@ Model::drawAllVertexPoints()
     for (size_t i = 0; i < numNewVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = newVertices[i];
         const int index = model::Vertex::index(vertexPtr);
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        sg::LineVertexUnit &vertexUnit = vertexUnits[index];
-        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
-        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
-            bx::simd128_t position;
-            softBody->getVertexPosition(vertexPtr, &position);
-            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[index];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
+            vertexUnit.m_color = m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity)
+                                                                        : Vector4U8(0, 0, 0xff, opacity);
         }
-        else {
-            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
-        }
-        const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
-        vertexUnit.m_color =
-            m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity) : Vector4U8(0, 0, 0xff, opacity);
     }
     const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
@@ -4344,18 +4360,19 @@ Model::drawAllVertexFaces()
     bx::simd128_t normal;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        sg::LineVertexUnit &vertexUnit = vertexUnits[i];
-        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
-        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
-            bx::simd128_t position;
-            softBody->getVertexPosition(vertexPtr, &position);
-            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[i];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            vertexUnit.m_color = Vector4U8(0xff);
         }
-        else {
-            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
-        }
-        vertexUnit.m_color = Vector4U8(0xff);
     }
     const IModelObjectSelection::FaceList faces(m_selection->allFaces());
     if (!faces.empty() && !sg::is_valid(m_drawAllVertexFaces.m_activeIndexBuffer)) {
@@ -4423,49 +4440,50 @@ Model::drawAllVertexWeights()
     bx::simd128_t normal;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        sg::LineVertexUnit &vertexUnit = vertexUnits[i];
-        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
-        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
-            bx::simd128_t position;
-            softBody->getVertexPosition(vertexPtr, &position);
-            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
-        }
-        else {
-            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
-        }
-        Vector3 color(Constants::kZeroV3);
-        nanoem_f32_t opacity = enableBlending ? 0.0f : 1.0f;
-        for (nanoem_rsize_t j = 0; j < 4; j++) {
-            const model::Bone *bone = vertex->bone(j);
-            if (bone && bone == activeBoneObject) {
-                nanoem_f32_t component = 0;
-                switch (j) {
-                case 0: {
-                    component = bx::simd_x(vertex->m_simd.m_weights);
-                    break;
-                }
-                case 1: {
-                    component = bx::simd_y(vertex->m_simd.m_weights);
-                    break;
-                }
-                case 2: {
-                    component = bx::simd_z(vertex->m_simd.m_weights);
-                    break;
-                }
-                case 3: {
-                    component = bx::simd_w(vertex->m_simd.m_weights);
-                    break;
-                }
-                default:
-                    break;
-                }
-                color = Color::jet(component);
-                opacity = 1.0f;
-                break;
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[i];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
             }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            Vector3 color(Constants::kZeroV3);
+            nanoem_f32_t opacity = enableBlending ? 0.0f : 1.0f;
+            for (nanoem_rsize_t j = 0; j < 4; j++) {
+                const model::Bone *bone = vertex->bone(j);
+                if (bone && bone == activeBoneObject) {
+                    nanoem_f32_t component = 0;
+                    switch (j) {
+                    case 0: {
+                        component = bx::simd_x(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    case 1: {
+                        component = bx::simd_y(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    case 2: {
+                        component = bx::simd_z(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    case 3: {
+                        component = bx::simd_w(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                    color = Color::jet(component);
+                    opacity = 1.0f;
+                    break;
+                }
+            }
+            vertexUnit.m_color = Vector4(color, opacity) * 255.0f;
         }
-        vertexUnit.m_color = Vector4(color, opacity) * 255.0f;
     }
     m_drawAllVertexWeights.update();
     internal::LineDrawer::Option option(m_drawAllVertexWeights.m_vertexBuffer, 0);
