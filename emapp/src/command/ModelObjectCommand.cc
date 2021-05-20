@@ -816,12 +816,20 @@ BaseMoveMaterialCommand::move(ScopedMutableMaterial &material, int destination, 
     nanoem_rsize_t numIndices;
     const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(nanoemMutableModelGetOriginObject(model), &numIndices);
     VertexIndexList tempFromBuffer(from.m_size), tempToBuffer(to.m_size);
-    memcpy(tempFromBuffer.data(), indices + from.m_offset, from.m_size * sizeof(tempToBuffer[0]));
+    memcpy(tempFromBuffer.data(), indices + from.m_offset, from.m_size * sizeof(tempFromBuffer[0]));
     memcpy(tempToBuffer.data(), indices + to.m_offset, to.m_size * sizeof(tempToBuffer[0]));
     VertexIndexList workingBuffer(numIndices);
     memcpy(workingBuffer.data(), indices, numIndices * sizeof(workingBuffer[0]));
-    memcpy(workingBuffer.data() + from.m_offset, tempFromBuffer.data(), from.m_size * sizeof(tempFromBuffer[0]));
-    memcpy(workingBuffer.data() + to.m_offset, tempToBuffer.data(), to.m_size * sizeof(tempToBuffer[0]));
+    if (from.m_offset < to.m_offset) {
+        nanoem_u32_t *bufferPtr = workingBuffer.data() + from.m_offset;
+        memcpy(bufferPtr, tempToBuffer.data(), to.m_size * sizeof(tempToBuffer[0]));
+        memcpy(bufferPtr + to.m_size, tempFromBuffer.data(), from.m_size * sizeof(tempFromBuffer[0]));
+    }
+    else {
+        nanoem_u32_t *bufferPtr = workingBuffer.data() + to.m_offset;
+        memcpy(bufferPtr, tempFromBuffer.data(), from.m_size * sizeof(tempFromBuffer[0]));
+        memcpy(bufferPtr + from.m_size, tempToBuffer.data(), to.m_size * sizeof(tempToBuffer[0]));
+    }
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices, status);
     nanoemMutableModelRemoveMaterialObject(model, material, status);
     nanoemMutableModelInsertMaterialObject(model, material, destination, status);
@@ -869,7 +877,7 @@ BaseMoveMaterialCommand::moveDown(nanoem_status_t *status)
             const nanoem_model_material_t *nextMaterialPtr = materials[i + 1];
             destination = Inline::saturateInt32(i + 1);
             to.m_size = nanoemModelMaterialGetNumVertexIndices(nextMaterialPtr);
-            to.m_offset = offset + to.m_size;
+            to.m_offset = offset + size;
             from.m_offset = offset;
             from.m_size = size;
             break;
