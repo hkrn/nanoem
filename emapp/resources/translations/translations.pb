@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -513,12 +513,8 @@ $nanoem.gui.model.edit.material.title材質（マテリアル）-
 ,nanoem.gui.model.edit.action.selection.title選択=
 *nanoem.gui.model.edit.action.masking.titleマスキングT
 8nanoem.gui.model.edit.action.selection.vertex.enable-all全ての頂点を選択d
-9nanoem.gui.model.edit.action.selection.vertex.disable-all'選択された全ての頂点を解除d
->nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1"全ての BDEF1 の頂点を選択d
->nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2"全ての BDEF2 の頂点を選択d
->nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4"全ての BDEF4 の頂点を選択b
-=nanoem.gui.model.edit.action.selection.vertex.enable-all-sdef!全ての SDEF の頂点を選択b
-=nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef!全ての QDEF の頂点を選択r
+9nanoem.gui.model.edit.action.selection.vertex.disable-all'選択された全ての頂点を解除n
+@nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type*次の種類に該当する頂点を選択r
 >nanoem.gui.model.edit.action.selection.vertex.enable-all-faces0選択された頂点が含まれる面を選択y
 Bnanoem.gui.model.edit.action.selection.vertex.enable-all-materials3選択された頂点が含まれる材質を選択�
 Fnanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs<選択された頂点が含まれる頂点モーフを選択�
@@ -1059,7 +1055,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-گF
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1591,12 +1587,8 @@ Insert New6
 ,nanoem.gui.model.edit.action.selection.title	Selection5
 *nanoem.gui.model.edit.action.masking.titleMaskingO
 8nanoem.gui.model.edit.action.selection.vertex.enable-allSelect All VerticesR
-9nanoem.gui.model.edit.action.selection.vertex.disable-allDeselect All Vertices[
->nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1Select All BDEF1 Vertices[
->nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2Select All BDEF2 Vertices[
->nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4Select All BDEF4 VerticesY
-=nanoem.gui.model.edit.action.selection.vertex.enable-all-sdefSelect All SDEF VerticesY
-=nanoem.gui.model.edit.action.selection.vertex.enable-all-qdefSelect All QDEF Verticesm
+9nanoem.gui.model.edit.action.selection.vertex.disable-allDeselect All Verticesf
+@nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type"Select All Vertices by Type of ...m
 >nanoem.gui.model.edit.action.selection.vertex.enable-all-faces+Select All Faces from All Selected Verticesu
 Bnanoem.gui.model.edit.action.selection.vertex.enable-all-materials/Select All Materials from All Selected Vertices}
 Fnanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs3Select All Vertex Morphs from All Selected Vertices

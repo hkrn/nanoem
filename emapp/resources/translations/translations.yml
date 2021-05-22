@@ -2039,26 +2039,10 @@
   phrase:
     en_US: 'Deselect All Vertices'
     ja_JP: '選択された全ての頂点を解除'
-- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type
   phrase:
-    en_US: 'Select All BDEF1 Vertices'
-    ja_JP: '全ての BDEF1 の頂点を選択'
-- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2
-  phrase:
-    en_US: 'Select All BDEF2 Vertices'
-    ja_JP: '全ての BDEF2 の頂点を選択'
-- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4
-  phrase:
-    en_US: 'Select All BDEF4 Vertices'
-    ja_JP: '全ての BDEF4 の頂点を選択'
-- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-sdef
-  phrase:
-    en_US: 'Select All SDEF Vertices'
-    ja_JP: '全ての SDEF の頂点を選択'
-- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef
-  phrase:
-    en_US: 'Select All QDEF Vertices'
-    ja_JP: '全ての QDEF の頂点を選択'
+    en_US: 'Select All Vertices by Type of ...'
+    ja_JP: '次の種類に該当する頂点を選択'
 - key: nanoem.gui.model.edit.action.selection.vertex.enable-all-faces
   phrase:
     en_US: 'Select All Faces from All Selected Vertices'

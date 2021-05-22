@@ -5048,20 +5048,23 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
             }
         }
         ImGui::Separator();
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef1"))) {
-            selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
-        }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef2"))) {
-            selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_BDEF2);
-        }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4"))) {
-            selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_BDEF4);
-        }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-sdef"))) {
-            selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_SDEF);
-        }
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef"))) {
-            selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_QDEF);
+        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type"))) {
+            if (ImGui::MenuItem("BDEF1")) {
+                selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
+            }
+            if (ImGui::MenuItem("BDEF2")) {
+                selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_BDEF2);
+            }
+            if (ImGui::MenuItem("BDEF4")) {
+                selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_BDEF4);
+            }
+            if (ImGui::MenuItem("SDEF")) {
+                selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_SDEF);
+            }
+            if (ImGui::MenuItem("QDEF")) {
+                selectAllVerticesByType(selection, NANOEM_MODEL_VERTEX_TYPE_QDEF);
+            }
+            ImGui::EndMenu();
         }
         ImGui::EndMenu();
     }
