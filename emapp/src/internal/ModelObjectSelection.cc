@@ -27,7 +27,7 @@ ModelObjectSelection::ModelObjectSelection(Model *parent)
     , m_hoveredJoint(nullptr)
     , m_hoveredSoftBody(nullptr)
     , m_editingType(kEditingTypeNone)
-    , m_targetMode(kSelectTargetModeTypePoint)
+    , m_targetMode(kTargetModeTypePoint)
     , m_boxSelectedBoneModeEnabled(false)
 {
 }
@@ -667,14 +667,14 @@ ModelObjectSelection::setEditingType(EditingType value)
     m_editingType = value;
 }
 
-ModelObjectSelection::SelectTargetModeType
+ModelObjectSelection::TargetModeType
 ModelObjectSelection::targetMode() const NANOEM_DECL_NOEXCEPT
 {
     return m_targetMode;
 }
 
 void
-ModelObjectSelection::setTargetMode(SelectTargetModeType value)
+ModelObjectSelection::setTargetMode(TargetModeType value)
 {
     m_targetMode = value;
 }

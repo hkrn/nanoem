@@ -39,12 +39,12 @@ public:
         kEditingTypeSoftBody,
         kEditingTypeMaxEnum
     };
-    enum SelectTargetModeType {
-        kSelectTargetModeTypeFirstEnum,
-        kSelectTargetModeTypePoint = kSelectTargetModeTypeFirstEnum,
-        kSelectTargetModeTypeBox,
-        kSelectTargetModeTypeCircle,
-        kSelectTargetModeTypeMaxEnum
+    enum TargetModeType {
+        kTargetModeTypeFirstEnum,
+        kTargetModeTypePoint = kTargetModeTypeFirstEnum,
+        kTargetModeTypeRectangle,
+        kTargetModeTypeCircle,
+        kTargetModeTypeMaxEnum
     };
 
     virtual ~IModelObjectSelection() NANOEM_DECL_NOEXCEPT
@@ -137,8 +137,8 @@ public:
     virtual void setBoxSelectedBoneModeEnabled(bool value) = 0;
     virtual EditingType editingType() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setEditingType(EditingType value) = 0;
-    virtual SelectTargetModeType targetMode() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual void setTargetMode(SelectTargetModeType value) = 0;
+    virtual TargetModeType targetMode() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setTargetMode(TargetModeType value) = 0;
 };
 
 } /* namespace nanoem */

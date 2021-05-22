@@ -796,8 +796,9 @@ protected:
         const Vector3SI32 &logicalScaleCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
     Matrix4x4 pivotMatrix(const Model *activeModel) const;
 
-    const ISelector *currentSelector() const NANOEM_DECL_NOEXCEPT;
-    ISelector *currentSelector();
+    const ISelector *currentSelector(const Model *model) const NANOEM_DECL_NOEXCEPT;
+    ISelector *currentSelector(const Model *model);
+    const RectangleSelector *rectangleSelector() const NANOEM_DECL_NOEXCEPT;
 
 public:
     void onPress(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
@@ -1015,13 +1016,57 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
 }
 
 const ISelector *
-BaseSelectionState::currentSelector() const NANOEM_DECL_NOEXCEPT
+BaseSelectionState::currentSelector(const Model *model) const NANOEM_DECL_NOEXCEPT
 {
-    return &m_rectangleSelector;
+    const ISelector *selector = &m_rectangleSelector;
+    if (model) {
+        const IModelObjectSelection *selection = model->selection();
+        switch (selection->targetMode()) {
+        case IModelObjectSelection::kTargetModeTypeCircle: {
+            selector = &m_circleSelector;
+            break;
+        }
+        case IModelObjectSelection::kTargetModeTypePoint: {
+            break;
+        }
+        case IModelObjectSelection::kTargetModeTypeRectangle: {
+            selector = &m_rectangleSelector;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return selector;
 }
 
 ISelector *
-BaseSelectionState::currentSelector()
+BaseSelectionState::currentSelector(const Model *model)
+{
+    ISelector *selector = &m_rectangleSelector;
+    if (model) {
+        const IModelObjectSelection *selection = model->selection();
+        switch (selection->targetMode()) {
+        case IModelObjectSelection::kTargetModeTypeCircle: {
+            selector = &m_circleSelector;
+            break;
+        }
+        case IModelObjectSelection::kTargetModeTypePoint: {
+            break;
+        }
+        case IModelObjectSelection::kTargetModeTypeRectangle: {
+            selector = &m_rectangleSelector;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return selector;
+}
+
+const RectangleSelector *
+BaseSelectionState::rectangleSelector() const NANOEM_DECL_NOEXCEPT
 {
     return &m_rectangleSelector;
 }
@@ -1041,7 +1086,7 @@ BaseSelectionState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
         }
         else {
             const Vector4SI32 rect(logicalScaleCursorPosition.x, logicalScaleCursorPosition.y, 0, 0);
-            currentSelector()->begin(rect, project);
+            currentSelector(project->activeModel())->begin(rect, project);
         }
         m_lastLogicalScalePosition = logicalScaleCursorPosition;
     }
@@ -1054,7 +1099,7 @@ BaseSelectionState::onMove(const Vector3SI32 &logicalScaleCursorPosition, const 
         project->setLogicalPixelMovingCursorPosition(logicalScaleCursorPosition);
         const Vector4SI32 rect(
             m_lastLogicalScalePosition, Vector2SI32(logicalScaleCursorPosition) - m_lastLogicalScalePosition);
-        currentSelector()->update(rect, project);
+        currentSelector(project->activeModel())->update(rect, project);
     }
 }
 
@@ -1066,10 +1111,11 @@ BaseSelectionState::onRelease(const Vector3SI32 &logicalScaleCursorPosition)
             EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScaleCursorPosition.z) ? false : true;
         const Vector4SI32 rect(
             m_lastLogicalScalePosition, Vector2SI32(logicalScaleCursorPosition) - m_lastLogicalScalePosition);
-        currentSelector()->end(rect, project);
-        if (Model *model = project->activeModel()) {
-            commitSelection(model, project, removeAll);
-            model->setPivotMatrix(pivotMatrix(model));
+        Model *activeModel = project->activeModel();
+        currentSelector(activeModel)->end(rect, project);
+        if (activeModel) {
+            commitSelection(activeModel, project, removeAll);
+            activeModel->setPivotMatrix(pivotMatrix(activeModel));
         }
         m_lastLogicalScalePosition = Vector2();
     }
@@ -1080,7 +1126,7 @@ BaseSelectionState::onDrawPrimitive2D(IPrimitive2D *primitive)
 {
     if (const Project *project = m_stateControllerPtr->currentProject()) {
         nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
-        currentSelector()->draw(primitive, deviceScaleRatio);
+        currentSelector(project->activeModel())->draw(primitive, deviceScaleRatio);
     }
 }
 
@@ -1126,7 +1172,7 @@ DraggingBoxSelectedBoneState::commitSelection(Model *model, const Project *proje
     if (removeAll) {
         selection->removeAllBones();
     }
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = rectangleSelector();
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
         const model::Bone *bone = model::Bone::cast(bonePtr);
@@ -1182,7 +1228,7 @@ DraggingVertexSelectionState::commitSelection(Model *model, const Project *proje
     if (removeAll) {
         selection->removeAllVertices();
     }
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
         const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
@@ -1241,7 +1287,7 @@ DraggingFaceSelectionState::commitSelection(Model *model, const Project *project
     if (removeAll) {
         selection->removeAllFaces();
     }
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
         const nanoem_rsize_t numVertexIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
@@ -1312,7 +1358,7 @@ DraggingMaterialSelectionState::commitSelection(Model *model, const Project *pro
     if (removeAll) {
         selection->removeAllMaterials();
     }
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
         const model::Material *material = model::Material::cast(materialPtr);
@@ -1385,7 +1431,7 @@ DraggingBoneSelectionState::commitSelection(Model *model, const Project *project
     if (removeAll) {
         selection->removeAllBones();
     }
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
         const model::Bone *bone = model::Bone::cast(bonePtr);
@@ -1442,7 +1488,7 @@ DraggingRigidBodySelectionState::commitSelection(Model *model, const Project *pr
         selection->removeAllRigidBodies();
     }
     Matrix4x4 worldTransform;
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *bodyPtr = bodies[i];
         const model::RigidBody *body = model::RigidBody::cast(bodyPtr);
@@ -1500,7 +1546,7 @@ DraggingJointSelectionState::commitSelection(Model *model, const Project *projec
         selection->removeAllJoints();
     }
     Matrix4x4 worldTransformA, worldTransformB;
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         const nanoem_model_joint_t *jointPtr = joints[i];
         const model::Joint *joint = model::Joint::cast(jointPtr);
@@ -1569,7 +1615,7 @@ DraggingSoftBodySelectionState::commitSelection(Model *model, const Project *pro
     }
     MaterialBaryCenterMap baryCenters;
     getMaterialMap(model, baryCenters);
-    const ISelector *selector = currentSelector();
+    const ISelector *selector = currentSelector(model);
     for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
         const nanoem_model_soft_body_t *softBodyPtr = bodies[i];
         const model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr);

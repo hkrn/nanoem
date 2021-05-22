@@ -162,19 +162,26 @@ ModelEditCommandDialog::draw(Project *project)
             ImGui::SameLine();
             addGizmoCoordinationButton("Local", Model::kTransformCoordinateTypeLocal, enabled);
         }
-        if (ImGui::CollapsingHeader("Selection")) {
-            addSelectionButton("(none)", IModelObjectSelection::kEditingTypeNone, project);
-            addSelectionButton(
+        if (ImGui::CollapsingHeader("Selection Mode")) {
+            addSelectionTargetButton("Circle", IModelObjectSelection::kTargetModeTypeCircle);
+            ImGui::SameLine();
+            addSelectionTargetButton("Rectangle", IModelObjectSelection::kTargetModeTypeRectangle);
+            ImGui::SameLine();
+            addSelectionTargetButton("Point", IModelObjectSelection::kTargetModeTypePoint);
+        }
+        if (ImGui::CollapsingHeader("Selection Type")) {
+            addSelectionTypeButton("(none)", IModelObjectSelection::kEditingTypeNone, project);
+            addSelectionTypeButton(
                 tr("nanoem.gui.window.model.tab.vertex"), IModelObjectSelection::kEditingTypeVertex, project);
-            addSelectionButton(
+            addSelectionTypeButton(
                 tr("nanoem.gui.window.model.tab.face"), IModelObjectSelection::kEditingTypeFace, project);
-            addSelectionButton(
+            addSelectionTypeButton(
                 tr("nanoem.gui.window.model.tab.material"), IModelObjectSelection::kEditingTypeMaterial, project);
-            addSelectionButton(
+            addSelectionTypeButton(
                 tr("nanoem.gui.window.model.tab.bone"), IModelObjectSelection::kEditingTypeBone, project);
-            addSelectionButton(
+            addSelectionTypeButton(
                 tr("nanoem.gui.window.model.tab.rigid-body"), IModelObjectSelection::kEditingTypeRigidBody, project);
-            addSelectionButton(
+            addSelectionTypeButton(
                 tr("nanoem.gui.window.model.tab.joint"), IModelObjectSelection::kEditingTypeJoint, project);
         }
         StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera"));
@@ -262,13 +269,24 @@ ModelEditCommandDialog::addGizmoCoordinationButton(const char *text, Model::Tran
 }
 
 void
-ModelEditCommandDialog::addSelectionButton(const char *text, IModelObjectSelection::EditingType type, Project *project)
+ModelEditCommandDialog::addSelectionTypeButton(const char *text, IModelObjectSelection::EditingType type, Project *project)
 {
     const IModelObjectSelection *selection = m_activeModel->selection();
     const IModelObjectSelection::EditingType editingType = selection->editingType();
     if (ImGui::RadioButton(text, editingType == type)) {
         beforeToggleEditingMode(editingType, m_activeModel, project);
         afterToggleEditingMode(type, m_activeModel, project);
+    }
+}
+
+void
+ModelEditCommandDialog::addSelectionTargetButton(
+    const char *text, IModelObjectSelection::TargetModeType type)
+{
+    IModelObjectSelection *selection = m_activeModel->selection();
+    const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
+    if (ImGui::RadioButton(text, targetMode == type)) {
+        selection->setTargetMode(type);
     }
 }
 
