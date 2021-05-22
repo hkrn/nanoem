@@ -38,7 +38,7 @@ class Model;
 namespace command {
 
 struct ScopedMutableModel {
-    ScopedMutableModel(Model *model);
+    ScopedMutableModel(Model *model, nanoem_status_t *status);
     ~ScopedMutableModel() NANOEM_DECL_NOEXCEPT;
     operator nanoem_mutable_model_t *() NANOEM_DECL_NOEXCEPT;
     nanoem_mutable_model_t *m_model;

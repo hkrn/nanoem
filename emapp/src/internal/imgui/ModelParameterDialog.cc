@@ -938,7 +938,8 @@ ModelParameterDialog::layoutSystem(Project *project)
             nanoem_u32_t flags =
                 format == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
             if (ImGui::Selectable(selectedFormatType(format), format == currentFormat, flags)) {
-                command::ScopedMutableModel scoped(m_activeModel);
+                nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                command::ScopedMutableModel scoped(m_activeModel, &status);
                 nanoemMutableModelSetFormatType(scoped, format);
             }
         }
@@ -961,8 +962,8 @@ ModelParameterDialog::layoutSystem(Project *project)
     if (ImGui::InputText("##name", nameBuffer.data(), nameBuffer.capacity())) {
         StringUtils::UnicodeStringScope s(factory);
         if (StringUtils::tryGetString(factory, nameBuffer.data(), s)) {
-            command::ScopedMutableModel scoped(m_activeModel);
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            command::ScopedMutableModel scoped(m_activeModel, &status);
             nanoemMutableModelSetName(scoped, s.value(), language, &status);
         }
     }
@@ -975,8 +976,8 @@ ModelParameterDialog::layoutSystem(Project *project)
     if (ImGui::InputTextMultiline("##comment", commentBuffer.data(), commentBuffer.capacity(), avail)) {
         StringUtils::UnicodeStringScope s(factory);
         if (StringUtils::tryGetString(factory, commentBuffer.data(), s)) {
-            command::ScopedMutableModel scoped(m_activeModel);
             nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            command::ScopedMutableModel scoped(m_activeModel, &status);
             nanoemMutableModelSetComment(scoped, s.value(), language, &status);
         }
     }
@@ -991,7 +992,8 @@ ModelParameterDialog::layoutSystem(Project *project)
             nanoem_u32_t flags =
                 codec == NANOEM_CODEC_TYPE_SJIS ? ImGuiSelectableFlags_Disabled : ImGuiSelectableFlags_None;
             if (ImGui::Selectable(selectedCodecType(codec), codec == currentCodec, flags)) {
-                command::ScopedMutableModel scoped(m_activeModel);
+                nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                command::ScopedMutableModel scoped(m_activeModel, &status);
                 nanoemMutableModelSetCodecType(scoped, codec);
             }
         }
@@ -1000,8 +1002,11 @@ ModelParameterDialog::layoutSystem(Project *project)
     ImGui::NextColumn();
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.system.uva"));
     ImGui::NextColumn();
-    int uva = 0;
+    int uva = nanoemModelGetAdditionalUVSize(m_activeModel->data());
     if (ImGui::DragInt("##uva", &uva, 0.01f, 0, 4)) {
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        command::ScopedMutableModel scoped(m_activeModel, &status);
+        nanoemMutableModelSetAdditionalUVSize(scoped, uva);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
     }
@@ -2271,7 +2276,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
             bool value = nanoemModelBoneHasConstraint(bonePtr) != 0;
             if (ImGui::Checkbox(tr("nanoem.gui.model.edit.bone.inverse-kinematics"), &value)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-                command::ScopedMutableModel sm(m_activeModel);
+                command::ScopedMutableModel sm(m_activeModel, &status);
                 command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetConstraintEnabled(scoped, value);
                 nanoem_mutable_model_constraint_t *constraint = nullptr;
