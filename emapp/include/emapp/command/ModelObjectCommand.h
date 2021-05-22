@@ -226,6 +226,28 @@ private:
     VertexIndexList m_vertexIndices;
 };
 
+class MergeMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    static undo_command_t *create(
+        Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
+
+    MergeMaterialCommand(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
+    ~MergeMaterialCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Model *m_activeModel;
+    ScopedMutableMaterial m_baseMaterial;
+    ScopedMutableMaterial m_mutableMaterial;
+    nanoem_rsize_t m_materialIndex;
+};
+
 class DeleteMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(

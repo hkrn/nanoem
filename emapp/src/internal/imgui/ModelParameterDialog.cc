@@ -5330,6 +5330,11 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
         }
         ImGui::EndMenu();
     }
+    ImGui::Separator();
+    if (ImGui::MenuItem("Merge the Material",nullptr, false, m_materialIndex > 0)) {
+        undo_command_t *command = command::MergeMaterialCommand::create(project, materials, m_materialIndex);
+        m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
+    }
 }
 
 void

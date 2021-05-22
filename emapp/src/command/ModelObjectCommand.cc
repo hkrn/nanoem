@@ -693,6 +693,81 @@ CopyMaterialFromModelCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
+MergeMaterialCommand::create(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+{
+    MergeMaterialCommand *command = nanoem_new(MergeMaterialCommand(project, materials, materialIndex));
+    return command->createCommand();
+}
+
+MergeMaterialCommand::MergeMaterialCommand(
+    Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+    : BaseUndoCommand(project)
+    , m_activeModel(project->activeModel())
+    , m_baseMaterial(materials[materialIndex - 1])
+    , m_mutableMaterial(materials[materialIndex])
+    , m_materialIndex(materialIndex)
+{
+}
+
+MergeMaterialCommand::~MergeMaterialCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+MergeMaterialCommand::undo(Error &error)
+{
+    ScopedMutableModel model(m_activeModel);
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    const nanoem_rsize_t numVertexIndices =
+        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_baseMaterial)) -
+        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial));
+    nanoemMutableModelMaterialSetNumVertexIndices(m_baseMaterial, numVertexIndices);
+    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, Inline::saturateInt32(m_materialIndex), &status);
+    m_activeModel->clearAllDrawVertexBuffers();
+    m_activeModel->rebuildIndexBuffer();
+    assignError(status, error);
+}
+
+void
+MergeMaterialCommand::redo(Error &error)
+{
+    ScopedMutableModel model(m_activeModel);
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    const nanoem_rsize_t numVertexIndices =
+        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_baseMaterial)) +
+        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial));
+    nanoemMutableModelMaterialSetNumVertexIndices(m_baseMaterial, numVertexIndices);
+    nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
+    m_activeModel->clearAllDrawVertexBuffers();
+    m_activeModel->rebuildIndexBuffer();
+    assignError(status, error);
+}
+
+void
+MergeMaterialCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MergeMaterialCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+MergeMaterialCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+MergeMaterialCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "MergeMaterialCommand";
+}
+
+undo_command_t *
 DeleteMaterialCommand::create(Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
     DeleteMaterialCommand *command = nanoem_new(DeleteMaterialCommand(project, materials, materialIndex));
