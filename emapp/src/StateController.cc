@@ -602,6 +602,9 @@ struct ISelector {
 
 class RectangleSelector NANOEM_DECL_SEALED : public ISelector, private NonCopyable {
 public:
+    static void updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project,
+        Vector4SI32 &outLogicalScaleRect, Vector4SI32 &outDeviceScaleRect, Vector2SI32 &direction) NANOEM_DECL_NOEXCEPT;
+
     RectangleSelector();
     ~RectangleSelector() NANOEM_DECL_NOEXCEPT;
 
@@ -610,12 +613,31 @@ public:
     void end(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool contains(const Vector2SI32 &deviceScaleCursorPosition) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project);
+    void updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT;
 
 private:
     Vector4SI32 m_logicalScaleRect;
     Vector4SI32 m_deviceScaleRect;
 };
+
+void
+RectangleSelector::updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project,
+    Vector4SI32 &outLogicalScaleRect, Vector4SI32 &outDeviceScaleRect, Vector2SI32 &direction) NANOEM_DECL_NOEXCEPT
+{
+    const Vector4UI16 imageRect(project->logicalScaleUniformedViewportImageRect());
+    outLogicalScaleRect = logicalScaleRect - Vector4SI32(imageRect.x, imageRect.y, 0, 0);
+    direction.x = logicalScaleRect.z < 0 ? -1 : 1;
+    if (logicalScaleRect.z < 0) {
+        outLogicalScaleRect.z *= -1;
+        outLogicalScaleRect.x -= outLogicalScaleRect.z;
+    }
+    direction.y = logicalScaleRect.w < 0 ? -1 : 1;
+    if (logicalScaleRect.w < 0) {
+        outLogicalScaleRect.w *= -1;
+        outLogicalScaleRect.y -= outLogicalScaleRect.w;
+    }
+    outDeviceScaleRect = Vector4(outLogicalScaleRect) * project->windowDevicePixelRatio();
+}
 
 RectangleSelector::RectangleSelector()
     : m_logicalScaleRect(0)
@@ -650,8 +672,9 @@ RectangleSelector::draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) 
 {
     static const Vector4 kOpaqueRed(1, 0, 0, 1);
     static const Vector4 kHalfOpacityRed(1, 0, 0, 0.5f);
+    BX_UNUSED_1(devicePixelRatio);
     primitive->fillRect(m_deviceScaleRect, kHalfOpacityRed, 0);
-    primitive->strokeRect(m_deviceScaleRect, kOpaqueRed, 0, devicePixelRatio);
+    primitive->strokeRect(m_deviceScaleRect, kOpaqueRed, 0, 1.0f);
 }
 
 bool
@@ -661,65 +684,96 @@ RectangleSelector::contains(const Vector2SI32 &deviceScaleCursorPosition) const 
 }
 
 void
-RectangleSelector::updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project)
+RectangleSelector::updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT
 {
-    const Vector4UI16 imageRect(project->logicalScaleUniformedViewportImageRect());
-    m_logicalScaleRect = logicalScaleRect - Vector4SI32(imageRect.x, imageRect.y, 0, 0);
-    if (logicalScaleRect.z < 0) {
-        m_logicalScaleRect.z *= -1;
-        m_logicalScaleRect.x -= m_logicalScaleRect.z;
-    }
-    if (logicalScaleRect.w < 0) {
-        m_logicalScaleRect.w *= -1;
-        m_logicalScaleRect.y -= m_logicalScaleRect.w;
-    }
-    m_deviceScaleRect = Vector4(m_logicalScaleRect) * project->windowDevicePixelRatio();
+    Vector2SI32 direction;
+    updateRectangle(logicalScaleRect, project, m_logicalScaleRect, m_deviceScaleRect, direction);
 }
 
-#if 0
-struct CircleSelector : ISelector {
-    CircleSelector()
-        : m_radius(0)
-    {
-    }
-    ~CircleSelector() NANOEM_DECL_NOEXCEPT
-    {
-    }
+class CircleSelector NANOEM_DECL_SEALED : public ISelector {
+public:
+    CircleSelector();
+    ~CircleSelector() NANOEM_DECL_NOEXCEPT;
 
-    void
-    begin(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        m_center = Vector2(logicalScaleRect.x, logicalScaleRect.y) * project->windowDevicePixelRatio();
-    }
-    void
-    update(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        m_radius = glm::length(Vector2(logicalScaleRect.z, logicalScaleRect.w) * project->windowDevicePixelRatio());
-    }
-    void
-    end(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        m_radius = glm::length(Vector2(logicalScaleRect.z, logicalScaleRect.w) * project->windowDevicePixelRatio());
-    }
-    void
-    draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        static const Vector4 kOpaqueRed(1, 0, 0, 1);
-        static const Vector4 kHalfOpacityRed(1, 0, 0, 0.5f);
-        const Vector4 rect(m_center.x, m_center.y - glm::abs(m_radius), m_radius, m_radius);
-        primitive->fillCircle(rect, kHalfOpacityRed);
-        primitive->strokeCircle(rect, kOpaqueRed, devicePixelRatio);
-    }
-    bool
-    contains(const Vector2SI32 &deviceScaleCursorPosition) const NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        return false;
-    }
+    void begin(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void update(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void end(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    bool contains(const Vector2SI32 &deviceScaleCursorPosition) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT;
 
-    Vector2 m_center;
-    nanoem_f32_t m_radius;
+private:
+    Vector4SI32 m_logicalScaleRect;
+    Vector4SI32 m_deviceScaleRect;
+    Vector2SI32 m_direction;
 };
-#endif
+
+CircleSelector::CircleSelector()
+    : m_logicalScaleRect(0)
+    , m_deviceScaleRect(0)
+    , m_direction(0)
+{
+}
+
+CircleSelector::~CircleSelector() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+CircleSelector::begin(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    updateRectangle(logicalScaleRect, project);
+}
+
+void
+CircleSelector::update(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    updateRectangle(logicalScaleRect, project);
+}
+
+void
+CircleSelector::end(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    updateRectangle(logicalScaleRect, project);
+}
+
+void
+CircleSelector::draw(IPrimitive2D *primitive, nanoem_f32_t devicePixelRatio) NANOEM_DECL_NOEXCEPT
+{
+    static const Vector4 kOpaqueRed(1, 0, 0, 1);
+    static const Vector4 kHalfOpacityRed(1, 0, 0, 0.5f);
+    BX_UNUSED_1(devicePixelRatio);
+    Vector4 rect(m_deviceScaleRect);
+    const nanoem_f32_t diag = glm::sqrt((rect.z * rect.z + rect.w * rect.w) * 4);
+    rect.z = rect.w = diag;
+    rect.x += diag * -0.5f;
+    rect.y += diag * -0.5f;
+    if (m_direction.x < 0) {
+        rect.x += m_deviceScaleRect.z;
+    }
+    if (m_direction.y < 0) {
+        rect.y += m_deviceScaleRect.w;
+    }
+    primitive->fillCircle(rect, kHalfOpacityRed);
+    primitive->strokeCircle(rect, kOpaqueRed, 1.0f);
+}
+
+bool
+CircleSelector::contains(const Vector2SI32 &deviceScaleCursorPosition) const NANOEM_DECL_NOEXCEPT
+{
+    const Vector4 rect(m_deviceScaleRect);
+    const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w);
+    Vector2 center;
+    center.x = m_direction.x < 0 ? rect.z + rect.x : rect.x;
+    center.y = m_direction.y < 0 ? rect.w + rect.y : rect.y;
+    return glm::distance(center, Vector2(deviceScaleCursorPosition)) < radius;
+}
+
+void
+CircleSelector::updateRectangle(const Vector4SI32 &logicalScaleRect, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    RectangleSelector::updateRectangle(logicalScaleRect, project, m_logicalScaleRect, m_deviceScaleRect, m_direction);
+}
 
 class BaseSelectionState : public BaseDraggingObjectState {
 protected:
@@ -745,13 +799,15 @@ protected:
     const ISelector *currentSelector() const NANOEM_DECL_NOEXCEPT;
     ISelector *currentSelector();
 
-    RectangleSelector m_rectangleSelector;
-
 public:
     void onPress(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
     void onRelease(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
     void onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE;
+
+private:
+    RectangleSelector m_rectangleSelector;
+    CircleSelector m_circleSelector;
 };
 
 void
@@ -1921,12 +1977,12 @@ void
 DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
 {
     static const Vector3 kRed(1, 0, 0), kGreen(0, 1, 0), kBlue(0, 0, 1);
+    static const nanoem_f32_t kKappa = 0.5522847498307933984022516322796f;
     const Project *project = activeModel->project();
     const Model::AxisType type = activeModel->transformAxisType();
     const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
     nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
                  thickness = project->logicalScaleCircleRadius() * 1.5f;
-    const nanoem_f32_t kappa = 0.5522847498307933984022516322796f;
     const nanoem_f32_t x1 = center.x - radius;
     const nanoem_f32_t y1 = center.y - radius;
     const nanoem_f32_t x2 = center.x + radius;
@@ -1937,14 +1993,14 @@ DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool
     primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
         Vector4(kRed, type == Model::kAxisX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     const Vector4 green(kGreen, type == Model::kAxisY || !isGrabbingHandle ? 1.0 : 0.25);
-    primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kappa),
-        Vector2(center.x - radius * kappa, y1), Vector2(center.x + 1, y1), green, thickness);
-    primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kappa, y1),
-        Vector2(x2, center.y - radius * kappa), Vector2(x2, center.y + 1), green, thickness);
-    primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kappa),
-        Vector2(center.x + radius * kappa, y2), Vector2(center.x - 1, y2), green, thickness);
-    primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kappa, y2),
-        Vector2(x1, center.y + radius * kappa), Vector2(x1, center.y - 1), green, thickness);
+    primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kKappa),
+        Vector2(center.x - radius * kKappa, y1), Vector2(center.x + 1, y1), green, thickness);
+    primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kKappa, y1),
+        Vector2(x2, center.y - radius * kKappa), Vector2(x2, center.y + 1), green, thickness);
+    primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kKappa),
+        Vector2(center.x + radius * kKappa, y2), Vector2(center.x - 1, y2), green, thickness);
+    primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kKappa, y2),
+        Vector2(x1, center.y + radius * kKappa), Vector2(x1, center.y - 1), green, thickness);
 }
 
 void
