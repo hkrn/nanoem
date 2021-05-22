@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -519,13 +519,15 @@ $nanoem.gui.model.edit.material.title材質（マテリアル）-
 >nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4"全ての BDEF4 の頂点を選択b
 =nanoem.gui.model.edit.action.selection.vertex.enable-all-sdef!全ての SDEF の頂点を選択b
 =nanoem.gui.model.edit.action.selection.vertex.enable-all-qdef!全ての QDEF の頂点を選択r
->nanoem.gui.model.edit.action.selection.vertex.enable-all-faces0選択された頂点が含まれる面を選択�
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-faces0選択された頂点が含まれる面を選択y
+Bnanoem.gui.model.edit.action.selection.vertex.enable-all-materials3選択された頂点が含まれる材質を選択�
 Fnanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs<選択された頂点が含まれる頂点モーフを選択�
 Gnanoem.gui.model.edit.action.selection.vertex.enable-all-texture-morphsE選択された頂点が含まれるテクスチャモーフを選択j
 6nanoem.gui.model.edit.action.masking.vertex.enable-all0選択された全ての頂点をマスキングt
 7nanoem.gui.model.edit.action.masking.vertex.disable-all9選択された全ての頂点のマスキングを解除j
 6nanoem.gui.model.edit.action.masking.vertex.invert-all0全ての頂点のマスキング状態を反転O
-6nanoem.gui.model.edit.action.selection.face.enable-all全ての面を選択_
+6nanoem.gui.model.edit.action.selection.face.enable-all全ての面を選択t
+@nanoem.gui.model.edit.action.selection.face.enable-all-materials0選択された面が含まれる材質を選択_
 7nanoem.gui.model.edit.action.selection.face.disable-all$選択された全ての面を解除e
 4nanoem.gui.model.edit.action.masking.face.enable-all-選択された全ての面をマスキングo
 5nanoem.gui.model.edit.action.masking.face.disable-all6選択された全ての面のマスキングを解除e
@@ -1057,7 +1059,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-�F
+گF
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1595,13 +1597,15 @@ Insert New6
 >nanoem.gui.model.edit.action.selection.vertex.enable-all-bdef4Select All BDEF4 VerticesY
 =nanoem.gui.model.edit.action.selection.vertex.enable-all-sdefSelect All SDEF VerticesY
 =nanoem.gui.model.edit.action.selection.vertex.enable-all-qdefSelect All QDEF Verticesm
->nanoem.gui.model.edit.action.selection.vertex.enable-all-faces+Select All Faces from All Selected Vertices}
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-faces+Select All Faces from All Selected Verticesu
+Bnanoem.gui.model.edit.action.selection.vertex.enable-all-materials/Select All Materials from All Selected Vertices}
 Fnanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs3Select All Vertex Morphs from All Selected Vertices
 Gnanoem.gui.model.edit.action.selection.vertex.enable-all-texture-morphs4Select All Texture Morphs from All Selected VerticesT
 6nanoem.gui.model.edit.action.masking.vertex.enable-allMask All Selected VerticesW
 7nanoem.gui.model.edit.action.masking.vertex.disable-allUnmask All Selected VerticesY
 6nanoem.gui.model.edit.action.masking.vertex.invert-allInvert All Mask/Unmask VerticesJ
-6nanoem.gui.model.edit.action.selection.face.enable-allSelect All FacesM
+6nanoem.gui.model.edit.action.selection.face.enable-allSelect All Facesp
+@nanoem.gui.model.edit.action.selection.face.enable-all-materials,Select All Materials from All Selected FacesM
 7nanoem.gui.model.edit.action.selection.face.disable-allDeselect All FacesN
 4nanoem.gui.model.edit.action.masking.face.enable-allMask All Selected FaceQ
 5nanoem.gui.model.edit.action.masking.face.disable-allUnmask All Selected FaceS

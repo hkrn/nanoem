@@ -1316,6 +1316,23 @@ ModelParameterDialog::layoutAllFaces(Project *project)
                     selection->addFace(face);
                 }
             }
+            if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.face.enable-all-materials"))) {
+                const IModelObjectSelection::FaceList faces(selection->allFaces());
+                removeAllMaterialSelectionIfNeeded(selection);
+                nanoem_rsize_t numVertices;
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
+                for (IModelObjectSelection::FaceList::const_iterator it = faces.begin(), end = faces.end(); it != end;
+                     ++it) {
+                    const Vector4UI32 &face = *it;
+                    for (nanoem_rsize_t j = 1; j < 4; j++) {
+                        const nanoem_model_vertex_t *vertexPtr = vertices[face[j]];
+                        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                            selection->addMaterial(vertex->material());
+                        }
+                    }
+                }
+            }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.face.disable-all"))) {
                 selection->removeAllFaces();
             }
@@ -4977,6 +4994,15 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
                     vertexSet.find(vertices[i2]) != vertexSet.end()) {
                     const Vector4UI32 face(i, i0, i1, i2);
                     selection->addFace(face);
+                }
+            }
+        }
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-materials"))) {
+            const model::Vertex::Set vertexSet(selection->allVertexSet());
+            removeAllMaterialSelectionIfNeeded(selection);
+            for (model::Vertex::Set::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end; ++it) {
+                if (const model::Vertex *vertex = model::Vertex::cast(*it)) {
+                    selection->addMaterial(vertex->material());
                 }
             }
         }

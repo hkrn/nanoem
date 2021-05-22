@@ -2063,6 +2063,10 @@
   phrase:
     en_US: 'Select All Faces from All Selected Vertices'
     ja_JP: '選択された頂点が含まれる面を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-materials
+  phrase:
+    en_US: 'Select All Materials from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれる材質を選択'
 - key: nanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs
   phrase:
     en_US: 'Select All Vertex Morphs from All Selected Vertices'
@@ -2087,6 +2091,10 @@
   phrase:
     en_US: 'Select All Faces'
     ja_JP: '全ての面を選択'
+- key: nanoem.gui.model.edit.action.selection.face.enable-all-materials
+  phrase:
+    en_US: 'Select All Materials from All Selected Faces'
+    ja_JP: '選択された面が含まれる材質を選択'
 - key: nanoem.gui.model.edit.action.selection.face.disable-all
   phrase:
     en_US: 'Deselect All Faces'
