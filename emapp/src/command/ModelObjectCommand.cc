@@ -482,12 +482,12 @@ CreateMaterialCommand::CreateMaterialCommand(
     Project *project, const String &name, const MutableVertexList &vertices, const VertexIndexList &vertexIndices)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableMaterial(m_activeModel)
+    , m_creatingMaterial(m_activeModel)
     , m_deletingVertices(vertices)
 {
     nanoem_rsize_t numVertices;
     nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_creatingMaterial);
     for (MutableVertexList::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
         nanoemMutableModelVertexSetType(*it, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
         nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
@@ -502,15 +502,15 @@ CreateMaterialCommand::CreateMaterialCommand(
     StringUtils::UnicodeStringScope us(factory);
     if (StringUtils::tryGetString(factory, name, us)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        nanoemMutableModelMaterialSetName(m_mutableMaterial, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-        nanoemMutableModelMaterialSetName(m_mutableMaterial, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelMaterialSetName(m_creatingMaterial, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelMaterialSetName(m_creatingMaterial, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    nanoemMutableModelMaterialSetAmbientColor(m_mutableMaterial, glm::value_ptr(Vector4(1)));
-    nanoemMutableModelMaterialSetDiffuseColor(m_mutableMaterial, glm::value_ptr(Vector4(1)));
-    nanoemMutableModelMaterialSetSpecularColor(m_mutableMaterial, glm::value_ptr(Vector4(1)));
-    nanoemMutableModelMaterialSetDiffuseOpacity(m_mutableMaterial, 1.0f);
-    nanoemMutableModelMaterialSetSpecularPower(m_mutableMaterial, 1.0f);
-    nanoemMutableModelMaterialSetNumVertexIndices(m_mutableMaterial, m_vertexIndices.size());
+    nanoemMutableModelMaterialSetAmbientColor(m_creatingMaterial, glm::value_ptr(Vector4(1)));
+    nanoemMutableModelMaterialSetDiffuseColor(m_creatingMaterial, glm::value_ptr(Vector4(1)));
+    nanoemMutableModelMaterialSetSpecularColor(m_creatingMaterial, glm::value_ptr(Vector4(1)));
+    nanoemMutableModelMaterialSetDiffuseOpacity(m_creatingMaterial, 1.0f);
+    nanoemMutableModelMaterialSetSpecularPower(m_creatingMaterial, 1.0f);
+    nanoemMutableModelMaterialSetNumVertexIndices(m_creatingMaterial, m_vertexIndices.size());
     model::Material *material = model::Material::create(project->sharedFallbackImage());
     material->bind(origin);
     material->resetLanguage(origin, project->unicodeStringFactory(), project->castLanguage());
@@ -531,7 +531,7 @@ CreateMaterialCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
+    nanoemMutableModelRemoveMaterialObject(model, m_creatingMaterial, &status);
     VertexIndexList workingBuffer;
     nanoem_rsize_t numVertexIndices;
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
@@ -557,7 +557,7 @@ CreateMaterialCommand::redo(Error &error)
     workingBuffer.assign(vertexIndices, vertexIndices + numVertexIndices);
     workingBuffer.insert(workingBuffer.end(), m_vertexIndices.begin(), m_vertexIndices.end());
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
-    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, -1, &status);
+    nanoemMutableModelInsertMaterialObject(model, m_creatingMaterial, -1, &status);
     for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelInsertVertexObject(model, *it, -1, &status);
@@ -604,10 +604,10 @@ CopyMaterialFromModelCommand::CopyMaterialFromModelCommand(
     Project *project, const Model *baseModel, const nanoem_model_material_t *baseMaterialPtr)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableMaterial(m_activeModel)
+    , m_creatingMaterial(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    nanoemMutableModelMaterialCopy(m_mutableMaterial, baseMaterialPtr, &status);
+    nanoemMutableModelMaterialCopy(m_creatingMaterial, baseMaterialPtr, &status);
     nanoem_rsize_t numMaterials, numVertexIndices;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(baseModel->data(), &numMaterials);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(baseModel->data(), &numVertexIndices);
@@ -625,7 +625,7 @@ CopyMaterialFromModelCommand::CopyMaterialFromModelCommand(
         offset += numMaterialVertexIndices;
     }
     model::Material *material = model::Material::create(project->sharedFallbackImage());
-    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_creatingMaterial);
     material->bind(origin);
     material->resetLanguage(origin, project->unicodeStringFactory(), project->castLanguage());
 }
@@ -639,7 +639,7 @@ CopyMaterialFromModelCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
+    nanoemMutableModelRemoveMaterialObject(model, m_creatingMaterial, &status);
     VertexIndexList workingBuffer;
     nanoem_rsize_t numVertexIndices;
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
@@ -661,7 +661,7 @@ CopyMaterialFromModelCommand::redo(Error &error)
     workingBuffer.assign(vertexIndices, vertexIndices + numVertexIndices);
     workingBuffer.insert(workingBuffer.end(), m_vertexIndices.begin(), m_vertexIndices.end());
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
-    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, -1, &status);
+    nanoemMutableModelInsertMaterialObject(model, m_creatingMaterial, -1, &status);
     m_activeModel->clearAllDrawVertexBuffers();
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
@@ -1301,7 +1301,7 @@ CreateBoneAsStagingParentCommand::CreateBoneAsStagingParentCommand(Project *proj
         nanoem_model_bone_t *bonePtr = bones[i];
         if (nanoemModelBoneGetParentBoneObject(bonePtr) == base) {
             nanoem_mutable_model_bone_t *mutableBone = nanoemMutableModelBoneCreateAsReference(bonePtr, &status);
-            m_deletingBoneChildren.push_back(mutableBone);
+            m_baseBoneChildren.push_back(mutableBone);
             break;
         }
     }
@@ -1309,10 +1309,10 @@ CreateBoneAsStagingParentCommand::CreateBoneAsStagingParentCommand(Project *proj
 
 CreateBoneAsStagingParentCommand::~CreateBoneAsStagingParentCommand() NANOEM_DECL_NOEXCEPT
 {
-    for (BoneList::const_iterator it = m_deletingBoneChildren.begin(), end = m_deletingBoneChildren.end(); it != end; ++it) {
+    for (BoneList::const_iterator it = m_baseBoneChildren.begin(), end = m_baseBoneChildren.end(); it != end; ++it) {
         nanoemMutableModelBoneDestroy(*it);
     }
-    m_deletingBoneChildren.clear();
+    m_baseBoneChildren.clear();
 }
 
 void
@@ -1322,7 +1322,7 @@ CreateBoneAsStagingParentCommand::undo(Error &error)
     ScopedMutableModel model(m_activeModel, &status);
     m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
     nanoemMutableModelRemoveBoneObject(model, m_creatingBone, &status);
-    for (BoneList::const_iterator it = m_deletingBoneChildren.begin(), end = m_deletingBoneChildren.end(); it != end; ++it) {
+    for (BoneList::const_iterator it = m_baseBoneChildren.begin(), end = m_baseBoneChildren.end(); it != end; ++it) {
         nanoemMutableModelBoneSetParentBoneObject(*it, m_parent);
     }
     assignError(status, error);
@@ -1335,7 +1335,7 @@ CreateBoneAsStagingParentCommand::redo(Error &error)
     ScopedMutableModel model(m_activeModel, &status);
     nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_boneIndex, &status);
     const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
-    for (BoneList::const_iterator it = m_deletingBoneChildren.begin(), end = m_deletingBoneChildren.end(); it != end; ++it) {
+    for (BoneList::const_iterator it = m_baseBoneChildren.begin(), end = m_baseBoneChildren.end(); it != end; ++it) {
         nanoemMutableModelBoneSetParentBoneObject(*it, origin);
     }
     m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
@@ -1377,16 +1377,16 @@ CreateBoneAsStagingChildCommand::CreateBoneAsStagingChildCommand(Project *projec
     : BaseUndoCommand(project)
     , m_parent(nanoemModelBoneGetParentBoneObject(base))
     , m_activeModel(project->activeModel())
-    , m_deletingBone(m_activeModel)
+    , m_creatingBone(m_activeModel)
     , m_baseBone(base)
     , m_boneIndex(model::Bone::index(base))
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    nanoemMutableModelBoneCopy(m_deletingBone, base, &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_deletingBone, m_parent);
-    CreateBoneCommand::setNameSuffix(m_deletingBone, "-", factory, &status);
-    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_deletingBone), project);
+    nanoemMutableModelBoneCopy(m_creatingBone, base, &status);
+    nanoemMutableModelBoneSetParentBoneObject(m_creatingBone, m_parent);
+    CreateBoneCommand::setNameSuffix(m_creatingBone, "-", factory, &status);
+    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_creatingBone), project);
 }
 
 CreateBoneAsStagingChildCommand::~CreateBoneAsStagingChildCommand() NANOEM_DECL_NOEXCEPT
@@ -1398,8 +1398,8 @@ CreateBoneAsStagingChildCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_deletingBone));
-    nanoemMutableModelRemoveBoneObject(model, m_deletingBone, &status);
+    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
+    nanoemMutableModelRemoveBoneObject(model, m_creatingBone, &status);
     nanoemMutableModelBoneSetParentBoneObject(m_baseBone, m_parent);
     assignError(status, error);
 }
@@ -1409,8 +1409,8 @@ CreateBoneAsStagingChildCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertBoneObject(model, m_deletingBone, m_boneIndex, &status);
-    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_deletingBone);
+    nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_boneIndex, &status);
+    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
     nanoemMutableModelBoneSetParentBoneObject(m_baseBone, origin);
     m_activeModel->addBoneReference(origin);
     assignError(status, error);
