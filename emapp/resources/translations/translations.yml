@@ -906,6 +906,38 @@
   phrase:
     en_US: Morph
     ja_JP: モーフ
+- key: nanoem.gui.window.model.menu.type.bone
+  phrase:
+    en_US: Bone Morph
+    ja_JP: ボーンモーフ
+- key: nanoem.gui.window.model.menu.type.group
+  phrase:
+    en_US: Group Morph
+    ja_JP: グループモーフ
+- key: nanoem.gui.window.model.menu.type.material
+  phrase:
+    en_US: Material Morph
+    ja_JP: 材質モーフ
+- key: nanoem.gui.window.model.menu.type.texture
+  phrase:
+    en_US: Texture Morph
+    ja_JP: テクスチャモーフ
+- key: nanoem.gui.window.model.menu.type.uv
+  phrase:
+    en_US: Additional UV Morph
+    ja_JP: 拡張 UV モーフ
+- key: nanoem.gui.window.model.menu.type.vertex
+  phrase:
+    en_US: Vertex Morph
+    ja_JP: 頂点モーフ
+- key: nanoem.gui.window.model.menu.type.flip
+  phrase:
+    en_US: Flip Morph
+    ja_JP: フリップモーフ
+- key: nanoem.gui.window.model.menu.type.impulse
+  phrase:
+    en_US: Impulse Morph
+    ja_JP: インパルスモーフ
 - key: nanoem.gui.window.model.menu.label
   phrase:
     en_US: Label
@@ -2295,15 +2327,130 @@
   phrase:
     en_US: 'Deselect All Soft Bodies'
     ja_JP: '選択された全てのソフトボディを解除'
-
-- key: nanoem.macos.expiration.title
+- key: nanoem.gui.model.edit.action.vertex.create-bone
   phrase:
-    en_US: Trial of nanoem PR edition has been expired
-    ja_JP: nanoem PR 版の試用期限が切れました
-- key: nanoem.macos.expiration.description
+    en_US: 'Create a Bone in Center of Selected'
+    ja_JP: '選択された頂点の中心にボーンを追加'
+- key: nanoem.gui.model.edit.action.vertex.add-vertex-morph
   phrase:
-    en_US: The application has been expired due to specified expiration date and will be terminated. (If you continue using the application, You should grab the latest version and overwrite install this)
-    ja_JP: 使用期限が切れたため終了します（もし使用を継続する場合は最新版を取得して上書きインストールしてください）
+    en_US: 'Add Selected to the Vertex Morph'
+    ja_JP: '選択された頂点を頂点モーフに追加'
+- key: nanoem.gui.model.edit.action.vertex.add-texture-morph
+  phrase:
+    en_US: 'Add Selected to the Texture Morph'
+    ja_JP: '選択された頂点をテクスチャモーフに追加'
+- key: nanoem.gui.model.edit.action.material.copy-from-model
+  phrase:
+    en_US: 'Copy from Model with ...'
+    ja_JP: '次のモデルにある材質からコピーする'
+- key: nanoem.gui.model.edit.action.material.create-from-obj
+  phrase:
+    en_US: 'Create Material from File (.obj)'
+    ja_JP: 'ファイル (.obj) から材質を作成する'
+- key: nanoem.gui.model.edit.action.material.add-material-morph
+  phrase:
+    en_US: 'Add Selected to the Material Morph'
+    ja_JP: '選択された材質を材質モーフに追加'
+- key: nanoem.gui.model.edit.action.material.merge
+  phrase:
+    en_US: 'Merge the Material'
+    ja_JP: '材質をマージする'
+- key: nanoem.gui.model.edit.action.material.texture.diffuse.set
+  phrase:
+    en_US: 'Set Diffuse Texture'
+    ja_JP: '拡散光テクスチャを設定'
+- key: nanoem.gui.model.edit.action.material.texture.diffuse.clear
+  phrase:
+    en_US: 'Clear Diffuse Texture'
+    ja_JP: '拡散光テクスチャをクリア'
+- key: nanoem.gui.model.edit.action.material.texture.spheremap.set
+  phrase:
+    en_US: 'Set SphereMap Texture'
+    ja_JP: 'スフィアマップテクスチャを設定'
+- key: nanoem.gui.model.edit.action.material.texture.spheremap.clear
+  phrase:
+    en_US: 'Clear SphereMap Texture'
+    ja_JP: 'スフィアマップテクスチャをクリア'
+- key: nanoem.gui.model.edit.action.material.texture.toon.set
+  phrase:
+    en_US: 'Set Toon Texture'
+    ja_JP: 'トゥーンテクスチャを設定'
+- key: nanoem.gui.model.edit.action.material.texture.toon.clear
+  phrase:
+    en_US: 'Clear Toon Texture'
+    ja_JP: 'トゥーンテクスチャをクリア'
+- key: nanoem.gui.model.edit.action.bone.create.destination
+  phrase:
+    en_US: 'Creating Destination Bone of %s'
+    ja_JP: '「%s」の接続先ボーンを作成'
+- key: nanoem.gui.model.edit.action.bone.create.staging
+  phrase:
+    en_US: 'Creating Staging Bone'
+    ja_JP: '多段ボーンを作成'
+- key: nanoem.gui.model.edit.action.bone.create.staging.parent
+  phrase:
+    en_US: 'as Parent of %s'
+    ja_JP: '「%s」の親ボーンとして作成'
+- key: nanoem.gui.model.edit.action.bone.create.staging.child
+  phrase:
+    en_US: 'as Child of %s'
+    ja_JP: '「%s」の子ボーンとして作成'
+- key: nanoem.gui.model.edit.action.bone.add-constraint-joints
+  phrase:
+    en_US: 'Add Selected to the IK Bone'
+    ja_JP: '選択されたボーンを IK ボーンに追加'
+- key: nanoem.gui.model.edit.action.bone.add-label
+  phrase:
+    en_US: 'Add Selected to the Label'
+    ja_JP: '選択されたボーンを表示枠に追加'
+- key: nanoem.gui.model.edit.action.bone.add-bone-morph
+  phrase:
+    en_US: 'Add Selected to the Bone Morph'
+    ja_JP: '選択されたボーンをボーンモーフに追加'
+- key: nanoem.gui.model.edit.action.bone.axis.parent
+  phrase:
+    en_US: 'Set from Parent'
+    ja_JP: '親ボーンから設定'
+- key: nanoem.gui.model.edit.action.bone.axis.target
+  phrase:
+    en_US: 'Set from Target'
+    ja_JP: '接続先から設定'
+- key: nanoem.gui.model.edit.action.bone.axis.select
+  phrase:
+    en_US: 'Set from Bone with ...'
+    ja_JP: '次のボーンから設定'
+- key: nanoem.gui.model.edit.action.bone.axis.global
+  phrase:
+    en_US: 'Set from Global Axis with ...'
+    ja_JP: '次の方向のグローバル軸から設定'
+- key: nanoem.gui.model.edit.action.morph.create-bone-morph-from-file
+  phrase:
+    en_US: 'Create Bone Morph from Pose File'
+    ja_JP: 'ポーズファイルからボーンモーフを作成'
+- key: nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file
+  phrase:
+    en_US: 'Create Vertex Morph from Model File'
+    ja_JP: 'モデルファイルから頂点モーフを作成'
+- key: nanoem.gui.model.edit.action.morph.add-label
+  phrase:
+    en_US: 'Add Selected to the Label'
+    ja_JP: '選択されたモーフを表示枠に追加'
+- key: nanoem.gui.model.edit.action.morph.add-group-morph
+  phrase:
+    en_US: 'Add Selected to the Group Morph'
+    ja_JP: '選択されたモーフをグループモーフに追加'
+- key: nanoem.gui.model.edit.action.morph.add-flip-morph
+  phrase:
+    en_US: 'Add Selected to the Flip Morph'
+    ja_JP: '選択されたモーフをフリップモーフに追加'
+- key: nanoem.gui.model.edit.action.rigid-body.create-intermediate-joint
+  phrase:
+    en_US: 'Create Intermediate Joint from Two Rigid Bodies'
+    ja_JP: 'ふたつの剛体から中間ジョイントを作成'
+- key: nanoem.gui.model.edit.action.rigid-body.add-impulse-morph
+  phrase:
+    en_US: 'Add Selected to the Impulse Morph'
+    ja_JP: '選択された剛体をインパルスモーフに追加'
 
 - key: nanoem.version
   phrase:

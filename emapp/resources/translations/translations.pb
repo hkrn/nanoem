@@ -1,5 +1,5 @@
 
-��@
+�@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -226,7 +226,15 @@ $nanoem.gui.window.model.tab.material材質（マテリアル）-
 !nanoem.gui.window.model.menu.face面/
 %nanoem.gui.window.model.menu.material材質.
 !nanoem.gui.window.model.menu.bone	ボーン/
-"nanoem.gui.window.model.menu.morph	モーフ/
+"nanoem.gui.window.model.menu.morph	モーフ<
+&nanoem.gui.window.model.menu.type.boneボーンモーフ@
+'nanoem.gui.window.model.menu.type.groupグループモーフ=
+*nanoem.gui.window.model.menu.type.material材質モーフE
+)nanoem.gui.window.model.menu.type.textureテクスチャモーフ;
+$nanoem.gui.window.model.menu.type.uv拡張 UV モーフ;
+(nanoem.gui.window.model.menu.type.vertex頂点モーフ?
+&nanoem.gui.window.model.menu.type.flipフリップモーフE
+)nanoem.gui.window.model.menu.type.impulseインパルスモーフ/
 "nanoem.gui.window.model.menu.label	表示枠1
 'nanoem.gui.window.model.menu.rigid-body剛体5
 "nanoem.gui.window.model.menu.jointジョイント<
@@ -577,9 +585,38 @@ Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択さ
 6nanoem.gui.model.edit.action.masking.joint.disable-allB選択された全てのジョイントのマスキングを解除r
 5nanoem.gui.model.edit.action.masking.joint.invert-all9全てのジョイントのマスキング状態を反転c
 ;nanoem.gui.model.edit.action.selection.soft-body.enable-all$全てのソフトボディを選択s
-<nanoem.gui.model.edit.action.selection.soft-body.disable-all3選択された全てのソフトボディを解除O
-nanoem.macos.expiration.title.nanoem PR 版の試用期限が切れました�
-#nanoem.macos.expiration.description�使用期限が切れたため終了します（もし使用を継続する場合は最新版を取得して上書きインストールしてください）+
+<nanoem.gui.model.edit.action.selection.soft-body.disable-all3選択された全てのソフトボディを解除f
+/nanoem.gui.model.edit.action.vertex.create-bone3選択された頂点の中心にボーンを追加h
+4nanoem.gui.model.edit.action.vertex.add-vertex-morph0選択された頂点を頂点モーフに追加r
+5nanoem.gui.model.edit.action.vertex.add-texture-morph9選択された頂点をテクスチャモーフに追加l
+5nanoem.gui.model.edit.action.material.copy-from-model3次のモデルにある材質からコピーするh
+5nanoem.gui.model.edit.action.material.create-from-obj/ファイル (.obj) から材質を作成するl
+8nanoem.gui.model.edit.action.material.add-material-morph0選択された材質を材質モーフに追加G
++nanoem.gui.model.edit.action.material.merge材質をマージする^
+9nanoem.gui.model.edit.action.material.texture.diffuse.set!拡散光テクスチャを設定c
+;nanoem.gui.model.edit.action.material.texture.diffuse.clear$拡散光テクスチャをクリアl
+;nanoem.gui.model.edit.action.material.texture.spheremap.set-スフィアマップテクスチャを設定q
+=nanoem.gui.model.edit.action.material.texture.spheremap.clear0スフィアマップテクスチャをクリア^
+6nanoem.gui.model.edit.action.material.texture.toon.set$トゥーンテクスチャを設定c
+8nanoem.gui.model.edit.action.material.texture.toon.clear'トゥーンテクスチャをクリア^
+4nanoem.gui.model.edit.action.bone.create.destination&「%s」の接続先ボーンを作成L
+0nanoem.gui.model.edit.action.bone.create.staging多段ボーンを作成a
+7nanoem.gui.model.edit.action.bone.create.staging.parent&「%s」の親ボーンとして作成`
+6nanoem.gui.model.edit.action.bone.create.staging.child&「%s」の子ボーンとして作成l
+7nanoem.gui.model.edit.action.bone.add-constraint-joints1選択されたボーンを IK ボーンに追加\
++nanoem.gui.model.edit.action.bone.add-label-選択されたボーンを表示枠に追加j
+0nanoem.gui.model.edit.action.bone.add-bone-morph6選択されたボーンをボーンモーフに追加I
+-nanoem.gui.model.edit.action.bone.axis.parent親ボーンから設定F
+-nanoem.gui.model.edit.action.bone.axis.target接続先から設定L
+-nanoem.gui.model.edit.action.bone.axis.select次のボーンから設定^
+-nanoem.gui.model.edit.action.bone.axis.global-次の方向のグローバル軸から設定x
+>nanoem.gui.model.edit.action.morph.create-bone-morph-from-file6ポーズファイルからボーンモーフを作成w
+@nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file3モデルファイルから頂点モーフを作成]
+,nanoem.gui.model.edit.action.morph.add-label-選択されたモーフを表示枠に追加o
+2nanoem.gui.model.edit.action.morph.add-group-morph9選択されたモーフをグループモーフに追加n
+1nanoem.gui.model.edit.action.morph.add-flip-morph9選択されたモーフをフリップモーフに追加{
+Ananoem.gui.model.edit.action.rigid-body.create-intermediate-joint6ふたつの剛体から中間ジョイントを作成v
+9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph9選択された剛体をインパルスモーフに追加+
 nanoem.versionnanoem のバージョン+
 !nanoem.window.dialog.buttons.save保存.
 $nanoem.window.dialog.buttons.discard破棄6
@@ -1064,7 +1101,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1295,7 +1332,17 @@ Rigid Body*
 !nanoem.gui.window.model.menu.faceFace1
 %nanoem.gui.window.model.menu.materialMaterial)
 !nanoem.gui.window.model.menu.boneBone+
-"nanoem.gui.window.model.menu.morphMorph+
+"nanoem.gui.window.model.menu.morphMorph4
+&nanoem.gui.window.model.menu.type.bone
+Bone Morph6
+'nanoem.gui.window.model.menu.type.groupGroup Morph<
+*nanoem.gui.window.model.menu.type.materialMaterial Morph:
+)nanoem.gui.window.model.menu.type.textureTexture Morph;
+$nanoem.gui.window.model.menu.type.uvAdditional UV Morph8
+(nanoem.gui.window.model.menu.type.vertexVertex Morph4
+&nanoem.gui.window.model.menu.type.flip
+Flip Morph:
+)nanoem.gui.window.model.menu.type.impulseImpulse Morph+
 "nanoem.gui.window.model.menu.labelLabel5
 'nanoem.gui.window.model.menu.rigid-body
 Rigid Body+
@@ -1661,9 +1708,38 @@ Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select Al
 6nanoem.gui.model.edit.action.masking.joint.disable-allUnmask All Selected JointsV
 5nanoem.gui.model.edit.action.masking.joint.invert-allInvert All Mask/Unmask JointsU
 ;nanoem.gui.model.edit.action.selection.soft-body.enable-allSelect All Soft BodiesX
-<nanoem.gui.model.edit.action.selection.soft-body.disable-allDeselect All Soft BodiesL
-nanoem.macos.expiration.title+Trial of nanoem PR edition has been expired�
-#nanoem.macos.expiration.description�The application has been expired due to specified expiration date and will be terminated. (If you continue using the application, You should grab the latest version and overwrite install this)
+<nanoem.gui.model.edit.action.selection.soft-body.disable-allDeselect All Soft BodiesV
+/nanoem.gui.model.edit.action.vertex.create-bone#Create a Bone in Center of SelectedX
+4nanoem.gui.model.edit.action.vertex.add-vertex-morph Add Selected to the Vertex MorphZ
+5nanoem.gui.model.edit.action.vertex.add-texture-morph!Add Selected to the Texture MorphQ
+5nanoem.gui.model.edit.action.material.copy-from-modelCopy from Model with ...Y
+5nanoem.gui.model.edit.action.material.create-from-obj Create Material from File (.obj)^
+8nanoem.gui.model.edit.action.material.add-material-morph"Add Selected to the Material MorphA
++nanoem.gui.model.edit.action.material.mergeMerge the MaterialP
+9nanoem.gui.model.edit.action.material.texture.diffuse.setSet Diffuse TextureT
+;nanoem.gui.model.edit.action.material.texture.diffuse.clearClear Diffuse TextureT
+;nanoem.gui.model.edit.action.material.texture.spheremap.setSet SphereMap TextureX
+=nanoem.gui.model.edit.action.material.texture.spheremap.clearClear SphereMap TextureJ
+6nanoem.gui.model.edit.action.material.texture.toon.setSet Toon TextureN
+8nanoem.gui.model.edit.action.material.texture.toon.clearClear Toon TextureW
+4nanoem.gui.model.edit.action.bone.create.destinationCreating Destination Bone of %sI
+0nanoem.gui.model.edit.action.bone.create.stagingCreating Staging BoneJ
+7nanoem.gui.model.edit.action.bone.create.staging.parentas Parent of %sH
+6nanoem.gui.model.edit.action.bone.create.staging.childas Child of %sV
+7nanoem.gui.model.edit.action.bone.add-constraint-jointsAdd Selected to the IK BoneH
++nanoem.gui.model.edit.action.bone.add-labelAdd Selected to the LabelR
+0nanoem.gui.model.edit.action.bone.add-bone-morphAdd Selected to the Bone Morph@
+-nanoem.gui.model.edit.action.bone.axis.parentSet from Parent@
+-nanoem.gui.model.edit.action.bone.axis.targetSet from TargetG
+-nanoem.gui.model.edit.action.bone.axis.selectSet from Bone with ...N
+-nanoem.gui.model.edit.action.bone.axis.globalSet from Global Axis with ...b
+>nanoem.gui.model.edit.action.morph.create-bone-morph-from-file Create Bone Morph from Pose Fileg
+@nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file#Create Vertex Morph from Model FileI
+,nanoem.gui.model.edit.action.morph.add-labelAdd Selected to the LabelU
+2nanoem.gui.model.edit.action.morph.add-group-morphAdd Selected to the Group MorphS
+1nanoem.gui.model.edit.action.morph.add-flip-morphAdd Selected to the Flip Morpht
+Ananoem.gui.model.edit.action.rigid-body.create-intermediate-joint/Create Intermediate Joint from Two Rigid Bodies^
+9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph!Add Selected to the Impulse Morph
 nanoem.versionVersion)
 !nanoem.window.dialog.buttons.saveSave/
 $nanoem.window.dialog.buttons.discardDiscard-

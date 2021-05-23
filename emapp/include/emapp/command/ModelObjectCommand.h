@@ -199,7 +199,7 @@ public:
 
 private:
     Model *m_activeModel;
-    ScopedMutableMaterial m_mutableMaterial;
+    ScopedMutableMaterial m_creatingMaterial;
     MutableVertexList m_deletingVertices;
     VertexIndexList m_vertexIndices;
 };
@@ -222,7 +222,7 @@ public:
 
 private:
     Model *m_activeModel;
-    ScopedMutableMaterial m_mutableMaterial;
+    ScopedMutableMaterial m_creatingMaterial;
     VertexIndexList m_vertexIndices;
 };
 
@@ -389,7 +389,7 @@ private:
     typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
-    BoneList m_deletingBoneChildren;
+    BoneList m_baseBoneChildren;
     ScopedMutableBone m_creatingBone;
     int m_boneIndex;
 };
@@ -412,7 +412,7 @@ private:
     typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
-    ScopedMutableBone m_deletingBone;
+    ScopedMutableBone m_creatingBone;
     ScopedMutableBone m_baseBone;
     int m_boneIndex;
 };
