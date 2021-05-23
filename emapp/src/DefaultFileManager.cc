@@ -1136,6 +1136,11 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
             }
         }
     }
+    else {
+        error = Error(translator()->translate("nanoem.error.motion.no-active-model.reason"),
+            translator()->translate("nanoem.error.motion.no-active-model.recovery-suggestion"),
+            Error::kDomainTypeApplication);
+    }
     return succeeded;
 }
 

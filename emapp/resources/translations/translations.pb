@@ -1,5 +1,5 @@
 
-��@
+�@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -916,7 +916,9 @@ $nanoem.project.track.selected-morphs選択モーフ5
 -nanoem.error.effect.invalid-attachment.reasonoエフェクトに割り当てるモデルまたはオフスクリーンの対象が設定されていません�
 :nanoem.error.effect.invalid-attachment.recovery-suggestion�メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてくださいm
 $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモデル用ではありません�
-/nanoem.error.motion.not-camera-and-light.reasonQ読み込まれたモーションはカメラ及び照明用ではありません�
+/nanoem.error.motion.not-camera-and-light.reasonQ読み込まれたモーションはカメラ及び照明用ではありません�
+*nanoem.error.motion.no-active-model.reasonWモデルモーションを読み込むためのモデルが選択されていません_
+7nanoem.error.motion.no-active-model.recovery-suggestion$モデルを選択してください�
 4nanoem.error.project.new-model.empty-file-uri.reasonN新規モデルを作成するにはプロジェクトの保存が必要です`
  nanoem.project.diagnostics.title<プロジェクトの一部ファイルの読み込み失敗�
 'nanoem.project.diagnostics.message.mainrプロジェクトの読み込みは成功しましたが、一部のファイルが読み込めませんでした�
@@ -1101,7 +1103,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -2036,7 +2038,9 @@ All Morphs#
 -nanoem.error.effect.invalid-attachment.reasonDThe model or offscreen target to attach the effect is not configured�
 :nanoem.error.effect.invalid-attachment.recovery-suggestionnSet the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect fileT
 $nanoem.error.motion.not-model.reason,The loading motion is not intended for modelf
-/nanoem.error.motion.not-camera-and-light.reason3The loading motion is not intended for camera/lightl
+/nanoem.error.motion.not-camera-and-light.reason3The loading motion is not intended for camera/light`
+*nanoem.error.motion.no-active-model.reason2The model is not selected to load the model motionR
+7nanoem.error.motion.no-active-model.recovery-suggestionTry selecting the modell
 4nanoem.error.project.new-model.empty-file-uri.reason4Saving the project is required to create a new modelH
  nanoem.project.diagnostics.title$Loading Project with Partial Failurel
 'nanoem.project.diagnostics.message.mainALoading the project is succeeded but some files cannot be loaded.^

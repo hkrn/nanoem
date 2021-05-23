@@ -3882,6 +3882,14 @@
   phrase:
     en_US: 'The loading motion is not intended for camera/light'
     ja_JP: '読み込まれたモーションはカメラ及び照明用ではありません'
+- key: nanoem.error.motion.no-active-model.reason
+  phrase:
+    en_US: 'The model is not selected to load the model motion'
+    ja_JP: 'モデルモーションを読み込むためのモデルが選択されていません'
+- key: nanoem.error.motion.no-active-model.recovery-suggestion
+  phrase:
+    en_US: 'Try selecting the model'
+    ja_JP: 'モデルを選択してください'
 - key: nanoem.error.project.new-model.empty-file-uri.reason
   phrase:
     en_US: 'Saving the project is required to create a new model'
