@@ -1740,7 +1740,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     if (ImGui::BeginPopupContextItem("material.texture.menu")) {
         IEventPublisher *eventPublisher = project->eventPublisher();
         IFileManager *fileManager = m_applicationPtr->fileManager();
-        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.texture.diffuse.set")) && !fileManager->hasTransientQueryFileDialogCallback()) {
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.texture.diffuse.set")) &&
+            !fileManager->hasTransientQueryFileDialogCallback()) {
             struct SetDiffuseTextureCallback : BaseSetTextureCallback {
                 struct PrivateUserData : BaseUserData {
                     PrivateUserData(nanoem_model_material_t *material, Model *model)
@@ -4851,7 +4852,8 @@ ModelParameterDialog::layoutBoneAxisMenuItems(
     nanoem_model_bone_t *bonePtr, PFN_nanoemMutableModelSetBoneAxis setBoneAxisCallback)
 {
     const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(bonePtr);
-    if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.bone.axis.parent"), nullptr, false, parentBonePtr != nullptr)) {
+    if (ImGui::MenuItem(
+            tr("nanoem.gui.model.edit.action.bone.axis.parent"), nullptr, false, parentBonePtr != nullptr)) {
         const Vector4 direction(glm::normalize(glm::make_vec3(nanoemModelBoneGetOrigin(parentBonePtr)) -
                                     glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr))),
             0);
@@ -5056,7 +5058,8 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
-        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.vertex.add-vertex-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_VERTEX))) {
+        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.vertex.add-vertex-morph"),
+                hasMorphType(NANOEM_MODEL_MORPH_TYPE_VERTEX))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -5071,7 +5074,8 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.vertex.add-texture-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_TEXTURE))) {
+        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.vertex.add-texture-morph"),
+                hasMorphType(NANOEM_MODEL_MORPH_TYPE_TEXTURE))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -5286,7 +5290,8 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
     }
     ImGui::Separator();
     if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
-        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.material.add-material-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_MATERIAL))) {
+        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.material.add-material-morph"),
+                hasMorphType(NANOEM_MODEL_MORPH_TYPE_MATERIAL))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -5304,7 +5309,8 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.merge"),nullptr, false, selection->countAllMaterials() == 1 && m_materialIndex > 0)) {
+    if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.merge"), nullptr, false,
+            selection->countAllMaterials() == 1 && m_materialIndex > 0)) {
         undo_command_t *command = command::MergeMaterialCommand::create(project, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
@@ -5344,14 +5350,16 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
     }
     if (const model::Bone *selectedBone = model::Bone::cast(selectedBonePtr)) {
         ImGui::Separator();
-        StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.destination"), selectedBone->nameConstString());
+        StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.destination"),
+            selectedBone->nameConstString());
         if (ImGui::MenuItem(buffer)) {
             undo_command_t *command = command::CreateBoneAsDestinationCommand::create(project, selectedBonePtr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.bone.create.staging"))) {
             const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(selectedBonePtr);
-            StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.staging.parent"), selectedBone->nameConstString());
+            StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.staging.parent"),
+                selectedBone->nameConstString());
             if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
                 undo_command_t *command = command::CreateBoneAsStagingParentCommand::create(project, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
@@ -5539,7 +5547,8 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
-        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.bone.add-bone-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_BONE))) {
+        if (ImGui::BeginMenu(
+                tr("nanoem.gui.model.edit.action.bone.add-bone-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_BONE))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -5831,7 +5840,8 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
-        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.morph.add-group-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_GROUP))) {
+        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.morph.add-group-morph"),
+                hasMorphType(NANOEM_MODEL_MORPH_TYPE_GROUP))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -6057,7 +6067,8 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
     }
     ImGui::Separator();
     if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"), isPMX21())) {
-        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.rigid-body.add-impulse-morph"), hasMorphType(NANOEM_MODEL_MORPH_TYPE_IMPULUSE))) {
+        if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.rigid-body.add-impulse-morph"),
+                hasMorphType(NANOEM_MODEL_MORPH_TYPE_IMPULUSE))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             for (nanoem_rsize_t i = 0; i < numMorphs; i++) {

@@ -269,7 +269,8 @@ ModelEditCommandDialog::addGizmoCoordinationButton(const char *text, Model::Tran
 }
 
 void
-ModelEditCommandDialog::addSelectionTypeButton(const char *text, IModelObjectSelection::EditingType type, Project *project)
+ModelEditCommandDialog::addSelectionTypeButton(
+    const char *text, IModelObjectSelection::EditingType type, Project *project)
 {
     const IModelObjectSelection *selection = m_activeModel->selection();
     const IModelObjectSelection::EditingType editingType = selection->editingType();
@@ -280,8 +281,7 @@ ModelEditCommandDialog::addSelectionTypeButton(const char *text, IModelObjectSel
 }
 
 void
-ModelEditCommandDialog::addSelectionTargetButton(
-    const char *text, IModelObjectSelection::TargetModeType type)
+ModelEditCommandDialog::addSelectionTargetButton(const char *text, IModelObjectSelection::TargetModeType type)
 {
     IModelObjectSelection *selection = m_activeModel->selection();
     const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();

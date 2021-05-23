@@ -1799,7 +1799,8 @@ Motion::testAllMissingModelObjects(const Model *model, StringSet &bones, StringS
     }
     {
         nanoem_rsize_t numKeyframes;
-        nanoem_motion_morph_keyframe_t *const *keyframes = nanoemMotionGetAllMorphKeyframeObjects(data(), &numKeyframes);
+        nanoem_motion_morph_keyframe_t *const *keyframes =
+            nanoemMotionGetAllMorphKeyframeObjects(data(), &numKeyframes);
         morphs.clear();
         for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
             const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
