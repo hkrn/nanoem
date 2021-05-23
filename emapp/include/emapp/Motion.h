@@ -176,6 +176,7 @@ public:
     void scaleAllMorphKeyframesIn(
         const Model *model, nanoem_frame_index_t from, nanoem_frame_index_t to, nanoem_f32_t scaleFactor);
     void scaleAllSelfShadowKeyframesIn(nanoem_frame_index_t from, nanoem_frame_index_t to, nanoem_f32_t scaleFactor);
+    bool testAllMissingModelObjects(const Model *model, StringSet &bones, StringSet &morphs) const;
 
     void destroyState(SelectionState *&selectionState) const NANOEM_DECL_NOEXCEPT;
     void saveState(SelectionState *&selectionState) const;

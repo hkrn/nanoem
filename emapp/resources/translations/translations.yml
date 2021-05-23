@@ -3912,6 +3912,23 @@
     en_US: 'Below files cannot be loaded due to file modification.'
     ja_JP: '次のファイルは保存時から変更があったため読み込めません'
 
+- key: nanoem.motion.model.diagnostics.title
+  phrase:
+    en_US: 'Loaded Model Motion Warning'
+    ja_JP: '読み込まれたモデルモーションの警告'
+- key: nanoem.motion.model.diagnostics.message
+  phrase:
+    en_US: 'Loading the model motion is succeeded, however below bones/morphs are missing so may not work as properly.'
+    ja_JP: 'モデルモーションの読み込みに成功しましたが、以下のボーンあるいはモーフが不足しているため正常に動作しない可能性があります'
+- key: nanoem.motion.model.diagnostics.all-missing-bones
+  phrase:
+    en_US: 'All Missing Bones'
+    ja_JP: '不足しているボーン一覧'
+- key: nanoem.motion.model.diagnostics.all-missing-morphs
+  phrase:
+    en_US: 'All Missing Morphs'
+    ja_JP: '不足しているモーフ一覧'
+
 - key: nanoem.model.validator.result.title
   phrase:
     en_US: 'Validation result of %s'

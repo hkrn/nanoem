@@ -1118,6 +1118,31 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
                 }
             }
             if (succeeded) {
+                StringSet bones, morphs;
+                if (!motion->testAllMissingModelObjects(model, bones, morphs)) {
+                    String message(translator()->translate("nanoem.motion.model.diagnostics.message"));
+                    message.append("\n");
+                    if (!bones.empty()) {
+                        StringUtils::format(message, "\n%s\n",
+                            translator()->translate("nanoem.motion.model.diagnostics.all-missing-bones"));
+                        for (StringSet::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+                            message.append("* ");
+                            message.append(it->c_str());
+                            message.append("\n");
+                        }
+                    }
+                    if (!morphs.empty()) {
+                        StringUtils::format(message, "\n%s\n",
+                            translator()->translate("nanoem.motion.model.diagnostics.all-missing-morphs"));
+                        for (StringSet::const_iterator it = morphs.begin(), end = morphs.end(); it != end; ++it) {
+                            message.append("* ");
+                            message.append(it->c_str());
+                            message.append("\n");
+                        }
+                    }
+                    m_applicationPtr->addModalDialog(ModalDialogFactory::createDisplayPlainTextDialog(
+                        m_applicationPtr, translator()->translate("nanoem.motion.model.diagnostics.title"), message));
+                }
                 lastMotionPtr = project->addModelMotion(motion, model);
                 project->restart();
             }
