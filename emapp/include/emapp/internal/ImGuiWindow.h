@@ -390,7 +390,7 @@ private:
         int baseRectType, int intercectedRectType, bool handleable);
     void drawTransformHandleSet(const Project *project, const IState *state, const ImVec2 &offset);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
-    void drawHardwareMonitor(const Project *project, const ImVec2 &offset);
+    void drawPerformanceMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);
     void drawTextCentered(
         const ImVec2 &offset, const Vector4 &rect, const char *text, size_t length, ImU32 color = IM_COL32_WHITE);

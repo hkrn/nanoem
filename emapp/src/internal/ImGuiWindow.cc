@@ -2978,7 +2978,7 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project, const I
             drawFPSCounter(project, offset);
         }
         if (project->isPerformanceMonitorEnabled()) {
-            drawHardwareMonitor(project, offset);
+            drawPerformanceMonitor(project, offset);
         }
         drawBoneTooltip(project);
     }
@@ -4061,7 +4061,7 @@ ImGuiWindow::drawFPSCounter(const Project *project, const ImVec2 &offset)
 }
 
 void
-ImGuiWindow::drawHardwareMonitor(const Project *project, const ImVec2 &offset)
+ImGuiWindow::drawPerformanceMonitor(const Project *project, const ImVec2 &offset)
 {
     static const nanoem_f32_t kSpacingSize = 10, kMarginSize = 5;
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
