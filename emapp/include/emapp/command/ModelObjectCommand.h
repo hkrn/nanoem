@@ -200,7 +200,7 @@ public:
 private:
     Model *m_activeModel;
     ScopedMutableMaterial m_mutableMaterial;
-    MutableVertexList m_mutableVertices;
+    MutableVertexList m_deletingVertices;
     VertexIndexList m_vertexIndices;
 };
 
@@ -244,7 +244,7 @@ public:
 private:
     Model *m_activeModel;
     ScopedMutableMaterial m_baseMaterial;
-    ScopedMutableMaterial m_mutableMaterial;
+    ScopedMutableMaterial m_deletingMaterial;
     nanoem_rsize_t m_materialIndex;
 };
 
@@ -265,7 +265,7 @@ public:
 
 private:
     Model *m_activeModel;
-    ScopedMutableMaterial m_mutableMaterial;
+    ScopedMutableMaterial m_deletingMaterial;
     VertexIndexList m_deletingVertexIndices;
     nanoem_rsize_t m_deletingVertexIndexOffset;
     nanoem_rsize_t m_materialIndex;
@@ -288,7 +288,7 @@ protected:
     void moveDown(nanoem_status_t *status);
 
     Model *m_activeModel;
-    ScopedMutableMaterial m_mutableMaterial;
+    ScopedMutableMaterial m_movingMaterial;
 };
 
 class MoveMaterialUpCommand NANOEM_DECL_SEALED : public BaseMoveMaterialCommand {
@@ -347,7 +347,7 @@ private:
     const nanoem_model_bone_t *m_base;
     const int m_offset;
     Model *m_activeModel;
-    ScopedMutableBone m_mutableBone;
+    ScopedMutableBone m_creatingBone;
 };
 
 class CreateBoneAsDestinationCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -367,7 +367,7 @@ public:
 private:
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
-    ScopedMutableBone m_mutableBone;
+    ScopedMutableBone m_creatingBone;
     int m_boneIndex;
 };
 
@@ -389,8 +389,8 @@ private:
     typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
-    BoneList m_bones;
-    ScopedMutableBone m_mutableBone;
+    BoneList m_deletingBoneChildren;
+    ScopedMutableBone m_creatingBone;
     int m_boneIndex;
 };
 
@@ -412,7 +412,7 @@ private:
     typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parent;
     Model *m_activeModel;
-    ScopedMutableBone m_mutableBone;
+    ScopedMutableBone m_deletingBone;
     ScopedMutableBone m_baseBone;
     int m_boneIndex;
 };
@@ -453,9 +453,12 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
+    typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
+    const nanoem_model_bone_t *m_parentBonePtr;
     const nanoem_rsize_t m_boneIndex;
     Model *m_activeModel;
-    nanoem_mutable_model_bone_t *m_mutableBone;
+    nanoem_mutable_model_bone_t *m_deletingBone;
+    BoneList m_bones;
 };
 
 class BaseMoveBoneCommand : public BaseUndoCommand {
@@ -521,7 +524,7 @@ private:
     const nanoem_model_morph_type_t m_type;
     const int m_offset;
     Model *m_activeModel;
-    ScopedMutableMorph m_mutableMorph;
+    ScopedMutableMorph m_creatingMorph;
 };
 
 class CreateBoneMorphFromPoseCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -542,7 +545,7 @@ public:
 
 private:
     Model *m_activeModel;
-    ScopedMutableMorph m_mutableMorph;
+    ScopedMutableMorph m_creatingMorph;
 };
 
 class CreateVertexMorphFromModelCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -561,7 +564,7 @@ public:
 
 private:
     Model *m_activeModel;
-    ScopedMutableMorph m_mutableMorph;
+    ScopedMutableMorph m_creatingMorph;
 };
 
 class BaseAddToMorphCommand : public BaseUndoCommand {
@@ -704,7 +707,7 @@ public:
 private:
     const nanoem_rsize_t m_morphIndex;
     Model *m_activeModel;
-    nanoem_mutable_model_morph_t *m_mutableMorph;
+    nanoem_mutable_model_morph_t *m_deletingMorph;
 };
 
 class BaseMoveMorphCommand : public BaseUndoCommand {
@@ -767,7 +770,7 @@ private:
     const nanoem_model_label_t *m_base;
     const int m_offset;
     Model *m_activeModel;
-    ScopedMutableLabel m_mutableLabel;
+    ScopedMutableLabel m_creatingLabel;
 };
 
 class BaseAddToLabelCommand : public BaseUndoCommand {
@@ -829,7 +832,7 @@ public:
 private:
     const nanoem_rsize_t m_labelIndex;
     Model *m_activeModel;
-    nanoem_mutable_model_label_t *m_mutableLabel;
+    nanoem_mutable_model_label_t *m_deletingLabel;
 };
 
 class BaseMoveLabelCommand : public BaseUndoCommand {
@@ -893,7 +896,7 @@ private:
     const nanoem_model_rigid_body_t *m_base;
     const int m_offset;
     Model *m_activeModel;
-    ScopedMutableRigidBody m_mutableRigidBody;
+    ScopedMutableRigidBody m_creatingRigidBody;
 };
 
 class DeleteRigidBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -913,7 +916,7 @@ public:
 private:
     const nanoem_rsize_t m_rigidBodyIndex;
     Model *m_activeModel;
-    nanoem_mutable_model_rigid_body_t *m_mutableRigidBody;
+    nanoem_mutable_model_rigid_body_t *m_deletingRigidBody;
 };
 
 class BaseMoveRigidBodyCommand : public BaseUndoCommand {
@@ -977,7 +980,7 @@ private:
     const nanoem_model_joint_t *m_base;
     const int m_offset;
     Model *m_activeModel;
-    ScopedMutableJoint m_mutableJoint;
+    ScopedMutableJoint m_creatingJoint;
 };
 
 class CreateIntermediateJointFromTwoRigidBodiesCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -996,7 +999,7 @@ public:
 
 private:
     Model *m_activeModel;
-    ScopedMutableJoint m_mutableJoint;
+    ScopedMutableJoint m_creatingJoint;
 };
 
 class DeleteJointCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -1016,7 +1019,7 @@ public:
 private:
     const nanoem_rsize_t m_jointIndex;
     Model *m_activeModel;
-    nanoem_mutable_model_joint_t *m_mutableJoint;
+    nanoem_mutable_model_joint_t *m_deletingJoint;
 };
 
 class BaseMoveJointCommand : public BaseUndoCommand {
@@ -1079,7 +1082,7 @@ private:
     const nanoem_model_soft_body_t *m_base;
     const int m_offset;
     Model *m_activeModel;
-    ScopedMutableSoftBody m_mutableSoftBody;
+    ScopedMutableSoftBody m_creatingSoftBody;
 };
 
 class DeleteSoftBodyCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
@@ -1099,7 +1102,7 @@ public:
 private:
     const nanoem_rsize_t m_softBodyIndex;
     Model *m_activeModel;
-    nanoem_mutable_model_soft_body_t *m_mutableSoftBody;
+    nanoem_mutable_model_soft_body_t *m_deletingSoftBody;
 };
 
 class BaseMoveSoftBodyCommand : public BaseUndoCommand {

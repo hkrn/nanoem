@@ -483,7 +483,7 @@ CreateMaterialCommand::CreateMaterialCommand(
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
     , m_mutableMaterial(m_activeModel)
-    , m_mutableVertices(vertices)
+    , m_deletingVertices(vertices)
 {
     nanoem_rsize_t numVertices;
     nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
@@ -518,11 +518,11 @@ CreateMaterialCommand::CreateMaterialCommand(
 
 CreateMaterialCommand::~CreateMaterialCommand() NANOEM_DECL_NOEXCEPT
 {
-    for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+    for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelVertexDestroy(*it);
     }
-    m_mutableVertices.clear();
+    m_deletingVertices.clear();
     m_vertexIndices.clear();
 }
 
@@ -537,7 +537,7 @@ CreateMaterialCommand::undo(Error &error)
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
     workingBuffer.assign(vertexIndices, vertexIndices + numVertexIndices - m_vertexIndices.size());
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
-    for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+    for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelRemoveVertexObject(model, *it, &status);
     }
@@ -558,7 +558,7 @@ CreateMaterialCommand::redo(Error &error)
     workingBuffer.insert(workingBuffer.end(), m_vertexIndices.begin(), m_vertexIndices.end());
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
     nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, -1, &status);
-    for (MutableVertexList::const_iterator it = m_mutableVertices.begin(), end = m_mutableVertices.end(); it != end;
+    for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelInsertVertexObject(model, *it, -1, &status);
     }
@@ -703,7 +703,7 @@ MergeMaterialCommand::MergeMaterialCommand(
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
     , m_baseMaterial(materials[materialIndex - 1])
-    , m_mutableMaterial(materials[materialIndex])
+    , m_deletingMaterial(materials[materialIndex])
     , m_materialIndex(materialIndex)
 {
 }
@@ -719,9 +719,9 @@ MergeMaterialCommand::undo(Error &error)
     ScopedMutableModel model(m_activeModel, &status);
     const nanoem_rsize_t numVertexIndices =
         nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_baseMaterial)) -
-        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial));
+        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_deletingMaterial));
     nanoemMutableModelMaterialSetNumVertexIndices(m_baseMaterial, numVertexIndices);
-    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, Inline::saturateInt32(m_materialIndex), &status);
+    nanoemMutableModelInsertMaterialObject(model, m_deletingMaterial, Inline::saturateInt32(m_materialIndex), &status);
     m_activeModel->clearAllDrawVertexBuffers();
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
@@ -734,9 +734,9 @@ MergeMaterialCommand::redo(Error &error)
     ScopedMutableModel model(m_activeModel, &status);
     const nanoem_rsize_t numVertexIndices =
         nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_baseMaterial)) +
-        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial));
+        nanoemModelMaterialGetNumVertexIndices(nanoemMutableModelMaterialGetOriginObject(m_deletingMaterial));
     nanoemMutableModelMaterialSetNumVertexIndices(m_baseMaterial, numVertexIndices);
-    nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
+    nanoemMutableModelRemoveMaterialObject(model, m_deletingMaterial, &status);
     m_activeModel->clearAllDrawVertexBuffers();
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
@@ -777,12 +777,12 @@ DeleteMaterialCommand::DeleteMaterialCommand(
     Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableMaterial(materials[materialIndex])
+    , m_deletingMaterial(materials[materialIndex])
     , m_deletingVertexIndexOffset(0)
     , m_materialIndex(materialIndex)
 {
     nanoem_rsize_t numMaterials, numVertexIndices;
-    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_deletingMaterial);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
     nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
@@ -821,7 +821,7 @@ DeleteMaterialCommand::undo(Error &error)
         memcpy(workingBufferPtr, indices + m_deletingVertexIndexOffset, restSize);
     }
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
-    nanoemMutableModelInsertMaterialObject(model, m_mutableMaterial, Inline::saturateInt32(m_materialIndex), &status);
+    nanoemMutableModelInsertMaterialObject(model, m_deletingMaterial, Inline::saturateInt32(m_materialIndex), &status);
     m_activeModel->clearAllDrawVertexBuffers();
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
@@ -840,7 +840,7 @@ DeleteMaterialCommand::redo(Error &error)
     memmove(workingBuffer.data() + m_deletingVertexIndexOffset,
         workingBuffer.data() + m_deletingVertexIndexOffset + size, rest * sizeof(workingBuffer[0]));
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), numIndices - size, &status);
-    nanoemMutableModelRemoveMaterialObject(model, m_mutableMaterial, &status);
+    nanoemMutableModelRemoveMaterialObject(model, m_deletingMaterial, &status);
     m_activeModel->clearAllDrawVertexBuffers();
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
@@ -874,7 +874,7 @@ BaseMoveMaterialCommand::BaseMoveMaterialCommand(
     Project *project, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableMaterial(materials[materialIndex])
+    , m_movingMaterial(materials[materialIndex])
 {
 }
 
@@ -914,7 +914,7 @@ BaseMoveMaterialCommand::move(ScopedMutableMaterial &material, int destination, 
 void
 BaseMoveMaterialCommand::moveUp(nanoem_status_t *status)
 {
-    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_movingMaterial);
     nanoem_rsize_t numMaterials, offset = 0;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
     LayoutPosition from = { 0, 0 }, to = { 0, 0 };
@@ -933,13 +933,13 @@ BaseMoveMaterialCommand::moveUp(nanoem_status_t *status)
         }
         offset += size;
     }
-    move(m_mutableMaterial, destination, from, to, m_activeModel, status);
+    move(m_movingMaterial, destination, from, to, m_activeModel, status);
 }
 
 void
 BaseMoveMaterialCommand::moveDown(nanoem_status_t *status)
 {
-    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_mutableMaterial);
+    const nanoem_model_material_t *activeMaterial = nanoemMutableModelMaterialGetOriginObject(m_movingMaterial);
     nanoem_rsize_t numMaterials, offset = 0;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
     LayoutPosition from = { 0, 0 }, to = { 0, 0 };
@@ -958,7 +958,7 @@ BaseMoveMaterialCommand::moveDown(nanoem_status_t *status)
         }
         offset += size;
     }
-    move(m_mutableMaterial, destination, from, to, m_activeModel, status);
+    move(m_movingMaterial, destination, from, to, m_activeModel, status);
 }
 
 undo_command_t *
@@ -1126,29 +1126,29 @@ CreateBoneCommand::CreateBoneCommand(
     , m_base(base)
     , m_offset(offset)
     , m_activeModel(project->activeModel())
-    , m_mutableBone(m_activeModel)
+    , m_creatingBone(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
     char buffer[Inline::kMarkerStringLength];
     if (m_base) {
-        nanoemMutableModelBoneCopy(m_mutableBone, m_base, &status);
+        nanoemMutableModelBoneCopy(m_creatingBone, m_base, &status);
     }
     nanoem_rsize_t numBones;
     nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
     StringUtils::format(buffer, sizeof(buffer), "%s%zu", kNewObjectPrefixName, numBones + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelBoneSetName(m_mutableBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelBoneSetName(m_creatingBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     StringUtils::format(buffer, sizeof(buffer), "NewBone%zu", numBones + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelBoneSetName(m_mutableBone, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelBoneSetName(m_creatingBone, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
     if (origin) {
-        nanoemMutableModelBoneSetOrigin(m_mutableBone, glm::value_ptr(Vector4(*origin, 1)));
+        nanoemMutableModelBoneSetOrigin(m_creatingBone, glm::value_ptr(Vector4(*origin, 1)));
     }
-    setup(nanoemMutableModelBoneGetOriginObject(m_mutableBone), project);
+    setup(nanoemMutableModelBoneGetOriginObject(m_creatingBone), project);
 }
 
 CreateBoneCommand::~CreateBoneCommand() NANOEM_DECL_NOEXCEPT
@@ -1161,8 +1161,8 @@ CreateBoneCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
-    nanoemMutableModelRemoveBoneObject(model, m_mutableBone, &status);
+    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
+    nanoemMutableModelRemoveBoneObject(model, m_creatingBone, &status);
     m_activeModel->removeBoneReference(bonePtr);
     assignError(status, error);
 }
@@ -1172,8 +1172,8 @@ CreateBoneCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
-    nanoemMutableModelInsertBoneObject(model, m_mutableBone, m_offset, &status);
+    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
+    nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_offset, &status);
     m_activeModel->addBoneReference(bonePtr);
     assignError(status, error);
 }
@@ -1213,18 +1213,18 @@ CreateBoneAsDestinationCommand::CreateBoneAsDestinationCommand(Project *project,
     : BaseUndoCommand(project)
     , m_parent(nanoemModelBoneGetParentBoneObject(base))
     , m_activeModel(project->activeModel())
-    , m_mutableBone(m_activeModel)
+    , m_creatingBone(m_activeModel)
     , m_boneIndex(model::Bone::index(base) + 1)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    nanoemMutableModelBoneCopy(m_mutableBone, base, &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_mutableBone, base);
-    CreateBoneCommand::setNameSuffix(m_mutableBone,
+    nanoemMutableModelBoneCopy(m_creatingBone, base, &status);
+    nanoemMutableModelBoneSetParentBoneObject(m_creatingBone, base);
+    CreateBoneCommand::setNameSuffix(m_creatingBone,
         reinterpret_cast<const char *>(model::Bone::kNameDestinationInJapanese), NANOEM_LANGUAGE_TYPE_JAPANESE, factory,
         &status);
-    CreateBoneCommand::setNameSuffix(m_mutableBone, "D", NANOEM_LANGUAGE_TYPE_ENGLISH, factory, &status);
-    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_mutableBone), project);
+    CreateBoneCommand::setNameSuffix(m_creatingBone, "D", NANOEM_LANGUAGE_TYPE_ENGLISH, factory, &status);
+    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_creatingBone), project);
 }
 
 CreateBoneAsDestinationCommand::~CreateBoneAsDestinationCommand() NANOEM_DECL_NOEXCEPT
@@ -1236,8 +1236,8 @@ CreateBoneAsDestinationCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
-    nanoemMutableModelRemoveBoneObject(model, m_mutableBone, &status);
+    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
+    nanoemMutableModelRemoveBoneObject(model, m_creatingBone, &status);
     assignError(status, error);
 }
 
@@ -1246,8 +1246,8 @@ CreateBoneAsDestinationCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertBoneObject(model, m_mutableBone, m_boneIndex, &status);
-    m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
+    nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_boneIndex, &status);
+    m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
     assignError(status, error);
 }
 
@@ -1286,22 +1286,22 @@ CreateBoneAsStagingParentCommand::CreateBoneAsStagingParentCommand(Project *proj
     : BaseUndoCommand(project)
     , m_parent(nanoemModelBoneGetParentBoneObject(base))
     , m_activeModel(project->activeModel())
-    , m_mutableBone(m_activeModel)
+    , m_creatingBone(m_activeModel)
     , m_boneIndex(model::Bone::index(base) + 1)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    nanoemMutableModelBoneCopy(m_mutableBone, base, &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_mutableBone, base);
-    CreateBoneCommand::setNameSuffix(m_mutableBone, "+", factory, &status);
-    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_mutableBone), project);
+    nanoemMutableModelBoneCopy(m_creatingBone, base, &status);
+    nanoemMutableModelBoneSetParentBoneObject(m_creatingBone, base);
+    CreateBoneCommand::setNameSuffix(m_creatingBone, "+", factory, &status);
+    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_creatingBone), project);
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         nanoem_model_bone_t *bonePtr = bones[i];
         if (nanoemModelBoneGetParentBoneObject(bonePtr) == base) {
             nanoem_mutable_model_bone_t *mutableBone = nanoemMutableModelBoneCreateAsReference(bonePtr, &status);
-            m_bones.push_back(mutableBone);
+            m_deletingBoneChildren.push_back(mutableBone);
             break;
         }
     }
@@ -1309,10 +1309,10 @@ CreateBoneAsStagingParentCommand::CreateBoneAsStagingParentCommand(Project *proj
 
 CreateBoneAsStagingParentCommand::~CreateBoneAsStagingParentCommand() NANOEM_DECL_NOEXCEPT
 {
-    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+    for (BoneList::const_iterator it = m_deletingBoneChildren.begin(), end = m_deletingBoneChildren.end(); it != end; ++it) {
         nanoemMutableModelBoneDestroy(*it);
     }
-    m_bones.clear();
+    m_deletingBoneChildren.clear();
 }
 
 void
@@ -1320,9 +1320,9 @@ CreateBoneAsStagingParentCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
-    nanoemMutableModelRemoveBoneObject(model, m_mutableBone, &status);
-    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
+    nanoemMutableModelRemoveBoneObject(model, m_creatingBone, &status);
+    for (BoneList::const_iterator it = m_deletingBoneChildren.begin(), end = m_deletingBoneChildren.end(); it != end; ++it) {
         nanoemMutableModelBoneSetParentBoneObject(*it, m_parent);
     }
     assignError(status, error);
@@ -1333,12 +1333,12 @@ CreateBoneAsStagingParentCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertBoneObject(model, m_mutableBone, m_boneIndex, &status);
-    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
-    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+    nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_boneIndex, &status);
+    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
+    for (BoneList::const_iterator it = m_deletingBoneChildren.begin(), end = m_deletingBoneChildren.end(); it != end; ++it) {
         nanoemMutableModelBoneSetParentBoneObject(*it, origin);
     }
-    m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
+    m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_creatingBone));
     assignError(status, error);
 }
 
@@ -1377,16 +1377,16 @@ CreateBoneAsStagingChildCommand::CreateBoneAsStagingChildCommand(Project *projec
     : BaseUndoCommand(project)
     , m_parent(nanoemModelBoneGetParentBoneObject(base))
     , m_activeModel(project->activeModel())
-    , m_mutableBone(m_activeModel)
+    , m_deletingBone(m_activeModel)
     , m_baseBone(base)
     , m_boneIndex(model::Bone::index(base))
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-    nanoemMutableModelBoneCopy(m_mutableBone, base, &status);
-    nanoemMutableModelBoneSetParentBoneObject(m_mutableBone, m_parent);
-    CreateBoneCommand::setNameSuffix(m_mutableBone, "-", factory, &status);
-    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_mutableBone), project);
+    nanoemMutableModelBoneCopy(m_deletingBone, base, &status);
+    nanoemMutableModelBoneSetParentBoneObject(m_deletingBone, m_parent);
+    CreateBoneCommand::setNameSuffix(m_deletingBone, "-", factory, &status);
+    CreateBoneCommand::setup(nanoemMutableModelBoneGetOriginObject(m_deletingBone), project);
 }
 
 CreateBoneAsStagingChildCommand::~CreateBoneAsStagingChildCommand() NANOEM_DECL_NOEXCEPT
@@ -1398,8 +1398,8 @@ CreateBoneAsStagingChildCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_mutableBone));
-    nanoemMutableModelRemoveBoneObject(model, m_mutableBone, &status);
+    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_deletingBone));
+    nanoemMutableModelRemoveBoneObject(model, m_deletingBone, &status);
     nanoemMutableModelBoneSetParentBoneObject(m_baseBone, m_parent);
     assignError(status, error);
 }
@@ -1409,8 +1409,8 @@ CreateBoneAsStagingChildCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertBoneObject(model, m_mutableBone, m_boneIndex, &status);
-    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
+    nanoemMutableModelInsertBoneObject(model, m_deletingBone, m_boneIndex, &status);
+    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_deletingBone);
     nanoemMutableModelBoneSetParentBoneObject(m_baseBone, origin);
     m_activeModel->addBoneReference(origin);
     assignError(status, error);
@@ -1524,20 +1524,34 @@ DeleteBoneCommand::create(Project *project, nanoem_rsize_t boneIndex)
 
 DeleteBoneCommand::DeleteBoneCommand(Project *project, nanoem_rsize_t boneIndex)
     : BaseUndoCommand(project)
+    , m_parentBonePtr(nullptr)
     , m_boneIndex(boneIndex)
     , m_activeModel(project->activeModel())
 {
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
-    nanoem_model_bone_t *bonePtr = bones[m_boneIndex];
+    nanoem_model_bone_t *deletingBonePtr = bones[m_boneIndex];
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    m_mutableBone = nanoemMutableModelBoneCreateAsReference(bonePtr, &status);
+    m_deletingBone = nanoemMutableModelBoneCreateAsReference(deletingBonePtr, &status);
+    m_parentBonePtr = nanoemModelBoneGetParentBoneObject(deletingBonePtr);
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        nanoem_model_bone_t *bonePtr = bones[i];
+        if (nanoemModelBoneGetParentBoneObject(bonePtr) == deletingBonePtr) {
+            nanoem_mutable_model_bone_t *mutableBone = nanoemMutableModelBoneCreateAsReference(bonePtr, &status);
+            m_bones.push_back(mutableBone);
+            break;
+        }
+    }
 }
 
 DeleteBoneCommand::~DeleteBoneCommand() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelBoneDestroy(m_mutableBone);
-    m_mutableBone = nullptr;
+    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+        nanoemMutableModelBoneDestroy(*it);
+    }
+    m_bones.clear();
+    nanoemMutableModelBoneDestroy(m_deletingBone);
+    m_deletingBone = nullptr;
     m_activeModel = nullptr;
 }
 
@@ -1546,9 +1560,12 @@ DeleteBoneCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
-    nanoemMutableModelInsertBoneObject(model, m_mutableBone, Inline::saturateInt32(m_boneIndex), &status);
+    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_deletingBone);
+    nanoemMutableModelInsertBoneObject(model, m_deletingBone, Inline::saturateInt32(m_boneIndex), &status);
     m_activeModel->addBoneReference(bonePtr);
+    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+        nanoemMutableModelBoneSetParentBoneObject(*it, bonePtr);
+    }
     assignError(status, error);
 }
 
@@ -1557,9 +1574,12 @@ DeleteBoneCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_mutableBone);
-    nanoemMutableModelRemoveBoneObject(model, m_mutableBone, &status);
+    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_deletingBone);
+    nanoemMutableModelRemoveBoneObject(model, m_deletingBone, &status);
     m_activeModel->removeBoneReference(bonePtr);
+    for (BoneList::const_iterator it = m_bones.begin(), end = m_bones.end(); it != end; ++it) {
+        nanoemMutableModelBoneSetParentBoneObject(*it, m_parentBonePtr);
+    }
     if (m_activeModel->activeBone() == bonePtr) {
         m_activeModel->setActiveBone(nullptr);
     }
@@ -1727,29 +1747,29 @@ CreateMorphCommand::CreateMorphCommand(
     , m_type(type)
     , m_offset(offset)
     , m_activeModel(project->activeModel())
-    , m_mutableMorph(m_activeModel)
+    , m_creatingMorph(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
     char buffer[Inline::kMarkerStringLength];
     if (m_base) {
-        nanoemMutableModelMorphCopy(m_mutableMorph, m_base, &status);
+        nanoemMutableModelMorphCopy(m_creatingMorph, m_base, &status);
     }
     else {
-        nanoemMutableModelMorphSetType(m_mutableMorph, m_type);
+        nanoemMutableModelMorphSetType(m_creatingMorph, m_type);
     }
     nanoem_rsize_t numMorphs;
     nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
     StringUtils::format(buffer, sizeof(buffer), "%s%zu", kNewObjectPrefixName, numMorphs + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelMorphSetName(m_mutableMorph, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     StringUtils::format(buffer, sizeof(buffer), "NewMorph%zu", numMorphs + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelMorphSetName(m_mutableMorph, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    setup(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), project);
+    setup(nanoemMutableModelMorphGetOriginObject(m_creatingMorph), project);
 }
 
 CreateMorphCommand::~CreateMorphCommand() NANOEM_DECL_NOEXCEPT
@@ -1762,8 +1782,8 @@ CreateMorphCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_mutableMorph);
-    nanoemMutableModelRemoveMorphObject(model, m_mutableMorph, &status);
+    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_creatingMorph);
+    nanoemMutableModelRemoveMorphObject(model, m_creatingMorph, &status);
     m_activeModel->removeMorphReference(morphPtr);
     assignError(status, error);
 }
@@ -1773,8 +1793,8 @@ CreateMorphCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_mutableMorph);
-    nanoemMutableModelInsertMorphObject(model, m_mutableMorph, m_offset, &status);
+    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_creatingMorph);
+    nanoemMutableModelInsertMorphObject(model, m_creatingMorph, m_offset, &status);
     m_activeModel->addMorphReference(morphPtr);
     assignError(status, error);
 }
@@ -1815,17 +1835,17 @@ CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(
     Project *project, const model::BindPose::BoneTransformMap &transforms, const String &filename)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableMorph(m_activeModel)
+    , m_creatingMorph(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
     if (StringUtils::tryGetString(factory, filename, us)) {
-        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    nanoemMutableModelMorphSetType(m_mutableMorph, NANOEM_MODEL_MORPH_TYPE_BONE);
-    nanoemMutableModelMorphSetCategory(m_mutableMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
+    nanoemMutableModelMorphSetType(m_creatingMorph, NANOEM_MODEL_MORPH_TYPE_BONE);
+    nanoemMutableModelMorphSetCategory(m_creatingMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
     for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(), end = transforms.end(); it != end;
          ++it) {
         if (const nanoem_model_bone_t *bonePtr = m_activeModel->findBone(it->first)) {
@@ -1833,15 +1853,15 @@ CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(
             const Quaternion &orientation = it->second.second;
             if (glm::all(glm::epsilonNotEqual(translation, Constants::kZeroV3, Constants::kEpsilon)) ||
                 glm::all(glm::epsilonNotEqual(orientation, Constants::kZeroQ, Constants::kEpsilon))) {
-                command::ScopedMutableMorphBone scoped(m_mutableMorph);
+                command::ScopedMutableMorphBone scoped(m_creatingMorph);
                 nanoemMutableModelMorphBoneSetBoneObject(scoped, bonePtr);
                 nanoemMutableModelMorphBoneSetTranslation(scoped, glm::value_ptr(Vector4(translation, 0)));
                 nanoemMutableModelMorphBoneSetOrientation(scoped, glm::value_ptr(orientation));
-                nanoemMutableModelMorphInsertBoneMorphObject(m_mutableMorph, scoped, -1, &status);
+                nanoemMutableModelMorphInsertBoneMorphObject(m_creatingMorph, scoped, -1, &status);
             }
         }
     }
-    CreateMorphCommand::setup(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), project);
+    CreateMorphCommand::setup(nanoemMutableModelMorphGetOriginObject(m_creatingMorph), project);
 }
 
 CreateBoneMorphFromPoseCommand::~CreateBoneMorphFromPoseCommand() NANOEM_DECL_NOEXCEPT
@@ -1853,8 +1873,8 @@ CreateBoneMorphFromPoseCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    m_activeModel->removeMorphReference(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
-    nanoemMutableModelRemoveMorphObject(model, m_mutableMorph, &status);
+    m_activeModel->removeMorphReference(nanoemMutableModelMorphGetOriginObject(m_creatingMorph));
+    nanoemMutableModelRemoveMorphObject(model, m_creatingMorph, &status);
     assignError(status, error);
 }
 
@@ -1863,8 +1883,8 @@ CreateBoneMorphFromPoseCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertMorphObject(model, m_mutableMorph, -1, &status);
-    m_activeModel->addMorphReference(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
+    nanoemMutableModelInsertMorphObject(model, m_creatingMorph, -1, &status);
+    m_activeModel->addMorphReference(nanoemMutableModelMorphGetOriginObject(m_creatingMorph));
     assignError(status, error);
 }
 
@@ -1904,17 +1924,17 @@ CreateVertexMorphFromModelCommand::CreateVertexMorphFromModelCommand(
     Project *project, const nanoem_model_t *modelPtr, const String &filename)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableMorph(m_activeModel)
+    , m_creatingMorph(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
     if (StringUtils::tryGetString(factory, filename, us)) {
-        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
-        nanoemMutableModelMorphSetName(m_mutableMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    nanoemMutableModelMorphSetType(m_mutableMorph, NANOEM_MODEL_MORPH_TYPE_VERTEX);
-    nanoemMutableModelMorphSetCategory(m_mutableMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
+    nanoemMutableModelMorphSetType(m_creatingMorph, NANOEM_MODEL_MORPH_TYPE_VERTEX);
+    nanoemMutableModelMorphSetCategory(m_creatingMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
     {
         nanoem_rsize_t numRightVertices, numLeftVertices;
         nanoem_model_vertex_t *const *rightVertices =
@@ -1927,15 +1947,15 @@ CreateVertexMorphFromModelCommand::CreateVertexMorphFromModelCommand(
                 rightOrigin(glm::make_vec3(nanoemModelVertexGetOrigin(rightVertex)));
             if (glm::abs(glm::distance(rightOrigin, leftOrigin)) > 0) {
                 nanoem_mutable_model_morph_vertex_t *item =
-                    nanoemMutableModelMorphVertexCreate(m_mutableMorph, &status);
+                    nanoemMutableModelMorphVertexCreate(m_creatingMorph, &status);
                 nanoemMutableModelMorphVertexSetVertexObject(item, rightVertex);
                 nanoemMutableModelMorphVertexSetPosition(item, glm::value_ptr(Vector4(leftOrigin - rightOrigin, 0)));
-                nanoemMutableModelMorphInsertVertexMorphObject(m_mutableMorph, item, -1, &status);
+                nanoemMutableModelMorphInsertVertexMorphObject(m_creatingMorph, item, -1, &status);
                 nanoemMutableModelMorphVertexDestroy(item);
             }
         }
     }
-    CreateMorphCommand::setup(nanoemMutableModelMorphGetOriginObject(m_mutableMorph), project);
+    CreateMorphCommand::setup(nanoemMutableModelMorphGetOriginObject(m_creatingMorph), project);
 }
 
 CreateVertexMorphFromModelCommand::~CreateVertexMorphFromModelCommand() NANOEM_DECL_NOEXCEPT
@@ -1947,8 +1967,8 @@ CreateVertexMorphFromModelCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    m_activeModel->removeMorphReference(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
-    nanoemMutableModelRemoveMorphObject(model, m_mutableMorph, &status);
+    m_activeModel->removeMorphReference(nanoemMutableModelMorphGetOriginObject(m_creatingMorph));
+    nanoemMutableModelRemoveMorphObject(model, m_creatingMorph, &status);
     assignError(status, error);
 }
 
@@ -1957,8 +1977,8 @@ CreateVertexMorphFromModelCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertMorphObject(model, m_mutableMorph, -1, &status);
-    m_activeModel->addMorphReference(nanoemMutableModelMorphGetOriginObject(m_mutableMorph));
+    nanoemMutableModelInsertMorphObject(model, m_creatingMorph, -1, &status);
+    m_activeModel->addMorphReference(nanoemMutableModelMorphGetOriginObject(m_creatingMorph));
     assignError(status, error);
 }
 
@@ -2451,13 +2471,13 @@ DeleteMorphCommand::DeleteMorphCommand(Project *project, nanoem_rsize_t morphInd
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
     nanoem_model_morph_t *morphPtr = morphs[m_morphIndex];
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    m_mutableMorph = nanoemMutableModelMorphCreateAsReference(morphPtr, &status);
+    m_deletingMorph = nanoemMutableModelMorphCreateAsReference(morphPtr, &status);
 }
 
 DeleteMorphCommand::~DeleteMorphCommand() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelMorphDestroy(m_mutableMorph);
-    m_mutableMorph = nullptr;
+    nanoemMutableModelMorphDestroy(m_deletingMorph);
+    m_deletingMorph = nullptr;
     m_activeModel = nullptr;
 }
 
@@ -2466,8 +2486,8 @@ DeleteMorphCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_mutableMorph);
-    nanoemMutableModelInsertMorphObject(model, m_mutableMorph, Inline::saturateInt32(m_morphIndex), &status);
+    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_deletingMorph);
+    nanoemMutableModelInsertMorphObject(model, m_deletingMorph, Inline::saturateInt32(m_morphIndex), &status);
     m_activeModel->addMorphReference(morphPtr);
     assignError(status, error);
 }
@@ -2477,7 +2497,7 @@ DeleteMorphCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_mutableMorph);
+    const nanoem_model_morph_t *morphPtr = nanoemMutableModelMorphGetOriginObject(m_deletingMorph);
     for (int i = NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM; i < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM; i++) {
         nanoem_model_morph_category_t category = static_cast<nanoem_model_morph_category_t>(i);
         if (m_activeModel->activeMorph(category) == morphPtr) {
@@ -2485,7 +2505,7 @@ DeleteMorphCommand::redo(Error &error)
         }
     }
     m_activeModel->removeMorphReference(morphPtr);
-    nanoemMutableModelRemoveMorphObject(model, m_mutableMorph, &status);
+    nanoemMutableModelRemoveMorphObject(model, m_deletingMorph, &status);
     assignError(status, error);
 }
 
@@ -2639,28 +2659,28 @@ CreateLabelCommand::CreateLabelCommand(Project *project, int offset, const nanoe
     , m_base(base)
     , m_offset(offset)
     , m_activeModel(project->activeModel())
-    , m_mutableLabel(m_activeModel)
+    , m_creatingLabel(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
     char buffer[Inline::kMarkerStringLength];
     if (m_base) {
-        nanoemMutableModelLabelCopy(m_mutableLabel, m_base, &status);
+        nanoemMutableModelLabelCopy(m_creatingLabel, m_base, &status);
     }
     nanoem_rsize_t numLabels;
     nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
     StringUtils::format(buffer, sizeof(buffer), "%s%zu", kNewObjectPrefixName, numLabels + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelLabelSetName(m_mutableLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelLabelSetName(m_creatingLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     StringUtils::format(buffer, sizeof(buffer), "NewLabel%zu", numLabels + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelLabelSetName(m_mutableLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelLabelSetName(m_creatingLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
     model::Label *newLabel = model::Label::create();
-    newLabel->bind(nanoemMutableModelLabelGetOriginObject(m_mutableLabel));
-    newLabel->resetLanguage(nanoemMutableModelLabelGetOriginObject(m_mutableLabel), factory, project->castLanguage());
+    newLabel->bind(nanoemMutableModelLabelGetOriginObject(m_creatingLabel));
+    newLabel->resetLanguage(nanoemMutableModelLabelGetOriginObject(m_creatingLabel), factory, project->castLanguage());
 }
 
 CreateLabelCommand::~CreateLabelCommand() NANOEM_DECL_NOEXCEPT
@@ -2673,7 +2693,7 @@ CreateLabelCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveLabelObject(model, m_mutableLabel, &status);
+    nanoemMutableModelRemoveLabelObject(model, m_creatingLabel, &status);
     currentProject()->rebuildAllTracks();
     assignError(status, error);
 }
@@ -2683,7 +2703,7 @@ CreateLabelCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertLabelObject(model, m_mutableLabel, m_offset, &status);
+    nanoemMutableModelInsertLabelObject(model, m_creatingLabel, m_offset, &status);
     currentProject()->rebuildAllTracks();
     assignError(status, error);
 }
@@ -2875,13 +2895,13 @@ DeleteLabelCommand::DeleteLabelCommand(Project *project, nanoem_rsize_t labelInd
     nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
     nanoem_model_label_t *labelPtr = labels[m_labelIndex];
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    m_mutableLabel = nanoemMutableModelLabelCreateAsReference(labelPtr, &status);
+    m_deletingLabel = nanoemMutableModelLabelCreateAsReference(labelPtr, &status);
 }
 
 DeleteLabelCommand::~DeleteLabelCommand() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelLabelDestroy(m_mutableLabel);
-    m_mutableLabel = nullptr;
+    nanoemMutableModelLabelDestroy(m_deletingLabel);
+    m_deletingLabel = nullptr;
     m_activeModel = nullptr;
 }
 
@@ -2890,7 +2910,7 @@ DeleteLabelCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertLabelObject(model, m_mutableLabel, Inline::saturateInt32(m_labelIndex), &status);
+    nanoemMutableModelInsertLabelObject(model, m_deletingLabel, Inline::saturateInt32(m_labelIndex), &status);
     currentProject()->rebuildAllTracks();
     assignError(status, error);
 }
@@ -2900,7 +2920,7 @@ DeleteLabelCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveLabelObject(model, m_mutableLabel, &status);
+    nanoemMutableModelRemoveLabelObject(model, m_deletingLabel, &status);
     currentProject()->rebuildAllTracks();
     assignError(status, error);
 }
@@ -3065,26 +3085,26 @@ CreateRigidBodyCommand::CreateRigidBodyCommand(Project *project, int offset, con
     , m_base(base)
     , m_offset(offset)
     , m_activeModel(project->activeModel())
-    , m_mutableRigidBody(m_activeModel)
+    , m_creatingRigidBody(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
     char buffer[Inline::kMarkerStringLength];
     if (m_base) {
-        nanoemMutableModelRigidBodyCopy(m_mutableRigidBody, m_base, &status);
+        nanoemMutableModelRigidBodyCopy(m_creatingRigidBody, m_base, &status);
     }
     nanoem_rsize_t numRigidBodies;
     nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
     StringUtils::format(buffer, sizeof(buffer), "%s%zu", kNewObjectPrefixName, numRigidBodies + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelRigidBodySetName(m_mutableRigidBody, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelRigidBodySetName(m_creatingRigidBody, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     StringUtils::format(buffer, sizeof(buffer), "NewRigidBody%zu", numRigidBodies + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelRigidBodySetName(m_mutableRigidBody, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelRigidBodySetName(m_creatingRigidBody, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    setup(nanoemMutableModelRigidBodyGetOriginObject(m_mutableRigidBody), project);
+    setup(nanoemMutableModelRigidBodyGetOriginObject(m_creatingRigidBody), project);
 }
 
 CreateRigidBodyCommand::~CreateRigidBodyCommand() NANOEM_DECL_NOEXCEPT
@@ -3097,7 +3117,7 @@ CreateRigidBodyCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveRigidBodyObject(model, m_mutableRigidBody, &status);
+    nanoemMutableModelRemoveRigidBodyObject(model, m_creatingRigidBody, &status);
     assignError(status, error);
 }
 
@@ -3106,7 +3126,7 @@ CreateRigidBodyCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertRigidBodyObject(model, m_mutableRigidBody, m_offset, &status);
+    nanoemMutableModelInsertRigidBodyObject(model, m_creatingRigidBody, m_offset, &status);
     assignError(status, error);
 }
 
@@ -3150,13 +3170,13 @@ DeleteRigidBodyCommand::DeleteRigidBodyCommand(Project *project, nanoem_rsize_t 
     nanoem_rsize_t numRigidBodies;
     nanoem_model_rigid_body_t *const *rigidBodies =
         nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
-    m_mutableRigidBody = nanoemMutableModelRigidBodyCreateAsReference(rigidBodies[m_rigidBodyIndex], &status);
+    m_deletingRigidBody = nanoemMutableModelRigidBodyCreateAsReference(rigidBodies[m_rigidBodyIndex], &status);
 }
 
 DeleteRigidBodyCommand::~DeleteRigidBodyCommand() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelRigidBodyDestroy(m_mutableRigidBody);
-    m_mutableRigidBody = nullptr;
+    nanoemMutableModelRigidBodyDestroy(m_deletingRigidBody);
+    m_deletingRigidBody = nullptr;
     m_activeModel = nullptr;
 }
 
@@ -3166,7 +3186,7 @@ DeleteRigidBodyCommand::undo(Error &error)
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
     nanoemMutableModelInsertRigidBodyObject(
-        model, m_mutableRigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
+        model, m_deletingRigidBody, Inline::saturateInt32(m_rigidBodyIndex), &status);
     assignError(status, error);
 }
 
@@ -3175,7 +3195,7 @@ DeleteRigidBodyCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveRigidBodyObject(model, m_mutableRigidBody, &status);
+    nanoemMutableModelRemoveRigidBodyObject(model, m_deletingRigidBody, &status);
     assignError(status, error);
 }
 
@@ -3340,26 +3360,26 @@ CreateJointCommand::CreateJointCommand(Project *project, int offset, const nanoe
     , m_base(base)
     , m_offset(offset)
     , m_activeModel(project->activeModel())
-    , m_mutableJoint(m_activeModel)
+    , m_creatingJoint(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
     char buffer[Inline::kMarkerStringLength];
     if (m_base) {
-        nanoemMutableModelJointCopy(m_mutableJoint, m_base, &status);
+        nanoemMutableModelJointCopy(m_creatingJoint, m_base, &status);
     }
     nanoem_rsize_t numJoints;
     nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
     StringUtils::format(buffer, sizeof(buffer), "%s%zu", kNewObjectPrefixName, numJoints + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelJointSetName(m_mutableJoint, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelJointSetName(m_creatingJoint, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     StringUtils::format(buffer, sizeof(buffer), "NewRigidBody%zu", numJoints + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelJointSetName(m_mutableJoint, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelJointSetName(m_creatingJoint, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
-    setup(nanoemMutableModelJointGetOriginObject(m_mutableJoint), project);
+    setup(nanoemMutableModelJointGetOriginObject(m_creatingJoint), project);
 }
 
 CreateJointCommand::~CreateJointCommand() NANOEM_DECL_NOEXCEPT
@@ -3372,7 +3392,7 @@ CreateJointCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveJointObject(model, m_mutableJoint, &status);
+    nanoemMutableModelRemoveJointObject(model, m_creatingJoint, &status);
     assignError(status, error);
 }
 
@@ -3381,7 +3401,7 @@ CreateJointCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertJointObject(model, m_mutableJoint, m_offset, &status);
+    nanoemMutableModelInsertJointObject(model, m_creatingJoint, m_offset, &status);
     assignError(status, error);
 }
 
@@ -3420,7 +3440,7 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::create(Project *project)
 CreateIntermediateJointFromTwoRigidBodiesCommand::CreateIntermediateJointFromTwoRigidBodiesCommand(Project *project)
     : BaseUndoCommand(project)
     , m_activeModel(project->activeModel())
-    , m_mutableJoint(m_activeModel)
+    , m_creatingJoint(m_activeModel)
 {
     nanoem_assert(m_activeModel->selection()->countAllRigidBodies() == 2, "must have two rigid bodies");
     const model::RigidBody::Set bodySet(m_activeModel->selection()->allRigidBodySet());
@@ -3431,7 +3451,8 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::CreateIntermediateJointFromTwo
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     for (nanoem_rsize_t i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
         nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
-        nanoemMutableModelJointSetName(m_mutableJoint, nanoemModelRigidBodyGetName(bodyA, language), language, &status);
+        nanoemMutableModelJointSetName(
+            m_creatingJoint, nanoemModelRigidBodyGetName(bodyA, language), language, &status);
     }
     const Vector4 origin(
         (glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyA)) + glm::make_vec4(nanoemModelRigidBodyGetOrigin(bodyB))) *
@@ -3439,12 +3460,12 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::CreateIntermediateJointFromTwo
     const Vector4 orientation((glm::make_vec4(nanoemModelRigidBodyGetOrientation(bodyA)) +
                                   glm::make_vec4(nanoemModelRigidBodyGetOrientation(bodyB))) *
         0.5f);
-    nanoemMutableModelJointSetOrigin(m_mutableJoint, glm::value_ptr(origin));
-    nanoemMutableModelJointSetOrientation(m_mutableJoint, glm::value_ptr(orientation));
-    nanoemMutableModelJointSetType(m_mutableJoint, NANOEM_MODEL_JOINT_TYPE_GENERIC_6DOF_SPRING_CONSTRAINT);
-    nanoemMutableModelJointSetRigidBodyAObject(m_mutableJoint, bodyA);
-    nanoemMutableModelJointSetRigidBodyBObject(m_mutableJoint, bodyB);
-    CreateJointCommand::setup(nanoemMutableModelJointGetOriginObject(m_mutableJoint), project);
+    nanoemMutableModelJointSetOrigin(m_creatingJoint, glm::value_ptr(origin));
+    nanoemMutableModelJointSetOrientation(m_creatingJoint, glm::value_ptr(orientation));
+    nanoemMutableModelJointSetType(m_creatingJoint, NANOEM_MODEL_JOINT_TYPE_GENERIC_6DOF_SPRING_CONSTRAINT);
+    nanoemMutableModelJointSetRigidBodyAObject(m_creatingJoint, bodyA);
+    nanoemMutableModelJointSetRigidBodyBObject(m_creatingJoint, bodyB);
+    CreateJointCommand::setup(nanoemMutableModelJointGetOriginObject(m_creatingJoint), project);
 }
 
 CreateIntermediateJointFromTwoRigidBodiesCommand::~CreateIntermediateJointFromTwoRigidBodiesCommand()
@@ -3457,7 +3478,7 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveJointObject(model, m_mutableJoint, &status);
+    nanoemMutableModelRemoveJointObject(model, m_creatingJoint, &status);
     assignError(status, error);
 }
 
@@ -3466,7 +3487,7 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertJointObject(model, m_mutableJoint, -1, &status);
+    nanoemMutableModelInsertJointObject(model, m_creatingJoint, -1, &status);
     assignError(status, error);
 }
 
@@ -3505,18 +3526,18 @@ DeleteJointCommand::DeleteJointCommand(Project *project, nanoem_rsize_t jointInd
     : BaseUndoCommand(project)
     , m_jointIndex(jointIndex)
     , m_activeModel(project->activeModel())
-    , m_mutableJoint(nullptr)
+    , m_deletingJoint(nullptr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_rsize_t numJoints;
     nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
-    m_mutableJoint = nanoemMutableModelJointCreateAsReference(joints[m_jointIndex], &status);
+    m_deletingJoint = nanoemMutableModelJointCreateAsReference(joints[m_jointIndex], &status);
 }
 
 DeleteJointCommand::~DeleteJointCommand() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelJointDestroy(m_mutableJoint);
-    m_mutableJoint = nullptr;
+    nanoemMutableModelJointDestroy(m_deletingJoint);
+    m_deletingJoint = nullptr;
     m_activeModel = nullptr;
 }
 
@@ -3525,7 +3546,7 @@ DeleteJointCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertJointObject(model, m_mutableJoint, Inline::saturateInt32(m_jointIndex), &status);
+    nanoemMutableModelInsertJointObject(model, m_deletingJoint, Inline::saturateInt32(m_jointIndex), &status);
     assignError(status, error);
 }
 
@@ -3534,7 +3555,7 @@ DeleteJointCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveJointObject(model, m_mutableJoint, &status);
+    nanoemMutableModelRemoveJointObject(model, m_deletingJoint, &status);
     assignError(status, error);
 }
 
@@ -3688,28 +3709,28 @@ CreateSoftBodyCommand::CreateSoftBodyCommand(Project *project, int offset, const
     , m_base(base)
     , m_offset(offset)
     , m_activeModel(project->activeModel())
-    , m_mutableSoftBody(m_activeModel)
+    , m_creatingSoftBody(m_activeModel)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
     char buffer[Inline::kMarkerStringLength];
     if (m_base) {
-        nanoemMutableModelSoftBodyCopy(m_mutableSoftBody, m_base, &status);
+        nanoemMutableModelSoftBodyCopy(m_creatingSoftBody, m_base, &status);
     }
     nanoem_rsize_t numSoftBodies;
     nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
     StringUtils::format(buffer, sizeof(buffer), "%s%zu", kNewObjectPrefixName, numSoftBodies + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelSoftBodySetName(m_mutableSoftBody, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        nanoemMutableModelSoftBodySetName(m_creatingSoftBody, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     StringUtils::format(buffer, sizeof(buffer), "NewRigidBody%zu", numSoftBodies + 1);
     if (StringUtils::tryGetString(factory, buffer, scope)) {
-        nanoemMutableModelSoftBodySetName(m_mutableSoftBody, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelSoftBodySetName(m_creatingSoftBody, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
     }
     model::SoftBody *newSoftBody = model::SoftBody::create();
     model::RigidBody::Resolver resolver;
-    nanoem_model_soft_body_t *softBodyPtr = nanoemMutableModelSoftBodyGetOriginObject(m_mutableSoftBody);
+    nanoem_model_soft_body_t *softBodyPtr = nanoemMutableModelSoftBodyGetOriginObject(m_creatingSoftBody);
     newSoftBody->bind(softBodyPtr, nullptr, resolver);
     newSoftBody->resetLanguage(softBodyPtr, factory, project->castLanguage());
 }
@@ -3724,7 +3745,7 @@ CreateSoftBodyCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveSoftBodyObject(model, m_mutableSoftBody, &status);
+    nanoemMutableModelRemoveSoftBodyObject(model, m_creatingSoftBody, &status);
     assignError(status, error);
 }
 
@@ -3733,7 +3754,7 @@ CreateSoftBodyCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertSoftBodyObject(model, m_mutableSoftBody, m_offset, &status);
+    nanoemMutableModelInsertSoftBodyObject(model, m_creatingSoftBody, m_offset, &status);
     assignError(status, error);
 }
 
@@ -3772,19 +3793,19 @@ DeleteSoftBodyCommand::DeleteSoftBodyCommand(Project *project, nanoem_rsize_t so
     : BaseUndoCommand(project)
     , m_softBodyIndex(softBodyIndex)
     , m_activeModel(project->activeModel())
-    , m_mutableSoftBody(nullptr)
+    , m_deletingSoftBody(nullptr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_rsize_t numSoftBodies;
     nanoem_model_soft_body_t *const *softBodies =
         nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
-    m_mutableSoftBody = nanoemMutableModelSoftBodyCreateAsReference(softBodies[m_softBodyIndex], &status);
+    m_deletingSoftBody = nanoemMutableModelSoftBodyCreateAsReference(softBodies[m_softBodyIndex], &status);
 }
 
 DeleteSoftBodyCommand::~DeleteSoftBodyCommand() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelSoftBodyDestroy(m_mutableSoftBody);
-    m_mutableSoftBody = nullptr;
+    nanoemMutableModelSoftBodyDestroy(m_deletingSoftBody);
+    m_deletingSoftBody = nullptr;
     m_activeModel = nullptr;
 }
 
@@ -3793,7 +3814,7 @@ DeleteSoftBodyCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelInsertSoftBodyObject(model, m_mutableSoftBody, Inline::saturateInt32(m_softBodyIndex), &status);
+    nanoemMutableModelInsertSoftBodyObject(model, m_deletingSoftBody, Inline::saturateInt32(m_softBodyIndex), &status);
     assignError(status, error);
 }
 
@@ -3802,7 +3823,7 @@ DeleteSoftBodyCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    nanoemMutableModelRemoveSoftBodyObject(model, m_mutableSoftBody, &status);
+    nanoemMutableModelRemoveSoftBodyObject(model, m_deletingSoftBody, &status);
     assignError(status, error);
 }
 
