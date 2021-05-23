@@ -1079,7 +1079,6 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     ImGui::BeginChild("left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y), true);
     ImGuiListClipper clipper;
     IModelObjectSelection *selection = m_activeModel->selection();
-    nanoem_model_vertex_t *hoveredVertexPtr = nullptr;
     bool up, down;
     detectUpDown(up, down);
     selectIndex(up, down, numVertices, m_vertexIndex);
@@ -1119,21 +1118,16 @@ ModelParameterDialog::layoutAllVertices(Project *project)
                     m_vertexIndex = i;
                     selection->addVertex(vertexPtr);
                 }
-                hoveredVertexPtr = vertexPtr;
             }
             else if ((up || down) && m_vertexIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_vertexIndex = i;
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredVertexPtr = vertexPtr;
             }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
     }
-    selection->setHoveredVertex(hoveredVertexPtr);
     ImGui::EndChild(); /* left-pane-inner */
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
@@ -1503,7 +1497,6 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     ImGui::BeginChild(
         "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
     ImGuiListClipper clipper;
-    nanoem_model_material_t *hoveredMaterialPtr = nullptr;
     IModelObjectSelection *selection = m_activeModel->selection();
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
@@ -1545,21 +1538,16 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
                     m_materialIndex = i;
                     selection->addMaterial(materialPtr);
                 }
-                hoveredMaterialPtr = materials[i];
             }
             else if ((up || down) && m_materialIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_materialIndex = i;
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredMaterialPtr = materials[i];
             }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
     }
-    selection->setHoveredMaterial(hoveredMaterialPtr);
     ImGui::EndChild(); /* left-pane-inner */
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus))) {
         ImGui::OpenPopup("material-create-op");
@@ -2045,7 +2033,6 @@ ModelParameterDialog::layoutAllBones(Project *project)
         ImGui::End();
     }
 #endif
-    nanoem_model_bone_t *hoveredBonePtr = nullptr;
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
@@ -2101,21 +2088,16 @@ ModelParameterDialog::layoutAllBones(Project *project)
                     m_boneIndex = i;
                     selection->addBone(bonePtr);
                 }
-                hoveredBonePtr = bones[i];
             }
             else if ((up || down) && m_boneIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_boneIndex = i;
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredBonePtr = bones[i];
             }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
     }
-    selection->setHoveredBone(hoveredBonePtr);
     ImGui::EndChild(); /* left-pane-inner */
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("bone-create-menu");
@@ -2659,7 +2641,6 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
 {
     nanoem_rsize_t numMorphs;
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
-    nanoem_model_morph_t *hoveredMorphPtr = nullptr;
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
@@ -2711,7 +2692,6 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                     m_morphItemIndex = 0;
                     selection->addMorph(morphPtr);
                 }
-                hoveredMorphPtr = morphs[i];
             }
             else if ((up || down) && m_morphIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
@@ -2719,15 +2699,11 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
                 m_morphIndex = i;
                 m_morphItemIndex = 0;
             }
-            else if (ImGui::IsItemHovered()) {
-                hoveredMorphPtr = morphs[i];
-            }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
     }
-    selection->setHoveredMorph(hoveredMorphPtr);
     ImGui::EndChild(); /* left-pane-inner */
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("morph-create-menu");
@@ -3551,7 +3527,6 @@ ModelParameterDialog::layoutAllLabels(Project *project)
 {
     nanoem_rsize_t numLabels;
     nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
-    nanoem_model_label_t *hoveredLabelPtr = nullptr;
     nanoem_f32_t width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
     if (ImGui::Button(reinterpret_cast<const char *>(ImGuiWindow::kFACogs))) {
@@ -3602,22 +3577,17 @@ ModelParameterDialog::layoutAllLabels(Project *project)
                     m_labelItemIndex = 0;
                     selection->addLabel(labelPtr);
                 }
-                hoveredLabelPtr = labels[i];
             }
             else if ((up || down) && m_labelIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_labelIndex = i;
                 m_labelItemIndex = 0;
             }
-            else if (ImGui::IsItemHovered()) {
-                hoveredLabelPtr = labels[i];
-            }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
     }
-    selection->setHoveredLabel(hoveredLabelPtr);
     ImGui::EndChild(); /* left-pane-inner */
     const nanoem_model_label_t *selectedLabel = numLabels > 0 ? labels[m_labelIndex] : nullptr;
     bool isEditable = !(nanoemModelLabelIsSpecial(selectedLabel) &&
@@ -3811,7 +3781,6 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
     ImGuiListClipper clipper;
     IModelObjectSelection *selection = m_activeModel->selection();
-    nanoem_model_rigid_body_t *hoveredRigidBodyPtr = nullptr;
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
     detectUpDown(up, down);
@@ -3825,9 +3794,6 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
             bool visible = rigidBody->isEditingMasked() ? false : true;
             if (ImGui::Checkbox(buffer, &visible)) {
                 rigidBody->setEditingMasked(visible ? false : true);
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredRigidBodyPtr = rigidBodies[i];
             }
             ImGui::SameLine();
             const bool selected = selection->containsRigidBody(rigidBodyPtr);
@@ -3855,14 +3821,10 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
                     m_rigidBodyIndex = i;
                     selection->addRigidBody(rigidBodyPtr);
                 }
-                hoveredRigidBodyPtr = rigidBodies[i];
             }
             else if ((up || down) && m_rigidBodyIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_rigidBodyIndex = i;
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredRigidBodyPtr = rigidBodies[i];
             }
             if (selected) {
                 ImGui::PopStyleColor();
@@ -3870,13 +3832,6 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         }
     }
     ImGui::EndChild(); /* left-pane-inner */
-    bool hovered = ImGui::IsItemHovered();
-    if (hovered && hoveredRigidBodyPtr) {
-        selection->setHoveredRigidBody(hoveredRigidBodyPtr);
-    }
-    else if (!hovered && !hoveredRigidBodyPtr) {
-        selection->setHoveredRigidBody(nullptr);
-    }
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {
         ImGui::OpenPopup("rigid-body-create-menu");
     }
@@ -4114,7 +4069,6 @@ ModelParameterDialog::layoutAllJoints(Project *project)
         "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
     ImGuiListClipper clipper;
     IModelObjectSelection *selection = m_activeModel->selection();
-    nanoem_model_joint_t *hoveredJointPtr = nullptr;
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
     detectUpDown(up, down);
@@ -4128,9 +4082,6 @@ ModelParameterDialog::layoutAllJoints(Project *project)
             bool visible = joint->isEditingMasked() ? false : true;
             if (ImGui::Checkbox(buffer, &visible)) {
                 joint->setEditingMasked(visible ? false : true);
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredJointPtr = joints[i];
             }
             ImGui::SameLine();
             const bool selected = selection->containsJoint(jointPtr);
@@ -4158,26 +4109,15 @@ ModelParameterDialog::layoutAllJoints(Project *project)
                     m_jointIndex = i;
                     selection->addJoint(jointPtr);
                 }
-                hoveredJointPtr = joints[i];
             }
             else if ((up || down) && m_jointIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_jointIndex = i;
             }
-            else if (ImGui::IsItemHovered()) {
-                hoveredJointPtr = joints[i];
-            }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
-    }
-    bool hovered = ImGui::IsItemHovered();
-    if (hovered && hoveredJointPtr) {
-        selection->setHoveredJoint(hoveredJointPtr);
-    }
-    else if (!hovered && !hoveredJointPtr) {
-        selection->setHoveredJoint(nullptr);
     }
     ImGui::EndChild(); /* left-pane-inner */
     joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
@@ -4385,7 +4325,6 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
         "left-pane-inner", ImVec2(width, ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing()), true);
     ImGuiListClipper clipper;
     IModelObjectSelection *selection = m_activeModel->selection();
-    nanoem_model_soft_body_t *hoveredSoftBodyPtr = nullptr;
     char buffer[Inline::kNameStackBufferSize];
     bool up, down;
     detectUpDown(up, down);
@@ -4426,21 +4365,16 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
                     m_softBodyIndex = i;
                     selection->addSoftBody(softBodyPtr);
                 }
-                hoveredSoftBodyPtr = softBodies[i];
             }
             else if ((up || down) && m_softBodyIndex == static_cast<nanoem_rsize_t>(i)) {
                 ImGui::SetScrollHereY();
                 m_softBodyIndex = i;
-            }
-            else if (ImGui::IsItemHovered()) {
-                hoveredSoftBodyPtr = softBodies[i];
             }
             if (selected) {
                 ImGui::PopStyleColor();
             }
         }
     }
-    selection->setHoveredSoftBody(hoveredSoftBodyPtr);
     ImGui::EndChild(); /* left-pane-inner */
     softBodies = nanoemModelGetAllSoftBodyObjects(m_activeModel->data(), &numSoftBodies);
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAPlus), 0, true)) {

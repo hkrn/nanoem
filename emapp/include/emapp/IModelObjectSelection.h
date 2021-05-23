@@ -85,23 +85,6 @@ public:
     virtual void clearAll() = 0;
     virtual void toggleSelectAndActiveBone(const nanoem_model_bone_t *bone, bool isMultipleSelection) = 0;
 
-    virtual void setHoveredVertex(nanoem_model_vertex_t *value) = 0;
-    virtual void setHoveredMaterial(nanoem_model_material_t *value) = 0;
-    virtual void setHoveredBone(nanoem_model_bone_t *value) = 0;
-    virtual void setHoveredMorph(nanoem_model_morph_t *value) = 0;
-    virtual void setHoveredLabel(nanoem_model_label_t *value) = 0;
-    virtual void setHoveredRigidBody(nanoem_model_rigid_body_t *value) = 0;
-    virtual void setHoveredJoint(nanoem_model_joint_t *value) = 0;
-    virtual void setHoveredSoftBody(nanoem_model_soft_body_t *value) = 0;
-    virtual void resetAllHoveredObjects() = 0;
-    virtual nanoem_model_vertex_t *hoveredVertex() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_material_t *hoveredMaterial() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_bone_t *hoveredBone() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_morph_t *hoveredMorph() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_label_t *hoveredLabel() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_rigid_body_t *hoveredRigidBody() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_joint_t *hoveredJoint() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_soft_body_t *hoveredSoftBody() NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_rsize_t countAllVertices() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_rsize_t countAllMaterials() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_rsize_t countAllBones() const NANOEM_DECL_NOEXCEPT = 0;

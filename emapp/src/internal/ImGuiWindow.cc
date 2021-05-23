@@ -4097,7 +4097,7 @@ void
 ImGuiWindow::drawBoneTooltip(Project *project)
 {
     if (Model *activeModel = project->activeModel()) {
-        const nanoem_model_bone_t *bonePtr = activeModel->selection()->hoveredBone();
+        const nanoem_model_bone_t *bonePtr = activeModel->hoveredBone();
         bool enabled = EnumUtils::isEnabled(Project::kDrawTypeBoneTooltip, m_viewportOverlayFlags);
         if (activeModel && bonePtr && enabled) {
             activeModel->drawBoneTooltip(primitiveContext(), bonePtr);

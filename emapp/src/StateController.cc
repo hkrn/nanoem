@@ -2283,7 +2283,7 @@ StateController::handlePointerMove(const Vector3SI32 &logicalScaleCursorPosition
                 Model::AxisType axisType;
                 const nanoem_model_bone_t *bonePtr =
                     DraggingBoneState::findHoverBone(logicalScaleCursorPosition, project, axisType);
-                model->selection()->setHoveredBone(const_cast<nanoem_model_bone_t *>(bonePtr));
+                model->setHoveredBone(const_cast<nanoem_model_bone_t *>(bonePtr));
                 model->setTransformAxisType(axisType);
             }
             project->setLogicalPixelMovingCursorPosition(logicalScaleCursorPosition);

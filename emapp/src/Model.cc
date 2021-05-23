@@ -861,6 +861,7 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_activeMaterialPtr(nullptr)
     , m_activeBonePairPtr(nullptr, nullptr)
     , m_activeEffectPtrPair(nullptr, nullptr)
+    , m_hoveredBonePtr(nullptr)
     , m_screenImage(nullptr)
     , m_sharedFallbackBone(nullptr)
     , m_userData(nullptr, nullptr)
@@ -4510,12 +4511,9 @@ Model::drawAllJointShapes()
 {
     nanoem_rsize_t numJoints;
     nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_opaque, &numJoints);
-    const nanoem_model_joint_t *hoveredJointPtr = m_selection->hoveredJoint();
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         const nanoem_model_joint_t *joint = joints[i];
-        if (!hoveredJointPtr || hoveredJointPtr == joint) {
-            drawJointShape(joint);
-        }
+        drawJointShape(joint);
     }
 }
 
@@ -4524,20 +4522,9 @@ Model::drawAllRigidBodyShapes()
 {
     nanoem_rsize_t numRigidBodies;
     nanoem_model_rigid_body_t *const *bodies = nanoemModelGetAllRigidBodyObjects(m_opaque, &numRigidBodies);
-    const nanoem_model_rigid_body_t *hoveredRigidBodyPtr = m_selection->hoveredRigidBody();
-    const nanoem_model_joint_t *hoveredJointPtr = m_selection->hoveredJoint();
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *rigidBodyPtr = bodies[i];
-        if (hoveredJointPtr) {
-            const nanoem_model_rigid_body_t *bodyA = nanoemModelJointGetRigidBodyAObject(hoveredJointPtr),
-                                            *bodyB = nanoemModelJointGetRigidBodyBObject(hoveredJointPtr);
-            if (bodyA == rigidBodyPtr || bodyB == rigidBodyPtr) {
-                drawRigidBodyShape(rigidBodyPtr);
-            }
-        }
-        else if (!hoveredRigidBodyPtr || hoveredRigidBodyPtr == rigidBodyPtr) {
-            drawRigidBodyShape(rigidBodyPtr);
-        }
+        drawRigidBodyShape(rigidBodyPtr);
     }
 }
 
@@ -5050,6 +5037,18 @@ Model::setActiveOutsideParentSubjectBone(const nanoem_model_bone_t *value)
     if (m_activeBonePairPtr.second != value) {
         m_activeBonePairPtr.second = value;
     }
+}
+
+const nanoem_model_bone_t *
+Model::hoveredBone() const NANOEM_DECL_NOEXCEPT
+{
+    return m_hoveredBonePtr;
+}
+
+void
+Model::setHoveredBone(const nanoem_model_bone_t *value)
+{
+    m_hoveredBonePtr = value;
 }
 
 const undo_stack_t *

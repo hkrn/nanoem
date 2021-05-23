@@ -313,6 +313,8 @@ public:
     void setActiveMaterial(const nanoem_model_material_t *value);
     const nanoem_model_bone_t *activeOutsideParentSubjectBone() const NANOEM_DECL_NOEXCEPT;
     void setActiveOutsideParentSubjectBone(const nanoem_model_bone_t *value);
+    const nanoem_model_bone_t *hoveredBone() const NANOEM_DECL_NOEXCEPT;
+    void setHoveredBone(const nanoem_model_bone_t *value);
     const undo_stack_t *undoStack() const NANOEM_DECL_NOEXCEPT;
     undo_stack_t *undoStack() NANOEM_DECL_NOEXCEPT;
     Matrix4x4 worldTransform() const NANOEM_DECL_NOEXCEPT;
@@ -552,6 +554,7 @@ private:
     const nanoem_model_morph_t *m_activeMorphPtr[NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM];
     const nanoem_model_constraint_t *m_activeConstraintPtr;
     const nanoem_model_material_t *m_activeMaterialPtr;
+    const nanoem_model_bone_t *m_hoveredBonePtr;
     ByteArray m_vertexBufferData;
     VertexIndexList m_faceStates;
     tinystl::pair<const nanoem_model_bone_t *, const nanoem_model_bone_t *> m_activeBonePairPtr;
