@@ -532,47 +532,47 @@ ModelParameterDialog::draw(Project *project)
     if (open(windowTitle.c_str(), kIdentifier, &visible,
             ImVec2(width, ImGui::GetFrameHeightWithSpacing() * kWindowFrameHeightRowCount), ImGuiWindowFlags_MenuBar)) {
         if (ImGui::BeginMenuBar()) {
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.vertex", tr("nanoem.gui.window.model.tab.vertex"));
+            StringUtils::format(buffer, sizeof(buffer), "%s##menu.vertex", tr("nanoem.gui.window.model.menu.vertex"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateVertexMenu(project);
                 ImGui::EndMenu();
             }
             StringUtils::format(
-                buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.tab.material"));
+                buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.menu.material"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateMaterialMenu(project);
                 ImGui::Separator();
                 layoutCreateMaterialMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.bone", tr("nanoem.gui.window.model.tab.bone"));
+            StringUtils::format(buffer, sizeof(buffer), "%s##menu.bone", tr("nanoem.gui.window.model.menu.bone"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateBoneMenu(project);
                 ImGui::Separator();
                 layoutCreateBoneMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.morph", tr("nanoem.gui.window.model.tab.morph"));
+            StringUtils::format(buffer, sizeof(buffer), "%s##menu.morph", tr("nanoem.gui.window.model.menu.morph"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateMorphMenu(project);
                 ImGui::Separator();
                 layoutCreateMorphMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.label", tr("nanoem.gui.window.model.tab.label"));
+            StringUtils::format(buffer, sizeof(buffer), "%s##menu.label", tr("nanoem.gui.window.model.menu.label"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateLabelMenu(project);
                 ImGui::EndMenu();
             }
             StringUtils::format(
-                buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.tab.rigid-body"));
+                buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.menu.rigid-body"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateRigidBodyMenu(project);
                 ImGui::Separator();
                 layoutCreateRigidBodyMenu(project);
                 ImGui::EndMenu();
             }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.joint", tr("nanoem.gui.window.model.tab.joint"));
+            StringUtils::format(buffer, sizeof(buffer), "%s##menu.joint", tr("nanoem.gui.window.model.menu.joint"));
             if (ImGui::BeginMenu(buffer)) {
                 layoutManipulateJointMenu(project);
                 ImGui::Separator();
@@ -580,7 +580,7 @@ ModelParameterDialog::draw(Project *project)
                 ImGui::EndMenu();
             }
             StringUtils::format(
-                buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.tab.soft-body"));
+                buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.menu.soft-body"));
             if (ImGui::BeginMenu(buffer, isPMX21())) {
                 layoutManipulateSoftBodyMenu(project);
                 ImGui::Separator();
@@ -5099,7 +5099,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::BeginMenu("Bone")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.bone"))) {
         if (ImGui::MenuItem(
                 "Create a Bone in Center of Selected", nullptr, nullptr, selection->countAllVertices() > 0)) {
             const model::Vertex::Set vertices(selection->allVertexSet());
@@ -5116,7 +5116,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Morph")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
         if (ImGui::BeginMenu("Add Selected to the Vertex Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_VERTEX))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -5346,7 +5346,7 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::BeginMenu("Morph")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
         if (ImGui::BeginMenu("Add Selected to the Material Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_MATERIAL))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -5365,7 +5365,7 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::MenuItem("Merge the Material",nullptr, false, m_materialIndex > 0)) {
+    if (ImGui::MenuItem("Merge the Material",nullptr, false, selection->countAllMaterials() == 1 && m_materialIndex > 0)) {
         undo_command_t *command = command::MergeMaterialCommand::create(project, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
@@ -5564,7 +5564,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::BeginMenu("Bone")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.bone"))) {
         if (ImGui::BeginMenu("Add Selected to the IK")) {
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 nanoem_model_bone_t *bonePtr = bones[i];
@@ -5580,7 +5580,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Label")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.label"))) {
         if (ImGui::BeginMenu("Add Selected to the Label")) {
             nanoem_rsize_t numLabels;
             nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
@@ -5598,7 +5598,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Morph")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
         if (ImGui::BeginMenu("Add Selected to the Bone Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_BONE))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -5872,7 +5872,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::BeginMenu("Label")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.label"))) {
         if (ImGui::BeginMenu("Add Selected to the Label")) {
             nanoem_rsize_t numLabels;
             nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
@@ -5890,7 +5890,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
         }
         ImGui::EndMenu();
     }
-    if (ImGui::BeginMenu("Morph")) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"))) {
         if (ImGui::BeginMenu("Add Selected to the Group Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_GROUP))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -6116,7 +6116,7 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
-    if (ImGui::BeginMenu("Morph", isPMX21())) {
+    if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.morph"), isPMX21())) {
         if (ImGui::BeginMenu("Add Selected to the Impulse Morph", hasMorphType(NANOEM_MODEL_MORPH_TYPE_IMPULUSE))) {
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);

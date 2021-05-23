@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -221,7 +221,16 @@ $nanoem.gui.window.model.tab.material材質（マテリアル）-
 !nanoem.gui.window.model.tab.label表示枠（ラベル）0
 &nanoem.gui.window.model.tab.rigid-body剛体4
 !nanoem.gui.window.model.tab.jointジョイント;
-%nanoem.gui.window.model.tab.soft-bodyソフトボディD
+%nanoem.gui.window.model.tab.soft-bodyソフトボディ-
+#nanoem.gui.window.model.menu.vertex頂点(
+!nanoem.gui.window.model.menu.face面/
+%nanoem.gui.window.model.menu.material材質.
+!nanoem.gui.window.model.menu.bone	ボーン/
+"nanoem.gui.window.model.menu.morph	モーフ/
+"nanoem.gui.window.model.menu.label	表示枠1
+'nanoem.gui.window.model.menu.rigid-body剛体5
+"nanoem.gui.window.model.menu.jointジョイント<
+&nanoem.gui.window.model.menu.soft-bodyソフトボディD
 "nanoem.gui.window.preference.titleアプリケーション設定n
 ,nanoem.gui.window.preference.global.renderer>レンダラ ※ 変更後要アプリケーション再起動O
 0nanoem.gui.window.preference.global.color-formatカラーフォーマットE
@@ -1055,7 +1064,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1281,7 +1290,17 @@ $nanoem.gui.window.model.tab.materialMaterial(
 &nanoem.gui.window.model.tab.rigid-body
 Rigid Body*
 !nanoem.gui.window.model.tab.jointJoint2
-%nanoem.gui.window.model.tab.soft-body	Soft Body<
+%nanoem.gui.window.model.tab.soft-body	Soft Body-
+#nanoem.gui.window.model.menu.vertexVertex)
+!nanoem.gui.window.model.menu.faceFace1
+%nanoem.gui.window.model.menu.materialMaterial)
+!nanoem.gui.window.model.menu.boneBone+
+"nanoem.gui.window.model.menu.morphMorph+
+"nanoem.gui.window.model.menu.labelLabel5
+'nanoem.gui.window.model.menu.rigid-body
+Rigid Body+
+"nanoem.gui.window.model.menu.jointJoint3
+&nanoem.gui.window.model.menu.soft-body	Soft Body<
 "nanoem.gui.window.preference.titleApplication Preferencel
 ,nanoem.gui.window.preference.global.renderer<Renderer * Restarting the application required after changed@
 0nanoem.gui.window.preference.global.color-formatColor FormatE

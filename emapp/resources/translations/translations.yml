@@ -886,6 +886,42 @@
   phrase:
     en_US: Soft Body
     ja_JP: ソフトボディ
+- key: nanoem.gui.window.model.menu.vertex
+  phrase:
+    en_US: Vertex
+    ja_JP: 頂点
+- key: nanoem.gui.window.model.menu.face
+  phrase:
+    en_US: Face
+    ja_JP: 面
+- key: nanoem.gui.window.model.menu.material
+  phrase:
+    en_US: Material
+    ja_JP: 材質
+- key: nanoem.gui.window.model.menu.bone
+  phrase:
+    en_US: Bone
+    ja_JP: ボーン
+- key: nanoem.gui.window.model.menu.morph
+  phrase:
+    en_US: Morph
+    ja_JP: モーフ
+- key: nanoem.gui.window.model.menu.label
+  phrase:
+    en_US: Label
+    ja_JP: 表示枠
+- key: nanoem.gui.window.model.menu.rigid-body
+  phrase:
+    en_US: Rigid Body
+    ja_JP: 剛体
+- key: nanoem.gui.window.model.menu.joint
+  phrase:
+    en_US: Joint
+    ja_JP: ジョイント
+- key: nanoem.gui.window.model.menu.soft-body
+  phrase:
+    en_US: Soft Body
+    ja_JP: ソフトボディ
 - key: nanoem.gui.window.preference.title
   phrase:
     en_US: Application Preference
