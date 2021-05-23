@@ -1,5 +1,5 @@
 
-�@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -313,10 +313,15 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 ,nanoem.gui.model.edit.material.diffuse.color$拡散光色（ディフューズ）G
 .nanoem.gui.model.edit.material.diffuse.opacity拡散光の透明度U
 -nanoem.gui.model.edit.material.specular.color$鏡面光色（スペキュラー）F
--nanoem.gui.model.edit.material.specular.power鏡面光色の強度9
+-nanoem.gui.model.edit.material.specular.power鏡面光色の強度6
+)nanoem.gui.model.edit.material.edge.title	エッジ9
 )nanoem.gui.model.edit.material.edge.colorエッジ色G
 +nanoem.gui.model.edit.material.edge.opacityエッジ色の透明度8
-(nanoem.gui.model.edit.material.edge.sizeエッジ幅J
+(nanoem.gui.model.edit.material.edge.sizeエッジ幅I
+-nanoem.gui.model.edit.material.primitive.typeプリミティブ種別L
+-nanoem.gui.model.edit.material.spheremap.typeスフィアマップ種別?
+,nanoem.gui.model.edit.material.texture.titleテクスチャF
+-nanoem.gui.model.edit.material.arbitrary-area任意ユーザ領域J
 .nanoem.gui.model.edit.material.texture.diffuse拡散光テクスチャU
 -nanoem.gui.model.edit.material.texture.sphere$スフィアマップテクスチャJ
 +nanoem.gui.model.edit.material.texture.toonトゥーンテクスチャX
@@ -328,19 +333,14 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 ;nanoem.gui.model.edit.material.property.casting-self-shadow$セルフシャドウの投影対象L
 3nanoem.gui.model.edit.material.property.self-shadowセルフシャドウ9
 ,nanoem.gui.model.edit.material.property.edge	エッジG
-4nanoem.gui.model.edit.material.property.vertex-color頂点カラー;
-1nanoem.gui.model.edit.material.sphere-texture.add加算@
-6nanoem.gui.model.edit.material.sphere-texture.multiply乗算<
-2nanoem.gui.model.edit.material.sphere-texture.noneなしR
-9nanoem.gui.model.edit.material.sphere-texture.sub-textureサブテクスチャ?
-5nanoem.gui.model.edit.material.sphere-texture.unknown不明G
+4nanoem.gui.model.edit.material.property.vertex-color頂点カラーG
 .nanoem.gui.model.edit.material.primitive.point点（ポイント）C
 -nanoem.gui.model.edit.material.primitive.line線（ライン）V
-1nanoem.gui.model.edit.material.primitive.triangle!三角（トライアングル）9
-/nanoem.gui.model.edit.material.sphere.type.noneなし8
-.nanoem.gui.model.edit.material.sphere.type.add加算=
-3nanoem.gui.model.edit.material.sphere.type.multiply乗算O
-6nanoem.gui.model.edit.material.sphere.type.sub-textureサブテクスチャA
+1nanoem.gui.model.edit.material.primitive.triangle!三角（トライアングル）<
+2nanoem.gui.model.edit.material.spheremap.type.noneなし;
+1nanoem.gui.model.edit.material.spheremap.type.add加算@
+6nanoem.gui.model.edit.material.spheremap.type.multiply乗算R
+9nanoem.gui.model.edit.material.spheremap.type.sub-textureサブテクスチャA
 (nanoem.gui.model.edit.bone.name.japanese名称（日本語）=
 'nanoem.gui.model.edit.bone.name.english名称（英語）1
 !nanoem.gui.model.edit.bone.origin原点座標1
@@ -1101,7 +1101,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1423,12 +1423,17 @@ Edge Width1
 ,nanoem.gui.model.edit.material.diffuse.colorDiffuse ColorA
 .nanoem.gui.model.edit.material.diffuse.opacityDiffuse Opacity?
 -nanoem.gui.model.edit.material.specular.colorSpecular Color?
--nanoem.gui.model.edit.material.specular.powerSpecular Power7
+-nanoem.gui.model.edit.material.specular.powerSpecular Power1
+)nanoem.gui.model.edit.material.edge.titleEdge7
 )nanoem.gui.model.edit.material.edge.color
 Edge Color;
 +nanoem.gui.model.edit.material.edge.opacityEdge Opacity6
 (nanoem.gui.model.edit.material.edge.size
-Edge WidthA
+Edge Width?
+-nanoem.gui.model.edit.material.primitive.typePrimitive Type?
+-nanoem.gui.model.edit.material.spheremap.typeSpheremap Type8
+,nanoem.gui.model.edit.material.texture.titleTexturesD
+-nanoem.gui.model.edit.material.arbitrary-areaArbitrary User AreaA
 .nanoem.gui.model.edit.material.texture.diffuseDiffuse TextureC
 -nanoem.gui.model.edit.material.texture.sphereSphere Map Texture;
 +nanoem.gui.model.edit.material.texture.toonToon TextureI
@@ -1441,19 +1446,14 @@ PropertiesQ
 ;nanoem.gui.model.edit.material.property.casting-self-shadowEnable Casting Self ShadowI
 3nanoem.gui.model.edit.material.property.self-shadowEnable Self Shadow;
 ,nanoem.gui.model.edit.material.property.edgeEnable EdgeK
-4nanoem.gui.model.edit.material.property.vertex-colorEnable Vertex Color8
-1nanoem.gui.model.edit.material.sphere-texture.addAddB
-6nanoem.gui.model.edit.material.sphere-texture.multiplyMultiply:
-2nanoem.gui.model.edit.material.sphere-texture.noneNoneH
-9nanoem.gui.model.edit.material.sphere-texture.sub-textureSub Texture@
-5nanoem.gui.model.edit.material.sphere-texture.unknownUnknown7
+4nanoem.gui.model.edit.material.property.vertex-colorEnable Vertex Color7
 .nanoem.gui.model.edit.material.primitive.pointPoint5
 -nanoem.gui.model.edit.material.primitive.lineLine=
-1nanoem.gui.model.edit.material.primitive.triangleTriangle7
-/nanoem.gui.model.edit.material.sphere.type.noneNone:
-.nanoem.gui.model.edit.material.sphere.type.addAdditive?
-3nanoem.gui.model.edit.material.sphere.type.multiplyMultiplyE
-6nanoem.gui.model.edit.material.sphere.type.sub-textureSub-Texture;
+1nanoem.gui.model.edit.material.primitive.triangleTriangle:
+2nanoem.gui.model.edit.material.spheremap.type.noneNone=
+1nanoem.gui.model.edit.material.spheremap.type.addAdditiveB
+6nanoem.gui.model.edit.material.spheremap.type.multiplyMultiplyH
+9nanoem.gui.model.edit.material.spheremap.type.sub-textureSub-Texture;
 (nanoem.gui.model.edit.bone.name.japaneseName (Japanese)9
 'nanoem.gui.model.edit.bone.name.englishName (English)+
 !nanoem.gui.model.edit.bone.originOrigin0

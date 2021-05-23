@@ -1629,7 +1629,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     }
     addSeparator();
     {
-        ImGui::TextUnformatted("Edge");
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.edge.title"));
         Vector4 value(glm::make_vec3(nanoemModelMaterialGetEdgeColor(materialPtr)),
             nanoemModelMaterialGetEdgeOpacity(materialPtr));
         if (ImGui::ColorEdit4("##edge", glm::value_ptr(value))) {
@@ -1639,7 +1639,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         }
     }
     {
-        ImGui::TextUnformatted("Primitive Type");
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.primitive.type"));
         if (ImGui::BeginCombo("##primitive", selectedMaterialPrimitiveType(materialPtr))) {
             if (ImGui::Selectable(tr("nanoem.gui.model.edit.material.primitive.triangle"))) {
                 command::ScopedMutableMaterial scoped(materialPtr);
@@ -1660,7 +1660,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         }
     }
     {
-        ImGui::TextUnformatted("SphereMap Type");
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.spheremap.type"));
         if (ImGui::BeginCombo("##spheremap",
                 selectedMaterialSphereMapType(nanoemModelMaterialGetSphereMapTextureType(materialPtr)))) {
             for (nanoem_rsize_t i = NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_FIRST_ENUM;
@@ -1844,7 +1844,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         ImGui::EndPopup();
     }
     ImGui::SameLine();
-    ImGui::TextUnformatted("Textures");
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.texture.title"));
     if (diffuseImage || hasOwnToonTexture || sphereMapImage) {
         String filename;
         if (diffuseImage) {
@@ -1866,7 +1866,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     }
     addSeparator();
     {
-        ImGui::TextUnformatted("Arbitrary Area");
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.arbitrary-area"));
         String clob;
         MutableString clobBuffer;
         StringUtils::getUtf8String(nanoemModelMaterialGetClob(materialPtr), factory, clob);
@@ -6515,13 +6515,13 @@ ModelParameterDialog::selectedMaterialSphereMapType(
 {
     switch (value) {
     case NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE:
-        return tr("nanoem.gui.model.edit.material.sphere.type.none");
+        return tr("nanoem.gui.model.edit.material.spheremap.type.none");
     case NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD:
-        return tr("nanoem.gui.model.edit.material.sphere.type.add");
+        return tr("nanoem.gui.model.edit.material.spheremap.type.add");
     case NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MULTIPLY:
-        return tr("nanoem.gui.model.edit.material.sphere.type.multiply");
+        return tr("nanoem.gui.model.edit.material.spheremap.type.multiply");
     case NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_SUB_TEXTURE:
-        return tr("nanoem.gui.model.edit.material.sphere.type.sub-texture");
+        return tr("nanoem.gui.model.edit.material.spheremap.type.sub-texture");
     default:
         return "(Unknown)";
     }

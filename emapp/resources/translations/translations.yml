@@ -1255,6 +1255,10 @@
   phrase:
     en_US: 'Specular Power'
     ja_JP: '鏡面光色の強度'
+- key: nanoem.gui.model.edit.material.edge.title
+  phrase:
+    en_US: 'Edge'
+    ja_JP: 'エッジ'
 - key: nanoem.gui.model.edit.material.edge.color
   phrase:
     en_US: 'Edge Color'
@@ -1267,6 +1271,22 @@
   phrase:
     en_US: 'Edge Width'
     ja_JP: 'エッジ幅'
+- key: nanoem.gui.model.edit.material.primitive.type
+  phrase:
+    en_US: 'Primitive Type'
+    ja_JP: 'プリミティブ種別'
+- key: nanoem.gui.model.edit.material.spheremap.type
+  phrase:
+    en_US: 'Spheremap Type'
+    ja_JP: 'スフィアマップ種別'
+- key: nanoem.gui.model.edit.material.texture.title
+  phrase:
+    en_US: 'Textures'
+    ja_JP: 'テクスチャ'
+- key: nanoem.gui.model.edit.material.arbitrary-area
+  phrase:
+    en_US: 'Arbitrary User Area'
+    ja_JP: '任意ユーザ領域'
 - key: nanoem.gui.model.edit.material.texture.diffuse
   phrase:
     en_US: 'Diffuse Texture'
@@ -1315,26 +1335,6 @@
   phrase:
     en_US: 'Enable Vertex Color'
     ja_JP: '頂点カラー'
-- key: nanoem.gui.model.edit.material.sphere-texture.add
-  phrase:
-    en_US: 'Add'
-    ja_JP: '加算'
-- key: nanoem.gui.model.edit.material.sphere-texture.multiply
-  phrase:
-    en_US: 'Multiply'
-    ja_JP: '乗算'
-- key: nanoem.gui.model.edit.material.sphere-texture.none
-  phrase:
-    en_US: 'None'
-    ja_JP: 'なし'
-- key: nanoem.gui.model.edit.material.sphere-texture.sub-texture
-  phrase:
-    en_US: 'Sub Texture'
-    ja_JP: 'サブテクスチャ'
-- key: nanoem.gui.model.edit.material.sphere-texture.unknown
-  phrase:
-    en_US: 'Unknown'
-    ja_JP: '不明'
 - key: nanoem.gui.model.edit.material.primitive.point
   phrase:
     en_US: 'Point'
@@ -1347,19 +1347,19 @@
   phrase:
     en_US: 'Triangle'
     ja_JP: '三角（トライアングル）'
-- key: nanoem.gui.model.edit.material.sphere.type.none
+- key: nanoem.gui.model.edit.material.spheremap.type.none
   phrase:
     en_US: 'None'
     ja_JP: 'なし'
-- key: nanoem.gui.model.edit.material.sphere.type.add
+- key: nanoem.gui.model.edit.material.spheremap.type.add
   phrase:
     en_US: 'Additive'
     ja_JP: '加算'
-- key: nanoem.gui.model.edit.material.sphere.type.multiply
+- key: nanoem.gui.model.edit.material.spheremap.type.multiply
   phrase:
     en_US: 'Multiply'
     ja_JP: '乗算'
-- key: nanoem.gui.model.edit.material.sphere.type.sub-texture
+- key: nanoem.gui.model.edit.material.spheremap.type.sub-texture
   phrase:
     en_US: 'Sub-Texture'
     ja_JP: 'サブテクスチャ'
