@@ -179,6 +179,80 @@ struct ScopedMutableSoftBody {
     nanoem_mutable_model_soft_body_t *m_softBody;
 };
 
+class DeletingMaterialState : private NonCopyable {
+public:
+    ~DeletingMaterialState() NANOEM_DECL_NOEXCEPT;
+
+    void clear() NANOEM_DECL_NOEXCEPT;
+    void save(const Model *model, const nanoem_model_material_t *materialPtr, nanoem_status_t *status);
+    void restore(const nanoem_model_material_t *materialPtr);
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_material_t *, TinySTLAllocator> MaterialMorphList;
+    typedef tinystl::vector<nanoem_mutable_model_soft_body_t *, TinySTLAllocator> SoftBodyList;
+    MaterialMorphList m_materialMorphs;
+    SoftBodyList m_softBodies;
+};
+
+class DeletingBoneState : private NonCopyable {
+public:
+    ~DeletingBoneState() NANOEM_DECL_NOEXCEPT;
+
+    void clear() NANOEM_DECL_NOEXCEPT;
+    void save(const Model *model, const nanoem_model_bone_t *bone, nanoem_status_t *status);
+    void restore(const nanoem_model_bone_t *bonePtr);
+    void setParentBone(const nanoem_model_bone_t *bonePtr);
+
+private:
+    typedef tinystl::pair<nanoem_mutable_model_vertex_t *, nanoem_rsize_t> VertexPair;
+    typedef tinystl::vector<VertexPair, TinySTLAllocator> VertexList;
+    typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
+    typedef tinystl::vector<nanoem_mutable_model_constraint_t *, TinySTLAllocator> ConstraintList;
+    typedef tinystl::vector<nanoem_mutable_model_constraint_joint_t *, TinySTLAllocator> ConstraintJointList;
+    typedef tinystl::vector<nanoem_mutable_model_morph_bone_t *, TinySTLAllocator> BoneMorphList;
+    typedef tinystl::vector<nanoem_mutable_model_rigid_body_t *, TinySTLAllocator> RigidBodyList;
+
+    VertexList m_vertices;
+    BoneList m_parentBones;
+    BoneList m_inherentParentBones;
+    BoneList m_targetBones;
+    ConstraintList m_constraints;
+    ConstraintJointList m_constraintJoints;
+    BoneMorphList m_boneMorphs;
+    RigidBodyList m_rigidBodies;
+};
+
+class DeletingMorphState : private NonCopyable {
+public:
+    ~DeletingMorphState() NANOEM_DECL_NOEXCEPT;
+
+    void clear() NANOEM_DECL_NOEXCEPT;
+    void save(const Model *model, const nanoem_model_morph_t *morphPtr, nanoem_status_t *status);
+    void restore(const nanoem_model_morph_t *morphPtr);
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_flip_t *, TinySTLAllocator> FlipMorphList;
+    typedef tinystl::vector<nanoem_mutable_model_morph_group_t *, TinySTLAllocator> GroupMorphList;
+    FlipMorphList m_flipMorphs;
+    GroupMorphList m_groupMorphs;
+};
+
+class DeletingRigidBodyState : private NonCopyable {
+public:
+    ~DeletingRigidBodyState() NANOEM_DECL_NOEXCEPT;
+
+    void clear() NANOEM_DECL_NOEXCEPT;
+    void save(const Model *model, const nanoem_model_rigid_body_t *rigidBodyPtr, nanoem_status_t *status);
+    void restore(const nanoem_model_rigid_body_t *rigidBodyPtr);
+
+private:
+    typedef tinystl::vector<nanoem_mutable_model_morph_impulse_t *, TinySTLAllocator> ImpulseMorphList;
+    typedef tinystl::vector<nanoem_mutable_model_joint_t *, TinySTLAllocator> JointList;
+    ImpulseMorphList m_impulseMorphs;
+    JointList m_jointsA;
+    JointList m_jointsB;
+};
+
 class CreateMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     typedef tinystl::vector<nanoem_mutable_model_vertex_t *, TinySTLAllocator> MutableVertexList;
@@ -267,6 +341,7 @@ private:
     Model *m_activeModel;
     ScopedMutableMaterial m_deletingMaterial;
     VertexIndexList m_deletingVertexIndices;
+    DeletingMaterialState m_deletingMaterialState;
     nanoem_rsize_t m_deletingVertexIndexOffset;
     nanoem_rsize_t m_materialIndex;
 };
@@ -453,12 +528,11 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    typedef tinystl::vector<nanoem_mutable_model_bone_t *, TinySTLAllocator> BoneList;
     const nanoem_model_bone_t *m_parentBonePtr;
     const nanoem_rsize_t m_boneIndex;
     Model *m_activeModel;
     nanoem_mutable_model_bone_t *m_deletingBone;
-    BoneList m_bones;
+    DeletingBoneState m_deletingBoneState;
 };
 
 class BaseMoveBoneCommand : public BaseUndoCommand {
@@ -708,6 +782,7 @@ private:
     const nanoem_rsize_t m_morphIndex;
     Model *m_activeModel;
     nanoem_mutable_model_morph_t *m_deletingMorph;
+    DeletingMorphState m_deletingMorphState;
 };
 
 class BaseMoveMorphCommand : public BaseUndoCommand {
@@ -917,6 +992,7 @@ private:
     const nanoem_rsize_t m_rigidBodyIndex;
     Model *m_activeModel;
     nanoem_mutable_model_rigid_body_t *m_deletingRigidBody;
+    DeletingRigidBodyState m_deletingRigidBodyState;
 };
 
 class BaseMoveRigidBodyCommand : public BaseUndoCommand {
@@ -1150,4 +1226,4 @@ public:
 } /* namespace command */
 } /* namespace nanoem */
 
-#endif /* NANOEM_EMAPP_COMMAND_IUNDOCOMMAND_H_ */
+#endif /* NANOEM_EMAPP_COMMAND_MODELOBJECTCOMMAND_H_ */
