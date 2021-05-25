@@ -29,7 +29,7 @@ MotionIOPluginDialog::handleResponse(Project *project)
     Error error;
     PluginFactory::MotionIOPluginProxy proxy(m_plugin);
     proxy.execute(m_functionIndex, m_input, project, error);
-    error.addModalDialog(m_applicationPtr);
+    error.addModalDialog(application());
 }
 
 void

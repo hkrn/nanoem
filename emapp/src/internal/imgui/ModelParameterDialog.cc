@@ -399,7 +399,7 @@ LoadWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error
             BaseNonModalDialogWindow *parent = static_cast<BaseNonModalDialogWindow *>(opaque);
             String message;
             StringUtils::format(message, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.message"), appliedNumVertices, numVertices);
-            BaseApplicationService *application = parent->m_applicationPtr;
+            BaseApplicationService *application = parent->application();
             application->addModalDialog(ModalDialogFactory::createDisplayPlainTextDialog(
                 application, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.title"), message));
         }
@@ -2087,7 +2087,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     }
     if (ImGui::BeginPopupContextItem("material.texture.menu")) {
         IEventPublisher *eventPublisher = project->eventPublisher();
-        IFileManager *fileManager = m_applicationPtr->fileManager();
+        IFileManager *fileManager = application()->fileManager();
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.texture.diffuse.set")) &&
             !fileManager->hasTransientQueryFileDialogCallback()) {
             struct SetDiffuseTextureCallback : BaseSetTextureCallback {
@@ -5446,7 +5446,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
         extensions.insert("csv");
         extensions.insert("txt");
         IEventPublisher *eventPublisher = project->eventPublisher();
-        IFileManager *fileManager = m_applicationPtr->fileManager();
+        IFileManager *fileManager = application()->fileManager();
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.vertex.weight.load"))) {
             LoadWeightFileCallback callback(this);
             fileManager->setTransientQueryFileDialogCallback(callback);
@@ -5506,7 +5506,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.create-from-obj"))) {
         CreateMaterialFromOBJFileCallback callback(m_parent);
         IEventPublisher *eventPublisher = project->eventPublisher();
-        IFileManager *fileManager = m_applicationPtr->fileManager();
+        IFileManager *fileManager = application()->fileManager();
         fileManager->setTransientQueryFileDialogCallback(callback);
         StringSet extensions(Model::loadableExtensionsSet());
         extensions.insert("obj");
@@ -6055,7 +6055,7 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.morph.create-bone-morph-from-file"))) {
         CreateBoneMorphFromBindPoseCallback callback(m_parent);
         IEventPublisher *eventPublisher = project->eventPublisher();
-        IFileManager *fileManager = m_applicationPtr->fileManager();
+        IFileManager *fileManager = application()->fileManager();
         fileManager->setTransientQueryFileDialogCallback(callback);
         eventPublisher->publishQueryOpenSingleFileDialogEvent(
             IFileManager::kDialogTypeUserCallback, model::BindPose::loadableExtensions());
@@ -6063,7 +6063,7 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file"))) {
         CreateVertexMorphFromModelCallback callback(m_parent);
         IEventPublisher *eventPublisher = project->eventPublisher();
-        IFileManager *fileManager = m_applicationPtr->fileManager();
+        IFileManager *fileManager = application()->fileManager();
         fileManager->setTransientQueryFileDialogCallback(callback);
         eventPublisher->publishQueryOpenSingleFileDialogEvent(
             IFileManager::kDialogTypeUserCallback, Model::loadableExtensions());

@@ -31,7 +31,7 @@ ModelIOPluginDialog::handleResponse(Project *project)
         PluginFactory::ModelIOPluginProxy proxy(m_plugin);
         proxy.execute(m_functionIndex, m_input, activeModel, project, error);
     }
-    error.addModalDialog(m_applicationPtr);
+    error.addModalDialog(application());
 }
 
 void

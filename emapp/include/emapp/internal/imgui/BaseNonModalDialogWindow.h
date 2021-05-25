@@ -14,7 +14,8 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
+class BaseNonModalDialogWindow : public ImGuiWindow::INoModalDialogWindow {
+public:
     enum ResponseType {
         kResponseTypeIndetermine,
         kResponseTypeOK,
@@ -42,8 +43,11 @@ struct BaseNonModalDialogWindow : ImGuiWindow::INoModalDialogWindow {
     void close();
 
     ResponseType layoutCommonButtons(bool *visible);
+    const BaseApplicationService *application() const NANOEM_DECL_NOEXCEPT;
+    BaseApplicationService *application() NANOEM_DECL_NOEXCEPT;
     const char *tr(const char *text) const NANOEM_DECL_NOEXCEPT;
 
+private:
     BaseApplicationService *m_applicationPtr;
 };
 

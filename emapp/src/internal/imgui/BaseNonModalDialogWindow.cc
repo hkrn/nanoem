@@ -150,6 +150,18 @@ BaseNonModalDialogWindow::layoutCommonButtons(bool *visible)
     return type;
 }
 
+const BaseApplicationService *
+BaseNonModalDialogWindow::application() const NANOEM_DECL_NOEXCEPT
+{
+    return m_applicationPtr;
+}
+
+BaseApplicationService *
+BaseNonModalDialogWindow::application() NANOEM_DECL_NOEXCEPT
+{
+    return m_applicationPtr;
+}
+
 const char *
 BaseNonModalDialogWindow::tr(const char *text) const NANOEM_DECL_NOEXCEPT
 {
