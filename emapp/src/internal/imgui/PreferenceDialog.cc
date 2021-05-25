@@ -180,8 +180,8 @@ PreferenceDialog::draw(Project *project)
                 layoutPreferenceMenuItemCombo(project, msaaItemTypes, BX_COUNTOF(msaaItemTypes));
                 ImGui::EndCombo();
             }
-            ImGui::TextUnformatted(app->translateMenuItem(
-                ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationTitle));
+            ImGui::TextUnformatted(
+                app->translateMenuItem(ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationTitle));
             static const ApplicationMenuBuilder::MenuItemType physicsSimulationModeTypes[] = {
                 ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime,
                 ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnablePlaying,

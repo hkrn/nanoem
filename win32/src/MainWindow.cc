@@ -2253,7 +2253,8 @@ MainWindow::registerAllPrerequisiteEventListeners()
         [](void *userData, uint32_t types, const StringList &allowedExtensions) {
             auto self = static_cast<MainWindow *>(userData);
             Dialog dialog(self->m_windowHandle);
-            if (dialog.save("Available Format (*.%s)", allowedExtensions, self->localizedString("nanoem.dialog.filename.untitled"))) {
+            if (dialog.save("Available Format (*.%s)", allowedExtensions,
+                    self->localizedString("nanoem.dialog.filename.untitled"))) {
                 self->m_client->sendQuerySaveFileDialogMessage(types, dialog.fileURI());
             }
             else {

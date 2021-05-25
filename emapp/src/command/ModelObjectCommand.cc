@@ -498,7 +498,8 @@ DeletingMaterialState::save(const Model *model, const nanoem_model_material_t *m
         nanoem_model_morph_t *morphPtr = morphs[i];
         if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE) {
             nanoem_rsize_t numItems;
-            nanoem_model_morph_material_t *const *items = nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
+            nanoem_model_morph_material_t *const *items =
+                nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
                 nanoem_model_morph_material_t *item = items[i];
                 if (nanoemModelMorphMaterialGetMaterialObject(item) == materialPtr) {
@@ -549,12 +550,12 @@ DeletingBoneState::clear() NANOEM_DECL_NOEXCEPT
         nanoemMutableModelBoneDestroy(*it);
     }
     m_parentBones.clear();
-    for (BoneList::const_iterator it = m_inherentParentBones.begin(), end = m_inherentParentBones.end(); it != end; ++it) {
+    for (BoneList::const_iterator it = m_inherentParentBones.begin(), end = m_inherentParentBones.end(); it != end;
+         ++it) {
         nanoemMutableModelBoneDestroy(*it);
     }
     m_inherentParentBones.clear();
-    for (BoneList::const_iterator it = m_targetBones.begin(), end = m_targetBones.end(); it != end;
-         ++it) {
+    for (BoneList::const_iterator it = m_targetBones.begin(), end = m_targetBones.end(); it != end; ++it) {
         nanoemMutableModelBoneDestroy(*it);
     }
     m_targetBones.clear();
@@ -586,7 +587,8 @@ DeletingBoneState::save(const Model *model, const nanoem_model_bone_t *bonePtr, 
         nanoem_model_vertex_t *vertexPtr = vertices[i];
         for (nanoem_rsize_t j = 0; j < 4; j++) {
             if (nanoemModelVertexGetBoneObject(vertexPtr, j) == bonePtr) {
-                nanoem_mutable_model_vertex_t *mutableVertex = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
+                nanoem_mutable_model_vertex_t *mutableVertex =
+                    nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
                 m_vertices.push_back(tinystl::make_pair(mutableVertex, j));
             }
         }
@@ -612,7 +614,8 @@ DeletingBoneState::save(const Model *model, const nanoem_model_bone_t *bonePtr, 
         }
         if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMuable(bonePtr)) {
             nanoem_rsize_t numJoints;
-            nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
+            nanoem_model_constraint_joint_t *const *joints =
+                nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
             for (nanoem_rsize_t j = 0; j < numJoints; j++) {
                 nanoem_model_constraint_joint_t *jointPtr = joints[i];
                 if (nanoemModelConstraintJointGetBoneObject(jointPtr) == bonePtr) {
@@ -668,8 +671,7 @@ DeletingBoneState::restore(const nanoem_model_bone_t *bonePtr)
          ++it) {
         nanoemMutableModelBoneSetInherentParentBoneObject(*it, bonePtr);
     }
-    for (BoneList::const_iterator it = m_targetBones.begin(), end = m_targetBones.end(); it != end;
-         ++it) {
+    for (BoneList::const_iterator it = m_targetBones.begin(), end = m_targetBones.end(); it != end; ++it) {
         nanoemMutableModelBoneSetTargetBoneObject(*it, bonePtr);
     }
     for (BoneMorphList::const_iterator it = m_boneMorphs.begin(), end = m_boneMorphs.end(); it != end; ++it) {
@@ -716,6 +718,7 @@ DeletingMorphState::clear() NANOEM_DECL_NOEXCEPT
 void
 DeletingMorphState::save(const Model *model, const nanoem_model_morph_t *morphPtr, nanoem_status_t *status)
 {
+    BX_UNUSED_1(morphPtr);
     nanoem_rsize_t numMorphs;
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(model->data(), &numMorphs);
     for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
@@ -789,8 +792,7 @@ DeletingRigidBodyState::save(const Model *model, const nanoem_model_rigid_body_t
         nanoem_model_morph_t *morphPtr = morphs[i];
         if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE) {
             nanoem_rsize_t numItems;
-            nanoem_model_morph_impulse_t *const *items =
-                nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
+            nanoem_model_morph_impulse_t *const *items = nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
                 nanoem_model_morph_impulse_t *item = items[i];
                 if (nanoemModelMorphImpulseGetRigidBodyObject(item) == rigidBodyPtr) {

@@ -353,8 +353,7 @@ LoadWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error
         if (StringUtils::equals(ptr, kSignature, sizeof(kSignature) - 1)) {
             ptr += sizeof(kSignature) - 1;
             Model *activeModel = project->activeModel();
-            nanoem_unicode_string_factory_t *factory =
-                project->unicodeStringFactory();
+            nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
             WeightRowList weightRows;
             while (const char *p = StringUtils::indexOf(ptr, '\n')) {
                 line.assign(reinterpret_cast<const nanoem_u8_t *>(ptr), reinterpret_cast<const nanoem_u8_t *>(p));
@@ -399,7 +398,8 @@ LoadWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error
             }
             BaseNonModalDialogWindow *parent = static_cast<BaseNonModalDialogWindow *>(opaque);
             String message;
-            StringUtils::format(message, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.message"), appliedNumVertices, numVertices);
+            StringUtils::format(message, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.message"),
+                appliedNumVertices, numVertices);
             BaseApplicationService *application = parent->application();
             application->addModalDialog(ModalDialogFactory::createDisplayPlainTextDialog(
                 application, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.title"), message));
@@ -408,7 +408,8 @@ LoadWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error
 }
 
 void
-LoadWeightFileCallback::WeightRow::readColumn(const char *s, const char *e, int columnIndex, const Model *activeModel, nanoem_unicode_string_factory_t *factory)
+LoadWeightFileCallback::WeightRow::readColumn(
+    const char *s, const char *e, int columnIndex, const Model *activeModel, nanoem_unicode_string_factory_t *factory)
 {
     switch (columnIndex) {
     case 0:
@@ -569,6 +570,7 @@ struct SaveWeightFileCallback : IFileManager::QueryFileDialogCallbacks {
 void
 SaveWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque)
 {
+    BX_UNUSED_1(opaque);
     Model *activeModel = project->activeModel();
     FileWriterScope scope;
     if (scope.open(fileURI, error)) {
@@ -643,7 +645,7 @@ int
 SaveWeightFileCallback::compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
 {
     const nanoem_model_bone_t *leftBonePtr = *static_cast<const nanoem_model_bone_t *const *>(a),
-                              *rightBonePtr = *static_cast<const nanoem_model_bone_t *const *>(a);
+                              *rightBonePtr = *static_cast<const nanoem_model_bone_t *const *>(b);
     return model::Bone::index(leftBonePtr) - model::Bone::index(rightBonePtr);
 }
 
