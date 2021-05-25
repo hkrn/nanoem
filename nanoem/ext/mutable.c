@@ -28,7 +28,7 @@ nanoemMutableModeVertexApplyChangeAllObjectIndices(nanoem_model_t *origin_model,
     nanoem_model_morph_vertex_t *morph_vertex;
     nanoem_model_morph_uv_t *morph_uv;
     nanoem_model_soft_body_t *soft_body;
-    nanoem_model_soft_body_anchor_t **anchors, *anchor;
+    nanoem_model_soft_body_anchor_t *anchor;
     nanoem_rsize_t num_objects, num_items, i, j;
     num_objects = origin_model->num_morphs;
     for (i = 0; i < num_objects; i++) {
