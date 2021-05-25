@@ -14,6 +14,7 @@
 #include "emapp/IImageView.h"
 #include "emapp/ILight.h"
 #include "emapp/ListUtils.h"
+#include "emapp/ModalDialogFactory.h"
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/command/TransformModelCommand.h"
@@ -307,6 +308,353 @@ CreateMaterialFromOBJFileCallback::CreateMaterialFromOBJFileCallback(ImGuiWindow
 }
 
 CreateMaterialFromOBJFileCallback::~CreateMaterialFromOBJFileCallback() NANOEM_DECL_NOEXCEPT
+{
+}
+
+static const char kSignature[] = "PMX Bone Weight\r\n";
+
+struct LoadWeightFileCallback : IFileManager::QueryFileDialogCallbacks {
+    static const nanoem_f32_t kEpsilon;
+    struct WeightRow {
+        void readColumn(const char *s, const char *e, int columnIndex, const Model *activeModel,
+            nanoem_unicode_string_factory_t *factory);
+        void apply(nanoem_model_vertex_t *vertexPtr) const;
+        Vector3 m_origin;
+        Vector3 m_normal;
+        const nanoem_model_bone_t *m_bones[4];
+        nanoem_f32_t m_weights[4];
+        Vector3 m_sdefC;
+        Vector3 m_sdefR0;
+        Vector3 m_sdefR1;
+        bool m_isSDEF;
+    };
+    typedef tinystl::vector<WeightRow, TinySTLAllocator> WeightRowList;
+
+    static void handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque);
+    static int compareWeightRow(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareOrigin(const Vector3 &a, const Vector3 &b) NANOEM_DECL_NOEXCEPT;
+    static bool applyVertex(const WeightRowList &rows, nanoem_model_vertex_t *vertexPtr) NANOEM_DECL_NOEXCEPT;
+
+    LoadWeightFileCallback(BaseNonModalDialogWindow *parent);
+    ~LoadWeightFileCallback() NANOEM_DECL_NOEXCEPT;
+};
+
+const nanoem_f32_t LoadWeightFileCallback::kEpsilon = 0.0001f;
+
+void
+LoadWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque)
+{
+    FileReaderScope scope(project->translator());
+    if (scope.open(fileURI, error)) {
+        ByteArray bytes, line;
+        FileUtils::read(scope, bytes, error);
+        const char *ptr = reinterpret_cast<char *>(bytes.data());
+        if (StringUtils::equals(ptr, kSignature, sizeof(kSignature) - 1)) {
+            ptr += sizeof(kSignature) - 1;
+            Model *activeModel = project->activeModel();
+            nanoem_unicode_string_factory_t *factory =
+                project->unicodeStringFactory();
+            WeightRowList weightRows;
+            while (const char *p = StringUtils::indexOf(ptr, '\n')) {
+                line.assign(reinterpret_cast<const nanoem_u8_t *>(ptr), reinterpret_cast<const nanoem_u8_t *>(p));
+                line.push_back(0);
+                const char *linePtr = reinterpret_cast<const char *>(line.data());
+                int columnIndex = 0;
+                WeightRow row;
+                while (const char *q = StringUtils::indexOf(linePtr, ',')) {
+                    row.readColumn(linePtr, q, columnIndex, activeModel, factory);
+                    linePtr = q + 1;
+                    columnIndex++;
+                }
+                if (columnIndex == 23) {
+                    const char *lineEnd = reinterpret_cast<const char *>(line.back());
+                    row.readColumn(linePtr, lineEnd, columnIndex, activeModel, factory);
+                    weightRows.push_back(row);
+                }
+                ptr = p + 1;
+            }
+            qsort(weightRows.data(), weightRows.size(), sizeof(weightRows[0]), compareWeightRow);
+            model::Vertex::Set vertexSet(activeModel->selection()->allVertexSet());
+            nanoem_rsize_t numVertices, appliedNumVertices = 0;
+            if (!vertexSet.empty()) {
+                numVertices = vertexSet.size();
+                for (model::Vertex::Set::const_iterator it = vertexSet.begin(), end = vertexSet.end(); it != end;
+                     ++it) {
+                    nanoem_model_vertex_t *vertexPtr = const_cast<nanoem_model_vertex_t *>(*it);
+                    if (applyVertex(weightRows, vertexPtr)) {
+                        appliedNumVertices++;
+                    }
+                }
+            }
+            else {
+                nanoem_model_vertex_t *const *vertices =
+                    nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
+                for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+                    nanoem_model_vertex_t *vertexPtr = vertices[i];
+                    if (applyVertex(weightRows, vertexPtr)) {
+                        appliedNumVertices++;
+                    }
+                }
+            }
+            BaseNonModalDialogWindow *parent = static_cast<BaseNonModalDialogWindow *>(opaque);
+            String message;
+            StringUtils::format(message, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.message"), appliedNumVertices, numVertices);
+            BaseApplicationService *application = parent->m_applicationPtr;
+            application->addModalDialog(ModalDialogFactory::createDisplayPlainTextDialog(
+                application, parent->tr("nanoem.gui.model.edit.action.vertex.weight.dialog.title"), message));
+        }
+    }
+}
+
+void
+LoadWeightFileCallback::WeightRow::readColumn(const char *s, const char *e, int columnIndex, const Model *activeModel, nanoem_unicode_string_factory_t *factory)
+{
+    switch (columnIndex) {
+    case 0:
+    case 1:
+    case 2: {
+        m_origin[columnIndex] = StringUtils::parseFloat(s, nullptr);
+        break;
+    }
+    case 3:
+    case 4:
+    case 5: {
+        m_normal[columnIndex - 3] = StringUtils::parseFloat(s, nullptr);
+        break;
+    }
+    case 6:
+    case 7:
+    case 8:
+    case 9: {
+        String name;
+        StringUtils::getUtf8String(s, e - s, NANOEM_CODEC_TYPE_SJIS, factory, name);
+        m_bones[columnIndex - 6] = activeModel->findBone(name);
+        break;
+    }
+    case 10:
+    case 11:
+    case 12:
+    case 13: {
+        m_weights[columnIndex - 10] = StringUtils::parseFloat(s, nullptr);
+        break;
+    }
+    case 14: {
+        m_isSDEF = StringUtils::equals(s, "True", 4);
+        break;
+    }
+    case 15:
+    case 16:
+    case 17: {
+        m_sdefC[columnIndex - 15] = StringUtils::parseFloat(s, nullptr);
+        break;
+    }
+    case 18:
+    case 19:
+    case 20: {
+        m_sdefR0[columnIndex - 18] = StringUtils::parseFloat(s, nullptr);
+        break;
+    }
+    case 21:
+    case 22:
+    case 23: {
+        m_sdefR1[columnIndex - 21] = StringUtils::parseFloat(s, nullptr);
+        break;
+    }
+    default:
+        break;
+    }
+}
+
+void
+LoadWeightFileCallback::WeightRow::apply(nanoem_model_vertex_t *vertexPtr) const
+{
+    command::ScopedMutableVertex vertex(vertexPtr);
+    nanoemMutableModelVertexSetOrigin(vertex, glm::value_ptr(Vector4(m_origin, 1)));
+    nanoemMutableModelVertexSetNormal(vertex, glm::value_ptr(Vector4(m_normal, 0)));
+    nanoemMutableModelVertexSetSdefC(vertex, glm::value_ptr(Vector4(m_sdefC, 0)));
+    nanoemMutableModelVertexSetSdefR0(vertex, glm::value_ptr(Vector4(m_sdefR0, 0)));
+    nanoemMutableModelVertexSetSdefR1(vertex, glm::value_ptr(Vector4(m_sdefR1, 0)));
+    if (m_weights[2] > 0 && m_bones[2] != nullptr) {
+        nanoemMutableModelVertexSetType(vertex, NANOEM_MODEL_VERTEX_TYPE_BDEF4);
+    }
+    else if (m_weights[1] > 0 && m_bones[1] != nullptr) {
+        nanoemMutableModelVertexSetType(
+            vertex, m_isSDEF ? NANOEM_MODEL_VERTEX_TYPE_SDEF : NANOEM_MODEL_VERTEX_TYPE_BDEF2);
+    }
+    else {
+        nanoemMutableModelVertexSetType(vertex, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
+    }
+    for (nanoem_rsize_t i = 0; i < 4; i++) {
+        nanoemMutableModelVertexSetBoneObject(vertex, m_bones[i], i);
+        nanoemMutableModelVertexSetBoneWeight(vertex, m_weights[i], i);
+    }
+}
+
+int
+LoadWeightFileCallback::compareWeightRow(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const WeightRow &left = *static_cast<const WeightRow *>(a), &right = *static_cast<const WeightRow *>(b);
+    return compareOrigin(left.m_origin, right.m_origin);
+}
+
+int
+LoadWeightFileCallback::compareOrigin(const Vector3 &a, const Vector3 &b) NANOEM_DECL_NOEXCEPT
+{
+    if (glm::epsilonEqual(a.x, b.x, kEpsilon)) {
+        if (glm::epsilonEqual(a.y, b.y, kEpsilon)) {
+            if (glm::epsilonEqual(a.z, b.z, kEpsilon)) {
+                return 0;
+            }
+            return a.z < b.z ? 1 : -1;
+        }
+        return a.y < b.y ? 1 : -1;
+    }
+    return a.x < b.x ? 1 : -1;
+}
+
+bool
+LoadWeightFileCallback::applyVertex(const WeightRowList &rows, nanoem_model_vertex_t *vertexPtr) NANOEM_DECL_NOEXCEPT
+{
+    WeightRow r;
+    Inline::clearZeroMemory(r);
+    r.m_origin = glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr));
+    bool result = false;
+    if (const WeightRow *row =
+            static_cast<const WeightRow *>(bsearch(&r, rows.data(), rows.size(), sizeof(rows[0]), compareWeightRow))) {
+        row->apply(vertexPtr);
+        result = true;
+    }
+    else {
+        nanoem_f32_t nearest = FLT_MAX;
+        const WeightRow *found = nullptr;
+        for (WeightRowList::const_iterator it = rows.begin(), end = rows.end(); it != end; ++it) {
+            const nanoem_f32_t distance = glm::distance(r.m_origin, it->m_origin);
+            if (distance < nearest) {
+                found = it;
+                nearest = distance;
+            }
+        }
+        if (nearest < kEpsilon && found) {
+            found->apply(vertexPtr);
+            result = true;
+        }
+    }
+    return result;
+}
+
+LoadWeightFileCallback::LoadWeightFileCallback(BaseNonModalDialogWindow *parent)
+{
+    m_accept = handleAccept;
+    m_cancel = nullptr;
+    m_destory = nullptr;
+    m_opaque = parent;
+}
+
+LoadWeightFileCallback::~LoadWeightFileCallback() NANOEM_DECL_NOEXCEPT
+{
+}
+
+struct SaveWeightFileCallback : IFileManager::QueryFileDialogCallbacks {
+    static void handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque);
+    static void writeLine(
+        const nanoem_model_vertex_t *vertexPtr, nanoem_unicode_string_factory_t *factory, String &content);
+    static const nanoem_u8_t *wrapString(const nanoem_u8_t *value) NANOEM_DECL_NOEXCEPT;
+    static int compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+
+    SaveWeightFileCallback();
+    ~SaveWeightFileCallback() NANOEM_DECL_NOEXCEPT;
+};
+
+void
+SaveWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error &error, void *opaque)
+{
+    Model *activeModel = project->activeModel();
+    FileWriterScope scope;
+    if (scope.open(fileURI, error)) {
+        String content;
+        content.append(kSignature);
+        model::Vertex::List vertices(ListUtils::toListFromSet(activeModel->selection()->allVertexSet()));
+        nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+        if (!vertices.empty()) {
+            qsort(vertices.begin(), vertices.size(), sizeof(vertices[0]), compareBone);
+            for (model::Vertex::List::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
+                const nanoem_model_vertex_t *vertexPtr = *it;
+                writeLine(vertexPtr, factory, content);
+            }
+        }
+        else {
+            nanoem_rsize_t numVertices;
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
+            for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+                const nanoem_model_vertex_t *vertexPtr = vertices[i];
+                writeLine(vertexPtr, factory, content);
+            }
+        }
+        FileUtils::write(scope.writer(), content, error);
+        scope.commit(error);
+    }
+}
+
+void
+SaveWeightFileCallback::writeLine(
+    const nanoem_model_vertex_t *vertexPtr, nanoem_unicode_string_factory_t *factory, String &content)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    const nanoem_f32_t *origin = nanoemModelVertexGetOrigin(vertexPtr), *normal = nanoemModelVertexGetNormal(vertexPtr),
+                       *sdefC = nanoemModelVertexGetSdefC(vertexPtr), *sdefR0 = nanoemModelVertexGetSdefR0(vertexPtr),
+                       *sdefR1 = nanoemModelVertexGetSdefR1(vertexPtr);
+    const char *isSDEF = nanoemModelVertexGetType(vertexPtr) == NANOEM_MODEL_VERTEX_TYPE_SDEF ? "True" : "False";
+    nanoem_u8_t *boneNames[] = { nullptr, nullptr, nullptr, nullptr };
+    for (nanoem_rsize_t i = 0; i < 4; i++) {
+        const nanoem_model_bone_t *bonePtr = nanoemModelVertexGetBoneObject(vertexPtr, i);
+        const nanoem_unicode_string_t *string = nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+        nanoem_rsize_t length;
+        boneNames[i] =
+            nanoemUnicodeStringFactoryGetByteArrayEncoding(factory, string, &length, NANOEM_CODEC_TYPE_SJIS, &status);
+    }
+    StringUtils::format(content,
+        "%.4f,%.4f,%.4f," // origin
+        "%.4f,%.4f,%.4f," // normal
+        "%s,%s,%s,%s," // bone names
+        "%.4f,%.4f,%.4f,%.4f," // bone weights
+        "%s," // sdef
+        "%.4f,%.4f,%.4f," // sdef C
+        "%.4f,%.4f,%.4f," // sdef R0
+        "%.4f,%.4f,%.4f" // sdef R1
+        "\r\n",
+        origin[0], origin[1], origin[2], normal[0], normal[1], normal[2], wrapString(boneNames[0]),
+        wrapString(boneNames[1]), wrapString(boneNames[2]), wrapString(boneNames[3]),
+        nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
+        nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3), isSDEF, sdefC[0],
+        sdefC[1], sdefC[2], sdefR0[0], sdefR0[1], sdefR0[2], sdefR1[0], sdefR1[1], sdefR1[2]);
+    for (nanoem_rsize_t i = 0; i < 4; i++) {
+        nanoemUnicodeStringFactoryDestroyByteArray(factory, boneNames[i]);
+    }
+}
+
+const nanoem_u8_t *
+SaveWeightFileCallback::wrapString(const nanoem_u8_t *value) NANOEM_DECL_NOEXCEPT
+{
+    return value ? value : reinterpret_cast<const nanoem_u8_t *>("");
+}
+
+int
+SaveWeightFileCallback::compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_bone_t *leftBonePtr = *static_cast<const nanoem_model_bone_t *const *>(a),
+                              *rightBonePtr = *static_cast<const nanoem_model_bone_t *const *>(a);
+    return model::Bone::index(leftBonePtr) - model::Bone::index(rightBonePtr);
+}
+
+SaveWeightFileCallback::SaveWeightFileCallback()
+{
+    m_accept = handleAccept;
+    m_cancel = nullptr;
+    m_destory = nullptr;
+    m_opaque = nullptr;
+}
+
+SaveWeightFileCallback::~SaveWeightFileCallback() NANOEM_DECL_NOEXCEPT
 {
 }
 
@@ -5089,6 +5437,27 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
                 }
             }
             ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+    ImGui::Separator();
+    if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.vertex.weight.title"))) {
+        StringSet extensions;
+        extensions.insert("csv");
+        extensions.insert("txt");
+        IEventPublisher *eventPublisher = project->eventPublisher();
+        IFileManager *fileManager = m_applicationPtr->fileManager();
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.vertex.weight.load"))) {
+            LoadWeightFileCallback callback(this);
+            fileManager->setTransientQueryFileDialogCallback(callback);
+            eventPublisher->publishQueryOpenSingleFileDialogEvent(
+                IFileManager::kDialogTypeUserCallback, ListUtils::toListFromSet(extensions));
+        }
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.vertex.weight.save"))) {
+            SaveWeightFileCallback callback;
+            fileManager->setTransientQueryFileDialogCallback(callback);
+            eventPublisher->publishQuerySaveFileDialogEvent(
+                IFileManager::kDialogTypeUserCallback, ListUtils::toListFromSet(extensions));
         }
         ImGui::EndMenu();
     }

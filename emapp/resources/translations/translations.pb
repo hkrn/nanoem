@@ -1,5 +1,5 @@
 
-ژ@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -588,7 +588,12 @@ Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択さ
 <nanoem.gui.model.edit.action.selection.soft-body.disable-all3選択された全てのソフトボディを解除f
 /nanoem.gui.model.edit.action.vertex.create-bone3選択された頂点の中心にボーンを追加h
 4nanoem.gui.model.edit.action.vertex.add-vertex-morph0選択された頂点を頂点モーフに追加r
-5nanoem.gui.model.edit.action.vertex.add-texture-morph9選択された頂点をテクスチャモーフに追加l
+5nanoem.gui.model.edit.action.vertex.add-texture-morph9選択された頂点をテクスチャモーフに追加F
+0nanoem.gui.model.edit.action.vertex.weight.titleウェイト転送Q
+/nanoem.gui.model.edit.action.vertex.weight.loadファイルから読み込みH
+/nanoem.gui.model.edit.action.vertex.weight.saveファイルに保存S
+7nanoem.gui.model.edit.action.vertex.weight.dialog.titleウェイト転送結果y
+9nanoem.gui.model.edit.action.vertex.weight.dialog.message<%u (対象頂点数 %u) の頂点が適用されました。l
 5nanoem.gui.model.edit.action.material.copy-from-model3次のモデルにある材質からコピーするh
 5nanoem.gui.model.edit.action.material.create-from-obj/ファイル (.obj) から材質を作成するl
 8nanoem.gui.model.edit.action.material.add-material-morph0選択された材質を材質モーフに追加G
@@ -1107,7 +1112,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1717,7 +1722,12 @@ Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select Al
 <nanoem.gui.model.edit.action.selection.soft-body.disable-allDeselect All Soft BodiesV
 /nanoem.gui.model.edit.action.vertex.create-bone#Create a Bone in Center of SelectedX
 4nanoem.gui.model.edit.action.vertex.add-vertex-morph Add Selected to the Vertex MorphZ
-5nanoem.gui.model.edit.action.vertex.add-texture-morph!Add Selected to the Texture MorphQ
+5nanoem.gui.model.edit.action.vertex.add-texture-morph!Add Selected to the Texture MorphC
+0nanoem.gui.model.edit.action.vertex.weight.titleWeight TransferA
+/nanoem.gui.model.edit.action.vertex.weight.loadLoad from File?
+/nanoem.gui.model.edit.action.vertex.weight.saveSave as FileQ
+7nanoem.gui.model.edit.action.vertex.weight.dialog.titleWeight Transfer Result\
+9nanoem.gui.model.edit.action.vertex.weight.dialog.message%u (of %u) vertices are appliedQ
 5nanoem.gui.model.edit.action.material.copy-from-modelCopy from Model with ...Y
 5nanoem.gui.model.edit.action.material.create-from-obj Create Material from File (.obj)^
 8nanoem.gui.model.edit.action.material.add-material-morph"Add Selected to the Material MorphA

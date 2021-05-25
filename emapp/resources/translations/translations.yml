@@ -2339,6 +2339,26 @@
   phrase:
     en_US: 'Add Selected to the Texture Morph'
     ja_JP: '選択された頂点をテクスチャモーフに追加'
+- key: nanoem.gui.model.edit.action.vertex.weight.title
+  phrase:
+    en_US: 'Weight Transfer'
+    ja_JP: 'ウェイト転送'
+- key: nanoem.gui.model.edit.action.vertex.weight.load
+  phrase:
+    en_US: 'Load from File'
+    ja_JP: 'ファイルから読み込み'
+- key: nanoem.gui.model.edit.action.vertex.weight.save
+  phrase:
+    en_US: 'Save as File'
+    ja_JP: 'ファイルに保存'
+- key: nanoem.gui.model.edit.action.vertex.weight.dialog.title
+  phrase:
+    en_US: 'Weight Transfer Result'
+    ja_JP: 'ウェイト転送結果'
+- key: nanoem.gui.model.edit.action.vertex.weight.dialog.message
+  phrase:
+    en_US: '%u (of %u) vertices are applied'
+    ja_JP: '%u (対象頂点数 %u) の頂点が適用されました。'
 - key: nanoem.gui.model.edit.action.material.copy-from-model
   phrase:
     en_US: 'Copy from Model with ...'
