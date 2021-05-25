@@ -348,6 +348,7 @@ LoadWeightFileCallback::handleAccept(const URI &fileURI, Project *project, Error
     if (scope.open(fileURI, error)) {
         ByteArray bytes, line;
         FileUtils::read(scope, bytes, error);
+        bytes.push_back(0);
         const char *ptr = reinterpret_cast<char *>(bytes.data());
         if (StringUtils::equals(ptr, kSignature, sizeof(kSignature) - 1)) {
             ptr += sizeof(kSignature) - 1;
