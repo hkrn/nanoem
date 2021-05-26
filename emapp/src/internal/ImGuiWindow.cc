@@ -85,6 +85,7 @@
 #include "emapp/internal/imgui/ViewportSettingDialog.h"
 #include "emapp/private/CommonInclude.h"
 
+#include "glm/gtx/matrix_query.hpp"
 #include "sokol/sokol_time.h"
 
 #define SOKOL_GFX_INCLUDED /* stub */
@@ -275,6 +276,7 @@ const nanoem_f32_t ImGuiWindow::kTimelineSeekerPanelWidth = 240.0f;
 const nanoem_f32_t ImGuiWindow::kTimelineUndoPanelWidth = 180.0f;
 const nanoem_f32_t ImGuiWindow::kTimelineTrackMaxWidth = 150.0f;
 const nanoem_f32_t ImGuiWindow::kTimelineKeyframeActionPanelWidth = 320.0f;
+const nanoem_f32_t ImGuiWindow::kModelEditCommandWidth = 270.0f;
 const nanoem_f32_t ImGuiWindow::kDrawCircleSegmentCount = 24.0f;
 const ImGuiDataType ImGuiWindow::kFrameIndexDataType = ImGuiDataType_U32;
 const ImU32 ImGuiWindow::kMainWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
@@ -1185,12 +1187,6 @@ ImGuiWindow::openModelParameterDialog(Project *project)
             m_dialogWindows.insert(tinystl::make_pair(ModelParameterDialog::kIdentifier, dialog));
         }
     }
-    if (m_dialogWindows.find(ModelEditCommandDialog::kIdentifier) == m_dialogWindows.end()) {
-        if (Model *activeModel = project->activeModel()) {
-            INoModalDialogWindow *dialog = nanoem_new(ModelEditCommandDialog(activeModel, m_applicationPtr));
-            m_dialogWindows.insert(tinystl::make_pair(ModelEditCommandDialog::kIdentifier, dialog));
-        }
-    }
 }
 
 void
@@ -1983,7 +1979,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);
             ImGui::SetNextWindowSizeConstraints(minimumViewportSize, ImVec2(FLT_MAX, FLT_MAX));
             if (ImGui::Begin(tr("nanoem.gui.viewport.title"), &viewportWindowDetached)) {
-                drawViewport(ImGui::GetContentRegionAvail().y, project, state);
+                drawViewport(project, ImGui::GetContentRegionAvail().y, state);
             }
             ImGui::End();
             ImGui::PopStyleVar();
@@ -1998,7 +1994,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
             drawTimeline(timelineWidth, viewportHeight, project);
             ImGui::SameLine();
             const ImVec2 viewportFrom(ImGui::GetCursorScreenPos());
-            drawViewport(viewportHeight, project, state);
+            drawViewport(project, viewportHeight, state);
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
                 handleVerticalSplitter(viewportFrom, size, viewportHeight, deviceScaleRatio);
             }
@@ -2029,7 +2025,10 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         ImGui::EndChild();
     }
     else {
-        drawViewport(ImGui::GetContentRegionAvail().y, project, state);
+        nanoem_f32_t height = ImGui::GetContentRegionAvail().y;
+        drawModelEditPanel(project, height);
+        ImGui::SameLine();
+        drawViewport(project, height, state);
     }
     ImGui::End();
     restoreDefaultStyle();
@@ -2906,7 +2905,7 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
 }
 
 void
-ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project, const IState *state)
+ImGuiWindow::drawViewport(Project *project, nanoem_f32_t viewportHeight, const IState *state)
 {
     ImGui::BeginChild("viewport", ImVec2(ImGui::GetContentRegionAvail().x, viewportHeight), false);
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio(),
@@ -3871,6 +3870,186 @@ ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();
+    ImGui::EndChild();
+}
+
+void
+ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
+{
+    char buffer[Inline::kLongNameStackBufferSize];
+    Model *activeModel = project->activeModel();
+    const bool isGizmoEnabled = !glm::isNull(activeModel->pivotMatrix(), Constants::kEpsilon);
+    ImGui::BeginChild("command", ImVec2(kModelEditCommandWidth * project->windowDevicePixelRatio(), height));
+    if (ImGui::CollapsingHeader("Operation", ImGuiTreeNodeFlags_DefaultOpen)) {
+        IModelObjectSelection *selection = activeModel->selection();
+        if (ImGui::BeginMenu("Operation Type")) {
+            const IModelObjectSelection::ObjectType objectType = selection->objectType();
+            const Model::EditActionType editActionType = activeModel->editActionType();
+            if (ImGui::MenuItem("Camera", nullptr, editActionType == Model::kEditActionTypeNone)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeNone);
+            }
+            if (ImGui::BeginMenu("Selection")) {
+                bool isSelection = editActionType == Model::kEditActionTypeSelectModelObject;
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.face"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeFace)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeFace, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.material"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeMaterial)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeMaterial, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.bone"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeBone)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeRigidBody)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeRigidBody, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.joint"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeJoint)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeJoint, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeSoftBody)) {
+                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeSoftBody, activeModel, project);
+                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Create Parent Bone", nullptr, editActionType == Model::kEditActionTypeCreateParentBone)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeCreateParentBone);
+            }
+            if (ImGui::MenuItem("Create Child Bone", nullptr, editActionType == Model::kEditActionTypeCreateChildBone)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeCreateChildBone);
+            }
+            if (ImGui::MenuItem("Paint Vertex Weight", nullptr, editActionType == Model::kEditActionTypePaintVertexWeight)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        ImGui::Text("Selection Mode");
+        const IModelObjectSelection::ObjectType objectType = selection->objectType();
+        const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
+        const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
+            objectType < IModelObjectSelection::kObjectTypeMaxEnum;
+        if (handleRadioButton("Circle", targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
+            selection->setTargetMode(IModelObjectSelection::kTargetModeTypeCircle);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton(
+                "Rectangle", targetMode == IModelObjectSelection::kTargetModeTypeRectangle, isSelectionMode)) {
+            selection->setTargetMode(IModelObjectSelection::kTargetModeTypeRectangle);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton("Point", targetMode == IModelObjectSelection::kTargetModeTypePoint, isSelectionMode)) {
+            selection->setTargetMode(IModelObjectSelection::kTargetModeTypePoint);
+        }
+    }
+    if (isGizmoEnabled && ImGui::CollapsingHeader("Gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text("Operation Type");
+        Model::GizmoOperationType op = activeModel->gizmoOperationType();
+        if (handleRadioButton("Translate", op == Model::kGizmoOperationTypeTranslate, isGizmoEnabled)) {
+            activeModel->setGizmoOperationType(Model::kGizmoOperationTypeTranslate);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton("Rotate", op == Model::kGizmoOperationTypeRotate, isGizmoEnabled)) {
+            activeModel->setGizmoOperationType(Model::kGizmoOperationTypeRotate);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton("Scale", op == Model::kGizmoOperationTypeScale, isGizmoEnabled)) {
+            activeModel->setGizmoOperationType(Model::kGizmoOperationTypeScale);
+        }
+        ImGui::Separator();
+        ImGui::Text("Coordinate Type");
+        Model::TransformCoordinateType coord = activeModel->gizmoTransformCoordinateType();
+        if (handleRadioButton("Global", coord == Model::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
+            activeModel->setGizmoTransformCoordinateType(Model::kTransformCoordinateTypeGlobal);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton("Local", coord == Model::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
+            activeModel->setGizmoTransformCoordinateType(Model::kTransformCoordinateTypeLocal);
+        }
+    }
+    StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera"));
+    if (ImGui::CollapsingHeader(buffer)) {
+        ICamera *camera = project->activeCamera();
+        Vector3 lookAt(camera->lookAt()), angle(glm::degrees(camera->angle()));
+        nanoem_f32_t distance = camera->distance();
+        int fov = camera->fov();
+        bool perspective = camera->isPerspective(), changed = false;
+        ImGui::PushItemWidth(-1);
+        ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.look-at"));
+        if (ImGui::DragFloat3("##look-at", glm::value_ptr(lookAt))) {
+            camera->setLookAt(glm::radians(lookAt));
+            changed = true;
+        }
+        ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.angle"));
+        if (ImGui::DragFloat3("##angle", glm::value_ptr(angle))) {
+            camera->setAngle(glm::radians(angle));
+            changed = true;
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s: %%.1f", tr("nanoem.gui.viewport.parameter.camera.distance"));
+        if (ImGui::DragFloat("##distance", &distance, 0.1f, 0.0f, 0.0f, buffer)) {
+            camera->setDistance(distance);
+            changed = true;
+        }
+        if (ImGui::DragInt("##fov", &fov, 0.1f, 1, 135, tr("nanoem.gui.panel.camera.fov.format"))) {
+            camera->setFov(fov);
+            changed = true;
+        }
+        if (ImGui::Checkbox("Perspective##perspective", &perspective)) {
+            camera->setPerspective(perspective);
+            changed = true;
+        }
+        if (ImGui::Button("Initialize##initialize", ImVec2(-1, 0))) {
+            camera->reset();
+            changed = true;
+        }
+        ImGui::PopItemWidth();
+        if (changed) {
+            camera->update();
+            project->resetAllModelEdges();
+        }
+    }
+    StringUtils::format(buffer, sizeof(buffer), "%s##light", tr("nanoem.gui.panel.light"));
+    if (ImGui::CollapsingHeader(buffer)) {
+        ILight *light = project->activeLight();
+        Vector3 color(light->color()), direction(light->direction());
+        ImGui::PushItemWidth(-1);
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.light.color"));
+        if (ImGui::ColorEdit3("##color", glm::value_ptr(color))) {
+            light->setColor(color);
+        }
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.light.direction"));
+        if (ImGui::DragFloat3("##direction", glm::value_ptr(direction), 0.01f, -1.0f, 1.0f)) {
+            light->setDirection(direction);
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##initialize", tr("nanoem.gui.panel.light.reset"));
+        if (ImGui::Button(buffer, ImVec2(-1, 0))) {
+            light->reset();
+        }
+        ImGui::PopItemWidth();
+    }
     ImGui::EndChild();
 }
 

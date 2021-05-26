@@ -20,17 +20,11 @@ struct ModelEditCommandDialog : BaseNonModalDialogWindow {
     static const char *const kIdentifier;
     static void applyDeltaTransform(const Matrix4x4 &delta, Model *activeModel);
     static void beforeToggleEditingMode(
-        IModelObjectSelection::EditingType editingType, Model *activeModel, Project *project);
+        IModelObjectSelection::ObjectType editingType, Model *activeModel, Project *project);
     static void afterToggleEditingMode(
-        IModelObjectSelection::EditingType editingType, Model *activeModel, Project *project);
+        IModelObjectSelection::ObjectType editingType, Model *activeModel, Project *project);
 
     ModelEditCommandDialog(Model *model, BaseApplicationService *applicationPtr);
-
-    bool draw(Project *project);
-    void addGizmoOperationButton(const char *text, Model::GizmoOperationType type, bool enabled);
-    void addGizmoCoordinationButton(const char *text, Model::TransformCoordinateType type, bool enabled);
-    void addSelectionTypeButton(const char *text, IModelObjectSelection::EditingType type, Project *project);
-    void addSelectionTargetButton(const char *text, IModelObjectSelection::TargetModeType type);
 
     Model *m_activeModel;
 };

@@ -859,9 +859,9 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_undoStack(nullptr)
     , m_activeConstraintPtr(nullptr)
     , m_activeMaterialPtr(nullptr)
+    , m_hoveredBonePtr(nullptr)
     , m_activeBonePairPtr(nullptr, nullptr)
     , m_activeEffectPtrPair(nullptr, nullptr)
-    , m_hoveredBonePtr(nullptr)
     , m_screenImage(nullptr)
     , m_sharedFallbackBone(nullptr)
     , m_userData(nullptr, nullptr)
@@ -869,7 +869,7 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_edgeColor(0, 0, 0, 1)
     , m_gizmoOperationType(kGizmoOperationTypeTranslate)
     , m_gizmoTransformCoordinateType(kTransformCoordinateTypeLocal)
-    , m_transformAxisType(kAxisTypeMaxEnum)
+    , m_transformAxisType(kAxisTypeNone)
     , m_transformCoordinateType(kTransformCoordinateTypeLocal)
     , m_states(kPrivateStateInitialValue)
     , m_edgeSizeScaleFactor(1.0f)
@@ -5462,7 +5462,26 @@ Model::setTransformAxisType(AxisType value)
             m_transformAxisType = value;
         }
         else {
-            m_transformAxisType = kAxisTypeMaxEnum;
+            m_transformAxisType = kAxisTypeNone;
+        }
+    }
+}
+
+Model::EditActionType
+Model::editActionType() const NANOEM_DECL_NOEXCEPT
+{
+    return m_project->isModelEditingEnabled() ? m_editActionType : kEditActionTypeNone;
+}
+
+void
+Model::setEditActionType(EditActionType value)
+{
+    if (value != m_editActionType) {
+        if (value >= kEditActionTypeFirstEnum && value < kEditActionTypeMaxEnum) {
+            m_editActionType = value;
+        }
+        else {
+            m_editActionType = kEditActionTypeNone;
         }
     }
 }

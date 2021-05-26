@@ -67,7 +67,7 @@ public:
         MutableOffsetJointList m_joints;
         MutableOffsetRigidBodyList m_rigidBodies;
         MutableOffsetVertexList m_vertices;
-        IModelObjectSelection::EditingType m_editingType;
+        IModelObjectSelection::ObjectType m_objectType;
     };
 
     static undo_command_t *create(

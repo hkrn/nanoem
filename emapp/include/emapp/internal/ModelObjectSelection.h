@@ -85,8 +85,8 @@ public:
 
     bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setBoxSelectedBoneModeEnabled(bool value) NANOEM_DECL_OVERRIDE;
-    EditingType editingType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setEditingType(EditingType value) NANOEM_DECL_OVERRIDE;
+    ObjectType objectType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setObjectType(ObjectType value) NANOEM_DECL_OVERRIDE;
     TargetModeType targetMode() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setTargetMode(TargetModeType value) NANOEM_DECL_OVERRIDE;
 
@@ -111,7 +111,7 @@ private:
     nanoem_model_rigid_body_t *m_hoveredRigidBody;
     nanoem_model_joint_t *m_hoveredJoint;
     nanoem_model_soft_body_t *m_hoveredSoftBody;
-    EditingType m_editingType;
+    ObjectType m_editingType;
     TargetModeType m_targetMode;
     bool m_boxSelectedBoneModeEnabled;
 };

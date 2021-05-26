@@ -23,8 +23,8 @@ struct emapp_model_dragging_orientate_bone_parameter_t {
 TEST_CASE("model_dragging_orientate_bone", "[emapp][model]")
 {
     const emapp_model_dragging_orientate_bone_parameter_t parameters[] = {
-        { Model::kAxisX, Vector2(480, 240), Vector2(500, 260), Vector3(1, 0, 0), 0.349066f },
-        { Model::kAxisZ, Vector2(480, 240), Vector2(500, 260), Vector3(0, 0, -1), 0.349066f }
+        { Model::kAxisTypeX, Vector2(480, 240), Vector2(500, 260), Vector3(1, 0, 0), 0.349066f },
+        { Model::kAxisTypeZ, Vector2(480, 240), Vector2(500, 260), Vector3(0, 0, -1), 0.349066f }
     };
     TestScope scope;
     for (const auto &parameter : parameters) {
@@ -83,7 +83,7 @@ TEST_CASE("model_dragging_orientate_bone_nan", "[emapp][model]")
 {
     TestScope scope;
     const emapp_model_dragging_orientate_bone_parameter_t parameters[] = {
-        { Model::kAxisY, Vector2(480, 240), Vector2(480, 240), Vector3(0, 0, 1), 0 },
+        { Model::kAxisTypeY, Vector2(480, 240), Vector2(480, 240), Vector3(0, 0, 1), 0 },
     };
     for (const auto &parameter : parameters) {
         {

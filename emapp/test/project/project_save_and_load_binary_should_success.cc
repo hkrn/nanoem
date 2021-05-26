@@ -119,7 +119,7 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
                 registrator.registerAddModelKeyframesCommand(indices, model, project->resolveMotion(model));
                 if (i == kActiveModel) {
                     project->setActiveModel(model);
-                    model->setTransformAxisType(Model::kAxisY);
+                    model->setTransformAxisType(Model::kAxisTypeY);
                     model->setTransformCoordinateType(Model::kTransformCoordinateTypeGlobal);
                 }
             }
@@ -138,7 +138,7 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
                 offset++;
             }
             CHECK(newProject->activeModel());
-            CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisY);
+            CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisTypeY);
             CHECK(newProject->activeModel()->transformCoordinateType() == Model::kTransformCoordinateTypeGlobal);
             CHECK(newProject->allMotions()->size() == kNumModels + 3);
         });

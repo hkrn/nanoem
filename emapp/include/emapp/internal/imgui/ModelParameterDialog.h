@@ -65,7 +65,7 @@ public:
         kTabTypeMaxEnum,
     };
 
-    static IModelObjectSelection::EditingType convertToEditingType(TabType tab) NANOEM_DECL_NOEXCEPT;
+    static IModelObjectSelection::ObjectType convertToObjectType(TabType tab) NANOEM_DECL_NOEXCEPT;
     static bool hasMorphType(const Model *model, nanoem_model_morph_type_t type) NANOEM_DECL_NOEXCEPT;
     static void formatVertexText(char *buffer, nanoem_rsize_t size, const nanoem_model_vertex_t *vertexPtr);
 

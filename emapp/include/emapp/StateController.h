@@ -17,6 +17,7 @@ namespace nanoem {
 
 class BaseApplicationService;
 class IFileManager;
+class IModelObjectSelection;
 class IState;
 
 class StateController NANOEM_DECL_SEALED : public IProjectHolder,
@@ -58,6 +59,8 @@ private:
         const Project *project, const Vector2SI32 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT;
     void setPrimaryDraggingState(Project *project, const Vector2SI32 &logicalCursorPosition);
     void setSecondaryDraggingState(Project *project, const Vector2SI32 &logicalCursorPosition);
+    IState *draggingBoneSelectionState(const IModelObjectSelection *selection);
+    IState *draggingModelObjectState(const IModelObjectSelection *selection);
 
     typedef tinystl::vector<Project *, TinySTLAllocator> QueuedProjectList;
     BaseApplicationService *m_applicationPtr;

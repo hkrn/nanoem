@@ -57,6 +57,7 @@ public:
     static const nanoem_f32_t kTimelineUndoPanelWidth;
     static const nanoem_f32_t kTimelineTrackMaxWidth;
     static const nanoem_f32_t kTimelineKeyframeActionPanelWidth;
+    static const nanoem_f32_t kModelEditCommandWidth;
     static const nanoem_f32_t kDrawCircleSegmentCount;
     static const ImGuiDataType kFrameIndexDataType;
     static const ImU32 kMainWindowFlags;
@@ -372,7 +373,7 @@ private:
     void drawKeyframeActionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t padding, Project *project);
-    void drawViewport(nanoem_f32_t viewportHeight, Project *project, const IState *state);
+    void drawViewport(Project *project, nanoem_f32_t viewportHeight, const IState *state);
     void drawViewportParameterBox(Project *project);
     void drawCommonInterpolationControls(Project *project);
     void drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
@@ -385,6 +386,7 @@ private:
     void drawMorphPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
     void drawViewPanel(const ImVec2 &panelSize, Project *project);
     void drawPlayPanel(const ImVec2 &panelSize, Project *project);
+    void drawModelEditPanel(Project *project, nanoem_f32_t height);
     void drawAllNonModalWindows(Project *project);
     void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
         int baseRectType, int intercectedRectType, bool handleable);

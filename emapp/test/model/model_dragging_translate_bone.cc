@@ -22,9 +22,9 @@ struct emapp_model_dragging_translate_bone_parameter_t {
 TEST_CASE("model_dragging_translate_bone", "[emapp][model]")
 {
     const emapp_model_dragging_translate_bone_parameter_t parameters[] = {
-        { Model::kAxisX, Vector2(480, 240), Vector2(500, 260), Vector3(1.0048010, 0, 0) },
-        { Model::kAxisY, Vector2(480, 240), Vector2(500, 260), Vector3(0, -1.004810, 0) },
-        { Model::kAxisZ, Vector2(480, 240), Vector2(500, 260), Vector3(1.0048010, -1.004810, 0) }
+        { Model::kAxisTypeX, Vector2(480, 240), Vector2(500, 260), Vector3(1.0048010, 0, 0) },
+        { Model::kAxisTypeY, Vector2(480, 240), Vector2(500, 260), Vector3(0, -1.004810, 0) },
+        { Model::kAxisTypeZ, Vector2(480, 240), Vector2(500, 260), Vector3(1.0048010, -1.004810, 0) }
     };
     TestScope scope;
     for (const auto &parameter : parameters) {
@@ -78,9 +78,9 @@ TEST_CASE("model_dragging_translate_bone", "[emapp][model]")
 TEST_CASE("model_dragging_translate_bone_sequential", "[emapp][model]")
 {
     const emapp_model_dragging_translate_bone_parameter_t parameters[] = {
-        { Model::kAxisX, Vector2(480, 240), Vector2(520, 280), Vector3(2.009621, 0, 0) },
-        { Model::kAxisY, Vector2(480, 240), Vector2(520, 280), Vector3(0, -2.009621, 0) },
-        { Model::kAxisZ, Vector2(480, 240), Vector2(520, 280), Vector3(2.009621, -2.009621, 0) }
+        { Model::kAxisTypeX, Vector2(480, 240), Vector2(520, 280), Vector3(2.009621, 0, 0) },
+        { Model::kAxisTypeY, Vector2(480, 240), Vector2(520, 280), Vector3(0, -2.009621, 0) },
+        { Model::kAxisTypeZ, Vector2(480, 240), Vector2(520, 280), Vector3(2.009621, -2.009621, 0) }
     };
     TestScope scope;
     for (const auto &parameter : parameters) {

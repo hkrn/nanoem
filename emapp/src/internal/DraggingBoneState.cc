@@ -269,7 +269,7 @@ TranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
 {
     const Model *model = activeModel();
     const Model::AxisType axis(model->transformAxisType());
-    const glm::bvec2 areAxisTypeSelected(axis == Model::kAxisX, axis == Model::kAxisY);
+    const glm::bvec2 areAxisTypeSelected(axis == Model::kAxisTypeX, axis == Model::kAxisTypeY);
     Vector3 localTranslation(m_baseLocalTranslation);
     if (glm::any(areAxisTypeSelected)) {
         const Vector2SI32 movingCursorPosition(logicalCursorPosition * Vector2SI32(areAxisTypeSelected)),
@@ -306,23 +306,23 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     const nanoem_model_bone_t *activeBonePtr = model->activeBone();
     Quaternion orientation;
     switch (model->transformAxisType()) {
-    case Model::kAxisCenter: {
+    case Model::kAxisTypeCenter: {
         /* do nothing */
         break;
     }
-    case Model::kAxisX: {
+    case Model::kAxisTypeX: {
         const Vector2 delta(logicalCursorPosition - pressedLogicalCursorPosition());
         const Vector3 axisX(handleDragAxis(activeBonePtr, 0));
         orientation = glm::angleAxis(glm::radians(delta).y, axisX);
         break;
     }
-    case Model::kAxisY: {
+    case Model::kAxisTypeY: {
         const nanoem_f32_t angle(angleCursorFromBone(logicalCursorPosition));
         const Vector3 axisY(handleDragAxis(activeBonePtr, 1));
         orientation = glm::angleAxis(angle, axisY);
         break;
     }
-    case Model::kAxisZ: {
+    case Model::kAxisTypeZ: {
         const Vector2 delta(logicalCursorPosition - pressedLogicalCursorPosition());
         const Vector3 axisZ(handleDragAxis(activeBonePtr, 2));
         orientation = glm::angleAxis(-glm::radians(delta).x, axisZ);
@@ -331,8 +331,8 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     default:
         break;
     }
-    const model::Bone::List &bones =
-        ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet());
+    const model::Bone::List bones(
+        ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet()));
     if (!bones.empty()) {
         performOrientationTransform(tinystl::make_pair(orientation, activeBonePtr), bones);
     }

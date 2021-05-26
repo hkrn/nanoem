@@ -54,7 +54,24 @@ class ISkinDeformer;
 
 class Model NANOEM_DECL_SEALED : public IDrawable, private NonCopyable {
 public:
-    enum AxisType { kAxisTypeFirstEnum, kAxisCenter = kAxisTypeFirstEnum, kAxisX, kAxisY, kAxisZ, kAxisTypeMaxEnum };
+    enum AxisType {
+        kAxisTypeFirstEnum,
+        kAxisTypeNone = kAxisTypeFirstEnum,
+        kAxisTypeCenter,
+        kAxisTypeX,
+        kAxisTypeY,
+        kAxisTypeZ,
+        kAxisTypeMaxEnum
+    };
+    enum EditActionType {
+        kEditActionTypeFirstEnum,
+        kEditActionTypeNone = kEditActionTypeFirstEnum,
+        kEditActionTypeSelectModelObject,
+        kEditActionTypePaintVertexWeight,
+        kEditActionTypeCreateParentBone,
+        kEditActionTypeCreateChildBone,
+        kEditActionTypeMaxEnum
+    };
     enum GizmoOperationType {
         kGizmoOperationTypeFirstEnum,
         kGizmoOperationTypeTranslate = kGizmoOperationTypeFirstEnum,
@@ -359,6 +376,8 @@ public:
     void setUserData(const UserData &value);
     AxisType transformAxisType() const NANOEM_DECL_NOEXCEPT;
     void setTransformAxisType(AxisType value);
+    EditActionType editActionType() const NANOEM_DECL_NOEXCEPT;
+    void setEditActionType(EditActionType value);
     TransformCoordinateType gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     void setGizmoTransformCoordinateType(TransformCoordinateType value);
     GizmoOperationType gizmoOperationType() const NANOEM_DECL_NOEXCEPT;
@@ -587,6 +606,7 @@ private:
     GizmoOperationType m_gizmoOperationType;
     TransformCoordinateType m_gizmoTransformCoordinateType;
     AxisType m_transformAxisType;
+    EditActionType m_editActionType;
     TransformCoordinateType m_transformCoordinateType;
     URI m_fileURI;
     String m_name;

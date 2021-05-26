@@ -757,30 +757,30 @@ const nanoem_f32_t ModelParameterDialog::kMinimumWindowWidth = 640;
 const int ModelParameterDialog::kWindowFrameHeightRowCount = 17;
 const int ModelParameterDialog::kInnerItemListFrameHeightRowCount = 10;
 
-IModelObjectSelection::EditingType
-ModelParameterDialog::convertToEditingType(TabType tab) NANOEM_DECL_NOEXCEPT
+IModelObjectSelection::ObjectType
+ModelParameterDialog::convertToObjectType(TabType tab) NANOEM_DECL_NOEXCEPT
 {
     switch (tab) {
     case kTabTypeBone:
-        return IModelObjectSelection::kEditingTypeBone;
+        return IModelObjectSelection::kObjectTypeBone;
     case kTabTypeFace:
-        return IModelObjectSelection::kEditingTypeFace;
+        return IModelObjectSelection::kObjectTypeFace;
     case kTabTypeJoint:
-        return IModelObjectSelection::kEditingTypeJoint;
+        return IModelObjectSelection::kObjectTypeJoint;
     case kTabTypeLabel:
-        return IModelObjectSelection::kEditingTypeLabel;
+        return IModelObjectSelection::kObjectTypeLabel;
     case kTabTypeMaterial:
-        return IModelObjectSelection::kEditingTypeMaterial;
+        return IModelObjectSelection::kObjectTypeMaterial;
     case kTabTypeMorph:
-        return IModelObjectSelection::kEditingTypeMorph;
+        return IModelObjectSelection::kObjectTypeMorph;
     case kTabTypeRigidBody:
-        return IModelObjectSelection::kEditingTypeRigidBody;
+        return IModelObjectSelection::kObjectTypeRigidBody;
     case kTabTypeSoftBody:
-        return IModelObjectSelection::kEditingTypeSoftBody;
+        return IModelObjectSelection::kObjectTypeSoftBody;
     case kTabTypeVertex:
-        return IModelObjectSelection::kEditingTypeVertex;
+        return IModelObjectSelection::kObjectTypeVertex;
     default:
-        return IModelObjectSelection::kEditingTypeNone;
+        return IModelObjectSelection::kObjectTypeNull;
     }
 }
 
@@ -849,7 +849,7 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllJoints(model->isShowAllJointShapes())
     , m_showAllSoftBodies(false)
 {
-    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kEditingTypeNone, m_activeModel, project);
+    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeNull, m_activeModel, project);
     m_savedState = nanoem_new(SavedState(m_editingMode));
     parent->addLazyExecutionCommand(nanoem_new(EnableModelEditingCommand(this)));
 }
@@ -6627,9 +6627,9 @@ void
 ModelParameterDialog::toggleTab(TabType value, Project *project)
 {
     if (value != m_tabType) {
-        ModelEditCommandDialog::beforeToggleEditingMode(convertToEditingType(m_tabType), m_activeModel, project);
+        ModelEditCommandDialog::beforeToggleEditingMode(convertToObjectType(m_tabType), m_activeModel, project);
         m_tabType = value;
-        ModelEditCommandDialog::afterToggleEditingMode(convertToEditingType(value), m_activeModel, project);
+        ModelEditCommandDialog::afterToggleEditingMode(convertToObjectType(value), m_activeModel, project);
     }
 }
 

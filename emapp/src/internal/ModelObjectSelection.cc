@@ -26,7 +26,7 @@ ModelObjectSelection::ModelObjectSelection(Model *parent)
     , m_hoveredRigidBody(nullptr)
     , m_hoveredJoint(nullptr)
     , m_hoveredSoftBody(nullptr)
-    , m_editingType(kEditingTypeNone)
+    , m_editingType(kObjectTypeFirstEnum)
     , m_targetMode(kTargetModeTypePoint)
     , m_boxSelectedBoneModeEnabled(false)
 {
@@ -546,14 +546,14 @@ ModelObjectSelection::setBoxSelectedBoneModeEnabled(bool value)
     m_boxSelectedBoneModeEnabled = value;
 }
 
-ModelObjectSelection::EditingType
-ModelObjectSelection::editingType() const NANOEM_DECL_NOEXCEPT
+ModelObjectSelection::ObjectType
+ModelObjectSelection::objectType() const NANOEM_DECL_NOEXCEPT
 {
     return m_editingType;
 }
 
 void
-ModelObjectSelection::setEditingType(EditingType value)
+ModelObjectSelection::setObjectType(ObjectType value)
 {
     m_editingType = value;
 }

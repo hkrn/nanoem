@@ -24,20 +24,19 @@ namespace nanoem {
 class IModelObjectSelection {
 public:
     typedef tinystl::vector<Vector4UI32, TinySTLAllocator> FaceList;
-    enum EditingType {
-        kEditingTypeFirstEnum,
-        kEditingTypeNone = kEditingTypeFirstEnum,
-        kEditingTypeInfo,
-        kEditingTypeVertex,
-        kEditingTypeFace,
-        kEditingTypeMaterial,
-        kEditingTypeBone,
-        kEditingTypeMorph,
-        kEditingTypeLabel,
-        kEditingTypeRigidBody,
-        kEditingTypeJoint,
-        kEditingTypeSoftBody,
-        kEditingTypeMaxEnum
+    enum ObjectType {
+        kObjectTypeFirstEnum,
+        kObjectTypeNull = kObjectTypeFirstEnum,
+        kObjectTypeVertex,
+        kObjectTypeFace,
+        kObjectTypeMaterial,
+        kObjectTypeBone,
+        kObjectTypeMorph,
+        kObjectTypeLabel,
+        kObjectTypeRigidBody,
+        kObjectTypeJoint,
+        kObjectTypeSoftBody,
+        kObjectTypeMaxEnum
     };
     enum TargetModeType {
         kTargetModeTypeFirstEnum,
@@ -118,8 +117,8 @@ public:
 
     virtual bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBoxSelectedBoneModeEnabled(bool value) = 0;
-    virtual EditingType editingType() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual void setEditingType(EditingType value) = 0;
+    virtual ObjectType objectType() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setObjectType(ObjectType value) = 0;
     virtual TargetModeType targetMode() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setTargetMode(TargetModeType value) = 0;
 };

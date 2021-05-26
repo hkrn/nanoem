@@ -35,7 +35,7 @@ TEST_CASE("motion_copy_paste_active_model_keyframes", "[emapp][motion]")
                     new TranslateActiveBoneState(project, activeModel, Vector2(480, 240), Vector2(480, 240)));
                 state->transform(Vector2(500, 260));
                 state->commit(Vector2(500, 260));
-                activeModel->setTransformAxisType(Model::kAxisX);
+                activeModel->setTransformAxisType(Model::kAxisTypeX);
                 state.reset(new OrientateActiveBoneState(project, activeModel, Vector2(480, 240), Vector2(480, 240)));
                 state->transform(Vector2(500, 260));
                 state->commit(Vector2(500, 260));

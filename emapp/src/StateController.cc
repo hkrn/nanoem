@@ -473,13 +473,13 @@ DraggingBoneState::selectTranslationAxisType(
         rectY(center.x - offset, center.y - length - offset, width, length);
     Model::AxisType axisType(Model::kAxisTypeMaxEnum);
     if (Inline::intersectsRectPoint(rectCenter, deviceScaleCursorPosition)) {
-        axisType = Model::kAxisCenter;
+        axisType = Model::kAxisTypeCenter;
     }
     else if (Inline::intersectsRectPoint(rectX, deviceScaleCursorPosition)) {
-        axisType = Model::kAxisX;
+        axisType = Model::kAxisTypeX;
     }
     else if (Inline::intersectsRectPoint(rectY, deviceScaleCursorPosition)) {
-        axisType = Model::kAxisY;
+        axisType = Model::kAxisTypeY;
     }
     return axisType;
 }
@@ -496,16 +496,16 @@ DraggingBoneState::selectOrientationAxisType(
         rectZ(center.x - radius, center.y - woffset, radius * 2.0f, width);
     Model::AxisType axisType(Model::kAxisTypeMaxEnum);
     if (distance < radius + woffset && distance > radius - woffset) {
-        axisType = Model::kAxisY;
+        axisType = Model::kAxisTypeY;
     }
     else if (Inline::intersectsRectPoint(rectCenter, deviceScaleCursorPosition)) {
-        axisType = Model::kAxisCenter;
+        axisType = Model::kAxisTypeCenter;
     }
     else if (Inline::intersectsRectPoint(rectX, deviceScaleCursorPosition)) {
-        axisType = Model::kAxisX;
+        axisType = Model::kAxisTypeX;
     }
     else if (Inline::intersectsRectPoint(rectZ, deviceScaleCursorPosition)) {
-        axisType = Model::kAxisZ;
+        axisType = Model::kAxisTypeZ;
     }
     return axisType;
 }
@@ -868,8 +868,8 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
     const IModelObjectSelection *selection = activeModel->selection();
     Matrix4x4 matrix(0);
     Vector3 aabbMin(FLT_MAX), aabbMax(-FLT_MAX);
-    switch (selection->editingType()) {
-    case IModelObjectSelection::kEditingTypeBone: {
+    switch (selection->objectType()) {
+    case IModelObjectSelection::kObjectTypeBone: {
         const model::Bone::Set selectedBoneSet(selection->allBoneSet());
         if (!selectedBoneSet.empty()) {
             for (model::Bone::Set::const_iterator it = selectedBoneSet.begin(), end = selectedBoneSet.end(); it != end;
@@ -882,7 +882,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         }
         break;
     }
-    case IModelObjectSelection::kEditingTypeFace: {
+    case IModelObjectSelection::kObjectTypeFace: {
         const IModelObjectSelection::FaceList selectedFaces(selection->allFaces());
         if (!selectedFaces.empty()) {
             nanoem_rsize_t numVertices;
@@ -899,7 +899,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         }
         break;
     }
-    case IModelObjectSelection::kEditingTypeJoint: {
+    case IModelObjectSelection::kObjectTypeJoint: {
         const model::Joint::Set selectedJointSet(selection->allJointSet());
         if (!selectedJointSet.empty()) {
             for (model::Joint::Set::const_iterator it = selectedJointSet.begin(), end = selectedJointSet.end();
@@ -912,7 +912,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         }
         break;
     }
-    case IModelObjectSelection::kEditingTypeMaterial: {
+    case IModelObjectSelection::kObjectTypeMaterial: {
         const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
         if (!selectedMaterialSet.empty()) {
             nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
@@ -946,7 +946,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         }
         break;
     }
-    case IModelObjectSelection::kEditingTypeRigidBody: {
+    case IModelObjectSelection::kObjectTypeRigidBody: {
         const model::RigidBody::Set selectedRigidBodySet(selection->allRigidBodySet());
         if (!selectedRigidBodySet.empty()) {
             for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet.begin(),
@@ -960,7 +960,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         }
         break;
     }
-    case IModelObjectSelection::kEditingTypeSoftBody: {
+    case IModelObjectSelection::kObjectTypeSoftBody: {
         const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
         if (!selectedSoftBodySet.empty()) {
             nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
@@ -995,7 +995,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         }
         break;
     }
-    case IModelObjectSelection::kEditingTypeVertex: {
+    case IModelObjectSelection::kObjectTypeVertex: {
         const model::Vertex::Set selectedVertexSet(selection->allVertexSet());
         if (!selectedVertexSet.empty()) {
             for (model::Vertex::Set::const_iterator it = selectedVertexSet.begin(), end = selectedVertexSet.end();
@@ -2014,9 +2014,9 @@ DrawUtil::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool i
     const nanoem_model_bone_t *activeBone = activeModel->activeBone();
     activeModel->drawBoneConnections(primitive, activeBone);
     primitive->strokeLine(center, Vector2(center.x + length, center.y),
-        Vector4(kRed, type == Model::kAxisX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+        Vector4(kRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(center, Vector2(center.x, center.y - length),
-        Vector4(kGreen, type == Model::kAxisY || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+        Vector4(kGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25), thickness);
 }
 
 void
@@ -2035,10 +2035,10 @@ DrawUtil::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool
     const nanoem_f32_t y2 = center.y + radius;
     activeModel->drawBoneConnections(primitive, activeModel->activeBone());
     primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
-        Vector4(kBlue, type == Model::kAxisZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+        Vector4(kBlue, type == Model::kAxisTypeZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
-        Vector4(kRed, type == Model::kAxisX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
-    const Vector4 green(kGreen, type == Model::kAxisY || !isGrabbingHandle ? 1.0 : 0.25);
+        Vector4(kRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    const Vector4 green(kGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25);
     primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kKappa),
         Vector2(center.x - radius * kKappa, y1), Vector2(center.x + 1, y1), green, thickness);
     primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kKappa, y1),
@@ -2403,40 +2403,25 @@ StateController::setPrimaryDraggingState(Project *project, const Vector2SI32 &lo
         if (const Model *model = project->activeModel()) {
             const IModelObjectSelection *selection = model->selection();
             if (!project->isModelEditingEnabled()) {
-                if (selection->isBoxSelectedBoneModeEnabled()) {
-                    state = nanoem_new(DraggingBoxSelectedBoneState(this, m_applicationPtr));
-                }
-                else {
-                    state = nanoem_new(DraggingBoneState(this, m_applicationPtr, true));
-                }
+                state = draggingBoneSelectionState(selection);
             }
             else {
-                switch (selection->editingType()) {
-                case IModelObjectSelection::kEditingTypeBone:
-                    state = nanoem_new(DraggingBoneSelectionState(this, m_applicationPtr));
+                switch (model->editActionType()) {
+                case Model::kEditActionTypeCreateChildBone: {
+                    state = nanoem_new(CreatingChildBoneState(this));
                     break;
-                case IModelObjectSelection::kEditingTypeFace:
-                    state = nanoem_new(DraggingFaceSelectionState(this, m_applicationPtr));
+                }
+                case Model::kEditActionTypeCreateParentBone: {
+                    state = nanoem_new(CreatingParentBoneState(this));
                     break;
-                case IModelObjectSelection::kEditingTypeJoint:
-                    state = nanoem_new(DraggingJointSelectionState(this, m_applicationPtr));
+                }
+                case Model::kEditActionTypePaintVertexWeight: {
                     break;
-                case IModelObjectSelection::kEditingTypeMaterial:
-                    state = nanoem_new(DraggingMaterialSelectionState(this, m_applicationPtr));
+                }
+                case Model::kEditActionTypeSelectModelObject: {
+                    state = draggingModelObjectState(selection);
                     break;
-                case IModelObjectSelection::kEditingTypeRigidBody:
-                    state = nanoem_new(DraggingRigidBodySelectionState(this, m_applicationPtr));
-                    break;
-                case IModelObjectSelection::kEditingTypeSoftBody:
-                    state = nanoem_new(DraggingSoftBodySelectionState(this, m_applicationPtr));
-                    break;
-                case IModelObjectSelection::kEditingTypeVertex:
-                    state = nanoem_new(DraggingVertexSelectionState(this, m_applicationPtr));
-                    break;
-                case IModelObjectSelection::kEditingTypeInfo:
-                case IModelObjectSelection::kEditingTypeLabel:
-                case IModelObjectSelection::kEditingTypeMorph:
-                case IModelObjectSelection::kEditingTypeNone:
+                }
                 default:
                     state = nanoem_new(DraggingCameraState(this, m_applicationPtr, true));
                     break;
@@ -2463,6 +2448,54 @@ StateController::setSecondaryDraggingState(Project *project, const Vector2SI32 &
         }
         setState(state);
     }
+}
+
+IState *
+StateController::draggingBoneSelectionState(const IModelObjectSelection *selection)
+{
+    IState *state = nullptr;
+    if (selection->isBoxSelectedBoneModeEnabled()) {
+        state = nanoem_new(DraggingBoxSelectedBoneState(this, m_applicationPtr));
+    }
+    else {
+        state = nanoem_new(DraggingBoneState(this, m_applicationPtr, true));
+    }
+    return state;
+}
+
+IState *
+StateController::draggingModelObjectState(const IModelObjectSelection *selection)
+{
+    IState *state = nullptr;
+    switch (selection->objectType()) {
+    case IModelObjectSelection::kObjectTypeBone:
+        state = nanoem_new(DraggingBoneSelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeFace:
+        state = nanoem_new(DraggingFaceSelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeJoint:
+        state = nanoem_new(DraggingJointSelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeMaterial:
+        state = nanoem_new(DraggingMaterialSelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeRigidBody:
+        state = nanoem_new(DraggingRigidBodySelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeSoftBody:
+        state = nanoem_new(DraggingSoftBodySelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeVertex:
+        state = nanoem_new(DraggingVertexSelectionState(this, m_applicationPtr));
+        break;
+    case IModelObjectSelection::kObjectTypeLabel:
+    case IModelObjectSelection::kObjectTypeMorph:
+    default:
+        state = nanoem_new(DraggingCameraState(this, m_applicationPtr, true));
+        break;
+    }
+    return state;
 }
 
 nanoem_f32_t
