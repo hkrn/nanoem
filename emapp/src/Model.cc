@@ -1241,8 +1241,8 @@ Model::setupAllBindings()
         model::Bone *bone = model::Bone::create();
         bone->bind(bonePtr);
         bone->resetLanguage(bonePtr, factory, language);
-        if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bonePtr)) {
-            bindConstraint(const_cast<nanoem_model_constraint_t *>(constraint));
+        if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(bonePtr)) {
+            bindConstraint(constraintPtr);
         }
         if (nanoemModelBoneHasInherentOrientation(bonePtr) || nanoemModelBoneHasInherentTranslation(bonePtr)) {
             const nanoem_model_bone_t *parentBone = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
@@ -2098,11 +2098,11 @@ Model::resetLanguage()
 }
 
 void
-Model::addBoneReference(const nanoem_model_bone_t *value)
+Model::addBoneReference(nanoem_model_bone_t *value)
 {
     if (value) {
-        if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(value)) {
-            bindConstraint(const_cast<nanoem_model_constraint_t *>(constraint));
+        if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(value)) {
+            bindConstraint(constraintPtr);
         }
         if (nanoemModelBoneHasInherentOrientation(value) || nanoemModelBoneHasInherentTranslation(value)) {
             const nanoem_model_bone_t *parentBone = nanoemModelBoneGetInherentParentBoneObject(value);
@@ -2114,7 +2114,7 @@ Model::addBoneReference(const nanoem_model_bone_t *value)
             StringUtils::getUtf8String(
                 nanoemModelBoneGetName(value, static_cast<nanoem_language_type_t>(j)), factory, objectName);
             if (!objectName.empty()) {
-                m_bones.insert(tinystl::make_pair(objectName, value));
+                m_bones[objectName] = value;
             }
         }
         if (m_skinDeformer) {
@@ -4928,12 +4928,6 @@ Model::activeBone() const NANOEM_DECL_NOEXCEPT
     return m_activeBonePairPtr.first;
 }
 
-nanoem_model_bone_t *
-Model::activeBone() NANOEM_DECL_NOEXCEPT
-{
-    return const_cast<nanoem_model_bone_t *>(m_activeBonePairPtr.first);
-}
-
 void
 Model::setActiveBone(const nanoem_model_bone_t *value)
 {
@@ -4947,12 +4941,6 @@ const nanoem_model_constraint_t *
 Model::activeConstraint() const NANOEM_DECL_NOEXCEPT
 {
     return m_activeConstraintPtr;
-}
-
-nanoem_model_constraint_t *
-Model::activeConstraint() NANOEM_DECL_NOEXCEPT
-{
-    return const_cast<nanoem_model_constraint_t *>(m_activeConstraintPtr);
 }
 
 void
@@ -4971,16 +4959,6 @@ Model::activeMorph(nanoem_model_morph_category_t category) const NANOEM_DECL_NOE
     return morph;
 }
 
-nanoem_model_morph_t *
-Model::activeMorph(nanoem_model_morph_category_t category) NANOEM_DECL_NOEXCEPT
-{
-    nanoem_model_morph_t *morph = nullptr;
-    if (category >= NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM && category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM) {
-        morph = const_cast<nanoem_model_morph_t *>(m_activeMorphPtr[category]);
-    }
-    return morph;
-}
-
 void
 Model::setActiveMorph(nanoem_model_morph_category_t category, const nanoem_model_morph_t *value)
 {
@@ -4993,12 +4971,6 @@ Model::setActiveMorph(nanoem_model_morph_category_t category, const nanoem_model
 
 const nanoem_model_morph_t *
 Model::activeMorph() const NANOEM_DECL_NOEXCEPT
-{
-    return activeMorph(NANOEM_MODEL_MORPH_CATEGORY_BASE);
-}
-
-nanoem_model_morph_t *
-Model::activeMorph() NANOEM_DECL_NOEXCEPT
 {
     return activeMorph(NANOEM_MODEL_MORPH_CATEGORY_BASE);
 }
@@ -5173,7 +5145,8 @@ Model::findInherentBoneSet(const nanoem_model_bone_t *bone) const
 }
 
 const nanoem_model_bone_t *
-Model::intersectsBone(const Vector2 &deviceScaleCursor, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT
+Model::intersectsBone(
+    const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT
 {
     Vector2 coord;
     nanoem_rsize_t numBones;
@@ -5183,12 +5156,42 @@ Model::intersectsBone(const Vector2 &deviceScaleCursor, nanoem_rsize_t &candidat
         const nanoem_model_bone_t *bonePtr = bones[i];
         if (isBoneSelectable(bonePtr) && !isRigidBodyBound(bonePtr)) {
             const model::Bone *bone = model::Bone::cast(bonePtr);
-            if (intersectsBoneInWindow(deviceScaleCursor, bone, coord)) {
+            if (intersectsBoneInWindow(deviceScaleCursorPosition, bone, coord)) {
                 candidateBones.push_back(bonePtr);
             }
         }
     }
     const nanoem_model_bone_t *bonePtr = nullptr;
+    if (candidateBones.size() > 1) {
+        candidateBoneIndex = (candidateBoneIndex + 1) % candidateBones.size();
+        bonePtr = candidateBones[candidateBoneIndex];
+    }
+    else {
+        candidateBoneIndex = 0;
+        if (candidateBones.size() == 1) {
+            bonePtr = candidateBones.front();
+        }
+    }
+    return bonePtr;
+}
+
+nanoem_model_bone_t *
+Model::intersectsBone(const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) NANOEM_DECL_NOEXCEPT
+{
+    Vector2 coord;
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
+    tinystl::vector<nanoem_model_bone_t *, TinySTLAllocator> candidateBones;
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        nanoem_model_bone_t *bonePtr = bones[i];
+        if (isBoneSelectable(bonePtr) && !isRigidBodyBound(bonePtr)) {
+            const model::Bone *bone = model::Bone::cast(bonePtr);
+            if (intersectsBoneInWindow(deviceScaleCursorPosition, bone, coord)) {
+                candidateBones.push_back(bonePtr);
+            }
+        }
+    }
+    nanoem_model_bone_t *bonePtr = nullptr;
     if (candidateBones.size() > 1) {
         candidateBoneIndex = (candidateBoneIndex + 1) % candidateBones.size();
         bonePtr = candidateBones[candidateBoneIndex];

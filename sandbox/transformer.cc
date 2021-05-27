@@ -18,7 +18,7 @@ transform(Model *model, Motion *motion)
     // factory.normalizeAllVertices();
     internal::EditingModelTrait::Bone bone(model);
     bone.createRootParentBone();
-    bone.createStagingProxyBone(model->activeBone());
+    // bone.createStagingProxyBone(model->activeBone());
     BX_UNUSED(motion);
 }
 

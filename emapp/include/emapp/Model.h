@@ -224,7 +224,7 @@ public:
     void registerResetActiveBoneTransformCommand(ResetType type);
     void registerResetMorphSetWeightsCommand(const model::Morph::Set &morphSet);
     void registerResetAllMorphWeightsCommand();
-    void addBoneReference(const nanoem_model_bone_t *value);
+    void addBoneReference(nanoem_model_bone_t *value);
     void addMorphReference(const nanoem_model_morph_t *value);
     void removeBoneReference(const nanoem_model_bone_t *value);
     void removeBoneReference(const String &value);
@@ -315,16 +315,12 @@ public:
     nanoem_model_t *data() NANOEM_DECL_NOEXCEPT;
     model::Bone *sharedFallbackBone();
     const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_bone_t *activeBone() NANOEM_DECL_NOEXCEPT;
     void setActiveBone(const nanoem_model_bone_t *value);
     const nanoem_model_constraint_t *activeConstraint() const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_constraint_t *activeConstraint() NANOEM_DECL_NOEXCEPT;
     void setActiveConstraint(const nanoem_model_constraint_t *value);
     const nanoem_model_morph_t *activeMorph(nanoem_model_morph_category_t category) const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_morph_t *activeMorph(nanoem_model_morph_category_t category) NANOEM_DECL_NOEXCEPT;
     void setActiveMorph(nanoem_model_morph_category_t category, const nanoem_model_morph_t *value);
     const nanoem_model_morph_t *activeMorph() const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_morph_t *activeMorph() NANOEM_DECL_NOEXCEPT;
     void setActiveMorph(const nanoem_model_morph_t *value);
     const nanoem_model_material_t *activeMaterial() const NANOEM_DECL_NOEXCEPT;
     void setActiveMaterial(const nanoem_model_material_t *value);
@@ -345,7 +341,9 @@ public:
     bool isRigidBodyBound(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     model::Bone::Set findInherentBoneSet(const nanoem_model_bone_t *bone) const;
     const nanoem_model_bone_t *intersectsBone(
-        const Vector2 &devicePixelCursor, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT;
+        const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT;
+    nanoem_model_bone_t *intersectsBone(
+        const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) NANOEM_DECL_NOEXCEPT;
     const nanoem_model_bone_t *findBone(const nanoem_unicode_string_t *name) const;
     const nanoem_model_bone_t *findBone(const String &name) const NANOEM_DECL_NOEXCEPT;
     const nanoem_model_bone_t *findRedoBone(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT;

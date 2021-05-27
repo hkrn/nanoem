@@ -2639,7 +2639,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                     nanoemMutableModelBoneSetConstraintObject(scoped, constraint);
                 }
                 else {
-                    nanoem_model_constraint_t *c = nanoemModelBoneGetConstraintObjectMuable(bonePtr);
+                    nanoem_model_constraint_t *c = nanoemModelBoneGetConstraintObjectMutable(bonePtr);
                     constraint = nanoemMutableModelConstraintCreateAsReference(c, &status);
                     nanoemMutableModelBoneRemoveConstraintObject(scoped, constraint);
                 }
@@ -5888,7 +5888,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.bone.add-constraint-joints"))) {
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 nanoem_model_bone_t *bonePtr = bones[i];
-                if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMuable(bonePtr)) {
+                if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(bonePtr)) {
                     const model::Constraint *constraint = model::Constraint::cast(constraintPtr);
                     if (constraint && ImGui::MenuItem(constraint->nameConstString())) {
                         undo_command_t *command = command::AddBoneToConstraintCommand::create(project, constraintPtr);

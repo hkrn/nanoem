@@ -612,7 +612,7 @@ DeletingBoneState::save(const Model *model, const nanoem_model_bone_t *bonePtr, 
             m_targetBones.push_back(mutableBone);
             break;
         }
-        if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMuable(bonePtr)) {
+        if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(bonePtr)) {
             nanoem_rsize_t numJoints;
             nanoem_model_constraint_joint_t *const *joints =
                 nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
@@ -1541,7 +1541,7 @@ CreateBoneCommand::redo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
+    nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
     nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_offset, &status);
     m_activeModel->addBoneReference(bonePtr);
     assignError(status, error);
@@ -1779,7 +1779,7 @@ CreateBoneAsStagingChildCommand::redo(Error &error)
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
     nanoemMutableModelInsertBoneObject(model, m_creatingBone, m_boneIndex, &status);
-    const nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
+    nanoem_model_bone_t *origin = nanoemMutableModelBoneGetOriginObject(m_creatingBone);
     nanoemMutableModelBoneSetParentBoneObject(m_baseBone, origin);
     m_activeModel->addBoneReference(origin);
     assignError(status, error);
@@ -1919,7 +1919,7 @@ DeleteBoneCommand::undo(Error &error)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     ScopedMutableModel model(m_activeModel, &status);
-    const nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_deletingBone);
+    nanoem_model_bone_t *bonePtr = nanoemMutableModelBoneGetOriginObject(m_deletingBone);
     nanoemMutableModelInsertBoneObject(model, m_deletingBone, Inline::saturateInt32(m_boneIndex), &status);
     m_activeModel->addBoneReference(bonePtr);
     m_deletingBoneState.restore(bonePtr);
@@ -3116,10 +3116,14 @@ AddBoneToLabelCommand::AddBoneToLabelCommand(Project *project, nanoem_model_labe
     : BaseAddToLabelCommand(project, labelPtr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Bone::Set bones(m_activeModel->selection()->allBoneSet());
-    for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
-        nanoem_model_bone_t *bonePtr = const_cast<nanoem_model_bone_t *>(*it);
-        m_items.push_back(nanoemMutableModelLabelItemCreateFromBoneObject(m_mutableLabel, bonePtr, &status));
+    model::Bone::Set boneSet(m_activeModel->selection()->allBoneSet());
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        nanoem_model_bone_t *bonePtr = bones[i];
+        if (boneSet.find(bonePtr) != boneSet.end()) {
+            m_items.push_back(nanoemMutableModelLabelItemCreateFromBoneObject(m_mutableLabel, bonePtr, &status));
+        }
     }
 }
 
@@ -3186,10 +3190,14 @@ AddMorphToLabelCommand::AddMorphToLabelCommand(Project *project, nanoem_model_la
     : BaseAddToLabelCommand(project, labelPtr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Morph::Set morphs(m_activeModel->selection()->allMorphSet());
-    for (model::Morph::Set::const_iterator it = morphs.begin(), end = morphs.end(); it != end; ++it) {
-        nanoem_model_morph_t *morphPtr = const_cast<nanoem_model_morph_t *>(*it);
-        m_items.push_back(nanoemMutableModelLabelItemCreateFromMorphObject(m_mutableLabel, morphPtr, &status));
+    model::Morph::Set morphSet(m_activeModel->selection()->allMorphSet());
+    nanoem_rsize_t numMorphs;
+    nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
+    for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+        nanoem_model_morph_t *morphPtr = morphs[i];
+        if (morphSet.find(morphPtr) != morphSet.end()) {
+            m_items.push_back(nanoemMutableModelLabelItemCreateFromMorphObject(m_mutableLabel, morphPtr, &status));
+        }
     }
 }
 
