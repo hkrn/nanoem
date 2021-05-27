@@ -3891,57 +3891,77 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             }
             if (ImGui::BeginMenu("Selection")) {
                 bool isSelection = editActionType == Model::kEditActionTypeSelectModelObject;
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeVertex, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.face"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeFace)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.face"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeFace)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeFace, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeFace, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.material"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeMaterial)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.material"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeMaterial)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeMaterial, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeMaterial, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.bone"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeBone)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.bone"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeBone)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeBone, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeRigidBody)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeRigidBody)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeRigidBody, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeRigidBody, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.joint"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeJoint)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.joint"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeJoint)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeJoint, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeJoint, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr, isSelection && objectType == IModelObjectSelection::kObjectTypeSoftBody)) {
+                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr,
+                        isSelection && objectType == IModelObjectSelection::kObjectTypeSoftBody)) {
                     ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeSoftBody, activeModel, project);
+                    ModelEditCommandDialog::afterToggleEditingMode(
+                        IModelObjectSelection::kObjectTypeSoftBody, activeModel, project);
                     activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
                 }
                 ImGui::EndMenu();
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Create Parent Bone", nullptr, editActionType == Model::kEditActionTypeCreateParentBone)) {
+            if (ImGui::MenuItem(
+                    "Create Parent Bone", nullptr, editActionType == Model::kEditActionTypeCreateParentBone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeBone, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypeCreateParentBone);
             }
-            if (ImGui::MenuItem("Create Child Bone", nullptr, editActionType == Model::kEditActionTypeCreateChildBone)) {
+            if (ImGui::MenuItem(
+                    "Create Target Bone", nullptr, editActionType == Model::kEditActionTypeCreateTargetBone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeBone, activeModel, project);
-                activeModel->setEditActionType(Model::kEditActionTypeCreateChildBone);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeCreateTargetBone);
             }
-            if (ImGui::MenuItem("Paint Vertex Weight", nullptr, editActionType == Model::kEditActionTypePaintVertexWeight)) {
+            if (ImGui::MenuItem(
+                    "Paint Vertex Weight", nullptr, editActionType == Model::kEditActionTypePaintVertexWeight)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                ModelEditCommandDialog::afterToggleEditingMode(IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeVertex, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
             }
             ImGui::EndMenu();

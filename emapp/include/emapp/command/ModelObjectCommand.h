@@ -492,6 +492,25 @@ private:
     int m_boneIndex;
 };
 
+class AddBoneCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    static undo_command_t *create(Project *project, nanoem_mutable_model_bone_t *bone);
+
+    AddBoneCommand(Project *project, nanoem_mutable_model_bone_t *base);
+    ~AddBoneCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    Model *m_activeModel;
+    nanoem_mutable_model_bone_t *m_addingBone;
+};
+
 class AddBoneToConstraintCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     static undo_command_t *create(Project *project, nanoem_model_constraint_t *constraintPtr);

@@ -68,8 +68,9 @@ public:
         kEditActionTypeNone = kEditActionTypeFirstEnum,
         kEditActionTypeSelectModelObject,
         kEditActionTypePaintVertexWeight,
+        kEditActionTypeCreateTriangleVertices,
         kEditActionTypeCreateParentBone,
-        kEditActionTypeCreateChildBone,
+        kEditActionTypeCreateTargetBone,
         kEditActionTypeMaxEnum
     };
     enum GizmoOperationType {

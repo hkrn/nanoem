@@ -8,6 +8,7 @@
 
 #include "emapp/BaseApplicationService.h"
 #include "emapp/EnumUtils.h"
+#include "emapp/Error.h"
 #include "emapp/IAudioPlayer.h"
 #include "emapp/ICamera.h"
 #include "emapp/IEventPublisher.h"
@@ -17,6 +18,7 @@
 #include "emapp/IState.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"
+#include "emapp/command/ModelObjectCommand.h"
 #include "emapp/internal/DebugDrawer.h"
 #include "emapp/internal/DraggingBackgroundVideoState.h"
 #include "emapp/internal/DraggingBoneState.h"
@@ -98,7 +100,7 @@ public:
 
 protected:
     void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE;
-    void onRelease(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
 
     virtual internal::IDraggingState *createTranslateState(
         int axisIndex, const Vector3SI32 &logicalScaleCursorPosition, Project *project) = 0;
@@ -161,8 +163,9 @@ BaseDraggingObjectState::onMove(const Vector3SI32 &logicalScaleCursorPosition, c
 }
 
 void
-BaseDraggingObjectState::onRelease(const Vector3SI32 &logicalScaleCursorPosition)
+BaseDraggingObjectState::onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     if (m_lastDraggingState) {
         m_lastDraggingState->commit(logicalScaleCursorPosition);
     }
@@ -278,7 +281,7 @@ public:
     internal::IDraggingState *createCameraZoomState(
         const Vector3SI32 &logicalScaleCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
 
-    void onPress(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
 
 private:
     static Vector2SI32 deviceScaleCursorActiveBoneInWindow(const Project *project) NANOEM_DECL_NOEXCEPT;
@@ -357,8 +360,9 @@ DraggingBoneState::createCameraZoomState(const Vector3SI32 &logicalScaleCursorPo
 }
 
 void
-DraggingBoneState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
+DraggingBoneState::onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
     internal::IDraggingState *draggingState = nullptr;
     Project *project = m_stateControllerPtr->currentProject();
@@ -524,7 +528,7 @@ public:
     internal::IDraggingState *createCameraZoomState(
         const Vector3SI32 &logicalScaleCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
 
-    void onPress(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
 };
 
 DraggingCameraState::DraggingCameraState(
@@ -580,8 +584,9 @@ DraggingCameraState::createCameraZoomState(const Vector3SI32 &logicalScaleCursor
 }
 
 void
-DraggingCameraState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
+DraggingCameraState::onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     Project::RectangleType rectangleType = Project::kRectangleTypeMaxEnum;
     Project *project = m_stateControllerPtr->currentProject();
     if (project && !project->isPlaying() &&
@@ -801,9 +806,9 @@ protected:
     const RectangleSelector *rectangleSelector() const NANOEM_DECL_NOEXCEPT;
 
 public:
-    void onPress(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
-    void onRelease(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     void onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE;
 
 private:
@@ -1072,8 +1077,9 @@ BaseSelectionState::rectangleSelector() const NANOEM_DECL_NOEXCEPT
 }
 
 void
-BaseSelectionState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
+BaseSelectionState::onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         Project::RectangleType rectangleType;
         if (project->isPlaying()) {
@@ -1104,8 +1110,9 @@ BaseSelectionState::onMove(const Vector3SI32 &logicalScaleCursorPosition, const 
 }
 
 void
-BaseSelectionState::onRelease(const Vector3SI32 &logicalScaleCursorPosition)
+BaseSelectionState::onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         bool removeAll =
             EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScaleCursorPosition.z) ? false : true;
@@ -1673,9 +1680,9 @@ public:
     DraggingMoveCameraLookAtState(StateController *stateController, BaseApplicationService *application);
     ~DraggingMoveCameraLookAtState() NANOEM_DECL_NOEXCEPT;
 
-    void onPress(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
-    void onRelease(const Vector3SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     internal::IDraggingState *m_lastDraggingState;
@@ -1695,8 +1702,9 @@ DraggingMoveCameraLookAtState::~DraggingMoveCameraLookAtState() NANOEM_DECL_NOEX
 }
 
 void
-DraggingMoveCameraLookAtState::onPress(const Vector3SI32 &logicalScaleCursorPosition)
+DraggingMoveCameraLookAtState::onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         m_lastDraggingState =
             nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScaleCursorPosition));
@@ -1715,8 +1723,9 @@ DraggingMoveCameraLookAtState::onMove(const Vector3SI32 &logicalScaleCursorPosit
 }
 
 void
-DraggingMoveCameraLookAtState::onRelease(const Vector3SI32 &logicalScaleCursorPosition)
+DraggingMoveCameraLookAtState::onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_1(error);
     if (m_lastDraggingState) {
         m_lastDraggingState->commit(logicalScaleCursorPosition);
         nanoem_delete_safe(m_lastDraggingState);
@@ -1731,15 +1740,17 @@ DraggingMoveCameraLookAtState::type() const NANOEM_DECL_NOEXCEPT
 
 class BaseCreatingBoneState : public IState {
 public:
-    void onPress(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     void onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE;
-    void onRelease(const Vector3SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     void onDrawPrimitive2D(IPrimitive2D *primitive) NANOEM_DECL_OVERRIDE;
     bool isGrabbingHandle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 protected:
     BaseCreatingBoneState(StateController *stateController);
     ~BaseCreatingBoneState() NANOEM_DECL_NOEXCEPT;
+
+    virtual void setup(nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr) = 0;
 
 private:
     StateController *m_stateControllerPtr;
@@ -1756,27 +1767,28 @@ BaseCreatingBoneState::BaseCreatingBoneState(StateController *stateController)
 
 BaseCreatingBoneState::~BaseCreatingBoneState() NANOEM_DECL_NOEXCEPT
 {
-    nanoemMutableModelBoneDestroy(m_destinationBone);
-    m_destinationBone = nullptr;
+    if (m_destinationBone) {
+        nanoemMutableModelBoneDestroy(m_destinationBone);
+        m_destinationBone = nullptr;
+    }
     m_sourceBone = nullptr;
 }
 
 void
-BaseCreatingBoneState::onPress(const Vector3SI32 &logicalCursorPosition)
+BaseCreatingBoneState::onPress(const Vector3SI32 &logicalCursorPosition, Error &error)
 {
     if (Project *project = m_stateControllerPtr->currentProject()) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         nanoem_rsize_t boneIndex = 0;
         if (Model *activeModel = project->activeModel()) {
             const Vector2 cursorPosition(Vector2(logicalCursorPosition) * project->windowDevicePixelRatio());
-            if (const nanoem_model_bone_t *sourceBonePtr = activeModel->intersectsBone(cursorPosition, boneIndex)) {
+            if (nanoem_model_bone_t *sourceBonePtr = activeModel->intersectsBone(cursorPosition, boneIndex)) {
+                nanoem_mutable_model_bone_t *mutableSourceBone =
+                    nanoemMutableModelBoneCreateAsReference(sourceBonePtr, &status);
                 m_destinationBone = nanoemMutableModelBoneCreate(activeModel->data(), &status);
-                nanoemMutableModelBoneSetParentBoneObject(m_destinationBone, sourceBonePtr);
-                nanoemMutableModelBoneSetTargetBoneObject(m_destinationBone, sourceBonePtr);
-                nanoemMutableModelBoneSetOrigin(m_destinationBone, nanoemModelBoneGetOrigin(sourceBonePtr));
-                nanoemMutableModelBoneSetRotateable(m_destinationBone, true);
-                nanoemMutableModelBoneSetVisible(m_destinationBone, true);
-                nanoemMutableModelBoneSetUserHandleable(m_destinationBone, true);
+                nanoemMutableModelBoneCopy(m_destinationBone, sourceBonePtr, &status);
+                setup(m_destinationBone, mutableSourceBone);
+                nanoemMutableModelBoneDestroy(mutableSourceBone);
                 nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone);
                 model::Bone *destinationBone = model::Bone::create();
                 destinationBone->bind(destinationBonePtr);
@@ -1784,12 +1796,15 @@ BaseCreatingBoneState::onPress(const Vector3SI32 &logicalCursorPosition)
                 m_sourceBone = sourceBonePtr;
             }
         }
+        const ITranslator *translator = project->translator();
+        error = Error(Error::convertStatusToMessage(status, translator), status, Error::kDomainTypeNanoem);
     }
 }
 
 void
-BaseCreatingBoneState::onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 & /* delta */)
+BaseCreatingBoneState::onMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta)
 {
+    BX_UNUSED_1(delta);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         if (const Model *activeModel = project->activeModel()) {
             if (nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone)) {
@@ -1805,21 +1820,14 @@ BaseCreatingBoneState::onMove(const Vector3SI32 &logicalCursorPosition, const Ve
 }
 
 void
-BaseCreatingBoneState::onRelease(const Vector3SI32 & /* logicalCursorPosition */)
+BaseCreatingBoneState::onRelease(const Vector3SI32 &logicalCursorPosition, Error &error)
 {
+    BX_UNUSED_2(logicalCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
-        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         if (Model *activeModel = project->activeModel()) {
-            nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone);
-            if (model::Bone *destinationBone = model::Bone::cast(destinationBonePtr)) {
-                destinationBone->resetLanguage(
-                    destinationBonePtr, project->unicodeStringFactory(), project->castLanguage());
-                nanoem_mutable_model_t *mutableModel =
-                    nanoemMutableModelCreateAsReference(activeModel->data(), &status);
-                nanoemMutableModelInsertBoneObject(mutableModel, m_destinationBone, -1, &status);
-                nanoemMutableModelDestroy(mutableModel);
-                activeModel->addBoneReference(destinationBonePtr);
-            }
+            undo_command_t *command = command::AddBoneCommand::create(project, m_destinationBone);
+            activeModel->pushUndo(command);
+            m_destinationBone = nullptr;
         }
     }
 }
@@ -1849,6 +1857,9 @@ public:
     CreatingParentBoneState(StateController *stateController);
     ~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT;
 
+    void setup(nanoem_mutable_model_bone_t *destinationBonePtr,
+        nanoem_mutable_model_bone_t *sourceBonePtr) NANOEM_DECL_OVERRIDE;
+
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
@@ -1861,33 +1872,56 @@ CreatingParentBoneState::~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT
 {
 }
 
+void
+CreatingParentBoneState::setup(
+    nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
+{
+    const nanoem_model_bone_t *originSourceBonePtr = nanoemMutableModelBoneGetOriginObject(sourceBonePtr);
+    const nanoem_model_bone_t *parentBonePtr = nanoemModelBoneGetParentBoneObject(originSourceBonePtr);
+    nanoemMutableModelBoneSetParentBoneObject(destinationBonePtr, parentBonePtr);
+    // nanoemMutableModelBoneSetTargetBoneObject(sourceBonePtr, destinationBonePtr);
+}
+
 IState::Type
 CreatingParentBoneState::type() const NANOEM_DECL_NOEXCEPT
 {
     return kTypeCreatingParentBoneState;
 }
 
-class CreatingChildBoneState NANOEM_DECL_SEALED : public BaseCreatingBoneState {
+class CreatingTargetBoneState NANOEM_DECL_SEALED : public BaseCreatingBoneState {
 public:
-    CreatingChildBoneState(StateController *stateController);
-    ~CreatingChildBoneState() NANOEM_DECL_NOEXCEPT;
+    CreatingTargetBoneState(StateController *stateController);
+    ~CreatingTargetBoneState() NANOEM_DECL_NOEXCEPT;
+
+    void setup(nanoem_mutable_model_bone_t *destinationBonePtr,
+        nanoem_mutable_model_bone_t *sourceBonePtr) NANOEM_DECL_OVERRIDE;
 
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
-CreatingChildBoneState::CreatingChildBoneState(StateController *stateController)
+CreatingTargetBoneState::CreatingTargetBoneState(StateController *stateController)
     : BaseCreatingBoneState(stateController)
 {
 }
 
-CreatingChildBoneState::~CreatingChildBoneState() NANOEM_DECL_NOEXCEPT
+CreatingTargetBoneState::~CreatingTargetBoneState() NANOEM_DECL_NOEXCEPT
 {
 }
 
-IState::Type
-CreatingChildBoneState::type() const NANOEM_DECL_NOEXCEPT
+void
+CreatingTargetBoneState::setup(
+    nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
 {
-    return kTypeCreatingChildBoneState;
+    const nanoem_model_bone_t *originSourceBonePtr = nanoemMutableModelBoneGetOriginObject(sourceBonePtr),
+                              *originDestinationBonePtr = nanoemMutableModelBoneGetOriginObject(destinationBonePtr);
+    nanoemMutableModelBoneSetParentBoneObject(destinationBonePtr, originSourceBonePtr);
+    nanoemMutableModelBoneSetTargetBoneObject(sourceBonePtr, originDestinationBonePtr);
+}
+
+IState::Type
+CreatingTargetBoneState::type() const NANOEM_DECL_NOEXCEPT
+{
+    return kTypeCreatingTargetBoneState;
 }
 
 class UndoState NANOEM_DECL_SEALED : public BaseState {
@@ -1895,10 +1929,9 @@ public:
     UndoState(StateController *stateController, BaseApplicationService *application);
     ~UndoState() NANOEM_DECL_NOEXCEPT;
 
-    void onPress(const Vector3SI32 & /* logicalScaleCursorPosition */) NANOEM_DECL_OVERRIDE;
-    void onMove(
-        const Vector3SI32 & /* logicalScaleCursorPosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
-    void onRelease(const Vector3SI32 & /* logicalScaleCursorPosition */) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
@@ -1912,18 +1945,21 @@ UndoState::~UndoState() NANOEM_DECL_NOEXCEPT
 }
 
 void
-UndoState::onPress(const Vector3SI32 &)
+UndoState::onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_2(logicalScaleCursorPosition, error);
 }
 
 void
-UndoState::onMove(const Vector3SI32 &, const Vector2SI32 &)
+UndoState::onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 &delta)
 {
+    BX_UNUSED_2(logicalScaleCursorPosition, delta);
 }
 
 void
-UndoState::onRelease(const Vector3SI32 &)
+UndoState::onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_2(logicalScaleCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         project->handleUndoAction();
     }
@@ -1940,10 +1976,9 @@ public:
     RedoState(StateController *stateController, BaseApplicationService *application);
     ~RedoState() NANOEM_DECL_NOEXCEPT;
 
-    void onPress(const Vector3SI32 & /* logicalScaleCursorPosition */) NANOEM_DECL_OVERRIDE;
-    void onMove(
-        const Vector3SI32 & /* logicalScaleCursorPosition */, const Vector2SI32 & /* delta */) NANOEM_DECL_OVERRIDE;
-    void onRelease(const Vector3SI32 & /* logicalScaleCursorPosition */) NANOEM_DECL_OVERRIDE;
+    void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
+    void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 &delta) NANOEM_DECL_OVERRIDE;
+    void onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error) NANOEM_DECL_OVERRIDE;
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
@@ -1957,18 +1992,21 @@ RedoState::~RedoState() NANOEM_DECL_NOEXCEPT
 }
 
 void
-RedoState::onPress(const Vector3SI32 &)
+RedoState::onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_2(logicalScaleCursorPosition, error);
 }
 
 void
-RedoState::onMove(const Vector3SI32 &, const Vector2SI32 &)
+RedoState::onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 &delta)
 {
+    BX_UNUSED_2(logicalScaleCursorPosition, delta);
 }
 
 void
-RedoState::onRelease(const Vector3SI32 &)
+RedoState::onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error)
 {
+    BX_UNUSED_2(logicalScaleCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         project->handleRedoAction();
     }
@@ -2264,7 +2302,9 @@ StateController::handlePointerPress(const Vector3SI32 &logicalScaleCursorPositio
             break;
         }
         if (m_state) {
-            m_state->onPress(logicalScaleCursorPosition);
+            Error error;
+            m_state->onPress(logicalScaleCursorPosition, error);
+            error.notify(project->eventPublisher());
         }
         project->setLogicalPixelLastCursorPosition(type, logicalScaleCursorPosition, true);
         project->setCursorModifiers(static_cast<nanoem_u32_t>(logicalScaleCursorPosition.z));
@@ -2297,8 +2337,10 @@ StateController::handlePointerRelease(const Vector3SI32 &logicalScaleCursorPosit
 {
     if (Project *project = currentProject()) {
         if (m_state) {
-            m_state->onRelease(logicalScaleCursorPosition);
+            Error error;
+            m_state->onRelease(logicalScaleCursorPosition, error);
             setState(nullptr);
+            error.notify(project->eventPublisher());
         }
         project->setLogicalPixelLastCursorPosition(type, logicalScaleCursorPosition, false);
         project->setCursorModifiers(static_cast<nanoem_u32_t>(logicalScaleCursorPosition.z));
@@ -2407,12 +2449,15 @@ StateController::setPrimaryDraggingState(Project *project, const Vector2SI32 &lo
             }
             else {
                 switch (model->editActionType()) {
-                case Model::kEditActionTypeCreateChildBone: {
-                    state = nanoem_new(CreatingChildBoneState(this));
-                    break;
-                }
                 case Model::kEditActionTypeCreateParentBone: {
                     state = nanoem_new(CreatingParentBoneState(this));
+                    break;
+                }
+                case Model::kEditActionTypeCreateTargetBone: {
+                    state = nanoem_new(CreatingTargetBoneState(this));
+                    break;
+                }
+                case Model::kEditActionTypeCreateTriangleVertices: {
                     break;
                 }
                 case Model::kEditActionTypePaintVertexWeight: {

@@ -1810,6 +1810,70 @@ CreateBoneAsStagingChildCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
+AddBoneCommand::create(Project *project, nanoem_mutable_model_bone_t *base)
+{
+    AddBoneCommand *command = nanoem_new(AddBoneCommand(project, base));
+    return command->createCommand();
+}
+
+AddBoneCommand::AddBoneCommand(Project *project, nanoem_mutable_model_bone_t *base)
+    : BaseUndoCommand(project)
+    , m_activeModel(project->activeModel())
+    , m_addingBone(base)
+{
+}
+
+AddBoneCommand::~AddBoneCommand() NANOEM_DECL_NOEXCEPT
+{
+    nanoemMutableModelBoneDestroy(m_addingBone);
+    m_addingBone = nullptr;
+}
+
+void
+AddBoneCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    ScopedMutableModel model(m_activeModel, &status);
+    m_activeModel->removeBoneReference(nanoemMutableModelBoneGetOriginObject(m_addingBone));
+    nanoemMutableModelRemoveBoneObject(model, m_addingBone, &status);
+    assignError(status, error);
+}
+
+void
+AddBoneCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    ScopedMutableModel model(m_activeModel, &status);
+    nanoemMutableModelInsertBoneObject(model, m_addingBone, -1, &status);
+    m_activeModel->addBoneReference(nanoemMutableModelBoneGetOriginObject(m_addingBone));
+    assignError(status, error);
+}
+
+void
+AddBoneCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+AddBoneCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+AddBoneCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+AddBoneCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "AddBoneCommand";
+}
+
+undo_command_t *
 AddBoneToConstraintCommand::create(Project *project, nanoem_model_constraint_t *constraintPtr)
 {
     AddBoneToConstraintCommand *command = nanoem_new(AddBoneToConstraintCommand(project, constraintPtr));

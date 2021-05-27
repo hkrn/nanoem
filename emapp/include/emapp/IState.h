@@ -12,6 +12,9 @@
 
 namespace nanoem {
 
+class Error;
+class IPrimitive2D;
+
 class IState {
 public:
     enum Type {
@@ -37,15 +40,15 @@ public:
         kTypeDraggingSoftBodySelectionState,
         kTypeDraggingVertexSelectionState,
         kTypeCreatingParentBoneState,
-        kTypeCreatingChildBoneState,
+        kTypeCreatingTargetBoneState,
         kTypeMaxEnum,
     };
     virtual ~IState() NANOEM_DECL_NOEXCEPT
     {
     }
-    virtual void onPress(const Vector3SI32 &logicalScaleCursorPosition) = 0;
+    virtual void onPress(const Vector3SI32 &logicalScaleCursorPosition, Error &error) = 0;
     virtual void onMove(const Vector3SI32 &logicalScaleCursorPosition, const Vector2SI32 &delta) = 0;
-    virtual void onRelease(const Vector3SI32 &logicalScaleCursorPosition) = 0;
+    virtual void onRelease(const Vector3SI32 &logicalScaleCursorPosition, Error &error) = 0;
     virtual void onDrawPrimitive2D(IPrimitive2D *primitive) = 0;
     virtual Type type() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool isGrabbingHandle() const NANOEM_DECL_NOEXCEPT = 0;
