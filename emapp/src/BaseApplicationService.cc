@@ -29,6 +29,7 @@
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/IPrimitive2D.h"
+#include "emapp/IState.h"
 #include "emapp/ITranslator.h"
 #include "emapp/IVideoRecorder.h"
 #include "emapp/ImageLoader.h"
@@ -1652,7 +1653,7 @@ BaseApplicationService::BaseApplicationService(const JSON_Value *root)
     , m_confirmer(this)
     , m_sharedCancelPublisherRepository(this)
     , m_sharedDebugCaptureRepository(this)
-    , m_defaultAuxFlags(Project::kDrawTypeBoneTooltip)
+    , m_defaultAuxFlags(IState::kDrawTypeBoneTooltip)
     , m_dllHandle(nullptr)
     , m_initialized(false)
 {

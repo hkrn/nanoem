@@ -1281,15 +1281,15 @@ ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *ov
         Project::EditingMode editingMode = project->editingMode();
         switch (editingMode) {
         case Project::kEditingModeSelect: {
-            flags |= Project::kDrawTypeBoneConnections;
+            flags |= IState::kDrawTypeBoneConnections;
             break;
         }
         case Project::kEditingModeMove: {
-            flags |= Project::kDrawTypeActiveBone | Project::kDrawTypeBoneMoveHandle;
+            flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneMoveHandle;
             break;
         }
         case Project::kEditingModeRotate: {
-            flags |= Project::kDrawTypeActiveBone | Project::kDrawTypeBoneRotateHandle;
+            flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneRotateHandle;
             break;
         }
         default:
@@ -1297,7 +1297,7 @@ ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *ov
         }
     }
     else if (!activeModel) {
-        flags |= Project::kDrawTypeCameraLookAt;
+        flags |= IState::kDrawTypeCameraLookAt;
     }
     m_viewportOverlayPtr = overlay;
     m_viewportOverlayFlags = flags;
@@ -4297,7 +4297,7 @@ ImGuiWindow::drawBoneTooltip(Project *project)
 {
     if (Model *activeModel = project->activeModel()) {
         const nanoem_model_bone_t *bonePtr = activeModel->hoveredBone();
-        bool enabled = EnumUtils::isEnabled(Project::kDrawTypeBoneTooltip, m_viewportOverlayFlags);
+        bool enabled = EnumUtils::isEnabled(IState::kDrawTypeBoneTooltip, m_viewportOverlayFlags);
         if (activeModel && bonePtr && enabled) {
             activeModel->drawBoneTooltip(primitiveContext(), bonePtr);
         }

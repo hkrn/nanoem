@@ -17,6 +17,19 @@ class IPrimitive2D;
 
 class IState {
 public:
+    enum DrawType {
+        kDrawTypeActiveBone = 0x1,
+        kDrawTypeBoneConnections = 0x2,
+        kDrawTypeConstraintConnections = 0x4,
+        kDrawTypeConstraintHeatmaps = 0x8,
+        kDrawTypeBoneTooltip = 0x10,
+        kDrawTypeBoneMoveHandle = 0x20,
+        kDrawTypeBoneRotateHandle = 0x40,
+        kDrawTypeBoneLocalAxes = 0x80,
+        kDrawTypeCameraLookAt = 0x100,
+        kDrawTypeVertexWeightBrush = 0x200,
+        kDrawTypeMaxEnum = 0x400,
+    };
     enum Type {
         kTypeFirstEnum,
         kTypeUndoState = kTypeFirstEnum,
@@ -41,6 +54,7 @@ public:
         kTypeDraggingVertexSelectionState,
         kTypeCreatingParentBoneState,
         kTypeCreatingTargetBoneState,
+        kTypePaintVertexWeightState,
         kTypeMaxEnum,
     };
     virtual ~IState() NANOEM_DECL_NOEXCEPT

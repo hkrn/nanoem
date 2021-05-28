@@ -2142,32 +2142,32 @@ StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
         if (Model *activeModel = project->activeModel()) {
             Vector4 activeBoneColor(kColorRed);
             if (activeModel->isVisible()) {
-                if (EnumUtils::isEnabled(Project::kDrawTypeBoneConnections, flags)) {
+                if (EnumUtils::isEnabled(IState::kDrawTypeBoneConnections, flags)) {
                     activeModel->drawAllBoneConnections(primitive, deviceScaleCursor);
                 }
-                if (EnumUtils::isEnabled(Project::kDrawTypeConstraintConnections, flags)) {
+                if (EnumUtils::isEnabled(IState::kDrawTypeConstraintConnections, flags)) {
                     activeModel->drawConstraintConnections(primitive, deviceScaleCursor);
                 }
-                if (EnumUtils::isEnabled(Project::kDrawTypeConstraintHeatmaps, flags)) {
+                if (EnumUtils::isEnabled(IState::kDrawTypeConstraintHeatmaps, flags)) {
                     activeModel->drawConstraintsHeatMap(primitive);
                 }
             }
-            if (EnumUtils::isEnabled(Project::kDrawTypeBoneMoveHandle, flags)) {
+            if (EnumUtils::isEnabled(IState::kDrawTypeBoneMoveHandle, flags)) {
                 activeBoneColor = kColorYellow;
                 const bool isGrabbingHandle = BaseState::isDraggingBoneState(m_state) && m_state->isGrabbingHandle();
                 DrawUtil::drawBoneMoveHandle(primitive, activeModel, isGrabbingHandle);
             }
-            if (EnumUtils::isEnabled(Project::kDrawTypeBoneRotateHandle, flags)) {
+            if (EnumUtils::isEnabled(IState::kDrawTypeBoneRotateHandle, flags)) {
                 activeBoneColor = kColorYellow;
                 const bool isGrabbingHandle = BaseState::isDraggingBoneState(m_state) && m_state->isGrabbingHandle();
                 DrawUtil::drawBoneRotateHandle(primitive, activeModel, isGrabbingHandle);
             }
-            if (EnumUtils::isEnabled(Project::kDrawTypeActiveBone, flags)) {
+            if (EnumUtils::isEnabled(IState::kDrawTypeActiveBone, flags)) {
                 DrawUtil::drawActiveBonePoint(primitive, activeBoneColor, project);
             }
         }
         const ICamera *camera = project->activeCamera();
-        if (EnumUtils::isEnabled(Project::kDrawTypeCameraLookAt, flags) && camera) {
+        if (EnumUtils::isEnabled(IState::kDrawTypeCameraLookAt, flags) && camera) {
             DrawUtil::drawCameraLookAtPoint(primitive, camera, project);
         }
     }

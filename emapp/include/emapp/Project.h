@@ -113,18 +113,6 @@ public:
         kCursorModifierTypeAlt = 0x4,
         kCursorModifierTypeMaxEnum = 0x8
     };
-    enum DrawType {
-        kDrawTypeActiveBone = 0x1,
-        kDrawTypeBoneConnections = 0x2,
-        kDrawTypeConstraintConnections = 0x4,
-        kDrawTypeConstraintHeatmaps = 0x8,
-        kDrawTypeBoneTooltip = 0x10,
-        kDrawTypeBoneMoveHandle = 0x20,
-        kDrawTypeBoneRotateHandle = 0x40,
-        kDrawTypeBoneLocalAxes = 0x80,
-        kDrawTypeCameraLookAt = 0x100,
-        kDrawTypeMaxEnum = 0x200
-    };
     enum EditingMode {
         kEditingModeFirstEnum,
         kEditingModeNone = kEditingModeFirstEnum,
