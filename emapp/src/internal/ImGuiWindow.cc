@@ -3228,7 +3228,7 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
 {
     static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
     ImGui::BeginChild("interpolation", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
@@ -3313,7 +3313,7 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
     static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
     const bool playing = project->isPlaying();
     ImGui::BeginChild("interpolation", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
@@ -3384,7 +3384,7 @@ ImGuiWindow::drawModelPanel(const ImVec2 &panelSize, Project *project)
 {
     Model *activeModel = project->activeModel();
     ImGui::BeginChild("model", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.model"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.model.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
@@ -3506,7 +3506,7 @@ ImGuiWindow::drawCameraPanel(const ImVec2 &panelSize, Project *project)
 {
     ICamera *activeCamera = project->activeCamera();
     ImGui::BeginChild("camera", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.camera"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.camera.title"));
     ImGui::Separator();
     ImGui::Spacing();
     bool buttonEnabled = !project->isPlaying();
@@ -3555,7 +3555,7 @@ ImGuiWindow::drawLightPanel(const ImVec2 &panelSize, Project *project)
 {
     ILight *activeLight = project->activeLight();
     ImGui::BeginChild("light", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.light"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.light.title"));
     ImGui::Separator();
     ImGui::Spacing();
     bool buttonEnabled = !project->isPlaying();
@@ -3596,7 +3596,7 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
 {
     Accessory *activeAccessory = project->activeAccessory();
     ImGui::BeginChild("accessory", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.accessory"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.accessory.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
@@ -3715,7 +3715,7 @@ ImGuiWindow::drawBonePanel(const ImVec2 &panelSize, Model *activeModel, Project 
 {
     IModelObjectSelection *selection = activeModel->selection();
     ImGui::BeginChild("bone", ImVec2(panelSize.x * 1.3f, panelSize.y), true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.bone"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.bone.title"));
     ImGui::Separator();
     ImGui::Columns(2, nullptr, false);
     const nanoem_model_bone_t *activeBone = activeModel->activeBone();
@@ -3792,7 +3792,7 @@ void
 ImGuiWindow::drawMorphPanel(const ImVec2 &panelSize, Model *activeModel, Project *project)
 {
     ImGui::BeginChild("morph", ImVec2(panelSize.x * 1.7f, panelSize.y), true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.morph"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.morph.title"));
     ImGui::Separator();
     ImGui::Spacing();
     const ITranslator *translator = project->translator();
@@ -3903,7 +3903,7 @@ void
 ImGuiWindow::drawViewPanel(const ImVec2 &panelSize, Project *project)
 {
     ImGui::BeginChild("view", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.view"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.view.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ICamera *camera = project->activeCamera();
@@ -3945,7 +3945,7 @@ void
 ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
 {
     ImGui::BeginChild("play", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.play"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.play.title"));
     ImGui::Separator();
     ImGui::Spacing();
     const bool isPlaying = project->isPlaying();
@@ -4002,15 +4002,16 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
     Model *activeModel = project->activeModel();
     const Model::EditActionType editActionType = activeModel->editActionType();
     ImGui::BeginChild("command", ImVec2(kModelEditCommandWidth * project->windowDevicePixelRatio(), height));
-    if (ImGui::CollapsingHeader("Operation##operation", ImGuiTreeNodeFlags_DefaultOpen)) {
+    StringUtils::format(buffer, sizeof(buffer), "%s##operation", tr("nanoem.gui.panel.model.edit.operation.title"));
+    if (ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
         IModelObjectSelection *selection = activeModel->selection();
-        if (ImGui::BeginMenu("Operation Type")) {
+        if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.title"))) {
             const IModelObjectSelection::ObjectType objectType = selection->objectType();
-            if (ImGui::MenuItem("Camera", nullptr, editActionType == Model::kEditActionTypeNone)) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.camera"), nullptr, editActionType == Model::kEditActionTypeNone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypeNone);
             }
-            if (ImGui::BeginMenu("Selection")) {
+            if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.selection"))) {
                 bool isSelection = editActionType == Model::kEditActionTypeSelectModelObject;
                 if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr,
                         isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
@@ -4063,22 +4064,22 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                 }
                 ImGui::EndMenu();
             }
-            if (ImGui::MenuItem(
-                    "Create Parent Bone", nullptr, editActionType == Model::kEditActionTypeCreateParentBone)) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-parent-bone"), nullptr,
+                    editActionType == Model::kEditActionTypeCreateParentBone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 ModelEditCommandDialog::afterToggleEditingMode(
                     IModelObjectSelection::kObjectTypeBone, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypeCreateParentBone);
             }
-            if (ImGui::MenuItem(
-                    "Create Target Bone", nullptr, editActionType == Model::kEditActionTypeCreateTargetBone)) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-target-bone"), nullptr,
+                    editActionType == Model::kEditActionTypeCreateTargetBone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 ModelEditCommandDialog::afterToggleEditingMode(
                     IModelObjectSelection::kObjectTypeBone, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypeCreateTargetBone);
             }
-            if (ImGui::MenuItem(
-                    "Paint Vertex Weight", nullptr, editActionType == Model::kEditActionTypePaintVertexWeight)) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight"), nullptr,
+                    editActionType == Model::kEditActionTypePaintVertexWeight)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 ModelEditCommandDialog::afterToggleEditingMode(
                     IModelObjectSelection::kObjectTypeVertex, activeModel, project);
@@ -4101,62 +4102,65 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             ImGui::EndMenu();
         }
         ImGui::Separator();
-        ImGui::Text("Selection Mode");
+        ImGui::Text(tr("nanoem.gui.panel.model.edit.operation.selection.title"));
         const IModelObjectSelection::ObjectType objectType = selection->objectType();
         const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
         const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
             objectType < IModelObjectSelection::kObjectTypeMaxEnum;
-        if (handleRadioButton("Circle", targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.circle"), targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypeCircle);
         }
         ImGui::SameLine();
-        if (handleRadioButton(
-                "Rectangle", targetMode == IModelObjectSelection::kTargetModeTypeRectangle, isSelectionMode)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.rectangle"),
+                targetMode == IModelObjectSelection::kTargetModeTypeRectangle, isSelectionMode)) {
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypeRectangle);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Point", targetMode == IModelObjectSelection::kTargetModeTypePoint, isSelectionMode)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.point"),
+                targetMode == IModelObjectSelection::kTargetModeTypePoint, isSelectionMode)) {
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypePoint);
         }
         ImGui::Spacing();
     }
     model::IGizmo *gizmo = activeModel->gizmo();
     const bool isGizmoEnabled = gizmo ? !glm::isNull(gizmo->pivotMatrix(), Constants::kEpsilon) : false;
-    if (isGizmoEnabled && ImGui::CollapsingHeader("Gizmo##gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text("Operation Type");
+    StringUtils::format(buffer, sizeof(buffer), "%s##gizmo", tr("nanoem.gui.panel.model.edit.gizmo.title"));
+    if (isGizmoEnabled && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::Text(tr("nanoem.gui.panel.model.edit.gizmo.operation.title"));
         model::IGizmo::OperationType op = gizmo->operationType();
-        if (handleRadioButton("Translate", op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.translate"), op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
             gizmo->setOperationType(model::IGizmo::kOperationTypeTranslate);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Rotate", op == model::IGizmo::kOperationTypeRotate, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.rotate"), op == model::IGizmo::kOperationTypeRotate, isGizmoEnabled)) {
             gizmo->setOperationType(model::IGizmo::kOperationTypeRotate);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Scale", op == model::IGizmo::kOperationTypeScale, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.scale"), op == model::IGizmo::kOperationTypeScale, isGizmoEnabled)) {
             gizmo->setOperationType(model::IGizmo::kOperationTypeScale);
         }
         ImGui::Separator();
-        ImGui::Text("Coordinate Type");
+        ImGui::Text(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.title"));
         model::IGizmo::TransformCoordinateType coord = gizmo->transformCoordinateType();
-        if (handleRadioButton("Global", coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.global"), coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
             gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeGlobal);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Local", coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.local"), coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
             gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeLocal);
         }
         ImGui::Spacing();
     }
     const bool paintMode = editActionType == Model::kEditActionTypePaintVertexWeight;
-    if (paintMode && ImGui::CollapsingHeader("Vertex Weight Paint##vertex-weight-paint", ImGuiTreeNodeFlags_DefaultOpen)) {
+    StringUtils::format(buffer, sizeof(buffer), "%s##vertex-weight-paint", tr("nanoem.gui.panel.model.edit.weight-paint.title"));
+    if (paintMode && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::PushItemWidth(-1);
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
         model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
         const nanoem_model_bone_t *activeBonePtr = brush->activeBone();
         const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
-        ImGui::TextUnformatted("Bone");
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
         if (ImGui::BeginCombo("##bone", activeBone ? activeBone->nameConstString() : "(null)")) {
             for (nanoem_rsize_t i = 0; i < numBones; i++) {
                 const nanoem_model_bone_t *bonePtr = bones[i];
@@ -4171,25 +4175,31 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         }
         nanoem_f32_t radius = brush->radius(), delta = brush->delta();
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-        if (ImGui::DragFloat("##radius", &radius, 0.5f, 0.5f, 100.0f, "Radius: %.3f")) {
+        if (ImGui::DragFloat(
+                "##radius", &radius, 0.5f, 0.5f, 100.0f, tr("nanoem.gui.panel.model.edit.weight-paint.radius"))) {
             brush->setRadius(radius);
         }
         ImGui::SameLine();
-        if (ImGui::DragFloat("##delta", &delta, 0.005f, -1.0f, 1.0f, "Delta: %.3f")) {
+        if (ImGui::DragFloat(
+                "##delta", &delta, 0.005f, -1.0f, 1.0f, tr("nanoem.gui.panel.model.edit.weight-paint.delta"))) {
             brush->setDelta(delta);
         }
         bool protectBDEF1 = brush->isProtectBDEF1Enabled();
-        if (ImGui::Checkbox("Protect BDEF1##protect-bdef1", &protectBDEF1)) {
+        StringUtils::format(
+            buffer, sizeof(buffer), "%s##protect-bdef1", tr("nanoem.gui.panel.model.edit.weight-paint.protect-bdef1"));
+        if (ImGui::Checkbox(buffer, &protectBDEF1)) {
             brush->setProtectBDEF1Enabled(protectBDEF1);
         }
         bool automaticNormalization = brush->isAutomaticNormalizationEnabled();
-        if (ImGui::Checkbox("Automatic Normalization##automatic-normalization", &automaticNormalization)) {
+        StringUtils::format(buffer, sizeof(buffer), "%s##automatic-normalization",
+            tr("nanoem.gui.panel.model.edit.weight-paint.automatic-normalization"));
+        if (ImGui::Checkbox(buffer, &automaticNormalization)) {
             brush->setAutomaticNormalizationEnabled(automaticNormalization);
         }
         ImGui::PopItemWidth();
         ImGui::Spacing();
     }
-    StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera"));
+    StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera.title"));
     if (ImGui::CollapsingHeader(buffer)) {
         ICamera *camera = project->activeCamera();
         Vector3 lookAt(camera->lookAt()), angle(glm::degrees(camera->angle()));
@@ -4231,7 +4241,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         }
         ImGui::Spacing();
     }
-    StringUtils::format(buffer, sizeof(buffer), "%s##light", tr("nanoem.gui.panel.light"));
+    StringUtils::format(buffer, sizeof(buffer), "%s##light", tr("nanoem.gui.panel.light.title"));
     if (ImGui::CollapsingHeader(buffer)) {
         ILight *light = project->activeLight();
         Vector3 color(light->color()), direction(light->direction());

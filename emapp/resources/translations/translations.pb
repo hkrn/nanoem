@@ -1,5 +1,5 @@
 
-��@
+Ҫ@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -13,8 +13,8 @@
 !nanoem.gui.keyframe.select-column	列選択$
 nanoem.gui.keyframe.start#開始$
 nanoem.gui.effectエフェクト7
-nanoem.gui.effect.reloadエフェクトの再読込-
-nanoem.gui.panel.accessoryアクセサリ/
+nanoem.gui.effect.reloadエフェクトの再読込3
+ nanoem.gui.panel.accessory.titleアクセサリ/
 nanoem.gui.panel.accessory.none（なし）0
 $nanoem.gui.panel.accessory.bone.none(なし)+
 !nanoem.gui.panel.accessory.delete削除+
@@ -27,8 +27,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
  nanoem.gui.panel.accessory.scale	拡大率0
 &nanoem.gui.panel.accessory.translation移動,
 "nanoem.gui.panel.accessory.visible表示*
-nanoem.gui.panel.accessory.op	外部親"
-nanoem.gui.panel.bone	ボーン'
+nanoem.gui.panel.accessory.op	外部親(
+nanoem.gui.panel.bone.title	ボーン'
 nanoem.gui.panel.bone.copy	コピー=
 *nanoem.gui.panel.bone.label.selection-mode選択モード$
 nanoem.gui.panel.bone.move移動+
@@ -40,8 +40,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 nanoem.gui.panel.bone.select選択-
  nanoem.gui.panel.bone.select.all	全選択-
  nanoem.gui.panel.bone.select.box	箱選択/
-"nanoem.gui.panel.bone.select.dirty	未登録$
-nanoem.gui.panel.camera	カメラ<
+"nanoem.gui.panel.bone.select.dirty	未登録*
+nanoem.gui.panel.camera.title	カメラ<
 )nanoem.gui.panel.camera.following-to-boneボーン追従-
 !nanoem.gui.panel.camera.bone.none(なし)(
 nanoem.gui.panel.camera.fov	視野角3
@@ -50,8 +50,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 nanoem.gui.panel.camera.label	カメラ.
 "nanoem.gui.panel.camera.model.none(なし)?
 #nanoem.gui.panel.camera.perspectiveパースペクティブ*
- nanoem.gui.panel.camera.register登録.
-nanoem.gui.panel.interpolation補完曲線8
+ nanoem.gui.panel.camera.register登録4
+$nanoem.gui.panel.interpolation.title補完曲線8
 (nanoem.gui.panel.interpolation.automatic自動補完9
 /nanoem.gui.panel.interpolation.bone.orientation回転A
 1nanoem.gui.panel.interpolation.bone.translation.x移動(X軸)A
@@ -65,14 +65,14 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 3nanoem.gui.panel.interpolation.camera.translation.z移動(Z軸)0
 #nanoem.gui.panel.interpolation.copy	コピー5
 %nanoem.gui.panel.interpolation.linear線形補間4
-$nanoem.gui.panel.interpolation.pasteペースト 
-nanoem.gui.panel.light照明#
+$nanoem.gui.panel.interpolation.pasteペースト&
+nanoem.gui.panel.light.title照明#
 nanoem.gui.panel.light.color色*
  nanoem.gui.panel.light.direction方向)
 nanoem.gui.panel.light.reset	初期化;
 "nanoem.gui.panel.light.self-shadowセルフシャドウ)
-nanoem.gui.panel.light.register登録#
-nanoem.gui.panel.model	モデル*
+nanoem.gui.panel.light.register登録)
+nanoem.gui.panel.model.title	モデル*
  nanoem.gui.panel.model.blend-add加算-
 &nanoem.gui.panel.model.blend-add.short加B
 nanoem.gui.panel.model.default カメラ/照明/アクセサリ'
@@ -84,8 +84,8 @@ $nanoem.gui.panel.interpolation.pasteペースト
 #nanoem.gui.panel.model.shadow.short影(
 nanoem.gui.panel.model.visible表示+
 $nanoem.gui.panel.model.visible.short表2
-&nanoem.gui.panel.model.constraint.none(なし)#
-nanoem.gui.panel.morph	モーフ'
+&nanoem.gui.panel.model.constraint.none(なし))
+nanoem.gui.panel.morph.title	モーフ'
 nanoem.gui.panel.morph.none(なし)!
 nanoem.gui.panel.morph.eye目-
 #nanoem.gui.panel.morph.eye.register登録(
@@ -96,8 +96,8 @@ $nanoem.gui.panel.model.visible.short表2
 nanoem.gui.panel.morph.other	その他/
 %nanoem.gui.panel.morph.other.register登録.
 nanoem.gui.panel.morph.weight#ウェイト:
-$nanoem.gui.panel.morph.weight.formatウェイト: %.2f
-nanoem.gui.panel.play再生$
+$nanoem.gui.panel.morph.weight.formatウェイト: %.2f%
+nanoem.gui.panel.play.title再生$
 nanoem.gui.panel.play.end#終了'
 nanoem.gui.panel.play.loop	ループ+
 nanoem.gui.panel.play.pause一時停止$
@@ -105,14 +105,14 @@ $nanoem.gui.panel.morph.weight.formatウェイト: %.2f
 nanoem.gui.panel.play.resume再開&
 nanoem.gui.panel.play.start#開始'
 nanoem.gui.panel.play.volume#音量3
-#nanoem.gui.panel.play.volume.format音量: %d%%0
-nanoem.gui.panel.shadowセルフシャドウ+
+#nanoem.gui.panel.play.volume.format音量: %d%%6
+nanoem.gui.panel.shadow.titleセルフシャドウ+
  nanoem.gui.panel.shadow.distance#距離.
 nanoem.gui.panel.shadow.mode-1モード１.
 nanoem.gui.panel.shadow.mode-2モード２&
 nanoem.gui.panel.shadow.noneなし*
- nanoem.gui.panel.shadow.register登録"
-nanoem.gui.panel.view	ビュー$
+ nanoem.gui.panel.shadow.register登録(
+nanoem.gui.panel.view.title	ビュー$
 nanoem.gui.panel.view.back背面&
 nanoem.gui.panel.view.bottom底面,
 nanoem.gui.panel.view.followフォロー.
@@ -121,7 +121,32 @@ $nanoem.gui.panel.morph.weight.formatウェイト: %.2f
 nanoem.gui.panel.view.front前面$
 nanoem.gui.panel.view.left左面%
 nanoem.gui.panel.view.right右面"
-nanoem.gui.panel.view.up上面
+nanoem.gui.panel.view.up上面5
++nanoem.gui.panel.model.edit.operation.title操作E
+2nanoem.gui.panel.model.edit.operation.action.titleアクション@
+3nanoem.gui.panel.model.edit.operation.action.camera	カメラ@
+6nanoem.gui.panel.model.edit.operation.action.selection選択X
+?nanoem.gui.panel.model.edit.operation.action.create-parent-bone親ボーンの作成^
+?nanoem.gui.panel.model.edit.operation.action.create-target-bone表示先ボーンの作成_
+@nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight頂点ウェイトを塗るH
+5nanoem.gui.panel.model.edit.operation.selection.title選択モード@
+6nanoem.gui.panel.model.edit.operation.selection.circle円形C
+9nanoem.gui.panel.model.edit.operation.selection.rectangle矩形<
+5nanoem.gui.panel.model.edit.operation.selection.point点4
+'nanoem.gui.panel.model.edit.gizmo.title	ギズモA
+1nanoem.gui.panel.model.edit.gizmo.operation.title操作種別?
+5nanoem.gui.panel.model.edit.gizmo.operation.translate移動<
+2nanoem.gui.panel.model.edit.gizmo.operation.rotate回転A
+1nanoem.gui.panel.model.edit.gizmo.operation.scaleスケールB
+2nanoem.gui.panel.model.edit.gizmo.coordinate.title座標種別F
+3nanoem.gui.panel.model.edit.gizmo.coordinate.globalグローバルE
+2nanoem.gui.panel.model.edit.gizmo.coordinate.localグローバルP
+.nanoem.gui.panel.model.edit.weight-paint.title頂点ウェイトペイント:
+-nanoem.gui.panel.model.edit.weight-paint.bone	ボーン?
+/nanoem.gui.panel.model.edit.weight-paint.radius半径: %.3f>
+.nanoem.gui.panel.model.edit.weight-paint.delta差分: %.3fg
+6nanoem.gui.panel.model.edit.weight-paint.protect-bdef1-BDEF1 を保護（対象頂点から除外）S
+@nanoem.gui.panel.model.edit.weight-paint.automatic-normalization自動正規化
 nanoem.gui.redoやり直し)
 nanoem.gui.timelineタイムライン
 nanoem.gui.undo元に戻す/
@@ -1112,7 +1137,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1126,8 +1151,8 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 !nanoem.gui.keyframe.select-columnColumn#
 nanoem.gui.keyframe.start#Start
 nanoem.gui.effectEffect)
-nanoem.gui.effect.reloadReload Effect'
-nanoem.gui.panel.accessory	Accessory)
+nanoem.gui.effect.reloadReload Effect-
+ nanoem.gui.panel.accessory.title	Accessory)
 nanoem.gui.panel.accessory.none(none).
 $nanoem.gui.panel.accessory.bone.none(none)+
 !nanoem.gui.panel.accessory.deleteDelete+
@@ -1140,8 +1165,8 @@ $nanoem.gui.panel.accessory.bone.none(none)+
  nanoem.gui.panel.accessory.scaleScale5
 &nanoem.gui.panel.accessory.translationTranslation-
 "nanoem.gui.panel.accessory.visibleVisible#
-nanoem.gui.panel.accessory.opOP
-nanoem.gui.panel.boneBone"
+nanoem.gui.panel.accessory.opOP#
+nanoem.gui.panel.bone.titleBone"
 nanoem.gui.panel.bone.copyCopy<
 *nanoem.gui.panel.bone.label.selection-modeSelection Mode"
 nanoem.gui.panel.bone.moveMove$
@@ -1153,8 +1178,8 @@ $nanoem.gui.panel.accessory.bone.none(none)+
 nanoem.gui.panel.bone.selectSelect'
  nanoem.gui.panel.bone.select.allAll'
  nanoem.gui.panel.bone.select.boxBox+
-"nanoem.gui.panel.bone.select.dirtyUnreg!
-nanoem.gui.panel.cameraCamera>
+"nanoem.gui.panel.bone.select.dirtyUnreg'
+nanoem.gui.panel.camera.titleCamera>
 )nanoem.gui.panel.camera.following-to-boneFollowing to Bone+
 !nanoem.gui.panel.camera.bone.none(none)"
 nanoem.gui.panel.camera.fovFov-
@@ -1164,8 +1189,8 @@ Initialize'
 nanoem.gui.panel.camera.labelCamera,
 "nanoem.gui.panel.camera.model.none(none)2
 #nanoem.gui.panel.camera.perspectivePerspective,
- nanoem.gui.panel.camera.registerRegister/
-nanoem.gui.panel.interpolationInterpolation5
+ nanoem.gui.panel.camera.registerRegister5
+$nanoem.gui.panel.interpolation.titleInterpolation5
 (nanoem.gui.panel.interpolation.automatic	Automatic>
 /nanoem.gui.panel.interpolation.bone.orientationOrientationI
 1nanoem.gui.panel.interpolation.bone.translation.xTranslation (X-Axis)I
@@ -1179,15 +1204,15 @@ Initialize'
 3nanoem.gui.panel.interpolation.camera.translation.zTranslation (Z-Axis)+
 #nanoem.gui.panel.interpolation.copyCopy/
 %nanoem.gui.panel.interpolation.linearLinear-
-$nanoem.gui.panel.interpolation.pastePaste
-nanoem.gui.panel.lightLight%
+$nanoem.gui.panel.interpolation.pastePaste%
+nanoem.gui.panel.light.titleLight%
 nanoem.gui.panel.light.colorColor-
  nanoem.gui.panel.light.direction	Direction*
 nanoem.gui.panel.light.reset
 Initialize1
 "nanoem.gui.panel.light.self-shadowSelf Shadow+
-nanoem.gui.panel.light.registerRegister
-nanoem.gui.panel.modelModel'
+nanoem.gui.panel.light.registerRegister%
+nanoem.gui.panel.model.titleModel'
  nanoem.gui.panel.model.blend-addAdd+
 &nanoem.gui.panel.model.blend-add.shortA8
 nanoem.gui.panel.model.defaultCamera/Light/Accessory'
@@ -1199,8 +1224,8 @@ Initialize1
 #nanoem.gui.panel.model.shadow.shortS)
 nanoem.gui.panel.model.visibleVisible)
 $nanoem.gui.panel.model.visible.shortV0
-&nanoem.gui.panel.model.constraint.none(none)
-nanoem.gui.panel.morphMorph%
+&nanoem.gui.panel.model.constraint.none(none)%
+nanoem.gui.panel.morph.titleMorph%
 nanoem.gui.panel.morph.none(none)!
 nanoem.gui.panel.morph.eyeEye/
 #nanoem.gui.panel.morph.eye.registerRegister)
@@ -1211,8 +1236,8 @@ $nanoem.gui.panel.model.visible.shortV0
 nanoem.gui.panel.morph.otherOther1
 %nanoem.gui.panel.morph.other.registerRegister(
 nanoem.gui.panel.morph.weight#Weight4
-$nanoem.gui.panel.morph.weight.formatWeight: %.2f
-nanoem.gui.panel.playPlay!
+$nanoem.gui.panel.morph.weight.formatWeight: %.2f#
+nanoem.gui.panel.play.titlePlay!
 nanoem.gui.panel.play.end#End"
 nanoem.gui.panel.play.loopLoop$
 nanoem.gui.panel.play.pausePause"
@@ -1220,14 +1245,14 @@ $nanoem.gui.panel.morph.weight.formatWeight: %.2f
 nanoem.gui.panel.play.resumeResume%
 nanoem.gui.panel.play.start#Start'
 nanoem.gui.panel.play.volume#Volume3
-#nanoem.gui.panel.play.volume.formatVolume: %d%%&
-nanoem.gui.panel.shadowSelf Shadow-
+#nanoem.gui.panel.play.volume.formatVolume: %d%%,
+nanoem.gui.panel.shadow.titleSelf Shadow-
  nanoem.gui.panel.shadow.distance	#Distance(
 nanoem.gui.panel.shadow.mode-1Mode 1(
 nanoem.gui.panel.shadow.mode-2Mode 2$
 nanoem.gui.panel.shadow.noneNone,
- nanoem.gui.panel.shadow.registerRegister
-nanoem.gui.panel.viewView"
+ nanoem.gui.panel.shadow.registerRegister#
+nanoem.gui.panel.view.titleView"
 nanoem.gui.panel.view.backBack&
 nanoem.gui.panel.view.bottomBottom&
 nanoem.gui.panel.view.followFollow)
@@ -1236,7 +1261,32 @@ $nanoem.gui.panel.morph.weight.formatWeight: %.2f
 nanoem.gui.panel.view.frontFront"
 nanoem.gui.panel.view.leftLeft$
 nanoem.gui.panel.view.rightRight
-nanoem.gui.panel.view.upUp
+nanoem.gui.panel.view.upUp8
++nanoem.gui.panel.model.edit.operation.title	Operation<
+2nanoem.gui.panel.model.edit.operation.action.titleAction=
+3nanoem.gui.panel.model.edit.operation.action.cameraCameraC
+6nanoem.gui.panel.model.edit.operation.action.selection	SelectionU
+?nanoem.gui.panel.model.edit.operation.action.create-parent-boneCreate Parent BoneU
+?nanoem.gui.panel.model.edit.operation.action.create-target-boneCreate Target BoneW
+@nanoem.gui.panel.model.edit.operation.action.paint-vertex-weightPaint Vertex WeightG
+5nanoem.gui.panel.model.edit.operation.selection.titleSelection Mode@
+6nanoem.gui.panel.model.edit.operation.selection.circleCircleF
+9nanoem.gui.panel.model.edit.operation.selection.rectangle	Rectangle>
+5nanoem.gui.panel.model.edit.operation.selection.pointPoint0
+'nanoem.gui.panel.model.edit.gizmo.titleGizmoC
+1nanoem.gui.panel.model.edit.gizmo.operation.titleOperation TypeB
+5nanoem.gui.panel.model.edit.gizmo.operation.translate	Translate<
+2nanoem.gui.panel.model.edit.gizmo.operation.rotateRotate:
+1nanoem.gui.panel.model.edit.gizmo.operation.scaleScaleE
+2nanoem.gui.panel.model.edit.gizmo.coordinate.titleCoordinate Type=
+3nanoem.gui.panel.model.edit.gizmo.coordinate.globalGlobal<
+2nanoem.gui.panel.model.edit.gizmo.coordinate.localGlobalE
+.nanoem.gui.panel.model.edit.weight-paint.titleVertex Weight Paint5
+-nanoem.gui.panel.model.edit.weight-paint.boneBone?
+/nanoem.gui.panel.model.edit.weight-paint.radiusRadius: %.3f=
+.nanoem.gui.panel.model.edit.weight-paint.deltaDelta: %.3fd
+6nanoem.gui.panel.model.edit.weight-paint.protect-bdef1*Protect BDEF1 (Exclude from Vertex Target)[
+@nanoem.gui.panel.model.edit.weight-paint.automatic-normalizationAutomatic Normalization
 nanoem.gui.redoRedo
 nanoem.gui.timelineTimeline
 nanoem.gui.undoUndo%

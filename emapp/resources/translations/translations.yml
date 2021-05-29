@@ -54,7 +54,7 @@
   phrase:
     en_US: Reload Effect
     ja_JP: エフェクトの再読込
-- key: nanoem.gui.panel.accessory
+- key: nanoem.gui.panel.accessory.title
   phrase:
     en_US: Accessory
     ja_JP: アクセサリ
@@ -110,7 +110,7 @@
   phrase:
     en_US: OP
     ja_JP: 外部親
-- key: nanoem.gui.panel.bone
+- key: nanoem.gui.panel.bone.title
   phrase:
     en_US: Bone
     ja_JP: ボーン
@@ -162,7 +162,7 @@
   phrase:
     en_US: Unreg
     ja_JP: 未登録
-- key: nanoem.gui.panel.camera
+- key: nanoem.gui.panel.camera.title
   phrase:
     en_US: Camera
     ja_JP: カメラ
@@ -202,7 +202,7 @@
   phrase:
     en_US: Register
     ja_JP: 登録
-- key: nanoem.gui.panel.interpolation
+- key: nanoem.gui.panel.interpolation.title
   phrase:
     en_US: Interpolation
     ja_JP: 補完曲線
@@ -262,7 +262,7 @@
   phrase:
     en_US: Paste
     ja_JP: ペースト
-- key: nanoem.gui.panel.light
+- key: nanoem.gui.panel.light.title
   phrase:
     en_US: Light
     ja_JP: 照明
@@ -286,7 +286,7 @@
   phrase:
     en_US: Register
     ja_JP: 登録
-- key: nanoem.gui.panel.model
+- key: nanoem.gui.panel.model.title
   phrase:
     en_US: Model
     ja_JP: モデル
@@ -338,7 +338,7 @@
   phrase:
     en_US: (none)
     ja_JP: (なし)
-- key: nanoem.gui.panel.morph
+- key: nanoem.gui.panel.morph.title
   phrase:
     en_US: Morph
     ja_JP: モーフ
@@ -386,7 +386,7 @@
   phrase:
     en_US: "Weight: %.2f"
     ja_JP: "ウェイト: %.2f"
-- key: nanoem.gui.panel.play
+- key: nanoem.gui.panel.play.title
   phrase:
     en_US: Play
     ja_JP: 再生
@@ -422,7 +422,7 @@
   phrase:
     en_US: "Volume: %d%%"
     ja_JP: "音量: %d%%"
-- key: nanoem.gui.panel.shadow
+- key: nanoem.gui.panel.shadow.title
   phrase:
     en_US: Self Shadow
     ja_JP: セルフシャドウ
@@ -446,7 +446,7 @@
   phrase:
     en_US: Register
     ja_JP: 登録
-- key: nanoem.gui.panel.view
+- key: nanoem.gui.panel.view.title
   phrase:
     en_US: View
     ja_JP: ビュー
@@ -486,6 +486,106 @@
   phrase:
     en_US: Up
     ja_JP: 上面
+- key: nanoem.gui.panel.model.edit.operation.title
+  phrase:
+    en_US: Operation
+    ja_JP: 操作
+- key: nanoem.gui.panel.model.edit.operation.action.title
+  phrase:
+    en_US: Action
+    ja_JP: アクション
+- key: nanoem.gui.panel.model.edit.operation.action.camera
+  phrase:
+    en_US: Camera
+    ja_JP: カメラ
+- key: nanoem.gui.panel.model.edit.operation.action.selection
+  phrase:
+    en_US: Selection
+    ja_JP: 選択
+- key: nanoem.gui.panel.model.edit.operation.action.create-parent-bone
+  phrase:
+    en_US: Create Parent Bone
+    ja_JP: 親ボーンの作成
+- key: nanoem.gui.panel.model.edit.operation.action.create-target-bone
+  phrase:
+    en_US: Create Target Bone
+    ja_JP: 表示先ボーンの作成
+- key: nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight
+  phrase:
+    en_US: Paint Vertex Weight
+    ja_JP: 頂点ウェイトを塗る
+- key: nanoem.gui.panel.model.edit.operation.selection.title
+  phrase:
+    en_US: Selection Mode
+    ja_JP: 選択モード
+- key: nanoem.gui.panel.model.edit.operation.selection.circle
+  phrase:
+    en_US: Circle
+    ja_JP: 円形
+- key: nanoem.gui.panel.model.edit.operation.selection.rectangle
+  phrase:
+    en_US: Rectangle
+    ja_JP: 矩形
+- key: nanoem.gui.panel.model.edit.operation.selection.point
+  phrase:
+    en_US: Point
+    ja_JP: 点
+- key: nanoem.gui.panel.model.edit.gizmo.title
+  phrase:
+    en_US: Gizmo
+    ja_JP: ギズモ
+- key: nanoem.gui.panel.model.edit.gizmo.operation.title
+  phrase:
+    en_US: Operation Type
+    ja_JP: 操作種別
+- key: nanoem.gui.panel.model.edit.gizmo.operation.translate
+  phrase:
+    en_US: Translate
+    ja_JP: 移動
+- key: nanoem.gui.panel.model.edit.gizmo.operation.rotate
+  phrase:
+    en_US: Rotate
+    ja_JP: 回転
+- key: nanoem.gui.panel.model.edit.gizmo.operation.scale
+  phrase:
+    en_US: Scale
+    ja_JP: スケール
+- key: nanoem.gui.panel.model.edit.gizmo.coordinate.title
+  phrase:
+    en_US: Coordinate Type
+    ja_JP: 座標種別
+- key: nanoem.gui.panel.model.edit.gizmo.coordinate.global
+  phrase:
+    en_US: Global
+    ja_JP: グローバル
+- key: nanoem.gui.panel.model.edit.gizmo.coordinate.local
+  phrase:
+    en_US: Global
+    ja_JP: グローバル
+- key: nanoem.gui.panel.model.edit.weight-paint.title
+  phrase:
+    en_US: Vertex Weight Paint
+    ja_JP: 頂点ウェイトペイント
+- key: nanoem.gui.panel.model.edit.weight-paint.bone
+  phrase:
+    en_US: Bone
+    ja_JP: ボーン
+- key: nanoem.gui.panel.model.edit.weight-paint.radius
+  phrase:
+    en_US: "Radius: %.3f"
+    ja_JP: "半径: %.3f"
+- key: nanoem.gui.panel.model.edit.weight-paint.delta
+  phrase:
+    en_US: "Delta: %.3f"
+    ja_JP: "差分: %.3f"
+- key: nanoem.gui.panel.model.edit.weight-paint.protect-bdef1
+  phrase:
+    en_US: Protect BDEF1 (Exclude from Vertex Target)
+    ja_JP: BDEF1 を保護（対象頂点から除外）
+- key: nanoem.gui.panel.model.edit.weight-paint.automatic-normalization
+  phrase:
+    en_US: Automatic Normalization
+    ja_JP: 自動正規化
 - key: nanoem.gui.redo
   phrase:
     en_US: Redo
