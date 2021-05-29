@@ -70,11 +70,11 @@ public:
     Gizmo();
     ~Gizmo() NANOEM_DECL_NOEXCEPT;
 
-    Matrix4x4 pivotMatrix() const noexcept NANOEM_DECL_OVERRIDE;
+    Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
     void setPivotMatrix(const Matrix4x4 &value) NANOEM_DECL_OVERRIDE;
-    TransformCoordinateType transformCoordinateType() const noexcept NANOEM_DECL_OVERRIDE;
+    TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
     void setTransformCoordinateType(TransformCoordinateType value) NANOEM_DECL_OVERRIDE;
-    OperationType operationType() const noexcept NANOEM_DECL_OVERRIDE;
+    OperationType operationType() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
     void setOperationType(OperationType value) NANOEM_DECL_OVERRIDE;
 
 private:

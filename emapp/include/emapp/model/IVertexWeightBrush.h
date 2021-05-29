@@ -26,6 +26,12 @@ public:
     virtual void setActiveBone(const nanoem_model_bone_t *value) = 0;
     virtual nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setRadius(nanoem_f32_t value) = 0;
+    virtual nanoem_f32_t delta() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setDelta(nanoem_f32_t value) = 0;
+    virtual bool isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setProtectBDEF1Enabled(bool value) = 0;
+    virtual bool isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setAutomaticNormalizationEnabled(bool value) = 0;
 };
 
 } /* namespace model */

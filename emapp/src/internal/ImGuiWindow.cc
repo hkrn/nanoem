@@ -261,25 +261,45 @@ WaveFormPanelDrawer::sampleBytesOffset(nanoem_rsize_t sample) const NANOEM_DECL_
 
 class VertexWeightBrush : public model::IVertexWeightBrush {
 public:
-    VertexWeightBrush();
+    VertexWeightBrush(Model *model);
     ~VertexWeightBrush() NANOEM_DECL_NOEXCEPT;
 
     void begin() NANOEM_DECL_OVERRIDE;
     void end() NANOEM_DECL_OVERRIDE;
+
     const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
     void setActiveBone(const nanoem_model_bone_t *value) NANOEM_DECL_OVERRIDE;
     nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
     void setRadius(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
+    nanoem_f32_t delta() const NANOEM_DECL_NOEXCEPT;
+    void setDelta(nanoem_f32_t value);
+    bool isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT;
+    void setProtectBDEF1Enabled(bool value);
+    bool isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setAutomaticNormalizationEnabled(bool value);
 
 private:
     const nanoem_model_bone_t *m_activeBonePtr;
+    Model *m_model;
     nanoem_f32_t m_radius;
+    nanoem_f32_t m_delta;
+    bool m_protectBDEF1Enabled;
+    bool m_automaticNormalizationEnabled;
 };
 
-VertexWeightBrush::VertexWeightBrush()
+VertexWeightBrush::VertexWeightBrush(Model *model)
     : m_activeBonePtr(nullptr)
+    , m_model(model)
     , m_radius(16.0f)
+    , m_delta(0.005f)
+    , m_protectBDEF1Enabled(true)
+    , m_automaticNormalizationEnabled(true)
 {
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
+    if (numBones > 0) {
+        setActiveBone(bones[0]);
+    }
 }
 
 VertexWeightBrush::~VertexWeightBrush() NANOEM_DECL_NOEXCEPT
@@ -318,6 +338,42 @@ void
 VertexWeightBrush::setRadius(nanoem_f32_t value)
 {
     m_radius = value;
+}
+
+nanoem_f32_t
+VertexWeightBrush::delta() const NANOEM_DECL_NOEXCEPT
+{
+    return m_delta;
+}
+
+void
+VertexWeightBrush::setDelta(nanoem_f32_t value)
+{
+    m_delta = value;
+}
+
+bool
+VertexWeightBrush::isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT
+{
+    return m_protectBDEF1Enabled;
+}
+
+void
+VertexWeightBrush::setProtectBDEF1Enabled(bool value)
+{
+    m_protectBDEF1Enabled = value;
+}
+
+bool
+VertexWeightBrush::isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return m_automaticNormalizationEnabled;
+}
+
+void
+VertexWeightBrush::setAutomaticNormalizationEnabled(bool value)
+{
+    m_automaticNormalizationEnabled = value;
 }
 
 } /* namespace anonymous */
@@ -3946,7 +4002,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
     Model *activeModel = project->activeModel();
     const Model::EditActionType editActionType = activeModel->editActionType();
     ImGui::BeginChild("command", ImVec2(kModelEditCommandWidth * project->windowDevicePixelRatio(), height));
-    if (ImGui::CollapsingHeader("Operation", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (ImGui::CollapsingHeader("Operation##operation", ImGuiTreeNodeFlags_DefaultOpen)) {
         IModelObjectSelection *selection = activeModel->selection();
         if (ImGui::BeginMenu("Operation Type")) {
             const IModelObjectSelection::ObjectType objectType = selection->objectType();
@@ -4029,7 +4085,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                 activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
                 activeModel->setShowAllVertexWeights(true);
                 if (!activeModel->vertexWeightBrush()) {
-                    activeModel->setVertexWeightBrush(nanoem_new(VertexWeightBrush));
+                    activeModel->setVertexWeightBrush(nanoem_new(VertexWeightBrush(activeModel)));
                 }
             }
             ImGui::Separator();
@@ -4062,10 +4118,11 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         if (handleRadioButton("Point", targetMode == IModelObjectSelection::kTargetModeTypePoint, isSelectionMode)) {
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypePoint);
         }
+        ImGui::Spacing();
     }
     model::IGizmo *gizmo = activeModel->gizmo();
     const bool isGizmoEnabled = gizmo ? !glm::isNull(gizmo->pivotMatrix(), Constants::kEpsilon) : false;
-    if (isGizmoEnabled && ImGui::CollapsingHeader("Gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
+    if (isGizmoEnabled && ImGui::CollapsingHeader("Gizmo##gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Operation Type");
         model::IGizmo::OperationType op = gizmo->operationType();
         if (handleRadioButton("Translate", op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
@@ -4089,9 +4146,10 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         if (handleRadioButton("Local", coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
             gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeLocal);
         }
+        ImGui::Spacing();
     }
     const bool paintMode = editActionType == Model::kEditActionTypePaintVertexWeight;
-    if (paintMode && ImGui::CollapsingHeader("Paint##paint")) {
+    if (paintMode && ImGui::CollapsingHeader("Vertex Weight Paint##vertex-weight-paint", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::PushItemWidth(-1);
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
@@ -4111,11 +4169,25 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             }
             ImGui::EndCombo();
         }
-        nanoem_f32_t radius = brush->radius();
-        if (ImGui::SliderFloat("Radius", &radius, 0.5f, 100.0f)) {
+        nanoem_f32_t radius = brush->radius(), delta = brush->delta();
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+        if (ImGui::DragFloat("##radius", &radius, 0.5f, 0.5f, 100.0f, "Radius: %.3f")) {
             brush->setRadius(radius);
         }
+        ImGui::SameLine();
+        if (ImGui::DragFloat("##delta", &delta, 0.005f, -1.0f, 1.0f, "Delta: %.3f")) {
+            brush->setDelta(delta);
+        }
+        bool protectBDEF1 = brush->isProtectBDEF1Enabled();
+        if (ImGui::Checkbox("Protect BDEF1##protect-bdef1", &protectBDEF1)) {
+            brush->setProtectBDEF1Enabled(protectBDEF1);
+        }
+        bool automaticNormalization = brush->isAutomaticNormalizationEnabled();
+        if (ImGui::Checkbox("Automatic Normalization##automatic-normalization", &automaticNormalization)) {
+            brush->setAutomaticNormalizationEnabled(automaticNormalization);
+        }
         ImGui::PopItemWidth();
+        ImGui::Spacing();
     }
     StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera"));
     if (ImGui::CollapsingHeader(buffer)) {
@@ -4157,6 +4229,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             camera->update();
             project->resetAllModelEdges();
         }
+        ImGui::Spacing();
     }
     StringUtils::format(buffer, sizeof(buffer), "%s##light", tr("nanoem.gui.panel.light"));
     if (ImGui::CollapsingHeader(buffer)) {

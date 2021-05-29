@@ -4434,7 +4434,8 @@ Model::drawAllVertexWeights()
     nanoem_rsize_t numMaterials, numVertices, numVertexIndices, indexOffset = 0;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-    const model::Bone *activeBoneObject = model::Bone::cast(activeBone());
+    const nanoem_model_bone_t *activeBonePtr = m_vertexWeightBrush ? m_vertexWeightBrush->activeBone() : activeBone();
+    const model::Bone *activeBoneObject = model::Bone::cast(activeBonePtr);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
     const bool enableBlending = isBlendingVertexWeightsEnabled();
     m_drawAllVertexWeights.ensureVertexBufferInitialized(canonicalNameConstString(), numVertices);
@@ -4456,7 +4457,7 @@ Model::drawAllVertexWeights()
                 Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
             }
             Vector3 color(Constants::kZeroV3);
-            nanoem_f32_t opacity = enableBlending ? 0.0f : 1.0f;
+            nanoem_f32_t opacity = vertex->isEditingMasked() || enableBlending ? 0.0f : 1.0f;
             for (nanoem_rsize_t j = 0; j < 4; j++) {
                 const model::Bone *bone = vertex->bone(j);
                 if (bone && bone == activeBoneObject) {
