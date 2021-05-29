@@ -6,7 +6,7 @@
 
 #include "emapp/Forward.h"
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
+struct Nanoem__Application__Command;
 
 namespace nanoem {
 

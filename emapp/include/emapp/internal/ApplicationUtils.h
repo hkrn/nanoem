@@ -12,12 +12,9 @@
 #include "emapp/PluginFactory.h"
 #include "emapp/model/Morph.h"
 
-struct _Nanoem__Common__Interpolation;
-struct _Nanoem__Application__Plugin;
-struct _Nanoem__Application__URI;
-typedef _Nanoem__Common__Interpolation Nanoem__Common__Interpolation;
-typedef _Nanoem__Application__Plugin Nanoem__Application__Plugin;
-typedef _Nanoem__Application__URI Nanoem__Application__URI;
+struct Nanoem__Common__Interpolation;
+struct Nanoem__Application__Plugin;
+struct Nanoem__Application__URI;
 
 namespace nanoem {
 

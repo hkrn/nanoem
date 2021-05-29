@@ -12,10 +12,8 @@
 #include "emapp/internal/PluginUI.h"
 #include "emapp/internal/imgui/BaseNonModalDialogWindow.h"
 
-struct _Nanoem__Application__Plugin__UIComponent;
-struct _Nanoem__Application__Plugin__UIWindow;
-typedef _Nanoem__Application__Plugin__UIComponent Nanoem__Application__Plugin__UIComponent;
-typedef _Nanoem__Application__Plugin__UIWindow Nanoem__Application__Plugin__UIWindow;
+struct Nanoem__Application__Plugin__UIComponent;
+struct Nanoem__Application__Plugin__UIWindow;
 
 namespace nanoem {
 namespace internal {

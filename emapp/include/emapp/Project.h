@@ -26,7 +26,7 @@
 
 #include "bimg/bimg.h"
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
+struct Nanoem__Application__Command;
 
 struct undo_command_t;
 struct undo_stack_t;

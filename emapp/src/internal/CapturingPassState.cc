@@ -598,7 +598,7 @@ public:
     bool isButtonEnabled(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     void handleUIComponent(
-        const char *id, const _Nanoem__Application__Plugin__UIComponent *component) NANOEM_DECL_OVERRIDE;
+        const char *id, const Nanoem__Application__Plugin__UIComponent *component) NANOEM_DECL_OVERRIDE;
     bool reloadUILayout(ByteArray &bytes, Error &error) NANOEM_DECL_OVERRIDE;
 
 private:
@@ -825,7 +825,7 @@ CapturingPassAsVideoState::ModalDialog::isButtonEnabled(nanoem_u32_t value) cons
 
 void
 CapturingPassAsVideoState::ModalDialog::handleUIComponent(
-    const char *id, const _Nanoem__Application__Plugin__UIComponent *component)
+    const char *id, const Nanoem__Application__Plugin__UIComponent *component)
 {
     PluginFactory::EncoderPluginProxy proxy(m_plugin);
     const nanoem_rsize_t size = nanoem__application__plugin__uicomponent__get_packed_size(component);

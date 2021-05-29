@@ -11,8 +11,8 @@
 #include "emapp/Forward.h"
 #include "imgui/imgui.h"
 
-struct _Nanoem__Application__Plugin__UIComponent;
-struct _Nanoem__Application__Plugin__UIWindow;
+struct Nanoem__Application__Plugin__UIComponent;
+struct Nanoem__Application__Plugin__UIWindow;
 
 namespace nanoem {
 
@@ -24,12 +24,12 @@ class PluginUI : private NonCopyable {
 public:
     class IReactor {
     public:
-        virtual void handleUIComponent(const char *id, const _Nanoem__Application__Plugin__UIComponent *component) = 0;
+        virtual void handleUIComponent(const char *id, const Nanoem__Application__Plugin__UIComponent *component) = 0;
         virtual bool reloadUILayout(ByteArray &bytes, Error &error) = 0;
     };
 
     PluginUI(
-        IReactor *reactor, _Nanoem__Application__Plugin__UIWindow *window, const char *title, float devicePixelRatio);
+        IReactor *reactor, Nanoem__Application__Plugin__UIWindow *window, const char *title, float devicePixelRatio);
     ~PluginUI();
 
     void draw();
@@ -39,10 +39,10 @@ public:
     const char *title() const NANOEM_DECL_NOEXCEPT;
 
 private:
-    void drawComponent(const _Nanoem__Application__Plugin__UIComponent *component);
+    void drawComponent(const Nanoem__Application__Plugin__UIComponent *component);
 
     IReactor *m_reactor;
-    _Nanoem__Application__Plugin__UIWindow *m_window;
+    Nanoem__Application__Plugin__UIWindow *m_window;
     const char *m_title;
     const float m_devicePixelRatio;
 };

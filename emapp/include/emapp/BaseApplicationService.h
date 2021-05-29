@@ -14,8 +14,8 @@
 struct nk_context;
 struct undo_command_t;
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
-typedef struct _Nanoem__Application__Event Nanoem__Application__Event;
+struct Nanoem__Application__Command;
+struct Nanoem__Application__Event;
 
 namespace bx {
 class CommandLine;
