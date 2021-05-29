@@ -10,6 +10,7 @@
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
+#include "emapp/model/IGizmo.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtc/type_ptr.hpp"
@@ -22,7 +23,7 @@ namespace internal {
 namespace imgui {
 namespace {
 
-struct GizmoUtils : private NonCopyable {
+struct GizmoUtils NANOEM_DECL_SEALED : private NonCopyable {
     static ImGuizmo::OPERATION operation(const Model *activeModel) NANOEM_DECL_NOEXCEPT;
     static ImGuizmo::MODE mode(const Model *activeModel) NANOEM_DECL_NOEXCEPT;
 };
@@ -32,15 +33,15 @@ GizmoUtils::operation(const Model *activeModel) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(activeModel, "model must NOT be null");
     ImGuizmo::OPERATION op;
-    switch (activeModel->gizmoOperationType()) {
-    case Model::kGizmoOperationTypeTranslate:
+    switch (activeModel->gizmo()->operationType()) {
+    case model::IGizmo::kOperationTypeTranslate:
     default:
         op = ImGuizmo::TRANSLATE;
         break;
-    case Model::kGizmoOperationTypeRotate:
+    case model::IGizmo::kOperationTypeRotate:
         op = ImGuizmo::ROTATE;
         break;
-    case Model::kGizmoOperationTypeScale:
+    case model::IGizmo::kOperationTypeScale:
         op = ImGuizmo::SCALE;
         break;
     }
@@ -52,16 +53,81 @@ GizmoUtils::mode(const Model *activeModel) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(activeModel, "model must NOT be null");
     ImGuizmo::MODE mode;
-    switch (activeModel->gizmoTransformCoordinateType()) {
-    case Model::kTransformCoordinateTypeGlobal:
+    switch (activeModel->gizmo()->transformCoordinateType()) {
+    case model::IGizmo::kTransformCoordinateTypeGlobal:
         mode = ImGuizmo::WORLD;
         break;
-    case Model::kTransformCoordinateTypeLocal:
+    case model::IGizmo::kTransformCoordinateTypeLocal:
     default:
         mode = ImGuizmo::LOCAL;
         break;
     }
     return mode;
+}
+
+class Gizmo NANOEM_DECL_SEALED : public model::IGizmo {
+public:
+    Gizmo();
+    ~Gizmo() NANOEM_DECL_NOEXCEPT;
+
+    Matrix4x4 pivotMatrix() const noexcept NANOEM_DECL_OVERRIDE;
+    void setPivotMatrix(const Matrix4x4 &value) NANOEM_DECL_OVERRIDE;
+    TransformCoordinateType transformCoordinateType() const noexcept NANOEM_DECL_OVERRIDE;
+    void setTransformCoordinateType(TransformCoordinateType value) NANOEM_DECL_OVERRIDE;
+    OperationType operationType() const noexcept NANOEM_DECL_OVERRIDE;
+    void setOperationType(OperationType value) NANOEM_DECL_OVERRIDE;
+
+private:
+    Matrix4x4 m_pivotMatrix;
+    TransformCoordinateType m_transformCoordinateType;
+    OperationType m_operationType;
+};
+
+Gizmo::Gizmo()
+    : m_pivotMatrix(0)
+    , m_transformCoordinateType(kTransformCoordinateTypeGlobal)
+    , m_operationType(kOperationTypeTranslate)
+{
+}
+
+Gizmo::~Gizmo() NANOEM_DECL_NOEXCEPT
+{
+}
+
+Matrix4x4
+Gizmo::pivotMatrix() const NANOEM_DECL_NOEXCEPT
+{
+    return m_pivotMatrix;
+}
+
+void
+Gizmo::setPivotMatrix(const Matrix4x4 &value)
+{
+    m_pivotMatrix = value;
+}
+
+Gizmo::TransformCoordinateType
+Gizmo::transformCoordinateType() const NANOEM_DECL_NOEXCEPT
+{
+    return m_transformCoordinateType;
+}
+
+void
+Gizmo::setTransformCoordinateType(TransformCoordinateType value)
+{
+    m_transformCoordinateType = value;
+}
+
+Gizmo::OperationType
+Gizmo::operationType() const NANOEM_DECL_NOEXCEPT
+{
+    return m_operationType;
+}
+
+void
+Gizmo::setOperationType(OperationType value)
+{
+    m_operationType = value;
 }
 
 } /* namespace anonymous */
@@ -93,7 +159,12 @@ GizmoController::draw(ImDrawList *drawList, const ImVec2 &offset, const ImVec2 &
     ImGuizmo::SetOrthographic(project->activeCamera()->isPerspective() ? false : true);
     project->activeCamera()->getViewTransform(view, projection);
     Model *activeModel = project->activeModel();
-    Matrix4x4 pivotMatrix(activeModel ? activeModel->pivotMatrix() : Matrix4x4(0));
+    model::IGizmo *gizmo = activeModel->gizmo();
+    if (activeModel && !gizmo) {
+        gizmo = nanoem_new(Gizmo);
+        activeModel->setGizmo(gizmo);
+    }
+    Matrix4x4 pivotMatrix(activeModel ? activeModel->gizmo()->pivotMatrix() : Matrix4x4(0));
     if (!glm::isNull(pivotMatrix, Constants::kEpsilon)) {
         ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(pivotMatrix), 1);
         if (ImGuizmo::IsOver()) {
@@ -108,7 +179,7 @@ GizmoController::draw(ImDrawList *drawList, const ImVec2 &offset, const ImVec2 &
             }
             m_state->transform(delta);
             m_transformMatrix *= delta;
-            activeModel->setPivotMatrix(pivotMatrix);
+            activeModel->gizmo()->setPivotMatrix(pivotMatrix);
         }
         else if (!ImGuizmo::IsUsing() && m_state) {
             m_state->reset();

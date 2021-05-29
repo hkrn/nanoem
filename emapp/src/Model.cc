@@ -35,7 +35,9 @@
 #include "emapp/internal/ModelObjectSelection.h"
 #include "emapp/model/BindPose.h"
 #include "emapp/model/Exporter.h"
+#include "emapp/model/IGizmo.h"
 #include "emapp/model/ISkinDeformer.h"
+#include "emapp/model/IVertexWeightBrush.h"
 #include "emapp/model/Importer.h"
 #include "emapp/model/Joint.h"
 #include "emapp/model/Label.h"
@@ -855,6 +857,8 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_selection(nullptr)
     , m_drawer(nullptr)
     , m_skinDeformer(nullptr)
+    , m_gizmo(nullptr)
+    , m_vertexWeightBrush(nullptr)
     , m_opaque(nullptr)
     , m_undoStack(nullptr)
     , m_activeConstraintPtr(nullptr)
@@ -865,10 +869,7 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_screenImage(nullptr)
     , m_sharedFallbackBone(nullptr)
     , m_userData(nullptr, nullptr)
-    , m_pivotMatrix(0)
     , m_edgeColor(0, 0, 0, 1)
-    , m_gizmoOperationType(kGizmoOperationTypeTranslate)
-    , m_gizmoTransformCoordinateType(kTransformCoordinateTypeLocal)
     , m_transformAxisType(kAxisTypeNone)
     , m_transformCoordinateType(kTransformCoordinateTypeLocal)
     , m_states(kPrivateStateInitialValue)
@@ -901,6 +902,8 @@ Model::~Model() NANOEM_DECL_NOEXCEPT
     nanoem_delete_safe(m_camera);
     nanoem_delete_safe(m_drawer);
     nanoem_delete_safe(m_skinDeformer);
+    nanoem_delete_safe(m_gizmo);
+    nanoem_delete_safe(m_vertexWeightBrush);
     nanoem_delete_safe(m_selection);
     nanoem_delete_safe(m_screenImage);
     undoStackDestroy(m_undoStack);
@@ -5439,6 +5442,42 @@ Model::setPassiveEffect(IEffect *value)
     }
 }
 
+const model::IGizmo *
+Model::gizmo() const NANOEM_DECL_NOEXCEPT
+{
+    return m_gizmo;
+}
+
+model::IGizmo *
+Model::gizmo()
+{
+    return m_gizmo;
+}
+
+void
+Model::setGizmo(model::IGizmo *value)
+{
+    m_gizmo = value;
+}
+
+const model::IVertexWeightBrush *
+Model::vertexWeightBrush() const NANOEM_DECL_NOEXCEPT
+{
+    return m_vertexWeightBrush;
+}
+
+model::IVertexWeightBrush *
+Model::vertexWeightBrush()
+{
+    return m_vertexWeightBrush;
+}
+
+void
+Model::setVertexWeightBrush(model::IVertexWeightBrush *value)
+{
+    m_vertexWeightBrush = value;
+}
+
 Model::UserData
 Model::userData() const
 {
@@ -5490,30 +5529,6 @@ Model::setEditActionType(EditActionType value)
 }
 
 Model::TransformCoordinateType
-Model::gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT
-{
-    return m_gizmoTransformCoordinateType;
-}
-
-void
-Model::setGizmoTransformCoordinateType(TransformCoordinateType value)
-{
-    m_gizmoTransformCoordinateType = value;
-}
-
-Model::GizmoOperationType
-Model::gizmoOperationType() const NANOEM_DECL_NOEXCEPT
-{
-    return m_gizmoOperationType;
-}
-
-void
-Model::setGizmoOperationType(GizmoOperationType value)
-{
-    m_gizmoOperationType = value;
-}
-
-Model::TransformCoordinateType
 Model::transformCoordinateType() const NANOEM_DECL_NOEXCEPT
 {
     return m_transformCoordinateType;
@@ -5544,18 +5559,6 @@ Model::toggleTransformCoordinateType()
         setTransformCoordinateType(kTransformCoordinateTypeGlobal);
         break;
     }
-}
-
-Matrix4x4
-Model::pivotMatrix() const NANOEM_DECL_NOEXCEPT
-{
-    return m_pivotMatrix;
-}
-
-void
-Model::setPivotMatrix(const Matrix4x4 &value)
-{
-    m_pivotMatrix = value;
 }
 
 Vector4

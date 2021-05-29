@@ -83,6 +83,8 @@
 #include "emapp/internal/imgui/UVEditDialog.h"
 #include "emapp/internal/imgui/UberMotionKeyframeSelection.h"
 #include "emapp/internal/imgui/ViewportSettingDialog.h"
+#include "emapp/model/IGizmo.h"
+#include "emapp/model/IVertexWeightBrush.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/matrix_query.hpp"
@@ -255,6 +257,67 @@ nanoem_rsize_t
 WaveFormPanelDrawer::sampleBytesOffset(nanoem_rsize_t sample) const NANOEM_DECL_NOEXCEPT
 {
     return m_base + sample * m_bytesPerSample;
+}
+
+class VertexWeightBrush : public model::IVertexWeightBrush {
+public:
+    VertexWeightBrush();
+    ~VertexWeightBrush() NANOEM_DECL_NOEXCEPT;
+
+    void begin() NANOEM_DECL_OVERRIDE;
+    void end() NANOEM_DECL_OVERRIDE;
+    const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
+    void setActiveBone(const nanoem_model_bone_t *value) NANOEM_DECL_OVERRIDE;
+    nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
+    void setRadius(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
+
+private:
+    const nanoem_model_bone_t *m_activeBonePtr;
+    nanoem_f32_t m_radius;
+};
+
+VertexWeightBrush::VertexWeightBrush()
+    : m_activeBonePtr(nullptr)
+    , m_radius(16.0f)
+{
+}
+
+VertexWeightBrush::~VertexWeightBrush() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+VertexWeightBrush::begin()
+{
+}
+
+void
+VertexWeightBrush::end()
+{
+}
+
+const nanoem_model_bone_t *
+VertexWeightBrush::activeBone() const NANOEM_DECL_NOEXCEPT
+{
+    return m_activeBonePtr;
+}
+
+void
+VertexWeightBrush::setActiveBone(const nanoem_model_bone_t *value)
+{
+    m_activeBonePtr = value;
+}
+
+nanoem_f32_t
+VertexWeightBrush::radius() const NANOEM_DECL_NOEXCEPT
+{
+    return m_radius;
+}
+
+void
+VertexWeightBrush::setRadius(nanoem_f32_t value)
+{
+    m_radius = value;
 }
 
 } /* namespace anonymous */
@@ -1294,6 +1357,9 @@ ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *ov
         }
         default:
             break;
+        }
+        if (activeModel->isShowAllVertexWeights()) {
+            flags |= IState::kDrawTypeVertexWeightBrush;
         }
     }
     else if (!activeModel) {
@@ -3878,13 +3944,12 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
 {
     char buffer[Inline::kLongNameStackBufferSize];
     Model *activeModel = project->activeModel();
-    const bool isGizmoEnabled = !glm::isNull(activeModel->pivotMatrix(), Constants::kEpsilon);
+    const Model::EditActionType editActionType = activeModel->editActionType();
     ImGui::BeginChild("command", ImVec2(kModelEditCommandWidth * project->windowDevicePixelRatio(), height));
     if (ImGui::CollapsingHeader("Operation", ImGuiTreeNodeFlags_DefaultOpen)) {
         IModelObjectSelection *selection = activeModel->selection();
         if (ImGui::BeginMenu("Operation Type")) {
             const IModelObjectSelection::ObjectType objectType = selection->objectType();
-            const Model::EditActionType editActionType = activeModel->editActionType();
             if (ImGui::MenuItem("Camera", nullptr, editActionType == Model::kEditActionTypeNone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypeNone);
@@ -3942,7 +4007,6 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                 }
                 ImGui::EndMenu();
             }
-            ImGui::Separator();
             if (ImGui::MenuItem(
                     "Create Parent Bone", nullptr, editActionType == Model::kEditActionTypeCreateParentBone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
@@ -3963,6 +4027,20 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                 ModelEditCommandDialog::afterToggleEditingMode(
                     IModelObjectSelection::kObjectTypeVertex, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
+                activeModel->setShowAllVertexWeights(true);
+                if (!activeModel->vertexWeightBrush()) {
+                    activeModel->setVertexWeightBrush(nanoem_new(VertexWeightBrush));
+                }
+            }
+            ImGui::Separator();
+            if (ImGui::BeginMenu("Create Primitive")) {
+                if (ImGui::MenuItem("Cone")) {
+                }
+                if (ImGui::MenuItem("Cube")) {
+                }
+                if (ImGui::MenuItem("Torus")) {
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
@@ -3985,30 +4063,59 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypePoint);
         }
     }
+    model::IGizmo *gizmo = activeModel->gizmo();
+    const bool isGizmoEnabled = gizmo ? !glm::isNull(gizmo->pivotMatrix(), Constants::kEpsilon) : false;
     if (isGizmoEnabled && ImGui::CollapsingHeader("Gizmo", ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text("Operation Type");
-        Model::GizmoOperationType op = activeModel->gizmoOperationType();
-        if (handleRadioButton("Translate", op == Model::kGizmoOperationTypeTranslate, isGizmoEnabled)) {
-            activeModel->setGizmoOperationType(Model::kGizmoOperationTypeTranslate);
+        model::IGizmo::OperationType op = gizmo->operationType();
+        if (handleRadioButton("Translate", op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
+            gizmo->setOperationType(model::IGizmo::kOperationTypeTranslate);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Rotate", op == Model::kGizmoOperationTypeRotate, isGizmoEnabled)) {
-            activeModel->setGizmoOperationType(Model::kGizmoOperationTypeRotate);
+        if (handleRadioButton("Rotate", op == model::IGizmo::kOperationTypeRotate, isGizmoEnabled)) {
+            gizmo->setOperationType(model::IGizmo::kOperationTypeRotate);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Scale", op == Model::kGizmoOperationTypeScale, isGizmoEnabled)) {
-            activeModel->setGizmoOperationType(Model::kGizmoOperationTypeScale);
+        if (handleRadioButton("Scale", op == model::IGizmo::kOperationTypeScale, isGizmoEnabled)) {
+            gizmo->setOperationType(model::IGizmo::kOperationTypeScale);
         }
         ImGui::Separator();
         ImGui::Text("Coordinate Type");
-        Model::TransformCoordinateType coord = activeModel->gizmoTransformCoordinateType();
-        if (handleRadioButton("Global", coord == Model::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
-            activeModel->setGizmoTransformCoordinateType(Model::kTransformCoordinateTypeGlobal);
+        model::IGizmo::TransformCoordinateType coord = gizmo->transformCoordinateType();
+        if (handleRadioButton("Global", coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
+            gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeGlobal);
         }
         ImGui::SameLine();
-        if (handleRadioButton("Local", coord == Model::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
-            activeModel->setGizmoTransformCoordinateType(Model::kTransformCoordinateTypeLocal);
+        if (handleRadioButton("Local", coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
+            gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeLocal);
         }
+    }
+    const bool paintMode = editActionType == Model::kEditActionTypePaintVertexWeight;
+    if (paintMode && ImGui::CollapsingHeader("Paint##paint")) {
+        ImGui::PushItemWidth(-1);
+        nanoem_rsize_t numBones;
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
+        model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
+        const nanoem_model_bone_t *activeBonePtr = brush->activeBone();
+        const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+        ImGui::TextUnformatted("Bone");
+        if (ImGui::BeginCombo("##bone", activeBone ? activeBone->nameConstString() : "(null)")) {
+            for (nanoem_rsize_t i = 0; i < numBones; i++) {
+                const nanoem_model_bone_t *bonePtr = bones[i];
+                if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
+                    const bool selected = bonePtr == activeBonePtr;
+                    if (ImGui::Selectable(bone->nameConstString(), selected)) {
+                        brush->setActiveBone(bonePtr);
+                    }
+                }
+            }
+            ImGui::EndCombo();
+        }
+        nanoem_f32_t radius = brush->radius();
+        if (ImGui::SliderFloat("Radius", &radius, 0.5f, 100.0f)) {
+            brush->setRadius(radius);
+        }
+        ImGui::PopItemWidth();
     }
     StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera"));
     if (ImGui::CollapsingHeader(buffer)) {

@@ -11,6 +11,7 @@
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"
+#include "emapp/model/IGizmo.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/matrix_query.hpp"
@@ -25,21 +26,15 @@ void
 ModelEditCommandDialog::beforeToggleEditingMode(
     IModelObjectSelection::ObjectType editingType, Model *activeModel, Project *project)
 {
+    activeModel->setShowAllVertexFaces(false);
+    activeModel->setShowAllVertexPoints(false);
+    activeModel->setShowAllVertexWeights(false);
+    activeModel->setShowAllMaterialOverlays(false);
+    activeModel->setShowAllBones(false);
+    activeModel->setShowAllRigidBodyShapes(false);
+    activeModel->setShowAllJointShapes(false);
     switch (editingType) {
-    case IModelObjectSelection::kObjectTypeVertex: {
-        activeModel->setShowAllVertexPoints(false);
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeFace: {
-        activeModel->setShowAllVertexFaces(false);
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeMaterial: {
-        activeModel->setShowAllMaterialOverlays(false);
-        break;
-    }
     case IModelObjectSelection::kObjectTypeBone: {
-        activeModel->setShowAllBones(false);
         project->setEditingMode(Project::kEditingModeSelect);
         break;
     }
@@ -53,18 +48,6 @@ ModelEditCommandDialog::beforeToggleEditingMode(
         }
         break;
     }
-    case IModelObjectSelection::kObjectTypeRigidBody: {
-        activeModel->setShowAllRigidBodyShapes(false);
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeJoint: {
-        activeModel->setShowAllJointShapes(false);
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeSoftBody: {
-        activeModel->setShowAllVertexFaces(false);
-        break;
-    }
     default:
         break;
     }
@@ -76,7 +59,9 @@ ModelEditCommandDialog::afterToggleEditingMode(
 {
     switch (editingType) {
     case IModelObjectSelection::kObjectTypeNull: {
-        activeModel->setPivotMatrix(Matrix4x4(0));
+        if (model::IGizmo *gizmo = activeModel->gizmo()) {
+            gizmo->setPivotMatrix(Matrix4x4(0));
+        }
         activeModel->selection()->setObjectType(editingType);
         project->setEditingMode(Project::kEditingModeNone);
         break;

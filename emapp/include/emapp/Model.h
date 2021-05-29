@@ -49,6 +49,8 @@ class LineDrawer;
 
 namespace model {
 struct BindPose;
+class IGizmo;
+class IVertexWeightBrush;
 class ISkinDeformer;
 } /* namespace model */
 
@@ -72,13 +74,6 @@ public:
         kEditActionTypeCreateParentBone,
         kEditActionTypeCreateTargetBone,
         kEditActionTypeMaxEnum
-    };
-    enum GizmoOperationType {
-        kGizmoOperationTypeFirstEnum,
-        kGizmoOperationTypeTranslate = kGizmoOperationTypeFirstEnum,
-        kGizmoOperationTypeRotate,
-        kGizmoOperationTypeScale,
-        kGizmoOperationTypeMaxEnum
     };
     enum TransformCoordinateType {
         kTransformCoordinateTypeFirstEnum,
@@ -371,21 +366,21 @@ public:
     const IEffect *passiveEffect() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     IEffect *passiveEffect() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setPassiveEffect(IEffect *value) NANOEM_DECL_OVERRIDE;
+    const model::IGizmo *gizmo() const NANOEM_DECL_NOEXCEPT;
+    model::IGizmo *gizmo();
+    void setGizmo(model::IGizmo *value);
+    const model::IVertexWeightBrush *vertexWeightBrush() const NANOEM_DECL_NOEXCEPT;
+    model::IVertexWeightBrush *vertexWeightBrush();
+    void setVertexWeightBrush(model::IVertexWeightBrush *value);
     UserData userData() const;
     void setUserData(const UserData &value);
     AxisType transformAxisType() const NANOEM_DECL_NOEXCEPT;
     void setTransformAxisType(AxisType value);
     EditActionType editActionType() const NANOEM_DECL_NOEXCEPT;
     void setEditActionType(EditActionType value);
-    TransformCoordinateType gizmoTransformCoordinateType() const NANOEM_DECL_NOEXCEPT;
-    void setGizmoTransformCoordinateType(TransformCoordinateType value);
-    GizmoOperationType gizmoOperationType() const NANOEM_DECL_NOEXCEPT;
-    void setGizmoOperationType(GizmoOperationType value);
     TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     void setTransformCoordinateType(TransformCoordinateType value);
     void toggleTransformCoordinateType();
-    Matrix4x4 pivotMatrix() const NANOEM_DECL_NOEXCEPT;
-    void setPivotMatrix(const Matrix4x4 &value);
     Vector4 edgeColor() const NANOEM_DECL_NOEXCEPT;
     void setEdgeColor(const Vector4 &value);
     nanoem_f32_t edgeSize() const NANOEM_DECL_NOEXCEPT;
@@ -560,6 +555,8 @@ private:
     IModelObjectSelection *m_selection;
     internal::LineDrawer *m_drawer;
     model::ISkinDeformer *m_skinDeformer;
+    model::IGizmo *m_gizmo;
+    model::IVertexWeightBrush *m_vertexWeightBrush;
     OffscreenPassiveRenderTargetEffectMap m_offscreenPassiveRenderTargetEffects;
     DrawArrayBuffer m_drawAllVertexNormals;
     DrawArrayBuffer m_drawAllVertexPoints;
@@ -600,10 +597,7 @@ private:
     StringMap m_annotations;
     sg_buffer m_vertexBuffers[2];
     sg_buffer m_indexBuffer;
-    Matrix4x4 m_pivotMatrix;
     Vector4 m_edgeColor;
-    GizmoOperationType m_gizmoOperationType;
-    TransformCoordinateType m_gizmoTransformCoordinateType;
     AxisType m_transformAxisType;
     EditActionType m_editActionType;
     TransformCoordinateType m_transformCoordinateType;

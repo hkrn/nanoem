@@ -6,6 +6,7 @@
 
 #include "emapp/command/MoveAllSelectedModelObjectsCommand.h"
 
+#include "emapp/model/IGizmo.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "nanoem/ext/mutable.h"
@@ -359,7 +360,7 @@ MoveAllSelectedModelObjectsCommand::State::reset()
 void
 MoveAllSelectedModelObjectsCommand::State::setPivotMatrix(const Matrix4x4 &value)
 {
-    m_activeModel->setPivotMatrix(value);
+    m_activeModel->gizmo()->setPivotMatrix(value);
 }
 
 Matrix4x4
@@ -424,7 +425,7 @@ MoveAllSelectedModelObjectsCommand::MoveAllSelectedModelObjectsCommand(
     , m_state(activeModel)
     , m_transformMatrix(transformMatrix)
     , m_lastPivotMatrix(pivotMatrix)
-    , m_currentPivotMatrix(activeModel->pivotMatrix())
+    , m_currentPivotMatrix(activeModel->gizmo()->pivotMatrix())
 {
 }
 
