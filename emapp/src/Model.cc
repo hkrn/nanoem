@@ -4456,7 +4456,7 @@ Model::drawAllVertexWeights()
             else {
                 Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
             }
-            Vector3 color(Constants::kZeroV3);
+            Vector3 color(0.25f);
             nanoem_f32_t opacity = vertex->isEditingMasked() || enableBlending ? 0.0f : 1.0f;
             for (nanoem_rsize_t j = 0; j < 4; j++) {
                 const model::Bone *bone = vertex->bone(j);
