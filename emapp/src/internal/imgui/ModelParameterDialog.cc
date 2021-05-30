@@ -1483,12 +1483,21 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numVertices > 0 && m_vertexIndex < numVertices) {
+    if (selection->countAllVertices() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchVertexChangePane(project);
+    }
+    else if (numVertices > 0 && m_vertexIndex < numVertices) {
         nanoem_model_vertex_t *vertexPtr = vertices[m_vertexIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutVertexPropertyPane(vertexPtr);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchVertexChangePane(Project *project)
+{
 }
 
 void
@@ -1784,7 +1793,11 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numFaces > 0 && m_faceIndex < numFaces) {
+    if (selection->countAllFaces() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchFaceChangePane(project);
+    }
+    else if (numFaces > 0 && m_faceIndex < numFaces) {
         const nanoem_rsize_t offset = m_faceIndex * 3;
         const nanoem_u32_t vertexIndex0 = vertexIndices[offset + 0], vertexIndex1 = vertexIndices[offset + 1],
                            vertexIndex2 = vertexIndices[offset + 2];
@@ -1793,6 +1806,11 @@ ModelParameterDialog::layoutAllFaces(Project *project)
         layoutFacePropertyPane(face);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchFaceChangePane(Project *project)
+{
 }
 
 void
@@ -1929,12 +1947,21 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numMaterials > 0 && m_materialIndex < numMaterials) {
+    if (selection->countAllMaterials() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchMaterialChangePane(project);
+    }
+    else if (numMaterials > 0 && m_materialIndex < numMaterials) {
         nanoem_model_material_t *materialPtr = materials[m_materialIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutMaterialPropertyPane(materialPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchMaterialChangePane(Project *project)
+{
 }
 
 void
@@ -2482,12 +2509,21 @@ ModelParameterDialog::layoutAllBones(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numBones > 0 && m_boneIndex < numBones) {
+    if (selection->countAllBones() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchBoneChangePane(project);
+    }
+    else if (numBones > 0 && m_boneIndex < numBones) {
         nanoem_model_bone_t *bonePtr = bones[m_boneIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutBonePropertyPane(bonePtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchBoneChangePane(Project *project)
+{
 }
 
 void
@@ -3088,12 +3124,21 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numMorphs > 0 && m_morphIndex < numMorphs) {
+    if (selection->countAllMorphs() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchMorphChangePane(project);
+    }
+    else if (numMorphs > 0 && m_morphIndex < numMorphs) {
         nanoem_model_morph_t *morphPtr = morphs[m_morphIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutMorphPropertyPane(morphPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchMorphChangePane(Project *project)
+{
 }
 
 void
@@ -3975,12 +4020,21 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numLabels > 0 && m_labelIndex < numLabels) {
+    if (selection->countAllLabels() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchLabelChangePane(project);
+    }
+    else if (numLabels > 0 && m_labelIndex < numLabels) {
         nanoem_model_label_t *labelPtr = labels[m_labelIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutLabelPropertyPane(labelPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchLabelChangePane(Project *project)
+{
 }
 
 void
@@ -4215,12 +4269,21 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies) {
+    if (selection->countAllRigidBodies() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchRigidBodyChangePane(project);
+    }
+    else if (numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies) {
         nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[m_rigidBodyIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutRigidBodyPropertyPane(rigidBodyPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchRigidBodyChangePane(Project *project)
+{
 }
 
 void
@@ -4504,12 +4567,21 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numJoints > 0 && m_jointIndex < numJoints) {
+    if (selection->countAllJoints() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchJointChangePane(project);
+    }
+    else if (numJoints > 0 && m_jointIndex < numJoints) {
         nanoem_model_joint_t *jointPtr = joints[m_jointIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutJointPropertyPane(jointPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchJointChangePane(Project *project)
+{
 }
 
 void
@@ -4760,12 +4832,21 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     ImGui::EndChild(); /* left-pane */
     ImGui::SameLine();
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
-    if (numSoftBodies > 0 && m_softBodyIndex < numSoftBodies) {
+    if (selection->countAllSoftBodies() > 1) {
+        ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
+        layoutBatchSoftBodyChangePane(project);
+    }
+    else if (numSoftBodies > 0 && m_softBodyIndex < numSoftBodies) {
         nanoem_model_soft_body_t *softBodyPtr = softBodies[m_softBodyIndex];
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         layoutSoftBodyPropertyPane(softBodyPtr, project);
     }
     ImGui::EndChild(); /* right-pane */
+}
+
+void
+ModelParameterDialog::layoutBatchSoftBodyChangePane(Project *project)
+{
 }
 
 void

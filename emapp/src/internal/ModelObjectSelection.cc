@@ -379,6 +379,12 @@ ModelObjectSelection::countAllSoftBodies() const NANOEM_DECL_NOEXCEPT
     return m_selectedSoftBodySet.size();
 }
 
+nanoem_rsize_t
+ModelObjectSelection::countAllFaces() const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedFaceSet.size();
+}
+
 model::Vertex::Set
 ModelObjectSelection::allVertexSet() const
 {

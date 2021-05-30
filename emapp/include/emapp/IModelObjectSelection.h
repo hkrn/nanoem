@@ -92,6 +92,7 @@ public:
     virtual nanoem_rsize_t countAllRigidBodies() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_rsize_t countAllJoints() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllFaces() const NANOEM_DECL_NOEXCEPT = 0;
 
     virtual model::Vertex::Set allVertexSet() const = 0;
     virtual model::Bone::Set allBoneSet() const = 0;

@@ -87,10 +87,13 @@ private:
         nanoem_model_bone_t *const *bones, nanoem_rsize_t numBones);
     void layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t numItems);
     void layoutAllVertices(Project *project);
+    void layoutBatchVertexChangePane(Project *project);
     void layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr);
     void layoutAllFaces(Project *project);
+    void layoutBatchFaceChangePane(Project *project);
     void layoutFacePropertyPane(const Vector3UI32 &face);
     void layoutAllMaterials(Project *project);
+    void layoutBatchMaterialChangePane(Project *project);
     void layoutMaterialPropertyPane(nanoem_model_material_t *materialPtr, Project *project);
     void layoutMaterialDiffuseImage(
         const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr);
@@ -98,10 +101,12 @@ private:
         const IImageView *image, const String &filename, const nanoem_model_material_t *activeMaterialPtr);
     void layoutMaterialToonImage(const IImageView *image, const String &filename);
     void layoutAllBones(Project *project);
+    void layoutBatchBoneChangePane(Project *project);
     void layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Project *project);
     void layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Project *project);
     void layoutBoneInternalParametersPanel(const nanoem_model_bone_t *bonePtr);
     void layoutAllMorphs(Project *project);
+    void layoutBatchMorphChangePane(Project *project);
     void layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Project *project);
     void layoutMorphBonePropertyPane(
         const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
@@ -117,12 +122,16 @@ private:
     void layoutMorphVertexPropertyPane(
         const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project);
     void layoutAllLabels(Project *project);
+    void layoutBatchLabelChangePane(Project *project);
     void layoutLabelPropertyPane(nanoem_model_label_t *labelPtr, Project *project);
     void layoutAllRigidBodies(Project *project);
+    void layoutBatchRigidBodyChangePane(Project *project);
     void layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rigidBodyPtr, Project *project);
     void layoutAllJoints(Project *project);
+    void layoutBatchJointChangePane(Project *project);
     void layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Project *project);
     void layoutAllSoftBodies(Project *project);
+    void layoutBatchSoftBodyChangePane(Project *project);
     void layoutSoftBodyPropertyPane(nanoem_model_soft_body_t *softBodyPtr, Project *project);
     bool layoutName(const nanoem_unicode_string_t *namePtr, Project *project, StringUtils::UnicodeStringScope &scope);
     void layoutTextWithParentBoneValidation(const nanoem_model_bone_t *bonePtr,

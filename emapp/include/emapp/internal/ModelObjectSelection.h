@@ -60,6 +60,7 @@ public:
     nanoem_rsize_t countAllRigidBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_rsize_t countAllJoints() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllFaces() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     model::Vertex::Set allVertexSet() const NANOEM_DECL_OVERRIDE;
     model::Bone::Set allBoneSet() const NANOEM_DECL_OVERRIDE;
