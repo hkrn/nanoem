@@ -32,6 +32,7 @@
 #include "emapp/Progress.h"
 #include "emapp/ResourceBundle.h"
 #include "emapp/StringUtils.h"
+#include "emapp/command/ModelObjectCommand.h"
 #include "emapp/command/UpdateCameraCommand.h"
 #include "emapp/internal/AccessoryValueState.h"
 #include "emapp/internal/BoneValueState.h"
@@ -290,6 +291,7 @@ private:
 
     const nanoem_model_bone_t *m_activeBonePtr;
     Model *m_model;
+    command::PaintVertexWeightCommand::BoneMappingStateMap m_mappings;
     nanoem_f32_t m_radius;
     nanoem_f32_t m_delta;
     bool m_protectBDEF1Enabled;
@@ -344,6 +346,19 @@ VertexWeightBrush::paint(const Vector2SI32 &logicalScaleCursorPosition)
 void
 VertexWeightBrush::end()
 {
+    for (command::PaintVertexWeightCommand::BoneMappingStateMap::iterator it = m_mappings.begin(),
+                                                                          end = m_mappings.end();
+         it != end; ++it) {
+        const nanoem_model_vertex_t *vertexPtr = it->first;
+        command::PaintVertexWeightCommand::BoneMappingState &origin = it->second.first;
+        for (nanoem_rsize_t i = 0; i < 4; i++) {
+            origin.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
+            origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
+        }
+    }
+    Project *project = m_model->project();
+    undo_command_t *command = command::PaintVertexWeightCommand::create(m_model, m_mappings);
+    m_model->pushUndo(command);
 }
 
 const nanoem_model_bone_t *
@@ -411,6 +426,17 @@ VertexWeightBrush::paintVertex(const model::IVertexWeightBrush *brush, nanoem_mo
     nanoem_status_t *status)
 {
     nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
+    command::PaintVertexWeightCommand::BoneMappingStateMap::const_iterator it = m_mappings.find(vertexPtr);
+    if (it == m_mappings.end()) {
+        command::PaintVertexWeightCommand::BoneMappingStatePair states;
+        Inline::clearZeroMemory(states.first);
+        command::PaintVertexWeightCommand::BoneMappingState &origin = states.second;
+        for (nanoem_rsize_t i = 0; i < 4; i++) {
+            origin.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
+            origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
+        }
+        m_mappings.insert(tinystl::make_pair(vertexPtr, states));
+    }
     switch (nanoemModelVertexGetType(vertexPtr)) {
     case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
         if (!brush->isProtectBDEF1Enabled()) {
@@ -479,10 +505,10 @@ void
 VertexWeightBrush::updateVertex(nanoem_model_vertex_t *vertexPtr)
 {
     if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+        const Vector4 weight(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
+            nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
         vertex->setupBoneBinding(vertexPtr, m_model);
-        vertex->m_simd.m_weights =
-            bx::simd_ld(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
-                nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
+        vertex->m_simd.m_weights = bx::simd_ld(glm::value_ptr(weight));
     }
 }
 

@@ -253,6 +253,34 @@ private:
     JointList m_jointsB;
 };
 
+class PaintVertexWeightCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct BoneMappingState {
+        const nanoem_model_bone_t *m_bones[4];
+        Vector4 m_weights;
+    };
+    typedef tinystl::pair<BoneMappingState, BoneMappingState> BoneMappingStatePair;
+    typedef tinystl::unordered_map<nanoem_model_vertex_t *, BoneMappingStatePair, TinySTLAllocator> BoneMappingStateMap;
+
+    static undo_command_t *create(Model *activeModel, const BoneMappingStateMap &mappings);
+
+    PaintVertexWeightCommand(Model *activeModel, const BoneMappingStateMap &mappings);
+    ~PaintVertexWeightCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    void setBoneWeight(nanoem_model_vertex_t *vertexPtr, const BoneMappingState &state, nanoem_status_t *status);
+
+    Model *m_activeModel;
+    BoneMappingStateMap m_mappings;
+};
+
 class CreateMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     typedef tinystl::vector<nanoem_mutable_model_vertex_t *, TinySTLAllocator> MutableVertexList;

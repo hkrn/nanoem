@@ -833,6 +833,89 @@ DeletingRigidBodyState::restore(const nanoem_model_rigid_body_t *rigidBodyPtr)
 }
 
 undo_command_t *
+PaintVertexWeightCommand::create(Model *activeModel, const BoneMappingStateMap &mappings)
+{
+    PaintVertexWeightCommand *command = nanoem_new(PaintVertexWeightCommand(activeModel, mappings));
+    return command->createCommand();
+}
+
+PaintVertexWeightCommand::PaintVertexWeightCommand(Model *activeModel, const BoneMappingStateMap &mappings)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+    , m_mappings(mappings)
+{
+}
+
+PaintVertexWeightCommand::~PaintVertexWeightCommand() NANOEM_DECL_NOEXCEPT
+{
+}
+
+void
+PaintVertexWeightCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (BoneMappingStateMap::const_iterator it = m_mappings.begin(), end = m_mappings.end(); it != end; ++it) {
+        nanoem_model_vertex_t *vertexPtr = it->first;
+        const BoneMappingState &state = it->second.second;
+        setBoneWeight(vertexPtr,state, &status);
+    }
+    assignError(status, error);
+}
+
+void
+PaintVertexWeightCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (BoneMappingStateMap::const_iterator it = m_mappings.begin(), end = m_mappings.end(); it != end; ++it) {
+        nanoem_model_vertex_t *vertexPtr = it->first;
+        const BoneMappingState &state = it->second.first;
+        setBoneWeight(vertexPtr, state, &status);
+    }
+    assignError(status, error);
+}
+
+void
+PaintVertexWeightCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+PaintVertexWeightCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+PaintVertexWeightCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+PaintVertexWeightCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "PaintVertexWeightCommand";
+}
+
+void
+PaintVertexWeightCommand::setBoneWeight(nanoem_model_vertex_t *vertexPtr, const BoneMappingState &state, nanoem_status_t *status)
+{
+    nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
+    for (nanoem_rsize_t i = 0; i < 4; i++) {
+        nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, state.m_bones[i], i);
+        nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, state.m_weights[i], i);
+    }
+    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+        vertex->setupBoneBinding(vertexPtr, m_activeModel);
+        vertex->m_simd.m_weights =
+            bx::simd_ld(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
+                nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
+    }
+    nanoemMutableModelVertexDestroy(mutableVertexPtr);
+}
+
+undo_command_t *
 CreateMaterialCommand::create(
     Model *activeModel, const String &name, const MutableVertexList &vertices, const VertexIndexList &vertexIndices)
 {
