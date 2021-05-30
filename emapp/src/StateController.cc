@@ -1947,7 +1947,7 @@ BaseCreatingBoneState::onRelease(const Vector3SI32 &logicalCursorPosition, Error
     BX_UNUSED_2(logicalCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         if (Model *activeModel = project->activeModel()) {
-            undo_command_t *command = command::AddBoneCommand::create(project, m_destinationBone);
+            undo_command_t *command = command::AddBoneCommand::create(activeModel, m_destinationBone);
             activeModel->pushUndo(command);
             m_destinationBone = nullptr;
         }

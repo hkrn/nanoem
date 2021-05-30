@@ -25,9 +25,9 @@ namespace command {
 
 class TransformModelCommand : public BaseUndoCommand {
 public:
-    static undo_command_t *create(Project *project, const Matrix4x4 &transform);
+    static undo_command_t *create(Model *activeModel, const Matrix4x4 &transform);
 
-    TransformModelCommand(Project *project, const Matrix4x4 &transform);
+    TransformModelCommand(Model *activeModel, const Matrix4x4 &transform);
     ~TransformModelCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;

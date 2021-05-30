@@ -16,15 +16,15 @@ namespace nanoem {
 namespace command {
 
 undo_command_t *
-TransformModelCommand::create(Project *project, const Matrix4x4 &transform)
+TransformModelCommand::create(Model *activeModel, const Matrix4x4 &transform)
 {
-    TransformModelCommand *command = nanoem_new(TransformModelCommand(project, transform));
+    TransformModelCommand *command = nanoem_new(TransformModelCommand(activeModel, transform));
     return command->createCommand();
 }
 
-TransformModelCommand::TransformModelCommand(Project *project, const Matrix4x4 &transform)
-    : BaseUndoCommand(project)
-    , m_activeModel(project->activeModel())
+TransformModelCommand::TransformModelCommand(Model *activeModel, const Matrix4x4 &transform)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
     , m_transform(transform)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;

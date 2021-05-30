@@ -136,8 +136,9 @@ CreateBoneMorphFromBindPoseCallback::handleAccept(const URI &fileURI, Project *p
         nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
         if (bindPose.load(bytes, factory, transforms, weights, error)) {
             ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+            Model *activeModel = project->activeModel();
             undo_command_t *command =
-                command::CreateBoneMorphFromPoseCommand::create(project, transforms, fileURI.lastPathComponent());
+                command::CreateBoneMorphFromPoseCommand::create(activeModel, transforms, fileURI.lastPathComponent());
             parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
     }
@@ -177,8 +178,9 @@ CreateVertexMorphFromModelCallback::handleAccept(const URI &fileURI, Project *pr
             nanoemModelGetAllVertexObjects(model, &numVertices);
             nanoemModelGetAllVertexObjects(project->activeModel()->data(), &numActualVertices);
             if (numVertices == numActualVertices) {
+                Model *activeModel = project->activeModel();
                 undo_command_t *command =
-                    command::CreateVertexMorphFromModelCommand::create(project, model, fileURI.lastPathComponent());
+                    command::CreateVertexMorphFromModelCommand::create(activeModel, model, fileURI.lastPathComponent());
                 parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
         }
@@ -254,8 +256,9 @@ CreateMaterialFromOBJFileCallback::handleAccept(const URI &fileURI, Project *pro
         }
         if (status == NANOEM_STATUS_SUCCESS) {
             ImGuiWindow *parent = static_cast<ImGuiWindow *>(opaque);
+            Model *activeModel = project->activeModel();
             undo_command_t *command =
-                command::CreateMaterialCommand::create(project, fileURI.lastPathComponent(), vertices, indices);
+                command::CreateMaterialCommand::create(activeModel, fileURI.lastPathComponent(), vertices, indices);
             parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         else {
@@ -1236,7 +1239,7 @@ ModelParameterDialog::layoutHeightBasedBatchTransformPane(Project *project)
     if (ImGuiWindow::handleButton(
             tr("nanoem.gui.model.edit.measure.transform.apply"), size.x, scaleFactor > 1.0f || scaleFactor < 1.0f)) {
         const Matrix4x4 transformModelMatrix(glm::scale(Constants::kIdentity, Vector3(scaleFactor)));
-        undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
+        undo_command_t *command = command::TransformModelCommand::create(m_activeModel, transformModelMatrix);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
@@ -1266,7 +1269,7 @@ ModelParameterDialog::layoutNumericInputBatchTransformPane(Project *project)
             rotateMatrix(rotateZ * rotateY * rotateX),
             translateMatrix(glm::translate(Constants::kIdentity, m_savedTranslation)),
             transformModelMatrix(scaleMatrix * rotateMatrix * translateMatrix);
-        undo_command_t *command = command::TransformModelCommand::create(project, transformModelMatrix);
+        undo_command_t *command = command::TransformModelCommand::create(m_activeModel, transformModelMatrix);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
@@ -1929,19 +1932,19 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     const bool isSingleMaterialSelected = selection->countAllMaterials() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_materialIndex < numMaterials && isSingleMaterialSelected)) {
-        undo_command_t *command = command::DeleteMaterialCommand::create(project, materials, m_materialIndex);
+        undo_command_t *command = command::DeleteMaterialCommand::create(m_activeModel, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0,
             m_materialIndex > 0 && isSingleMaterialSelected)) {
-        undo_command_t *command = command::MoveMaterialUpCommand::create(project, materials, m_materialIndex);
+        undo_command_t *command = command::MoveMaterialUpCommand::create(m_activeModel, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numMaterials > 0 && m_materialIndex < numMaterials - 1 && isSingleMaterialSelected)) {
-        undo_command_t *command = command::MoveMaterialDownCommand::create(project, materials, m_materialIndex);
+        undo_command_t *command = command::MoveMaterialDownCommand::create(m_activeModel, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -2491,19 +2494,19 @@ ModelParameterDialog::layoutAllBones(Project *project)
     const bool isSingleBoneSelected = selection->countAllBones() == 1;
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0, m_boneIndex < numBones && isSingleBoneSelected)) {
-        undo_command_t *command = command::DeleteBoneCommand::create(project, m_boneIndex);
+        undo_command_t *command = command::DeleteBoneCommand::create(m_activeModel, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_boneIndex > 0 && isSingleBoneSelected)) {
-        undo_command_t *command = command::MoveBoneUpCommand::create(project, m_boneIndex);
+        undo_command_t *command = command::MoveBoneUpCommand::create(m_activeModel, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numBones > 0 && m_boneIndex < numBones - 1 && isSingleBoneSelected)) {
-        undo_command_t *command = command::MoveBoneDownCommand::create(project, m_boneIndex);
+        undo_command_t *command = command::MoveBoneDownCommand::create(m_activeModel, m_boneIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -3106,19 +3109,19 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     const bool isSingleMorphSelected = selection->countAllMorphs() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_morphIndex < numMorphs && isSingleMorphSelected)) {
-        undo_command_t *command = command::DeleteMorphCommand::create(project, m_morphIndex);
+        undo_command_t *command = command::DeleteMorphCommand::create(m_activeModel, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_morphIndex > 0 && isSingleMorphSelected)) {
-        undo_command_t *command = command::MoveMorphUpCommand::create(project, m_morphIndex);
+        undo_command_t *command = command::MoveMorphUpCommand::create(m_activeModel, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numMorphs > 0 && m_morphIndex < numMorphs - 1 && isSingleMorphSelected)) {
-        undo_command_t *command = command::MoveMorphDownCommand::create(project, m_morphIndex);
+        undo_command_t *command = command::MoveMorphDownCommand::create(m_activeModel, m_morphIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4002,19 +4005,19 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     const bool isSingleLabelSelected = selection->countAllLabels() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             isEditable && m_labelIndex < numLabels && isSingleLabelSelected)) {
-        undo_command_t *command = command::DeleteLabelCommand::create(project, m_labelIndex);
+        undo_command_t *command = command::DeleteLabelCommand::create(m_activeModel, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, isEditable && isSingleLabelSelected)) {
-        undo_command_t *command = command::MoveLabelUpCommand::create(project, m_labelIndex);
+        undo_command_t *command = command::MoveLabelUpCommand::create(m_activeModel, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             isEditable && numLabels > 0 && m_labelIndex < numLabels - 1 && isSingleLabelSelected)) {
-        undo_command_t *command = command::MoveLabelDownCommand::create(project, m_labelIndex);
+        undo_command_t *command = command::MoveLabelDownCommand::create(m_activeModel, m_labelIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4251,19 +4254,19 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     const bool isSingleRigidBodySelected = selection->countAllRigidBodies() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_rigidBodyIndex < numRigidBodies && isSingleRigidBodySelected)) {
-        undo_command_t *command = command::DeleteRigidBodyCommand::create(project, m_rigidBodyIndex);
+        undo_command_t *command = command::DeleteRigidBodyCommand::create(m_activeModel, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0,
             m_rigidBodyIndex > 0 && isSingleRigidBodySelected)) {
-        undo_command_t *command = command::MoveRigidBodyUpCommand::create(project, m_rigidBodyIndex);
+        undo_command_t *command = command::MoveRigidBodyUpCommand::create(m_activeModel, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies - 1 && isSingleRigidBodySelected)) {
-        undo_command_t *command = command::MoveRigidBodyDownCommand::create(project, m_rigidBodyIndex);
+        undo_command_t *command = command::MoveRigidBodyDownCommand::create(m_activeModel, m_rigidBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4549,19 +4552,19 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     const bool isSingleJointSelected = selection->countAllJoints() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_jointIndex < numJoints && isSingleJointSelected)) {
-        undo_command_t *command = command::DeleteJointCommand::create(project, m_jointIndex);
+        undo_command_t *command = command::DeleteJointCommand::create(m_activeModel, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0, m_jointIndex > 0 && isSingleJointSelected)) {
-        undo_command_t *command = command::MoveJointUpCommand::create(project, m_jointIndex);
+        undo_command_t *command = command::MoveJointUpCommand::create(m_activeModel, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numJoints > 0 && m_jointIndex < numJoints - 1 && isSingleJointSelected)) {
-        undo_command_t *command = command::MoveJointDownCommand::create(project, m_jointIndex);
+        undo_command_t *command = command::MoveJointDownCommand::create(m_activeModel, m_jointIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -4814,19 +4817,19 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     const bool isSingleSoftBodySelected = selection->countAllSoftBodies() == 1;
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAMinus), 0,
             m_softBodyIndex < numSoftBodies && isSingleSoftBodySelected)) {
-        undo_command_t *command = command::DeleteSoftBodyCommand::create(project, m_softBodyIndex);
+        undo_command_t *command = command::DeleteSoftBodyCommand::create(m_activeModel, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowUp), 0,
             m_softBodyIndex > 0 && isSingleSoftBodySelected)) {
-        undo_command_t *command = command::MoveSoftBodyUpCommand::create(project, m_softBodyIndex);
+        undo_command_t *command = command::MoveSoftBodyUpCommand::create(m_activeModel, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(reinterpret_cast<const char *>(ImGuiWindow::kFAArrowDown), 0,
             numSoftBodies > 0 && m_softBodyIndex < numSoftBodies - 1 && isSingleSoftBodySelected)) {
-        undo_command_t *command = command::MoveSoftBodyDownCommand::create(project, m_softBodyIndex);
+        undo_command_t *command = command::MoveSoftBodyDownCommand::create(m_activeModel, m_softBodyIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
     ImGui::EndChild(); /* left-pane */
@@ -5484,7 +5487,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
                 max = glm::max(max, origin);
             }
             const Vector3 center((min + max) * 0.5f);
-            undo_command_t *command = command::CreateBoneCommand::create(project, center);
+            undo_command_t *command = command::CreateBoneCommand::create(m_activeModel, center);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -5499,7 +5502,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_VERTEX) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddVertexToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddVertexToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -5515,7 +5518,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_TEXTURE) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddVertexToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddVertexToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -5564,7 +5567,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
                         const model::Material *material = model::Material::cast(materialPtr);
                         if (ImGui::MenuItem(material->nameConstString())) {
                             undo_command_t *command =
-                                command::CopyMaterialFromModelCommand::create(project, model, materialPtr);
+                                command::CopyMaterialFromModelCommand::create(m_activeModel, model, materialPtr);
                             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                         }
                     }
@@ -5752,7 +5755,7 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_MATERIAL) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddMaterialToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddMaterialToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -5764,7 +5767,7 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
     ImGui::Separator();
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.merge"), nullptr, false,
             selection->countAllMaterials() == 1 && m_materialIndex > 0)) {
-        undo_command_t *command = command::MergeMaterialCommand::create(project, materials, m_materialIndex);
+        undo_command_t *command = command::MergeMaterialCommand::create(m_activeModel, materials, m_materialIndex);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
 }
@@ -5779,24 +5782,24 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
     int selectedBoneIndex = model::Bone::index(selectedBonePtr);
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.new.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateBoneCommand::create(project, -1, nullptr);
+            undo_command_t *command = command::CreateBoneCommand::create(m_activeModel, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_boneIndex < numBones)) {
-            undo_command_t *command = command::CreateBoneCommand::create(project, selectedBoneIndex + 1, nullptr);
+            undo_command_t *command = command::CreateBoneCommand::create(m_activeModel, selectedBoneIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.copy.title"), m_boneIndex < numBones)) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateBoneCommand::create(project, -1, selectedBonePtr);
+            undo_command_t *command = command::CreateBoneCommand::create(m_activeModel, -1, selectedBonePtr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
             undo_command_t *command =
-                command::CreateBoneCommand::create(project, selectedBoneIndex + 1, selectedBonePtr);
+                command::CreateBoneCommand::create(m_activeModel, selectedBoneIndex + 1, selectedBonePtr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -5806,7 +5809,7 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
         StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.destination"),
             selectedBone->nameConstString());
         if (ImGui::MenuItem(buffer)) {
-            undo_command_t *command = command::CreateBoneAsDestinationCommand::create(project, selectedBonePtr);
+            undo_command_t *command = command::CreateBoneAsDestinationCommand::create(m_activeModel, selectedBonePtr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.bone.create.staging"))) {
@@ -5814,13 +5817,13 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
             StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.staging.parent"),
                 selectedBone->nameConstString());
             if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
-                undo_command_t *command = command::CreateBoneAsStagingParentCommand::create(project, selectedBonePtr);
+                undo_command_t *command = command::CreateBoneAsStagingParentCommand::create(m_activeModel, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.staging.child"),
                 selectedBone->nameConstString());
             if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
-                undo_command_t *command = command::CreateBoneAsStagingChildCommand::create(project, selectedBonePtr);
+                undo_command_t *command = command::CreateBoneAsStagingChildCommand::create(m_activeModel, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -5972,7 +5975,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
                 if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(bonePtr)) {
                     const model::Constraint *constraint = model::Constraint::cast(constraintPtr);
                     if (constraint && ImGui::MenuItem(constraint->nameConstString())) {
-                        undo_command_t *command = command::AddBoneToConstraintCommand::create(project, constraintPtr);
+                        undo_command_t *command = command::AddBoneToConstraintCommand::create(m_activeModel, constraintPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -5990,7 +5993,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
                 if (!nanoemModelLabelIsSpecial(labelPtr)) {
                     const model::Label *label = model::Label::cast(labelPtr);
                     if (label && ImGui::MenuItem(label->nameConstString())) {
-                        undo_command_t *command = command::AddBoneToLabelCommand::create(project, labelPtr);
+                        undo_command_t *command = command::AddBoneToLabelCommand::create(m_activeModel, labelPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6009,7 +6012,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddBoneToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddBoneToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6031,12 +6034,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.bone"))) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_BONE;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6044,12 +6047,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.group"))) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_GROUP;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6057,12 +6060,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.material"))) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_MATERIAL;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6070,12 +6073,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.texture"))) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_TEXTURE;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6083,12 +6086,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.vertex"))) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_VERTEX;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6097,12 +6100,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.flip"), isPMX21())) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_FLIP;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6110,12 +6113,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         if (ImGui::BeginMenu(tr("nanoem.gui.window.model.menu.type.impulse"), isPMX21())) {
             const nanoem_model_morph_type_t type = NANOEM_MODEL_MORPH_TYPE_IMPULUSE;
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-                undo_command_t *command = command::CreateMorphCommand::create(project, -1, nullptr, type);
+                undo_command_t *command = command::CreateMorphCommand::create(m_activeModel, -1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
                 undo_command_t *command =
-                    command::CreateMorphCommand::create(project, selectedMorphIndex + 1, nullptr, type);
+                    command::CreateMorphCommand::create(m_activeModel, selectedMorphIndex + 1, nullptr, type);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6125,12 +6128,12 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.copy.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
             undo_command_t *command =
-                command::CreateMorphCommand::create(project, -1, selectedMorph, NANOEM_MODEL_MORPH_TYPE_UNKNOWN);
+                command::CreateMorphCommand::create(m_activeModel, -1, selectedMorph, NANOEM_MODEL_MORPH_TYPE_UNKNOWN);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
             undo_command_t *command = command::CreateMorphCommand::create(
-                project, selectedMorphIndex + 1, selectedMorph, NANOEM_MODEL_MORPH_TYPE_UNKNOWN);
+                m_activeModel, selectedMorphIndex + 1, selectedMorph, NANOEM_MODEL_MORPH_TYPE_UNKNOWN);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -6283,7 +6286,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
                 if (!nanoemModelLabelIsSpecial(labelPtr)) {
                     const model::Label *label = model::Label::cast(labelPtr);
                     if (label && ImGui::MenuItem(label->nameConstString())) {
-                        undo_command_t *command = command::AddMorphToLabelCommand::create(project, labelPtr);
+                        undo_command_t *command = command::AddMorphToLabelCommand::create(m_activeModel, labelPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6302,7 +6305,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_GROUP) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddGroupToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddGroupToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6318,7 +6321,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_FLIP) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddFlipToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddFlipToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6337,24 +6340,24 @@ ModelParameterDialog::layoutCreateLabelMenu(Project *project, const nanoem_model
     int selectedLabelIndex = model::Label::index(selectedLabel);
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.new.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateLabelCommand::create(project, -1, nullptr);
+            undo_command_t *command = command::CreateLabelCommand::create(m_activeModel, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_labelIndex < numLabels)) {
-            undo_command_t *command = command::CreateLabelCommand::create(project, selectedLabelIndex + 1, nullptr);
+            undo_command_t *command = command::CreateLabelCommand::create(m_activeModel, selectedLabelIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.copy.title"), m_labelIndex < numLabels)) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-last"))) {
-            undo_command_t *command = command::CreateLabelCommand::create(project, -1, selectedLabel);
+            undo_command_t *command = command::CreateLabelCommand::create(m_activeModel, -1, selectedLabel);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-last"))) {
             undo_command_t *command =
-                command::CreateLabelCommand::create(project, selectedLabelIndex + 1, selectedLabel);
+                command::CreateLabelCommand::create(m_activeModel, selectedLabelIndex + 1, selectedLabel);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -6424,25 +6427,25 @@ ModelParameterDialog::layoutCreateRigidBodyMenu(Project *project)
     int selectedRigidBodyIndex = model::RigidBody::index(selectedRigidBody);
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.new.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateRigidBodyCommand::create(project, -1, nullptr);
+            undo_command_t *command = command::CreateRigidBodyCommand::create(m_activeModel, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_rigidBodyIndex < numRigidBodies)) {
             undo_command_t *command =
-                command::CreateRigidBodyCommand::create(project, selectedRigidBodyIndex + 1, nullptr);
+                command::CreateRigidBodyCommand::create(m_activeModel, selectedRigidBodyIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.copy.title"), m_rigidBodyIndex < numRigidBodies)) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateRigidBodyCommand::create(project, -1, selectedRigidBody);
+            undo_command_t *command = command::CreateRigidBodyCommand::create(m_activeModel, -1, selectedRigidBody);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
             undo_command_t *command =
-                command::CreateRigidBodyCommand::create(project, selectedRigidBodyIndex + 1, selectedRigidBody);
+                command::CreateRigidBodyCommand::create(m_activeModel, selectedRigidBodyIndex + 1, selectedRigidBody);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -6451,7 +6454,7 @@ ModelParameterDialog::layoutCreateRigidBodyMenu(Project *project)
     const IModelObjectSelection *selection = m_activeModel->selection();
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.rigid-body.create-intermediate-joint"), nullptr, nullptr,
             selection->countAllRigidBodies() == 2)) {
-        undo_command_t *command = command::CreateIntermediateJointFromTwoRigidBodiesCommand::create(project);
+        undo_command_t *command = command::CreateIntermediateJointFromTwoRigidBodiesCommand::create(m_activeModel);
         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
     }
 }
@@ -6529,7 +6532,7 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
                 if (nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_IMPULUSE) {
                     const model::Morph *morph = model::Morph::cast(morphPtr);
                     if (morph && ImGui::MenuItem(morph->nameConstString())) {
-                        undo_command_t *command = command::AddRigidBodyToMorphCommand::create(project, morphPtr);
+                        undo_command_t *command = command::AddRigidBodyToMorphCommand::create(m_activeModel, morphPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6549,24 +6552,24 @@ ModelParameterDialog::layoutCreateJointMenu(Project *project)
     int selectedJointIndex = model::Joint::index(selectedJoint);
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.new.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateJointCommand::create(project, -1, nullptr);
+            undo_command_t *command = command::CreateJointCommand::create(m_activeModel, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_jointIndex < numJoints)) {
-            undo_command_t *command = command::CreateJointCommand::create(project, selectedJointIndex + 1, nullptr);
+            undo_command_t *command = command::CreateJointCommand::create(m_activeModel, selectedJointIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.copy.title"), m_jointIndex < numJoints)) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateJointCommand::create(project, -1, selectedJoint);
+            undo_command_t *command = command::CreateJointCommand::create(m_activeModel, -1, selectedJoint);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
             undo_command_t *command =
-                command::CreateJointCommand::create(project, selectedJointIndex + 1, selectedJoint);
+                command::CreateJointCommand::create(m_activeModel, selectedJointIndex + 1, selectedJoint);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -6658,25 +6661,25 @@ ModelParameterDialog::layoutCreateSoftBodyMenu(Project *project)
     int selectedSoftBodyIndex = model::SoftBody::index(selectedSoftBody);
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.new.title"))) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateSoftBodyCommand::create(project, -1, nullptr);
+            undo_command_t *command = command::CreateSoftBodyCommand::create(m_activeModel, -1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_softBodyIndex < numSoftBodies)) {
             undo_command_t *command =
-                command::CreateSoftBodyCommand::create(project, selectedSoftBodyIndex + 1, nullptr);
+                command::CreateSoftBodyCommand::create(m_activeModel, selectedSoftBodyIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.insert.copy.title"), m_softBodyIndex < numSoftBodies)) {
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.at-last"))) {
-            undo_command_t *command = command::CreateSoftBodyCommand::create(project, -1, selectedSoftBody);
+            undo_command_t *command = command::CreateSoftBodyCommand::create(m_activeModel, -1, selectedSoftBody);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.copy.at-next"))) {
             undo_command_t *command =
-                command::CreateSoftBodyCommand::create(project, selectedSoftBodyIndex + 1, selectedSoftBody);
+                command::CreateSoftBodyCommand::create(m_activeModel, selectedSoftBodyIndex + 1, selectedSoftBody);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
