@@ -2060,13 +2060,6 @@ public:
     bool isGrabbingHandle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
 private:
-    void paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, Model *activeModel, nanoem_status_t *status);
-    void setVertexBoneWeight(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t max,
-        nanoem_mutable_model_vertex_t *mutableVertexPtr);
-    void normalizeVertexBoneWeight(
-        nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
-    void updateVertex(nanoem_model_vertex_t *vertexPtr, Model *activeModel);
-
     StateController *m_stateControllerPtr;
 };
 
@@ -2096,22 +2089,9 @@ PaintVertexWeightState::onMove(const Vector3SI32 &logicalScaleCursorPosition, co
     BX_UNUSED_1(delta);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         project->setLogicalPixelMovingCursorPosition(logicalScaleCursorPosition);
-        const ICamera *camera = project->activeCamera();
-        const Vector2 deviceScaleCursorPosition(
-            Vector2(logicalScaleCursorPosition) * project->windowDevicePixelRatio());
         Model *activeModel = project->activeModel();
-        const model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-        nanoem_rsize_t numVertices;
-        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
-            nanoem_model_vertex_t *vertexPtr = vertices[i];
-            const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
-            const Vector2 cursor(camera->toDeviceScreenCoordinateInWindow(origin));
-            if (glm::distance(deviceScaleCursorPosition, cursor) < brush->radius()) {
-                paintVertex(brush, vertexPtr, activeModel, &status);
-            }
-        }
+        model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
+        brush->paint(logicalScaleCursorPosition);
     }
 }
 
@@ -2142,86 +2122,6 @@ bool
 PaintVertexWeightState::isGrabbingHandle() const NANOEM_DECL_NOEXCEPT
 {
     return false;
-}
-
-void
-PaintVertexWeightState::paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
-    Model *activeModel, nanoem_status_t *status)
-{
-    nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
-    switch (nanoemModelVertexGetType(vertexPtr)) {
-    case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
-        if (!brush->isProtectBDEF1Enabled()) {
-            const nanoem_model_bone_t *activeBone = brush->activeBone();
-            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, activeBone, 0);
-            updateVertex(vertexPtr, activeModel);
-        }
-        break;
-    }
-    case NANOEM_MODEL_VERTEX_TYPE_BDEF2:
-    case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
-        setVertexBoneWeight(brush, vertexPtr, 2, mutableVertexPtr);
-        if (brush->isAutomaticNormalizationEnabled()) {
-            normalizeVertexBoneWeight(vertexPtr, 2, mutableVertexPtr);
-        }
-        updateVertex(vertexPtr, activeModel);
-        break;
-    }
-    case NANOEM_MODEL_VERTEX_TYPE_BDEF4:
-    case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
-        setVertexBoneWeight(brush, vertexPtr, 4, mutableVertexPtr);
-        if (brush->isAutomaticNormalizationEnabled()) {
-            normalizeVertexBoneWeight(vertexPtr, 4, mutableVertexPtr);
-        }
-        updateVertex(vertexPtr, activeModel);
-        break;
-    }
-    default:
-        break;
-    }
-    nanoemMutableModelVertexDestroy(mutableVertexPtr);
-}
-
-void
-PaintVertexWeightState::setVertexBoneWeight(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
-    nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr)
-{
-    const nanoem_model_bone_t *activeBone = brush->activeBone();
-    for (nanoem_rsize_t i = 0; i < max; i++) {
-        if (nanoemModelVertexGetBoneObject(vertexPtr, i) == activeBone) {
-            nanoem_f32_t weight = nanoemModelVertexGetBoneWeight(vertexPtr, i);
-            weight += brush->delta();
-            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, glm::clamp(weight, 0.0f, 1.0f), i);
-            break;
-        }
-    }
-}
-
-void
-PaintVertexWeightState::normalizeVertexBoneWeight(
-    nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr)
-{
-    nanoem_f32_t sum = 0;
-    for (nanoem_rsize_t i = 0; i < max; i++) {
-        sum += nanoemModelVertexGetBoneWeight(vertexPtr, i);
-    }
-    if (sum > 1.0f) {
-        for (nanoem_rsize_t i = 0; i < max; i++) {
-            nanoem_f32_t weight = nanoemModelVertexGetBoneWeight(vertexPtr, i);
-            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, weight / sum, i);
-        }
-    }
-}
-
-void
-PaintVertexWeightState::updateVertex(nanoem_model_vertex_t *vertexPtr, Model *activeModel)
-{
-    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
-        vertex->setupBoneBinding(vertexPtr, activeModel);
-        vertex->m_simd.m_weights =
-            bx::simd_ld(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
-                nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
-    }
 }
 
 class UndoState NANOEM_DECL_SEALED : public BaseState {
