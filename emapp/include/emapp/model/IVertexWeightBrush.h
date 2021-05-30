@@ -20,6 +20,7 @@ public:
     }
 
     virtual void begin() = 0;
+    virtual void paint(const Vector2SI32 &logicalScaleCursorPosition) = 0;
     virtual void end() = 0;
 
     virtual const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT = 0;
