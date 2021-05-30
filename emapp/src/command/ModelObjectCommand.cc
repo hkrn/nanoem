@@ -4508,5 +4508,725 @@ MoveSoftBodyDownCommand::name() const NANOEM_DECL_NOEXCEPT
     return "MoveSoftBodyDownCommand";
 }
 
+undo_command_t *
+BatchChangeAllVertexObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllVertexObjectsCommand *command =
+        nanoem_new(BatchChangeAllVertexObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllVertexObjectsCommand::save(const nanoem_model_vertex_t *vertexPtr, Parameter &parameter)
+{
+    parameter.m_origin = glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr));
+    parameter.m_normal = glm::make_vec3(nanoemModelVertexGetNormal(vertexPtr));
+    parameter.m_texcoord = glm::make_vec2(nanoemModelVertexGetTexCoord(vertexPtr));
+    parameter.m_edgeSize = nanoemModelVertexGetEdgeSize(vertexPtr);
+    parameter.m_type = nanoemModelVertexGetType(vertexPtr);
+    parameter.m_sdefC = glm::make_vec3(nanoemModelVertexGetSdefC(vertexPtr));
+    parameter.m_sdefR0 = glm::make_vec3(nanoemModelVertexGetSdefR0(vertexPtr));
+    parameter.m_sdefR1 = glm::make_vec3(nanoemModelVertexGetSdefR1(vertexPtr));
+    for (nanoem_rsize_t i = 0; i < 4; i++) {
+        parameter.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
+        parameter.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
+        parameter.m_uva[i] = glm::make_vec4(nanoemModelVertexGetAdditionalUV(vertexPtr, i));
+    }
+}
+
+void
+BatchChangeAllVertexObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_vertex_t *vertexPtr)
+{
+    nanoemMutableModelVertexSetOrigin(vertexPtr, glm::value_ptr(Vector4(parameter.m_origin, 1)));
+    nanoemMutableModelVertexSetNormal(vertexPtr, glm::value_ptr(Vector4(parameter.m_normal, 0)));
+    nanoemMutableModelVertexSetTexCoord(vertexPtr, glm::value_ptr(Vector4(parameter.m_texcoord, 0, 0)));
+    nanoemMutableModelVertexSetEdgeSize(vertexPtr, parameter.m_edgeSize);
+    nanoemMutableModelVertexSetType(vertexPtr, parameter.m_type);
+    nanoemMutableModelVertexSetSdefC(vertexPtr, glm::value_ptr(Vector4(parameter.m_sdefC, 0)));
+    nanoemMutableModelVertexSetSdefR0(vertexPtr, glm::value_ptr(Vector4(parameter.m_sdefR0, 0)));
+    nanoemMutableModelVertexSetSdefR1(vertexPtr, glm::value_ptr(Vector4(parameter.m_sdefR1, 0)));
+    for (nanoem_rsize_t i = 0; i < 4; i++) {
+        nanoemMutableModelVertexSetBoneObject(vertexPtr, parameter.m_bones[i], i);
+        nanoemMutableModelVertexSetBoneWeight(vertexPtr, parameter.m_weights[i], i);
+        nanoemMutableModelVertexSetAdditionalUV(vertexPtr, glm::value_ptr(parameter.m_uva[i]), i);
+    }
+}
+
+BatchChangeAllVertexObjectsCommand::BatchChangeAllVertexObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllVertexObjectsCommand::~BatchChangeAllVertexObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllVertexObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableVertex vertex(it->first);
+        restore(it->second, vertex);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllVertexObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableVertex vertex(it->first);
+        restore(m_newParameter, vertex);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllVertexObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllVertexObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllVertexObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllVertexObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllVertexObjectsCommand";
+}
+
+undo_command_t *
+BatchChangeAllMaterialObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllMaterialObjectsCommand *command =
+        nanoem_new(BatchChangeAllMaterialObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::save(const nanoem_model_material_t *materialPtr, Parameter &parameter)
+{
+    parameter.m_ambientColor = glm::make_vec3(nanoemModelMaterialGetAmbientColor(materialPtr));
+    parameter.m_diffuseColor = glm::make_vec3(nanoemModelMaterialGetDiffuseColor(materialPtr));
+    parameter.m_specularColor = glm::make_vec3(nanoemModelMaterialGetSpecularColor(materialPtr));
+    parameter.m_edgeColor = glm::make_vec3(nanoemModelMaterialGetEdgeColor(materialPtr));
+    parameter.m_diffuseOpacity = nanoemModelMaterialGetDiffuseOpacity(materialPtr);
+    parameter.m_specularPower = nanoemModelMaterialGetSpecularPower(materialPtr);
+    parameter.m_edgeOpacity = nanoemModelMaterialGetEdgeOpacity(materialPtr);
+    parameter.m_edgeSize = nanoemModelMaterialGetEdgeSize(materialPtr);
+    parameter.m_isToonShared = nanoemModelMaterialIsToonShared(materialPtr);
+    parameter.m_isCullingDisabled = nanoemModelMaterialIsCullingDisabled(materialPtr);
+    parameter.m_isCastingShadowEnabled = nanoemModelMaterialIsCastingShadowEnabled(materialPtr);
+    parameter.m_isCastingShadowMapEnabled = nanoemModelMaterialIsCastingShadowMapEnabled(materialPtr);
+    parameter.m_isShadowMapEnabled = nanoemModelMaterialIsShadowMapEnabled(materialPtr);
+    parameter.m_isEdgeEnabled = nanoemModelMaterialIsEdgeEnabled(materialPtr);
+    parameter.m_isVertexColorEnabled = nanoemModelMaterialIsVertexColorEnabled(materialPtr);
+    parameter.m_isPointDrawEnabled = nanoemModelMaterialIsPointDrawEnabled(materialPtr);
+    parameter.m_isLineDrawEnabled = nanoemModelMaterialIsLineDrawEnabled(materialPtr);
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_material_t *materialPtr)
+{
+    nanoemMutableModelMaterialSetAmbientColor(materialPtr, glm::value_ptr(Vector4(parameter.m_ambientColor, 0)));
+    nanoemMutableModelMaterialSetDiffuseColor(materialPtr, glm::value_ptr(Vector4(parameter.m_diffuseColor, 0)));
+    nanoemMutableModelMaterialSetSpecularColor(materialPtr, glm::value_ptr(Vector4(parameter.m_specularColor, 0)));
+    nanoemMutableModelMaterialSetEdgeColor(materialPtr, glm::value_ptr(Vector4(parameter.m_edgeColor, 0)));
+    nanoemMutableModelMaterialSetDiffuseOpacity(materialPtr, parameter.m_diffuseOpacity);
+    nanoemMutableModelMaterialSetSpecularPower(materialPtr, parameter.m_specularPower);
+    nanoemMutableModelMaterialSetEdgeOpacity(materialPtr, parameter.m_edgeOpacity);
+    nanoemMutableModelMaterialSetEdgeSize(materialPtr, parameter.m_edgeSize);
+    nanoemMutableModelMaterialSetToonShared(materialPtr, parameter.m_isToonShared);
+    nanoemMutableModelMaterialSetCullingDisabled(materialPtr, parameter.m_isCullingDisabled);
+    nanoemMutableModelMaterialSetCastingShadowEnabled(materialPtr, parameter.m_isCastingShadowEnabled);
+    nanoemMutableModelMaterialSetCastingShadowMapEnabled(materialPtr, parameter.m_isCastingShadowMapEnabled);
+    nanoemMutableModelMaterialSetShadowMapEnabled(materialPtr, parameter.m_isShadowMapEnabled);
+    nanoemMutableModelMaterialSetEdgeEnabled(materialPtr, parameter.m_isEdgeEnabled);
+    nanoemMutableModelMaterialSetVertexColorEnabled(materialPtr, parameter.m_isVertexColorEnabled);
+    nanoemMutableModelMaterialSetPointDrawEnabled(materialPtr, parameter.m_isPointDrawEnabled);
+    nanoemMutableModelMaterialSetLineDrawEnabled(materialPtr, parameter.m_isLineDrawEnabled);
+}
+
+BatchChangeAllMaterialObjectsCommand::BatchChangeAllMaterialObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllMaterialObjectsCommand::~BatchChangeAllMaterialObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableMaterial vertex(it->first);
+        restore(it->second, vertex);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableMaterial vertex(it->first);
+        restore(m_newParameter, vertex);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllMaterialObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllMaterialObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllMaterialObjectsCommand";
+}
+
+undo_command_t *
+BatchChangeAllBoneObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllBoneObjectsCommand *command =
+        nanoem_new(BatchChangeAllBoneObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllBoneObjectsCommand::save(const nanoem_model_bone_t *bonePtr, Parameter &parameter)
+{
+    parameter.m_origin = glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr));
+    parameter.m_destinationOrigin = glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr));
+    parameter.m_fixedAxis = glm::make_vec3(nanoemModelBoneGetFixedAxis(bonePtr));
+    parameter.m_localAxisX = glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr));
+    parameter.m_localAxisZ = glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr));
+    parameter.m_parentBone = nanoemModelBoneGetParentBoneObject(bonePtr);
+    parameter.m_inherentParentBone = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
+    parameter.m_targetBone = nanoemModelBoneGetTargetBoneObject(bonePtr);
+    parameter.m_inherentCoefficient = nanoemModelBoneGetInherentCoefficient(bonePtr);
+    parameter.m_stageIndex = nanoemModelBoneGetStageIndex(bonePtr);
+    parameter.m_hasDestinationOrigin = nanoemModelBoneHasDestinationBone(bonePtr);
+    parameter.m_rotateable = nanoemModelBoneIsRotateable(bonePtr);
+    parameter.m_movable = nanoemModelBoneIsMovable(bonePtr);
+    parameter.m_visible = nanoemModelBoneIsVisible(bonePtr);
+    parameter.m_userHandleable = nanoemModelBoneIsUserHandleable(bonePtr);
+    parameter.m_hasLocalInherent = nanoemModelBoneHasLocalInherent(bonePtr);
+    parameter.m_hasInherentTranslation = nanoemModelBoneHasInherentTranslation(bonePtr);
+    parameter.m_hasInherentOrientation = nanoemModelBoneHasInherentOrientation(bonePtr);
+    parameter.m_hasFixedAxis = nanoemModelBoneHasFixedAxis(bonePtr);
+    parameter.m_hasLocalAxes = nanoemModelBoneHasLocalAxes(bonePtr);
+    parameter.m_isAffectedByPhysicsSimulation = nanoemModelBoneIsAffectedByPhysicsSimulation(bonePtr);
+    parameter.m_hasExternalParentBone = nanoemModelBoneHasExternalParentBone(bonePtr);
+}
+
+void
+BatchChangeAllBoneObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_bone_t *bonePtr)
+{
+    nanoemMutableModelBoneSetOrigin(bonePtr, glm::value_ptr(Vector4(parameter.m_origin, 1)));
+    nanoemMutableModelBoneSetDestinationOrigin(bonePtr, glm::value_ptr(Vector4(parameter.m_destinationOrigin, 0)));
+    nanoemMutableModelBoneSetFixedAxis(bonePtr, glm::value_ptr(Vector4(parameter.m_fixedAxis, 0)));
+    nanoemMutableModelBoneSetLocalXAxis(bonePtr, glm::value_ptr(Vector4(parameter.m_localAxisX, 0)));
+    nanoemMutableModelBoneSetLocalZAxis(bonePtr, glm::value_ptr(Vector4(parameter.m_localAxisZ, 0)));
+    nanoemMutableModelBoneSetParentBoneObject(bonePtr, parameter.m_parentBone);
+    nanoemMutableModelBoneSetInherentParentBoneObject(bonePtr, parameter.m_inherentParentBone);
+    nanoemMutableModelBoneSetTargetBoneObject(bonePtr, parameter.m_targetBone);
+    nanoemMutableModelBoneSetInherentCoefficient(bonePtr, parameter.m_inherentCoefficient);
+    nanoemMutableModelBoneSetStageIndex(bonePtr, parameter.m_stageIndex);
+    nanoemMutableModelBoneSetRotateable(bonePtr, parameter.m_rotateable);
+    nanoemMutableModelBoneSetMovable(bonePtr, parameter.m_movable);
+    nanoemMutableModelBoneSetVisible(bonePtr, parameter.m_visible);
+    nanoemMutableModelBoneSetUserHandleable(bonePtr, parameter.m_userHandleable);
+    nanoemMutableModelBoneSetLocalInherentEnabled(bonePtr, parameter.m_hasLocalInherent);
+    nanoemMutableModelBoneSetInherentTranslationEnabled(bonePtr, parameter.m_hasInherentTranslation);
+    nanoemMutableModelBoneSetInherentOrientationEnabled(bonePtr, parameter.m_hasInherentOrientation);
+    nanoemMutableModelBoneSetFixedAxisEnabled(bonePtr, parameter.m_hasFixedAxis);
+    nanoemMutableModelBoneSetLocalAxesEnabled(bonePtr, parameter.m_hasLocalAxes);
+    nanoemMutableModelBoneSetAffectedByPhysicsSimulation(bonePtr, parameter.m_isAffectedByPhysicsSimulation);
+    nanoemMutableModelBoneEnableExternalParentBone(bonePtr, parameter.m_hasExternalParentBone);
+}
+
+BatchChangeAllBoneObjectsCommand::BatchChangeAllBoneObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllBoneObjectsCommand::~BatchChangeAllBoneObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllBoneObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableBone bone(it->first);
+        restore(it->second, bone);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllBoneObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableBone bone(it->first);
+        restore(m_newParameter, bone);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllBoneObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllBoneObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllBoneObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllBoneObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllBoneObjectsCommand";
+}
+
+undo_command_t *
+BatchChangeAllMorphObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllMorphObjectsCommand *command =
+        nanoem_new(BatchChangeAllMorphObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllMorphObjectsCommand::save(const nanoem_model_morph_t *morphPtr, Parameter &parameter)
+{
+    parameter.m_category = nanoemModelMorphGetCategory(morphPtr);
+}
+
+void
+BatchChangeAllMorphObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_morph_t *morphPtr)
+{
+    nanoemMutableModelMorphSetCategory(morphPtr, parameter.m_category);
+}
+
+BatchChangeAllMorphObjectsCommand::BatchChangeAllMorphObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllMorphObjectsCommand::~BatchChangeAllMorphObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllMorphObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableMorph morph(it->first);
+        restore(it->second, morph);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllMorphObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableMorph morph(it->first);
+        restore(m_newParameter, morph);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllMorphObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllMorphObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllMorphObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllMorphObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllMorphObjectsCommand";
+}
+
+undo_command_t *
+BatchChangeAllRigidBodyObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllRigidBodyObjectsCommand *command =
+        nanoem_new(BatchChangeAllRigidBodyObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::save(const nanoem_model_rigid_body_t *rigidBodyPtr, Parameter &parameter)
+{
+    parameter.m_size = glm::make_vec3(nanoemModelRigidBodyGetShapeSize(rigidBodyPtr));
+    parameter.m_origin = glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr));
+    parameter.m_orientation = glm::make_vec3(nanoemModelRigidBodyGetOrientation(rigidBodyPtr));
+    parameter.m_bone = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
+    parameter.m_shapeType = nanoemModelRigidBodyGetShapeType(rigidBodyPtr);
+    parameter.m_transformType = nanoemModelRigidBodyGetTransformType(rigidBodyPtr);
+    parameter.m_mass = nanoemModelRigidBodyGetMass(rigidBodyPtr);
+    parameter.m_linearDamping = nanoemModelRigidBodyGetLinearDamping(rigidBodyPtr);
+    parameter.m_angularDamping = nanoemModelRigidBodyGetAngularDamping(rigidBodyPtr);
+    parameter.m_restitution = nanoemModelRigidBodyGetRestitution(rigidBodyPtr);
+    parameter.m_friction = nanoemModelRigidBodyGetFriction(rigidBodyPtr);
+    parameter.m_collisionGroup = nanoemModelRigidBodyGetCollisionGroupId(rigidBodyPtr);
+    parameter.m_collisionMask = nanoemModelRigidBodyGetCollisionMask(rigidBodyPtr);
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_rigid_body_t *rigidBodyPtr)
+{
+    nanoemMutableModelRigidBodySetShapeSize(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_size, 0)));
+    nanoemMutableModelRigidBodySetOrigin(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_origin, 0)));
+    nanoemMutableModelRigidBodySetOrientation(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_orientation, 0)));
+    nanoemMutableModelRigidBodySetBoneObject(rigidBodyPtr, parameter.m_bone);
+    nanoemMutableModelRigidBodySetShapeType(rigidBodyPtr, parameter.m_shapeType);
+    nanoemMutableModelRigidBodySetTransformType(rigidBodyPtr, parameter.m_transformType);
+    nanoemMutableModelRigidBodySetMass(rigidBodyPtr, parameter.m_mass);
+    nanoemMutableModelRigidBodySetLinearDamping(rigidBodyPtr, parameter.m_linearDamping);
+    nanoemMutableModelRigidBodySetAngularDamping(rigidBodyPtr, parameter.m_angularDamping);
+    nanoemMutableModelRigidBodySetRestitution(rigidBodyPtr, parameter.m_restitution);
+    nanoemMutableModelRigidBodySetFriction(rigidBodyPtr, parameter.m_friction);
+    nanoemMutableModelRigidBodySetCollisionGroupId(rigidBodyPtr, parameter.m_collisionGroup);
+    nanoemMutableModelRigidBodySetCollisionMask(rigidBodyPtr, parameter.m_collisionMask);
+}
+
+BatchChangeAllRigidBodyObjectsCommand::BatchChangeAllRigidBodyObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllRigidBodyObjectsCommand::~BatchChangeAllRigidBodyObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableRigidBody rigid_body(it->first);
+        restore(it->second, rigid_body);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableRigidBody rigid_body(it->first);
+        restore(m_newParameter, rigid_body);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllRigidBodyObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllRigidBodyObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllRigidBodyObjectsCommand";
+}
+
+undo_command_t *
+BatchChangeAllJointObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllJointObjectsCommand *command =
+        nanoem_new(BatchChangeAllJointObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllJointObjectsCommand::save(const nanoem_model_joint_t *jointPtr, Parameter &parameter)
+{
+    parameter.m_origin = glm::make_vec3(nanoemModelJointGetOrigin(jointPtr));
+    parameter.m_orientation = glm::make_vec3(nanoemModelJointGetOrientation(jointPtr));
+    parameter.m_linearUpperLimit = glm::make_vec3(nanoemModelJointGetLinearUpperLimit(jointPtr));
+    parameter.m_linearLowerLimit = glm::make_vec3(nanoemModelJointGetLinearLowerLimit(jointPtr));
+    parameter.m_linearStiffness = glm::make_vec3(nanoemModelJointGetLinearStiffness(jointPtr));
+    parameter.m_angularUpperLimit = glm::make_vec3(nanoemModelJointGetAngularUpperLimit(jointPtr));
+    parameter.m_angularLowerLimit = glm::make_vec3(nanoemModelJointGetAngularLowerLimit(jointPtr));
+    parameter.m_angularStiffness = glm::make_vec3(nanoemModelJointGetAngularStiffness(jointPtr));
+    parameter.m_bodyA = nanoemModelJointGetRigidBodyAObject(jointPtr);
+    parameter.m_bodyB = nanoemModelJointGetRigidBodyBObject(jointPtr);
+    parameter.m_type = nanoemModelJointGetType(jointPtr);
+}
+
+void
+BatchChangeAllJointObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_joint_t *jointPtr)
+{
+    nanoemMutableModelJointSetOrigin(jointPtr, glm::value_ptr(Vector4(parameter.m_origin, 0)));
+    nanoemMutableModelJointSetOrientation(jointPtr, glm::value_ptr(Vector4(parameter.m_orientation, 0)));
+    nanoemMutableModelJointSetLinearUpperLimit(jointPtr, glm::value_ptr(Vector4(parameter.m_linearUpperLimit, 0)));
+    nanoemMutableModelJointSetLinearLowerLimit(jointPtr, glm::value_ptr(Vector4(parameter.m_linearLowerLimit, 0)));
+    nanoemMutableModelJointSetLinearStiffness(jointPtr, glm::value_ptr(Vector4(parameter.m_linearStiffness, 0)));
+    nanoemMutableModelJointSetAngularUpperLimit(jointPtr, glm::value_ptr(Vector4(parameter.m_angularUpperLimit, 0)));
+    nanoemMutableModelJointSetAngularLowerLimit(jointPtr, glm::value_ptr(Vector4(parameter.m_angularLowerLimit, 0)));
+    nanoemMutableModelJointSetAngularStiffness(jointPtr, glm::value_ptr(Vector4(parameter.m_angularStiffness, 0)));
+    nanoemMutableModelJointSetRigidBodyAObject(jointPtr, parameter.m_bodyA);
+    nanoemMutableModelJointSetRigidBodyBObject(jointPtr, parameter.m_bodyB);
+    nanoemMutableModelJointSetType(jointPtr, parameter.m_type);
+}
+
+BatchChangeAllJointObjectsCommand::BatchChangeAllJointObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllJointObjectsCommand::~BatchChangeAllJointObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllJointObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableJoint joint(it->first);
+        restore(it->second, joint);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllJointObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableJoint joint(it->first);
+        restore(m_newParameter, joint);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllJointObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllJointObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllJointObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllJointObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllJointObjectsCommand";
+}
+
+undo_command_t *
+BatchChangeAllSoftBodyObjectsCommand::create(Model *activeModel, const List &objects, const Parameter &parameter)
+{
+    BatchChangeAllSoftBodyObjectsCommand *command =
+        nanoem_new(BatchChangeAllSoftBodyObjectsCommand(activeModel, objects, parameter));
+    return command->createCommand();
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::save(const nanoem_model_soft_body_t *softBodyPtr, Parameter &parameter)
+{
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_soft_body_t *softBodyPtr)
+{
+}
+
+BatchChangeAllSoftBodyObjectsCommand::BatchChangeAllSoftBodyObjectsCommand(
+    Model *activeModel, const List &objects, const Parameter &parameter)
+    : BaseUndoCommand(activeModel->project())
+    , m_activeModel(activeModel)
+{
+    for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
+        Parameter parameter;
+        save(*it, parameter);
+        m_objects.insert(tinystl::make_pair(*it, parameter));
+    }
+}
+
+BatchChangeAllSoftBodyObjectsCommand::~BatchChangeAllSoftBodyObjectsCommand() NANOEM_DECL_NOEXCEPT
+{
+    m_activeModel = nullptr;
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::undo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableSoftBody soft_body(it->first);
+        restore(it->second, soft_body);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::redo(Error &error)
+{
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    for (ParameterMap::const_iterator it = m_objects.begin(), end = m_objects.end(); it != end; ++it) {
+        ScopedMutableSoftBody soft_body(it->first);
+        restore(m_newParameter, soft_body);
+    }
+    assignError(status, error);
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::read(const void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::write(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+void
+BatchChangeAllSoftBodyObjectsCommand::release(void *messagePtr)
+{
+    BX_UNUSED_1(messagePtr);
+}
+
+const char *
+BatchChangeAllSoftBodyObjectsCommand::name() const NANOEM_DECL_NOEXCEPT
+{
+    return "BatchChangeAllSoftBodyObjectsCommand";
+}
+
 } /* namespace command */
 } /* namespace nanoem */

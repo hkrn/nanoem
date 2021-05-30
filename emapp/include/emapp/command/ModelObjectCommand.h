@@ -1270,6 +1270,277 @@ public:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
+class BatchChangeAllVertexObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+        Vector3 m_origin;
+        Vector3 m_normal;
+        Vector2 m_texcoord;
+        nanoem_f32_t m_edgeSize;
+        nanoem_model_vertex_type_t m_type;
+        const nanoem_model_bone_t *m_bones[4];
+        Vector4 m_weights;
+        Vector3 m_sdefC;
+        Vector3 m_sdefR0;
+        Vector3 m_sdefR1;
+        Vector4 m_uva[4];
+    };
+    typedef tinystl::vector<nanoem_model_vertex_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_vertex_t *vertexPtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_vertex_t *vertexPtr);
+
+    BatchChangeAllVertexObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllVertexObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_vertex_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
+class BatchChangeAllMaterialObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+        Vector3 m_ambientColor;
+        Vector3 m_diffuseColor;
+        Vector3 m_specularColor;
+        Vector3 m_edgeColor;
+        nanoem_f32_t m_diffuseOpacity;
+        nanoem_f32_t m_specularPower;
+        nanoem_f32_t m_edgeOpacity;
+        nanoem_f32_t m_edgeSize;
+        bool m_isToonShared;
+        bool m_isCullingDisabled;
+        bool m_isCastingShadowEnabled;
+        bool m_isCastingShadowMapEnabled;
+        bool m_isShadowMapEnabled;
+        bool m_isEdgeEnabled;
+        bool m_isVertexColorEnabled;
+        bool m_isPointDrawEnabled;
+        bool m_isLineDrawEnabled;
+    };
+    typedef tinystl::vector<nanoem_model_material_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_material_t *materialPtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_material_t *materialPtr);
+
+    BatchChangeAllMaterialObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllMaterialObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_material_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
+class BatchChangeAllBoneObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+        Vector3 m_origin;
+        Vector3 m_destinationOrigin;
+        Vector3 m_fixedAxis;
+        Vector3 m_localAxisX;
+        Vector3 m_localAxisZ;
+        const nanoem_model_bone_t *m_parentBone;
+        const nanoem_model_bone_t *m_inherentParentBone;
+        const nanoem_model_bone_t *m_targetBone;
+        nanoem_f32_t m_inherentCoefficient;
+        int m_stageIndex;
+        bool m_hasDestinationOrigin;
+        bool m_rotateable;
+        bool m_movable;
+        bool m_visible;
+        bool m_userHandleable;
+        bool m_hasLocalInherent;
+        bool m_hasInherentTranslation;
+        bool m_hasInherentOrientation;
+        bool m_hasFixedAxis;
+        bool m_hasLocalAxes;
+        bool m_isAffectedByPhysicsSimulation;
+        bool m_hasExternalParentBone;
+    };
+    typedef tinystl::vector<nanoem_model_bone_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_bone_t *bonePtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_bone_t *bonePtr);
+
+    BatchChangeAllBoneObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllBoneObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_bone_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
+class BatchChangeAllMorphObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+        nanoem_model_morph_category_t m_category;
+    };
+    typedef tinystl::vector<nanoem_model_morph_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_morph_t *morphPtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_morph_t *morphPtr);
+
+    BatchChangeAllMorphObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllMorphObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_morph_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
+class BatchChangeAllRigidBodyObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+        Vector3 m_size;
+        Vector3 m_origin;
+        Vector3 m_orientation;
+        const nanoem_model_bone_t *m_bone;
+        nanoem_model_rigid_body_shape_type_t m_shapeType;
+        nanoem_model_rigid_body_transform_type_t m_transformType;
+        nanoem_f32_t m_mass;
+        nanoem_f32_t m_linearDamping;
+        nanoem_f32_t m_angularDamping;
+        nanoem_f32_t m_restitution;
+        nanoem_f32_t m_friction;
+        int m_collisionGroup;
+        int m_collisionMask;
+    };
+    typedef tinystl::vector<nanoem_model_rigid_body_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_rigid_body_t *rigidBodyPtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_rigid_body_t *rigidBodyPtr);
+
+    BatchChangeAllRigidBodyObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllRigidBodyObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_rigid_body_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
+class BatchChangeAllJointObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+        Vector3 m_origin;
+        Vector3 m_orientation;
+        Vector3 m_linearUpperLimit;
+        Vector3 m_linearLowerLimit;
+        Vector3 m_linearStiffness;
+        Vector3 m_angularUpperLimit;
+        Vector3 m_angularLowerLimit;
+        Vector3 m_angularStiffness;
+        const nanoem_model_rigid_body_t *m_bodyA;
+        const nanoem_model_rigid_body_t *m_bodyB;
+        nanoem_model_joint_type_t m_type;
+    };
+    typedef tinystl::vector<nanoem_model_joint_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_joint_t *jointPtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_joint_t *jointPtr);
+
+    BatchChangeAllJointObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllJointObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_joint_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
+class BatchChangeAllSoftBodyObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
+public:
+    struct Parameter {
+    };
+    typedef tinystl::vector<nanoem_model_soft_body_t *, TinySTLAllocator> List;
+
+    static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);
+    static void save(const nanoem_model_soft_body_t *softBodyPtr, Parameter &parameter);
+    static void restore(const Parameter &parameter, nanoem_mutable_model_soft_body_t *softBodyPtr);
+
+    BatchChangeAllSoftBodyObjectsCommand(Model *activeModel, const List &objects, const Parameter &parameter);
+    ~BatchChangeAllSoftBodyObjectsCommand() NANOEM_DECL_NOEXCEPT;
+
+    void undo(Error &error) NANOEM_DECL_OVERRIDE;
+    void redo(Error &error) NANOEM_DECL_OVERRIDE;
+    void read(const void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void write(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    void release(void *messagePtr) NANOEM_DECL_OVERRIDE;
+    const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
+private:
+    typedef tinystl::unordered_map<nanoem_model_soft_body_t *, Parameter, TinySTLAllocator> ParameterMap;
+
+    Model *m_activeModel;
+    ParameterMap m_objects;
+    Parameter m_newParameter;
+};
+
 } /* namespace command */
 } /* namespace nanoem */
 
