@@ -324,6 +324,10 @@ public:
     void setActiveOutsideParentSubjectBone(const nanoem_model_bone_t *value);
     const nanoem_model_bone_t *hoveredBone() const NANOEM_DECL_NOEXCEPT;
     void setHoveredBone(const nanoem_model_bone_t *value);
+    const undo_stack_t *activeUndoStack() const NANOEM_DECL_NOEXCEPT;
+    undo_stack_t *activeUndoStack() NANOEM_DECL_NOEXCEPT;
+    const undo_stack_t *editingUndoStack() const NANOEM_DECL_NOEXCEPT;
+    undo_stack_t *editingUndoStack() NANOEM_DECL_NOEXCEPT;
     const undo_stack_t *undoStack() const NANOEM_DECL_NOEXCEPT;
     undo_stack_t *undoStack() NANOEM_DECL_NOEXCEPT;
     Matrix4x4 worldTransform() const NANOEM_DECL_NOEXCEPT;
@@ -566,6 +570,7 @@ private:
     JointBuffers m_drawJoint;
     nanoem_model_t *m_opaque;
     undo_stack_t *m_undoStack;
+    undo_stack_t *m_editingUndoStack;
     const nanoem_model_morph_t *m_activeMorphPtr[NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM];
     const nanoem_model_constraint_t *m_activeConstraintPtr;
     const nanoem_model_material_t *m_activeMaterialPtr;

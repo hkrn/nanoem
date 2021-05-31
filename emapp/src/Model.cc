@@ -861,6 +861,7 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_vertexWeightBrush(nullptr)
     , m_opaque(nullptr)
     , m_undoStack(nullptr)
+    , m_editingUndoStack(nullptr)
     , m_activeConstraintPtr(nullptr)
     , m_activeMaterialPtr(nullptr)
     , m_hoveredBonePtr(nullptr)
@@ -885,7 +886,9 @@ Model::Model(Project *project, nanoem_u16_t handle)
     m_activeEffectPtrPair.first = m_project->sharedResourceRepository()->modelProgramBundle();
     m_activeEffectPtrPair.second = nullptr;
     m_selection = nanoem_new(internal::ModelObjectSelection(this));
-    m_undoStack = undoStackCreateWithSoftLimit(undoStackGetSoftLimit(m_project->undoStack()));
+    undo_stack_t *projectUndoStack = m_project->undoStack();
+    m_undoStack = undoStackCreateWithSoftLimit(undoStackGetSoftLimit(projectUndoStack));
+    m_editingUndoStack = undoStackCreateWithSoftLimit(undoStackGetSoftLimit(projectUndoStack));
     m_camera = project->createCamera();
     const ICamera *camera = project->globalCamera();
     m_camera->setAngle(camera->angle());
@@ -908,6 +911,8 @@ Model::~Model() NANOEM_DECL_NOEXCEPT
     nanoem_delete_safe(m_screenImage);
     undoStackDestroy(m_undoStack);
     m_undoStack = nullptr;
+    undoStackDestroy(m_editingUndoStack);
+    m_editingUndoStack = nullptr;
     nanoemModelDestroy(m_opaque);
     m_activeBonePairPtr.first = m_activeBonePairPtr.second = nullptr;
     m_activeEffectPtrPair.first = nullptr;
@@ -2232,7 +2237,14 @@ Model::pushUndo(undo_command_t *command)
 {
     nanoem_assert(!m_project->isPlaying(), "must not be called while playing");
     if (!m_project->isPlaying()) {
-        undoStackPushCommand(undoStack(), command);
+        undo_stack_t *stackPtr = nullptr;
+        if (!m_project->isModelEditingEnabled()) {
+            stackPtr = undoStack();
+        }
+        else {
+            stackPtr = editingUndoStack();
+        }
+        undoStackPushCommand(stackPtr, command);
         m_project->eventPublisher()->publishUndoChangeEvent();
     }
     else {
@@ -5025,6 +5037,30 @@ void
 Model::setHoveredBone(const nanoem_model_bone_t *value)
 {
     m_hoveredBonePtr = value;
+}
+
+const undo_stack_t *
+Model::activeUndoStack() const NANOEM_DECL_NOEXCEPT
+{
+    return !m_project->isModelEditingEnabled() ? undoStack() : editingUndoStack();
+}
+
+undo_stack_t *
+Model::activeUndoStack() NANOEM_DECL_NOEXCEPT
+{
+    return !m_project->isModelEditingEnabled() ? undoStack() : editingUndoStack();
+}
+
+const undo_stack_t *
+Model::editingUndoStack() const NANOEM_DECL_NOEXCEPT
+{
+    return m_editingUndoStack;
+}
+
+undo_stack_t *
+Model::editingUndoStack() NANOEM_DECL_NOEXCEPT
+{
+    return m_editingUndoStack;
 }
 
 const undo_stack_t *

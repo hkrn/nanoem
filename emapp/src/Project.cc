@@ -4608,7 +4608,7 @@ Project::activeUndoStack() const NANOEM_DECL_NOEXCEPT
 {
     const undo_stack_t *stack;
     if (const Model *model = activeModel()) {
-        stack = model->undoStack();
+        stack = model->activeUndoStack();
     }
     else {
         stack = undoStack();
@@ -4621,7 +4621,7 @@ Project::activeUndoStack() NANOEM_DECL_NOEXCEPT
 {
     undo_stack_t *stack;
     if (Model *model = activeModel()) {
-        stack = model->undoStack();
+        stack = model->activeUndoStack();
     }
     else {
         stack = undoStack();
@@ -6175,8 +6175,17 @@ Project::setModelEditingEnabled(bool value)
     Model *model = activeModel();
     if (model && isModelEditingEnabled() != value) {
         model->rebuildAllVertexBuffers(value ? false : true);
+        undoStackClear(model->editingUndoStack());
         EnumUtils::setEnabled(kEnableModelEditing, m_stateFlags, value);
-        eventPublisher()->publishToggleModelEditingEnabledEvent(value);
+        IEventPublisher *ev = eventPublisher();
+        ev->publishToggleModelEditingEnabledEvent(value);
+        if (value) {
+            ev->publishUndoEvent(false, false);
+        }
+        else {
+            const undo_stack_t *stack = model->undoStack();
+            ev->publishUndoEvent(undoStackCanUndo(stack), undoStackCanRedo(stack));
+        }
     }
 }
 
