@@ -3733,8 +3733,8 @@ Project::copyAllSelectedBones(Model *model, Error &error)
         nanoem_mutable_model_morph_t *morph = nanoemMutableModelMorphCreate(originModel, &status);
         nanoemMutableModelMorphSetCategory(morph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
         nanoemMutableModelMorphSetType(morph, NANOEM_MODEL_MORPH_TYPE_BONE);
-        const model::Bone::Set &bones = model->selection()->allBoneSet();
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        const model::Bone::Set *boneSet = model->selection()->allBoneSet();
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const model::Bone *bone = model::Bone::cast(*it);
             if (bone && StringUtils::tryGetString(factory, bone->name(), scope)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
@@ -3788,9 +3788,9 @@ Project::selectAllBoneKeyframesFromSelectedBoneSet(Model *model)
 {
     if (Motion *motion = resolveMotion(model)) {
         const nanoem_frame_index_t frameIndex = currentLocalFrameIndex();
-        const model::Bone::Set &bones = model->selection()->allBoneSet();
+        const model::Bone::Set *boneSet = model->selection()->allBoneSet();
         IMotionKeyframeSelection *selection = motion->selection();
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bone = *it;
             const nanoem_unicode_string_t *name = nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
             selection->add(motion->findBoneKeyframe(name, frameIndex));

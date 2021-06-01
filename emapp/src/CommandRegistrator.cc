@@ -87,11 +87,11 @@ void
 CommandRegistrator::registerAddBoneKeyframesCommandBySelectedBoneSet(Model *model)
 {
     nanoem_parameter_assert(model, "must not be nullptr");
-    const model::Bone::Set &selectedBones = model->selection()->allBoneSet();
+    const model::Bone::Set *selectedBoneSet = model->selection()->allBoneSet();
     const nanoem_frame_index_t frameIndex = m_project->currentLocalFrameIndex();
     Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
-    if (!selectedBones.empty()) {
-        for (model::Bone::Set::const_iterator it = selectedBones.begin(), end = selectedBones.end(); it != end; ++it) {
+    if (!selectedBoneSet->empty()) {
+        for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bone = *it;
             boneFrameIndexListMap[bone].insert(frameIndex);
         }
@@ -308,10 +308,10 @@ CommandRegistrator::registerRemoveBoneKeyframesCommandByCurrentLocalFrameIndex(M
     nanoem_assert(!m_project->isPlaying(), "must not be called while playing");
     Motion *motion = m_project->resolveMotion(model);
     if (model && motion) {
-        const model::Bone::Set &bones = model->selection()->allBoneSet();
+        const model::Bone::Set *boneSet = model->selection()->allBoneSet();
         const nanoem_frame_index_t frameIndex = m_project->currentLocalFrameIndex();
         Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bone = *it;
             boneFrameIndexListMap[bone].insert(frameIndex);
         }

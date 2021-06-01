@@ -94,15 +94,16 @@ public:
     virtual nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_rsize_t countAllFaces() const NANOEM_DECL_NOEXCEPT = 0;
 
-    virtual model::Vertex::Set allVertexSet() const = 0;
-    virtual model::Bone::Set allBoneSet() const = 0;
-    virtual model::Material::Set allMaterialSet() const = 0;
-    virtual model::Morph::Set allMorphSet() const = 0;
-    virtual model::Label::Set allLabelSet() const = 0;
-    virtual model::RigidBody::Set allRigidBodySet() const = 0;
-    virtual model::Joint::Set allJointSet() const = 0;
-    virtual model::SoftBody::Set allSoftBodySet() const = 0;
+    virtual const model::Vertex::Set *allVertexSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Bone::Set *allBoneSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Material::Set *allMaterialSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Morph::Set *allMorphSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Label::Set *allLabelSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::RigidBody::Set *allRigidBodySet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Joint::Set *allJointSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::SoftBody::Set *allSoftBodySet() const NANOEM_DECL_NOEXCEPT = 0;
     virtual FaceList allFaces() const = 0;
+
     virtual bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT = 0;

@@ -62,15 +62,16 @@ public:
     nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_rsize_t countAllFaces() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
-    model::Vertex::Set allVertexSet() const NANOEM_DECL_OVERRIDE;
-    model::Bone::Set allBoneSet() const NANOEM_DECL_OVERRIDE;
-    model::Material::Set allMaterialSet() const NANOEM_DECL_OVERRIDE;
-    model::Morph::Set allMorphSet() const NANOEM_DECL_OVERRIDE;
-    model::Label::Set allLabelSet() const NANOEM_DECL_OVERRIDE;
-    model::RigidBody::Set allRigidBodySet() const NANOEM_DECL_OVERRIDE;
-    model::Joint::Set allJointSet() const NANOEM_DECL_OVERRIDE;
-    model::SoftBody::Set allSoftBodySet() const NANOEM_DECL_OVERRIDE;
+    const model::Vertex::Set *allVertexSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Bone::Set *allBoneSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Material::Set *allMaterialSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Morph::Set *allMorphSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Label::Set *allLabelSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::RigidBody::Set *allRigidBodySet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Joint::Set *allJointSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::SoftBody::Set *allSoftBodySet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     FaceList allFaces() const NANOEM_DECL_OVERRIDE;
+
     bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;

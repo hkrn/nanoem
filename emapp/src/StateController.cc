@@ -993,9 +993,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
     Vector3 aabbMin(FLT_MAX), aabbMax(-FLT_MAX);
     switch (selection->objectType()) {
     case IModelObjectSelection::kObjectTypeBone: {
-        const model::Bone::Set selectedBoneSet(selection->allBoneSet());
-        if (!selectedBoneSet.empty()) {
-            for (model::Bone::Set::const_iterator it = selectedBoneSet.begin(), end = selectedBoneSet.end(); it != end;
+        const model::Bone::Set *selectedBoneSet = selection->allBoneSet();
+        if (!selectedBoneSet->empty()) {
+            for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end;
                  ++it) {
                 const nanoem_model_bone_t *bonePtr = *it;
                 const Vector3 origin(model::Bone::origin(bonePtr));
@@ -1023,9 +1023,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         break;
     }
     case IModelObjectSelection::kObjectTypeJoint: {
-        const model::Joint::Set selectedJointSet(selection->allJointSet());
-        if (!selectedJointSet.empty()) {
-            for (model::Joint::Set::const_iterator it = selectedJointSet.begin(), end = selectedJointSet.end();
+        const model::Joint::Set *selectedJointSet = selection->allJointSet();
+        if (!selectedJointSet->empty()) {
+            for (model::Joint::Set::const_iterator it = selectedJointSet->begin(), end = selectedJointSet->end();
                  it != end; ++it) {
                 const nanoem_model_joint_t *jointPtr = *it;
                 const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
@@ -1036,8 +1036,8 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         break;
     }
     case IModelObjectSelection::kObjectTypeMaterial: {
-        const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
-        if (!selectedMaterialSet.empty()) {
+        const model::Material::Set *selectedMaterialSet = selection->allMaterialSet();
+        if (!selectedMaterialSet->empty()) {
             nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
             const nanoem_model_t *opaque = activeModel->data();
             nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
@@ -1052,7 +1052,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                 }
                 offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
             }
-            for (model::Material::Set::const_iterator it = selectedMaterialSet.begin(), end = selectedMaterialSet.end();
+            for (model::Material::Set::const_iterator it = selectedMaterialSet->begin(), end = selectedMaterialSet->end();
                  it != end; ++it) {
                 const nanoem_model_material_t *materialPtr = *it;
                 MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
@@ -1070,10 +1070,10 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         break;
     }
     case IModelObjectSelection::kObjectTypeRigidBody: {
-        const model::RigidBody::Set selectedRigidBodySet(selection->allRigidBodySet());
-        if (!selectedRigidBodySet.empty()) {
-            for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet.begin(),
-                                                       end = selectedRigidBodySet.end();
+        const model::RigidBody::Set *selectedRigidBodySet = selection->allRigidBodySet();
+        if (!selectedRigidBodySet->empty()) {
+            for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet->begin(),
+                                                       end = selectedRigidBodySet->end();
                  it != end; ++it) {
                 const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                 const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
@@ -1084,8 +1084,8 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         break;
     }
     case IModelObjectSelection::kObjectTypeSoftBody: {
-        const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
-        if (!selectedSoftBodySet.empty()) {
+        const model::SoftBody::Set *selectedSoftBodySet = selection->allSoftBodySet();
+        if (!selectedSoftBodySet->empty()) {
             nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
             const nanoem_model_t *opaque = activeModel->data();
             nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
@@ -1100,7 +1100,7 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                 }
                 offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
             }
-            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet.begin(), end = selectedSoftBodySet.end();
+            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet->begin(), end = selectedSoftBodySet->end();
                  it != end; ++it) {
                 const nanoem_model_soft_body_t *softBodyPtr = *it;
                 const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
@@ -1119,9 +1119,9 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
         break;
     }
     case IModelObjectSelection::kObjectTypeVertex: {
-        const model::Vertex::Set selectedVertexSet(selection->allVertexSet());
-        if (!selectedVertexSet.empty()) {
-            for (model::Vertex::Set::const_iterator it = selectedVertexSet.begin(), end = selectedVertexSet.end();
+        const model::Vertex::Set *selectedVertexSet = selection->allVertexSet();
+        if (!selectedVertexSet->empty()) {
+            for (model::Vertex::Set::const_iterator it = selectedVertexSet->begin(), end = selectedVertexSet->end();
                  it != end; ++it) {
                 const nanoem_model_vertex_t *vertexPtr = *it;
                 const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));

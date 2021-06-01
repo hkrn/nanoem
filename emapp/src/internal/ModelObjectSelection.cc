@@ -385,52 +385,52 @@ ModelObjectSelection::countAllFaces() const NANOEM_DECL_NOEXCEPT
     return m_selectedFaceSet.size();
 }
 
-model::Vertex::Set
-ModelObjectSelection::allVertexSet() const
+const model::Vertex::Set *
+ModelObjectSelection::allVertexSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedVertexSet;
+    return &m_selectedVertexSet;
 }
 
-model::Bone::Set
-ModelObjectSelection::allBoneSet() const
+const model::Bone::Set *
+ModelObjectSelection::allBoneSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedBoneSet;
+    return &m_selectedBoneSet;
 }
 
-model::Material::Set
-ModelObjectSelection::allMaterialSet() const
+const model::Material::Set *
+ModelObjectSelection::allMaterialSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedMaterialSet;
+    return &m_selectedMaterialSet;
 }
 
-model::Morph::Set
-ModelObjectSelection::allMorphSet() const
+const model::Morph::Set *
+ModelObjectSelection::allMorphSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedMorphSet;
+    return &m_selectedMorphSet;
 }
 
-model::Label::Set
-ModelObjectSelection::allLabelSet() const
+const model::Label::Set *
+ModelObjectSelection::allLabelSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedLabelSet;
+    return &m_selectedLabelSet;
 }
 
-model::RigidBody::Set
-ModelObjectSelection::allRigidBodySet() const
+const model::RigidBody::Set *
+ModelObjectSelection::allRigidBodySet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedRigidBodySet;
+    return &m_selectedRigidBodySet;
 }
 
-model::Joint::Set
-ModelObjectSelection::allJointSet() const
+const model::Joint::Set *
+ModelObjectSelection::allJointSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedJointSet;
+    return &m_selectedJointSet;
 }
 
-model::SoftBody::Set
-ModelObjectSelection::allSoftBodySet() const
+const model::SoftBody::Set *
+ModelObjectSelection::allSoftBodySet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_selectedSoftBodySet;
+    return &m_selectedSoftBodySet;
 }
 
 IModelObjectSelection::FaceList

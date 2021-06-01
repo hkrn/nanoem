@@ -87,8 +87,8 @@ ModelKeyframeSelector::handleAction(const TimelineSegment &segment, int index)
         break;
     }
     case kSelectTypeBones: {
-        model::Bone::Set bones(activeModel->selection()->allBoneSet());
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        const model::Bone::Set *boneSet = activeModel->selection()->allBoneSet();
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bonePtr = *it;
             selection->addBoneKeyframes(bonePtr, segment.m_from, segment.m_to);
         }

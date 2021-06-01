@@ -28,10 +28,10 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     switch (m_objectType) {
     case IModelObjectSelection::kObjectTypeBone: {
-        const model::Bone::Set selectedBoneSet(selection->allBoneSet());
+        const model::Bone::Set *selectedBoneSet = selection->allBoneSet();
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
-        for (model::Bone::Set::const_iterator it = selectedBoneSet.begin(), end = selectedBoneSet.end(); it != end;
+        for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end;
              ++it) {
             const nanoem_model_bone_t *bonePtr = *it;
             nanoem_model_bone_t *mutableBonePtr = bones[model::Bone::index(bonePtr)];
@@ -66,10 +66,10 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         break;
     }
     case IModelObjectSelection::kObjectTypeJoint: {
-        const model::Joint::Set selectedJointSet(selection->allJointSet());
+        const model::Joint::Set *selectedJointSet = selection->allJointSet();
         nanoem_rsize_t numJoints;
         nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(activeModel->data(), &numJoints);
-        for (model::Joint::Set::const_iterator it = selectedJointSet.begin(), end = selectedJointSet.end(); it != end;
+        for (model::Joint::Set::const_iterator it = selectedJointSet->begin(), end = selectedJointSet->end(); it != end;
              ++it) {
             const nanoem_model_joint_t *jointPtr = *it;
             nanoem_model_joint_t *mutableJointPtr = joints[model::Joint::index(jointPtr)];
@@ -81,7 +81,7 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         break;
     }
     case IModelObjectSelection::kObjectTypeMaterial: {
-        const model::Material::Set selectedMaterialSet(selection->allMaterialSet());
+        const model::Material::Set *selectedMaterialSet = selection->allMaterialSet();
         MutableVertexSet vertexSet;
         nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
         const nanoem_model_t *opaque = activeModel->data();
@@ -94,7 +94,7 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             materialOffsets.insert(tinystl::make_pair(material, offset));
             offset += nanoemModelMaterialGetNumVertexIndices(material);
         }
-        for (model::Material::Set::const_iterator it = selectedMaterialSet.begin(), end = selectedMaterialSet.end();
+        for (model::Material::Set::const_iterator it = selectedMaterialSet->begin(), end = selectedMaterialSet->end();
              it != end; ++it) {
             const nanoem_model_material_t *materialPtr = *it;
             MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
@@ -117,11 +117,11 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         break;
     }
     case IModelObjectSelection::kObjectTypeRigidBody: {
-        const model::RigidBody::Set selectedRigidBodySet(selection->allRigidBodySet());
+        const model::RigidBody::Set *selectedRigidBodySet = selection->allRigidBodySet();
         nanoem_rsize_t numRigidBodies;
         nanoem_model_rigid_body_t *const *rigidBodies =
             nanoemModelGetAllRigidBodyObjects(activeModel->data(), &numRigidBodies);
-        for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet.begin(), end = selectedRigidBodySet.end();
+        for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet->begin(), end = selectedRigidBodySet->end();
              it != end; ++it) {
             const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
             nanoem_model_rigid_body_t *mutableRigidBodyPtr = rigidBodies[model::RigidBody::index(rigidBodyPtr)];
@@ -134,7 +134,7 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         break;
     }
     case IModelObjectSelection::kObjectTypeSoftBody: {
-        const model::SoftBody::Set selectedSoftBodySet(selection->allSoftBodySet());
+        const model::SoftBody::Set *selectedSoftBodySet = selection->allSoftBodySet();
         MutableVertexSet vertexSet;
         nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
         const nanoem_model_t *opaque = activeModel->data();
@@ -147,7 +147,7 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
             materialOffsets.insert(tinystl::make_pair(material, offset));
             offset += nanoemModelMaterialGetNumVertexIndices(material);
         }
-        for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet.begin(), end = selectedSoftBodySet.end();
+        for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet->begin(), end = selectedSoftBodySet->end();
              it != end; ++it) {
             const nanoem_model_soft_body_t *softBodyPtr = *it;
             const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
@@ -171,10 +171,10 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         break;
     }
     case IModelObjectSelection::kObjectTypeVertex: {
-        const model::Vertex::Set selectedVertexSet(selection->allVertexSet());
+        const model::Vertex::Set *selectedVertexSet = selection->allVertexSet();
         nanoem_rsize_t numVertices;
         nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-        for (model::Vertex::Set::const_iterator it = selectedVertexSet.begin(), end = selectedVertexSet.end();
+        for (model::Vertex::Set::const_iterator it = selectedVertexSet->begin(), end = selectedVertexSet->end();
              it != end; ++it) {
             const nanoem_model_vertex_t *vertexPtr = *it;
             nanoem_model_vertex_t *mutableVertexPtr = vertices[model::Vertex::index(vertexPtr)];

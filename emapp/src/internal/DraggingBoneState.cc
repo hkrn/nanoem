@@ -53,7 +53,7 @@ void
 DraggingBoneState::commit(const Vector2SI32 & /* logicalCursorPosition */)
 {
     model::BindPose currentBindPose;
-    model::Bone::Set boneSet(m_model->selection()->allBoneSet());
+    model::Bone::Set boneSet(*m_model->selection()->allBoneSet());
     m_model->saveBindPose(currentBindPose);
     const nanoem_model_bone_t *activeBonePtr = m_model->activeBone();
     boneSet.insert(activeBonePtr);
@@ -280,9 +280,9 @@ TranslateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
         localTranslation += cursorMoveDelta(logicalCursorPosition);
     }
     const nanoem_model_bone_t *activeBonePtr = model->activeBone();
-    const model::Bone::List &bones =
-        ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet());
-    if (!bones.empty()) {
+    const model::Bone::Set *boneSet = model->selection()->allBoneSet();
+    if (!boneSet->empty()) {
+        const model::Bone::List bones(ListUtils::toListFromSet<const nanoem_model_bone_t *>(*boneSet));
         performTranslationTransform(tinystl::make_pair(localTranslation, activeBonePtr), bones);
     }
 }
@@ -331,9 +331,9 @@ OrientateActiveBoneState::transform(const Vector2SI32 &logicalCursorPosition)
     default:
         break;
     }
-    const model::Bone::List bones(
-        ListUtils::toListFromSet<const nanoem_model_bone_t *>(model->selection()->allBoneSet()));
-    if (!bones.empty()) {
+    const model::Bone::Set *boneSet = model->selection()->allBoneSet();
+    if (!boneSet->empty()) {
+        const model::Bone::List bones(ListUtils::toListFromSet<const nanoem_model_bone_t *>(*boneSet));
         performOrientationTransform(tinystl::make_pair(orientation, activeBonePtr), bones);
     }
 }

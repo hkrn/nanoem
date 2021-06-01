@@ -1974,8 +1974,8 @@ AddBoneToConstraintCommand::AddBoneToConstraintCommand(Model *activeModel, nanoe
     , m_mutableConstraint(constraintPtr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Bone::Set bones(m_activeModel->selection()->allBoneSet());
-    for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+    const model::Bone::Set *boneSet = m_activeModel->selection()->allBoneSet();
+    for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
         const nanoem_model_bone_t *bonePtr = *it;
         nanoem_mutable_model_constraint_joint_t *jointPtr =
             nanoemMutableModelConstraintJointCreate(m_mutableConstraint, &status);
@@ -2541,8 +2541,8 @@ AddVertexToMorphCommand::AddVertexToMorphCommand(Model *activeModel, nanoem_mode
             nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_TEXTURE,
         "type must be vertex");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Vertex::Set vertices(m_activeModel->selection()->allVertexSet());
-    for (model::Vertex::Set::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
+    const model::Vertex::Set *vertexSet = m_activeModel->selection()->allVertexSet();
+    for (model::Vertex::Set::const_iterator it = vertexSet->begin(), end = vertexSet->end(); it != end; ++it) {
         const nanoem_model_vertex_t *vertexPtr = *it;
         nanoem_mutable_model_morph_vertex_t *item = nanoemMutableModelMorphVertexCreate(m_mutableMorph, &status);
         nanoemMutableModelMorphVertexSetVertexObject(item, vertexPtr);
@@ -2614,8 +2614,8 @@ AddMaterialToMorphCommand::AddMaterialToMorphCommand(Model *activeModel, nanoem_
 {
     nanoem_assert(nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_MATERIAL, "type must be material");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Material::Set materials(m_activeModel->selection()->allMaterialSet());
-    for (model::Material::Set::const_iterator it = materials.begin(), end = materials.end(); it != end; ++it) {
+    const model::Material::Set *materialSet = m_activeModel->selection()->allMaterialSet();
+    for (model::Material::Set::const_iterator it = materialSet->begin(), end = materialSet->end(); it != end; ++it) {
         const nanoem_model_material_t *materialPtr = *it;
         nanoem_mutable_model_morph_material_t *item = nanoemMutableModelMorphMaterialCreate(m_mutableMorph, &status);
         nanoemMutableModelMorphMaterialSetMaterialObject(item, materialPtr);
@@ -2687,8 +2687,8 @@ AddBoneToMorphCommand::AddBoneToMorphCommand(Model *activeModel, nanoem_model_mo
 {
     nanoem_assert(nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE, "type must be bone");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Bone::Set bones(m_activeModel->selection()->allBoneSet());
-    for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+    const model::Bone::Set *boneSet = m_activeModel->selection()->allBoneSet();
+    for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
         const nanoem_model_bone_t *bonePtr = *it;
         nanoem_mutable_model_morph_bone_t *item = nanoemMutableModelMorphBoneCreate(m_mutableMorph, &status);
         nanoemMutableModelMorphBoneSetBoneObject(item, bonePtr);
@@ -2760,8 +2760,8 @@ AddGroupToMorphCommand::AddGroupToMorphCommand(Model *activeModel, nanoem_model_
 {
     nanoem_assert(nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_GROUP, "type must be group");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Morph::Set groups(m_activeModel->selection()->allMorphSet());
-    for (model::Morph::Set::const_iterator it = groups.begin(), end = groups.end(); it != end; ++it) {
+    const model::Morph::Set *morphSet = m_activeModel->selection()->allMorphSet();
+    for (model::Morph::Set::const_iterator it = morphSet->begin(), end = morphSet->end(); it != end; ++it) {
         const nanoem_model_morph_t *morphPtr = *it;
         if (nanoemModelMorphGetType(morphPtr) != NANOEM_MODEL_MORPH_TYPE_GROUP) {
             nanoem_mutable_model_morph_group_t *item = nanoemMutableModelMorphGroupCreate(m_mutableMorph, &status);
@@ -2835,8 +2835,8 @@ AddFlipToMorphCommand::AddFlipToMorphCommand(Model *activeModel, nanoem_model_mo
 {
     nanoem_assert(nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_FLIP, "type must be flip");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Morph::Set flips(m_activeModel->selection()->allMorphSet());
-    for (model::Morph::Set::const_iterator it = flips.begin(), end = flips.end(); it != end; ++it) {
+    const model::Morph::Set *morphSet = m_activeModel->selection()->allMorphSet();
+    for (model::Morph::Set::const_iterator it = morphSet->begin(), end = morphSet->end(); it != end; ++it) {
         const nanoem_model_morph_t *morphPtr = *it;
         nanoem_mutable_model_morph_flip_t *item = nanoemMutableModelMorphFlipCreate(m_mutableMorph, &status);
         nanoemMutableModelMorphFlipSetMorphObject(item, morphPtr);
@@ -2908,8 +2908,8 @@ AddRigidBodyToMorphCommand::AddRigidBodyToMorphCommand(Model *activeModel, nanoe
 {
     nanoem_assert(nanoemModelMorphGetType(morphPtr) == NANOEM_MODEL_MORPH_TYPE_BONE, "type must be rigid_body");
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::RigidBody::Set rigidBodies(m_activeModel->selection()->allRigidBodySet());
-    for (model::RigidBody::Set::const_iterator it = rigidBodies.begin(), end = rigidBodies.end(); it != end; ++it) {
+    const model::RigidBody::Set *rigidBodySet = m_activeModel->selection()->allRigidBodySet();
+    for (model::RigidBody::Set::const_iterator it = rigidBodySet->begin(), end = rigidBodySet->end(); it != end; ++it) {
         const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
         nanoem_mutable_model_morph_impulse_t *item = nanoemMutableModelMorphImpulseCreate(m_mutableMorph, &status);
         nanoemMutableModelMorphImpulseSetRigidBodyObject(item, rigidBodyPtr);
@@ -3272,12 +3272,12 @@ AddBoneToLabelCommand::AddBoneToLabelCommand(Model *activeModel, nanoem_model_la
     : BaseAddToLabelCommand(activeModel, labelPtr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Bone::Set boneSet(m_activeModel->selection()->allBoneSet());
+    const model::Bone::Set *boneSet = m_activeModel->selection()->allBoneSet();
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         nanoem_model_bone_t *bonePtr = bones[i];
-        if (boneSet.find(bonePtr) != boneSet.end()) {
+        if (boneSet->find(bonePtr) != boneSet->end()) {
             m_items.push_back(nanoemMutableModelLabelItemCreateFromBoneObject(m_mutableLabel, bonePtr, &status));
         }
     }
@@ -3346,12 +3346,12 @@ AddMorphToLabelCommand::AddMorphToLabelCommand(Model *activeModel, nanoem_model_
     : BaseAddToLabelCommand(activeModel, labelPtr)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    model::Morph::Set morphSet(m_activeModel->selection()->allMorphSet());
+    const model::Morph::Set *morphSet = m_activeModel->selection()->allMorphSet();
     nanoem_rsize_t numMorphs;
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
     for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
         nanoem_model_morph_t *morphPtr = morphs[i];
-        if (morphSet.find(morphPtr) != morphSet.end()) {
+        if (morphSet->find(morphPtr) != morphSet->end()) {
             m_items.push_back(nanoemMutableModelLabelItemCreateFromMorphObject(m_mutableLabel, morphPtr, &status));
         }
     }
@@ -3983,8 +3983,8 @@ CreateIntermediateJointFromTwoRigidBodiesCommand::CreateIntermediateJointFromTwo
     , m_creatingJoint(m_activeModel)
 {
     nanoem_assert(m_activeModel->selection()->countAllRigidBodies() == 2, "must have two rigid bodies");
-    const model::RigidBody::Set bodySet(m_activeModel->selection()->allRigidBodySet());
-    const model::RigidBody::List bodies(ListUtils::toListFromSet(bodySet));
+    const model::RigidBody::Set *rigidBodySet = m_activeModel->selection()->allRigidBodySet();
+    const model::RigidBody::List bodies(ListUtils::toListFromSet(*rigidBodySet));
     int body0Index = model::RigidBody::index(bodies[0]), body1Index = model::RigidBody::index(bodies[1]);
     const nanoem_model_rigid_body_t *bodyA = body0Index < body1Index ? bodies[0] : bodies[1],
                                     *bodyB = body0Index < body1Index ? bodies[1] : bodies[0];
