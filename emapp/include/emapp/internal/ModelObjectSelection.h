@@ -15,6 +15,14 @@ namespace internal {
 
 class ModelObjectSelection NANOEM_DECL_SEALED : public IModelObjectSelection {
 public:
+    static void sortedVertexList(const IModelObjectSelection *selection, model::Vertex::List &vertices);
+    static void sortedMaterialList(const IModelObjectSelection *selection, model::Material::List &materials);
+    static void sortedBoneList(const IModelObjectSelection *selection, model::Bone::List &bones);
+    static void sortedMorphList(const IModelObjectSelection *selection, model::Morph::List &morphs);
+    static void sortedRigidBodyList(const IModelObjectSelection *selection, model::RigidBody::List &rigidBodies);
+    static void sortedJointList(const IModelObjectSelection *selection, model::Joint::List &joints);
+    static void sortedSoftBodyList(const IModelObjectSelection *selection, model::SoftBody::List &softBodies);
+
     ModelObjectSelection(Model *parent);
     ~ModelObjectSelection() NANOEM_DECL_NOEXCEPT;
 

@@ -11,8 +11,8 @@
 #include "emapp/internal/imgui/BaseNonModalDialogWindow.h"
 
 #include "emapp/IModelObjectSelection.h"
-#include "emapp/Model.h"
 #include "emapp/StringUtils.h"
+#include "emapp/command/ModelObjectCommand.h"
 
 namespace nanoem {
 namespace internal {
@@ -20,10 +20,6 @@ namespace imgui {
 
 class ModelParameterDialog : public BaseNonModalDialogWindow {
 public:
-    typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneObject)(
-        nanoem_mutable_model_bone_t *, const nanoem_model_bone_t *);
-    typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
-
     struct SavedState {
         struct ModelState {
             const nanoem_model_bone_t *m_activeBone;
@@ -79,6 +75,12 @@ public:
     void restoreProjectState(Project *project);
 
 private:
+    typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneObject)(
+        nanoem_mutable_model_bone_t *, const nanoem_model_bone_t *);
+    typedef void(APIENTRY *PFN_nanoemMutableModelSetRigidBodyObject)(
+        nanoem_mutable_model_joint_t *, const nanoem_model_rigid_body_t *);
+    typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
+
     void layoutMeasure(Project *project);
     void layoutHeightBasedBatchTransformPane(Project *project);
     void layoutNumericInputBatchTransformPane(Project *project);
@@ -138,6 +140,8 @@ private:
         const nanoem_model_bone_t *parentBonePtr, const char *titleID, const char *validationMessageID);
     void layoutBoneComboBox(const char *id, const nanoem_model_bone_t *baseBonePtr, nanoem_model_bone_t *bonePtr,
         PFN_nanoemMutableModelSetBoneObject setBoneCallback);
+    void layoutRigidBodyComboBox(const char *id, const nanoem_model_rigid_body_t *baseRigidBodyPtr,
+        nanoem_model_joint_t *jointPtr, PFN_nanoemMutableModelSetRigidBodyObject setRigidBodyCallback);
     void layoutBoneAxisMenuItems(nanoem_model_bone_t *bonePtr, PFN_nanoemMutableModelSetBoneAxis setBoneAxisCallback);
 
     void layoutManipulateVertexMenu(Project *project);
@@ -175,6 +179,20 @@ private:
     void toggleMaterial(const nanoem_model_material_t *materialPtr);
     void toggleRigidBody(const nanoem_model_rigid_body_t *rigidBodyPtr);
     void toggleVertex(const nanoem_model_vertex_t *vertexPtr);
+    void updateSortSelectedVertices(const IModelObjectSelection *selection);
+    void updateSortSelectedMaterials(const IModelObjectSelection *selection);
+    void updateSortSelectedBones(const IModelObjectSelection *selection);
+    void updateSortSelectedMorphs(const IModelObjectSelection *selection);
+    void updateSortSelectedRigidBodies(const IModelObjectSelection *selection);
+    void updateSortSelectedJoints(const IModelObjectSelection *selection);
+    void updateSortSelectedSoftBodies(const IModelObjectSelection *selection);
+    void clearSortedSelectedVertices();
+    void clearSortedSelectedMaterials();
+    void clearSortedSelectedBones();
+    void clearSortedSelectedMorphs();
+    void clearSortedSelectedRigidBodies();
+    void clearSortedSelectedJoints();
+    void clearSortedSelectedSoftBodies();
 
     const char *selectedFormatType(const nanoem_model_format_type_t type) const NANOEM_DECL_NOEXCEPT;
     const char *selectedCodecType(const nanoem_codec_type_t type) const NANOEM_DECL_NOEXCEPT;
@@ -187,7 +205,7 @@ private:
     const char *selectedMorphMaterialOperationType(
         nanoem_model_morph_material_operation_type_t value) const NANOEM_DECL_NOEXCEPT;
     const char *selectedJointType(nanoem_model_joint_type_t value) const NANOEM_DECL_NOEXCEPT;
-    const char *selectedSoftBodyAeroMdoelType(
+    const char *selectedSoftBodyAeroModelType(
         const nanoem_model_soft_body_aero_model_type_t type) const NANOEM_DECL_NOEXCEPT;
     bool hasMorphType(nanoem_model_morph_type_t type) const NANOEM_DECL_NOEXCEPT;
     bool hasModelWithMaterial(const Project *project) const NANOEM_DECL_NOEXCEPT;
@@ -196,6 +214,27 @@ private:
     ImGuiWindow *m_parent;
     Model *m_activeModel;
     SavedState *m_savedState;
+    command::BatchChangeAllBoneObjectsCommand::Parameter m_batchBoneParameter;
+    command::BatchChangeAllJointObjectsCommand::Parameter m_batchJointParameter;
+    command::BatchChangeAllMaterialObjectsCommand::Parameter m_batchMaterialParameter;
+    command::BatchChangeAllMorphObjectsCommand::Parameter m_batchMorphParameter;
+    command::BatchChangeAllRigidBodyObjectsCommand::Parameter m_batchRigidBodyParameter;
+    command::BatchChangeAllSoftBodyObjectsCommand::Parameter m_batchSoftBodyParameter;
+    command::BatchChangeAllVertexObjectsCommand::Parameter m_batchVertexParameter;
+    model::Vertex::List m_sortedSelectedVertices;
+    model::Material::List m_sortedSelectedMaterials;
+    model::Bone::List m_sortedSelectedBones;
+    model::Morph::List m_sortedSelectedMorphs;
+    model::Joint::List m_sortedSelectedJoints;
+    model::RigidBody::List m_sortedSelectedRigidBodies;
+    model::SoftBody::List m_sortedSelectedSoftBodies;
+    nanoem_rsize_t m_sortedSelectedVertexIndex;
+    nanoem_rsize_t m_sortedSelectedMaterialIndex;
+    nanoem_rsize_t m_sortedSelectedBoneIndex;
+    nanoem_rsize_t m_sortedSelectedMorphIndex;
+    nanoem_rsize_t m_sortedSelectedRigidBodyIndex;
+    nanoem_rsize_t m_sortedSelectedJointIndex;
+    nanoem_rsize_t m_sortedSelectedSoftBodyIndex;
     int m_language;
     TabType m_tabType;
     TabType m_explicitTabType;

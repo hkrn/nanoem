@@ -15,6 +15,125 @@
 
 namespace nanoem {
 namespace internal {
+namespace {
+
+class SortUtils : private NonCopyable {
+public:
+    static int compareVertex(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareMaterial(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareMorph(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareRigidBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareJoint(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareSoftBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+};
+
+int
+SortUtils::compareVertex(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_vertex_t *left = *static_cast<const nanoem_model_vertex_t *const *>(a),
+                                *right = *static_cast<const nanoem_model_vertex_t *const *>(b);
+    return model::Vertex::index(left) - model::Vertex::index(right);
+}
+
+int
+SortUtils::compareMaterial(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_material_t *left = *static_cast<const nanoem_model_material_t *const *>(a),
+                                  *right = *static_cast<const nanoem_model_material_t *const *>(b);
+    return model::Material::index(left) - model::Material::index(right);
+}
+
+int
+SortUtils::compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_bone_t *left = *static_cast<const nanoem_model_bone_t *const *>(a),
+                              *right = *static_cast<const nanoem_model_bone_t *const *>(b);
+    return model::Bone::index(left) - model::Bone::index(right);
+}
+
+int
+SortUtils::compareMorph(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_morph_t *left = *static_cast<const nanoem_model_morph_t *const *>(a),
+                               *right = *static_cast<const nanoem_model_morph_t *const *>(b);
+    return model::Morph::index(left) - model::Morph::index(right);
+}
+
+int
+SortUtils::compareRigidBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_rigid_body_t *left = *static_cast<const nanoem_model_rigid_body_t *const *>(a),
+                                    *right = *static_cast<const nanoem_model_rigid_body_t *const *>(b);
+    return model::RigidBody::index(left) - model::RigidBody::index(right);
+}
+
+int
+SortUtils::compareJoint(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_joint_t *left = *static_cast<const nanoem_model_joint_t *const *>(a),
+                               *right = *static_cast<const nanoem_model_joint_t *const *>(b);
+    return model::Joint::index(left) - model::Joint::index(right);
+}
+
+int
+SortUtils::compareSoftBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_soft_body_t *left = *static_cast<const nanoem_model_soft_body_t *const *>(a),
+                                   *right = *static_cast<const nanoem_model_soft_body_t *const *>(b);
+    return model::SoftBody::index(left) - model::SoftBody::index(right);
+}
+
+} /* namespace anonymous */
+
+void
+ModelObjectSelection::sortedVertexList(const IModelObjectSelection *selection, model::Vertex::List &vertices)
+{
+    vertices = ListUtils::toListFromSet(*selection->allVertexSet());
+    qsort(vertices.data(), vertices.size(), sizeof(vertices[0]), SortUtils::compareVertex);
+}
+
+void
+ModelObjectSelection::sortedMaterialList(const IModelObjectSelection *selection, model::Material::List &materials)
+{
+    materials = ListUtils::toListFromSet(*selection->allMaterialSet());
+    qsort(materials.data(), materials.size(), sizeof(materials[0]), SortUtils::compareMaterial);
+}
+
+void
+ModelObjectSelection::sortedBoneList(const IModelObjectSelection *selection, model::Bone::List &bones)
+{
+    bones = ListUtils::toListFromSet(*selection->allBoneSet());
+    qsort(bones.data(), bones.size(), sizeof(bones[0]), SortUtils::compareBone);
+}
+
+void
+ModelObjectSelection::sortedMorphList(const IModelObjectSelection *selection, model::Morph::List &morphs)
+{
+    morphs = ListUtils::toListFromSet(*selection->allMorphSet());
+    qsort(morphs.data(), morphs.size(), sizeof(morphs[0]), SortUtils::compareMorph);
+}
+
+void
+ModelObjectSelection::sortedRigidBodyList(const IModelObjectSelection *selection, model::RigidBody::List &rigidBodies)
+{
+    rigidBodies = ListUtils::toListFromSet(*selection->allRigidBodySet());
+    qsort(rigidBodies.data(), rigidBodies.size(), sizeof(rigidBodies[0]), SortUtils::compareRigidBody);
+}
+
+void
+ModelObjectSelection::sortedJointList(const IModelObjectSelection *selection, model::Joint::List &joints)
+{
+    joints = ListUtils::toListFromSet(*selection->allJointSet());
+    qsort(joints.data(), joints.size(), sizeof(joints[0]), SortUtils::compareJoint);
+}
+
+void
+ModelObjectSelection::sortedSoftBodyList(const IModelObjectSelection *selection, model::SoftBody::List &softBodies)
+{
+    softBodies = ListUtils::toListFromSet(*selection->allSoftBodySet());
+    qsort(softBodies.data(), softBodies.size(), sizeof(softBodies[0]), SortUtils::compareSoftBody);
+}
 
 ModelObjectSelection::ModelObjectSelection(Model *parent)
     : m_parent(parent)

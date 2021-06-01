@@ -4200,6 +4200,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                 }
                 ImGui::EndMenu();
             }
+            ImGui::Separator();
             if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-parent-bone"), nullptr,
                     editActionType == Model::kEditActionTypeCreateParentBone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);

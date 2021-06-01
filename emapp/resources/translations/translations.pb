@@ -1,5 +1,5 @@
 
-Ҫ@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -405,7 +405,8 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 )nanoem.gui.model.edit.morph.name.japanese名称（日本語）>
 (nanoem.gui.model.edit.morph.name.english名称（英語）4
 $nanoem.gui.model.edit.morph.categoryカテゴリ*
- nanoem.gui.model.edit.morph.type種別/
+ nanoem.gui.model.edit.morph.type種別?
+)nanoem.gui.model.edit.morph.category.baseシステム予約/
 (nanoem.gui.model.edit.morph.category.eye目6
 ,nanoem.gui.model.edit.morph.category.eyebrowまゆ5
 (nanoem.gui.model.edit.morph.category.lip	リップ7
@@ -646,7 +647,21 @@ Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択さ
 2nanoem.gui.model.edit.action.morph.add-group-morph9選択されたモーフをグループモーフに追加n
 1nanoem.gui.model.edit.action.morph.add-flip-morph9選択されたモーフをフリップモーフに追加{
 Ananoem.gui.model.edit.action.rigid-body.create-intermediate-joint6ふたつの剛体から中間ジョイントを作成v
-9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph9選択された剛体をインパルスモーフに追加+
+9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph9選択された剛体をインパルスモーフに追加D
+(nanoem.gui.model.edit.batch.apply.vertex%u 頂点を一括適用F
+*nanoem.gui.model.edit.batch.apply.material%u 材質を一括適用E
+&nanoem.gui.model.edit.batch.apply.bone%u ボーンを一括適用F
+'nanoem.gui.model.edit.batch.apply.morph%u モーフを一括適用H
+,nanoem.gui.model.edit.batch.apply.rigid-body%u 剛体を一括適用L
+'nanoem.gui.model.edit.batch.apply.joint!%u ジョイントを一括適用S
++nanoem.gui.model.edit.batch.apply.soft-body$%u ソフトボディを一括適用X
+'nanoem.gui.model.edit.batch.copy.vertex-次の頂点からパラメータをコピーZ
+)nanoem.gui.model.edit.batch.copy.material-次の材質からパラメータをコピーY
+%nanoem.gui.model.edit.batch.copy.bone0次のボーンからパラメータをコピーZ
+&nanoem.gui.model.edit.batch.copy.morph0次のモーフからパラメータをコピー\
++nanoem.gui.model.edit.batch.copy.rigid-body-次の剛体からパラメータをコピー`
+&nanoem.gui.model.edit.batch.copy.joint6次のジョイントからパラメータをコピーg
+*nanoem.gui.model.edit.batch.copy.soft-body9次のソフトボディからパラメータをコピー+
 nanoem.versionnanoem のバージョン+
 !nanoem.window.dialog.buttons.save保存.
 $nanoem.window.dialog.buttons.discard破棄6
@@ -1137,7 +1152,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1560,7 +1575,8 @@ Local Axes9
 )nanoem.gui.model.edit.morph.name.japaneseName (Japanese):
 (nanoem.gui.model.edit.morph.name.englishName (English)0
 $nanoem.gui.model.edit.morph.categoryCategory(
- nanoem.gui.model.edit.morph.typeType/
+ nanoem.gui.model.edit.morph.typeType<
+)nanoem.gui.model.edit.morph.category.baseSystem Reserved/
 (nanoem.gui.model.edit.morph.category.eyeEye7
 ,nanoem.gui.model.edit.morph.category.eyebrowEyebrow/
 (nanoem.gui.model.edit.morph.category.lipLip3
@@ -1805,7 +1821,21 @@ Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select Al
 2nanoem.gui.model.edit.action.morph.add-group-morphAdd Selected to the Group MorphS
 1nanoem.gui.model.edit.action.morph.add-flip-morphAdd Selected to the Flip Morpht
 Ananoem.gui.model.edit.action.rigid-body.create-intermediate-joint/Create Intermediate Joint from Two Rigid Bodies^
-9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph!Add Selected to the Impulse Morph
+9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph!Add Selected to the Impulse MorphC
+(nanoem.gui.model.edit.batch.apply.vertexApply Batch %u VerticesF
+*nanoem.gui.model.edit.batch.apply.materialApply Batch %u Materials>
+&nanoem.gui.model.edit.batch.apply.boneApply Batch %u Bones@
+'nanoem.gui.model.edit.batch.apply.morphApply Batch %u MorphsK
+,nanoem.gui.model.edit.batch.apply.rigid-bodyApply Batch %u Rigid Bodies@
+'nanoem.gui.model.edit.batch.apply.jointApply Batch %u JointsI
++nanoem.gui.model.edit.batch.apply.soft-bodyApply Batch %u Soft BodiesE
+'nanoem.gui.model.edit.batch.copy.vertexCopy Vertex Parameter fromI
+)nanoem.gui.model.edit.batch.copy.materialCopy Material Parameter fromA
+%nanoem.gui.model.edit.batch.copy.boneCopy Bone Parameter fromC
+&nanoem.gui.model.edit.batch.copy.morphCopy Morph Parameter fromM
++nanoem.gui.model.edit.batch.copy.rigid-bodyCopy Rigid Body Parameter fromC
+&nanoem.gui.model.edit.batch.copy.jointCopy Joint Parameter fromK
+*nanoem.gui.model.edit.batch.copy.soft-bodyCopy Soft Body Parameter from
 nanoem.versionVersion)
 !nanoem.window.dialog.buttons.saveSave/
 $nanoem.window.dialog.buttons.discardDiscard-

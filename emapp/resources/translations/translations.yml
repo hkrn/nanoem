@@ -1623,6 +1623,10 @@
   phrase:
     en_US: 'Type'
     ja_JP: '種別'
+- key: nanoem.gui.model.edit.morph.category.base
+  phrase:
+    en_US: 'System Reserved'
+    ja_JP: 'システム予約'
 - key: nanoem.gui.model.edit.morph.category.eye
   phrase:
     en_US: 'Eye'
@@ -2571,6 +2575,62 @@
   phrase:
     en_US: 'Add Selected to the Impulse Morph'
     ja_JP: '選択された剛体をインパルスモーフに追加'
+- key: nanoem.gui.model.edit.batch.apply.vertex
+  phrase:
+    en_US: 'Apply Batch %u Vertices'
+    ja_JP: '%u 頂点を一括適用'
+- key: nanoem.gui.model.edit.batch.apply.material
+  phrase:
+    en_US: 'Apply Batch %u Materials'
+    ja_JP: '%u 材質を一括適用'
+- key: nanoem.gui.model.edit.batch.apply.bone
+  phrase:
+    en_US: 'Apply Batch %u Bones'
+    ja_JP: '%u ボーンを一括適用'
+- key: nanoem.gui.model.edit.batch.apply.morph
+  phrase:
+    en_US: 'Apply Batch %u Morphs'
+    ja_JP: '%u モーフを一括適用'
+- key: nanoem.gui.model.edit.batch.apply.rigid-body
+  phrase:
+    en_US: 'Apply Batch %u Rigid Bodies'
+    ja_JP: '%u 剛体を一括適用'
+- key: nanoem.gui.model.edit.batch.apply.joint
+  phrase:
+    en_US: 'Apply Batch %u Joints'
+    ja_JP: '%u ジョイントを一括適用'
+- key: nanoem.gui.model.edit.batch.apply.soft-body
+  phrase:
+    en_US: 'Apply Batch %u Soft Bodies'
+    ja_JP: '%u ソフトボディを一括適用'
+- key: nanoem.gui.model.edit.batch.copy.vertex
+  phrase:
+    en_US: 'Copy Vertex Parameter from'
+    ja_JP: '次の頂点からパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.material
+  phrase:
+    en_US: 'Copy Material Parameter from'
+    ja_JP: '次の材質からパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.bone
+  phrase:
+    en_US: 'Copy Bone Parameter from'
+    ja_JP: '次のボーンからパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.morph
+  phrase:
+    en_US: 'Copy Morph Parameter from'
+    ja_JP: '次のモーフからパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.rigid-body
+  phrase:
+    en_US: 'Copy Rigid Body Parameter from'
+    ja_JP: '次の剛体からパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.joint
+  phrase:
+    en_US: 'Copy Joint Parameter from'
+    ja_JP: '次のジョイントからパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.soft-body
+  phrase:
+    en_US: 'Copy Soft Body Parameter from'
+    ja_JP: '次のソフトボディからパラメータをコピー'
 
 - key: nanoem.version
   phrase:

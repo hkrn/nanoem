@@ -1320,6 +1320,7 @@ public:
         nanoem_f32_t m_specularPower;
         nanoem_f32_t m_edgeOpacity;
         nanoem_f32_t m_edgeSize;
+        nanoem_model_material_sphere_map_texture_type_t m_sphereType;
         bool m_isToonShared;
         bool m_isCullingDisabled;
         bool m_isCastingShadowEnabled;
@@ -1436,7 +1437,7 @@ private:
 class BatchChangeAllRigidBodyObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     struct Parameter {
-        Vector3 m_size;
+        Vector3 m_shapeSize;
         Vector3 m_origin;
         Vector3 m_orientation;
         const nanoem_model_bone_t *m_bone;

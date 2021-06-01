@@ -4556,6 +4556,7 @@ BatchChangeAllVertexObjectsCommand::BatchChangeAllVertexObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
@@ -4634,6 +4635,7 @@ BatchChangeAllMaterialObjectsCommand::save(const nanoem_model_material_t *materi
     parameter.m_specularPower = nanoemModelMaterialGetSpecularPower(materialPtr);
     parameter.m_edgeOpacity = nanoemModelMaterialGetEdgeOpacity(materialPtr);
     parameter.m_edgeSize = nanoemModelMaterialGetEdgeSize(materialPtr);
+    parameter.m_sphereType = nanoemModelMaterialGetSphereMapTextureType(materialPtr);
     parameter.m_isToonShared = nanoemModelMaterialIsToonShared(materialPtr);
     parameter.m_isCullingDisabled = nanoemModelMaterialIsCullingDisabled(materialPtr);
     parameter.m_isCastingShadowEnabled = nanoemModelMaterialIsCastingShadowEnabled(materialPtr);
@@ -4656,6 +4658,7 @@ BatchChangeAllMaterialObjectsCommand::restore(const Parameter &parameter, nanoem
     nanoemMutableModelMaterialSetSpecularPower(materialPtr, parameter.m_specularPower);
     nanoemMutableModelMaterialSetEdgeOpacity(materialPtr, parameter.m_edgeOpacity);
     nanoemMutableModelMaterialSetEdgeSize(materialPtr, parameter.m_edgeSize);
+    nanoemMutableModelMaterialSetSphereMapTextureType(materialPtr, parameter.m_sphereType);
     nanoemMutableModelMaterialSetToonShared(materialPtr, parameter.m_isToonShared);
     nanoemMutableModelMaterialSetCullingDisabled(materialPtr, parameter.m_isCullingDisabled);
     nanoemMutableModelMaterialSetCastingShadowEnabled(materialPtr, parameter.m_isCastingShadowEnabled);
@@ -4671,6 +4674,7 @@ BatchChangeAllMaterialObjectsCommand::BatchChangeAllMaterialObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
@@ -4795,6 +4799,7 @@ BatchChangeAllBoneObjectsCommand::BatchChangeAllBoneObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
@@ -4878,6 +4883,7 @@ BatchChangeAllMorphObjectsCommand::BatchChangeAllMorphObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
@@ -4948,7 +4954,7 @@ BatchChangeAllRigidBodyObjectsCommand::create(Model *activeModel, const List &ob
 void
 BatchChangeAllRigidBodyObjectsCommand::save(const nanoem_model_rigid_body_t *rigidBodyPtr, Parameter &parameter)
 {
-    parameter.m_size = glm::make_vec3(nanoemModelRigidBodyGetShapeSize(rigidBodyPtr));
+    parameter.m_shapeSize = glm::make_vec3(nanoemModelRigidBodyGetShapeSize(rigidBodyPtr));
     parameter.m_origin = glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr));
     parameter.m_orientation = glm::make_vec3(nanoemModelRigidBodyGetOrientation(rigidBodyPtr));
     parameter.m_bone = nanoemModelRigidBodyGetBoneObject(rigidBodyPtr);
@@ -4966,7 +4972,7 @@ BatchChangeAllRigidBodyObjectsCommand::save(const nanoem_model_rigid_body_t *rig
 void
 BatchChangeAllRigidBodyObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_rigid_body_t *rigidBodyPtr)
 {
-    nanoemMutableModelRigidBodySetShapeSize(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_size, 0)));
+    nanoemMutableModelRigidBodySetShapeSize(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_shapeSize, 0)));
     nanoemMutableModelRigidBodySetOrigin(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_origin, 0)));
     nanoemMutableModelRigidBodySetOrientation(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_orientation, 0)));
     nanoemMutableModelRigidBodySetBoneObject(rigidBodyPtr, parameter.m_bone);
@@ -4985,6 +4991,7 @@ BatchChangeAllRigidBodyObjectsCommand::BatchChangeAllRigidBodyObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
@@ -5088,6 +5095,7 @@ BatchChangeAllJointObjectsCommand::BatchChangeAllJointObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
@@ -5169,6 +5177,7 @@ BatchChangeAllSoftBodyObjectsCommand::BatchChangeAllSoftBodyObjectsCommand(
     Model *activeModel, const List &objects, const Parameter &parameter)
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
+    , m_newParameter(parameter)
 {
     for (List::const_iterator it = objects.begin(), end = objects.end(); it != end; ++it) {
         Parameter parameter;
