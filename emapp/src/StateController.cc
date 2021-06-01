@@ -995,8 +995,8 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
     case IModelObjectSelection::kObjectTypeBone: {
         const model::Bone::Set *selectedBoneSet = selection->allBoneSet();
         if (!selectedBoneSet->empty()) {
-            for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end;
-                 ++it) {
+            for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end();
+                 it != end; ++it) {
                 const nanoem_model_bone_t *bonePtr = *it;
                 const Vector3 origin(model::Bone::origin(bonePtr));
                 assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
@@ -1052,7 +1052,8 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                 }
                 offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
             }
-            for (model::Material::Set::const_iterator it = selectedMaterialSet->begin(), end = selectedMaterialSet->end();
+            for (model::Material::Set::const_iterator it = selectedMaterialSet->begin(),
+                                                      end = selectedMaterialSet->end();
                  it != end; ++it) {
                 const nanoem_model_material_t *materialPtr = *it;
                 MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
@@ -1100,7 +1101,8 @@ BaseSelectionState::pivotMatrix(const Model *activeModel) const
                 }
                 offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
             }
-            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet->begin(), end = selectedSoftBodySet->end();
+            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet->begin(),
+                                                      end = selectedSoftBodySet->end();
                  it != end; ++it) {
                 const nanoem_model_soft_body_t *softBodyPtr = *it;
                 const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);

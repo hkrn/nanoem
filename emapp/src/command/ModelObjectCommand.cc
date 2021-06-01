@@ -857,7 +857,7 @@ PaintVertexWeightCommand::undo(Error &error)
     for (BoneMappingStateMap::const_iterator it = m_mappings.begin(), end = m_mappings.end(); it != end; ++it) {
         nanoem_model_vertex_t *vertexPtr = it->first;
         const BoneMappingState &state = it->second.second;
-        setBoneWeight(vertexPtr,state, &status);
+        setBoneWeight(vertexPtr, state, &status);
     }
     assignError(status, error);
 }
@@ -899,7 +899,8 @@ PaintVertexWeightCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 void
-PaintVertexWeightCommand::setBoneWeight(nanoem_model_vertex_t *vertexPtr, const BoneMappingState &state, nanoem_status_t *status)
+PaintVertexWeightCommand::setBoneWeight(
+    nanoem_model_vertex_t *vertexPtr, const BoneMappingState &state, nanoem_status_t *status)
 {
     nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
     for (nanoem_rsize_t i = 0; i < 4; i++) {
@@ -1138,7 +1139,8 @@ CopyMaterialFromModelCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-MergeMaterialCommand::create(Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+MergeMaterialCommand::create(
+    Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
     MergeMaterialCommand *command = nanoem_new(MergeMaterialCommand(activeModel, materials, materialIndex));
     return command->createCommand();
@@ -1213,7 +1215,8 @@ MergeMaterialCommand::name() const NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-DeleteMaterialCommand::create(Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+DeleteMaterialCommand::create(
+    Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
     DeleteMaterialCommand *command = nanoem_new(DeleteMaterialCommand(activeModel, materials, materialIndex));
     return command->createCommand();
@@ -1415,7 +1418,8 @@ BaseMoveMaterialCommand::moveDown(nanoem_status_t *status)
 }
 
 undo_command_t *
-MoveMaterialUpCommand::create(Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
+MoveMaterialUpCommand::create(
+    Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex)
 {
     MoveMaterialUpCommand *command = nanoem_new(MoveMaterialUpCommand(activeModel, materials, materialIndex));
     return command->createCommand();
@@ -2339,7 +2343,8 @@ undo_command_t *
 CreateBoneMorphFromPoseCommand::create(
     Model *activeModel, const model::BindPose::BoneTransformMap &transforms, const String &filename)
 {
-    CreateBoneMorphFromPoseCommand *command = nanoem_new(CreateBoneMorphFromPoseCommand(activeModel, transforms, filename));
+    CreateBoneMorphFromPoseCommand *command =
+        nanoem_new(CreateBoneMorphFromPoseCommand(activeModel, transforms, filename));
     return command->createCommand();
 }
 
@@ -3062,7 +3067,8 @@ BaseMoveMorphCommand::redo(Error &error)
     move(m_toMorphIndex, m_fromMorphIndex, error);
 }
 
-BaseMoveMorphCommand::BaseMoveMorphCommand(Model *activeModel, nanoem_rsize_t fromMorphIndex, nanoem_rsize_t toMorphIndex)
+BaseMoveMorphCommand::BaseMoveMorphCommand(
+    Model *activeModel, nanoem_rsize_t fromMorphIndex, nanoem_rsize_t toMorphIndex)
     : BaseUndoCommand(activeModel->project())
     , m_fromMorphIndex(fromMorphIndex)
     , m_toMorphIndex(toMorphIndex)
@@ -3491,7 +3497,8 @@ BaseMoveLabelCommand::redo(Error &error)
     move(m_toLabelIndex, m_fromLabelIndex, error);
 }
 
-BaseMoveLabelCommand::BaseMoveLabelCommand(Model *activeModel, nanoem_rsize_t fromLabelIndex, nanoem_rsize_t toLabelIndex)
+BaseMoveLabelCommand::BaseMoveLabelCommand(
+    Model *activeModel, nanoem_rsize_t fromLabelIndex, nanoem_rsize_t toLabelIndex)
     : BaseUndoCommand(activeModel->project())
     , m_fromLabelIndex(fromLabelIndex)
     , m_toLabelIndex(toLabelIndex)
@@ -4135,7 +4142,8 @@ BaseMoveJointCommand::redo(Error &error)
     move(m_toJointIndex, m_fromJointIndex, error);
 }
 
-BaseMoveJointCommand::BaseMoveJointCommand(Model *activeModel, nanoem_rsize_t fromJointIndex, nanoem_rsize_t toJointIndex)
+BaseMoveJointCommand::BaseMoveJointCommand(
+    Model *activeModel, nanoem_rsize_t fromJointIndex, nanoem_rsize_t toJointIndex)
     : BaseUndoCommand(activeModel->project())
     , m_fromJointIndex(fromJointIndex)
     , m_toJointIndex(toJointIndex)
@@ -4970,7 +4978,8 @@ BatchChangeAllRigidBodyObjectsCommand::save(const nanoem_model_rigid_body_t *rig
 }
 
 void
-BatchChangeAllRigidBodyObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_rigid_body_t *rigidBodyPtr)
+BatchChangeAllRigidBodyObjectsCommand::restore(
+    const Parameter &parameter, nanoem_mutable_model_rigid_body_t *rigidBodyPtr)
 {
     nanoemMutableModelRigidBodySetShapeSize(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_shapeSize, 0)));
     nanoemMutableModelRigidBodySetOrigin(rigidBodyPtr, glm::value_ptr(Vector4(parameter.m_origin, 0)));

@@ -3893,7 +3893,8 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
                     IModelObjectSelection *selection = model->selection();
                     const model::Bone::Set *boneSet = selection->allBoneSet();
                     selection->addAllDirtyBones();
-                    for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
+                    for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end;
+                         ++it) {
                         selection->addBone(*it);
                     }
                     registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(model);

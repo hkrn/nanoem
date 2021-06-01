@@ -285,8 +285,8 @@ class CreateMaterialCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
     typedef tinystl::vector<nanoem_mutable_model_vertex_t *, TinySTLAllocator> MutableVertexList;
 
-    static undo_command_t *create(
-        Model *activeModel, const String &name, const MutableVertexList &vertices, const VertexIndexList &vertexIndices);
+    static undo_command_t *create(Model *activeModel, const String &name, const MutableVertexList &vertices,
+        const VertexIndexList &vertexIndices);
 
     CreateMaterialCommand(Model *activeModel, const String &name, const MutableVertexList &vertices,
         const VertexIndexList &vertexIndices);
@@ -376,7 +376,8 @@ private:
 
 class BaseMoveMaterialCommand : public BaseUndoCommand {
 public:
-    BaseMoveMaterialCommand(Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
+    BaseMoveMaterialCommand(
+        Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
     ~BaseMoveMaterialCommand() NANOEM_DECL_NOEXCEPT;
 
 protected:
@@ -415,7 +416,8 @@ public:
     static undo_command_t *create(
         Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t materialIndex);
 
-    MoveMaterialDownCommand(Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
+    MoveMaterialDownCommand(
+        Model *activeModel, nanoem_model_material_t *const *materials, nanoem_rsize_t &materialIndex);
     ~MoveMaterialDownCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;
@@ -630,7 +632,8 @@ public:
         Model *activeModel, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
     static void setup(nanoem_model_morph_t *morphPtr, Project *project);
 
-    CreateMorphCommand(Model *activeModel, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
+    CreateMorphCommand(
+        Model *activeModel, int offset, const nanoem_model_morph_t *base, nanoem_model_morph_type_t type);
     ~CreateMorphCommand() NANOEM_DECL_NOEXCEPT;
 
     void undo(Error &error) NANOEM_DECL_OVERRIDE;

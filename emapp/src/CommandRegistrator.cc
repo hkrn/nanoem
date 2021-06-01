@@ -91,7 +91,8 @@ CommandRegistrator::registerAddBoneKeyframesCommandBySelectedBoneSet(Model *mode
     const nanoem_frame_index_t frameIndex = m_project->currentLocalFrameIndex();
     Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
     if (!selectedBoneSet->empty()) {
-        for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end; ++it) {
+        for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end;
+             ++it) {
             const nanoem_model_bone_t *bone = *it;
             boneFrameIndexListMap[bone].insert(frameIndex);
         }

@@ -121,7 +121,8 @@ MoveAllSelectedModelObjectsCommand::State::State(Model *activeModel)
         nanoem_rsize_t numRigidBodies;
         nanoem_model_rigid_body_t *const *rigidBodies =
             nanoemModelGetAllRigidBodyObjects(activeModel->data(), &numRigidBodies);
-        for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet->begin(), end = selectedRigidBodySet->end();
+        for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet->begin(),
+                                                   end = selectedRigidBodySet->end();
              it != end; ++it) {
             const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
             nanoem_model_rigid_body_t *mutableRigidBodyPtr = rigidBodies[model::RigidBody::index(rigidBodyPtr)];

@@ -281,8 +281,7 @@ public:
     void setAutomaticNormalizationEnabled(bool value);
 
 private:
-    void paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
-        nanoem_status_t *status);
+    void paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status);
     void setVertexBoneWeight(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
         nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
     void normalizeVertexBoneWeight(
@@ -422,8 +421,8 @@ VertexWeightBrush::setAutomaticNormalizationEnabled(bool value)
 }
 
 void
-VertexWeightBrush::paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
-    nanoem_status_t *status)
+VertexWeightBrush::paintVertex(
+    const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status)
 {
     nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
     command::PaintVertexWeightCommand::BoneMappingStateMap::const_iterator it = m_mappings.find(vertexPtr);
@@ -4143,7 +4142,8 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         IModelObjectSelection *selection = activeModel->selection();
         if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.title"))) {
             const IModelObjectSelection::ObjectType objectType = selection->objectType();
-            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.camera"), nullptr, editActionType == Model::kEditActionTypeNone)) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.camera"), nullptr,
+                    editActionType == Model::kEditActionTypeNone)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypeNone);
             }
@@ -4244,7 +4244,8 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
         const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
             objectType < IModelObjectSelection::kObjectTypeMaxEnum;
-        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.circle"), targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.circle"),
+                targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypeCircle);
         }
         ImGui::SameLine();
@@ -4265,31 +4266,37 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
     if (isGizmoEnabled && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::Text(tr("nanoem.gui.panel.model.edit.gizmo.operation.title"));
         model::IGizmo::OperationType op = gizmo->operationType();
-        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.translate"), op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.translate"),
+                op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
             gizmo->setOperationType(model::IGizmo::kOperationTypeTranslate);
         }
         ImGui::SameLine();
-        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.rotate"), op == model::IGizmo::kOperationTypeRotate, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.rotate"),
+                op == model::IGizmo::kOperationTypeRotate, isGizmoEnabled)) {
             gizmo->setOperationType(model::IGizmo::kOperationTypeRotate);
         }
         ImGui::SameLine();
-        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.scale"), op == model::IGizmo::kOperationTypeScale, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.scale"),
+                op == model::IGizmo::kOperationTypeScale, isGizmoEnabled)) {
             gizmo->setOperationType(model::IGizmo::kOperationTypeScale);
         }
         ImGui::Separator();
         ImGui::Text(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.title"));
         model::IGizmo::TransformCoordinateType coord = gizmo->transformCoordinateType();
-        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.global"), coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.global"),
+                coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
             gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeGlobal);
         }
         ImGui::SameLine();
-        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.local"), coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.local"),
+                coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
             gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeLocal);
         }
         ImGui::Spacing();
     }
     const bool paintMode = editActionType == Model::kEditActionTypePaintVertexWeight;
-    StringUtils::format(buffer, sizeof(buffer), "%s##vertex-weight-paint", tr("nanoem.gui.panel.model.edit.weight-paint.title"));
+    StringUtils::format(
+        buffer, sizeof(buffer), "%s##vertex-weight-paint", tr("nanoem.gui.panel.model.edit.weight-paint.title"));
     if (paintMode && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
         ImGui::PushItemWidth(-1);
         nanoem_rsize_t numBones;

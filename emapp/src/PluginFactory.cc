@@ -359,7 +359,8 @@ PluginFactory::ModelIOPluginProxy::setupSelection(const Model *model, Error &err
         m_plugin->setAllSelectedVertexObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::Material::Set *materialSet = selection->allMaterialSet();
-        for (model::Material::Set::const_iterator it = materialSet->begin(), end = materialSet->end(); it != end; ++it) {
+        for (model::Material::Set::const_iterator it = materialSet->begin(), end = materialSet->end(); it != end;
+             ++it) {
             indices.push_back(model::Material::index(*it));
         }
         m_plugin->setAllSelectedMaterialObjectIndices(indices.data(), indices.size(), error);
@@ -383,7 +384,8 @@ PluginFactory::ModelIOPluginProxy::setupSelection(const Model *model, Error &err
         m_plugin->setAllSelectedLabelObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::RigidBody::Set *rigidBodySet = selection->allRigidBodySet();
-        for (model::RigidBody::Set::const_iterator it = rigidBodySet->begin(), end = rigidBodySet->end(); it != end; ++it) {
+        for (model::RigidBody::Set::const_iterator it = rigidBodySet->begin(), end = rigidBodySet->end(); it != end;
+             ++it) {
             indices.push_back(model::RigidBody::index(*it));
         }
         m_plugin->setAllSelectedRigidBodyObjectIndices(indices.data(), indices.size(), error);
@@ -395,7 +397,8 @@ PluginFactory::ModelIOPluginProxy::setupSelection(const Model *model, Error &err
         m_plugin->setAllSelectedJointObjectIndices(indices.data(), indices.size(), error);
         indices.clear();
         const model::SoftBody::Set *softBodySet = selection->allSoftBodySet();
-        for (model::SoftBody::Set::const_iterator it = softBodySet->begin(), end = softBodySet->end(); it != end; ++it) {
+        for (model::SoftBody::Set::const_iterator it = softBodySet->begin(), end = softBodySet->end(); it != end;
+             ++it) {
             indices.push_back(model::SoftBody::index(*it));
         }
         m_plugin->setAllSelectedSoftBodyObjectIndices(indices.data(), indices.size(), error);

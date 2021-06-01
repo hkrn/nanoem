@@ -14,11 +14,11 @@
 #include "emapp/IImageView.h"
 #include "emapp/ILight.h"
 #include "emapp/ListUtils.h"
-#include "emapp/internal/ModelObjectSelection.h"
 #include "emapp/ModalDialogFactory.h"
 #include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/command/TransformModelCommand.h"
+#include "emapp/internal/ModelObjectSelection.h"
 #include "emapp/internal/imgui/LazyPushUndoCommand.h"
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
 #include "emapp/internal/imgui/UVEditDialog.h"
@@ -1520,7 +1520,8 @@ ModelParameterDialog::layoutBatchVertexChangePane(Project *project)
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
-    StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.batch.apply.vertex"), m_activeModel->selection()->countAllVertices());
+    StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.batch.apply.vertex"),
+        m_activeModel->selection()->countAllVertices());
     if (ImGuiWindow::handleButton(buffer, -1, true)) {
         command::BatchChangeAllVertexObjectsCommand::List objects;
         nanoem_rsize_t numVertices;
@@ -1542,7 +1543,7 @@ ModelParameterDialog::layoutBatchVertexChangePane(Project *project)
     StringUtils::format(buffer, sizeof(buffer), "Vertex%d", model::Vertex::index(selectedVertex));
     if (ImGui::BeginCombo("##copy-parameter-from", selectedVertex ? buffer : "(null)")) {
         for (model::Vertex::List::const_iterator it = m_sortedSelectedVertices.begin(),
-                                                   end = m_sortedSelectedVertices.end();
+                                                 end = m_sortedSelectedVertices.end();
              it != end; ++it) {
             const nanoem_model_vertex_t *vertexPtr = *it;
             StringUtils::format(buffer, sizeof(buffer), "Vertex%d", model::Vertex::index(vertexPtr));
@@ -2110,7 +2111,8 @@ ModelParameterDialog::layoutBatchMaterialChangePane(Project *project)
     if (ImGuiWindow::handleButton(buffer, -1, true)) {
         command::BatchChangeAllMaterialObjectsCommand::List objects;
         nanoem_rsize_t numMaterials;
-        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
+        nanoem_model_material_t *const *materials =
+            nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
         const model::Material::Set *materialSet = m_activeModel->selection()->allMaterialSet();
         for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
             nanoem_model_material_t *materialPtr = materials[i];
@@ -2128,7 +2130,7 @@ ModelParameterDialog::layoutBatchMaterialChangePane(Project *project)
         model::Material::cast(m_sortedSelectedMaterials[m_sortedSelectedMaterialIndex]);
     if (ImGui::BeginCombo("##copy-parameter-from", selectedMaterial ? selectedMaterial->nameConstString() : "(null)")) {
         for (model::Material::List::const_iterator it = m_sortedSelectedMaterials.begin(),
-                                                    end = m_sortedSelectedMaterials.end();
+                                                   end = m_sortedSelectedMaterials.end();
              it != end; ++it) {
             const model::Material *material = model::Material::cast(*it);
             if (material && ImGui::Selectable(material->nameConstString())) {
@@ -2177,8 +2179,7 @@ ModelParameterDialog::layoutBatchMaterialChangePane(Project *project)
         ImGui::EndCombo();
     }
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.spheremap.type"));
-    if (ImGui::BeginCombo(
-            "##spheremap", selectedMaterialSphereMapType(m_batchMaterialParameter.m_sphereType))) {
+    if (ImGui::BeginCombo("##spheremap", selectedMaterialSphereMapType(m_batchMaterialParameter.m_sphereType))) {
         for (nanoem_rsize_t i = NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_FIRST_ENUM;
              i < NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MAX_ENUM; i++) {
             const nanoem_model_material_sphere_map_texture_type_t type =
@@ -2621,7 +2622,8 @@ constructTree(const BoneTree &boneTree, const nanoem_model_bone_t *parentBonePtr
         if (const model::Bone *parentBone = model::Bone::cast(parentBonePtr)) {
             if (ImGui::TreeNode(parentBonePtr, "%s", parentBone->nameConstString())) {
                 const model::Bone::Set *boneSet = &it->second;
-                for (model::Bone::Set::const_iterator it2 = boneSet->begin(), end2 = boneSet->end(); it2 != end2; ++it2) {
+                for (model::Bone::Set::const_iterator it2 = boneSet->begin(), end2 = boneSet->end(); it2 != end2;
+                     ++it2) {
                     const nanoem_model_bone_t *bonePtr = *it2;
                     constructTree(boneTree, bonePtr);
                 }
@@ -2792,8 +2794,7 @@ ModelParameterDialog::layoutBatchBoneChangePane(Project *project)
     if (ImGuiWindow::handleButton(buffer, -1, true)) {
         command::BatchChangeAllBoneObjectsCommand::List objects;
         nanoem_rsize_t numBones;
-        nanoem_model_bone_t *const *bones =
-            nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
         const model::Bone::Set *boneSet = m_activeModel->selection()->allBoneSet();
         for (nanoem_rsize_t i = 0; i < numBones; i++) {
             nanoem_model_bone_t *bonePtr = bones[i];
@@ -2807,11 +2808,9 @@ ModelParameterDialog::layoutBatchBoneChangePane(Project *project)
     }
     addSeparator();
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.batch.copy.bone"));
-    const model::Bone *selectedBone =
-        model::Bone::cast(m_sortedSelectedBones[m_sortedSelectedBoneIndex]);
+    const model::Bone *selectedBone = model::Bone::cast(m_sortedSelectedBones[m_sortedSelectedBoneIndex]);
     if (ImGui::BeginCombo("##copy-parameter-from", selectedBone ? selectedBone->nameConstString() : "(null)")) {
-        for (model::Bone::List::const_iterator it = m_sortedSelectedBones.begin(),
-                                                   end = m_sortedSelectedBones.end();
+        for (model::Bone::List::const_iterator it = m_sortedSelectedBones.begin(), end = m_sortedSelectedBones.end();
              it != end; ++it) {
             const model::Bone *bone = model::Bone::cast(*it);
             if (bone && ImGui::Selectable(bone->nameConstString())) {
@@ -2827,7 +2826,8 @@ ModelParameterDialog::layoutBatchBoneChangePane(Project *project)
     }
     const nanoem_model_bone_t *parentBonePtr = nullptr;
     layoutBoneComboBox("parent", parentBonePtr, nullptr, nanoemMutableModelBoneSetParentBoneObject);
-    if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.destination.bone"), !m_batchBoneParameter.m_hasDestinationOrigin)) {
+    if (ImGui::RadioButton(
+            tr("nanoem.gui.model.edit.bone.destination.bone"), !m_batchBoneParameter.m_hasDestinationOrigin)) {
         m_batchBoneParameter.m_hasDestinationOrigin = false;
     }
     ImGui::SameLine();
@@ -4129,7 +4129,8 @@ ModelParameterDialog::layoutMorphMaterialPropertyPane(
     }
     addSeparator();
     {
-        const nanoem_model_morph_material_operation_type_t value = nanoemModelMorphMaterialGetOperationType(morphMaterialPtr);
+        const nanoem_model_morph_material_operation_type_t value =
+            nanoemModelMorphMaterialGetOperationType(morphMaterialPtr);
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.morph.material.operation"));
         if (ImGui::BeginCombo("##operation", selectedMorphMaterialOperationType(value))) {
             for (int i = NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_FIRST_ENUM;
@@ -4692,7 +4693,8 @@ ModelParameterDialog::layoutBatchRigidBodyChangePane(Project *project)
     if (ImGuiWindow::handleButton(buffer, -1, true)) {
         command::BatchChangeAllRigidBodyObjectsCommand::List objects;
         nanoem_rsize_t numRigidBodys;
-        nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodys);
+        nanoem_model_rigid_body_t *const *rigidBodies =
+            nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodys);
         const model::RigidBody::Set *rigidBodySet = m_activeModel->selection()->allRigidBodySet();
         for (nanoem_rsize_t i = 0; i < numRigidBodys; i++) {
             nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
@@ -5240,10 +5242,10 @@ ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Pr
         }
     }
     addSeparator();
-    layoutRigidBodyComboBox(
-        "rigid-body.a", nanoemModelJointGetRigidBodyAObject(jointPtr), jointPtr, nanoemMutableModelJointSetRigidBodyAObject);
-    layoutRigidBodyComboBox(
-        "rigid-body.b", nanoemModelJointGetRigidBodyBObject(jointPtr), jointPtr, nanoemMutableModelJointSetRigidBodyBObject);
+    layoutRigidBodyComboBox("rigid-body.a", nanoemModelJointGetRigidBodyAObject(jointPtr), jointPtr,
+        nanoemMutableModelJointSetRigidBodyAObject);
+    layoutRigidBodyComboBox("rigid-body.b", nanoemModelJointGetRigidBodyBObject(jointPtr), jointPtr,
+        nanoemMutableModelJointSetRigidBodyBObject);
     addSeparator();
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.joint.origin"));
@@ -6013,7 +6015,7 @@ ModelParameterDialog::layoutManipulateVertexMenu(Project *project)
             }
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs"))) {
-            const model::Vertex::Set *vertexSet =selection->allVertexSet();
+            const model::Vertex::Set *vertexSet = selection->allVertexSet();
             nanoem_rsize_t numMorphs;
             nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
             removeAllMorphSelectionIfNeeded(selection);
@@ -6447,13 +6449,15 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
             StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.staging.parent"),
                 selectedBone->nameConstString());
             if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
-                undo_command_t *command = command::CreateBoneAsStagingParentCommand::create(m_activeModel, selectedBonePtr);
+                undo_command_t *command =
+                    command::CreateBoneAsStagingParentCommand::create(m_activeModel, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             StringUtils::format(buffer, sizeof(buffer), tr("nanoem.gui.model.edit.action.bone.create.staging.child"),
                 selectedBone->nameConstString());
             if (ImGui::MenuItem(buffer, nullptr, false, parentBonePtr != nullptr)) {
-                undo_command_t *command = command::CreateBoneAsStagingChildCommand::create(m_activeModel, selectedBonePtr);
+                undo_command_t *command =
+                    command::CreateBoneAsStagingChildCommand::create(m_activeModel, selectedBonePtr);
                 m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
             }
             ImGui::EndMenu();
@@ -6605,7 +6609,8 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
                 if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(bonePtr)) {
                     const model::Constraint *constraint = model::Constraint::cast(constraintPtr);
                     if (constraint && ImGui::MenuItem(constraint->nameConstString())) {
-                        undo_command_t *command = command::AddBoneToConstraintCommand::create(m_activeModel, constraintPtr);
+                        undo_command_t *command =
+                            command::AddBoneToConstraintCommand::create(m_activeModel, constraintPtr);
                         m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
                     }
                 }
@@ -6975,7 +6980,8 @@ ModelParameterDialog::layoutCreateLabelMenu(Project *project, const nanoem_model
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_labelIndex < numLabels)) {
-            undo_command_t *command = command::CreateLabelCommand::create(m_activeModel, selectedLabelIndex + 1, nullptr);
+            undo_command_t *command =
+                command::CreateLabelCommand::create(m_activeModel, selectedLabelIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
@@ -7187,7 +7193,8 @@ ModelParameterDialog::layoutCreateJointMenu(Project *project)
         }
         if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.insert.new.after-selected"), nullptr, nullptr,
                 m_jointIndex < numJoints)) {
-            undo_command_t *command = command::CreateJointCommand::create(m_activeModel, selectedJointIndex + 1, nullptr);
+            undo_command_t *command =
+                command::CreateJointCommand::create(m_activeModel, selectedJointIndex + 1, nullptr);
             m_parent->addLazyExecutionCommand(nanoem_new(LazyPushUndoCommand(command)));
         }
         ImGui::EndMenu();
