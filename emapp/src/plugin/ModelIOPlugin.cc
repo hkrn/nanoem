@@ -45,6 +45,7 @@ ModelIOPlugin::ModelIOPlugin(IEventPublisher *publisher)
     , _modelIOSetAllMaskedRigidBodyObjectIndices(nullptr)
     , _modelIOSetAllMaskedJointObjectIndices(nullptr)
     , _modelIOSetAllMaskedSoftBodyObjectIndices(nullptr)
+    , _modelIOSetEditingModeEnabled(nullptr)
     , _modelIOSetAudioDescription(nullptr)
     , _modelIOSetCameraDescription(nullptr)
     , _modelIOSetLightDescription(nullptr)
@@ -153,6 +154,8 @@ ModelIOPlugin::load(const URI &fileURI)
                     _modelIOSetAllMaskedJointObjectIndices);
                 Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices",
                     _modelIOSetAllMaskedSoftBodyObjectIndices);
+                Inline::resolveSymbol(
+                    handle, "nanoemApplicationPluginModelIOSetEditingModeEnabled", _modelIOSetEditingModeEnabled);
                 m_handle = handle;
                 m_name = fileURI.lastPathComponent();
                 m_fileURI = fileURI;
@@ -393,6 +396,14 @@ ModelIOPlugin::setAllMaskedSoftBodyObjectIndices(const int *indices, nanoem_rsiz
         int status = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
         _modelIOSetAllMaskedSoftBodyObjectIndices(m_modelIO, indices, Inline::saturateInt32U(size), &status);
         handlePluginStatus(status, error);
+    }
+}
+
+void
+ModelIOPlugin::setEditingModeEnabled(bool value)
+{
+    if (_modelIOSetEditingModeEnabled) {
+        _modelIOSetEditingModeEnabled(m_modelIO, value ? 1 : 0);
     }
 }
 

@@ -326,6 +326,7 @@ void
 PluginFactory::ModelIOPluginProxy::setProjectDescription(Project *project, Error &error)
 {
     if (m_plugin) {
+        m_plugin->setEditingModeEnabled(project->isModelEditingEnabled());
         m_plugin->setInputAudio(project->audioPlayer(), error);
         m_plugin->setInputCamera(project->globalCamera(), error);
         m_plugin->setInputLight(project->globalLight(), error);

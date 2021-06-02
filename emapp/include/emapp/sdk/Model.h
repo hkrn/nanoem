@@ -72,6 +72,8 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedJointObj
     nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices(
     nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetEditingModeEnabled(
+    nanoem_application_plugin_model_io_t *plugin, int value);
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAudioDescription(
     nanoem_application_plugin_model_io_t *plugin, const nanoem_u8_t *data, nanoem_u32_t length, nanoem_i32_t *status);
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetCameraDescription(
