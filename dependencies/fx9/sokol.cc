@@ -60,7 +60,7 @@ struct Main {
         if (succeeded) {
             bool found = false;
             for (int i = SG_MAX_SHADERSTAGE_IMAGES - 1; i >= 0; i--) {
-                const sg_image_type type = images[i].type;
+                const sg_image_type type = images[i].image_type;
                 if (!found && type != _SG_IMAGETYPE_DEFAULT) {
                     found = true;
                 }
@@ -88,8 +88,8 @@ struct Main {
             desc.source = shader->msl;
             break;
         case FX9__EFFECT__SHADER__BODY_SPIRV:
-            desc.byte_code = shader->spirv.data;
-            desc.byte_code_size = shader->spirv.len;
+            desc.bytecode.ptr = shader->spirv.data;
+            desc.bytecode.size = shader->spirv.len;
             break;
         default:
             break;
@@ -268,8 +268,8 @@ struct Main {
                         id.height = 1;
                         id.pixel_format = SG_PIXELFORMAT_RGBA8;
                         uint32_t pixel = 0;
-                        id.content.subimage[0][0].ptr = &pixel;
-                        id.content.subimage[0][0].size = sizeof(pixel);
+                        id.data.subimage[0][0].ptr = &pixel;
+                        id.data.subimage[0][0].size = sizeof(pixel);
                         sg_image ih = sg_make_image(&id);
                         for (int i = 0; i < SG_MAX_SHADERSTAGE_IMAGES; i++) {
                             if (sd.fs.images[i].name) {
