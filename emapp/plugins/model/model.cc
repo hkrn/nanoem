@@ -63,22 +63,32 @@ public:
     int
     countAllFunctions() const
     {
-        return 6;
+        return 10;
     }
     const char *
     functionName(int index) const
     {
         switch (index) {
         case 0:
-            return "Function 1";
+            return "UI";
         case 1:
-            return "Function 2";
+            return "State";
         case 2:
-            return "Function 3";
+            return "Vertex";
         case 3:
-            return "Function 4";
+            return "Material";
         case 4:
-            return "Function 5";
+            return "Bone";
+        case 5:
+            return "Morph";
+        case 6:
+            return "Label";
+        case 7:
+            return "RigidBody";
+        case 8:
+            return "Joint";
+        case 9:
+            return "SoftBody";
         default:
             return "Unknown";
         }
@@ -156,6 +166,61 @@ public:
         m_selectedJointObjectIndices = ObjectIndexList(data, data + length);
     }
     void
+    setAllSelectedSoftBodyObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_selectedSoftBodyObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedVertexObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedVertexObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedMaterialObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedMaterialObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedBoneObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedBoneObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedConstraintObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedConstraintObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedMorphObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedMorphObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedLabelObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedLabelObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedRigidBodyObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedRigidBodyObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedJointObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedJointObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setAllMaskedSoftBodyObjectIndices(const int *data, nanoem_u32_t length)
+    {
+        m_maskedSoftBodyObjectIndices = ObjectIndexList(data, data + length);
+    }
+    void
+    setEditingModeEnabled(bool value)
+    {
+        m_editingModeEnabled = value;
+    }
+    void
     setInputAudio(const nanoem_u8_t *data, nanoem_u32_t length)
     {
         fprintf(stderr, "%p:%d\n", data, length);
@@ -176,24 +241,48 @@ public:
         nanoemMutableBufferDestroy(m_outputBuffer);
         m_outputBuffer = nanoemMutableBufferCreate(&status);
         switch (m_functionIndex) {
-        case 0: {
-            fprintf(stderr, "Function 1 executed\n");
-            break;
-        }
         case 1: {
-            fprintf(stderr, "Function 2 executed\n");
+            fprintf(stderr, "State Executed: enabled = %d\n", m_editingModeEnabled);
             break;
         }
         case 2: {
-            fprintf(stderr, "Function 3 executed\n");
+            fprintf(stderr, "Vertex Executed: selected=%lu, masked=%lu\n", m_selectedVertexObjectIndices.size(),
+                m_maskedVertexObjectIndices.size());
             break;
         }
         case 3: {
-            fprintf(stderr, "Function 4 executed\n");
+            fprintf(stderr, "Material Executed: selected=%lu, masked=%lu\n", m_selectedMaterialObjectIndices.size(),
+                m_maskedMaterialObjectIndices.size());
             break;
         }
         case 4: {
-            fprintf(stderr, "Function 5 executed\n");
+            fprintf(stderr, "Bone Executed: selected=%lu, masked=%lu\n", m_selectedBoneObjectIndices.size(),
+                m_maskedBoneObjectIndices.size());
+            break;
+        }
+        case 5: {
+            fprintf(stderr, "Morph Executed: selected=%lu, masked=%lu\n", m_selectedMorphObjectIndices.size(),
+                m_maskedMorphObjectIndices.size());
+            break;
+        }
+        case 6: {
+            fprintf(stderr, "Label Executed: selected=%lu, masked=%lu\n", m_selectedLabelObjectIndices.size(),
+                m_maskedLabelObjectIndices.size());
+            break;
+        }
+        case 7: {
+            fprintf(stderr, "RigidBody Executed: selected=%lu, masked=%lu\n", m_selectedRigidBodyObjectIndices.size(),
+                m_maskedRigidBodyObjectIndices.size());
+            break;
+        }
+        case 8: {
+            fprintf(stderr, "Joint Executed: selected=%lu, masked=%lu\n", m_selectedJointObjectIndices.size(),
+                m_maskedJointObjectIndices.size());
+            break;
+        }
+        case 9: {
+            fprintf(stderr, "SoftBody Executed: selected=%lu, masked=%lu\n", m_selectedSoftBodyObjectIndices.size(),
+                m_maskedSoftBodyObjectIndices.size());
             break;
         }
         default:
@@ -311,11 +400,22 @@ private:
     ObjectIndexList m_selectedLabelObjectIndices;
     ObjectIndexList m_selectedRigidBodyObjectIndices;
     ObjectIndexList m_selectedJointObjectIndices;
+    ObjectIndexList m_selectedSoftBodyObjectIndices;
+    ObjectIndexList m_maskedVertexObjectIndices;
+    ObjectIndexList m_maskedMaterialObjectIndices;
+    ObjectIndexList m_maskedBoneObjectIndices;
+    ObjectIndexList m_maskedConstraintObjectIndices;
+    ObjectIndexList m_maskedMorphObjectIndices;
+    ObjectIndexList m_maskedLabelObjectIndices;
+    ObjectIndexList m_maskedRigidBodyObjectIndices;
+    ObjectIndexList m_maskedJointObjectIndices;
+    ObjectIndexList m_maskedSoftBodyObjectIndices;
     ComponentList m_components;
     std::string m_failureReason;
     std::string m_recoverySuggestion;
     int m_languageIndex;
     int m_functionIndex;
+    bool m_editingModeEnabled;
 };
 
 } /* namespace anonymous */
@@ -556,6 +656,134 @@ nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices(
     }
     else if (status) {
         *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllSelectedSoftBodyObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedVertexObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedVertexObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedMaterialObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedMaterialObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedBoneObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedBoneObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedConstraintObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedConstraintObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedMorphObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedMorphObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedLabelObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedLabelObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedRigidBodyObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedRigidBodyObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedJointObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedJointObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setAllMaskedSoftBodyObjectIndices(data, length);
+    }
+    else if (status) {
+        *status = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT;
+    }
+}
+
+void APIENTRY
+nanoemApplicationPluginModelIOSetEditingModeEnabled(nanoem_application_plugin_model_io_t *plugin, int value)
+{
+    if (nanoem_is_not_null(plugin)) {
+        plugin->setEditingModeEnabled(value != 0);
     }
 }
 
