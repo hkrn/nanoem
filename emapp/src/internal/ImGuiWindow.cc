@@ -273,12 +273,12 @@ public:
     void setActiveBone(const nanoem_model_bone_t *value) NANOEM_DECL_OVERRIDE;
     nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
     void setRadius(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
-    nanoem_f32_t delta() const NANOEM_DECL_NOEXCEPT;
-    void setDelta(nanoem_f32_t value);
-    bool isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT;
-    void setProtectBDEF1Enabled(bool value);
-    bool isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT;
-    void setAutomaticNormalizationEnabled(bool value);
+    nanoem_f32_t delta() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setDelta(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
+    bool isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setProtectBDEF1Enabled(bool value) NANOEM_DECL_OVERRIDE;
+    bool isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setAutomaticNormalizationEnabled(bool value) NANOEM_DECL_OVERRIDE;
 
 private:
     void paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status);
@@ -355,7 +355,6 @@ VertexWeightBrush::end()
             origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
         }
     }
-    Project *project = m_model->project();
     undo_command_t *command = command::PaintVertexWeightCommand::create(m_model, m_mappings);
     m_model->pushUndo(command);
 }
@@ -509,6 +508,242 @@ VertexWeightBrush::updateVertex(nanoem_model_vertex_t *vertexPtr)
         vertex->setupBoneBinding(vertexPtr, m_model);
         vertex->m_simd.m_weights = bx::simd_ld(glm::value_ptr(weight));
     }
+}
+
+class BasePrimitiveDialog : public imgui::BaseNonModalDialogWindow {
+protected:
+    BasePrimitiveDialog(BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s);
+
+    void layoutTransform();
+    void applyTransform(par_shapes_mesh *mesh);
+    void createUndoCommand(Project *project, const par_shapes_mesh *mesh);
+
+private:
+    Vector3 m_translation;
+    Vector3 m_rotation;
+    Vector3 m_scale;
+};
+
+BasePrimitiveDialog::BasePrimitiveDialog(BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s)
+    : imgui::BaseNonModalDialogWindow(applicationPtr)
+    , m_translation(t)
+    , m_rotation(r)
+    , m_scale(s)
+{
+}
+
+void
+BasePrimitiveDialog::layoutTransform()
+{
+    ImGui::TextUnformatted("Translation");
+    ImGui::DragFloat3("##translation", glm::value_ptr(m_translation));
+    ImGui::TextUnformatted("Rotation");
+    ImGui::DragFloat3("##rotation", glm::value_ptr(m_rotation), 1.0f, -180.0f, 180.0f);
+    ImGui::TextUnformatted("Scale");
+    ImGui::DragFloat3("##scale", glm::value_ptr(m_scale), 1.0f, 0.0001f, 10000.0f);
+}
+
+void
+BasePrimitiveDialog::applyTransform(par_shapes_mesh *mesh)
+{
+    const Quaternion q(glm::radians(m_rotation));
+    par_shapes_scale(mesh, m_scale.x, m_scale.y, m_scale.z);
+    par_shapes_rotate(mesh, glm::angle(q), glm::value_ptr(glm::axis(q)));
+    par_shapes_translate(mesh, m_translation.x, m_translation.y, m_translation.z);
+}
+
+void
+BasePrimitiveDialog::createUndoCommand(Project *project, const par_shapes_mesh *mesh)
+{
+    command::CreateMaterialCommand::MutableVertexList vertices;
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    Model *activeModel = project->activeModel();
+    for (nanoem_rsize_t i = 0, numPoints = mesh->npoints; i < numPoints; i++) {
+        nanoem_mutable_model_vertex_t *vertexPtr = nanoemMutableModelVertexCreate(activeModel->data(), &status);
+        {
+            const Vector4 position(glm::make_vec3(&mesh->points[i * 3]), 1);
+            nanoemMutableModelVertexSetOrigin(vertexPtr, glm::value_ptr(position));
+        }
+        if (mesh->normals) {
+            const Vector4 normal(glm::make_vec3(&mesh->normals[i * 3]), 0);
+            nanoemMutableModelVertexSetNormal(vertexPtr, glm::value_ptr(normal));
+        }
+        if (mesh->tcoords) {
+            const Vector4 texcoord(glm::make_vec2(&mesh->tcoords[i * 2]), 0, 0);
+            nanoemMutableModelVertexSetTexCoord(vertexPtr, glm::value_ptr(texcoord));
+        }
+        vertices.push_back(vertexPtr);
+    }
+    VertexIndexList indices;
+    for (nanoem_rsize_t i = 0, numTriangles = mesh->ntriangles; i < numTriangles; i++) {
+        const PAR_SHAPES_T *triangles = &mesh->triangles[i * 3];
+        indices.push_back(*triangles);
+        indices.push_back(*(triangles + 1));
+        indices.push_back(*(triangles + 2));
+    }
+    undo_command_t *command = command::CreateMaterialCommand::create(activeModel, String(), vertices, indices);
+    activeModel->pushUndo(command);
+}
+
+class CreateConePrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateConePrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateConePrimitiveDialog::kIdentifier = "dialog.model.primitive.cone";
+
+CreateConePrimitiveDialog::CreateConePrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Constants::kZeroV3, Vector3(5))
+    , m_slices(16)
+    , m_stacks(8)
+{
+}
+
+bool
+CreateConePrimitiveDialog::draw(Project *project)
+{
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 10;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Cone", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 128, "Slices: %d");
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 128, "Stacks: %d");
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_cone(m_slices, m_stacks);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateCubePrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateCubePrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+};
+
+const char *const CreateCubePrimitiveDialog::kIdentifier = "dialog.model.primitive.cube";
+
+CreateCubePrimitiveDialog::CreateCubePrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Vector3(-5, 0, -5), Constants::kZeroV3, Vector3(5))
+{
+}
+
+bool
+CreateCubePrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 6;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Cube", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_cube();
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateTorusPrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateTorusPrimitiveDialog(BaseApplicationService *applicationPtr);
+    ~CreateTorusPrimitiveDialog() NANOEM_DECL_NOEXCEPT;
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    nanoem_f32_t m_radius;
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateTorusPrimitiveDialog::kIdentifier = "dialog.model.primitive.torus";
+
+CreateTorusPrimitiveDialog::CreateTorusPrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Constants::kZeroV3, Vector3(5))
+    , m_radius(0.5f)
+    , m_slices(16)
+    , m_stacks(16)
+{
+}
+
+CreateTorusPrimitiveDialog::~CreateTorusPrimitiveDialog() NANOEM_DECL_NOEXCEPT
+{
+}
+
+bool
+CreateTorusPrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 9;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Torus", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 128, "Slices: %d");
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 3, 128, "Stacks: %d");
+        ImGui::SliderFloat("##radius", &m_radius, 0.1f, 1.0f, "Radius: %.1f");
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_torus(m_slices, m_stacks, m_radius);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
 }
 
 } /* namespace anonymous */
@@ -2549,7 +2784,7 @@ ImGuiWindow::drawTrack(ITrack *track, int i, Model *activeModel, TrackSet &selec
             Accessory *accessory = static_cast<Accessory *>(track->opaque());
             addLazyExecutionCommand(nanoem_new(LazySetActiveAccessoryCommand(accessory, this)));
         }
-        else if (type == ITrack::kTypeModelLabel) {
+        else if (type == ITrack::kTypeModelLabel && activeModel) {
             const ITrack *trackConst = track;
             const nanoem_model_label_t *labelPtr = static_cast<const nanoem_model_label_t *>(trackConst->opaque());
             nanoem_rsize_t numLabels;
@@ -2568,7 +2803,7 @@ ImGuiWindow::drawTrack(ITrack *track, int i, Model *activeModel, TrackSet &selec
                 }
             }
         }
-        else if (type == ITrack::kTypeModelBone) {
+        else if (type == ITrack::kTypeModelBone && activeModel) {
             const ITrack *trackConst = track;
             const nanoem_model_bone_t *bonePtr = static_cast<const nanoem_model_bone_t *>(trackConst->opaque());
             IModelObjectSelection *selection = activeModel->selection();
@@ -4228,18 +4463,24 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             }
             ImGui::Separator();
             if (ImGui::BeginMenu("Create Primitive")) {
-                if (ImGui::MenuItem("Cone")) {
+                if (ImGui::MenuItem("Cone") && m_dialogWindows.find(CreateConePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                    INoModalDialogWindow *dialog = nanoem_new(CreateConePrimitiveDialog(m_applicationPtr));
+                    m_dialogWindows.insert(tinystl::make_pair(CreateConePrimitiveDialog::kIdentifier, dialog));
                 }
-                if (ImGui::MenuItem("Cube")) {
+                if (ImGui::MenuItem("Cube") && m_dialogWindows.find(CreateCubePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                    INoModalDialogWindow *dialog = nanoem_new(CreateCubePrimitiveDialog(m_applicationPtr));
+                    m_dialogWindows.insert(tinystl::make_pair(CreateCubePrimitiveDialog::kIdentifier, dialog));
                 }
-                if (ImGui::MenuItem("Torus")) {
+                if (ImGui::MenuItem("Torus") && m_dialogWindows.find(CreateTorusPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                    INoModalDialogWindow *dialog = nanoem_new(CreateTorusPrimitiveDialog(m_applicationPtr));
+                    m_dialogWindows.insert(tinystl::make_pair(CreateTorusPrimitiveDialog::kIdentifier, dialog));
                 }
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
         }
         ImGui::Separator();
-        ImGui::Text(tr("nanoem.gui.panel.model.edit.operation.selection.title"));
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.operation.selection.title"));
         const IModelObjectSelection::ObjectType objectType = selection->objectType();
         const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
         const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
@@ -4264,7 +4505,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
     const bool isGizmoEnabled = gizmo ? !glm::isNull(gizmo->pivotMatrix(), Constants::kEpsilon) : false;
     StringUtils::format(buffer, sizeof(buffer), "%s##gizmo", tr("nanoem.gui.panel.model.edit.gizmo.title"));
     if (isGizmoEnabled && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
-        ImGui::Text(tr("nanoem.gui.panel.model.edit.gizmo.operation.title"));
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.gizmo.operation.title"));
         model::IGizmo::OperationType op = gizmo->operationType();
         if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.translate"),
                 op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
@@ -4281,7 +4522,7 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             gizmo->setOperationType(model::IGizmo::kOperationTypeScale);
         }
         ImGui::Separator();
-        ImGui::Text(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.title"));
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.title"));
         model::IGizmo::TransformCoordinateType coord = gizmo->transformCoordinateType();
         if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.global"),
                 coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {

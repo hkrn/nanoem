@@ -302,7 +302,7 @@ public:
 private:
     Model *m_activeModel;
     ScopedMutableMaterial m_creatingMaterial;
-    MutableVertexList m_deletingVertices;
+    MutableVertexList m_creatingVertices;
     VertexIndexList m_vertexIndices;
 };
 

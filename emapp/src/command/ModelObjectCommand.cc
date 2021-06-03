@@ -929,13 +929,18 @@ CreateMaterialCommand::CreateMaterialCommand(
     : BaseUndoCommand(activeModel->project())
     , m_activeModel(activeModel)
     , m_creatingMaterial(m_activeModel)
-    , m_deletingVertices(vertices)
+    , m_creatingVertices(vertices)
 {
-    nanoem_rsize_t numVertices;
+    nanoem_rsize_t numVertices, numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones), *firstBone = nullptr;
+    if (numBones > 0) {
+        firstBone = bones[0];
+    }
     nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
     nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_creatingMaterial);
     for (MutableVertexList::const_iterator it = vertices.begin(), end = vertices.end(); it != end; ++it) {
         nanoemMutableModelVertexSetType(*it, NANOEM_MODEL_VERTEX_TYPE_BDEF1);
+        nanoemMutableModelVertexSetBoneObject(*it, firstBone, 0);
         nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
         model::Vertex *vertex = model::Vertex::create();
         vertex->bind(vertexPtr);
@@ -944,7 +949,8 @@ CreateMaterialCommand::CreateMaterialCommand(
     for (VertexIndexList::const_iterator it = vertexIndices.begin(), end = vertexIndices.end(); it != end; ++it) {
         m_vertexIndices.push_back(*it + Inline::saturateInt32U(numVertices));
     }
-    nanoem_unicode_string_factory_t *factory = currentProject()->unicodeStringFactory();
+    Project *project = currentProject();
+    nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
     if (StringUtils::tryGetString(factory, name, us)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
@@ -957,18 +963,22 @@ CreateMaterialCommand::CreateMaterialCommand(
     nanoemMutableModelMaterialSetDiffuseOpacity(m_creatingMaterial, 1.0f);
     nanoemMutableModelMaterialSetSpecularPower(m_creatingMaterial, 1.0f);
     nanoemMutableModelMaterialSetNumVertexIndices(m_creatingMaterial, m_vertexIndices.size());
-    model::Material *material = model::Material::create(currentProject()->sharedFallbackImage());
+    nanoemMutableModelMaterialSetCastingShadowEnabled(m_creatingMaterial, true);
+    nanoemMutableModelMaterialSetCastingShadowMapEnabled(m_creatingMaterial, true);
+    nanoemMutableModelMaterialSetShadowMapEnabled(m_creatingMaterial, true);
+    nanoemMutableModelMaterialSetEdgeEnabled(m_creatingMaterial, true);
+    model::Material *material = model::Material::create(project->sharedFallbackImage());
     material->bind(origin);
-    material->resetLanguage(origin, currentProject()->unicodeStringFactory(), currentProject()->castLanguage());
+    material->resetLanguage(origin, factory, project->castLanguage());
 }
 
 CreateMaterialCommand::~CreateMaterialCommand() NANOEM_DECL_NOEXCEPT
 {
-    for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
+    for (MutableVertexList::const_iterator it = m_creatingVertices.begin(), end = m_creatingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelVertexDestroy(*it);
     }
-    m_deletingVertices.clear();
+    m_creatingVertices.clear();
     m_vertexIndices.clear();
 }
 
@@ -983,7 +993,7 @@ CreateMaterialCommand::undo(Error &error)
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_activeModel->data(), &numVertexIndices);
     workingBuffer.assign(vertexIndices, vertexIndices + numVertexIndices - m_vertexIndices.size());
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
-    for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
+    for (MutableVertexList::const_iterator it = m_creatingVertices.begin(), end = m_creatingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelRemoveVertexObject(model, *it, &status);
     }
@@ -1004,7 +1014,7 @@ CreateMaterialCommand::redo(Error &error)
     workingBuffer.insert(workingBuffer.end(), m_vertexIndices.begin(), m_vertexIndices.end());
     nanoemMutableModelSetVertexIndices(model, workingBuffer.data(), workingBuffer.size(), &status);
     nanoemMutableModelInsertMaterialObject(model, m_creatingMaterial, -1, &status);
-    for (MutableVertexList::const_iterator it = m_deletingVertices.begin(), end = m_deletingVertices.end(); it != end;
+    for (MutableVertexList::const_iterator it = m_creatingVertices.begin(), end = m_creatingVertices.end(); it != end;
          ++it) {
         nanoemMutableModelInsertVertexObject(model, *it, -1, &status);
     }
