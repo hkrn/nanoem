@@ -13,9 +13,9 @@
 namespace nanoem {
 namespace model {
 
-class IVertexWeightBrush : private NonCopyable {
+class IVertexWeightPainter : private NonCopyable {
 public:
-    virtual ~IVertexWeightBrush() NANOEM_DECL_NOEXCEPT
+    virtual ~IVertexWeightPainter() NANOEM_DECL_NOEXCEPT
     {
     }
 

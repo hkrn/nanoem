@@ -50,7 +50,7 @@ class LineDrawer;
 namespace model {
 struct BindPose;
 class IGizmo;
-class IVertexWeightBrush;
+class IVertexWeightPainter;
 class ISkinDeformer;
 } /* namespace model */
 
@@ -373,9 +373,9 @@ public:
     const model::IGizmo *gizmo() const NANOEM_DECL_NOEXCEPT;
     model::IGizmo *gizmo();
     void setGizmo(model::IGizmo *value);
-    const model::IVertexWeightBrush *vertexWeightBrush() const NANOEM_DECL_NOEXCEPT;
-    model::IVertexWeightBrush *vertexWeightBrush();
-    void setVertexWeightBrush(model::IVertexWeightBrush *value);
+    const model::IVertexWeightPainter *vertexWeightPainter() const NANOEM_DECL_NOEXCEPT;
+    model::IVertexWeightPainter *vertexWeightPainter();
+    void setVertexWeightPainter(model::IVertexWeightPainter *value);
     UserData userData() const;
     void setUserData(const UserData &value);
     AxisType transformAxisType() const NANOEM_DECL_NOEXCEPT;
@@ -560,7 +560,7 @@ private:
     internal::LineDrawer *m_drawer;
     model::ISkinDeformer *m_skinDeformer;
     model::IGizmo *m_gizmo;
-    model::IVertexWeightBrush *m_vertexWeightBrush;
+    model::IVertexWeightPainter *m_vertexWeightPainter;
     OffscreenPassiveRenderTargetEffectMap m_offscreenPassiveRenderTargetEffects;
     DrawArrayBuffer m_drawAllVertexNormals;
     DrawArrayBuffer m_drawAllVertexPoints;

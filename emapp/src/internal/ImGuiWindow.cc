@@ -83,9 +83,9 @@
 #include "emapp/internal/imgui/SelfShadowConfigurationDialog.h"
 #include "emapp/internal/imgui/UVEditDialog.h"
 #include "emapp/internal/imgui/UberMotionKeyframeSelection.h"
+#include "emapp/internal/imgui/VertexWeightPainter.h"
 #include "emapp/internal/imgui/ViewportSettingDialog.h"
 #include "emapp/model/IGizmo.h"
-#include "emapp/model/IVertexWeightBrush.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/matrix_query.hpp"
@@ -260,256 +260,6 @@ WaveFormPanelDrawer::sampleBytesOffset(nanoem_rsize_t sample) const NANOEM_DECL_
     return m_base + sample * m_bytesPerSample;
 }
 
-class VertexWeightBrush : public model::IVertexWeightBrush {
-public:
-    VertexWeightBrush(Model *model);
-    ~VertexWeightBrush() NANOEM_DECL_NOEXCEPT;
-
-    void begin() NANOEM_DECL_OVERRIDE;
-    void paint(const Vector2SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
-    void end() NANOEM_DECL_OVERRIDE;
-
-    const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
-    void setActiveBone(const nanoem_model_bone_t *value) NANOEM_DECL_OVERRIDE;
-    nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
-    void setRadius(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
-    nanoem_f32_t delta() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setDelta(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
-    bool isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setProtectBDEF1Enabled(bool value) NANOEM_DECL_OVERRIDE;
-    bool isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setAutomaticNormalizationEnabled(bool value) NANOEM_DECL_OVERRIDE;
-
-private:
-    void paintVertex(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status);
-    void setVertexBoneWeight(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
-        nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
-    void normalizeVertexBoneWeight(
-        nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
-    void updateVertex(nanoem_model_vertex_t *vertexPtr);
-
-    const nanoem_model_bone_t *m_activeBonePtr;
-    Model *m_model;
-    command::PaintVertexWeightCommand::BoneMappingStateMap m_mappings;
-    nanoem_f32_t m_radius;
-    nanoem_f32_t m_delta;
-    bool m_protectBDEF1Enabled;
-    bool m_automaticNormalizationEnabled;
-};
-
-VertexWeightBrush::VertexWeightBrush(Model *model)
-    : m_activeBonePtr(nullptr)
-    , m_model(model)
-    , m_radius(16.0f)
-    , m_delta(0.005f)
-    , m_protectBDEF1Enabled(true)
-    , m_automaticNormalizationEnabled(true)
-{
-    nanoem_rsize_t numBones;
-    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
-    if (numBones > 0) {
-        setActiveBone(bones[0]);
-    }
-}
-
-VertexWeightBrush::~VertexWeightBrush() NANOEM_DECL_NOEXCEPT
-{
-}
-
-void
-VertexWeightBrush::begin()
-{
-}
-
-void
-VertexWeightBrush::paint(const Vector2SI32 &logicalScaleCursorPosition)
-{
-    Project *project = m_model->project();
-    const ICamera *camera = project->activeCamera();
-    const Vector2 deviceScaleCursorPosition(Vector2(logicalScaleCursorPosition) * project->windowDevicePixelRatio());
-    Model *activeModel = project->activeModel();
-    const model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-    nanoem_rsize_t numVertices;
-    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
-        nanoem_model_vertex_t *vertexPtr = vertices[i];
-        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
-        const Vector2 cursor(camera->toDeviceScreenCoordinateInWindow(origin));
-        if (glm::distance(deviceScaleCursorPosition, cursor) < brush->radius()) {
-            paintVertex(brush, vertexPtr, &status);
-        }
-    }
-}
-
-void
-VertexWeightBrush::end()
-{
-    for (command::PaintVertexWeightCommand::BoneMappingStateMap::iterator it = m_mappings.begin(),
-                                                                          end = m_mappings.end();
-         it != end; ++it) {
-        const nanoem_model_vertex_t *vertexPtr = it->first;
-        command::PaintVertexWeightCommand::BoneMappingState &origin = it->second.first;
-        for (nanoem_rsize_t i = 0; i < 4; i++) {
-            origin.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
-            origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
-        }
-    }
-    undo_command_t *command = command::PaintVertexWeightCommand::create(m_model, m_mappings);
-    m_model->pushUndo(command);
-}
-
-const nanoem_model_bone_t *
-VertexWeightBrush::activeBone() const NANOEM_DECL_NOEXCEPT
-{
-    return m_activeBonePtr;
-}
-
-void
-VertexWeightBrush::setActiveBone(const nanoem_model_bone_t *value)
-{
-    m_activeBonePtr = value;
-}
-
-nanoem_f32_t
-VertexWeightBrush::radius() const NANOEM_DECL_NOEXCEPT
-{
-    return m_radius;
-}
-
-void
-VertexWeightBrush::setRadius(nanoem_f32_t value)
-{
-    m_radius = value;
-}
-
-nanoem_f32_t
-VertexWeightBrush::delta() const NANOEM_DECL_NOEXCEPT
-{
-    return m_delta;
-}
-
-void
-VertexWeightBrush::setDelta(nanoem_f32_t value)
-{
-    m_delta = value;
-}
-
-bool
-VertexWeightBrush::isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT
-{
-    return m_protectBDEF1Enabled;
-}
-
-void
-VertexWeightBrush::setProtectBDEF1Enabled(bool value)
-{
-    m_protectBDEF1Enabled = value;
-}
-
-bool
-VertexWeightBrush::isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT
-{
-    return m_automaticNormalizationEnabled;
-}
-
-void
-VertexWeightBrush::setAutomaticNormalizationEnabled(bool value)
-{
-    m_automaticNormalizationEnabled = value;
-}
-
-void
-VertexWeightBrush::paintVertex(
-    const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status)
-{
-    nanoem_mutable_model_vertex_t *mutableVertexPtr = nanoemMutableModelVertexCreateAsReference(vertexPtr, status);
-    command::PaintVertexWeightCommand::BoneMappingStateMap::const_iterator it = m_mappings.find(vertexPtr);
-    if (it == m_mappings.end()) {
-        command::PaintVertexWeightCommand::BoneMappingStatePair states;
-        Inline::clearZeroMemory(states.first);
-        command::PaintVertexWeightCommand::BoneMappingState &origin = states.second;
-        for (nanoem_rsize_t i = 0; i < 4; i++) {
-            origin.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
-            origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
-        }
-        m_mappings.insert(tinystl::make_pair(vertexPtr, states));
-    }
-    switch (nanoemModelVertexGetType(vertexPtr)) {
-    case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
-        if (!brush->isProtectBDEF1Enabled()) {
-            const nanoem_model_bone_t *activeBone = brush->activeBone();
-            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, activeBone, 0);
-            updateVertex(vertexPtr);
-        }
-        break;
-    }
-    case NANOEM_MODEL_VERTEX_TYPE_BDEF2:
-    case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
-        setVertexBoneWeight(brush, vertexPtr, 2, mutableVertexPtr);
-        if (brush->isAutomaticNormalizationEnabled()) {
-            normalizeVertexBoneWeight(vertexPtr, 2, mutableVertexPtr);
-        }
-        updateVertex(vertexPtr);
-        break;
-    }
-    case NANOEM_MODEL_VERTEX_TYPE_BDEF4:
-    case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
-        setVertexBoneWeight(brush, vertexPtr, 4, mutableVertexPtr);
-        if (brush->isAutomaticNormalizationEnabled()) {
-            normalizeVertexBoneWeight(vertexPtr, 4, mutableVertexPtr);
-        }
-        updateVertex(vertexPtr);
-        break;
-    }
-    default:
-        break;
-    }
-    nanoemMutableModelVertexDestroy(mutableVertexPtr);
-}
-
-void
-VertexWeightBrush::setVertexBoneWeight(const model::IVertexWeightBrush *brush, nanoem_model_vertex_t *vertexPtr,
-    nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr)
-{
-    const nanoem_model_bone_t *activeBone = brush->activeBone();
-    for (nanoem_rsize_t i = 0; i < max; i++) {
-        if (nanoemModelVertexGetBoneObject(vertexPtr, i) == activeBone) {
-            nanoem_f32_t weight = nanoemModelVertexGetBoneWeight(vertexPtr, i);
-            weight += brush->delta();
-            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, glm::clamp(weight, 0.0f, 1.0f), i);
-            break;
-        }
-    }
-}
-
-void
-VertexWeightBrush::normalizeVertexBoneWeight(
-    nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr)
-{
-    nanoem_f32_t sum = 0;
-    for (nanoem_rsize_t i = 0; i < max; i++) {
-        sum += nanoemModelVertexGetBoneWeight(vertexPtr, i);
-    }
-    if (sum > 1.0f) {
-        for (nanoem_rsize_t i = 0; i < max; i++) {
-            nanoem_f32_t weight = nanoemModelVertexGetBoneWeight(vertexPtr, i);
-            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, weight / sum, i);
-        }
-    }
-}
-
-void
-VertexWeightBrush::updateVertex(nanoem_model_vertex_t *vertexPtr)
-{
-    if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
-        const Vector4 weight(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
-            nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
-        vertex->setupBoneBinding(vertexPtr, m_model);
-        vertex->m_simd.m_weights = bx::simd_ld(glm::value_ptr(weight));
-    }
-}
-
 class BasePrimitiveDialog : public imgui::BaseNonModalDialogWindow {
 protected:
     BasePrimitiveDialog(BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s);
@@ -524,7 +274,8 @@ private:
     Vector3 m_scale;
 };
 
-BasePrimitiveDialog::BasePrimitiveDialog(BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s)
+BasePrimitiveDialog::BasePrimitiveDialog(
+    BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s)
     : imgui::BaseNonModalDialogWindow(applicationPtr)
     , m_translation(t)
     , m_rotation(r)
@@ -1785,7 +1536,7 @@ ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *ov
             break;
         }
         if (activeModel->isShowAllVertexWeights()) {
-            flags |= IState::kDrawTypeVertexWeightBrush;
+            flags |= IState::kDrawTypeVertexWeightPainter;
         }
     }
     else if (!activeModel) {
@@ -4457,21 +4208,24 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                     IModelObjectSelection::kObjectTypeVertex, activeModel, project);
                 activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
                 activeModel->setShowAllVertexWeights(true);
-                if (!activeModel->vertexWeightBrush()) {
-                    activeModel->setVertexWeightBrush(nanoem_new(VertexWeightBrush(activeModel)));
+                if (!activeModel->vertexWeightPainter()) {
+                    activeModel->setVertexWeightPainter(nanoem_new(VertexWeightPainter(activeModel)));
                 }
             }
             ImGui::Separator();
             if (ImGui::BeginMenu("Create Primitive")) {
-                if (ImGui::MenuItem("Cone") && m_dialogWindows.find(CreateConePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                if (ImGui::MenuItem("Cone") &&
+                    m_dialogWindows.find(CreateConePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
                     INoModalDialogWindow *dialog = nanoem_new(CreateConePrimitiveDialog(m_applicationPtr));
                     m_dialogWindows.insert(tinystl::make_pair(CreateConePrimitiveDialog::kIdentifier, dialog));
                 }
-                if (ImGui::MenuItem("Cube") && m_dialogWindows.find(CreateCubePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                if (ImGui::MenuItem("Cube") &&
+                    m_dialogWindows.find(CreateCubePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
                     INoModalDialogWindow *dialog = nanoem_new(CreateCubePrimitiveDialog(m_applicationPtr));
                     m_dialogWindows.insert(tinystl::make_pair(CreateCubePrimitiveDialog::kIdentifier, dialog));
                 }
-                if (ImGui::MenuItem("Torus") && m_dialogWindows.find(CreateTorusPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                if (ImGui::MenuItem("Torus") &&
+                    m_dialogWindows.find(CreateTorusPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
                     INoModalDialogWindow *dialog = nanoem_new(CreateTorusPrimitiveDialog(m_applicationPtr));
                     m_dialogWindows.insert(tinystl::make_pair(CreateTorusPrimitiveDialog::kIdentifier, dialog));
                 }
@@ -4542,8 +4296,8 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
         ImGui::PushItemWidth(-1);
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
-        model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-        const nanoem_model_bone_t *activeBonePtr = brush->activeBone();
+        model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+        const nanoem_model_bone_t *activeBonePtr = painter->activeBone();
         const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
         ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
         if (ImGui::BeginCombo("##bone", activeBone ? activeBone->nameConstString() : "(null)")) {
@@ -4552,34 +4306,34 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
                 if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
                     const bool selected = bonePtr == activeBonePtr;
                     if (ImGui::Selectable(bone->nameConstString(), selected)) {
-                        brush->setActiveBone(bonePtr);
+                        painter->setActiveBone(bonePtr);
                     }
                 }
             }
             ImGui::EndCombo();
         }
-        nanoem_f32_t radius = brush->radius(), delta = brush->delta();
+        nanoem_f32_t radius = painter->radius(), delta = painter->delta();
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
         if (ImGui::DragFloat(
                 "##radius", &radius, 0.5f, 0.5f, 100.0f, tr("nanoem.gui.panel.model.edit.weight-paint.radius"))) {
-            brush->setRadius(radius);
+            painter->setRadius(radius);
         }
         ImGui::SameLine();
         if (ImGui::DragFloat(
                 "##delta", &delta, 0.005f, -1.0f, 1.0f, tr("nanoem.gui.panel.model.edit.weight-paint.delta"))) {
-            brush->setDelta(delta);
+            painter->setDelta(delta);
         }
-        bool protectBDEF1 = brush->isProtectBDEF1Enabled();
+        bool protectBDEF1 = painter->isProtectBDEF1Enabled();
         StringUtils::format(
             buffer, sizeof(buffer), "%s##protect-bdef1", tr("nanoem.gui.panel.model.edit.weight-paint.protect-bdef1"));
         if (ImGui::Checkbox(buffer, &protectBDEF1)) {
-            brush->setProtectBDEF1Enabled(protectBDEF1);
+            painter->setProtectBDEF1Enabled(protectBDEF1);
         }
-        bool automaticNormalization = brush->isAutomaticNormalizationEnabled();
+        bool automaticNormalization = painter->isAutomaticNormalizationEnabled();
         StringUtils::format(buffer, sizeof(buffer), "%s##automatic-normalization",
             tr("nanoem.gui.panel.model.edit.weight-paint.automatic-normalization"));
         if (ImGui::Checkbox(buffer, &automaticNormalization)) {
-            brush->setAutomaticNormalizationEnabled(automaticNormalization);
+            painter->setAutomaticNormalizationEnabled(automaticNormalization);
         }
         ImGui::PopItemWidth();
         ImGui::Spacing();

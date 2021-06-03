@@ -37,7 +37,7 @@
 #include "emapp/model/Exporter.h"
 #include "emapp/model/IGizmo.h"
 #include "emapp/model/ISkinDeformer.h"
-#include "emapp/model/IVertexWeightBrush.h"
+#include "emapp/model/IVertexWeightPainter.h"
 #include "emapp/model/Importer.h"
 #include "emapp/model/Joint.h"
 #include "emapp/model/Label.h"
@@ -858,7 +858,7 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_drawer(nullptr)
     , m_skinDeformer(nullptr)
     , m_gizmo(nullptr)
-    , m_vertexWeightBrush(nullptr)
+    , m_vertexWeightPainter(nullptr)
     , m_opaque(nullptr)
     , m_undoStack(nullptr)
     , m_editingUndoStack(nullptr)
@@ -906,7 +906,7 @@ Model::~Model() NANOEM_DECL_NOEXCEPT
     nanoem_delete_safe(m_drawer);
     nanoem_delete_safe(m_skinDeformer);
     nanoem_delete_safe(m_gizmo);
-    nanoem_delete_safe(m_vertexWeightBrush);
+    nanoem_delete_safe(m_vertexWeightPainter);
     nanoem_delete_safe(m_selection);
     nanoem_delete_safe(m_screenImage);
     undoStackDestroy(m_undoStack);
@@ -4446,7 +4446,8 @@ Model::drawAllVertexWeights()
     nanoem_rsize_t numMaterials, numVertices, numVertexIndices, indexOffset = 0;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-    const nanoem_model_bone_t *activeBonePtr = m_vertexWeightBrush ? m_vertexWeightBrush->activeBone() : activeBone();
+    const nanoem_model_bone_t *activeBonePtr =
+        m_vertexWeightPainter ? m_vertexWeightPainter->activeBone() : activeBone();
     const model::Bone *activeBoneObject = model::Bone::cast(activeBonePtr);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
     const bool enableBlending = isBlendingVertexWeightsEnabled();
@@ -5497,22 +5498,22 @@ Model::setGizmo(model::IGizmo *value)
     m_gizmo = value;
 }
 
-const model::IVertexWeightBrush *
-Model::vertexWeightBrush() const NANOEM_DECL_NOEXCEPT
+const model::IVertexWeightPainter *
+Model::vertexWeightPainter() const NANOEM_DECL_NOEXCEPT
 {
-    return m_vertexWeightBrush;
+    return m_vertexWeightPainter;
 }
 
-model::IVertexWeightBrush *
-Model::vertexWeightBrush()
+model::IVertexWeightPainter *
+Model::vertexWeightPainter()
 {
-    return m_vertexWeightBrush;
+    return m_vertexWeightPainter;
 }
 
 void
-Model::setVertexWeightBrush(model::IVertexWeightBrush *value)
+Model::setVertexWeightPainter(model::IVertexWeightPainter *value)
 {
-    m_vertexWeightBrush = value;
+    m_vertexWeightPainter = value;
 }
 
 Model::UserData

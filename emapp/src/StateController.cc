@@ -24,7 +24,7 @@
 #include "emapp/internal/DraggingBoneState.h"
 #include "emapp/internal/DraggingCameraState.h"
 #include "emapp/model/IGizmo.h"
-#include "emapp/model/IVertexWeightBrush.h"
+#include "emapp/model/IVertexWeightPainter.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtx/vector_query.hpp"
@@ -48,8 +48,8 @@ public:
     static void drawBoneRotateHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
     static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
     static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
-    static void drawVertexWeightBrush(
-        IPrimitive2D *primitive, const model::IVertexWeightBrush *brush, const Project *project);
+    static void drawVertexWeightPainter(
+        IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project);
 };
 
 const Vector3 DrawUtils::kColorRed = Vector3(1, 0, 0);
@@ -139,8 +139,8 @@ DrawUtils::drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera,
 }
 
 void
-DrawUtils::drawVertexWeightBrush(
-    IPrimitive2D *primitive, const model::IVertexWeightBrush *brush, const Project *project)
+DrawUtils::drawVertexWeightPainter(
+    IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project)
 {
     const Vector4UI16 layoutRect(project->deviceScaleUniformedViewportLayoutRect());
     const Vector2SI32 center(project->deviceScaleMovingCursorPosition() - Vector2SI32(layoutRect));
@@ -2080,8 +2080,8 @@ PaintVertexWeightState::onPress(const Vector3SI32 &logicalScaleCursorPosition, E
     BX_UNUSED_2(logicalScaleCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         Model *activeModel = project->activeModel();
-        model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-        brush->begin();
+        model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+        painter->begin();
     }
 }
 
@@ -2092,8 +2092,8 @@ PaintVertexWeightState::onMove(const Vector3SI32 &logicalScaleCursorPosition, co
     if (Project *project = m_stateControllerPtr->currentProject()) {
         project->setLogicalPixelMovingCursorPosition(logicalScaleCursorPosition);
         Model *activeModel = project->activeModel();
-        model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-        brush->paint(logicalScaleCursorPosition);
+        model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+        painter->paint(logicalScaleCursorPosition);
     }
 }
 
@@ -2103,8 +2103,8 @@ PaintVertexWeightState::onRelease(const Vector3SI32 &logicalScaleCursorPosition,
     BX_UNUSED_2(logicalScaleCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         Model *activeModel = project->activeModel();
-        model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-        brush->end();
+        model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+        painter->end();
     }
 }
 
@@ -2274,9 +2274,9 @@ StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
             if (EnumUtils::isEnabled(IState::kDrawTypeActiveBone, flags)) {
                 DrawUtils::drawActiveBonePoint(primitive, activeBoneColor, project);
             }
-            if (EnumUtils::isEnabled(IState::kDrawTypeVertexWeightBrush, flags)) {
-                const model::IVertexWeightBrush *brush = activeModel->vertexWeightBrush();
-                DrawUtils::drawVertexWeightBrush(primitive, brush, project);
+            if (EnumUtils::isEnabled(IState::kDrawTypeVertexWeightPainter, flags)) {
+                const model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+                DrawUtils::drawVertexWeightPainter(primitive, painter, project);
             }
         }
         const ICamera *camera = project->activeCamera();

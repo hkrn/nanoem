@@ -27,7 +27,7 @@ public:
         kDrawTypeBoneRotateHandle = 0x40,
         kDrawTypeBoneLocalAxes = 0x80,
         kDrawTypeCameraLookAt = 0x100,
-        kDrawTypeVertexWeightBrush = 0x200,
+        kDrawTypeVertexWeightPainter = 0x200,
         kDrawTypeMaxEnum = 0x400,
     };
     enum Type {

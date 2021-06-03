@@ -932,7 +932,8 @@ CreateMaterialCommand::CreateMaterialCommand(
     , m_creatingVertices(vertices)
 {
     nanoem_rsize_t numVertices, numBones;
-    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones), *firstBone = nullptr;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones),
+                               *firstBone = nullptr;
     if (numBones > 0) {
         firstBone = bones[0];
     }
