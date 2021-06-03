@@ -827,6 +827,7 @@ ModelParameterDialog::ModelParameterDialog(
     , m_tabType(kTabTypeFirstEnum)
     , m_explicitTabType(kTabTypeMaxEnum)
     , m_vertexIndex(0)
+    , m_vertexCandidateUVAIndex(0)
     , m_faceIndex(0)
     , m_materialIndex(0)
     , m_boneIndex(0)
@@ -909,51 +910,51 @@ ModelParameterDialog::draw(Project *project)
             StringUtils::format(
                 buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.menu.material"));
             if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateMaterialMenu(project);
+                layoutManipulateMaterialMenu();
                 ImGui::Separator();
                 layoutCreateMaterialMenu(project);
                 ImGui::EndMenu();
             }
             StringUtils::format(buffer, sizeof(buffer), "%s##menu.bone", tr("nanoem.gui.window.model.menu.bone"));
             if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateBoneMenu(project);
+                layoutManipulateBoneMenu();
                 ImGui::Separator();
-                layoutCreateBoneMenu(project);
+                layoutCreateBoneMenu();
                 ImGui::EndMenu();
             }
             StringUtils::format(buffer, sizeof(buffer), "%s##menu.morph", tr("nanoem.gui.window.model.menu.morph"));
             if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateMorphMenu(project);
+                layoutManipulateMorphMenu();
                 ImGui::Separator();
-                layoutCreateMorphMenu(project);
+                layoutCreateMorphMenu();
                 ImGui::EndMenu();
             }
             StringUtils::format(buffer, sizeof(buffer), "%s##menu.label", tr("nanoem.gui.window.model.menu.label"));
             if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateLabelMenu(project);
+                layoutManipulateLabelMenu();
                 ImGui::EndMenu();
             }
             StringUtils::format(
                 buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.menu.rigid-body"));
             if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateRigidBodyMenu(project);
+                layoutManipulateRigidBodyMenu();
                 ImGui::Separator();
-                layoutCreateRigidBodyMenu(project);
+                layoutCreateRigidBodyMenu();
                 ImGui::EndMenu();
             }
             StringUtils::format(buffer, sizeof(buffer), "%s##menu.joint", tr("nanoem.gui.window.model.menu.joint"));
             if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateJointMenu(project);
+                layoutManipulateJointMenu();
                 ImGui::Separator();
-                layoutCreateJointMenu(project);
+                layoutCreateJointMenu();
                 ImGui::EndMenu();
             }
             StringUtils::format(
                 buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.menu.soft-body"));
             if (ImGui::BeginMenu(buffer, isPMX21())) {
-                layoutManipulateSoftBodyMenu(project);
+                layoutManipulateSoftBodyMenu();
                 ImGui::Separator();
-                layoutCreateSoftBodyMenu(project);
+                layoutCreateSoftBodyMenu();
                 ImGui::EndMenu();
             }
             ImGui::EndMenuBar();
@@ -966,7 +967,7 @@ ModelParameterDialog::draw(Project *project)
         StringUtils::format(buffer, sizeof(buffer), "%s##tab.measure", tr("nanoem.gui.window.model.tab.measure"));
         if (ImGui::BeginTabItem(
                 buffer, nullptr, explicitTabType == kTabTypeMeasure ? ImGuiTabItemFlags_SetSelected : 0)) {
-            layoutMeasure(project);
+            layoutMeasure();
             ImGui::EndTabItem();
             toggleTab(kTabTypeMeasure, project);
         }
@@ -1070,7 +1071,7 @@ ModelParameterDialog::destroy(Project *project)
 }
 
 void
-ModelParameterDialog::layoutMeasure(Project *project)
+ModelParameterDialog::layoutMeasure()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::BeginChild("left-pane", ImVec2(ImGui::GetContentRegionAvail().x * 0.35f, 0), true);
@@ -1205,17 +1206,17 @@ ModelParameterDialog::layoutMeasure(Project *project)
     }
     addSeparator();
     if (m_heightBased) {
-        layoutHeightBasedBatchTransformPane(project);
+        layoutHeightBasedBatchTransformPane();
     }
     else {
-        layoutNumericInputBatchTransformPane(project);
+        layoutNumericInputBatchTransformPane();
     }
     ImGui::PopItemWidth();
     ImGui::EndChild();
 }
 
 void
-ModelParameterDialog::layoutHeightBasedBatchTransformPane(Project *project)
+ModelParameterDialog::layoutHeightBasedBatchTransformPane()
 {
     nanoem_rsize_t numVertices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
@@ -1264,7 +1265,7 @@ ModelParameterDialog::layoutHeightBasedBatchTransformPane(Project *project)
 }
 
 void
-ModelParameterDialog::layoutNumericInputBatchTransformPane(Project *project)
+ModelParameterDialog::layoutNumericInputBatchTransformPane()
 {
     ImGui::TextUnformatted("Translation");
     ImGui::InputFloat3("##translation", glm::value_ptr(m_savedTranslation));
@@ -1383,8 +1384,8 @@ ModelParameterDialog::layoutSystem(Project *project)
 }
 
 void
-ModelParameterDialog::layoutVertexBoneSelection(const char *label, nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t i,
-    nanoem_model_bone_t *const *bones, nanoem_rsize_t numBones)
+ModelParameterDialog::layoutVertexBoneSelection(const char *label, nanoem_rsize_t i, nanoem_model_bone_t *const *bones,
+    nanoem_rsize_t numBones, nanoem_model_vertex_t *vertexPtr)
 {
     const nanoem_model_bone_t *vertexBonePtr = nanoemModelVertexGetBoneObject(vertexPtr, i);
     if (ImGui::BeginCombo(label, model::Bone::nameConstString(vertexBonePtr, "(none)"))) {
@@ -1401,7 +1402,24 @@ ModelParameterDialog::layoutVertexBoneSelection(const char *label, nanoem_model_
 }
 
 void
-ModelParameterDialog::layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t numItems)
+ModelParameterDialog::layoutVertexBoneSelection(const char *label, nanoem_rsize_t i, nanoem_model_bone_t *const *bones,
+    nanoem_rsize_t numBones, command::BatchChangeAllVertexObjectsCommand::Parameter &parameter)
+{
+    const nanoem_model_bone_t *vertexBonePtr = parameter.m_bones[i];
+    if (ImGui::BeginCombo(label, model::Bone::nameConstString(vertexBonePtr, "(none)"))) {
+        for (nanoem_rsize_t j = 0; j < numBones; j++) {
+            const nanoem_model_bone_t *bonePtr = bones[j];
+            const model::Bone *bone = model::Bone::cast(bonePtr);
+            if (bone && ImGui::Selectable(bone->nameConstString(), bonePtr == vertexBonePtr)) {
+                parameter.m_bones[i] = bonePtr;
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
+
+void
+ModelParameterDialog::layoutVertexBoneWeights(nanoem_rsize_t numItems, nanoem_model_vertex_t *vertexPtr)
 {
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
@@ -1415,7 +1433,7 @@ ModelParameterDialog::layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, 
         ImGui::SameLine();
         StringUtils::format(label, sizeof(label), "##bone%jd", i);
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.75f);
-        layoutVertexBoneSelection(label, vertexPtr, i, bones, numBones);
+        layoutVertexBoneSelection(label, i, bones, numBones, vertexPtr);
         ImGui::PopItemWidth();
         ImGui::SameLine();
         ImGui::PushItemWidth(-1);
@@ -1424,6 +1442,35 @@ ModelParameterDialog::layoutVertexBoneWeights(nanoem_model_vertex_t *vertexPtr, 
         if (ImGui::SliderFloat(label, &weight, 0, 1)) {
             command::ScopedMutableVertex scoped(vertexPtr);
             nanoemMutableModelVertexSetBoneWeight(scoped, weight, i);
+        }
+        ImGui::PopItemWidth();
+    }
+}
+
+void
+ModelParameterDialog::layoutVertexBoneWeights(
+    nanoem_rsize_t numItems, command::BatchChangeAllVertexObjectsCommand::Parameter &parameter)
+{
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
+    for (nanoem_rsize_t i = 0; i < numItems; i++) {
+        char label[Inline::kNameStackBufferSize];
+        const nanoem_model_bone_t *bonePtr = parameter.m_bones[i];
+        StringUtils::format(label, sizeof(label), "%s##toggle%jd", ImGuiWindow::kFALink, i);
+        if (ImGuiWindow::handleButton(label, 0, bonePtr != nullptr)) {
+            toggleBone(bonePtr);
+        }
+        ImGui::SameLine();
+        StringUtils::format(label, sizeof(label), "##bone%jd", i);
+        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.75f);
+        layoutVertexBoneSelection(label, i, bones, numBones, parameter);
+        ImGui::PopItemWidth();
+        ImGui::SameLine();
+        ImGui::PushItemWidth(-1);
+        nanoem_f32_t weight = parameter.m_weights[i];
+        StringUtils::format(label, sizeof(label), "##weight%jd", i);
+        if (ImGui::SliderFloat(label, &weight, 0, 1)) {
+            parameter.m_weights[i] = weight;
         }
         ImGui::PopItemWidth();
     }
@@ -1504,7 +1551,7 @@ ModelParameterDialog::layoutAllVertices(Project *project)
     if (selection->countAllVertices() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedVertices(selection);
-        layoutBatchVertexChangePane(project);
+        layoutBatchVertexChangePane();
     }
     else if (numVertices > 0 && m_vertexIndex < numVertices) {
         nanoem_model_vertex_t *vertexPtr = vertices[m_vertexIndex];
@@ -1516,7 +1563,7 @@ ModelParameterDialog::layoutAllVertices(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchVertexChangePane(Project *project)
+ModelParameterDialog::layoutBatchVertexChangePane()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
@@ -1564,27 +1611,24 @@ ModelParameterDialog::layoutBatchVertexChangePane(Project *project)
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.texcoord"));
     if (ImGui::InputFloat2("##texcoord", glm::value_ptr(m_batchVertexParameter.m_texcoord))) {
     }
-    nanoem_rsize_t offset = 0;
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.2f);
-    if (ImGui::BeginCombo("##uva", "UVA")) {
-        if (ImGui::Selectable("UVA1")) {
-            offset = 1;
-        }
-        if (ImGui::Selectable("UVA2")) {
-            offset = 2;
-        }
-        if (ImGui::Selectable("UVA3")) {
-            offset = 3;
-        }
-        if (ImGui::Selectable("UVA4")) {
-            offset = 4;
+    nanoem_rsize_t displayUVAIndex = m_vertexCandidateUVAIndex + 1;
+    StringUtils::format(buffer, sizeof(buffer), "UVA%jd", displayUVAIndex);
+    if (ImGui::BeginCombo("##uva", buffer)) {
+        for (nanoem_rsize_t i = 0; i < 4; i++) {
+            displayUVAIndex = i + 1;
+            StringUtils::format(buffer, sizeof(buffer), "UVA%jd##uva-%jd", displayUVAIndex, displayUVAIndex);
+            if (ImGui::Selectable(buffer)) {
+                m_vertexCandidateUVAIndex = i;
+            }
         }
         ImGui::EndCombo();
     }
     ImGui::PopItemWidth();
     ImGui::SameLine();
-    Vector4 value(0);
+    Vector4 value(m_batchVertexParameter.m_uva[m_vertexCandidateUVAIndex]);
     if (ImGui::InputFloat4("##uva-value", glm::value_ptr(value))) {
+        m_batchVertexParameter.m_uva[m_vertexCandidateUVAIndex] = value;
     }
     addSeparator();
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.edge"));
@@ -1613,23 +1657,23 @@ ModelParameterDialog::layoutBatchVertexChangePane(Project *project)
             toggleBone(bonePtr);
         }
         ImGui::SameLine();
-        // layoutVertexBoneSelection("##bone", vertexPtr, 0, bones, numBones);
+        layoutVertexBoneSelection("##bone", 0, bones, numBones, m_batchVertexParameter);
         break;
     }
     case NANOEM_MODEL_VERTEX_TYPE_BDEF2: {
-        // layoutVertexBoneWeights(vertexPtr, 2);
+        layoutVertexBoneWeights(2, m_batchVertexParameter);
         break;
     }
     case NANOEM_MODEL_VERTEX_TYPE_BDEF4: {
-        // layoutVertexBoneWeights(vertexPtr, 4);
+        layoutVertexBoneWeights(4, m_batchVertexParameter);
         break;
     }
     case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
-        // layoutVertexBoneWeights(vertexPtr, 2);
+        layoutVertexBoneWeights(2, m_batchVertexParameter);
         break;
     }
     case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
-        // layoutVertexBoneWeights(vertexPtr, 4);
+        layoutVertexBoneWeights(4, m_batchVertexParameter);
         break;
     }
     default:
@@ -1667,29 +1711,26 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
         }
     }
     {
-        nanoem_rsize_t offset = 0;
+        char buffer[Inline::kNameStackBufferSize];
         ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.2f);
-        if (ImGui::BeginCombo("##uva", "UVA")) {
-            if (ImGui::Selectable("UVA1")) {
-                offset = 1;
-            }
-            if (ImGui::Selectable("UVA2")) {
-                offset = 2;
-            }
-            if (ImGui::Selectable("UVA3")) {
-                offset = 3;
-            }
-            if (ImGui::Selectable("UVA4")) {
-                offset = 4;
+        nanoem_rsize_t displayUVAIndex = m_vertexCandidateUVAIndex + 1;
+        StringUtils::format(buffer, sizeof(buffer), "UVA%jd", displayUVAIndex);
+        if (ImGui::BeginCombo("##uva", buffer)) {
+            for (nanoem_rsize_t i = 0; i < 4; i++) {
+                displayUVAIndex = i + 1;
+                StringUtils::format(buffer, sizeof(buffer), "UVA%jd##uva-%jd", displayUVAIndex, displayUVAIndex);
+                if (ImGui::Selectable(buffer)) {
+                    m_vertexCandidateUVAIndex = i;
+                }
             }
             ImGui::EndCombo();
         }
         ImGui::PopItemWidth();
         ImGui::SameLine();
-        Vector4 value(glm::make_vec4(nanoemModelVertexGetAdditionalUV(vertexPtr, offset)));
+        Vector4 value(glm::make_vec4(nanoemModelVertexGetAdditionalUV(vertexPtr, m_vertexCandidateUVAIndex)));
         if (ImGui::InputFloat4("##uva-value", glm::value_ptr(value))) {
             command::ScopedMutableVertex scoped(vertexPtr);
-            nanoemMutableModelVertexSetAdditionalUV(scoped, glm::value_ptr(value), offset);
+            nanoemMutableModelVertexSetAdditionalUV(scoped, glm::value_ptr(value), m_vertexCandidateUVAIndex);
         }
     }
     addSeparator();
@@ -1738,19 +1779,19 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
                 toggleBone(bonePtr);
             }
             ImGui::SameLine();
-            layoutVertexBoneSelection("##bone", vertexPtr, 0, bones, numBones);
+            layoutVertexBoneSelection("##bone", 0, bones, numBones, vertexPtr);
             break;
         }
         case NANOEM_MODEL_VERTEX_TYPE_BDEF2: {
-            layoutVertexBoneWeights(vertexPtr, 2);
+            layoutVertexBoneWeights(2, vertexPtr);
             break;
         }
         case NANOEM_MODEL_VERTEX_TYPE_BDEF4: {
-            layoutVertexBoneWeights(vertexPtr, 4);
+            layoutVertexBoneWeights(4, vertexPtr);
             break;
         }
         case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
-            layoutVertexBoneWeights(vertexPtr, 2);
+            layoutVertexBoneWeights(2, vertexPtr);
             {
                 ImGui::TextUnformatted(tr("nanoem.gui.model.edit.vertex.sdef.r0"));
                 Vector4 value(glm::make_vec4(nanoemModelVertexGetSdefR0(vertexPtr)));
@@ -1778,7 +1819,7 @@ ModelParameterDialog::layoutVertexPropertyPane(nanoem_model_vertex_t *vertexPtr)
             break;
         }
         case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
-            layoutVertexBoneWeights(vertexPtr, 4);
+            layoutVertexBoneWeights(4, vertexPtr);
             break;
         }
         default:
@@ -1934,7 +1975,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (selection->countAllFaces() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-        layoutBatchFaceChangePane(project);
+        layoutBatchFaceChangePane();
     }
     else if (numFaces > 0 && m_faceIndex < numFaces) {
         const nanoem_rsize_t offset = m_faceIndex * 3;
@@ -1948,7 +1989,7 @@ ModelParameterDialog::layoutAllFaces(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchFaceChangePane(Project *project)
+ModelParameterDialog::layoutBatchFaceChangePane()
 {
 }
 
@@ -1997,7 +2038,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
         ImGui::OpenPopup("material-op-menu");
     }
     if (ImGui::BeginPopup("material-op-menu")) {
-        layoutManipulateMaterialMenu(project);
+        layoutManipulateMaterialMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -2090,7 +2131,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
     if (selection->countAllMaterials() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedMaterials(selection);
-        layoutBatchMaterialChangePane(project);
+        layoutBatchMaterialChangePane();
     }
     else if (numMaterials > 0 && m_materialIndex < numMaterials) {
         nanoem_model_material_t *materialPtr = materials[m_materialIndex];
@@ -2102,7 +2143,7 @@ ModelParameterDialog::layoutAllMaterials(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchMaterialChangePane(Project *project)
+ModelParameterDialog::layoutBatchMaterialChangePane()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
@@ -2680,7 +2721,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
         ImGui::OpenPopup("bone-op-menu");
     }
     if (ImGui::BeginPopup("bone-op-menu")) {
-        layoutManipulateBoneMenu(project);
+        layoutManipulateBoneMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -2744,7 +2785,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
         ImGui::OpenPopup("bone-create-menu");
     }
     if (ImGui::BeginPopup("bone-create-menu")) {
-        layoutCreateBoneMenu(project);
+        layoutCreateBoneMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -2773,7 +2814,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
     if (selection->countAllBones() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedBones(selection);
-        layoutBatchBoneChangePane(project);
+        layoutBatchBoneChangePane();
     }
     else if (numBones > 0 && m_boneIndex < numBones) {
         nanoem_model_bone_t *bonePtr = bones[m_boneIndex];
@@ -2785,7 +2826,7 @@ ModelParameterDialog::layoutAllBones(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchBoneChangePane(Project *project)
+ModelParameterDialog::layoutBatchBoneChangePane()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
@@ -3388,7 +3429,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
         ImGui::OpenPopup("morph-op-menu");
     }
     if (ImGui::BeginPopup("morph-op-menu")) {
-        layoutManipulateMorphMenu(project);
+        layoutManipulateMorphMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -3450,7 +3491,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
         ImGui::OpenPopup("morph-create-menu");
     }
     if (ImGui::BeginPopup("morph-create-menu")) {
-        layoutCreateMorphMenu(project);
+        layoutCreateMorphMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -3479,7 +3520,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
     if (selection->countAllMorphs() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedMorphs(selection);
-        layoutBatchMorphChangePane(project);
+        layoutBatchMorphChangePane();
     }
     else if (numMorphs > 0 && m_morphIndex < numMorphs) {
         nanoem_model_morph_t *morphPtr = morphs[m_morphIndex];
@@ -3491,7 +3532,7 @@ ModelParameterDialog::layoutAllMorphs(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchMorphChangePane(Project *project)
+ModelParameterDialog::layoutBatchMorphChangePane()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
@@ -3591,23 +3632,23 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
         ImGui::BeginChild("##items", panelWindowSize, true);
         switch (nanoemModelMorphGetType(morphPtr)) {
         case NANOEM_MODEL_MORPH_TYPE_BONE: {
-            layoutMorphBonePropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphBonePropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         case NANOEM_MODEL_MORPH_TYPE_FLIP: {
-            layoutMorphFlipPropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphFlipPropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         case NANOEM_MODEL_MORPH_TYPE_GROUP: {
-            layoutMorphGroupPropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphGroupPropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         case NANOEM_MODEL_MORPH_TYPE_IMPULUSE: {
-            layoutMorphImpulsePropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphImpulsePropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
-            layoutMorphMaterialPropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphMaterialPropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         case NANOEM_MODEL_MORPH_TYPE_TEXTURE:
@@ -3615,11 +3656,11 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
         case NANOEM_MODEL_MORPH_TYPE_UVA2:
         case NANOEM_MODEL_MORPH_TYPE_UVA3:
         case NANOEM_MODEL_MORPH_TYPE_UVA4: {
-            layoutMorphUVPropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphUVPropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         case NANOEM_MODEL_MORPH_TYPE_VERTEX: {
-            layoutMorphVertexPropertyPane(propertyWindowSize, morphPtr, project);
+            layoutMorphVertexPropertyPane(propertyWindowSize, morphPtr);
             break;
         }
         default:
@@ -3631,8 +3672,7 @@ ModelParameterDialog::layoutMorphPropertyPane(nanoem_model_morph_t *morphPtr, Pr
 }
 
 void
-ModelParameterDialog::layoutMorphBonePropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphBonePropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -3736,8 +3776,7 @@ ModelParameterDialog::layoutMorphBonePropertyPane(
 }
 
 void
-ModelParameterDialog::layoutMorphFlipPropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphFlipPropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -3833,8 +3872,7 @@ ModelParameterDialog::layoutMorphFlipPropertyPane(
 }
 
 void
-ModelParameterDialog::layoutMorphGroupPropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphGroupPropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -3930,8 +3968,7 @@ ModelParameterDialog::layoutMorphGroupPropertyPane(
 }
 
 void
-ModelParameterDialog::layoutMorphImpulsePropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphImpulsePropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -4044,8 +4081,7 @@ ModelParameterDialog::layoutMorphImpulsePropertyPane(
 }
 
 void
-ModelParameterDialog::layoutMorphMaterialPropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphMaterialPropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -4227,8 +4263,7 @@ ModelParameterDialog::layoutMorphMaterialPropertyPane(
 }
 
 void
-ModelParameterDialog::layoutMorphUVPropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphUVPropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -4274,8 +4309,7 @@ ModelParameterDialog::layoutMorphUVPropertyPane(
 }
 
 void
-ModelParameterDialog::layoutMorphVertexPropertyPane(
-    const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr, Project *project)
+ModelParameterDialog::layoutMorphVertexPropertyPane(const ImVec2 &propertyWindowSize, nanoem_model_morph_t *morphPtr)
 {
     char buffer[Inline::kNameStackBufferSize];
     bool itemUp, itemDown;
@@ -4331,7 +4365,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
         ImGui::OpenPopup("label-op-menu");
     }
     if (ImGui::BeginPopup("label-op-menu")) {
-        layoutManipulateLabelMenu(project);
+        layoutManipulateLabelMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -4394,7 +4428,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
         ImGui::OpenPopup("label-create-menu");
     }
     if (ImGui::BeginPopup("label-create-menu")) {
-        layoutCreateLabelMenu(project, selectedLabel);
+        layoutCreateLabelMenu(selectedLabel);
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -4421,7 +4455,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
     ImGui::BeginChild("right-pane", ImGui::GetContentRegionAvail());
     if (selection->countAllLabels() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-        layoutBatchLabelChangePane(project);
+        layoutBatchLabelChangePane();
     }
     else if (numLabels > 0 && m_labelIndex < numLabels) {
         nanoem_model_label_t *labelPtr = labels[m_labelIndex];
@@ -4432,7 +4466,7 @@ ModelParameterDialog::layoutAllLabels(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchLabelChangePane(Project *project)
+ModelParameterDialog::layoutBatchLabelChangePane()
 {
 }
 
@@ -4579,7 +4613,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         ImGui::OpenPopup("rigid-body-op-menu");
     }
     if (ImGui::BeginPopup("rigid-body-op-menu")) {
-        layoutManipulateRigidBodyMenu(project);
+        layoutManipulateRigidBodyMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -4643,7 +4677,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
         ImGui::OpenPopup("rigid-body-create-menu");
     }
     if (ImGui::BeginPopup("rigid-body-create-menu")) {
-        layoutCreateRigidBodyMenu(project);
+        layoutCreateRigidBodyMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -4672,7 +4706,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
     if (selection->countAllRigidBodies() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedRigidBodies(selection);
-        layoutBatchRigidBodyChangePane(project);
+        layoutBatchRigidBodyChangePane();
     }
     else if (numRigidBodies > 0 && m_rigidBodyIndex < numRigidBodies) {
         nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[m_rigidBodyIndex];
@@ -4684,7 +4718,7 @@ ModelParameterDialog::layoutAllRigidBodies(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchRigidBodyChangePane(Project *project)
+ModelParameterDialog::layoutBatchRigidBodyChangePane()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
@@ -4776,15 +4810,15 @@ ModelParameterDialog::layoutBatchRigidBodyChangePane(Project *project)
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.object-type"));
     nanoem_model_rigid_body_transform_type_t transformType = m_batchRigidBodyParameter.m_transformType;
     if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.object-type.static"),
-            shapeType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION)) {
+            transformType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_TO_SIMULATION)) {
         m_batchRigidBodyParameter.m_transformType = transformType;
     }
     if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.object-type.dynamic"),
-            shapeType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_SIMULATION_TO_BONE)) {
+            transformType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_SIMULATION_TO_BONE)) {
         m_batchRigidBodyParameter.m_transformType = transformType;
     }
     if (ImGui::RadioButton(tr("nanoem.gui.model.edit.rigid-body.object-type.kinematic"),
-            shapeType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_ORIENTATION_AND_SIMULATION_TO_BONE)) {
+            transformType == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FROM_BONE_ORIENTATION_AND_SIMULATION_TO_BONE)) {
         m_batchRigidBodyParameter.m_transformType = transformType;
     }
     addSeparator();
@@ -5014,7 +5048,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
         ImGui::OpenPopup("joint-op-menu");
     }
     if (ImGui::BeginPopup("joint-op-menu")) {
-        layoutManipulateJointMenu(project);
+        layoutManipulateJointMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -5079,7 +5113,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
         ImGui::OpenPopup("joint-create-menu");
     }
     if (ImGui::BeginPopup("joint-create-menu")) {
-        layoutCreateJointMenu(project);
+        layoutCreateJointMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -5108,7 +5142,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
     if (selection->countAllJoints() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedJoints(selection);
-        layoutBatchJointChangePane(project);
+        layoutBatchJointChangePane();
     }
     else if (numJoints > 0 && m_jointIndex < numJoints) {
         nanoem_model_joint_t *jointPtr = joints[m_jointIndex];
@@ -5120,7 +5154,7 @@ ModelParameterDialog::layoutAllJoints(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchJointChangePane(Project *project)
+ModelParameterDialog::layoutBatchJointChangePane()
 {
     char buffer[Inline::kNameStackBufferSize];
     ImGui::PushItemWidth(-1);
@@ -5157,7 +5191,6 @@ ModelParameterDialog::layoutBatchJointChangePane(Project *project)
     }
     addSeparator();
     {
-        char label[Inline::kNameStackBufferSize];
         nanoem_rsize_t numRigidBodies;
         nanoem_model_rigid_body_t *const *bodies =
             nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
@@ -5229,7 +5262,6 @@ ModelParameterDialog::layoutBatchJointChangePane(Project *project)
 void
 ModelParameterDialog::layoutJointPropertyPane(nanoem_model_joint_t *jointPtr, Project *project)
 {
-    char buffer[Inline::kNameStackBufferSize];
     nanoem_language_type_t language = static_cast<nanoem_language_type_t>(m_language);
     StringUtils::UnicodeStringScope scope(project->unicodeStringFactory());
     ImGui::PushItemWidth(-1);
@@ -5341,7 +5373,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
         ImGui::OpenPopup("soft-body-op-menu");
     }
     if (ImGui::BeginPopup("soft-body-op-menu")) {
-        layoutManipulateSoftBodyMenu(project);
+        layoutManipulateSoftBodyMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -5406,7 +5438,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
         ImGui::OpenPopup("soft-body-create-menu");
     }
     if (ImGui::BeginPopup("soft-body-create-menu")) {
-        layoutCreateSoftBodyMenu(project);
+        layoutCreateSoftBodyMenu();
         ImGui::EndPopup();
     }
     ImGui::SameLine();
@@ -5435,7 +5467,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
     if (selection->countAllSoftBodies() > 1) {
         ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
         updateSortSelectedSoftBodies(selection);
-        layoutBatchSoftBodyChangePane(project);
+        layoutBatchSoftBodyChangePane();
     }
     else if (numSoftBodies > 0 && m_softBodyIndex < numSoftBodies) {
         nanoem_model_soft_body_t *softBodyPtr = softBodies[m_softBodyIndex];
@@ -5447,7 +5479,7 @@ ModelParameterDialog::layoutAllSoftBodies(Project *project)
 }
 
 void
-ModelParameterDialog::layoutBatchSoftBodyChangePane(Project *project)
+ModelParameterDialog::layoutBatchSoftBodyChangePane()
 {
     ImGui::TextUnformatted("Currently Unsupported");
 }
@@ -6235,7 +6267,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
+ModelParameterDialog::layoutManipulateMaterialMenu()
 {
     nanoem_rsize_t numMaterials;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
@@ -6405,7 +6437,7 @@ ModelParameterDialog::layoutManipulateMaterialMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutCreateBoneMenu(Project *project)
+ModelParameterDialog::layoutCreateBoneMenu()
 {
     char buffer[Inline::kNameStackBufferSize];
     nanoem_rsize_t numBones;
@@ -6466,7 +6498,7 @@ ModelParameterDialog::layoutCreateBoneMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
+ModelParameterDialog::layoutManipulateBoneMenu()
 {
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_activeModel->data(), &numBones);
@@ -6659,7 +6691,7 @@ ModelParameterDialog::layoutManipulateBoneMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutCreateMorphMenu(Project *project)
+ModelParameterDialog::layoutCreateMorphMenu()
 {
     nanoem_rsize_t numMorphs;
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -6774,6 +6806,7 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
         ImGui::EndMenu();
     }
     ImGui::Separator();
+    Project *project = m_activeModel->project();
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.morph.create-bone-morph-from-file"))) {
         CreateBoneMorphFromBindPoseCallback callback(m_parent);
         IEventPublisher *eventPublisher = project->eventPublisher();
@@ -6793,7 +6826,7 @@ ModelParameterDialog::layoutCreateMorphMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
+ModelParameterDialog::layoutManipulateMorphMenu()
 {
     nanoem_rsize_t numMorphs;
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_activeModel->data(), &numMorphs);
@@ -6968,7 +7001,7 @@ ModelParameterDialog::layoutManipulateMorphMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutCreateLabelMenu(Project *project, const nanoem_model_label_t *selectedLabel)
+ModelParameterDialog::layoutCreateLabelMenu(const nanoem_model_label_t *selectedLabel)
 {
     nanoem_rsize_t numLabels;
     nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
@@ -7001,7 +7034,7 @@ ModelParameterDialog::layoutCreateLabelMenu(Project *project, const nanoem_model
 }
 
 void
-ModelParameterDialog::layoutManipulateLabelMenu(Project *project)
+ModelParameterDialog::layoutManipulateLabelMenu()
 {
     nanoem_rsize_t numLabels;
     nanoem_model_label_t *const *labels = nanoemModelGetAllLabelObjects(m_activeModel->data(), &numLabels);
@@ -7054,7 +7087,7 @@ ModelParameterDialog::layoutManipulateLabelMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutCreateRigidBodyMenu(Project *project)
+ModelParameterDialog::layoutCreateRigidBodyMenu()
 {
     nanoem_rsize_t numRigidBodies;
     nanoem_model_rigid_body_t *const *rigidBodies =
@@ -7096,7 +7129,7 @@ ModelParameterDialog::layoutCreateRigidBodyMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
+ModelParameterDialog::layoutManipulateRigidBodyMenu()
 {
     nanoem_rsize_t numRigidBodies;
     nanoem_model_rigid_body_t *const *rigidBodies =
@@ -7180,7 +7213,7 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutCreateJointMenu(Project *project)
+ModelParameterDialog::layoutCreateJointMenu()
 {
     nanoem_rsize_t numJoints;
     nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
@@ -7214,7 +7247,7 @@ ModelParameterDialog::layoutCreateJointMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutManipulateJointMenu(Project *project)
+ModelParameterDialog::layoutManipulateJointMenu()
 {
     nanoem_rsize_t numJoints;
     nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
@@ -7289,7 +7322,7 @@ ModelParameterDialog::layoutManipulateJointMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutCreateSoftBodyMenu(Project *project)
+ModelParameterDialog::layoutCreateSoftBodyMenu()
 {
     nanoem_rsize_t numSoftBodies;
     nanoem_model_soft_body_t *const *softBodies =
@@ -7324,7 +7357,7 @@ ModelParameterDialog::layoutCreateSoftBodyMenu(Project *project)
 }
 
 void
-ModelParameterDialog::layoutManipulateSoftBodyMenu(Project *project)
+ModelParameterDialog::layoutManipulateSoftBodyMenu()
 {
     nanoem_rsize_t numSoftBodies;
     nanoem_model_soft_body_t *const *softBodies =
