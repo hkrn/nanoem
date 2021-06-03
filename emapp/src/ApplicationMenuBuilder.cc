@@ -1865,6 +1865,8 @@ ApplicationMenuBuilder::handleToggleModelEditingEnabledEvent(void *userData, boo
     self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllEyeKeyframes, invert);
     self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllEyebrowKeyframes, invert);
     self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllLipKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditModelPluginTitle, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMotionPluginTitle, invert);
     self->setMenuItemEnable(kMenuItemTypeModelRemoveAllSelectedKeyframes, invert);
     self->setMenuItemEnable(kMenuItemTypeCameraRegisterKeyframe, invert);
     self->setMenuItemEnable(kMenuItemTypeCameraRemoveAllSelectedKeyframes, invert);
