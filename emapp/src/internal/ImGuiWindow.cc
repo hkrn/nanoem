@@ -401,7 +401,7 @@ public:
 const char *const CreateCubePrimitiveDialog::kIdentifier = "dialog.model.primitive.cube";
 
 CreateCubePrimitiveDialog::CreateCubePrimitiveDialog(BaseApplicationService *service)
-    : BasePrimitiveDialog(service, Vector3(-5, 0, -5), Constants::kZeroV3, Vector3(5))
+    : BasePrimitiveDialog(service, Vector3(-2.5f, 0, -2.5f), Constants::kZeroV3, Vector3(5))
 {
 }
 

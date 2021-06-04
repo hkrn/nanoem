@@ -287,6 +287,7 @@ public:
 
     static undo_command_t *create(Model *activeModel, const String &name, const MutableVertexList &vertices,
         const VertexIndexList &vertexIndices);
+    static void setup(nanoem_model_material_t *materialPtr, Project *project);
 
     CreateMaterialCommand(Model *activeModel, const String &name, const MutableVertexList &vertices,
         const VertexIndexList &vertexIndices);

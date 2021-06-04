@@ -924,6 +924,16 @@ CreateMaterialCommand::create(
     return command->createCommand();
 }
 
+void
+CreateMaterialCommand::setup(nanoem_model_material_t *materialPtr, Project *project)
+{
+    model::Material *material = model::Material::create(project->sharedFallbackImage());
+    material->bind(materialPtr);
+    material->reset(materialPtr);
+    material->resetDeform();
+    material->resetLanguage(materialPtr, project->unicodeStringFactory(), project->castLanguage());
+}
+
 CreateMaterialCommand::CreateMaterialCommand(
     Model *activeModel, const String &name, const MutableVertexList &vertices, const VertexIndexList &vertexIndices)
     : BaseUndoCommand(activeModel->project())
@@ -945,6 +955,7 @@ CreateMaterialCommand::CreateMaterialCommand(
         nanoem_model_vertex_t *vertexPtr = nanoemMutableModelVertexGetOriginObject(*it);
         model::Vertex *vertex = model::Vertex::create();
         vertex->bind(vertexPtr);
+        vertex->setupBoneBinding(vertexPtr, m_activeModel);
         vertex->setMaterial(origin);
     }
     for (VertexIndexList::const_iterator it = vertexIndices.begin(), end = vertexIndices.end(); it != end; ++it) {
@@ -953,10 +964,25 @@ CreateMaterialCommand::CreateMaterialCommand(
     Project *project = currentProject();
     nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
     StringUtils::UnicodeStringScope us(factory);
-    if (StringUtils::tryGetString(factory, name, us)) {
+    if (!name.empty() && StringUtils::tryGetString(factory, name, us)) {
         nanoem_status_t status = NANOEM_STATUS_SUCCESS;
         nanoemMutableModelMaterialSetName(m_creatingMaterial, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
         nanoemMutableModelMaterialSetName(m_creatingMaterial, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+    }
+    else {
+        static const nanoem_u8_t kNameMaterialInJapanese[] = { 0xe6, 0x9d, 0x90, 0xe8, 0xb3, 0xaa, 0 };
+        String japaneseName, englishName;
+        nanoem_rsize_t numMaterials;
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        nanoemModelGetAllMaterialObjects(m_activeModel->data(), &numMaterials);
+        StringUtils::format(japaneseName, "%s%jd", kNameMaterialInJapanese, numMaterials + 1);
+        if (StringUtils::tryGetString(factory, japaneseName, us)) {
+            nanoemMutableModelMaterialSetName(m_creatingMaterial, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        StringUtils::format(englishName, "Material%jd", numMaterials + 1);
+        if (StringUtils::tryGetString(factory, englishName, us)) {
+            nanoemMutableModelMaterialSetName(m_creatingMaterial, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
     }
     nanoemMutableModelMaterialSetAmbientColor(m_creatingMaterial, glm::value_ptr(Vector4(1)));
     nanoemMutableModelMaterialSetDiffuseColor(m_creatingMaterial, glm::value_ptr(Vector4(1)));
@@ -968,9 +994,7 @@ CreateMaterialCommand::CreateMaterialCommand(
     nanoemMutableModelMaterialSetCastingShadowMapEnabled(m_creatingMaterial, true);
     nanoemMutableModelMaterialSetShadowMapEnabled(m_creatingMaterial, true);
     nanoemMutableModelMaterialSetEdgeEnabled(m_creatingMaterial, true);
-    model::Material *material = model::Material::create(project->sharedFallbackImage());
-    material->bind(origin);
-    material->resetLanguage(origin, factory, project->castLanguage());
+    setup(nanoemMutableModelMaterialGetOriginObject(m_creatingMaterial), project);
 }
 
 CreateMaterialCommand::~CreateMaterialCommand() NANOEM_DECL_NOEXCEPT
@@ -998,7 +1022,7 @@ CreateMaterialCommand::undo(Error &error)
          ++it) {
         nanoemMutableModelRemoveVertexObject(model, *it, &status);
     }
-    m_activeModel->clearAllDrawVertexBuffers();
+    m_activeModel->rebuildAllVertexBuffers(false);
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
 }
@@ -1019,7 +1043,7 @@ CreateMaterialCommand::redo(Error &error)
          ++it) {
         nanoemMutableModelInsertVertexObject(model, *it, -1, &status);
     }
-    m_activeModel->clearAllDrawVertexBuffers();
+    m_activeModel->rebuildAllVertexBuffers(false);
     m_activeModel->rebuildIndexBuffer();
     assignError(status, error);
 }
@@ -1081,11 +1105,7 @@ CopyMaterialFromModelCommand::CopyMaterialFromModelCommand(
         }
         offset += numMaterialVertexIndices;
     }
-    Project *project = currentProject();
-    model::Material *material = model::Material::create(project->sharedFallbackImage());
-    nanoem_model_material_t *origin = nanoemMutableModelMaterialGetOriginObject(m_creatingMaterial);
-    material->bind(origin);
-    material->resetLanguage(origin, project->unicodeStringFactory(), project->castLanguage());
+    CreateMaterialCommand::setup(nanoemMutableModelMaterialGetOriginObject(m_creatingMaterial), currentProject());
 }
 
 CopyMaterialFromModelCommand::~CopyMaterialFromModelCommand() NANOEM_DECL_NOEXCEPT
