@@ -698,6 +698,10 @@ EnableModelEditingCommand::destroy(Project *project)
 }
 
 struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
+    static void saveLastModel(const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state,
+        Project *project, Error &error);
+    static void saveCurrentModel(const Model *activeModel, Project *project, Error &error);
+
     DisableModelEditingCommand(ModelParameterDialog::SavedState *state);
     ~DisableModelEditingCommand() NANOEM_DECL_NOEXCEPT;
 
@@ -707,6 +711,41 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
     Model *m_activeModel;
     ModelParameterDialog::SavedState *m_state;
 };
+
+void
+DisableModelEditingCommand::saveLastModel(
+    const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Project *project, Error &error)
+{
+    FileWriterScope scope;
+    String filePath(activeModel->fileURI().absolutePathByDeletingPathExtension());
+    filePath.append("-");
+    filePath.append(state.m_datetime);
+    filePath.append(
+        nanoemModelGetFormatType(activeModel->data()) == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ".pmd" : ".pmx");
+    if (scope.open(URI::createFromFilePath(filePath), error)) {
+        FileUtils::write(scope.writer(), state.m_modelData, error);
+        if (!error.hasReason()) {
+            scope.commit(error);
+        }
+        else {
+            scope.rollback(error);
+        }
+    }
+}
+
+void
+DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Project *project, Error &error)
+{
+    FileWriterScope scope;
+    if (scope.open(activeModel->fileURI(), error)) {
+        if (activeModel->save(scope.writer(), error)) {
+            scope.commit(error);
+        }
+        else {
+            scope.rollback(error);
+        }
+    }
+}
 
 DisableModelEditingCommand::DisableModelEditingCommand(ModelParameterDialog::SavedState *state)
     : m_state(state)
@@ -730,21 +769,7 @@ DisableModelEditingCommand::execute(Project *project)
         Model *model = it->first;
         model->setActiveBone(state.m_activeBone);
         model->setActiveMorph(state.m_activeMorph);
-        FileWriterScope scope;
-        String filePath(model->fileURI().absolutePathByDeletingPathExtension());
-        filePath.append("-");
-        filePath.append(state.m_datetime);
-        filePath.append(nanoemModelGetFormatType(model->data()) == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ".pmd" : ".pmx");
-        if (scope.open(URI::createFromFilePath(filePath), error)) {
-            FileUtils::write(scope.writer(), state.m_modelData, error);
-            if (!error.hasReason()) {
-                scope.commit(error);
-            }
-            else {
-                scope.rollback(error);
-            }
-            error.notify(project->eventPublisher());
-        }
+        saveLastModel(model, state, project, error);
         if (Motion *motion = project->resolveMotion(model)) {
             motion->load(state.m_motionData, 0, error);
         }
@@ -761,16 +786,8 @@ DisableModelEditingCommand::execute(Project *project)
     project->destroyState(m_state->m_state);
     project->setEditingMode(m_state->m_lastEditingMode);
     project->setModelEditingEnabled(false);
-    FileWriterScope scope;
-    if (scope.open(activeModel->fileURI(), error)) {
-        if (activeModel->save(scope.writer(), error)) {
-            scope.commit(error);
-        }
-        else {
-            scope.rollback(error);
-        }
-        error.notify(project->eventPublisher());
-    }
+    saveCurrentModel(activeModel, project, error);
+    error.notify(project->eventPublisher());
 }
 
 void
@@ -1091,7 +1108,17 @@ void
 ModelParameterDialog::destroy(Project *project)
 {
     if (m_savedState) {
+        Error error;
+        ModelParameterDialog::SavedState::ModelStateMap &states = m_savedState->m_modelStates;
+        for (ModelParameterDialog::SavedState::ModelStateMap::const_iterator it = states.begin(), end = states.end();
+             it != end; ++it) {
+            const ModelParameterDialog::SavedState::ModelState &state = it->second;
+            Model *model = it->first;
+            DisableModelEditingCommand::saveLastModel(model, state, project, error);
+        }
+        DisableModelEditingCommand::saveCurrentModel(m_activeModel, project, error);
         project->destroyState(m_savedState->m_state);
+        error.notify(project->eventPublisher());
     }
 }
 
