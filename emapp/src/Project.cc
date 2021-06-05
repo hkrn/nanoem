@@ -3485,13 +3485,13 @@ Project::pasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex
 }
 
 void
-Project::reversePasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error)
+Project::symmetricPasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error)
 {
-    reversePasteAllSelectedKeyframes(activeModel(), frameIndex, error);
+    symmetricPasteAllSelectedKeyframes(activeModel(), frameIndex, error);
 }
 
 void
-Project::reversePasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error)
+Project::symmetricPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error)
 {
     internalPasteAllSelectedKeyframes(model, frameIndex, true, error);
     restart();
@@ -3772,13 +3772,13 @@ Project::pasteAllSelectedBones(Model *model, Error &error)
 }
 
 void
-Project::reversePasteAllSelectedBones(Error &error)
+Project::symmetricPasteAllSelectedBones(Error &error)
 {
-    reversePasteAllSelectedBones(activeModel(), error);
+    symmetricPasteAllSelectedBones(activeModel(), error);
 }
 
 void
-Project::reversePasteAllSelectedBones(Model *model, Error &error)
+Project::symmetricPasteAllSelectedBones(Model *model, Error &error)
 {
     internalPasteAllSelectedBones(model, true, error);
 }
@@ -6327,7 +6327,7 @@ Project::matchDrawableEffect(const IDrawable *drawable, const Effect *ownerEffec
 }
 
 void
-Project::reverseLocalTransformBone(
+Project::symmetricLocalTransformBone(
     const String &name, const Vector3 &translation, const Quaternion &orientation, Model *model)
 {
     if (model::Bone *newBone = model::Bone::cast(model->findBone(name))) {
@@ -6544,7 +6544,7 @@ Project::loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, cons
 }
 
 void
-Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool reverse, Error &error)
+Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool symmetric, Error &error)
 {
     nanoem_assert(!isPlaying(), "must not be called while playing");
     if (!isMotionClipboardEmpty()) {
@@ -6553,7 +6553,7 @@ Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t fr
             ByteArray snapshot;
             if (Motion *modelMotionPtr = resolveMotion(model)) {
                 modelMotionPtr->save(snapshot, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
-                modelMotionPtr->overrideAllKeyframes(source, reverse);
+                modelMotionPtr->overrideAllKeyframes(source, symmetric);
                 model->pushUndo(command::MotionSnapshotCommand::create(modelMotionPtr, model, snapshot,
                     NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_BONE | NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MODEL |
                         NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MORPH));
@@ -6594,7 +6594,7 @@ Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t fr
 }
 
 void
-Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
+Project::internalPasteAllSelectedBones(Model *model, bool symmetric, Error &error)
 {
     nanoem_assert(!isPlaying(), "must not be called while playing");
     if (model && !isModelClipboardEmpty()) {
@@ -6611,7 +6611,7 @@ Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
                 nanoem_model_morph_bone_t *const *boneMorphs =
                     nanoemModelMorphGetAllBoneMorphObjects(rootMorph, &numBoneMorphs);
                 model::Bone::Set originBones;
-                StringSet reversedBoneNameSet;
+                StringSet symmetricBoneNameSet;
                 for (nanoem_rsize_t i = 0; i < numBoneMorphs; i++) {
                     const nanoem_model_morph_bone_t *boneMorph = boneMorphs[i];
                     const nanoem_model_bone_t *sourceBone = nanoemModelMorphBoneGetBoneObject(boneMorph);
@@ -6623,23 +6623,23 @@ Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
                         const Vector3 translation(glm::make_vec3(nanoemModelMorphBoneGetTranslation(boneMorph)));
                         const Quaternion orientation(glm::make_quat(nanoemModelMorphBoneGetOrientation(boneMorph)));
                         const char *namePtr = bone->canonicalNameConstString();
-                        if (reverse) {
+                        if (symmetric) {
                             if (StringUtils::hasPrefix(
                                     namePtr, reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese))) {
                                 const String newName(StringUtils::substitutedPrefixString(
                                     reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese), namePtr));
-                                if (reversedBoneNameSet.find(newName) == reversedBoneNameSet.end()) {
-                                    reverseLocalTransformBone(newName, translation, orientation, model);
-                                    reversedBoneNameSet.insert(newName);
+                                if (symmetricBoneNameSet.find(newName) == symmetricBoneNameSet.end()) {
+                                    symmetricLocalTransformBone(newName, translation, orientation, model);
+                                    symmetricBoneNameSet.insert(newName);
                                 }
                             }
                             if (StringUtils::hasPrefix(
                                     namePtr, reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese))) {
                                 const String newName(StringUtils::substitutedPrefixString(
                                     reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese), namePtr));
-                                if (reversedBoneNameSet.find(newName) == reversedBoneNameSet.end()) {
-                                    reverseLocalTransformBone(newName, translation, orientation, model);
-                                    reversedBoneNameSet.insert(newName);
+                                if (symmetricBoneNameSet.find(newName) == symmetricBoneNameSet.end()) {
+                                    symmetricLocalTransformBone(newName, translation, orientation, model);
+                                    symmetricBoneNameSet.insert(newName);
                                 }
                             }
                         }

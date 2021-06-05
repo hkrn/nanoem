@@ -3187,7 +3187,7 @@ ImGuiWindow::drawKeyframeActionPanel(Project *project, nanoem_f32_t padding)
     if (handleButton(tr("nanoem.gui.keyframe.inverse-paste"), (ImGui::GetContentRegionAvail().x - padding) / 3.0f,
             hasKeyframeCopied)) {
         Error error;
-        project->reversePasteAllSelectedKeyframes(project->currentLocalFrameIndex(), error);
+        project->symmetricPasteAllSelectedKeyframes(project->currentLocalFrameIndex(), error);
         error.notify(project->eventPublisher());
     }
     ImGui::SameLine();
@@ -4019,7 +4019,7 @@ ImGuiWindow::drawBonePanel(const ImVec2 &panelSize, Model *activeModel, Project 
     if (handleTranslatedButton(
             "nanoem.gui.panel.bone.inverse-paste", ImGui::GetContentRegionAvail().x / 2.0f, buttonEnabled)) {
         Error error;
-        project->reversePasteAllSelectedBones(error);
+        project->symmetricPasteAllSelectedBones(error);
         error.notify(project->eventPublisher());
     }
     ImGui::SameLine();

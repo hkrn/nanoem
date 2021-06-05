@@ -97,7 +97,7 @@ TEST_CASE("project_copy_paste_bone_parameters", "[emapp][project]")
             project->seek(42, true);
             CHECK(rightBone->localUserTranslation() == Constants::kZeroV3);
             CHECK(rightBone->localUserOrientation() == Constants::kZeroQ);
-            project->reversePasteAllSelectedBones(error);
+            project->symmetricPasteAllSelectedBones(error);
             CHECK_FALSE(error.hasReason());
             CHECK(rightBone->localUserTranslation() == Vector3(-1, 2, 3));
             CHECK(rightBone->localUserOrientation() == Quaternion(0.1f, 0.2f, -0.3f, -0.4f));
@@ -107,7 +107,7 @@ TEST_CASE("project_copy_paste_bone_parameters", "[emapp][project]")
                 project->seek(84, true);
                 CHECK(rightBone->localUserTranslation() == Constants::kZeroV3);
                 CHECK(rightBone->localUserOrientation() == Constants::kZeroQ);
-                project->reversePasteAllSelectedBones(error);
+                project->symmetricPasteAllSelectedBones(error);
                 CHECK_FALSE(error.hasReason());
                 CHECK(rightBone->localUserTranslation() == Vector3(-1, 2, 3));
                 CHECK(rightBone->localUserOrientation() == Quaternion(0.1f, 0.2f, -0.3f, -0.4f));
@@ -124,7 +124,7 @@ TEST_CASE("project_copy_paste_bone_parameters", "[emapp][project]")
             project->seek(42, true);
             CHECK(leftBone->localUserTranslation() == Constants::kZeroV3);
             CHECK(leftBone->localUserOrientation() == Constants::kZeroQ);
-            project->reversePasteAllSelectedBones(error);
+            project->symmetricPasteAllSelectedBones(error);
             CHECK_FALSE(error.hasReason());
             CHECK(leftBone->localUserTranslation() == Vector3(-1, 2, 3));
             CHECK(leftBone->localUserOrientation() == Quaternion(0.1f, 0.2f, -0.3f, -0.4f));
@@ -134,7 +134,7 @@ TEST_CASE("project_copy_paste_bone_parameters", "[emapp][project]")
                 project->seek(84, true);
                 CHECK(leftBone->localUserTranslation() == Constants::kZeroV3);
                 CHECK(leftBone->localUserOrientation() == Constants::kZeroQ);
-                project->reversePasteAllSelectedBones(error);
+                project->symmetricPasteAllSelectedBones(error);
                 CHECK_FALSE(error.hasReason());
                 CHECK(leftBone->localUserTranslation() == Vector3(-1, 2, 3));
                 CHECK(leftBone->localUserOrientation() == Quaternion(0.1f, 0.2f, -0.3f, -0.4f));
@@ -194,7 +194,7 @@ TEST_CASE("project_copy_paste_bone_parameters_redo", "[emapp][project]")
                 firstProject->handleCopyAction(error);
                 CHECK_FALSE(error.hasReason());
                 firstProject->seek(42, true);
-                firstProject->reversePasteAllSelectedBones(error);
+                firstProject->symmetricPasteAllSelectedBones(error);
                 CHECK_FALSE(error.hasReason());
             }
             {
@@ -225,7 +225,7 @@ TEST_CASE("project_copy_paste_bone_parameters_redo", "[emapp][project]")
                 firstProject->handleCopyAction(error);
                 CHECK_FALSE(error.hasReason());
                 firstProject->seek(42, true);
-                firstProject->reversePasteAllSelectedBones(error);
+                firstProject->symmetricPasteAllSelectedBones(error);
                 CHECK_FALSE(error.hasReason());
             }
             {

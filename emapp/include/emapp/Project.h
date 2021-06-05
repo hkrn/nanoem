@@ -426,8 +426,8 @@ public:
     void copyAllSelectedKeyframes(Model *model, Error &error);
     void pasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error);
     void pasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error);
-    void reversePasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error);
-    void reversePasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error);
+    void symmetricPasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error);
+    void symmetricPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error);
     void selectAllKeyframesInColumn();
     void selectAllKeyframesInColumn(Model *model);
     void selectAllMotionKeyframesIn(const TimelineSegment &range);
@@ -442,8 +442,8 @@ public:
     void copyAllSelectedBones(Model *model, Error &error);
     void pasteAllSelectedBones(Error &error);
     void pasteAllSelectedBones(Model *model, Error &error);
-    void reversePasteAllSelectedBones(Error &error);
-    void reversePasteAllSelectedBones(Model *model, Error &error);
+    void symmetricPasteAllSelectedBones(Error &error);
+    void symmetricPasteAllSelectedBones(Model *model, Error &error);
     void selectAllBoneKeyframesFromSelectedBoneSet(Model *model);
     bool isModelClipboardEmpty() const NANOEM_DECL_NOEXCEPT;
     bool isMotionClipboardEmpty() const NANOEM_DECL_NOEXCEPT;
@@ -822,7 +822,7 @@ private:
     static void adjustViewportImageRect(const Vector4 viewportLayoutRect, const Vector2 &viewportImageSize,
         Vector4 &viewportImageRect) NANOEM_DECL_NOEXCEPT;
     static bool matchDrawableEffect(const IDrawable *drawable, const Effect *ownerEffect, const String &expr);
-    static void reverseLocalTransformBone(
+    static void symmetricLocalTransformBone(
         const String &name, const Vector3 &translation, const Quaternion &orientation, Model *model);
 
     void addEffectOrderSet(IDrawable *drawable);
@@ -842,8 +842,8 @@ private:
     bool loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const URI &fileURI,
         const StringPair &condition, const ByteArray &bytes, OffscreenRenderTargetConditionList &newConditionsoid,
         Progress &progress, Error &error);
-    void internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool reverse, Error &error);
-    void internalPasteAllSelectedBones(Model *model, bool invert, Error &error);
+    void internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool symmetric, Error &error);
+    void internalPasteAllSelectedBones(Model *model, bool symmetric, Error &error);
     void internalSeek(nanoem_frame_index_t frameIndex);
     void internalSeek(nanoem_frame_index_t frameIndex, nanoem_f32_t amount, nanoem_f32_t delta);
     void destroyDetachedEffect(Effect *effect);
