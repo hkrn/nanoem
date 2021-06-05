@@ -496,7 +496,7 @@ ThreadedApplicationService::handleStoppingApplicationThread()
 void
 ThreadedApplicationService::handleInitializeApplication()
 {
-    const URI &fileURI = recoverableRedoFileURI();
+    const URI fileURI(recoverableRedoFileURI());
     if (!fileURI.isEmpty() && FileUtils::exists(fileURI)) {
         const ITranslator *tr = translator();
         const String &title = tr->translate("nanoem.window.dialog.redo.confirm.title");

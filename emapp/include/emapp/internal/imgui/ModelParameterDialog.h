@@ -73,6 +73,7 @@ public:
     bool draw(Project *project) NANOEM_DECL_OVERRIDE;
     void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
+    void drawMenuBar(Project *project);
     void saveProjectState(Project *project);
     void restoreProjectState(Project *project);
 

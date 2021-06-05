@@ -942,65 +942,7 @@ ModelParameterDialog::draw(Project *project)
             windowTitle, "%s - %s", tr("nanoem.gui.window.model.title"), m_activeModel->nameConstString());
     }
     if (open(windowTitle.c_str(), kIdentifier, &visible,
-            ImVec2(width, ImGui::GetFrameHeightWithSpacing() * kWindowFrameHeightRowCount), ImGuiWindowFlags_MenuBar)) {
-        if (ImGui::BeginMenuBar()) {
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.vertex", tr("nanoem.gui.window.model.menu.vertex"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateVertexMenu(project);
-                ImGui::EndMenu();
-            }
-            StringUtils::format(
-                buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.menu.material"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateMaterialMenu();
-                ImGui::Separator();
-                layoutCreateMaterialMenu(project);
-                ImGui::EndMenu();
-            }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.bone", tr("nanoem.gui.window.model.menu.bone"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateBoneMenu();
-                ImGui::Separator();
-                layoutCreateBoneMenu();
-                ImGui::EndMenu();
-            }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.morph", tr("nanoem.gui.window.model.menu.morph"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateMorphMenu();
-                ImGui::Separator();
-                layoutCreateMorphMenu();
-                ImGui::EndMenu();
-            }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.label", tr("nanoem.gui.window.model.menu.label"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateLabelMenu();
-                ImGui::EndMenu();
-            }
-            StringUtils::format(
-                buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.menu.rigid-body"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateRigidBodyMenu();
-                ImGui::Separator();
-                layoutCreateRigidBodyMenu();
-                ImGui::EndMenu();
-            }
-            StringUtils::format(buffer, sizeof(buffer), "%s##menu.joint", tr("nanoem.gui.window.model.menu.joint"));
-            if (ImGui::BeginMenu(buffer)) {
-                layoutManipulateJointMenu();
-                ImGui::Separator();
-                layoutCreateJointMenu();
-                ImGui::EndMenu();
-            }
-            StringUtils::format(
-                buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.menu.soft-body"));
-            if (ImGui::BeginMenu(buffer, isPMX21())) {
-                layoutManipulateSoftBodyMenu();
-                ImGui::Separator();
-                layoutCreateSoftBodyMenu();
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
-        }
+            ImVec2(width, ImGui::GetFrameHeightWithSpacing() * kWindowFrameHeightRowCount))) {
         const TabType explicitTabType = m_explicitTabType;
         if (explicitTabType != kTabTypeMaxEnum) {
             m_explicitTabType = kTabTypeMaxEnum;
@@ -7602,6 +7544,68 @@ ModelParameterDialog::resetMeasureState()
     m_savedRotation = Constants::kZeroV3;
     m_savedScale = Vector3(1);
     m_savedModelHeight = -1;
+}
+
+void
+ModelParameterDialog::drawMenuBar(Project *project)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    if (ImGui::BeginMenuBar()) {
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.vertex", tr("nanoem.gui.window.model.menu.vertex"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateVertexMenu(project);
+            ImGui::EndMenu();
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.material", tr("nanoem.gui.window.model.menu.material"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateMaterialMenu();
+            ImGui::Separator();
+            layoutCreateMaterialMenu(project);
+            ImGui::EndMenu();
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.bone", tr("nanoem.gui.window.model.menu.bone"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateBoneMenu();
+            ImGui::Separator();
+            layoutCreateBoneMenu();
+            ImGui::EndMenu();
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.morph", tr("nanoem.gui.window.model.menu.morph"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateMorphMenu();
+            ImGui::Separator();
+            layoutCreateMorphMenu();
+            ImGui::EndMenu();
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.label", tr("nanoem.gui.window.model.menu.label"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateLabelMenu();
+            ImGui::EndMenu();
+        }
+        StringUtils::format(
+            buffer, sizeof(buffer), "%s##menu.rigid-body", tr("nanoem.gui.window.model.menu.rigid-body"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateRigidBodyMenu();
+            ImGui::Separator();
+            layoutCreateRigidBodyMenu();
+            ImGui::EndMenu();
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.joint", tr("nanoem.gui.window.model.menu.joint"));
+        if (ImGui::BeginMenu(buffer)) {
+            layoutManipulateJointMenu();
+            ImGui::Separator();
+            layoutCreateJointMenu();
+            ImGui::EndMenu();
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##menu.soft-body", tr("nanoem.gui.window.model.menu.soft-body"));
+        if (ImGui::BeginMenu(buffer, isPMX21())) {
+            layoutManipulateSoftBodyMenu();
+            ImGui::Separator();
+            layoutCreateSoftBodyMenu();
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
 }
 
 void

@@ -373,7 +373,7 @@ private:
     void drawKeyframeActionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t padding, Project *project);
-    void drawViewport(Project *project, nanoem_f32_t viewportHeight, const IState *state);
+    void drawViewport(Project *project, const IState *state);
     void drawViewportParameterBox(Project *project);
     void drawCommonInterpolationControls(Project *project);
     void drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
