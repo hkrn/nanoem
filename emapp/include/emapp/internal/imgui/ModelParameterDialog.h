@@ -82,6 +82,7 @@ private:
     typedef void(APIENTRY *PFN_nanoemMutableModelSetRigidBodyObject)(
         nanoem_mutable_model_joint_t *, const nanoem_model_rigid_body_t *);
     typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneAxis)(nanoem_mutable_model_bone_t *, const nanoem_f32_t *);
+    static bool selectNameBasedSymmetricModelObject(const String &name, String &reversedName, StringSet &nameSet);
 
     void layoutMeasure();
     void layoutHeightBasedBatchTransformPane();

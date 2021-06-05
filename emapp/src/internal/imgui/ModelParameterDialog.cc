@@ -1122,6 +1122,30 @@ ModelParameterDialog::destroy(Project *project)
     }
 }
 
+bool
+ModelParameterDialog::selectNameBasedSymmetricModelObject(const String &name, String &reversedName, StringSet &nameSet)
+{
+    bool found = false;
+    if (nameSet.find(name) == nameSet.end()) {
+        const char *right = reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese),
+                   *left = reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese);
+        const nanoem_rsize_t rl = StringUtils::length(right), ll = StringUtils::length(right);
+        if (StringUtils::equals(name.c_str(), right, rl)) {
+            reversedName.append(left);
+            reversedName.append(name.c_str() + rl);
+        }
+        else if (StringUtils::equals(name.c_str(), left, ll)) {
+            reversedName.append(right);
+            reversedName.append(name.c_str() + ll);
+        }
+        if (!reversedName.empty()) {
+            nameSet.insert(name);
+            found = true;
+        }
+    }
+    return found;
+}
+
 void
 ModelParameterDialog::layoutMeasure()
 {
@@ -6644,6 +6668,21 @@ ModelParameterDialog::layoutManipulateBoneMenu()
                 }
             }
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.bone.enable-symmetric"))) {
+            StringSet nameSet;
+            const model::Bone::Set *boneSet = selection->allBoneSet();
+            for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
+                const nanoem_model_bone_t *bonePtr = *it;
+                const model::Bone *bone = model::Bone::cast(bonePtr);
+                String reversedName;
+                if (bone && selectNameBasedSymmetricModelObject(bone->nameConstString(), reversedName, nameSet)) {
+                    if (const nanoem_model_bone_t *foundBonePtr = m_activeModel->findBone(reversedName)) {
+                        selection->addBone(foundBonePtr);
+                    }
+                }
+            }
+        }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
@@ -7208,6 +7247,33 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu()
                 selection->addBone(bonePtr);
             }
         }
+        ImGui::Separator();
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.rigid-body.enable-symmetric"))) {
+            typedef tinystl::unordered_map<String, const nanoem_model_rigid_body_t *, TinySTLAllocator> RigidBodyMap;
+            StringSet nameSet;
+            RigidBodyMap rigidBodyMap;
+            nanoem_rsize_t numRigidBodies;
+            nanoem_model_rigid_body_t *const *rigidBodies =
+                nanoemModelGetAllRigidBodyObjects(m_activeModel->data(), &numRigidBodies);
+            for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+                const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
+                if (const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
+                    rigidBodyMap.insert(tinystl::make_pair(rigidBody->name(), rigidBodyPtr));
+                }
+            }
+            const model::RigidBody::Set *boneSet = selection->allRigidBodySet();
+            for (model::RigidBody::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
+                const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
+                String reversedName;
+                if (rigidBody && selectNameBasedSymmetricModelObject(rigidBody->nameConstString(), reversedName, nameSet)) {
+                    RigidBodyMap::const_iterator it = rigidBodyMap.find(reversedName);
+                    if (it != rigidBodyMap.end()) {
+                        selection->addRigidBody(it->second);
+                    }
+                }
+            }
+        }
         ImGui::EndMenu();
     }
     if (ImGui::BeginMenu(tr("nanoem.gui.model.edit.action.masking.title"))) {
@@ -7337,6 +7403,34 @@ ModelParameterDialog::layoutManipulateJointMenu()
                                                 *bodyBPtr = nanoemModelJointGetRigidBodyBObject(jointPtr);
                 selection->addRigidBody(bodyAPtr);
                 selection->addRigidBody(bodyBPtr);
+            }
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.selection.joint.enable-symmetric"))) {
+            typedef tinystl::unordered_map<String, const nanoem_model_joint_t *, TinySTLAllocator> JointMap;
+            StringSet nameSet;
+            JointMap rigidBodyMap;
+            nanoem_rsize_t numJoints;
+            nanoem_model_joint_t *const *joints =
+                nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
+            for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+                const nanoem_model_joint_t *jointPtr = joints[i];
+                if (const model::Joint *joint = model::Joint::cast(jointPtr)) {
+                    rigidBodyMap.insert(tinystl::make_pair(joint->name(), jointPtr));
+                }
+            }
+            const model::Joint::Set *boneSet = selection->allJointSet();
+            for (model::Joint::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
+                const nanoem_model_joint_t *jointPtr = *it;
+                const model::Joint *joint = model::Joint::cast(jointPtr);
+                String reversedName;
+                if (joint &&
+                    selectNameBasedSymmetricModelObject(joint->nameConstString(), reversedName, nameSet)) {
+                    JointMap::const_iterator it = rigidBodyMap.find(reversedName);
+                    if (it != rigidBodyMap.end()) {
+                        selection->addJoint(it->second);
+                    }
+                }
             }
         }
         ImGui::EndMenu();

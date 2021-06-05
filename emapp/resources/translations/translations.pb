@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -597,7 +597,8 @@ Cnanoem.gui.model.edit.action.selection.material.enable-all-verticesB選択さ�
 Cnanoem.gui.model.edit.action.selection.bone.enable-all-rigid-bodies6選択されたボーンが含まれる剛体を選択c
 >nanoem.gui.model.edit.action.selection.bone.enable-all-visible!全ての表示ボーンを選択l
 Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateable'全ての回転可能ボーンを選択i
->nanoem.gui.model.edit.action.selection.bone.enable-all-movable'全ての移動可能ボーンを選択e
+>nanoem.gui.model.edit.action.selection.bone.enable-all-movable'全ての移動可能ボーンを選択a
+<nanoem.gui.model.edit.action.selection.bone.enable-symmetric!左右対称のボーンを選択e
 7nanoem.gui.model.edit.action.selection.bone.disable-all*選択された全てのボーンを解除k
 4nanoem.gui.model.edit.action.masking.bone.enable-all3選択された全てのボーンをマスキングr
 >nanoem.gui.model.edit.action.masking.bone.enable-all-invisible0非表示の全てのボーンをマスキングu
@@ -610,14 +611,16 @@ Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateable'全ての回
 8nanoem.gui.model.edit.action.selection.label.disable-all*選択された全ての表示枠を解除�
 9nanoem.gui.model.edit.action.selection.label.children-allW選択された表示枠から該当する全てのボーンまたはモーフを選択X
 <nanoem.gui.model.edit.action.selection.rigid-body.enable-all全ての剛体を選択�
-Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bonesB選択された剛体から該当する全てのボーンを選択h
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bonesB選択された剛体から該当する全てのボーンを選択d
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-symmetric左右対称の剛体を選択h
 =nanoem.gui.model.edit.action.selection.rigid-body.disable-all'選択された全ての剛体を解除n
 :nanoem.gui.model.edit.action.masking.rigid-body.enable-all0選択された全ての剛体をマスキングx
 ;nanoem.gui.model.edit.action.masking.rigid-body.disable-all9選択された全ての剛体のマスキングを解除n
 :nanoem.gui.model.edit.action.masking.rigid-body.invert-all0全ての剛体のマスキング状態を反転\
 7nanoem.gui.model.edit.action.selection.joint.enable-all!全てのジョイントを選択�
 =nanoem.gui.model.edit.action.selection.joint.enable-all-bonesK選択されたジョイントから該当する全てのボーンを選択�
-Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択されたジョイントから該当する全ての剛体を選択l
+Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択されたジョイントから該当する全ての剛体を選択h
+=nanoem.gui.model.edit.action.selection.joint.enable-symmetric'左右対称のジョイントを選択l
 8nanoem.gui.model.edit.action.selection.joint.disable-all0選択された全てのジョイントを解除r
 5nanoem.gui.model.edit.action.masking.joint.enable-all9選択された全てのジョイントをマスキング|
 6nanoem.gui.model.edit.action.masking.joint.disable-allB選択された全てのジョイントのマスキングを解除r
@@ -1165,7 +1168,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1786,7 +1789,8 @@ Cnanoem.gui.model.edit.action.selection.material.enable-all-vertices/Select All
 Cnanoem.gui.model.edit.action.selection.bone.enable-all-rigid-bodies/Select All Rigid Bodies from All Selected BonesZ
 >nanoem.gui.model.edit.action.selection.bone.enable-all-visibleSelect All Visible Bones`
 Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateableSelect All Rotateable BonesZ
->nanoem.gui.model.edit.action.selection.bone.enable-all-movableSelect All Movable BonesM
+>nanoem.gui.model.edit.action.selection.bone.enable-all-movableSelect All Movable BonesX
+<nanoem.gui.model.edit.action.selection.bone.enable-symmetricSelect Symmetric Bone(s)M
 7nanoem.gui.model.edit.action.selection.bone.disable-allDeselect All BonesO
 4nanoem.gui.model.edit.action.masking.bone.enable-allMask All Selected BonesZ
 >nanoem.gui.model.edit.action.masking.bone.enable-all-invisibleMask All Invisible BonesR
@@ -1799,14 +1803,16 @@ Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateableSelect All R
 8nanoem.gui.model.edit.action.selection.label.disable-allDeselect All Labelsm
 9nanoem.gui.model.edit.action.selection.label.children-all0Select All Bones/Morphs from All Selected LabelsW
 <nanoem.gui.model.edit.action.selection.rigid-body.enable-allSelect All Rigid Bodiesu
-Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones/Select All Bones from All Selected Rigid BodiesZ
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones/Select All Bones from All Selected Rigid Bodiesa
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-symmetricSelect Symmetric Rigid BodyZ
 =nanoem.gui.model.edit.action.selection.rigid-body.disable-allDeselect All Rigid Bodies\
 :nanoem.gui.model.edit.action.masking.rigid-body.enable-allMask All Selected Rigid Bodies_
 ;nanoem.gui.model.edit.action.masking.rigid-body.disable-all Unmask All Selected Rigid Bodiesa
 :nanoem.gui.model.edit.action.masking.rigid-body.invert-all#Invert All Mask/Unmask Rigid BodiesL
 7nanoem.gui.model.edit.action.selection.joint.enable-allSelect All Jointsj
 =nanoem.gui.model.edit.action.selection.joint.enable-all-bones)Select All Bones from All Selected Jointsx
-Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select All Rigid Bodies from All Selected JointsO
+Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select All Rigid Bodies from All Selected JointsZ
+=nanoem.gui.model.edit.action.selection.joint.enable-symmetricSelect Symmetric Joint(s)O
 8nanoem.gui.model.edit.action.selection.joint.disable-allDeselect All JointsQ
 5nanoem.gui.model.edit.action.masking.joint.enable-allMask All Selected JointsT
 6nanoem.gui.model.edit.action.masking.joint.disable-allUnmask All Selected JointsV

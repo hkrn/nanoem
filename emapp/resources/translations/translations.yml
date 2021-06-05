@@ -2375,6 +2375,10 @@
   phrase:
     en_US: 'Select All Movable Bones'
     ja_JP: '全ての移動可能ボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-symmetric
+  phrase:
+    en_US: 'Select Symmetric Bone(s)'
+    ja_JP: '左右対称のボーンを選択'
 - key: nanoem.gui.model.edit.action.selection.bone.disable-all
   phrase:
     en_US: 'Deselect All Bones'
@@ -2427,6 +2431,10 @@
   phrase:
     en_US: 'Select All Bones from All Selected Rigid Bodies'
     ja_JP: '選択された剛体から該当する全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.enable-symmetric
+  phrase:
+    en_US: 'Select Symmetric Rigid Body'
+    ja_JP: '左右対称の剛体を選択'
 - key: nanoem.gui.model.edit.action.selection.rigid-body.disable-all
   phrase:
     en_US: 'Deselect All Rigid Bodies'
@@ -2455,6 +2463,10 @@
   phrase:
     en_US: 'Select All Rigid Bodies from All Selected Joints'
     ja_JP: '選択されたジョイントから該当する全ての剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-symmetric
+  phrase:
+    en_US: 'Select Symmetric Joint(s)'
+    ja_JP: '左右対称のジョイントを選択'
 - key: nanoem.gui.model.edit.action.selection.joint.disable-all
   phrase:
     en_US: 'Deselect All Joints'
