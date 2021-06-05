@@ -42,8 +42,9 @@ public:
         BX_UNUSED_2(canUndo, canRedo);
     }
     void
-    publishUndoChangeEvent() NANOEM_DECL_OVERRIDE
+    publishPushUndoCommandEvent(const undo_command_t *commandPtr) NANOEM_DECL_OVERRIDE
     {
+        BX_UNUSED_1(commandPtr);
     }
     void
     publishAddModelEvent(const Model *model) NANOEM_DECL_OVERRIDE

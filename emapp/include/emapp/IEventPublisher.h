@@ -10,6 +10,8 @@
 
 #include "emapp/Forward.h"
 
+struct undo_command_t;
+
 namespace nanoem {
 
 class Accessory;
@@ -26,7 +28,7 @@ public:
         const char *screen, const char *action, const char *category, const char *label) = 0;
     virtual void publishUndoEvent(bool canUndo, bool canRedo) = 0;
     virtual void publishRedoEvent(bool canRedo, bool canUndo) = 0;
-    virtual void publishUndoChangeEvent() = 0;
+    virtual void publishPushUndoCommandEvent(const undo_command_t *commandPtr) = 0;
     virtual void publishAddModelEvent(const Model *model) = 0;
     virtual void publishSetActiveModelEvent(const Model *model) = 0;
     virtual void publishSetActiveBoneEvent(const Model *model, const char *boneName) = 0;

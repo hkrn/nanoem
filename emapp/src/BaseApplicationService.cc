@@ -289,7 +289,7 @@ public:
         const char *screen, const char *action, const char *category, const char *label) NANOEM_DECL_OVERRIDE;
     void publishUndoEvent(bool canUndo, bool canRedo) NANOEM_DECL_OVERRIDE;
     void publishRedoEvent(bool canRedo, bool canUndo) NANOEM_DECL_OVERRIDE;
-    void publishUndoChangeEvent() NANOEM_DECL_OVERRIDE;
+    void publishPushUndoCommandEvent(const undo_command_t *commandPtr) NANOEM_DECL_OVERRIDE;
     void publishAddModelEvent(const Model *model) NANOEM_DECL_OVERRIDE;
     void publishSetActiveModelEvent(const Model *model) NANOEM_DECL_OVERRIDE;
     void publishSetActiveBoneEvent(const Model *model, const char *boneName) NANOEM_DECL_OVERRIDE;
@@ -421,7 +421,7 @@ BaseApplicationService::EventPublisher::publishUndoEvent(bool canUndo, bool canR
     sendEventMessage(event);
     if (g_sentryAvailable) {
         sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo"));
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo.undo"));
         sentry_add_breadcrumb(breadcrumb);
     }
 }
@@ -439,13 +439,13 @@ BaseApplicationService::EventPublisher::publishRedoEvent(bool canRedo, bool canU
     sendEventMessage(event);
     if (g_sentryAvailable) {
         sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("redo"));
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo.redo"));
         sentry_add_breadcrumb(breadcrumb);
     }
 }
 
 void
-BaseApplicationService::EventPublisher::publishUndoChangeEvent()
+BaseApplicationService::EventPublisher::publishPushUndoCommandEvent(const undo_command_t *commandPtr)
 {
     Nanoem__Application__UndoChangeEvent base = NANOEM__APPLICATION__UNDO_CHANGE_EVENT__INIT;
     Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
@@ -453,6 +453,12 @@ BaseApplicationService::EventPublisher::publishUndoChangeEvent()
     event.type_case = NANOEM__APPLICATION__EVENT__TYPE_UNDO_CHANGE;
     event.undo_change = &base;
     sendEventMessage(event);
+    if (g_sentryAvailable) {
+        sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo.push"));
+        sentry_value_set_by_key(breadcrumb, "name", sentry_value_new_string(undoCommandGetName(commandPtr)));
+        sentry_add_breadcrumb(breadcrumb);
+    }
 }
 
 void

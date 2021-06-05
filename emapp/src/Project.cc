@@ -2741,7 +2741,7 @@ Project::pushUndo(undo_command_t *command)
     nanoem_assert(!isPlaying(), "must not be called while playing");
     if (!isPlaying()) {
         undoStackPushCommand(undoStack(), command);
-        eventPublisher()->publishUndoChangeEvent();
+        eventPublisher()->publishPushUndoCommandEvent(command);
     }
     else {
         undoCommandDestroy(command);

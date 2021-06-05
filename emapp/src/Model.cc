@@ -2248,7 +2248,7 @@ Model::pushUndo(undo_command_t *command)
             stackPtr = editingUndoStack();
         }
         undoStackPushCommand(stackPtr, command);
-        m_project->eventPublisher()->publishUndoChangeEvent();
+        m_project->eventPublisher()->publishPushUndoCommandEvent(command);
     }
     else {
         undoCommandDestroy(command);
