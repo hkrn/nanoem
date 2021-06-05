@@ -494,26 +494,74 @@
   phrase:
     en_US: Action
     ja_JP: アクション
-- key: nanoem.gui.panel.model.edit.operation.action.camera
+- key: nanoem.gui.panel.model.edit.operation.action.camera.title
   phrase:
     en_US: Camera
     ja_JP: カメラ
-- key: nanoem.gui.panel.model.edit.operation.action.selection
+- key: nanoem.gui.panel.model.edit.operation.action.selection.title
   phrase:
     en_US: Selection
     ja_JP: 選択
-- key: nanoem.gui.panel.model.edit.operation.action.create-parent-bone
+- key: nanoem.gui.panel.model.edit.operation.action.create-parent-bone.title
   phrase:
     en_US: Create Parent Bone
     ja_JP: 親ボーンの作成
-- key: nanoem.gui.panel.model.edit.operation.action.create-target-bone
+- key: nanoem.gui.panel.model.edit.operation.action.create-target-bone.title
   phrase:
     en_US: Create Target Bone
     ja_JP: 表示先ボーンの作成
-- key: nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight
+- key: nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.title
   phrase:
     en_US: Paint Vertex Weight
     ja_JP: 頂点ウェイトを塗る
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.title
+  phrase:
+    en_US: Create Material Primitive
+    ja_JP: 材質プリミティブの作成
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cone
+  phrase:
+    en_US: Cone
+    ja_JP: 円錐
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cube
+  phrase:
+    en_US: Cube
+    ja_JP: 立方体
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinder
+  phrase:
+    en_US: Cylinder
+    ja_JP: 円筒
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphere
+  phrase:
+    en_US: Sphere
+    ja_JP: 球体
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.torus
+  phrase:
+    en_US: Torus
+    ja_JP: トーラス
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation
+  phrase:
+    en_US: Translation
+    ja_JP: 移動量
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation
+  phrase:
+    en_US: Rotation
+    ja_JP: 回転量
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scale
+  phrase:
+    en_US: Scale
+    ja_JP: スケール
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices
+  phrase:
+    en_US: "Slices: %d"
+    ja_JP: "円周分割数: %d"
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks
+  phrase:
+    en_US: "Stacks: %d"
+    ja_JP: "高さ分割数: %d"
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius
+  phrase:
+    en_US: "Inner Radius: %.1f"
+    ja_JP: "内径: %.1f"
 - key: nanoem.gui.panel.model.edit.operation.selection.title
   phrase:
     en_US: Selection Mode

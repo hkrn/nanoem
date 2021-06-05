@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -123,12 +123,24 @@ $nanoem.gui.panel.morph.weight.formatウェイト: %.2f%
 nanoem.gui.panel.view.right右面"
 nanoem.gui.panel.view.up上面5
 +nanoem.gui.panel.model.edit.operation.title操作E
-2nanoem.gui.panel.model.edit.operation.action.titleアクション@
-3nanoem.gui.panel.model.edit.operation.action.camera	カメラ@
-6nanoem.gui.panel.model.edit.operation.action.selection選択X
-?nanoem.gui.panel.model.edit.operation.action.create-parent-bone親ボーンの作成^
-?nanoem.gui.panel.model.edit.operation.action.create-target-bone表示先ボーンの作成_
-@nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight頂点ウェイトを塗るH
+2nanoem.gui.panel.model.edit.operation.action.titleアクションF
+9nanoem.gui.panel.model.edit.operation.action.camera.title	カメラF
+<nanoem.gui.panel.model.edit.operation.action.selection.title選択^
+Enanoem.gui.panel.model.edit.operation.action.create-parent-bone.title親ボーンの作成d
+Enanoem.gui.panel.model.edit.operation.action.create-target-bone.title表示先ボーンの作成e
+Fnanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.title頂点ウェイトを塗るq
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.title!材質プリミティブの作成U
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.cone円錐X
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.cube	立方体Y
+Onanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinder円筒W
+Mnanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphere球体\
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.torusトーラスj
+]nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation	移動量g
+Znanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation	回転量g
+Wnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scaleスケールo
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices円周分割数: %do
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks高さ分割数: %dh
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius内径: %.1fH
 5nanoem.gui.panel.model.edit.operation.selection.title選択モード@
 6nanoem.gui.panel.model.edit.operation.selection.circle円形C
 9nanoem.gui.panel.model.edit.operation.selection.rectangle矩形<
@@ -1152,7 +1164,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1278,12 +1290,26 @@ $nanoem.gui.panel.morph.weight.formatWeight: %.2f#
 nanoem.gui.panel.view.rightRight
 nanoem.gui.panel.view.upUp8
 +nanoem.gui.panel.model.edit.operation.title	Operation<
-2nanoem.gui.panel.model.edit.operation.action.titleAction=
-3nanoem.gui.panel.model.edit.operation.action.cameraCameraC
-6nanoem.gui.panel.model.edit.operation.action.selection	SelectionU
-?nanoem.gui.panel.model.edit.operation.action.create-parent-boneCreate Parent BoneU
-?nanoem.gui.panel.model.edit.operation.action.create-target-boneCreate Target BoneW
-@nanoem.gui.panel.model.edit.operation.action.paint-vertex-weightPaint Vertex WeightG
+2nanoem.gui.panel.model.edit.operation.action.titleActionC
+9nanoem.gui.panel.model.edit.operation.action.camera.titleCameraI
+<nanoem.gui.panel.model.edit.operation.action.selection.title	Selection[
+Enanoem.gui.panel.model.edit.operation.action.create-parent-bone.titleCreate Parent Bone[
+Enanoem.gui.panel.model.edit.operation.action.create-target-bone.titleCreate Target Bone]
+Fnanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.titlePaint Vertex Weighti
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.titleCreate Material PrimitiveS
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.coneConeS
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.cubeCube[
+Onanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinderCylinderW
+Mnanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphereSphereU
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.torusTorusl
+]nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translationTranslationf
+Znanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotationRotation`
+Wnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scaleScalef
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices
+Slices: %df
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks
+Stacks: %dn
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radiusInner Radius: %.1fG
 5nanoem.gui.panel.model.edit.operation.selection.titleSelection Mode@
 6nanoem.gui.panel.model.edit.operation.selection.circleCircleF
 9nanoem.gui.panel.model.edit.operation.selection.rectangle	Rectangle>

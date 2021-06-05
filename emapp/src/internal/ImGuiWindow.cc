@@ -207,8 +207,8 @@ WaveFormPanelDrawer::WaveFormPanelDrawer(const Project *project, nanoem_u32_t nu
         const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
         const nanoem_u32_t bytesPerSample = player->bitsPerSample() / 8,
                            bytesPerSecond = player->sampleRate() * player->numChannels() * bytesPerSample,
-                           length = static_cast<nanoem_rsize_t>((numVisibleMarkers / denominator) * bytesPerSecond),
-                           base = static_cast<nanoem_rsize_t>((frameIndex / denominator) * bytesPerSecond);
+                           length = static_cast<nanoem_u32_t>((numVisibleMarkers / denominator) * bytesPerSecond),
+                           base = static_cast<nanoem_u32_t>((frameIndex / denominator) * bytesPerSecond);
         m_linearPCMSamplesPtr = player->linearPCMSamples();
         m_length = length - length % bytesPerSample;
         m_base = base - base % bytesPerSample;
@@ -289,11 +289,13 @@ BasePrimitiveDialog::BasePrimitiveDialog(
 void
 BasePrimitiveDialog::layoutTransform()
 {
-    ImGui::TextUnformatted("Translation");
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation"));
     ImGui::DragFloat3("##translation", glm::value_ptr(m_translation));
-    ImGui::TextUnformatted("Rotation");
+    ImGui::TextUnformatted(
+        tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation"));
     ImGui::DragFloat3("##rotation", glm::value_ptr(m_rotation), 1.0f, -180.0f, 180.0f);
-    ImGui::TextUnformatted("Scale");
+    ImGui::TextUnformatted(
+        tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scale"));
     ImGui::DragFloat3("##scale", glm::value_ptr(m_scale), 1.0f, 0.0001f, 10000.0f);
 }
 
@@ -355,9 +357,9 @@ private:
 const char *const CreateConePrimitiveDialog::kIdentifier = "dialog.model.primitive.cone";
 
 CreateConePrimitiveDialog::CreateConePrimitiveDialog(BaseApplicationService *service)
-    : BasePrimitiveDialog(service, Constants::kZeroV3, Constants::kZeroV3, Vector3(5))
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Vector3(-90, 0, 0), Vector3(5))
     , m_slices(16)
-    , m_stacks(8)
+    , m_stacks(10)
 {
 }
 
@@ -369,8 +371,9 @@ CreateConePrimitiveDialog::draw(Project *project)
     if (open("Create Cone", kIdentifier, &visible, height)) {
         ImGui::PushItemWidth(-1);
         layoutTransform();
-        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 128, "Slices: %d");
-        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 128, "Stacks: %d");
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 10000, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
         addSeparator();
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
@@ -438,6 +441,119 @@ CreateCubePrimitiveDialog::draw(Project *project)
     return visible;
 }
 
+class CreateCylinderPrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateCylinderPrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateCylinderPrimitiveDialog::kIdentifier = "dialog.model.primitive.cylinder";
+
+CreateCylinderPrimitiveDialog::CreateCylinderPrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Vector3(-90, 0, 0), Vector3(5))
+    , m_slices(16)
+    , m_stacks(10)
+{
+}
+
+bool
+CreateCylinderPrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 8;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Cylinder", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_cylinder(m_slices, m_stacks);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateSpherePrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateSpherePrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateSpherePrimitiveDialog::kIdentifier = "dialog.model.primitive.sphere";
+
+CreateSpherePrimitiveDialog::CreateSpherePrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Vector3(0, 5, 0), Constants::kZeroV3, Vector3(5))
+    , m_slices(16)
+    , m_stacks(10)
+{
+}
+
+bool
+CreateSpherePrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 8;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Sphere", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_parametric_sphere(m_slices, m_stacks);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
 class CreateTorusPrimitiveDialog : public BasePrimitiveDialog {
 public:
     static const char *const kIdentifier;
@@ -456,10 +572,10 @@ private:
 const char *const CreateTorusPrimitiveDialog::kIdentifier = "dialog.model.primitive.torus";
 
 CreateTorusPrimitiveDialog::CreateTorusPrimitiveDialog(BaseApplicationService *service)
-    : BasePrimitiveDialog(service, Constants::kZeroV3, Constants::kZeroV3, Vector3(5))
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Vector3(90, 0, 0), Vector3(5))
     , m_radius(0.5f)
     , m_slices(16)
-    , m_stacks(16)
+    , m_stacks(10)
 {
 }
 
@@ -476,9 +592,11 @@ CreateTorusPrimitiveDialog::draw(Project *project)
     if (open("Create Torus", kIdentifier, &visible, height)) {
         ImGui::PushItemWidth(-1);
         layoutTransform();
-        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 128, "Slices: %d");
-        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 3, 128, "Stacks: %d");
-        ImGui::SliderFloat("##radius", &m_radius, 0.1f, 1.0f, "Radius: %.1f");
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        ImGui::SliderFloat("##radius", &m_radius, 0.1f, 1.0f, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius"));
         addSeparator();
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
@@ -4127,121 +4245,132 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
     const Model::EditActionType editActionType = activeModel->editActionType();
     ImGui::BeginChild("command", ImVec2(kModelEditCommandWidth * project->windowDevicePixelRatio(), height));
     StringUtils::format(buffer, sizeof(buffer), "%s##operation", tr("nanoem.gui.panel.model.edit.operation.title"));
-    if (ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
-        IModelObjectSelection *selection = activeModel->selection();
-        if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.title"))) {
-            const IModelObjectSelection::ObjectType objectType = selection->objectType();
-            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.camera"), nullptr,
-                    editActionType == Model::kEditActionTypeNone)) {
-                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                activeModel->setEditActionType(Model::kEditActionTypeNone);
-            }
-            if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.selection"))) {
-                bool isSelection = editActionType == Model::kEditActionTypeSelectModelObject;
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.vertex"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeVertex, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.face"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeFace)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeFace, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.material"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeMaterial)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeMaterial, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.bone"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeBone)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeBone, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.rigid-body"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeRigidBody)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeRigidBody, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.joint"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeJoint)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeJoint, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                if (ImGui::MenuItem(tr("nanoem.gui.window.model.tab.soft-body"), nullptr,
-                        isSelection && objectType == IModelObjectSelection::kObjectTypeSoftBody)) {
-                    ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                    ModelEditCommandDialog::afterToggleEditingMode(
-                        IModelObjectSelection::kObjectTypeSoftBody, activeModel, project);
-                    activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::Separator();
-            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-parent-bone"), nullptr,
-                    editActionType == Model::kEditActionTypeCreateParentBone)) {
-                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                ModelEditCommandDialog::afterToggleEditingMode(
-                    IModelObjectSelection::kObjectTypeBone, activeModel, project);
-                activeModel->setEditActionType(Model::kEditActionTypeCreateParentBone);
-            }
-            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-target-bone"), nullptr,
-                    editActionType == Model::kEditActionTypeCreateTargetBone)) {
-                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
-                ModelEditCommandDialog::afterToggleEditingMode(
-                    IModelObjectSelection::kObjectTypeBone, activeModel, project);
-                activeModel->setEditActionType(Model::kEditActionTypeCreateTargetBone);
-            }
-            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight"), nullptr,
-                    editActionType == Model::kEditActionTypePaintVertexWeight)) {
+    IModelObjectSelection *selection = activeModel->selection();
+    const IModelObjectSelection::ObjectType objectType = selection->objectType();
+    if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.title"))) {
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.camera.title"), nullptr,
+                editActionType == Model::kEditActionTypeNone)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            selection->setObjectType(IModelObjectSelection::kObjectTypeNull);
+            activeModel->setEditActionType(Model::kEditActionTypeNone);
+        }
+        if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.selection.title"))) {
+            bool isSelection = editActionType == Model::kEditActionTypeSelectModelObject;
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.vertex"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
                 ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
                 ModelEditCommandDialog::afterToggleEditingMode(
                     IModelObjectSelection::kObjectTypeVertex, activeModel, project);
-                activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
-                activeModel->setShowAllVertexWeights(true);
-                if (!activeModel->vertexWeightPainter()) {
-                    activeModel->setVertexWeightPainter(nanoem_new(VertexWeightPainter(activeModel)));
-                }
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
             }
-            ImGui::Separator();
-            if (ImGui::BeginMenu("Create Primitive")) {
-                if (ImGui::MenuItem("Cone") &&
-                    m_dialogWindows.find(CreateConePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
-                    INoModalDialogWindow *dialog = nanoem_new(CreateConePrimitiveDialog(m_applicationPtr));
-                    m_dialogWindows.insert(tinystl::make_pair(CreateConePrimitiveDialog::kIdentifier, dialog));
-                }
-                if (ImGui::MenuItem("Cube") &&
-                    m_dialogWindows.find(CreateCubePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
-                    INoModalDialogWindow *dialog = nanoem_new(CreateCubePrimitiveDialog(m_applicationPtr));
-                    m_dialogWindows.insert(tinystl::make_pair(CreateCubePrimitiveDialog::kIdentifier, dialog));
-                }
-                if (ImGui::MenuItem("Torus") &&
-                    m_dialogWindows.find(CreateTorusPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
-                    INoModalDialogWindow *dialog = nanoem_new(CreateTorusPrimitiveDialog(m_applicationPtr));
-                    m_dialogWindows.insert(tinystl::make_pair(CreateTorusPrimitiveDialog::kIdentifier, dialog));
-                }
-                ImGui::EndMenu();
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.face"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeFace)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeFace, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.material"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeMaterial)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeMaterial, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.bone"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeBone)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.rigid-body"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeRigidBody)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeRigidBody, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.joint"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeJoint)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeJoint, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.soft-body"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeSoftBody)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeSoftBody, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
             }
             ImGui::EndMenu();
         }
         ImGui::Separator();
-        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.operation.selection.title"));
-        const IModelObjectSelection::ObjectType objectType = selection->objectType();
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-parent-bone.title"), nullptr,
+                editActionType == Model::kEditActionTypeCreateParentBone)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            ModelEditCommandDialog::afterToggleEditingMode(
+                IModelObjectSelection::kObjectTypeBone, activeModel, project);
+            activeModel->setEditActionType(Model::kEditActionTypeCreateParentBone);
+        }
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-target-bone.title"), nullptr,
+                editActionType == Model::kEditActionTypeCreateTargetBone)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            ModelEditCommandDialog::afterToggleEditingMode(
+                IModelObjectSelection::kObjectTypeBone, activeModel, project);
+            activeModel->setEditActionType(Model::kEditActionTypeCreateTargetBone);
+        }
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.title"), nullptr,
+                editActionType == Model::kEditActionTypePaintVertexWeight)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            ModelEditCommandDialog::afterToggleEditingMode(
+                IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+            activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
+            activeModel->setShowAllVertexWeights(true);
+            if (!activeModel->vertexWeightPainter()) {
+                activeModel->setVertexWeightPainter(nanoem_new(VertexWeightPainter(activeModel)));
+            }
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.title"))) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cone")) &&
+                m_dialogWindows.find(CreateConePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateConePrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateConePrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cube")) &&
+                m_dialogWindows.find(CreateCubePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateCubePrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateCubePrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(
+                    tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinder")) &&
+                m_dialogWindows.find(CreateCylinderPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateCylinderPrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateCylinderPrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphere")) &&
+                m_dialogWindows.find(CreateSpherePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateSpherePrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateSpherePrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.torus")) &&
+                m_dialogWindows.find(CreateTorusPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateTorusPrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateTorusPrimitiveDialog::kIdentifier, dialog));
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+    const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
+        objectType < IModelObjectSelection::kObjectTypeMaxEnum;
+    if (isSelectionMode &&
+        ImGui::CollapsingHeader(
+            tr("nanoem.gui.panel.model.edit.operation.selection.title"), ImGuiTreeNodeFlags_DefaultOpen)) {
         const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
-        const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
-            objectType < IModelObjectSelection::kObjectTypeMaxEnum;
         if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.circle"),
                 targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
             selection->setTargetMode(IModelObjectSelection::kTargetModeTypeCircle);
