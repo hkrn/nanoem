@@ -403,8 +403,7 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
 void
 Error::addModalDialog(BaseApplicationService *applicationPtr) const
 {
-    IModalDialog *dialog = createModalDialog(applicationPtr);
-    if (dialog) {
+    if (IModalDialog *dialog = createModalDialog(applicationPtr)) {
         applicationPtr->addModalDialog(dialog);
         applicationPtr->eventPublisher()->publishErrorEvent(*this);
     }

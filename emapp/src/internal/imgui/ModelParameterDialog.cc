@@ -730,8 +730,23 @@ DisableModelEditingCommand::execute(Project *project)
         Model *model = it->first;
         model->setActiveBone(state.m_activeBone);
         model->setActiveMorph(state.m_activeMorph);
+        FileWriterScope scope;
+        String filePath(model->fileURI().absolutePathByDeletingPathExtension());
+        filePath.append("-");
+        filePath.append(state.m_datetime);
+        filePath.append(nanoemModelGetFormatType(model->data()) == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ".pmd" : ".pmx");
+        if (scope.open(URI::createFromFilePath(filePath), error)) {
+            FileUtils::write(scope.writer(), state.m_modelData, error);
+            if (!error.hasReason()) {
+                scope.commit(error);
+            }
+            else {
+                scope.rollback(error);
+            }
+            error.notify(project->eventPublisher());
+        }
         if (Motion *motion = project->resolveMotion(model)) {
-            motion->load(state.m_motion, 0, error);
+            motion->load(state.m_motionData, 0, error);
         }
     }
     Model *activeModel = m_state->m_activeModel;
@@ -746,6 +761,16 @@ DisableModelEditingCommand::execute(Project *project)
     project->destroyState(m_state->m_state);
     project->setEditingMode(m_state->m_lastEditingMode);
     project->setModelEditingEnabled(false);
+    FileWriterScope scope;
+    if (scope.open(activeModel->fileURI(), error)) {
+        if (activeModel->save(scope.writer(), error)) {
+            scope.commit(error);
+        }
+        else {
+            scope.rollback(error);
+        }
+        error.notify(project->eventPublisher());
+    }
 }
 
 void
@@ -7409,15 +7434,25 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
         IDrawable *drawable = *it;
         drawable->setVisible(false);
     }
+    Error error;
     if (Motion *motion = project->resolveMotion(model)) {
-        Error error;
         SavedState::ModelStateMap::const_iterator it = m_savedState->m_modelStates.find(model);
         if (it == m_savedState->m_modelStates.end()) {
             SavedState::ModelState state;
-            if (motion->save(state.m_motion, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
+            const URI modelFileURI(model->fileURI());
+            FileReaderScope scope(project->translator());
+            if (scope.open(modelFileURI, error)) {
+                FileUtils::read(scope, state.m_modelData, error);
+                if (error.hasReason()) {
+                    error = Error();
+                    model->save(state.m_modelData, error);
+                }
+            }
+            if (!error.hasReason() && motion->save(state.m_motionData, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
                 motion->clearAllKeyframes();
                 state.m_activeBone = model->activeBone();
                 state.m_activeMorph = model->activeMorph();
+                StringUtils::formatDateTimeLocal(state.m_datetime, sizeof(state.m_datetime), "%Y%m%d_%H%M%S");
                 m_savedState->m_modelStates.insert(tinystl::make_pair(model, state));
             }
         }
@@ -7434,6 +7469,7 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
     model->updateStagingVertexBuffer();
     project->activeCamera()->reset();
     project->activeLight()->reset();
+    error.addModalDialog(application());
 }
 
 void

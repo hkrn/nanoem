@@ -24,7 +24,9 @@ public:
         struct ModelState {
             const nanoem_model_bone_t *m_activeBone;
             const nanoem_model_morph_t *m_activeMorph;
-            ByteArray m_motion;
+            ByteArray m_modelData;
+            ByteArray m_motionData;
+            char m_datetime[32];
         };
         SavedState(Project::EditingMode editingMode)
             : m_activeModel(nullptr)
