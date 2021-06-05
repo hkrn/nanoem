@@ -12,7 +12,7 @@ nanoem is an [MMD (MikuMikuDance)](https://sites.google.com/view/vpvp/) compatib
 
 ### Prerequisites
 
-- [cmake](https://cmake.org) (> 3.5)
+- [cmake](https://cmake.org) (>= 3.5)
 - C++14 compliant compiler
   - confirmed on Clang and Visual Studio 2017
 - [git](https://git-scm.com)
@@ -24,6 +24,8 @@ nanoem is an [MMD (MikuMikuDance)](https://sites.google.com/view/vpvp/) compatib
 See also [GitHub Action Workflow](.github/workflows/main.yml).
 
 ```bash
+git submodule update --init --recurse
+
 # needs setting NANOEM_TARGET_COMPILER explicitly when the compiler is clang (default is gcc on Linux)
 export NANOEM_TARGET_COMPILER=clang
 cmake -P scripts/build.cmake
