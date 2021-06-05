@@ -60,7 +60,7 @@ public:
     virtual void openModelEdgeDialog(Project *project) = 0;
     virtual void openScaleAllSelectedKeyframesDialog() = 0;
     virtual void openEffectParameterDialog(Project *project) = 0;
-    virtual void openModelParameterDialog(Project *project) = 0;
+    virtual void openModelParameterDialog(Project *project, Error &error) = 0;
     virtual void openPreferenceDialog() = 0;
     virtual bool openModelIOPluginDialog(Project *project, plugin::ModelIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) = 0;

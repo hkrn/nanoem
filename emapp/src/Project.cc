@@ -1850,8 +1850,8 @@ Project::newModel(Error &error)
             }
         }
         else {
-            error = Error(translator()->translate("nanoem.error.project.new-model.empty-file-uri.reason"), "",
-                Error::kDomainTypeApplication);
+            error = Error(
+                translator()->translate("nanoem.error.project.new-model.reason"), "", Error::kDomainTypeApplication);
         }
     }
     else {

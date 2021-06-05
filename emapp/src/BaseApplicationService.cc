@@ -1812,9 +1812,6 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
     switch (type) {
     case ApplicationMenuBuilder::kMenuItemTypeFileNewModel: {
         project->newModel(error);
-        if (error.hasReason()) {
-            error.addModalDialog(this);
-        }
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeEditUndo: {
@@ -1922,7 +1919,7 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeEditOpenModelParameterWindow: {
-        m_window->openModelParameterDialog(project);
+        m_window->openModelParameterDialog(project, error);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeEditSelectAll: {
@@ -2423,8 +2420,7 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         handled = false;
         break;
     }
-    error.notify(eventPublisher());
-    return handled;
+    return handled && !error.hasReason();
 }
 
 void
@@ -3539,7 +3535,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_MENU_ACTION: {
-        dispatchMenuItemAction(project, command->menu_action->value, error);
+        succeeded = dispatchMenuItemAction(project, command->menu_action->value, error);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_RENDER_FRAME: {

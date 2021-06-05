@@ -4118,10 +4118,14 @@
   phrase:
     en_US: 'Try selecting the model'
     ja_JP: 'モデルを選択してください'
-- key: nanoem.error.project.new-model.empty-file-uri.reason
+- key: nanoem.error.project.new-model.reason
   phrase:
     en_US: 'Saving the project is required to create a new model'
     ja_JP: '新規モデルを作成するにはプロジェクトの保存が必要です'
+- key: nanoem.error.project.open-model.reason
+  phrase:
+    en_US: 'Saving the project is required to open model parameter dialog'
+    ja_JP: 'モデル編集ダイアログを開くにはプロジェクトの保存が必要です'
 
 - key: nanoem.project.diagnostics.title
   phrase:

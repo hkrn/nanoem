@@ -1539,9 +1539,14 @@ ImGuiWindow::openEffectParameterDialog(Project *project)
 }
 
 void
-ImGuiWindow::openModelParameterDialog(Project *project)
+ImGuiWindow::openModelParameterDialog(Project *project, Error &error)
 {
-    if (m_dialogWindows.find(ModelParameterDialog::kIdentifier) == m_dialogWindows.end()) {
+    if (project->isDirty()) {
+        const ITranslator *translator = project->translator();
+        error =
+            Error(translator->translate("nanoem.error.project.open-model.reason"), "", Error::kDomainTypeApplication);
+    }
+    else if (m_dialogWindows.find(ModelParameterDialog::kIdentifier) == m_dialogWindows.end()) {
         if (Model *activeModel = project->activeModel()) {
             INoModalDialogWindow *dialog =
                 nanoem_new(ModelParameterDialog(activeModel, project, m_applicationPtr, this));

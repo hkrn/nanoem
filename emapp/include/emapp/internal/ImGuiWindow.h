@@ -203,7 +203,7 @@ public:
     void openModelEdgeDialog(Project *project) NANOEM_DECL_OVERRIDE;
     void openScaleAllSelectedKeyframesDialog() NANOEM_DECL_OVERRIDE;
     void openEffectParameterDialog(Project *project) NANOEM_DECL_OVERRIDE;
-    void openModelParameterDialog(Project *project) NANOEM_DECL_OVERRIDE;
+    void openModelParameterDialog(Project *project, Error &error) NANOEM_DECL_OVERRIDE;
     void openPreferenceDialog() NANOEM_DECL_OVERRIDE;
     bool openModelIOPluginDialog(Project *project, plugin::ModelIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) NANOEM_DECL_OVERRIDE;
