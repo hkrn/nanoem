@@ -10,8 +10,7 @@
 
 #include "emapp/PhysicsEngine.h"
 
-#include "par/par_shapes.h"
-
+struct par_shapes_mesh_s;
 struct nanoem_physics_rigid_body_t;
 
 namespace nanoem {
@@ -87,7 +86,7 @@ public:
     bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
     void setEditingMasked(bool value);
 
-    const par_shapes_mesh *sharedShapeMesh(const nanoem_model_rigid_body_t *body);
+    const par_shapes_mesh_s *sharedShapeMesh(const nanoem_model_rigid_body_t *body);
 
 private:
     struct PlaceHolder {

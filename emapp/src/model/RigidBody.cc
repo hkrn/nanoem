@@ -13,6 +13,7 @@
 #include "emapp/model/Bone.h"
 #include "emapp/private/CommonInclude.h"
 
+#define PAR_SHAPES_T uint32_t
 #include "glm/gtc/matrix_inverse.hpp"
 #include "par/par_shapes.h"
 

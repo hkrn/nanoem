@@ -41,6 +41,7 @@ __pragma(warning(push))
 __pragma(warning(disable:4244))
 __pragma(warning(disable:4305))
 #endif /* _MSC_VER */
+#define PAR_SHAPES_T uint32_t
 #include "par/par_shapes.h"
 #if defined(_MSC_VER)
 __pragma(warning(pop))

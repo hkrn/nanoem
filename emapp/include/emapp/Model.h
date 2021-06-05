@@ -21,9 +21,10 @@
 #include "emapp/model/RigidBody.h"
 #include "emapp/model/Vertex.h"
 
+struct Nanoem__Application__Command;
+struct par_shapes_mesh_s;
 struct undo_command_t;
 struct undo_stack_t;
-struct Nanoem__Application__Command;
 
 namespace nanoem {
 
@@ -464,7 +465,7 @@ private:
         typedef tinystl::vector<IndexType, TinySTLAllocator> IndexList;
         DrawIndexedBuffer();
         ~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT;
-        nanoem_u32_t fillShape(const par_shapes_mesh *mesh, const nanoem::Vector4 &color);
+        nanoem_u32_t fillShape(const par_shapes_mesh_s *mesh, const nanoem::Vector4 &color);
         void ensureVertexBufferInitialized(const char *name, nanoem_rsize_t numVertices);
         void ensureIndexBufferInitialized(
             const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices, bool line);

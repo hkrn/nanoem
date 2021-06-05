@@ -91,6 +91,9 @@
 #include "glm/gtx/matrix_query.hpp"
 #include "sokol/sokol_time.h"
 
+#define PAR_SHAPES_T uint32_t
+#include "par/par_shapes.h"
+
 #define SOKOL_GFX_INCLUDED /* stub */
 #include "sokol/util/sokol_gfx_imgui.h"
 

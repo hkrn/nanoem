@@ -56,6 +56,9 @@
 #include "sokol/sokol_time.h"
 #include "undo/undo.h"
 
+#define PAR_SHAPES_T uint32_t
+#include "par/par_shapes.h"
+
 #if defined(NANOEM_ENABLE_TBB)
 #include "tbb/tbb.h"
 #endif /* NANOEM_ENABLE_TBB */
