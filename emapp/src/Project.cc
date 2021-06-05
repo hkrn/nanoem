@@ -3925,9 +3925,7 @@ Project::isDirty() const NANOEM_DECL_NOEXCEPT
 {
     bool dirty = false;
     dirty |= globalCamera()->isDirty();
-    dirty |= activeCamera()->isDirty();
     dirty |= globalLight()->isDirty();
-    dirty |= activeLight()->isDirty();
     dirty |= shadowCamera()->isDirty();
     for (AccessoryList::const_iterator it = m_allAccessoryPtrs.begin(), end = m_allAccessoryPtrs.end(); it != end;
          ++it) {

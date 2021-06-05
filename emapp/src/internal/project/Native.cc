@@ -1027,6 +1027,7 @@ Native::Context::loadModelFromFile(const Nanoem__Project__Model *m, nanoem_rsize
             loadModel(m, model, Inline::saturateInt32(numDrawables), drawableOrderList, transformOrderList,
                 activeModelPtr, error, diagnostics);
             handles.insert(tinystl::make_pair(static_cast<nanoem_u16_t>(m->model_handle), model->handle()));
+            model->setDirty(false);
         }
         if (isAbsolutePath) {
             m_project->setFilePathMode(Project::kFilePathModeAbsolute);
@@ -1741,6 +1742,7 @@ Native::Context::saveModel(Model *model, FileType fileType, Error &error)
     }
     saveAllModelMaterialAttachments(mo, model, fileType, error);
     saveAllIncludeEffectSources(mo, model);
+    model->setDirty(false);
     return mo;
 }
 

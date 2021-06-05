@@ -1099,6 +1099,7 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
                     }
                     /* reset dirty morph state at initializing model to apply morph motion correctly */
                     model->updateStagingVertexBuffer();
+                    model->setDirty(false);
                 }
                 else {
                     const char *message = Error::convertStatusToMessage(status, m_project->translator());
@@ -1776,11 +1777,13 @@ PMM::Context::saveAllModels(nanoem_mutable_document_t *document, ModelResolveMap
     }
     const Model *activeModel = m_project->activeModel();
     for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
-        int transformOrder = ListUtils::indexOf(*it, *transforms);
-        if (activeModel == *it) {
+        Model *model = *it;
+        int transformOrder = ListUtils::indexOf(model, *transforms);
+        if (activeModel == model) {
             selectedModelIndex = it - models.begin();
         }
-        saveModel(*it, drawOrderIndex++, transformOrder, document, resolveMap, status);
+        saveModel(model, drawOrderIndex++, transformOrder, document, resolveMap, status);
+        model->setDirty(false);
     }
     nanoemMutableDocumentSetAccessoryIndexAfterModel(document, drawOrderIndex);
     if (!models.empty()) {
