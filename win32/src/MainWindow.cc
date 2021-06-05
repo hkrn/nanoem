@@ -366,6 +366,49 @@ MainWindow::saveFile(const URI &fileURI, IFileManager::DialogType type)
     m_client->sendSaveFileMessage(fileURI, type);
 }
 
+void
+MainWindow::exportImage()
+{
+    m_client->addCompleteExportImageConfigurationEventListener(
+        [](void *userData, const StringList &availableExtensions) {
+            if (!availableExtensions.empty()) {
+                auto self = static_cast<MainWindow *>(userData);
+                Dialog dialog(self->m_windowHandle);
+                Dialog::FilterList filters;
+                if (dialog.save("Exportable Image Format (*.%s)", availableExtensions,
+                        self->localizedString("nanoem.dialog.filename.untitled"))) {
+                    self->m_client->sendExecuteExportingImageMessage(dialog.fileURI());
+                }
+            }
+        },
+        this, true);
+    m_client->sendRequestExportImageConfigurationMessage();
+}
+
+void
+MainWindow::exportVideo()
+{
+    m_client->addAvailableAllExportingVideoExtensionsEvent(
+        [](void *userData, const StringList & /* extensions */) {
+            auto self = static_cast<MainWindow *>(userData);
+            self->m_client->addCompleteExportVideoConfigurationEventListener(
+                [](void *userData, const StringList &availableExtensions) {
+                    if (!availableExtensions.empty()) {
+                        auto self = static_cast<MainWindow *>(userData);
+                        Dialog dialog(self->m_windowHandle);
+                        if (dialog.save("Exportable Video Format (*.%s)", availableExtensions,
+                                self->localizedString("nanoem.dialog.filename.untitled"))) {
+                            self->m_client->sendExecuteExportingVideoMessage(dialog.fileURI());
+                        }
+                    }
+                },
+                self, true);
+            self->m_client->sendRequestExportVideoConfigurationMessage();
+        },
+        this, true);
+    m_client->sendLoadAllEncoderPluginsMessage(cachedAggregateAllPlugins());
+}
+
 LRESULT CALLBACK
 MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -1701,42 +1744,47 @@ MainWindow::handleMenuItem(HWND hwnd, ApplicationMenuBuilder::MenuItemType menuT
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExportImage: {
-        m_client->addCompleteExportImageConfigurationEventListener(
-            [](void *userData, const StringList &availableExtensions) {
-                if (!availableExtensions.empty()) {
-                    auto self = static_cast<MainWindow *>(userData);
-                    Dialog dialog(self->m_windowHandle);
-                    Dialog::FilterList filters;
-                    if (dialog.save("Exportable Image Format (*.%s)", availableExtensions,
-                            self->localizedString("nanoem.dialog.filename.untitled"))) {
-                        self->m_client->sendExecuteExportingImageMessage(dialog.fileURI());
-                    }
-                }
+        m_client->addSaveProjectAfterConfirmEventListener(
+            [](void *userData) {
+                auto self = static_cast<MainWindow *>(userData);
+                self->m_client->addCompleteSavingFileEventListener(
+                    [](void *userData, const URI & /* fileURI */, uint32_t /* type */, uint64_t /* ticks */) {
+                        auto self = static_cast<MainWindow *>(userData);
+                        self->exportImage();
+                    },
+                    self, true);
+                self->saveProject();
             },
             this, true);
-        m_client->sendRequestExportImageConfigurationMessage();
+        m_client->addDiscardProjectAfterConfirmEventListener(
+            [](void *userData) {
+                auto self = static_cast<MainWindow *>(userData);
+                self->exportImage();
+            },
+            this, true);
+        m_client->sendConfirmBeforeExportingImageMessage();
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExportVideo: {
-        m_client->addAvailableAllExportingVideoExtensionsEvent(
-            [](void *userData, const StringList & /* extensions */) {
+        m_client->addSaveProjectAfterConfirmEventListener(
+            [](void *userData) {
                 auto self = static_cast<MainWindow *>(userData);
-                self->m_client->addCompleteExportVideoConfigurationEventListener(
-                    [](void *userData, const StringList &availableExtensions) {
-                        if (!availableExtensions.empty()) {
-                            auto self = static_cast<MainWindow *>(userData);
-                            Dialog dialog(self->m_windowHandle);
-                            if (dialog.save("Exportable Video Format (*.%s)", availableExtensions,
-                                    self->localizedString("nanoem.dialog.filename.untitled"))) {
-                                self->m_client->sendExecuteExportingVideoMessage(dialog.fileURI());
-                            }
-                        }
+                self->m_client->addCompleteSavingFileEventListener(
+                    [](void *userData, const URI & /* fileURI */, uint32_t /* type */, uint64_t /* ticks */) {
+                        auto self = static_cast<MainWindow *>(userData);
+                        self->exportVideo();
                     },
                     self, true);
-                self->m_client->sendRequestExportVideoConfigurationMessage();
+                self->saveProject();
             },
             this, true);
-        m_client->sendLoadAllEncoderPluginsMessage(cachedAggregateAllPlugins());
+        m_client->addDiscardProjectAfterConfirmEventListener(
+            [](void *userData) {
+                auto self = static_cast<MainWindow *>(userData);
+                self->exportVideo();
+            },
+            this, true);
+        m_client->sendConfirmBeforeExportingVideoMessage();
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExit: {

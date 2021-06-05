@@ -114,6 +114,8 @@ private:
     void loadFile(const URI &fileURI, IFileManager::DialogType type);
     void saveFile(const Dialog &dialog, IFileManager::DialogType type);
     void saveFile(const URI &fileURI, IFileManager::DialogType type);
+    void exportImage();
+    void exportVideo();
 
     bool setupDirectXRenderer(HWND windowHandle, int width, int height, bool &isLowPower, Error &error);
     bool setupOpenGLRenderer(HWND windowHandle, Error &error);
