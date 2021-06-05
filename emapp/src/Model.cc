@@ -1766,16 +1766,12 @@ Model::rebuildAllVertexBuffers(bool enableSkinFactory)
     }
     if (enableSkinFactory) {
         initializeAllStagingVertexBuffers();
-        markStagingVertexBufferDirty();
     }
     else {
         initializeVertexBufferByteArray();
         createAllStagingVertexBuffers();
-        const nanoem_u8_t *dataPtr = m_vertexBufferData.data();
-        const int dataSize = Inline::saturateInt32(m_vertexBufferData.size());
-        sg::update_buffer(m_vertexBuffers[0], dataPtr, dataSize);
-        sg::update_buffer(m_vertexBuffers[1], dataPtr, dataSize);
     }
+    markStagingVertexBufferDirty();
 }
 
 void
