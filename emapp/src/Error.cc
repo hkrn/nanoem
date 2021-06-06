@@ -377,11 +377,14 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
 {
     IModalDialog *dialog = nullptr;
     if (hasReason() && !isCancelled()) {
+        static const nanoem_u8_t kFAExclamationTriangle[] = { 0xef, 0x81, 0xb1, 0 };
         const ITranslator *translator = applicationPtr->translator();
         const String title(translator->translate("nanoem.window.dialog.error.title"));
         String buffer;
+        buffer.append(reinterpret_cast<const char *>(kFAExclamationTriangle));
+        buffer.append(" ");
         buffer.append(translator->translate("nanoem.window.dialog.error.message.reason"));
-        buffer.append("\n\n");
+        buffer.append("\n");
         int c = code();
         if (c != 0) {
             char partial[16];
@@ -390,9 +393,12 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
         }
         buffer.append(reasonConstString());
         if (hasRecoverySuggestion()) {
+            static const nanoem_u8_t kFAInfoCircle[] = { 0xef, 0x81, 0x9a, 0 };
             buffer.append("\n\n");
+            buffer.append(reinterpret_cast<const char *>(kFAInfoCircle));
+            buffer.append(" ");
             buffer.append(translator->translate("nanoem.window.dialog.error.message.recovery-suggestion"));
-            buffer.append("\n\n");
+            buffer.append("\n");
             buffer.append(recoverySuggestionConstString());
         }
         dialog = ModalDialogFactory::createDisplayPlainTextDialog(applicationPtr, title, buffer);
