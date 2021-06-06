@@ -782,7 +782,6 @@ protected:
         const Vector3SI32 &logicalScaleCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
     internal::IDraggingState *createCameraZoomState(
         const Vector3SI32 &logicalScaleCursorPosition, Project *project) NANOEM_DECL_OVERRIDE;
-    Matrix4x4 pivotMatrix(const Model *activeModel) const;
 
     const ISelector *currentSelector(const Model *model) const NANOEM_DECL_NOEXCEPT;
     ISelector *currentSelector(const Model *model);
@@ -798,19 +797,6 @@ private:
     RectangleSelector m_rectangleSelector;
     CircleSelector m_circleSelector;
 };
-
-void
-BaseSelectionState::assignAxisAlignedBoundingBox(const Vector3 &value, Vector3 &aabbMin, Vector3 &aabbMax)
-{
-    aabbMin = glm::min(aabbMin, value);
-    aabbMax = glm::max(aabbMax, value);
-}
-
-void
-BaseSelectionState::assignPivotMatrixFromAABB(const Vector3 &aabbMin, const Vector3 &aabbMax, Matrix4x4 &matrix)
-{
-    matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
-}
 
 BaseSelectionState::BaseSelectionState(StateController *stateController, BaseApplicationService *application)
     : BaseDraggingObjectState(stateController, application, false)
@@ -847,162 +833,6 @@ BaseSelectionState::createCameraZoomState(const Vector3SI32 &logicalScaleCursorP
 {
     BX_UNUSED_2(logicalScaleCursorPosition, project);
     return nullptr;
-}
-
-Matrix4x4
-BaseSelectionState::pivotMatrix(const Model *activeModel) const
-{
-    typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
-    const IModelObjectSelection *selection = activeModel->selection();
-    Matrix4x4 matrix(0);
-    Vector3 aabbMin(FLT_MAX), aabbMax(-FLT_MAX);
-    switch (selection->objectType()) {
-    case IModelObjectSelection::kObjectTypeBone: {
-        const model::Bone::Set *selectedBoneSet = selection->allBoneSet();
-        if (!selectedBoneSet->empty()) {
-            for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end();
-                 it != end; ++it) {
-                const nanoem_model_bone_t *bonePtr = *it;
-                const Vector3 origin(model::Bone::origin(bonePtr));
-                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeFace: {
-        const IModelObjectSelection::FaceList selectedFaces(selection->allFaces());
-        if (!selectedFaces.empty()) {
-            nanoem_rsize_t numVertices;
-            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(activeModel->data(), &numVertices);
-            for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(), end = selectedFaces.end();
-                 it != end; ++it) {
-                const Vector4UI32 &face = *it;
-                for (nanoem_rsize_t i = 1; i < 4; i++) {
-                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[face[i]])));
-                    assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
-                }
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeJoint: {
-        const model::Joint::Set *selectedJointSet = selection->allJointSet();
-        if (!selectedJointSet->empty()) {
-            for (model::Joint::Set::const_iterator it = selectedJointSet->begin(), end = selectedJointSet->end();
-                 it != end; ++it) {
-                const nanoem_model_joint_t *jointPtr = *it;
-                const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
-                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeMaterial: {
-        const model::Material::Set *selectedMaterialSet = selection->allMaterialSet();
-        if (!selectedMaterialSet->empty()) {
-            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
-            const nanoem_model_t *opaque = activeModel->data();
-            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
-            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
-            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
-            MaterialOffsetMap materialOffsets;
-            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *materialPtr = materials[i];
-                const model::Material *material = model::Material::cast(materialPtr);
-                if (material && material->isVisible()) {
-                    materialOffsets.insert(tinystl::make_pair(materialPtr, offset));
-                }
-                offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
-            }
-            for (model::Material::Set::const_iterator it = selectedMaterialSet->begin(),
-                                                      end = selectedMaterialSet->end();
-                 it != end; ++it) {
-                const nanoem_model_material_t *materialPtr = *it;
-                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
-                if (it2 != materialOffsets.end()) {
-                    nanoem_rsize_t offset = it2->second, indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-                    for (nanoem_rsize_t i = 0; i < indices; i++) {
-                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
-                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                        assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
-                    }
-                }
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeRigidBody: {
-        const model::RigidBody::Set *selectedRigidBodySet = selection->allRigidBodySet();
-        if (!selectedRigidBodySet->empty()) {
-            for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet->begin(),
-                                                       end = selectedRigidBodySet->end();
-                 it != end; ++it) {
-                const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
-                const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
-                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeSoftBody: {
-        const model::SoftBody::Set *selectedSoftBodySet = selection->allSoftBodySet();
-        if (!selectedSoftBodySet->empty()) {
-            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
-            const nanoem_model_t *opaque = activeModel->data();
-            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
-            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
-            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
-            MaterialOffsetMap materialOffsets;
-            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
-                const nanoem_model_material_t *materialPtr = materials[i];
-                const model::Material *material = model::Material::cast(materialPtr);
-                if (material && material->isVisible()) {
-                    materialOffsets.insert(tinystl::make_pair(materialPtr, offset));
-                }
-                offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
-            }
-            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet->begin(),
-                                                      end = selectedSoftBodySet->end();
-                 it != end; ++it) {
-                const nanoem_model_soft_body_t *softBodyPtr = *it;
-                const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
-                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
-                if (it2 != materialOffsets.end()) {
-                    nanoem_rsize_t offset = it2->second, indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
-                    for (nanoem_rsize_t i = 0; i < indices; i++) {
-                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
-                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
-                        assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
-                    }
-                }
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    case IModelObjectSelection::kObjectTypeVertex: {
-        const model::Vertex::Set *selectedVertexSet = selection->allVertexSet();
-        if (!selectedVertexSet->empty()) {
-            for (model::Vertex::Set::const_iterator it = selectedVertexSet->begin(), end = selectedVertexSet->end();
-                 it != end; ++it) {
-                const nanoem_model_vertex_t *vertexPtr = *it;
-                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
-                aabbMin = glm::min(aabbMin, origin);
-                aabbMax = glm::max(aabbMax, origin);
-            }
-            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
-        }
-        break;
-    }
-    default:
-        break;
-    }
-    return matrix;
 }
 
 const ISelector *
@@ -1108,7 +938,8 @@ BaseSelectionState::onRelease(const Vector3SI32 &logicalScaleCursorPosition, Err
         if (activeModel) {
             commitSelection(activeModel, project, removeAll);
             if (model::IGizmo *gizmo = activeModel->gizmo()) {
-                gizmo->setPivotMatrix(pivotMatrix(activeModel));
+                const IModelObjectSelection *selection = activeModel->selection();
+                gizmo->setPivotMatrix(selection->pivotMatrix());
             }
         }
         m_lastLogicalScalePosition = Vector2();

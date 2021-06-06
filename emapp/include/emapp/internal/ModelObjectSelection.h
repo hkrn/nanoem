@@ -79,6 +79,7 @@ public:
     const model::Joint::Set *allJointSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     const model::SoftBody::Set *allSoftBodySet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     FaceList allFaces() const NANOEM_DECL_OVERRIDE;
+    Matrix4x4 pivotMatrix() const NANOEM_DECL_OVERRIDE;
 
     bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -102,6 +103,10 @@ public:
 
 private:
     typedef tinystl::unordered_set<Vector4UI32, TinySTLAllocator> FaceSet;
+    static void assignAxisAlignedBoundingBox(
+        const Vector3 &value, Vector3 &aabbMin, Vector3 &aabbMax) NANOEM_DECL_NOEXCEPT;
+    static void assignPivotMatrixFromAABB(
+        const Vector3 &aabbMin, const Vector3 &aabbMax, Matrix4x4 &matrix) NANOEM_DECL_NOEXCEPT;
 
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;

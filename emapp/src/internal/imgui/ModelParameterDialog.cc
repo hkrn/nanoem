@@ -22,6 +22,7 @@
 #include "emapp/internal/imgui/LazyPushUndoCommand.h"
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
 #include "emapp/internal/imgui/UVEditDialog.h"
+#include "emapp/model/IGizmo.h"
 #include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
@@ -6624,6 +6625,9 @@ ModelParameterDialog::layoutManipulateBoneMenu()
                     }
                 }
             }
+            if (model::IGizmo *gizmo = m_activeModel->gizmo()) {
+                gizmo->setPivotMatrix(selection->pivotMatrix());
+            }
         }
         ImGui::EndMenu();
     }
@@ -7216,6 +7220,9 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu()
                     }
                 }
             }
+            if (model::IGizmo *gizmo = m_activeModel->gizmo()) {
+                gizmo->setPivotMatrix(selection->pivotMatrix());
+            }
         }
         ImGui::EndMenu();
     }
@@ -7372,6 +7379,9 @@ ModelParameterDialog::layoutManipulateJointMenu()
                         selection->addJoint(it->second);
                     }
                 }
+            }
+            if (model::IGizmo *gizmo = m_activeModel->gizmo()) {
+                gizmo->setPivotMatrix(selection->pivotMatrix());
             }
         }
         ImGui::EndMenu();

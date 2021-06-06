@@ -103,6 +103,7 @@ public:
     virtual const model::Joint::Set *allJointSet() const NANOEM_DECL_NOEXCEPT = 0;
     virtual const model::SoftBody::Set *allSoftBodySet() const NANOEM_DECL_NOEXCEPT = 0;
     virtual FaceList allFaces() const = 0;
+    virtual Matrix4x4 pivotMatrix() const = 0;
 
     virtual bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT = 0;
