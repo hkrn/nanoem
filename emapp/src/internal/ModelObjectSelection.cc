@@ -559,7 +559,7 @@ ModelObjectSelection::allFaces() const
 }
 
 Matrix4x4
-ModelObjectSelection::pivotMatrix() const NANOEM_DECL_OVERRIDE
+ModelObjectSelection::pivotMatrix() const
 {
     typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
     Matrix4x4 matrix(0);
