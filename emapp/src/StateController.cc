@@ -1568,11 +1568,15 @@ protected:
     BaseCreatingBoneState(StateController *stateController);
     ~BaseCreatingBoneState() NANOEM_DECL_NOEXCEPT;
 
-    virtual void setup(nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr) = 0;
+    virtual undo_command_t *createCommand(Model *activeModel, nanoem_mutable_model_bone_t *destinationBonePtr,
+        nanoem_mutable_model_bone_t *sourceBonePtr) = 0;
 
 private:
+    void setNewName(const Model *activeModel, const nanoem_model_bone_t *sourceBonePtr,
+        nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
+
     StateController *m_stateControllerPtr;
-    const nanoem_model_bone_t *m_sourceBone;
+    nanoem_model_bone_t *m_sourceBone;
     nanoem_mutable_model_bone_t *m_destinationBone;
 };
 
@@ -1601,13 +1605,10 @@ BaseCreatingBoneState::onPress(const Vector3SI32 &logicalCursorPosition, Error &
         if (Model *activeModel = project->activeModel()) {
             const Vector2 cursorPosition(Vector2(logicalCursorPosition) * project->windowDevicePixelRatio());
             if (nanoem_model_bone_t *sourceBonePtr = activeModel->intersectsBone(cursorPosition, boneIndex)) {
-                nanoem_mutable_model_bone_t *mutableSourceBone =
-                    nanoemMutableModelBoneCreateAsReference(sourceBonePtr, &status);
                 m_destinationBone = nanoemMutableModelBoneCreate(activeModel->data(), &status);
                 nanoemMutableModelBoneCopy(m_destinationBone, sourceBonePtr, &status);
-                setup(m_destinationBone, mutableSourceBone);
-                nanoemMutableModelBoneDestroy(mutableSourceBone);
                 nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+                setNewName(activeModel, sourceBonePtr, factory, &status);
                 nanoem_model_bone_t *destinationBonePtr = nanoemMutableModelBoneGetOriginObject(m_destinationBone);
                 model::Bone *destinationBone = model::Bone::create();
                 destinationBone->bind(destinationBonePtr);
@@ -1645,8 +1646,11 @@ BaseCreatingBoneState::onRelease(const Vector3SI32 &logicalCursorPosition, Error
     BX_UNUSED_2(logicalCursorPosition, error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         if (Model *activeModel = project->activeModel()) {
-            undo_command_t *command = command::AddBoneCommand::create(activeModel, m_destinationBone);
+            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+            nanoem_mutable_model_bone_t *sourceBone = nanoemMutableModelBoneCreateAsReference(m_sourceBone, &status);
+            undo_command_t *command = createCommand(activeModel, m_destinationBone, sourceBone);
             activeModel->pushUndo(command);
+            m_sourceBone = nullptr;
             m_destinationBone = nullptr;
         }
     }
@@ -1672,12 +1676,36 @@ BaseCreatingBoneState::isGrabbingHandle() const NANOEM_DECL_NOEXCEPT
     return false;
 }
 
+void
+BaseCreatingBoneState::setNewName(const Model *activeModel, const nanoem_model_bone_t *sourceBonePtr, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
+{
+    static const nanoem_u8_t kNameCopyOfInJapanese[] = { 0xe3, 0x81, 0xae, 0xe3, 0x82, 0xb3, 0xe3, 0x83, 0x94, 0xe3,
+        0x83, 0xbc, 0 };
+    String newName;
+    StringUtils::getUtf8String(
+        nanoemModelBoneGetName(sourceBonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, newName);
+    newName.append(reinterpret_cast<const char *>(kNameCopyOfInJapanese));
+    nanoem_rsize_t index = 1;
+    while (true) {
+        String innerName(newName);
+        StringUtils::format(innerName, "%d", index++);
+        if (!activeModel->findBone(innerName)) {
+            newName = innerName;
+            break;
+        }
+    }
+    StringUtils::UnicodeStringScope scope(factory);
+    if (StringUtils::tryGetString(factory, newName, scope)) {
+        nanoemMutableModelBoneSetName(m_destinationBone, scope.value(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM, status);
+    }
+}
+
 class CreatingParentBoneState NANOEM_DECL_SEALED : public BaseCreatingBoneState {
 public:
     CreatingParentBoneState(StateController *stateController);
     ~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT;
 
-    void setup(nanoem_mutable_model_bone_t *destinationBonePtr,
+    undo_command_t *createCommand(Model *model, nanoem_mutable_model_bone_t *destinationBonePtr,
         nanoem_mutable_model_bone_t *sourceBonePtr) NANOEM_DECL_OVERRIDE;
 
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -1692,15 +1720,11 @@ CreatingParentBoneState::~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT
 {
 }
 
-void
-CreatingParentBoneState::setup(
+undo_command_t *
+CreatingParentBoneState::createCommand(Model *activeModel,
     nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
 {
-    const nanoem_model_bone_t *originSourceBonePtr = nanoemMutableModelBoneGetOriginObject(sourceBonePtr),
-                              *originDestinationBonePtr = nanoemMutableModelBoneGetOriginObject(destinationBonePtr),
-                              *parentBonePtr = nanoemModelBoneGetParentBoneObject(originSourceBonePtr);
-    nanoemMutableModelBoneSetParentBoneObject(destinationBonePtr, parentBonePtr);
-    nanoemMutableModelBoneSetTargetBoneObject(sourceBonePtr, originDestinationBonePtr);
+    return command::CreateDraggedParentBoneCommand::create(activeModel, destinationBonePtr, sourceBonePtr);
 }
 
 IState::Type
@@ -1714,7 +1738,7 @@ public:
     CreatingTargetBoneState(StateController *stateController);
     ~CreatingTargetBoneState() NANOEM_DECL_NOEXCEPT;
 
-    void setup(nanoem_mutable_model_bone_t *destinationBonePtr,
+    undo_command_t *createCommand(Model *activeModel, nanoem_mutable_model_bone_t *destinationBonePtr,
         nanoem_mutable_model_bone_t *sourceBonePtr) NANOEM_DECL_OVERRIDE;
 
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -1729,14 +1753,11 @@ CreatingTargetBoneState::~CreatingTargetBoneState() NANOEM_DECL_NOEXCEPT
 {
 }
 
-void
-CreatingTargetBoneState::setup(
-    nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
+undo_command_t *
+CreatingTargetBoneState::createCommand(
+    Model *activeModel, nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
 {
-    const nanoem_model_bone_t *originSourceBonePtr = nanoemMutableModelBoneGetOriginObject(sourceBonePtr),
-                              *originDestinationBonePtr = nanoemMutableModelBoneGetOriginObject(destinationBonePtr);
-    nanoemMutableModelBoneSetParentBoneObject(destinationBonePtr, originSourceBonePtr);
-    nanoemMutableModelBoneSetTargetBoneObject(sourceBonePtr, originDestinationBonePtr);
+    return command::CreateDraggedTargetBoneCommand::create(activeModel, destinationBonePtr, sourceBonePtr);
 }
 
 IState::Type
