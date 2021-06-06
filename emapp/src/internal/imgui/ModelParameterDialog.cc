@@ -6287,6 +6287,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
         }
         ImGui::EndMenu();
     }
+    #if 0
     if (ImGui::BeginMenu("Duplicate with")) {
         if (ImGui::MenuItem("Faces")) {
             // TODO: implement
@@ -6299,6 +6300,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
         }
         ImGui::EndMenu();
     }
+    #endif
     ImGui::Separator();
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.create-from-obj"))) {
         CreateMaterialFromOBJFileCallback callback(m_parent);
