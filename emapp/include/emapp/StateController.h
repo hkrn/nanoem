@@ -20,8 +20,7 @@ class IFileManager;
 class IModelObjectSelection;
 class IState;
 
-class StateController NANOEM_DECL_SEALED : public IProjectHolder,
-                                           private NonCopyable {
+class StateController NANOEM_DECL_SEALED : public IProjectHolder, private NonCopyable {
 public:
     StateController(BaseApplicationService *application, IFileManager *delegate);
     ~StateController() NANOEM_DECL_NOEXCEPT;

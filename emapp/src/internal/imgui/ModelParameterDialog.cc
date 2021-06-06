@@ -7208,7 +7208,8 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu()
                 const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
                 const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
                 String reversedName;
-                if (rigidBody && selectNameBasedSymmetricModelObject(rigidBody->nameConstString(), reversedName, nameSet)) {
+                if (rigidBody &&
+                    selectNameBasedSymmetricModelObject(rigidBody->nameConstString(), reversedName, nameSet)) {
                     RigidBodyMap::const_iterator it = rigidBodyMap.find(reversedName);
                     if (it != rigidBodyMap.end()) {
                         selection->addRigidBody(it->second);
@@ -7353,8 +7354,7 @@ ModelParameterDialog::layoutManipulateJointMenu()
             StringSet nameSet;
             JointMap rigidBodyMap;
             nanoem_rsize_t numJoints;
-            nanoem_model_joint_t *const *joints =
-                nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
+            nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_activeModel->data(), &numJoints);
             for (nanoem_rsize_t i = 0; i < numJoints; i++) {
                 const nanoem_model_joint_t *jointPtr = joints[i];
                 if (const model::Joint *joint = model::Joint::cast(jointPtr)) {
@@ -7366,8 +7366,7 @@ ModelParameterDialog::layoutManipulateJointMenu()
                 const nanoem_model_joint_t *jointPtr = *it;
                 const model::Joint *joint = model::Joint::cast(jointPtr);
                 String reversedName;
-                if (joint &&
-                    selectNameBasedSymmetricModelObject(joint->nameConstString(), reversedName, nameSet)) {
+                if (joint && selectNameBasedSymmetricModelObject(joint->nameConstString(), reversedName, nameSet)) {
                     JointMap::const_iterator it = rigidBodyMap.find(reversedName);
                     if (it != rigidBodyMap.end()) {
                         selection->addJoint(it->second);
@@ -7511,7 +7510,8 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
                     model->save(state.m_modelData, error);
                 }
             }
-            if (!error.hasReason() && motion->save(state.m_motionData, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
+            if (!error.hasReason() &&
+                motion->save(state.m_motionData, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
                 motion->clearAllKeyframes();
                 state.m_activeBone = model->activeBone();
                 state.m_activeMorph = model->activeMorph();

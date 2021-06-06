@@ -356,7 +356,8 @@ private:
     void handleDraggingMorphSliderState();
     void setEditingMode(Project *project, Project::EditingMode mode);
     void toggleEditingMode(Project *project, Project::EditingMode mode);
-    void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, IState *state, nanoem_u32_t flags, bool &seekable);
+    void drawMainWindow(
+        const Vector2 &devicePixelWindowSize, Project *project, IState *state, nanoem_u32_t flags, bool &seekable);
     void drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project);
     void drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_frame_index_t &frameIndex,
         bool &frameIndexChanged, bool &forward, bool &backward);

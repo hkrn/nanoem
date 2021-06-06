@@ -289,7 +289,8 @@ BasePrimitiveDialog::BasePrimitiveDialog(
 void
 BasePrimitiveDialog::layoutTransform()
 {
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation"));
+    ImGui::TextUnformatted(
+        tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation"));
     ImGui::DragFloat3("##translation", glm::value_ptr(m_translation));
     ImGui::TextUnformatted(
         tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation"));
@@ -372,8 +373,10 @@ CreateConePrimitiveDialog::draw(Project *project)
         ImGui::PushItemWidth(-1);
         layoutTransform();
         addSeparator();
-        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
-        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 10000, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 10000,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
         addSeparator();
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
@@ -473,7 +476,8 @@ CreateCylinderPrimitiveDialog::draw(Project *project)
         ImGui::PushItemWidth(-1);
         layoutTransform();
         addSeparator();
-        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
         ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 256,
             tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
         addSeparator();
@@ -593,10 +597,12 @@ CreateTorusPrimitiveDialog::draw(Project *project)
         ImGui::PushItemWidth(-1);
         layoutTransform();
         addSeparator();
-        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
         ImGui::DragInt("##stacks", &m_stacks, 1.0f, 3, 256,
             tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
-        ImGui::SliderFloat("##radius", &m_radius, 0.1f, 1.0f, tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius"));
+        ImGui::SliderFloat("##radius", &m_radius, 0.1f, 1.0f,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius"));
         addSeparator();
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
@@ -4861,8 +4867,7 @@ ImGuiWindow::drawOrientationAxes(bool intersected, const IModelObjectSelection *
     const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
     const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
     bool showXYZAxes = activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
-        ((intersected && isSelectingBoneHandle(selection, rectangleType)) ||
-            isDraggingBoneAxisAlignedState(state));
+        ((intersected && isSelectingBoneHandle(selection, rectangleType)) || isDraggingBoneAxisAlignedState(state));
     if (showXYZAxes) {
         Quaternion orientation(Constants::kZeroQ);
         if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
