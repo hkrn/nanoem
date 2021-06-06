@@ -17,6 +17,7 @@
 
 namespace nanoem {
 
+class IModelObjectSelection;
 class IVectorValueState;
 
 namespace internal {
@@ -214,9 +215,7 @@ public:
     void resizeDevicePixelWindowSize(const Vector2UI16 &value) NANOEM_DECL_OVERRIDE;
     void setDevicePixelRatio(float value) NANOEM_DECL_OVERRIDE;
     void setAntiAliasEnabled(bool value) NANOEM_DECL_OVERRIDE;
-    void drawAll2DPrimitives(
-        Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
-    void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
+    void drawAllWindows(Project *project, IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     void drawWindow(Project *project, ImDrawData *drawData, bool load);
 
     const IModalDialog *currentModalDialog() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -357,7 +356,7 @@ private:
     void handleDraggingMorphSliderState();
     void setEditingMode(Project *project, Project::EditingMode mode);
     void toggleEditingMode(Project *project, Project::EditingMode mode);
-    void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, const IState *state, bool &seekable);
+    void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, IState *state, nanoem_u32_t flags, bool &seekable);
     void drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project);
     void drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_frame_index_t &frameIndex,
         bool &frameIndexChanged, bool &forward, bool &backward);
@@ -373,7 +372,7 @@ private:
     void drawKeyframeActionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t padding, Project *project);
-    void drawViewport(Project *project, const IState *state);
+    void drawViewport(Project *project, IState *state, nanoem_u32_t flags);
     void drawViewportParameterBox(Project *project);
     void drawCommonInterpolationControls(Project *project);
     void drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
@@ -388,9 +387,12 @@ private:
     void drawPlayPanel(const ImVec2 &panelSize, Project *project);
     void drawModelEditPanel(Project *project, nanoem_f32_t height);
     void drawAllNonModalWindows(Project *project);
+    void drawPrimitive2D(Project *project, IState *state, nanoem_u32_t flags);
     void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
         int baseRectType, int intercectedRectType, bool handleable);
-    void drawTransformHandleSet(const Project *project, const IState *state, const ImVec2 &offset);
+    void drawTransformHandleSet(const Project *project, IState *state, const ImVec2 &offset);
+    void drawOrientationAxes(bool intersected, const IModelObjectSelection *selection, const Model *activeModel,
+        const Project *project, IState *state);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawPerformanceMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);
@@ -409,7 +411,6 @@ private:
 
     BaseApplicationService *m_applicationPtr;
     ImGuiApplicationMenuBuilder *m_menu;
-    Project::IViewportOverlay *m_viewportOverlayPtr;
     imgui::GizmoController *m_gizmoController;
     CameraLookAtVectorValueState *m_cameraLookAtVectorValueState;
     CameraAngleVectorValueState *m_cameraAngleVectorValueState;

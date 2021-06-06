@@ -71,8 +71,7 @@ public:
     virtual void resizeDevicePixelWindowSize(const Vector2UI16 &value) = 0;
     virtual void setDevicePixelRatio(float value) = 0;
     virtual void setAntiAliasEnabled(bool value) = 0;
-    virtual void drawAll2DPrimitives(Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) = 0;
-    virtual void drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags) = 0;
+    virtual void drawAllWindows(Project *project, IState *state, nanoem_u32_t flags) = 0;
 
     virtual const IModalDialog *currentModalDialog() const NANOEM_DECL_NOEXCEPT = 0;
     virtual IModalDialog *currentModalDialog() NANOEM_DECL_NOEXCEPT = 0;

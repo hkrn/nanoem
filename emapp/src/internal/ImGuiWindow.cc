@@ -618,6 +618,139 @@ CreateTorusPrimitiveDialog::draw(Project *project)
     return visible;
 }
 
+class DrawUtils NANOEM_DECL_SEALED : private NonCopyable {
+public:
+    static const Vector3 kColorRed;
+    static const Vector3 kColorGreen;
+    static const Vector3 kColorBlue;
+    static const Vector3 kColorYellow;
+    static const nanoem_f32_t kKappa;
+
+    static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project) NANOEM_DECL_NOEXCEPT;
+    static bool isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT;
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
+    static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
+    static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
+    static void drawVertexWeightPainter(
+        IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project);
+};
+
+const Vector3 DrawUtils::kColorRed = Vector3(1, 0, 0);
+const Vector3 DrawUtils::kColorGreen = Vector3(0, 1, 0);
+const Vector3 DrawUtils::kColorBlue = Vector3(0, 0, 1);
+const Vector3 DrawUtils::kColorYellow = Vector3(1, 1, 0);
+const nanoem_f32_t DrawUtils::kKappa = 0.5522847498307933984022516322796f;
+
+Vector2SI32
+DrawUtils::deviceScaleCursorActiveBoneInViewport(const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    Vector2SI32 deviceScaleCursor(0);
+    if (const Model *model = project->activeModel()) {
+        if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
+            deviceScaleCursor =
+                project->activeCamera()->toDeviceScreenCoordinateInViewport(bone->worldTransformOrigin());
+        }
+    }
+    return deviceScaleCursor;
+}
+
+bool
+DrawUtils::isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT
+{
+    bool result = false;
+    if (value) {
+        switch (value->type()) {
+        case IState::kTypeDraggingBoneAxisAlignedOrientateActiveBoneState:
+        case IState::kTypeDraggingBoneAxisAlignedTranslateActiveBoneState:
+        case IState::kTypeDraggingBoneOrientateActiveBoneState:
+        case IState::kTypeDraggingBoneTranslateActiveBoneState:
+            result = true;
+            break;
+        default:
+            break;
+        }
+    }
+    return result;
+}
+
+void
+DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
+{
+    const Project *project = activeModel->project();
+    const Model::AxisType type = activeModel->transformAxisType();
+    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
+    const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
+                       thickness = project->logicalScaleCircleRadius();
+    const nanoem_model_bone_t *activeBone = activeModel->activeBone();
+    activeModel->drawBoneConnections(primitive, activeBone);
+    primitive->strokeLine(center, Vector2(center.x + length, center.y),
+        Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    primitive->strokeLine(center, Vector2(center.x, center.y - length),
+        Vector4(kColorGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+}
+
+void
+DrawUtils::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
+{
+    const Project *project = activeModel->project();
+    const Model::AxisType type = activeModel->transformAxisType();
+    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
+    nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
+                 thickness = project->logicalScaleCircleRadius() * 1.5f;
+    const nanoem_f32_t x1 = center.x - radius;
+    const nanoem_f32_t y1 = center.y - radius;
+    const nanoem_f32_t x2 = center.x + radius;
+    const nanoem_f32_t y2 = center.y + radius;
+    activeModel->drawBoneConnections(primitive, activeModel->activeBone());
+    primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
+        Vector4(kColorBlue, type == Model::kAxisTypeZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
+        Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    const Vector4 green(kColorGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25);
+    primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kKappa),
+        Vector2(center.x - radius * kKappa, y1), Vector2(center.x + 1, y1), green, thickness);
+    primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kKappa, y1),
+        Vector2(x2, center.y - radius * kKappa), Vector2(x2, center.y + 1), green, thickness);
+    primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kKappa),
+        Vector2(center.x + radius * kKappa, y2), Vector2(center.x - 1, y2), green, thickness);
+    primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kKappa, y2),
+        Vector2(x1, center.y + radius * kKappa), Vector2(x1, center.y - 1), green, thickness);
+}
+
+void
+DrawUtils::drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project)
+{
+    const Vector2SI32 center(deviceScaleCursorActiveBoneInViewport(project));
+    if (center.x != 0 && center.y != 0) {
+        const nanoem_f32_t radius = project->deviceScaleCircleRadius(), extent = radius * 2;
+        primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), activeBoneColor);
+    }
+}
+
+void
+DrawUtils::drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project)
+{
+    const Vector2 center(camera->toDeviceScreenCoordinateInViewport(camera->boundLookAt()));
+    const nanoem_f32_t circleRadius = project->deviceScaleCircleRadius();
+    const nanoem_f32_t innerRadius = circleRadius * 0.65f;
+    primitive->strokeCircle(
+        Vector4(center.x - circleRadius, center.y - circleRadius, circleRadius * 2, circleRadius * 2),
+        Vector4(1, 0, 0, 1), 2.0f);
+    primitive->fillCircle(
+        Vector4(center.x - innerRadius, center.y - innerRadius, innerRadius * 2, innerRadius * 2), Vector4(1, 0, 0, 1));
+}
+
+void
+DrawUtils::drawVertexWeightPainter(
+    IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project)
+{
+    const Vector4UI16 layoutRect(project->deviceScaleUniformedViewportLayoutRect());
+    const Vector2SI32 center(project->deviceScaleMovingCursorPosition() - Vector2SI32(layoutRect));
+    const nanoem_f32_t radius = brush->radius(), extent = radius * 2;
+    primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), Vector4(kColorRed, 0.5));
+}
+
 } /* namespace anonymous */
 
 using namespace imgui;
@@ -896,7 +1029,6 @@ ImGuiWindow::restoreDefaultStyle()
 ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
     : m_applicationPtr(application)
     , m_menu(nullptr)
-    , m_viewportOverlayPtr(nullptr)
     , m_gizmoController(nullptr)
     , m_cameraLookAtVectorValueState(nullptr)
     , m_cameraAngleVectorValueState(nullptr)
@@ -1640,40 +1772,7 @@ ImGuiWindow::setAntiAliasEnabled(bool value)
 }
 
 void
-ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags)
-{
-    const Model *activeModel = project->activeModel();
-    if (activeModel && !activeModel->isMorphWeightFocused()) {
-        Project::EditingMode editingMode = project->editingMode();
-        switch (editingMode) {
-        case Project::kEditingModeSelect: {
-            flags |= IState::kDrawTypeBoneConnections;
-            break;
-        }
-        case Project::kEditingModeMove: {
-            flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneMoveHandle;
-            break;
-        }
-        case Project::kEditingModeRotate: {
-            flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneRotateHandle;
-            break;
-        }
-        default:
-            break;
-        }
-        if (activeModel->isShowAllVertexWeights()) {
-            flags |= IState::kDrawTypeVertexWeightPainter;
-        }
-    }
-    else if (!activeModel) {
-        flags |= IState::kDrawTypeCameraLookAt;
-    }
-    m_viewportOverlayPtr = overlay;
-    m_viewportOverlayFlags = flags;
-}
-
-void
-ImGuiWindow::drawAllWindows(Project *project, const IState *state, nanoem_u32_t flags)
+ImGuiWindow::drawAllWindows(Project *project, IState *state, nanoem_u32_t flags)
 {
     BX_UNUSED_2(project, flags);
     sg_pass_action pa;
@@ -1696,7 +1795,7 @@ ImGuiWindow::drawAllWindows(Project *project, const IState *state, nanoem_u32_t 
             m_gizmoController->begin();
         }
         bool seekable = false;
-        drawMainWindow(deviceScaleWindowSize, project, state, seekable);
+        drawMainWindow(deviceScaleWindowSize, project, state, flags, seekable);
         drawAllNonModalWindows(project);
         handleModalDialogWindow(deviceScaleWindowSize, project);
 #if !defined(NDEBUG)
@@ -2304,7 +2403,8 @@ ImGuiWindow::toggleEditingMode(Project *project, Project::EditingMode mode)
 }
 
 void
-ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *project, const IState *state, bool &seekable)
+ImGuiWindow::drawMainWindow(
+    const Vector2 &deviceScaleWindowSize, Project *project, IState *state, nanoem_u32_t flags, bool &seekable)
 {
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
     saveDefaultStyle(deviceScaleRatio);
@@ -2323,11 +2423,11 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     ImGui::SetNextWindowSize(ImVec2(deviceScaleWindowSize.x, deviceScaleWindowSize.y));
     ImGui::SetNextWindowSizeConstraints(
         ImVec2(deviceScaleWindowSize.x, deviceScaleWindowSize.y), ImVec2(FLT_MAX, FLT_MAX));
-    nanoem_u32_t flags = kMainWindowFlags;
+    nanoem_u32_t windowFlags = kMainWindowFlags;
     if (m_menu) {
-        flags |= ImGuiWindowFlags_MenuBar;
+        windowFlags |= ImGuiWindowFlags_MenuBar;
     }
-    ImGui::Begin("main", nullptr, flags);
+    ImGui::Begin("main", nullptr, windowFlags);
     seekable = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
     if (m_menu) {
         m_menu->draw(m_debugger);
@@ -2348,7 +2448,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);
             ImGui::SetNextWindowSizeConstraints(minimumViewportSize, ImVec2(FLT_MAX, FLT_MAX));
             if (ImGui::Begin(tr("nanoem.gui.viewport.title"), &viewportWindowDetached)) {
-                drawViewport(project, state);
+                drawViewport(project, state, flags);
             }
             ImGui::End();
             ImGui::PopStyleVar();
@@ -2364,7 +2464,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
             ImGui::SameLine();
             const ImVec2 viewportFrom(ImGui::GetCursorScreenPos());
             ImGui::BeginChild("viewport", ImVec2(ImGui::GetContentRegionAvail().x, viewportHeight), false);
-            drawViewport(project, state);
+            drawViewport(project, state, flags);
             ImGui::EndChild();
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
                 handleVerticalSplitter(viewportFrom, size, viewportHeight, deviceScaleRatio);
@@ -2405,7 +2505,7 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
             ModelParameterDialog *dialog = static_cast<ModelParameterDialog *>(it->second);
             dialog->drawMenuBar(project);
         }
-        drawViewport(project, state);
+        drawViewport(project, state, flags);
         ImGui::EndChild();
     }
     ImGui::End();
@@ -3283,7 +3383,7 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
 }
 
 void
-ImGuiWindow::drawViewport(Project *project, const IState *state)
+ImGuiWindow::drawViewport(Project *project, IState *state, nanoem_u32_t flags)
 {
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio(),
                        invertDeviceScaleRatio = 1.0f / deviceScaleRatio;
@@ -3345,10 +3445,10 @@ ImGuiWindow::drawViewport(Project *project, const IState *state)
             m_gizmoController = nanoem_new(GizmoController);
         }
     }
-    if (m_viewportOverlayPtr) {
+    {
         m_primitive2D.setBaseOffset(offset);
         m_primitive2D.setScaleFactor(deviceScaleRatio);
-        m_viewportOverlayPtr->drawPrimitive2D(&m_primitive2D, m_viewportOverlayFlags);
+        drawPrimitive2D(project, state, flags);
         drawTransformHandleSet(project, state, offset);
         if (project->isFPSCounterEnabled()) {
             drawFPSCounter(project, offset);
@@ -4595,7 +4695,76 @@ ImGuiWindow::drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offs
 }
 
 void
-ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state, const ImVec2 &offset)
+ImGuiWindow::drawPrimitive2D(Project *project, IState *state, nanoem_u32_t flags)
+{
+    if (state) {
+        state->onDrawPrimitive2D(&m_primitive2D);
+    }
+    const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
+    if (Model *activeModel = project->activeModel()) {
+        Vector4 activeBoneColor(DrawUtils::kColorRed, 1);
+        if (!activeModel->isMorphWeightFocused()) {
+            Project::EditingMode editingMode = project->editingMode();
+            switch (editingMode) {
+            case Project::kEditingModeSelect: {
+                flags |= IState::kDrawTypeBoneConnections;
+                break;
+            }
+            case Project::kEditingModeMove: {
+                flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneMoveHandle;
+                break;
+            }
+            case Project::kEditingModeRotate: {
+                flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneRotateHandle;
+                break;
+            }
+            default:
+                break;
+            }
+            if (activeModel->isShowAllVertexWeights()) {
+                flags |= IState::kDrawTypeVertexWeightPainter;
+            }
+        }
+        else if (!activeModel) {
+            flags |= IState::kDrawTypeCameraLookAt;
+        }
+        if (activeModel->isVisible()) {
+            if (EnumUtils::isEnabled(IState::kDrawTypeBoneConnections, flags)) {
+                activeModel->drawAllBoneConnections(&m_primitive2D, deviceScaleCursor);
+            }
+            if (EnumUtils::isEnabled(IState::kDrawTypeConstraintConnections, flags)) {
+                activeModel->drawConstraintConnections(&m_primitive2D, deviceScaleCursor);
+            }
+            if (EnumUtils::isEnabled(IState::kDrawTypeConstraintHeatmaps, flags)) {
+                activeModel->drawConstraintsHeatMap(&m_primitive2D);
+            }
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeBoneMoveHandle, flags)) {
+            activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
+            const bool isGrabbingHandle = DrawUtils::isDraggingBoneState(state) && state->isGrabbingHandle();
+            DrawUtils::drawBoneMoveHandle(&m_primitive2D, activeModel, isGrabbingHandle);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeBoneRotateHandle, flags)) {
+            activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
+            const bool isGrabbingHandle = DrawUtils::isDraggingBoneState(state) && state->isGrabbingHandle();
+            DrawUtils::drawBoneRotateHandle(&m_primitive2D, activeModel, isGrabbingHandle);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeActiveBone, flags)) {
+            DrawUtils::drawActiveBonePoint(&m_primitive2D, activeBoneColor, project);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeVertexWeightPainter, flags)) {
+            const model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+            DrawUtils::drawVertexWeightPainter(&m_primitive2D, painter, project);
+        }
+    }
+    const ICamera *camera = project->activeCamera();
+    if (EnumUtils::isEnabled(IState::kDrawTypeCameraLookAt, flags) && camera) {
+        DrawUtils::drawCameraLookAtPoint(&m_primitive2D, camera, project);
+    }
+}
+
+void
+ImGuiWindow::drawTransformHandleSet(const Project *project, IState *state, const ImVec2 &offset)
 {
     nanoem_parameter_assert(project, "must not be nullptr");
     if (project->isTransformHandleVisible()) {
@@ -4618,40 +4787,7 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state,
             Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
         if (const Model *activeModel = project->activeModel()) {
             const IModelObjectSelection *selection = activeModel->selection();
-            const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
-            const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
-            if (activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
-                ((intersected && isSelectingBoneHandle(selection, intersectedRectangleType)) ||
-                    isDraggingBoneAxisAlignedState(state))) {
-                Quaternion orientation(Constants::kZeroQ);
-                if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
-                    orientation =
-                        activeBone->localOrientation() * glm::quat_cast(model::Bone::localAxes(activeBonePtr));
-                }
-                const Vector3 base(activeBone->worldTransformOrigin()), scaleFactor(3),
-                    unitX(orientation * Constants::kUnitX * scaleFactor),
-                    unitY(orientation * Constants::kUnitY * scaleFactor),
-                    unitZ(orientation * Constants::kUnitZ * -scaleFactor);
-                const ICamera *camera = project->activeCamera();
-                const Vector2SI32 p(camera->toDeviceScreenCoordinateInViewport(base)),
-                    x(camera->toDeviceScreenCoordinateInViewport(base + unitX)),
-                    y(camera->toDeviceScreenCoordinateInViewport(base + unitY)),
-                    z(camera->toDeviceScreenCoordinateInViewport(base + unitZ)),
-                    windowSize(Vector2(project->windowSize()) * project->windowDevicePixelRatio());
-                const Vector4SI32 rect(-windowSize, windowSize * 2);
-                if (Inline::intersectsRectPoint(rect, p)) {
-                    const nanoem_f32_t thickness = 3.0f;
-                    if (Inline::intersectsRectPoint(rect, x)) {
-                        m_primitive2D.strokeLine(p, x, kColorRed, thickness);
-                    }
-                    if (Inline::intersectsRectPoint(rect, y)) {
-                        m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
-                    }
-                    if (Inline::intersectsRectPoint(rect, z)) {
-                        m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
-                    }
-                }
-            }
+            drawOrientationAxes(intersected, selection, activeModel, project, state);
             const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable();
             drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX,
                 intersectedRectangleType, rotateable);
@@ -4711,6 +4847,48 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const IState *state,
             const Vector4 rect(project->queryDevicePixelRectangle(Project::kRectangleCameraZoom, Vector2UI16()));
             internalFillRect(rect, deviceScaleRatio);
             drawTextCentered(offset, rect, reinterpret_cast<const char *>(kFAZoom), sizeof(kFAZoom) - 1);
+        }
+    }
+}
+
+void
+ImGuiWindow::drawOrientationAxes(bool intersected, const IModelObjectSelection *selection, const Model *activeModel,
+    const Project *project, IState *state)
+{
+    Project::RectangleType rectangleType;
+    const ImGuiIO &io = ImGui::GetIO();
+    const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
+    const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
+    const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+    bool showXYZAxes = activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
+        ((intersected && isSelectingBoneHandle(selection, rectangleType)) ||
+            isDraggingBoneAxisAlignedState(state));
+    if (showXYZAxes) {
+        Quaternion orientation(Constants::kZeroQ);
+        if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
+            orientation = activeBone->localOrientation() * glm::quat_cast(model::Bone::localAxes(activeBonePtr));
+        }
+        const Vector3 base(activeBone->worldTransformOrigin()), scaleFactor(3),
+            unitX(orientation * Constants::kUnitX * scaleFactor), unitY(orientation * Constants::kUnitY * scaleFactor),
+            unitZ(orientation * Constants::kUnitZ * -scaleFactor);
+        const ICamera *camera = project->activeCamera();
+        const Vector2SI32 p(camera->toDeviceScreenCoordinateInViewport(base)),
+            x(camera->toDeviceScreenCoordinateInViewport(base + unitX)),
+            y(camera->toDeviceScreenCoordinateInViewport(base + unitY)),
+            z(camera->toDeviceScreenCoordinateInViewport(base + unitZ)),
+            windowSize(Vector2(project->windowSize()) * project->windowDevicePixelRatio());
+        const Vector4SI32 rect(-windowSize, windowSize * 2);
+        if (Inline::intersectsRectPoint(rect, p)) {
+            const nanoem_f32_t thickness = 3.0f;
+            if (Inline::intersectsRectPoint(rect, x)) {
+                m_primitive2D.strokeLine(p, x, kColorRed, thickness);
+            }
+            if (Inline::intersectsRectPoint(rect, y)) {
+                m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
+            }
+            if (Inline::intersectsRectPoint(rect, z)) {
+                m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
+            }
         }
     }
 }

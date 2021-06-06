@@ -194,12 +194,6 @@ public:
         }
         virtual nanoem_unicode_string_factory_t *unicodeStringFactory() const NANOEM_DECL_NOEXCEPT = 0;
     };
-    struct IViewportOverlay {
-        virtual ~IViewportOverlay() NANOEM_DECL_NOEXCEPT
-        {
-        }
-        virtual void drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags) = 0;
-    };
     struct IDiagnostics {
         virtual void addNotFoundFileURI(const URI &fileURI) = 0;
         virtual void addDigestMismatchFileURI(const URI &fileURI) = 0;

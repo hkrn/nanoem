@@ -21,21 +21,19 @@ class IModelObjectSelection;
 class IState;
 
 class StateController NANOEM_DECL_SEALED : public IProjectHolder,
-                                           public Project::IViewportOverlay,
                                            private NonCopyable {
 public:
     StateController(BaseApplicationService *application, IFileManager *delegate);
     ~StateController() NANOEM_DECL_NOEXCEPT;
 
-    void drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     const Project *currentProject() const NANOEM_DECL_OVERRIDE;
     Project *currentProject() NANOEM_DECL_OVERRIDE;
 
     BaseApplicationService *application() NANOEM_DECL_NOEXCEPT;
     IFileManager *fileManager() NANOEM_DECL_NOEXCEPT;
-    const IState *state() const NANOEM_DECL_NOEXCEPT;
-    IState *state() NANOEM_DECL_NOEXCEPT;
-    void setState(IState *state);
+    const IState *currentState() const NANOEM_DECL_NOEXCEPT;
+    IState *currentState() NANOEM_DECL_NOEXCEPT;
+    void setCurrentState(IState *state);
     void consumeDefaultPass();
 
     void handlePointerScroll(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta);

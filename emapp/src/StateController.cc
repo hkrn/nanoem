@@ -35,123 +35,7 @@ namespace nanoem {
 
 namespace {
 
-class DrawUtils NANOEM_DECL_SEALED : private NonCopyable {
-public:
-    static const Vector3 kColorRed;
-    static const Vector3 kColorGreen;
-    static const Vector3 kColorBlue;
-    static const Vector3 kColorYellow;
-    static const nanoem_f32_t kKappa;
-
-    static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project);
-    static void drawBoneMoveHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
-    static void drawBoneRotateHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
-    static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
-    static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
-    static void drawVertexWeightPainter(
-        IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project);
-};
-
-const Vector3 DrawUtils::kColorRed = Vector3(1, 0, 0);
-const Vector3 DrawUtils::kColorGreen = Vector3(0, 1, 0);
-const Vector3 DrawUtils::kColorBlue = Vector3(0, 0, 1);
-const Vector3 DrawUtils::kColorYellow = Vector3(1, 1, 0);
-const nanoem_f32_t DrawUtils::kKappa = 0.5522847498307933984022516322796f;
-
-Vector2SI32
-DrawUtils::deviceScaleCursorActiveBoneInViewport(const Project *project)
-{
-    Vector2SI32 deviceScaleCursor(0);
-    if (const Model *model = project->activeModel()) {
-        if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
-            deviceScaleCursor =
-                project->activeCamera()->toDeviceScreenCoordinateInViewport(bone->worldTransformOrigin());
-        }
-    }
-    return deviceScaleCursor;
-}
-
-void
-DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
-{
-    const Project *project = activeModel->project();
-    const Model::AxisType type = activeModel->transformAxisType();
-    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
-    const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
-                       thickness = project->logicalScaleCircleRadius();
-    const nanoem_model_bone_t *activeBone = activeModel->activeBone();
-    activeModel->drawBoneConnections(primitive, activeBone);
-    primitive->strokeLine(center, Vector2(center.x + length, center.y),
-        Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
-    primitive->strokeLine(center, Vector2(center.x, center.y - length),
-        Vector4(kColorGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25), thickness);
-}
-
-void
-DrawUtils::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
-{
-    const Project *project = activeModel->project();
-    const Model::AxisType type = activeModel->transformAxisType();
-    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
-    nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
-                 thickness = project->logicalScaleCircleRadius() * 1.5f;
-    const nanoem_f32_t x1 = center.x - radius;
-    const nanoem_f32_t y1 = center.y - radius;
-    const nanoem_f32_t x2 = center.x + radius;
-    const nanoem_f32_t y2 = center.y + radius;
-    activeModel->drawBoneConnections(primitive, activeModel->activeBone());
-    primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
-        Vector4(kColorBlue, type == Model::kAxisTypeZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
-    primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
-        Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
-    const Vector4 green(kColorGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25);
-    primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kKappa),
-        Vector2(center.x - radius * kKappa, y1), Vector2(center.x + 1, y1), green, thickness);
-    primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kKappa, y1),
-        Vector2(x2, center.y - radius * kKappa), Vector2(x2, center.y + 1), green, thickness);
-    primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kKappa),
-        Vector2(center.x + radius * kKappa, y2), Vector2(center.x - 1, y2), green, thickness);
-    primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kKappa, y2),
-        Vector2(x1, center.y + radius * kKappa), Vector2(x1, center.y - 1), green, thickness);
-}
-
-void
-DrawUtils::drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project)
-{
-    const Vector2SI32 center(deviceScaleCursorActiveBoneInViewport(project));
-    if (center.x != 0 && center.y != 0) {
-        const nanoem_f32_t radius = project->deviceScaleCircleRadius(), extent = radius * 2;
-        primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), activeBoneColor);
-    }
-}
-
-void
-DrawUtils::drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project)
-{
-    const Vector2 center(camera->toDeviceScreenCoordinateInViewport(camera->boundLookAt()));
-    const nanoem_f32_t circleRadius = project->deviceScaleCircleRadius();
-    const nanoem_f32_t innerRadius = circleRadius * 0.65f;
-    primitive->strokeCircle(
-        Vector4(center.x - circleRadius, center.y - circleRadius, circleRadius * 2, circleRadius * 2),
-        Vector4(1, 0, 0, 1), 2.0f);
-    primitive->fillCircle(
-        Vector4(center.x - innerRadius, center.y - innerRadius, innerRadius * 2, innerRadius * 2), Vector4(1, 0, 0, 1));
-}
-
-void
-DrawUtils::drawVertexWeightPainter(
-    IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project)
-{
-    const Vector4UI16 layoutRect(project->deviceScaleUniformedViewportLayoutRect());
-    const Vector2SI32 center(project->deviceScaleMovingCursorPosition() - Vector2SI32(layoutRect));
-    const nanoem_f32_t radius = brush->radius(), extent = radius * 2;
-    primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), Vector4(kColorRed, 0.5));
-}
-
 class BaseState : public IState, private NonCopyable {
-public:
-    static bool isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT;
-
 protected:
     BaseState(StateController *stateController, BaseApplicationService *application);
 
@@ -163,25 +47,6 @@ protected:
     Vector2SI32 m_lastLogicalScalePosition;
     bool m_isGrabbingHandle;
 };
-
-bool
-BaseState::isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT
-{
-    bool result = false;
-    if (value) {
-        switch (value->type()) {
-        case IState::kTypeDraggingBoneAxisAlignedOrientateActiveBoneState:
-        case IState::kTypeDraggingBoneAxisAlignedTranslateActiveBoneState:
-        case IState::kTypeDraggingBoneOrientateActiveBoneState:
-        case IState::kTypeDraggingBoneTranslateActiveBoneState:
-            result = true;
-            break;
-        default:
-            break;
-        }
-    }
-    return result;
-}
 
 BaseState::BaseState(StateController *stateController, BaseApplicationService *application)
     : m_stateControllerPtr(stateController)
@@ -2237,53 +2102,7 @@ StateController::StateController(BaseApplicationService *application, IFileManag
 
 StateController::~StateController() NANOEM_DECL_NOEXCEPT
 {
-    setState(nullptr);
-}
-
-void
-StateController::drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags)
-{
-    if (Project *project = currentProject()) {
-        if (m_state) {
-            m_state->onDrawPrimitive2D(primitive);
-        }
-        const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
-        if (Model *activeModel = project->activeModel()) {
-            Vector4 activeBoneColor(DrawUtils::kColorRed, 1);
-            if (activeModel->isVisible()) {
-                if (EnumUtils::isEnabled(IState::kDrawTypeBoneConnections, flags)) {
-                    activeModel->drawAllBoneConnections(primitive, deviceScaleCursor);
-                }
-                if (EnumUtils::isEnabled(IState::kDrawTypeConstraintConnections, flags)) {
-                    activeModel->drawConstraintConnections(primitive, deviceScaleCursor);
-                }
-                if (EnumUtils::isEnabled(IState::kDrawTypeConstraintHeatmaps, flags)) {
-                    activeModel->drawConstraintsHeatMap(primitive);
-                }
-            }
-            if (EnumUtils::isEnabled(IState::kDrawTypeBoneMoveHandle, flags)) {
-                activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
-                const bool isGrabbingHandle = BaseState::isDraggingBoneState(m_state) && m_state->isGrabbingHandle();
-                DrawUtils::drawBoneMoveHandle(primitive, activeModel, isGrabbingHandle);
-            }
-            if (EnumUtils::isEnabled(IState::kDrawTypeBoneRotateHandle, flags)) {
-                activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
-                const bool isGrabbingHandle = BaseState::isDraggingBoneState(m_state) && m_state->isGrabbingHandle();
-                DrawUtils::drawBoneRotateHandle(primitive, activeModel, isGrabbingHandle);
-            }
-            if (EnumUtils::isEnabled(IState::kDrawTypeActiveBone, flags)) {
-                DrawUtils::drawActiveBonePoint(primitive, activeBoneColor, project);
-            }
-            if (EnumUtils::isEnabled(IState::kDrawTypeVertexWeightPainter, flags)) {
-                const model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
-                DrawUtils::drawVertexWeightPainter(primitive, painter, project);
-            }
-        }
-        const ICamera *camera = project->activeCamera();
-        if (EnumUtils::isEnabled(IState::kDrawTypeCameraLookAt, flags) && camera) {
-            DrawUtils::drawCameraLookAtPoint(primitive, camera, project);
-        }
-    }
+    setCurrentState(nullptr);
 }
 
 const Project *
@@ -2311,19 +2130,19 @@ StateController::fileManager() NANOEM_DECL_NOEXCEPT
 }
 
 const IState *
-StateController::state() const NANOEM_DECL_NOEXCEPT
+StateController::currentState() const NANOEM_DECL_NOEXCEPT
 {
     return m_state;
 }
 
 IState *
-StateController::state() NANOEM_DECL_NOEXCEPT
+StateController::currentState() NANOEM_DECL_NOEXCEPT
 {
     return m_state;
 }
 
 void
-StateController::setState(IState *state)
+StateController::setCurrentState(IState *state)
 {
     if (state != m_state) {
         nanoem_delete(m_state);
@@ -2391,7 +2210,7 @@ StateController::handlePointerPress(const Vector3SI32 &logicalScaleCursorPositio
             break;
         }
         case Project::kCursorTypeMouseMiddle: {
-            setState(nanoem_new(DraggingMoveCameraLookAtState(this, m_applicationPtr)));
+            setCurrentState(nanoem_new(DraggingMoveCameraLookAtState(this, m_applicationPtr)));
             break;
         }
         case Project::kCursorTypeMouseRight: {
@@ -2404,11 +2223,11 @@ StateController::handlePointerPress(const Vector3SI32 &logicalScaleCursorPositio
             break;
         }
         case Project::kCursorTypeMouseUndo: {
-            setState(nanoem_new(UndoState(this, m_applicationPtr)));
+            setCurrentState(nanoem_new(UndoState(this, m_applicationPtr)));
             break;
         }
         case Project::kCursorTypeMouseRedo: {
-            setState(nanoem_new(RedoState(this, m_applicationPtr)));
+            setCurrentState(nanoem_new(RedoState(this, m_applicationPtr)));
             break;
         }
         default:
@@ -2452,7 +2271,7 @@ StateController::handlePointerRelease(const Vector3SI32 &logicalScaleCursorPosit
         if (m_state) {
             Error error;
             m_state->onRelease(logicalScaleCursorPosition, error);
-            setState(nullptr);
+            setCurrentState(nullptr);
             error.notify(project->eventPublisher());
         }
         project->setLogicalPixelLastCursorPosition(type, logicalScaleCursorPosition, false);
@@ -2590,7 +2409,7 @@ StateController::setPrimaryDraggingState(Project *project, const Vector2SI32 &lo
         else {
             state = nanoem_new(DraggingCameraState(this, m_applicationPtr, true));
         }
-        setState(state);
+        setCurrentState(state);
     }
 }
 
@@ -2605,7 +2424,7 @@ StateController::setSecondaryDraggingState(Project *project, const Vector2SI32 &
         else {
             state = nanoem_new(DraggingCameraState(this, m_applicationPtr, false));
         }
-        setState(state);
+        setCurrentState(state);
     }
 }
 

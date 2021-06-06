@@ -243,7 +243,7 @@ public:
     Project *createProject(const Vector2UI16 &logicalPixelWindowSize, sg_pixel_format pixelFormat,
         nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio, const char *dllPath);
     void destroyProject(Project *project);
-    void draw(Project *project, Project::IViewportOverlay *overlay);
+    void draw(Project *project);
 
     const char *translateMenuItem(nanoem_u32_t type) const NANOEM_DECL_NOEXCEPT;
     bool dispatchMenuItemAction(Project *project, nanoem_u32_t type, Error &error);

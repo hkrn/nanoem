@@ -1769,7 +1769,7 @@ BaseApplicationService::destroyProject(Project *project)
 }
 
 void
-BaseApplicationService::draw(Project *project, Project::IViewportOverlay *overlay)
+BaseApplicationService::draw(Project *project)
 {
     if (nanoem_likely(project)) {
         Error error;
@@ -1792,8 +1792,8 @@ BaseApplicationService::draw(Project *project, Project::IViewportOverlay *overla
                 error.addModalDialog(this);
             }
         }
-        m_window->drawAll2DPrimitives(project, overlay, m_defaultAuxFlags);
-        m_window->drawAllWindows(project, m_stateController->state(), m_defaultAuxFlags);
+        IState *state = m_stateController->currentState();
+        m_window->drawAllWindows(project, state, m_defaultAuxFlags);
     }
 }
 
@@ -5344,7 +5344,7 @@ BaseApplicationService::drawDefaultPass()
         if (active) {
             OPTICK_FRAME(__PRETTY_FUNCTION__);
             beginDrawContext();
-            draw(project, m_stateController);
+            draw(project);
             sg::commit();
             presentDefaultPass(project);
             resetAllPasses = project->resetAllPasses();
