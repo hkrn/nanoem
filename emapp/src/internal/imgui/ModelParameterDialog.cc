@@ -26,6 +26,10 @@
 #include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
+#include "emapp/DebugUtils.h"
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
+
 extern "C" {
 #include "tinyobjloader-c/tinyobj_loader_c.h"
 }
@@ -717,12 +721,13 @@ void
 DisableModelEditingCommand::saveLastModel(
     const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Project *project, Error &error)
 {
-    FileWriterScope scope;
     String filePath(activeModel->fileURI().absolutePathByDeletingPathExtension());
     filePath.append("-");
     filePath.append(state.m_datetime);
     filePath.append(
         nanoemModelGetFormatType(activeModel->data()) == NANOEM_MODEL_FORMAT_TYPE_PMD_1_0 ? ".pmd" : ".pmx");
+#if !defined(NANOEM_ENABLE_DEBUG_LABEL)
+    FileWriterScope scope;
     if (scope.open(URI::createFromFilePath(filePath), error)) {
         FileUtils::write(scope.writer(), state.m_modelData, error);
         if (!error.hasReason()) {
@@ -732,11 +737,15 @@ DisableModelEditingCommand::saveLastModel(
             scope.rollback(error);
         }
     }
+#else
+    DebugUtils::print("DisableModelEditingCommand::saveLastModel(path=%s)", filePath.c_str());
+#endif
 }
 
 void
 DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Project *project, Error &error)
 {
+#if !defined(NANOEM_ENABLE_DEBUG_LABEL)
     FileWriterScope scope;
     if (scope.open(activeModel->fileURI(), error)) {
         if (activeModel->save(scope.writer(), error)) {
@@ -746,6 +755,9 @@ DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Project *
             scope.rollback(error);
         }
     }
+#else
+    DebugUtils::print("DisableModelEditingCommand::saveCurrentModel(path=%s)", activeModel->fileURI().absolutePathConstString());
+#endif
 }
 
 DisableModelEditingCommand::DisableModelEditingCommand(ModelParameterDialog::SavedState *state)
@@ -903,6 +915,9 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllRigidBodies(model->isShowAllRigidBodyShapes())
     , m_showAllJoints(model->isShowAllJointShapes())
     , m_showAllSoftBodies(false)
+    , m_showActiveBone(false)
+    , m_showFixedAxis(false)
+    , m_showLocalAxes(false)
 {
     Inline::clearZeroMemory(m_batchBoneParameter);
     Inline::clearZeroMemory(m_batchJointParameter);
@@ -2969,6 +2984,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
     }
     {
         bool value = nanoemModelBoneHasDestinationBone(bonePtr) != 0;
+        ImGui::BeginGroup();
         if (ImGui::RadioButton(tr("nanoem.gui.model.edit.bone.destination.bone"), value)) {
             command::ScopedMutableBone scoped(bonePtr);
             nanoemMutableModelBoneSetTargetBoneObject(scoped, nanoemModelBoneGetTargetBoneObject(bonePtr));
@@ -2990,6 +3006,9 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 nanoemMutableModelBoneSetDestinationOrigin(scoped, glm::value_ptr(origin));
             }
         }
+        ImGui::EndGroup();
+        m_showActiveBone = ImGui::IsItemHovered();
+        m_activeModel->setActiveBone(m_showActiveBone ? bonePtr : nullptr);
     }
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.bone.stage"));
@@ -3114,6 +3133,7 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
         StringUtils::format(
             buffer, sizeof(buffer), "%s##properties.fixed-axis", tr("nanoem.gui.model.edit.bone.fixed-axis.title"));
         if (nanoemModelBoneHasFixedAxis(bonePtr) && ImGui::CollapsingHeader(buffer)) {
+            ImGui::BeginGroup();
             StringUtils::format(buffer, sizeof(buffer), "%s##properties.fixed-axis.op.button", ImGuiWindow::kFACogs);
             if (ImGui::Button(buffer)) {
                 ImGui::OpenPopup("fixed-axis.op");
@@ -3128,10 +3148,14 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetFixedAxis(scoped, glm::value_ptr(axis));
             }
+            ImGui::EndGroup();
+            m_showFixedAxis = ImGui::IsItemHovered();
+            m_activeModel->setActiveBone(m_showFixedAxis ? bonePtr : nullptr);
         }
         StringUtils::format(
             buffer, sizeof(buffer), "%s##properties.local-axes", tr("nanoem.gui.model.edit.bone.local-axes.title"));
         if (nanoemModelBoneHasLocalAxes(bonePtr) && ImGui::CollapsingHeader(buffer)) {
+            ImGui::BeginGroup();
             StringUtils::format(buffer, sizeof(buffer), "%s##properties.local-axes.x.op.button", ImGuiWindow::kFACogs);
             if (ImGui::Button(buffer)) {
                 ImGui::OpenPopup("local-axes.x.op");
@@ -3162,6 +3186,9 @@ ModelParameterDialog::layoutBonePropertyPane(nanoem_model_bone_t *bonePtr, Proje
                 command::ScopedMutableBone scoped(bonePtr);
                 nanoemMutableModelBoneSetLocalZAxis(scoped, glm::value_ptr(axisZ));
             }
+            ImGui::EndGroup();
+            m_showLocalAxes = ImGui::IsItemHovered();
+            m_activeModel->setActiveBone(m_showLocalAxes ? bonePtr : nullptr);
         }
     }
     layoutBoneConstraintPanel(bonePtr, project);
@@ -7629,6 +7656,24 @@ ModelParameterDialog::saveProjectState(Project *project)
     project->grid()->setVisible(true);
     project->setPhysicsSimulationMode(PhysicsEngine::kSimulationModeDisable);
     setActiveModel(m_activeModel, project);
+}
+
+bool
+ModelParameterDialog::isActiveBoneShown() const NANOEM_DECL_NOEXCEPT
+{
+    return m_showActiveBone;
+}
+
+bool
+ModelParameterDialog::isFixedAxisShown() const NANOEM_DECL_NOEXCEPT
+{
+    return m_showFixedAxis;
+}
+
+bool
+ModelParameterDialog::isLocalAxesShown() const NANOEM_DECL_NOEXCEPT
+{
+    return m_showLocalAxes;
 }
 
 void

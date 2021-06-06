@@ -75,7 +75,10 @@ public:
 
     void drawMenuBar(Project *project);
     void saveProjectState(Project *project);
-    void restoreProjectState(Project *project);
+
+    bool isActiveBoneShown() const NANOEM_DECL_NOEXCEPT;
+    bool isLocalAxesShown() const NANOEM_DECL_NOEXCEPT;
+    bool isFixedAxisShown() const NANOEM_DECL_NOEXCEPT;
 
 private:
     typedef void(APIENTRY *PFN_nanoemMutableModelSetBoneObject)(
@@ -274,6 +277,9 @@ private:
     bool m_showAllRigidBodies;
     bool m_showAllJoints;
     bool m_showAllSoftBodies;
+    bool m_showActiveBone;
+    bool m_showFixedAxis;
+    bool m_showLocalAxes;
 };
 
 } /* namespace imgui */

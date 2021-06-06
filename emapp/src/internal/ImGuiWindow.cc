@@ -634,8 +634,8 @@ public:
 
     static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project) NANOEM_DECL_NOEXCEPT;
     static bool isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT;
-    static void drawBoneMoveHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
-    static void drawBoneRotateHandle(IPrimitive2D *primitive, Model *model, bool isGrabbingHandle);
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
     static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
     static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
     static void drawVertexWeightPainter(
@@ -681,7 +681,7 @@ DrawUtils::isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT
 }
 
 void
-DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
+DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
 {
     const Project *project = activeModel->project();
     const Model::AxisType type = activeModel->transformAxisType();
@@ -689,7 +689,6 @@ DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool 
     const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
                        thickness = project->logicalScaleCircleRadius();
     const nanoem_model_bone_t *activeBone = activeModel->activeBone();
-    activeModel->drawBoneConnections(primitive, activeBone);
     primitive->strokeLine(center, Vector2(center.x + length, center.y),
         Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(center, Vector2(center.x, center.y - length),
@@ -697,7 +696,7 @@ DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, Model *activeModel, bool 
 }
 
 void
-DrawUtils::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, bool isGrabbingHandle)
+DrawUtils::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
 {
     const Project *project = activeModel->project();
     const Model::AxisType type = activeModel->transformAxisType();
@@ -708,7 +707,6 @@ DrawUtils::drawBoneRotateHandle(IPrimitive2D *primitive, Model *activeModel, boo
     const nanoem_f32_t y1 = center.y - radius;
     const nanoem_f32_t x2 = center.x + radius;
     const nanoem_f32_t y2 = center.y + radius;
-    activeModel->drawBoneConnections(primitive, activeModel->activeBone());
     primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
         Vector4(kColorBlue, type == Model::kAxisTypeZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
@@ -2035,6 +2033,40 @@ ImGuiWindow::handleVectorValueState(IVectorValueState *state)
         deletable = false;
     }
     return deletable;
+}
+
+void
+ImGuiWindow::appendDrawFlags(
+    const Model *activeModel, const ModelParameterDialog *dialog, nanoem_u32_t &flags) NANOEM_DECL_NOEXCEPT
+{
+    static const nanoem_u32_t kActiveBoneFlags = IState::kDrawTypeActiveBone | IState::kDrawTypeActiveBoneConnection;
+    if (!activeModel->isMorphWeightFocused()) {
+        const Project::EditingMode editingMode = activeModel->project()->editingMode();
+        switch (editingMode) {
+        case Project::kEditingModeSelect: {
+            if (dialog && dialog->isActiveBoneShown()) {
+                flags |= IState::kDrawTypeActiveBoneConnection;
+            }
+            else {
+                flags |= IState::kDrawTypeAllBoneConnections;
+            }
+            break;
+        }
+        case Project::kEditingModeMove: {
+            flags |= kActiveBoneFlags | IState::kDrawTypeBoneMoveHandle;
+            break;
+        }
+        case Project::kEditingModeRotate: {
+            flags |= kActiveBoneFlags | IState::kDrawTypeBoneRotateHandle;
+            break;
+        }
+        default:
+            break;
+        }
+        if (activeModel->isShowAllVertexWeights()) {
+            flags |= IState::kDrawTypeVertexWeightPainter;
+        }
+    }
 }
 
 ITrack *
@@ -4706,49 +4738,34 @@ ImGuiWindow::drawPrimitive2D(Project *project, IState *state, nanoem_u32_t flags
     if (state) {
         state->onDrawPrimitive2D(&m_primitive2D);
     }
-    const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
-    if (Model *activeModel = project->activeModel()) {
+    Model *activeModel = project->activeModel();
+    if (activeModel && activeModel->isVisible()) {
+        const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
         Vector4 activeBoneColor(DrawUtils::kColorRed, 1);
-        if (!activeModel->isMorphWeightFocused()) {
-            Project::EditingMode editingMode = project->editingMode();
-            switch (editingMode) {
-            case Project::kEditingModeSelect: {
-                flags |= IState::kDrawTypeBoneConnections;
-                break;
-            }
-            case Project::kEditingModeMove: {
-                flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneMoveHandle;
-                break;
-            }
-            case Project::kEditingModeRotate: {
-                flags |= IState::kDrawTypeActiveBone | IState::kDrawTypeBoneRotateHandle;
-                break;
-            }
-            default:
-                break;
-            }
-            if (activeModel->isShowAllVertexWeights()) {
-                flags |= IState::kDrawTypeVertexWeightPainter;
-            }
+        NoModalDialogWindowList::const_iterator it = m_dialogWindows.find(ModelParameterDialog::kIdentifier);
+        const ModelParameterDialog *dialog = nullptr;
+        if (it != m_dialogWindows.end()) {
+            dialog = static_cast<ModelParameterDialog *>(it->second);
         }
-        else if (!activeModel) {
-            flags |= IState::kDrawTypeCameraLookAt;
+        appendDrawFlags(activeModel, dialog, flags);
+        if (EnumUtils::isEnabled(IState::kDrawTypeAllBoneConnections, flags)) {
+            activeModel->drawAllBoneConnections(&m_primitive2D, deviceScaleCursor);
         }
-        if (activeModel->isVisible()) {
-            if (EnumUtils::isEnabled(IState::kDrawTypeBoneConnections, flags)) {
-                activeModel->drawAllBoneConnections(&m_primitive2D, deviceScaleCursor);
-            }
-            if (EnumUtils::isEnabled(IState::kDrawTypeConstraintConnections, flags)) {
-                activeModel->drawConstraintConnections(&m_primitive2D, deviceScaleCursor);
-            }
-            if (EnumUtils::isEnabled(IState::kDrawTypeConstraintHeatmaps, flags)) {
-                activeModel->drawConstraintsHeatMap(&m_primitive2D);
-            }
+        if (EnumUtils::isEnabled(IState::kDrawTypeConstraintConnections, flags)) {
+            activeModel->drawConstraintConnections(&m_primitive2D, deviceScaleCursor);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeConstraintHeatmaps, flags)) {
+            activeModel->drawConstraintsHeatMap(&m_primitive2D);
         }
         if (EnumUtils::isEnabled(IState::kDrawTypeBoneMoveHandle, flags)) {
             activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
             const bool isGrabbingHandle = DrawUtils::isDraggingBoneState(state) && state->isGrabbingHandle();
             DrawUtils::drawBoneMoveHandle(&m_primitive2D, activeModel, isGrabbingHandle);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeActiveBoneConnection, flags)) {
+            const nanoem_model_bone_t *bonePtr = activeModel->activeBone();
+            activeModel->drawBoneConnections(&m_primitive2D, bonePtr);
+            activeModel->drawBonePoint(&m_primitive2D, bonePtr, deviceScaleCursor);
         }
         if (EnumUtils::isEnabled(IState::kDrawTypeBoneRotateHandle, flags)) {
             activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
@@ -4793,7 +4810,7 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, IState *state, const
             Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
         if (const Model *activeModel = project->activeModel()) {
             const IModelObjectSelection *selection = activeModel->selection();
-            drawOrientationAxes(intersected, selection, activeModel, project, state);
+            drawOrientationAxes(intersected, intersectedRectangleType, selection, activeModel, project, state);
             const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable();
             drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX,
                 intersectedRectangleType, rotateable);
@@ -4858,16 +4875,21 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, IState *state, const
 }
 
 void
-ImGuiWindow::drawOrientationAxes(bool intersected, const IModelObjectSelection *selection, const Model *activeModel,
-    const Project *project, IState *state)
+ImGuiWindow::drawOrientationAxes(bool intersected, nanoem_u32_t rectangleType, const IModelObjectSelection *selection,
+    const Model *activeModel, const Project *project, IState *state)
 {
-    Project::RectangleType rectangleType;
     const ImGuiIO &io = ImGui::GetIO();
     const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
     const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
     const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
     bool showXYZAxes = activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
-        ((intersected && isSelectingBoneHandle(selection, rectangleType)) || isDraggingBoneAxisAlignedState(state));
+        ((intersected && isSelectingBoneHandle(selection, static_cast<Project::RectangleType>(rectangleType))) ||
+            isDraggingBoneAxisAlignedState(state));
+    NoModalDialogWindowList::const_iterator it = m_dialogWindows.find(ModelParameterDialog::kIdentifier);
+    if (it != m_dialogWindows.end()) {
+        const ModelParameterDialog *dialog = static_cast<ModelParameterDialog *>(it->second);
+        showXYZAxes |= dialog->isLocalAxesShown();
+    }
     if (showXYZAxes) {
         Quaternion orientation(Constants::kZeroQ);
         if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {

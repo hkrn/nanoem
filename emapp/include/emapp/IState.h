@@ -19,13 +19,13 @@ class IState {
 public:
     enum DrawType {
         kDrawTypeActiveBone = 0x1,
-        kDrawTypeBoneConnections = 0x2,
+        kDrawTypeAllBoneConnections = 0x2,
         kDrawTypeConstraintConnections = 0x4,
         kDrawTypeConstraintHeatmaps = 0x8,
         kDrawTypeBoneTooltip = 0x10,
         kDrawTypeBoneMoveHandle = 0x20,
         kDrawTypeBoneRotateHandle = 0x40,
-        kDrawTypeBoneLocalAxes = 0x80,
+        kDrawTypeActiveBoneConnection = 0x80,
         kDrawTypeCameraLookAt = 0x100,
         kDrawTypeVertexWeightPainter = 0x200,
         kDrawTypeMaxEnum = 0x400,

@@ -39,6 +39,7 @@ class LightDirectionVectorValueState;
 
 namespace imgui {
 class GizmoController;
+class ModelParameterDialog;
 } /* namespace imgui */
 
 class ImGuiWindow NANOEM_DECL_SEALED : public IUIWindow, private NonCopyable {
@@ -325,6 +326,8 @@ private:
     static nanoem_rsize_t findTrack(const void *opaque, ITrack::Type targetTrackType, Project::TrackList &tracks);
     static bool isRhombusReactionSelectable(RhombusReactionType type) NANOEM_DECL_NOEXCEPT;
     static bool handleVectorValueState(IVectorValueState *state);
+    static void appendDrawFlags(
+        const Model *activeModel, const imgui::ModelParameterDialog *dialog, nanoem_u32_t &flags) NANOEM_DECL_NOEXCEPT;
 
     ITrack *selectTrack(nanoem_rsize_t offset, ITrack::Type targetTrackType, Project::TrackList &tracks);
     const char *tr(const char *id) NANOEM_DECL_NOEXCEPT;
@@ -392,7 +395,7 @@ private:
     void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
         int baseRectType, int intercectedRectType, bool handleable);
     void drawTransformHandleSet(const Project *project, IState *state, const ImVec2 &offset);
-    void drawOrientationAxes(bool intersected, const IModelObjectSelection *selection, const Model *activeModel,
+    void drawOrientationAxes(bool intersected, nanoem_u32_t rectangleType, const IModelObjectSelection *selection, const Model *activeModel,
         const Project *project, IState *state);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawPerformanceMonitor(const Project *project, const ImVec2 &offset);
@@ -408,7 +411,6 @@ private:
     void renderDrawList(const Project *project, const ImDrawData *drawData, int sampleCount, Buffer *bufferPtr,
         sg_bindings &bindingsRef, sg::PassBlock &pb);
     void internalFillRect(const Vector4 &devicePixelRect, nanoem_f32_t devicePixelRatio);
-    void applyDeltaTransform(const Matrix4x4 &delta, Model *activeModel);
 
     BaseApplicationService *m_applicationPtr;
     ImGuiApplicationMenuBuilder *m_menu;
