@@ -6619,7 +6619,7 @@ ModelParameterDialog::layoutManipulateBoneMenu()
                 const nanoem_model_bone_t *bonePtr = *it;
                 const model::Bone *bone = model::Bone::cast(bonePtr);
                 String reversedName;
-                if (bone && selectNameBasedSymmetricModelObject(bone->nameConstString(), reversedName, nameSet)) {
+                if (bone && selectNameBasedSymmetricModelObject(bone->canonicalNameConstString(), reversedName, nameSet)) {
                     if (const nanoem_model_bone_t *foundBonePtr = m_activeModel->findBone(reversedName)) {
                         selection->addBone(foundBonePtr);
                     }
@@ -7204,7 +7204,7 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu()
             for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
                 const nanoem_model_rigid_body_t *rigidBodyPtr = rigidBodies[i];
                 if (const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr)) {
-                    rigidBodyMap.insert(tinystl::make_pair(rigidBody->name(), rigidBodyPtr));
+                    rigidBodyMap.insert(tinystl::make_pair(rigidBody->canonicalName(), rigidBodyPtr));
                 }
             }
             const model::RigidBody::Set *boneSet = selection->allRigidBodySet();
@@ -7213,7 +7213,7 @@ ModelParameterDialog::layoutManipulateRigidBodyMenu()
                 const model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodyPtr);
                 String reversedName;
                 if (rigidBody &&
-                    selectNameBasedSymmetricModelObject(rigidBody->nameConstString(), reversedName, nameSet)) {
+                    selectNameBasedSymmetricModelObject(rigidBody->canonicalNameConstString(), reversedName, nameSet)) {
                     RigidBodyMap::const_iterator it = rigidBodyMap.find(reversedName);
                     if (it != rigidBodyMap.end()) {
                         selection->addRigidBody(it->second);
@@ -7365,7 +7365,7 @@ ModelParameterDialog::layoutManipulateJointMenu()
             for (nanoem_rsize_t i = 0; i < numJoints; i++) {
                 const nanoem_model_joint_t *jointPtr = joints[i];
                 if (const model::Joint *joint = model::Joint::cast(jointPtr)) {
-                    rigidBodyMap.insert(tinystl::make_pair(joint->name(), jointPtr));
+                    rigidBodyMap.insert(tinystl::make_pair(joint->canonicalName(), jointPtr));
                 }
             }
             const model::Joint::Set *boneSet = selection->allJointSet();
@@ -7373,7 +7373,8 @@ ModelParameterDialog::layoutManipulateJointMenu()
                 const nanoem_model_joint_t *jointPtr = *it;
                 const model::Joint *joint = model::Joint::cast(jointPtr);
                 String reversedName;
-                if (joint && selectNameBasedSymmetricModelObject(joint->nameConstString(), reversedName, nameSet)) {
+                if (joint &&
+                    selectNameBasedSymmetricModelObject(joint->canonicalNameConstString(), reversedName, nameSet)) {
                     JointMap::const_iterator it = rigidBodyMap.find(reversedName);
                     if (it != rigidBodyMap.end()) {
                         selection->addJoint(it->second);
