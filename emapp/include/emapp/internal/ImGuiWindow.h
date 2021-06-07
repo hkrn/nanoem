@@ -395,8 +395,8 @@ private:
     void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
         int baseRectType, int intercectedRectType, bool handleable);
     void drawTransformHandleSet(const Project *project, IState *state, const ImVec2 &offset);
-    void drawOrientationAxes(bool intersected, nanoem_u32_t rectangleType, const IModelObjectSelection *selection, const Model *activeModel,
-        const Project *project, IState *state);
+    void drawOrientationAxes(bool intersected, nanoem_u32_t rectangleType, const IModelObjectSelection *selection,
+        const Model *activeModel, const Project *project, IState *state);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawPerformanceMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);

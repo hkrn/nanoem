@@ -1677,7 +1677,8 @@ BaseCreatingBoneState::isGrabbingHandle() const NANOEM_DECL_NOEXCEPT
 }
 
 void
-BaseCreatingBoneState::setNewName(const Model *activeModel, const nanoem_model_bone_t *sourceBonePtr, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
+BaseCreatingBoneState::setNewName(const Model *activeModel, const nanoem_model_bone_t *sourceBonePtr,
+    nanoem_unicode_string_factory_t *factory, nanoem_status_t *status)
 {
     static const nanoem_u8_t kNameCopyOfInJapanese[] = { 0xe3, 0x81, 0xae, 0xe3, 0x82, 0xb3, 0xe3, 0x83, 0x94, 0xe3,
         0x83, 0xbc, 0 };
@@ -1688,7 +1689,7 @@ BaseCreatingBoneState::setNewName(const Model *activeModel, const nanoem_model_b
     nanoem_rsize_t index = 1;
     while (true) {
         String innerName(newName);
-        StringUtils::format(innerName, "%d", index++);
+        StringUtils::format(innerName, "%jd", index++);
         if (!activeModel->findBone(innerName)) {
             newName = innerName;
             break;
@@ -1721,8 +1722,8 @@ CreatingParentBoneState::~CreatingParentBoneState() NANOEM_DECL_NOEXCEPT
 }
 
 undo_command_t *
-CreatingParentBoneState::createCommand(Model *activeModel,
-    nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
+CreatingParentBoneState::createCommand(
+    Model *activeModel, nanoem_mutable_model_bone_t *destinationBonePtr, nanoem_mutable_model_bone_t *sourceBonePtr)
 {
     return command::CreateDraggedParentBoneCommand::create(activeModel, destinationBonePtr, sourceBonePtr);
 }

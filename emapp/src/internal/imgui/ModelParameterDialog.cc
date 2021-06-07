@@ -756,7 +756,8 @@ DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Project *
         }
     }
 #else
-    DebugUtils::print("DisableModelEditingCommand::saveCurrentModel(path=%s)", activeModel->fileURI().absolutePathConstString());
+    DebugUtils::print(
+        "DisableModelEditingCommand::saveCurrentModel(path=%s)", activeModel->fileURI().absolutePathConstString());
 #endif
 }
 
@@ -6287,7 +6288,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
         }
         ImGui::EndMenu();
     }
-    #if 0
+#if 0
     if (ImGui::BeginMenu("Duplicate with")) {
         if (ImGui::MenuItem("Faces")) {
             // TODO: implement
@@ -6300,7 +6301,7 @@ ModelParameterDialog::layoutCreateMaterialMenu(Project *project)
         }
         ImGui::EndMenu();
     }
-    #endif
+#endif
     ImGui::Separator();
     if (ImGui::MenuItem(tr("nanoem.gui.model.edit.action.material.create-from-obj"))) {
         CreateMaterialFromOBJFileCallback callback(m_parent);
@@ -6648,7 +6649,8 @@ ModelParameterDialog::layoutManipulateBoneMenu()
                 const nanoem_model_bone_t *bonePtr = *it;
                 const model::Bone *bone = model::Bone::cast(bonePtr);
                 String reversedName;
-                if (bone && selectNameBasedSymmetricModelObject(bone->canonicalNameConstString(), reversedName, nameSet)) {
+                if (bone &&
+                    selectNameBasedSymmetricModelObject(bone->canonicalNameConstString(), reversedName, nameSet)) {
                     if (const nanoem_model_bone_t *foundBonePtr = m_activeModel->findBone(reversedName)) {
                         selection->addBone(foundBonePtr);
                     }
