@@ -4450,7 +4450,7 @@ Model::drawAllVertexWeights()
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
     const nanoem_model_bone_t *activeBonePtr =
-        m_vertexWeightPainter ? m_vertexWeightPainter->activeBone() : activeBone();
+        m_vertexWeightPainter ? m_vertexWeightPainter->vertexBone(0) : activeBone();
     const model::Bone *activeBoneObject = model::Bone::cast(activeBonePtr);
     const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
     const bool enableBlending = isBlendingVertexWeightsEnabled();

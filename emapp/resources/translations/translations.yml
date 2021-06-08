@@ -614,6 +614,22 @@
   phrase:
     en_US: Vertex Weight Paint
     ja_JP: 頂点ウェイトペイント
+- key: nanoem.gui.panel.model.edit.weight-paint.painter-type
+  phrase:
+    en_US: Painter Type
+    ja_JP: ペイント種別
+- key: nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brush
+  phrase:
+    en_US: Base Brush
+    ja_JP: ベースブラシ
+- key: nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brush
+  phrase:
+    en_US: Air Brush
+    ja_JP: エアブラシ
+- key: nanoem.gui.panel.model.edit.weight-paint.vertex-type
+  phrase:
+    en_US: Vertex Type
+    ja_JP: 頂点種別
 - key: nanoem.gui.panel.model.edit.weight-paint.bone
   phrase:
     en_US: Bone
@@ -626,10 +642,10 @@
   phrase:
     en_US: "Delta: %.3f"
     ja_JP: "差分: %.3f"
-- key: nanoem.gui.panel.model.edit.weight-paint.protect-bdef1
+- key: nanoem.gui.panel.model.edit.weight-paint.normalize
   phrase:
-    en_US: Protect BDEF1 (Exclude from Vertex Target)
-    ja_JP: BDEF1 を保護（対象頂点から除外）
+    en_US: Normalize
+    ja_JP: 正規化
 - key: nanoem.gui.panel.model.edit.weight-paint.automatic-normalization
   phrase:
     en_US: Automatic Normalization

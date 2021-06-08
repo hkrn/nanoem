@@ -154,6 +154,74 @@ isDraggingBoneAxisAlignedState(const IState *state) NANOEM_DECL_NOEXCEPT
     return result;
 }
 
+class VertexWeightPainterUtils : private NonCopyable {
+public:
+    static const char *selectedVertexType(const nanoem_model_vertex_type_t type) NANOEM_DECL_NOEXCEPT;
+    static const char *selectedVertexWeightPainterType(const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT;
+    static void layoutSelectBoneComboBox(Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter);
+};
+
+const char *
+VertexWeightPainterUtils::selectedVertexType(const nanoem_model_vertex_type_t type) NANOEM_DECL_NOEXCEPT
+{
+    switch (type) {
+    case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
+        return "BDEF1";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_BDEF2: {
+        return "BDEF2";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_BDEF4: {
+        return "BDEF4";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
+        return "SDEF";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
+        return "QDEF";
+    }
+    default:
+        return "(Unknown)";
+    }
+}
+
+const char *
+VertexWeightPainterUtils::selectedVertexWeightPainterType(const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT
+{
+    switch (type) {
+    case model::IVertexWeightPainter::kTypeAirBrush:
+        return translator->translate("nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brush");
+    case model::IVertexWeightPainter::kTypeBaseBrush:
+        return translator->translate("nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brush");
+    default:
+        return "(Unknown)";
+    }
+}
+
+void
+VertexWeightPainterUtils::layoutSelectBoneComboBox(Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    const nanoem_model_bone_t *activeBonePtr = painter->vertexBone(offset);
+    const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+    StringUtils::format(buffer, sizeof(buffer), "##bones[%jd]", offset);
+    if (ImGui::BeginCombo(buffer, activeBone ? activeBone->nameConstString() : "(null)")) {
+        nanoem_rsize_t numBones;
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
+        for (nanoem_rsize_t i = 0; i < numBones; i++) {
+            const nanoem_model_bone_t *bonePtr = bones[i];
+            if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
+                const bool selected = bonePtr == activeBonePtr;
+                StringUtils::format(buffer, sizeof(buffer), "%s##bones[%jd][%jd]", bone->nameConstString(), offset, i);
+                if (ImGui::Selectable(buffer, selected)) {
+                    painter->setVertexBone(bonePtr, offset);
+                }
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
+
 struct WaveFormPanelDrawer {
     typedef nanoem_f32_t (*CallbackHandler)(void *data, int idx);
 
@@ -4575,47 +4643,121 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
     StringUtils::format(
         buffer, sizeof(buffer), "%s##vertex-weight-paint", tr("nanoem.gui.panel.model.edit.weight-paint.title"));
     if (paintMode && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
+        const ITranslator *translator = project->translator();
         ImGui::PushItemWidth(-1);
-        nanoem_rsize_t numBones;
-        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
         model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
-        const nanoem_model_bone_t *activeBonePtr = painter->activeBone();
-        const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
-        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
-        if (ImGui::BeginCombo("##bone", activeBone ? activeBone->nameConstString() : "(null)")) {
-            for (nanoem_rsize_t i = 0; i < numBones; i++) {
-                const nanoem_model_bone_t *bonePtr = bones[i];
-                if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
-                    const bool selected = bonePtr == activeBonePtr;
-                    if (ImGui::Selectable(bone->nameConstString(), selected)) {
-                        painter->setActiveBone(bonePtr);
-                    }
+        model::IVertexWeightPainter::Type painterType = painter->type();
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.painter-type"));
+        if (ImGui::BeginCombo(
+                "##painter-type", VertexWeightPainterUtils::selectedVertexWeightPainterType(painterType, translator))) {
+            for (int i = model::IVertexWeightPainter::kTypeFirstEnum; i < model::IVertexWeightPainter::kTypeMaxEnum;
+                 i++) {
+                const model::IVertexWeightPainter::Type type = static_cast<model::IVertexWeightPainter::Type>(i);
+                if (ImGui::Selectable(
+                        VertexWeightPainterUtils::selectedVertexWeightPainterType(type, translator), type == painterType)) {
+                    painter->setType(type);
                 }
             }
             ImGui::EndCombo();
         }
-        nanoem_f32_t radius = painter->radius(), delta = painter->delta();
-        ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-        if (ImGui::DragFloat(
-                "##radius", &radius, 0.5f, 0.5f, 100.0f, tr("nanoem.gui.panel.model.edit.weight-paint.radius"))) {
-            painter->setRadius(radius);
+        switch (painter->type()) {
+        case model::IVertexWeightPainter::kTypeBaseBrush: {
+            nanoem_model_vertex_type_t vertexType = painter->vertexType();
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.vertex-type"));
+            if (ImGui::BeginCombo("##vertex-type", VertexWeightPainterUtils::selectedVertexType(vertexType))) {
+                for (int i = NANOEM_MODEL_VERTEX_TYPE_FIRST_ENUM; i < NANOEM_MODEL_VERTEX_TYPE_MAX_ENUM; i++) {
+                    const nanoem_model_vertex_type_t type = static_cast<nanoem_model_vertex_type_t>(i);
+                    if (ImGui::Selectable(VertexWeightPainterUtils::selectedVertexType(type), type == vertexType)) {
+                        painter->setVertexType(type);
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
+            switch (vertexType) {
+            case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
+                VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, 0, painter);
+                break;
+            }
+            case NANOEM_MODEL_VERTEX_TYPE_BDEF2:
+            case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
+                for (nanoem_rsize_t i = 0; i < 2; i++) {
+                    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+                    VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, i, painter);
+                    ImGui::PopItemWidth();
+                    ImGui::SameLine();
+                    nanoem_f32_t weight = painter->vertexWeight(i);
+                    StringUtils::format(buffer, sizeof(buffer), "##weights[%jd]", i);
+                    if (ImGui::SliderFloat(buffer, &weight, 0.0f, 1.0f, "Weight: %.2f")) {
+                        painter->setVertexWeight(weight, i);
+                    }
+                }
+                if (ImGui::Button(tr("nanoem.gui.panel.model.edit.weight-paint.normalize"))) {
+                    nanoem_f32_t weight = glm::clamp(painter->vertexWeight(0), 0.0f, 1.0f);
+                    painter->setVertexWeight(weight, 0);
+                    painter->setVertexWeight(1.0f - weight, 1);
+                }
+                break;
+            }
+            case NANOEM_MODEL_VERTEX_TYPE_BDEF4:
+            case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
+                for (nanoem_rsize_t i = 0; i < 4; i++) {
+                    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+                    VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, i, painter);
+                    ImGui::PopItemWidth();
+                    ImGui::SameLine();
+                    nanoem_f32_t weight = painter->vertexWeight(i);
+                    StringUtils::format(buffer, sizeof(buffer), "##weights[%jd]", i);
+                    if (ImGui::SliderFloat(buffer, &weight, 0.0f, 1.0f, "Weight: %.2f")) {
+                        painter->setVertexWeight(weight, i);
+                    }
+                }
+                if (ImGui::Button(tr("nanoem.gui.panel.model.edit.weight-paint.normalize"))) {
+                    nanoem_f32_t sum = 0.0f;
+                    for (nanoem_rsize_t i = 0; i < 4; i++) {
+                        if (painter->vertexBone(i)) {
+                            sum += painter->vertexWeight(i);
+                        }
+                    }
+                    for (nanoem_rsize_t i = 0; i < 4; i++) {
+                        nanoem_f32_t weight = 0;
+                        if (painter->vertexBone(i)) {
+                            weight = painter->vertexWeight(i) / sum;
+                        }
+                        painter->setVertexWeight(weight, i);
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            break;
         }
-        ImGui::SameLine();
-        if (ImGui::DragFloat(
-                "##delta", &delta, 0.005f, -1.0f, 1.0f, tr("nanoem.gui.panel.model.edit.weight-paint.delta"))) {
-            painter->setDelta(delta);
+        case model::IVertexWeightPainter::kTypeAirBrush: {
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
+            VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, 0, painter);
+            nanoem_f32_t radius = painter->radius(), delta = painter->delta();
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+            if (ImGui::DragFloat(
+                    "##radius", &radius, 0.5f, 0.5f, 100.0f, tr("nanoem.gui.panel.model.edit.weight-paint.radius"))) {
+                painter->setRadius(radius);
+            }
+            ImGui::SameLine();
+            if (ImGui::DragFloat(
+                    "##delta", &delta, 0.005f, -1.0f, 1.0f, tr("nanoem.gui.panel.model.edit.weight-paint.delta"))) {
+                painter->setDelta(delta);
+            }
+            bool automaticNormalization = painter->isAutomaticNormalizationEnabled();
+            StringUtils::format(buffer, sizeof(buffer), "%s##automatic-normalization",
+                tr("nanoem.gui.panel.model.edit.weight-paint.automatic-normalization"));
+            if (ImGui::Checkbox(buffer, &automaticNormalization)) {
+                painter->setAutomaticNormalizationEnabled(automaticNormalization);
+            }
+            break;
         }
-        bool protectBDEF1 = painter->isProtectBDEF1Enabled();
-        StringUtils::format(
-            buffer, sizeof(buffer), "%s##protect-bdef1", tr("nanoem.gui.panel.model.edit.weight-paint.protect-bdef1"));
-        if (ImGui::Checkbox(buffer, &protectBDEF1)) {
-            painter->setProtectBDEF1Enabled(protectBDEF1);
-        }
-        bool automaticNormalization = painter->isAutomaticNormalizationEnabled();
-        StringUtils::format(buffer, sizeof(buffer), "%s##automatic-normalization",
-            tr("nanoem.gui.panel.model.edit.weight-paint.automatic-normalization"));
-        if (ImGui::Checkbox(buffer, &automaticNormalization)) {
-            painter->setAutomaticNormalizationEnabled(automaticNormalization);
+        default:
+            break;
         }
         ImGui::PopItemWidth();
         ImGui::Spacing();

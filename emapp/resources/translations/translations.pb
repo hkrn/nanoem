@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -153,11 +153,15 @@ Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.paramete
 2nanoem.gui.panel.model.edit.gizmo.coordinate.title座標種別F
 3nanoem.gui.panel.model.edit.gizmo.coordinate.globalグローバルE
 2nanoem.gui.panel.model.edit.gizmo.coordinate.localグローバルP
-.nanoem.gui.panel.model.edit.weight-paint.title頂点ウェイトペイント:
+.nanoem.gui.panel.model.edit.weight-paint.title頂点ウェイトペイントK
+5nanoem.gui.panel.model.edit.weight-paint.painter-typeペイント種別V
+@nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brushベースブラシR
+?nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brushエアブラシD
+4nanoem.gui.panel.model.edit.weight-paint.vertex-type頂点種別:
 -nanoem.gui.panel.model.edit.weight-paint.bone	ボーン?
 /nanoem.gui.panel.model.edit.weight-paint.radius半径: %.3f>
-.nanoem.gui.panel.model.edit.weight-paint.delta差分: %.3fg
-6nanoem.gui.panel.model.edit.weight-paint.protect-bdef1-BDEF1 を保護（対象頂点から除外）S
+.nanoem.gui.panel.model.edit.weight-paint.delta差分: %.3f?
+2nanoem.gui.panel.model.edit.weight-paint.normalize	正規化S
 @nanoem.gui.panel.model.edit.weight-paint.automatic-normalization自動正規化
 nanoem.gui.redoやり直し)
 nanoem.gui.timelineタイムライン
@@ -1168,7 +1172,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1326,11 +1330,16 @@ Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.paramete
 2nanoem.gui.panel.model.edit.gizmo.coordinate.titleCoordinate Type=
 3nanoem.gui.panel.model.edit.gizmo.coordinate.globalGlobal<
 2nanoem.gui.panel.model.edit.gizmo.coordinate.localGlobalE
-.nanoem.gui.panel.model.edit.weight-paint.titleVertex Weight Paint5
+.nanoem.gui.panel.model.edit.weight-paint.titleVertex Weight PaintE
+5nanoem.gui.panel.model.edit.weight-paint.painter-typePainter TypeN
+@nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brush
+Base BrushL
+?nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brush	Air BrushC
+4nanoem.gui.panel.model.edit.weight-paint.vertex-typeVertex Type5
 -nanoem.gui.panel.model.edit.weight-paint.boneBone?
 /nanoem.gui.panel.model.edit.weight-paint.radiusRadius: %.3f=
-.nanoem.gui.panel.model.edit.weight-paint.deltaDelta: %.3fd
-6nanoem.gui.panel.model.edit.weight-paint.protect-bdef1*Protect BDEF1 (Exclude from Vertex Target)[
+.nanoem.gui.panel.model.edit.weight-paint.deltaDelta: %.3f?
+2nanoem.gui.panel.model.edit.weight-paint.normalize	Normalize[
 @nanoem.gui.panel.model.edit.weight-paint.automatic-normalizationAutomatic Normalization
 nanoem.gui.redoRedo
 nanoem.gui.timelineTimeline

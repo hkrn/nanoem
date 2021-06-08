@@ -28,32 +28,38 @@ public:
     void paint(const Vector2SI32 &logicalScaleCursorPosition) NANOEM_DECL_OVERRIDE;
     void end() NANOEM_DECL_OVERRIDE;
 
-    const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
-    void setActiveBone(const nanoem_model_bone_t *value) NANOEM_DECL_OVERRIDE;
-    nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT NANOEM_DECL_OVERRIDE;
+    Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setType(Type value);
+    nanoem_model_vertex_type_t vertexType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setVertexType(nanoem_model_vertex_type_t value) NANOEM_DECL_OVERRIDE;
+    const nanoem_model_bone_t *vertexBone(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setVertexBone(const nanoem_model_bone_t *value, nanoem_rsize_t index) NANOEM_DECL_OVERRIDE;
+    nanoem_f32_t vertexWeight(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setVertexWeight(const nanoem_f32_t value, nanoem_rsize_t index) NANOEM_DECL_OVERRIDE;
+    nanoem_f32_t radius() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setRadius(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
     nanoem_f32_t delta() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setDelta(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
-    bool isProtectBDEF1Enabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setProtectBDEF1Enabled(bool value) NANOEM_DECL_OVERRIDE;
     bool isAutomaticNormalizationEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setAutomaticNormalizationEnabled(bool value) NANOEM_DECL_OVERRIDE;
 
 private:
-    void paintVertex(
-        const model::IVertexWeightPainter *brush, nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status);
-    void setVertexBoneWeight(const model::IVertexWeightPainter *brush, nanoem_model_vertex_t *vertexPtr,
-        nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
-    void normalizeVertexBoneWeight(
+    static void normalizeVertexBoneWeight(
         nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
+    void paintVertex(nanoem_model_vertex_t *vertexPtr, nanoem_status_t *status);
+    void paintVertexBaseBrush(nanoem_mutable_model_vertex_t *mutableVertexPtr);
+    void paintVertexAirBrush(nanoem_mutable_model_vertex_t *mutableVertexPtr);
+    void setVertexBoneWeight(nanoem_rsize_t max, nanoem_mutable_model_vertex_t *mutableVertexPtr);
     void updateVertex(nanoem_model_vertex_t *vertexPtr);
 
-    const nanoem_model_bone_t *m_activeBonePtr;
     Model *m_model;
     command::PaintVertexWeightCommand::BoneMappingStateMap m_mappings;
+    const nanoem_model_bone_t *m_bones[4];
+    nanoem_f32_t m_weights[4];
+    nanoem_model_vertex_type_t m_vertexType;
+    Type m_type;
     nanoem_f32_t m_radius;
     nanoem_f32_t m_delta;
-    bool m_protectBDEF1Enabled;
     bool m_automaticNormalizationEnabled;
 };
 
