@@ -703,7 +703,8 @@ EnableModelEditingCommand::destroy(Project *project)
 }
 
 struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
-    static void saveLastModel(const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Error &error);
+    static void saveLastModel(
+        const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Error &error);
     static void saveCurrentModel(const Model *activeModel, Error &error);
 
     DisableModelEditingCommand(ModelParameterDialog::SavedState *state);
