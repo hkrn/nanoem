@@ -4885,11 +4885,11 @@ ModelParameterDialog::layoutBatchRigidBodyChangePane()
     if (ImGui::SliderFloat("##restitution", &m_batchRigidBodyParameter.m_restitution, 0.0f, 1.0f, buffer)) {
     }
     addSeparator();
-    ImGui::TextUnformatted("Collision Group");
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.collision.group"));
     if (ImGui::DragInt("##collision.group", &m_batchRigidBodyParameter.m_collisionGroup, 0.05f, 0, 15)) {
     }
     nanoem_u32_t flags = ~m_batchRigidBodyParameter.m_collisionGroup;
-    ImGui::TextUnformatted("Collision Mask");
+    ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.collision.mask"));
     ImGui::Columns(8, nullptr, false);
     for (int i = 0; i < 16; i++) {
         char buffer[16];
@@ -5058,7 +5058,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     }
     addSeparator();
     {
-        ImGui::TextUnformatted("Collision Group");
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.collision.group"));
         int value = nanoemModelRigidBodyGetCollisionGroupId(rigidBodyPtr);
         if (ImGui::DragInt("##collision.group", &value, 0.05f, 0, 15)) {
             command::ScopedMutableRigidBody scoped(rigidBodyPtr);
@@ -5067,7 +5067,7 @@ ModelParameterDialog::layoutRigidBodyPropertyPane(nanoem_model_rigid_body_t *rig
     }
     {
         nanoem_u32_t flags = ~nanoemModelRigidBodyGetCollisionMask(rigidBodyPtr);
-        ImGui::TextUnformatted("Collision Mask");
+        ImGui::TextUnformatted(tr("nanoem.gui.model.edit.rigid-body.collision.mask"));
         ImGui::Columns(8, nullptr, false);
         for (int i = 0; i < 16; i++) {
             char buffer[16];

@@ -1939,6 +1939,14 @@
   phrase:
     en_US: 'Restitution'
     ja_JP: '反発係数'
+- key: nanoem.gui.model.edit.rigid-body.collision.group
+  phrase:
+    en_US: 'Collision Group'
+    ja_JP: '衝突グループ'
+- key: nanoem.gui.model.edit.rigid-body.collision.mask
+  phrase:
+    en_US: 'Collision Mask'
+    ja_JP: '衝突マスク'
 - key: nanoem.gui.model.edit.rigid-body.object-type.dynamic
   phrase:
     en_US: 'Feedback from Simulation'

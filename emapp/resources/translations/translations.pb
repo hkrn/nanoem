@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -488,7 +488,9 @@ $nanoem.gui.model.edit.morph.flip.add追加1
 /nanoem.gui.model.edit.rigid-body.linear-damping移動減衰@
 0nanoem.gui.model.edit.rigid-body.angular-damping回転減衰9
 )nanoem.gui.model.edit.rigid-body.friction摩擦係数<
-,nanoem.gui.model.edit.rigid-body.restitution反発係数S
+,nanoem.gui.model.edit.rigid-body.restitution反発係数F
+0nanoem.gui.model.edit.rigid-body.collision.group衝突グループB
+/nanoem.gui.model.edit.rigid-body.collision.mask衝突マスクS
 4nanoem.gui.model.edit.rigid-body.object-type.dynamic演算結果を全て反映L
 6nanoem.gui.model.edit.rigid-body.object-type.kinematic回転のみ反映F
 3nanoem.gui.model.edit.rigid-body.object-type.staticボーン連動>
@@ -1172,7 +1174,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1680,7 +1682,9 @@ Shape Size-
 /nanoem.gui.model.edit.rigid-body.linear-dampingLinear DampingC
 0nanoem.gui.model.edit.rigid-body.angular-dampingAngular Damping5
 )nanoem.gui.model.edit.rigid-body.frictionFriction;
-,nanoem.gui.model.edit.rigid-body.restitutionRestitutionP
+,nanoem.gui.model.edit.rigid-body.restitutionRestitutionC
+0nanoem.gui.model.edit.rigid-body.collision.groupCollision GroupA
+/nanoem.gui.model.edit.rigid-body.collision.maskCollision MaskP
 4nanoem.gui.model.edit.rigid-body.object-type.dynamicFeedback from Simulation_
 6nanoem.gui.model.edit.rigid-body.object-type.kinematic%Feedback from Simulation without moveI
 3nanoem.gui.model.edit.rigid-body.object-type.staticFeedback from Bone?
