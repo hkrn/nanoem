@@ -1146,9 +1146,7 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
                 lastMotionPtr = project->addModelMotion(motion, model);
                 project->restart();
             }
-            else {
-                project->destroyMotion(lastMotionPtr);
-            }
+            project->destroyMotion(lastMotionPtr);
         }
         else if (model::BindPose::isLoadableExtension(fileURI)) {
             FileReaderScope scope(&m_translator);

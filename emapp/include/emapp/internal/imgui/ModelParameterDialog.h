@@ -276,7 +276,6 @@ private:
     bool m_showAllBones;
     bool m_showAllRigidBodies;
     bool m_showAllJoints;
-    bool m_showAllSoftBodies;
     bool m_showActiveBone;
     bool m_showFixedAxis;
     bool m_showLocalAxes;

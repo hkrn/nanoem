@@ -703,9 +703,8 @@ EnableModelEditingCommand::destroy(Project *project)
 }
 
 struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
-    static void saveLastModel(const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state,
-        Project *project, Error &error);
-    static void saveCurrentModel(const Model *activeModel, Project *project, Error &error);
+    static void saveLastModel(const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Error &error);
+    static void saveCurrentModel(const Model *activeModel, Error &error);
 
     DisableModelEditingCommand(ModelParameterDialog::SavedState *state);
     ~DisableModelEditingCommand() NANOEM_DECL_NOEXCEPT;
@@ -719,7 +718,7 @@ struct DisableModelEditingCommand : ImGuiWindow::ILazyExecutionCommand {
 
 void
 DisableModelEditingCommand::saveLastModel(
-    const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Project *project, Error &error)
+    const Model *activeModel, const ModelParameterDialog::SavedState::ModelState &state, Error &error)
 {
     String filePath(activeModel->fileURI().absolutePathByDeletingPathExtension());
     filePath.append("-");
@@ -743,7 +742,7 @@ DisableModelEditingCommand::saveLastModel(
 }
 
 void
-DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Project *project, Error &error)
+DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Error &error)
 {
 #if !defined(NANOEM_ENABLE_DEBUG_LABEL)
     FileWriterScope scope;
@@ -783,7 +782,7 @@ DisableModelEditingCommand::execute(Project *project)
         Model *model = it->first;
         model->setActiveBone(state.m_activeBone);
         model->setActiveMorph(state.m_activeMorph);
-        saveLastModel(model, state, project, error);
+        saveLastModel(model, state, error);
         if (Motion *motion = project->resolveMotion(model)) {
             motion->load(state.m_motionData, 0, error);
         }
@@ -800,7 +799,7 @@ DisableModelEditingCommand::execute(Project *project)
     project->destroyState(m_state->m_state);
     project->setEditingMode(m_state->m_lastEditingMode);
     project->setModelEditingEnabled(false);
-    saveCurrentModel(activeModel, project, error);
+    saveCurrentModel(activeModel, error);
     error.notify(project->eventPublisher());
 }
 
@@ -915,7 +914,6 @@ ModelParameterDialog::ModelParameterDialog(
     , m_showAllBones(model->isShowAllBones())
     , m_showAllRigidBodies(model->isShowAllRigidBodyShapes())
     , m_showAllJoints(model->isShowAllJointShapes())
-    , m_showAllSoftBodies(false)
     , m_showActiveBone(false)
     , m_showFixedAxis(false)
     , m_showLocalAxes(false)
@@ -1073,9 +1071,9 @@ ModelParameterDialog::destroy(Project *project)
              it != end; ++it) {
             const ModelParameterDialog::SavedState::ModelState &state = it->second;
             Model *model = it->first;
-            DisableModelEditingCommand::saveLastModel(model, state, project, error);
+            DisableModelEditingCommand::saveLastModel(model, state, error);
         }
-        DisableModelEditingCommand::saveCurrentModel(m_activeModel, project, error);
+        DisableModelEditingCommand::saveCurrentModel(m_activeModel, error);
         project->destroyState(m_savedState->m_state);
         error.notify(project->eventPublisher());
     }
