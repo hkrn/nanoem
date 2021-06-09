@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -991,8 +991,8 @@ $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモ�
 'nanoem.project.diagnostics.message.mainrプロジェクトの読み込みは成功しましたが、一部のファイルが読み込めませんでした�
 ,nanoem.project.diagnostics.message.not-foundQ次のファイルが見つかりません。移動した可能性があります�
 2nanoem.project.diagnostics.message.digest-mismatchQ次のファイルは保存時から変更があったため読み込めません\
-%nanoem.motion.model.diagnostics.title3読み込まれたモデルモーションの警告�
-'nanoem.motion.model.diagnostics.message�モデルモーションの読み込みに成功しましたが、以下のボーンあるいはモーフが不足しているため正常に動作しない可能性がありますV
+%nanoem.motion.model.diagnostics.title3読み込まれたモデルモーションの警告�
+'nanoem.motion.model.diagnostics.message�モデルモーションの読み込みに成功しましたが、「%s」のために作られている関係で以下のボーンあるいはモーフが不足しているため正常に動作しない可能性がありますV
 1nanoem.motion.model.diagnostics.all-missing-bones!不足しているボーン一覧W
 2nanoem.motion.model.diagnostics.all-missing-morphs!不足しているモーフ一覧>
 #nanoem.model.validator.result.title「%s」の検証結果\
@@ -1174,7 +1174,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -2187,8 +2187,8 @@ $nanoem.error.motion.not-model.reason,The loading motion is not intended for mo
 'nanoem.project.diagnostics.message.mainALoading the project is succeeded but some files cannot be loaded.^
 ,nanoem.project.diagnostics.message.not-found.Below files cannot be loaded due to not found.l
 2nanoem.project.diagnostics.message.digest-mismatch6Below files cannot be loaded due to file modification.D
-%nanoem.motion.model.diagnostics.titleLoaded Model Motion Warning�
-'nanoem.motion.model.diagnostics.messagejLoading the model motion is succeeded, however below bones/morphs are missing so may not work as properly.F
+%nanoem.motion.model.diagnostics.titleLoaded Model Motion Warning�
+'nanoem.motion.model.diagnostics.messageLoading the model motion is succeeded, however below bones/morphs are missing due to made for "%s" so may not work as properly.F
 1nanoem.motion.model.diagnostics.all-missing-bonesAll Missing BonesH
 2nanoem.motion.model.diagnostics.all-missing-morphsAll Missing Morphs>
 #nanoem.model.validator.result.titleValidation result of %sD

@@ -4186,8 +4186,8 @@
     ja_JP: '読み込まれたモデルモーションの警告'
 - key: nanoem.motion.model.diagnostics.message
   phrase:
-    en_US: 'Loading the model motion is succeeded, however below bones/morphs are missing so may not work as properly.'
-    ja_JP: 'モデルモーションの読み込みに成功しましたが、以下のボーンあるいはモーフが不足しているため正常に動作しない可能性があります'
+    en_US: 'Loading the model motion is succeeded, however below bones/morphs are missing due to made for "%s" so may not work as properly.'
+    ja_JP: 'モデルモーションの読み込みに成功しましたが、「%s」のために作られており以下のボーンあるいはモーフが不足しているため正常に動作しない可能性があります'
 - key: nanoem.motion.model.diagnostics.all-missing-bones
   phrase:
     en_US: 'All Missing Bones'

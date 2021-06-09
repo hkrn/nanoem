@@ -1120,7 +1120,11 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
             if (succeeded) {
                 StringSet bones, morphs;
                 if (!motion->testAllMissingModelObjects(model, bones, morphs)) {
-                    String message(translator()->translate("nanoem.motion.model.diagnostics.message"));
+                    String message, name;
+                    StringUtils::getUtf8String(
+                        nanoemMotionGetTargetModelName(motion->data()), project->unicodeStringFactory(), name);
+                    StringUtils::format(
+                        message, translator()->translate("nanoem.motion.model.diagnostics.message"), name.c_str());
                     message.append("\n");
                     if (!bones.empty()) {
                         StringUtils::format(message, "\n%s\n",
