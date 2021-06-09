@@ -56,10 +56,13 @@ VertexWeightPainter::paint(const Vector2SI32 &logicalScaleCursorPosition)
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         nanoem_model_vertex_t *vertexPtr = vertices[i];
-        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
-        const Vector2 cursor(camera->toDeviceScreenCoordinateInWindow(origin));
-        if (glm::distance(deviceScaleCursorPosition, cursor) < radius()) {
-            paintVertex(vertexPtr, &status);
+        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        if (vertex && !vertex->isEditingMasked()) {
+            const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+            const Vector2 cursor(camera->toDeviceScreenCoordinateInWindow(origin));
+            if (glm::distance(deviceScaleCursorPosition, cursor) < radius()) {
+                paintVertex(vertexPtr, &status);
+            }
         }
     }
 }
@@ -72,7 +75,7 @@ VertexWeightPainter::end()
          it != end; ++it) {
         const nanoem_model_vertex_t *vertexPtr = it->first;
         command::PaintVertexWeightCommand::BoneMappingState &origin = it->second.first;
-        for (nanoem_rsize_t i = 0; i < 4; i++) {
+        for (nanoem_rsize_t i = 0; i < BX_COUNTOF(m_bones); i++) {
             origin.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
             origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
         }
@@ -194,7 +197,7 @@ VertexWeightPainter::paintVertex(nanoem_model_vertex_t *vertexPtr, nanoem_status
         command::PaintVertexWeightCommand::BoneMappingStatePair states;
         Inline::clearZeroMemory(states.first);
         command::PaintVertexWeightCommand::BoneMappingState &origin = states.second;
-        for (nanoem_rsize_t i = 0; i < 4; i++) {
+        for (nanoem_rsize_t i = 0; i < BX_COUNTOF(m_bones); i++) {
             origin.m_bones[i] = nanoemModelVertexGetBoneObject(vertexPtr, i);
             origin.m_weights[i] = nanoemModelVertexGetBoneWeight(vertexPtr, i);
         }
@@ -218,23 +221,34 @@ VertexWeightPainter::paintVertex(nanoem_model_vertex_t *vertexPtr, nanoem_status
 void
 VertexWeightPainter::paintVertexBaseBrush(nanoem_mutable_model_vertex_t *mutableVertexPtr)
 {
-    nanoemMutableModelVertexSetType(mutableVertexPtr, m_type);
+    nanoemMutableModelVertexSetType(mutableVertexPtr, m_vertexType);
     switch (m_vertexType) {
     case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
         nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, vertexBone(0), 0);
+        nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, 1.0f, 0);
+        for (nanoem_rsize_t i = 1; i < BX_COUNTOF(m_bones); i++) {
+            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, nullptr, i);
+            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, 0.0f, i);
+        }
         break;
     }
     case NANOEM_MODEL_VERTEX_TYPE_BDEF2:
     case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
         for (nanoem_rsize_t i = 0; i < 2; i++) {
-            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, vertexBone(i), vertexWeight(i));
+            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, vertexBone(i), i);
+            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, vertexWeight(i), i);
+        }
+        for (nanoem_rsize_t i = 2; i < BX_COUNTOF(m_bones); i++) {
+            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, nullptr, i);
+            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, 0.0f, i);
         }
         break;
     }
     case NANOEM_MODEL_VERTEX_TYPE_BDEF4:
     case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
-        for (nanoem_rsize_t i = 0; i < 4; i++) {
-            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, vertexBone(i), vertexWeight(i));
+        for (nanoem_rsize_t i = 0; i < BX_COUNTOF(m_bones); i++) {
+            nanoemMutableModelVertexSetBoneObject(mutableVertexPtr, vertexBone(i), i);
+            nanoemMutableModelVertexSetBoneWeight(mutableVertexPtr, vertexWeight(i), i);
         }
         break;
     }

@@ -157,8 +157,10 @@ isDraggingBoneAxisAlignedState(const IState *state) NANOEM_DECL_NOEXCEPT
 class VertexWeightPainterUtils : private NonCopyable {
 public:
     static const char *selectedVertexType(const nanoem_model_vertex_type_t type) NANOEM_DECL_NOEXCEPT;
-    static const char *selectedVertexWeightPainterType(const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT;
-    static void layoutSelectBoneComboBox(Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter);
+    static const char *selectedVertexWeightPainterType(
+        const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT;
+    static void layoutSelectBoneComboBox(
+        Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter);
 };
 
 const char *
@@ -186,7 +188,8 @@ VertexWeightPainterUtils::selectedVertexType(const nanoem_model_vertex_type_t ty
 }
 
 const char *
-VertexWeightPainterUtils::selectedVertexWeightPainterType(const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT
+VertexWeightPainterUtils::selectedVertexWeightPainterType(
+    const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT
 {
     switch (type) {
     case model::IVertexWeightPainter::kTypeAirBrush:
@@ -199,7 +202,8 @@ VertexWeightPainterUtils::selectedVertexWeightPainterType(const model::IVertexWe
 }
 
 void
-VertexWeightPainterUtils::layoutSelectBoneComboBox(Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter)
+VertexWeightPainterUtils::layoutSelectBoneComboBox(
+    Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter)
 {
     char buffer[Inline::kNameStackBufferSize];
     const nanoem_model_bone_t *activeBonePtr = painter->vertexBone(offset);
@@ -756,7 +760,6 @@ DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel,
     const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
     const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
                        thickness = project->logicalScaleCircleRadius();
-    const nanoem_model_bone_t *activeBone = activeModel->activeBone();
     primitive->strokeLine(center, Vector2(center.x + length, center.y),
         Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
     primitive->strokeLine(center, Vector2(center.x, center.y - length),
@@ -4653,8 +4656,8 @@ ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
             for (int i = model::IVertexWeightPainter::kTypeFirstEnum; i < model::IVertexWeightPainter::kTypeMaxEnum;
                  i++) {
                 const model::IVertexWeightPainter::Type type = static_cast<model::IVertexWeightPainter::Type>(i);
-                if (ImGui::Selectable(
-                        VertexWeightPainterUtils::selectedVertexWeightPainterType(type, translator), type == painterType)) {
+                if (ImGui::Selectable(VertexWeightPainterUtils::selectedVertexWeightPainterType(type, translator),
+                        type == painterType)) {
                     painter->setType(type);
                 }
             }

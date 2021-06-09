@@ -29,7 +29,7 @@ public:
     void end() NANOEM_DECL_OVERRIDE;
 
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setType(Type value);
+    void setType(Type value) NANOEM_DECL_OVERRIDE;
     nanoem_model_vertex_type_t vertexType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setVertexType(nanoem_model_vertex_type_t value) NANOEM_DECL_OVERRIDE;
     const nanoem_model_bone_t *vertexBone(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
