@@ -143,26 +143,28 @@ public:
     IModalDialog *onAccepted(Project *project) NANOEM_DECL_OVERRIDE;
 
 private:
-    String m_message;
     ModalDialogFactory::AddingModelDialogCallback m_callback;
     String m_title;
+    MutableString m_text;
     Model *m_model;
 };
 
 LoadingModelConfirmDialog::LoadingModelConfirmDialog(
     BaseApplicationService *applicationPtr, Model *model, ModalDialogFactory::AddingModelDialogCallback callback)
     : NoActionDialog(applicationPtr)
-    , m_message(model->comment())
     , m_callback(callback)
     , m_model(model)
 {
     StringUtils::format(m_title, applicationPtr->translator()->translate("nanoem.window.title.confirm.model"),
         model->canonicalNameConstString());
-    if (m_message.empty()) {
+    String comment(model->comment());
+    if (comment.empty()) {
         nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
         StringUtils::getUtf8String(
-            nanoemModelGetComment(model->data(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_message);
+            nanoemModelGetComment(model->data(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, comment);
     }
+    m_text.assign(comment.c_str(), comment.c_str() + comment.size());
+    m_text.push_back(0);
 }
 
 LoadingModelConfirmDialog::~LoadingModelConfirmDialog() NANOEM_DECL_NOEXCEPT
@@ -183,11 +185,9 @@ LoadingModelConfirmDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 LoadingModelConfirmDialog::draw(const Project *)
 {
-    MutableString s(m_message.c_str(), m_message.c_str() + m_message.size());
-    s.push_back(0);
     ImVec2 size(ImGui::GetContentRegionAvail());
     size.y -= ImGui::GetFrameHeightWithSpacing();
-    ImGui::InputTextMultiline("##text", s.data(), s.size(), size, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextMultiline("##text", m_text.data(), m_text.size(), size, ImGuiInputTextFlags_ReadOnly);
 }
 
 nanoem_u32_t
@@ -399,15 +399,16 @@ public:
 
 private:
     const String m_title;
-    const String m_message;
+    MutableString m_text;
 };
 
 DisplayPlainTextDialog::DisplayPlainTextDialog(
     BaseApplicationService *applicationPtr, const String &title, const String &message)
     : NoActionDialog(applicationPtr)
     , m_title(title)
-    , m_message(message)
 {
+    m_text.assign(message.c_str(), message.c_str() + message.size());
+    m_text.push_back(0);
 }
 
 DisplayPlainTextDialog::~DisplayPlainTextDialog() NANOEM_DECL_NOEXCEPT
@@ -423,11 +424,9 @@ DisplayPlainTextDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 DisplayPlainTextDialog::draw(const Project *)
 {
-    MutableString s(m_message.c_str(), m_message.c_str() + m_message.size());
-    s.push_back(0);
     ImVec2 size(ImGui::GetContentRegionAvail());
     size.y -= ImGui::GetFrameHeightWithSpacing();
-    ImGui::InputTextMultiline("##text", s.data(), s.size(), size, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextMultiline("##text", m_text.data(), m_text.size(), size, ImGuiInputTextFlags_ReadOnly);
 }
 
 nanoem_u32_t
@@ -822,12 +821,21 @@ public:
 
 private:
     String m_title;
+    MutableString m_text;
 };
 
 AboutDialog::AboutDialog(BaseApplicationService *applicationPtr)
     : NoActionDialog(applicationPtr)
 {
     StringUtils::format(m_title, "About nanoem %s", nanoemGetVersionString());
+    static const char kPrefixText[] = "Copyright (c) 2015-2021 hkrn All rights reserved\n\n";
+    m_text.assign(kPrefixText, kPrefixText + sizeof(kPrefixText));
+    const nanoem_u8_t *data = nullptr;
+    size_t length = 0;
+    resources::getCredits(data, length);
+    m_text.insert(
+        m_text.end() - 1, reinterpret_cast<const char *>(data), reinterpret_cast<const char *>(data + length));
+    m_text.push_back(0);
 }
 
 AboutDialog::~AboutDialog() NANOEM_DECL_NOEXCEPT
@@ -843,17 +851,9 @@ AboutDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 AboutDialog::draw(const Project *)
 {
-    static const char kPrefixText[] = "Copyright (c) 2015-2021 hkrn All rights reserved\n\n";
-    MutableString text;
-    text.insert(text.end(), kPrefixText, kPrefixText + sizeof(kPrefixText));
-    const nanoem_u8_t *data = nullptr;
-    size_t length = 0;
-    resources::getCredits(data, length);
-    text.insert(text.end() - 1, reinterpret_cast<const char *>(data), reinterpret_cast<const char *>(data + length));
-    text.push_back(0);
     ImVec2 size(ImGui::GetContentRegionAvail());
     size.y -= ImGui::GetFrameHeightWithSpacing();
-    ImGui::InputTextMultiline("##text", text.data(), text.size(), size, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextMultiline("##text", m_text.data(), m_text.size(), size, ImGuiInputTextFlags_ReadOnly);
 }
 
 nanoem_u32_t
