@@ -862,7 +862,7 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         sg_range &content = desc.data.subimage[0][0];
         content.ptr = data;
         content.size = nanoem_rsize_t(4) * width * height;
-        textureHandle = drawable->uploadImage(container.m_name, desc);
+        imageView = drawable->uploadImage(container.m_name, desc);
         stbi_image_free(data);
     }
     else if (bimg::ImageContainer *decodedImageContainer = bimg::imageParse(g_bimg_allocator, container.m_dataPtr,
