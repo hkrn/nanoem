@@ -126,13 +126,13 @@ run(const bx::CommandLine &command)
         ThreadedApplicationService service(root);
         internal::StubEventPublisher publisher;
         service.setEventPublisher(&publisher);
-        service.initialize(1.0f);
+        service.initialize(1.0f, 1.0f);
         Project *project = service.createProject(glm::vec2(1), SG_PIXELFORMAT_RGBA8, 1.0f, 1.0f, "");
         project->setFileURI(fileURI);
         internal::project::PMM pmm(project);
         ByteArray bytes;
         FileUtils::read(scope, bytes, error);
-        pmm.load(bytes.data(), bytes.size(), error);
+        pmm.load(bytes.data(), bytes.size(), error, nullptr);
         {
             FileReaderScope scope(service.translator());
             const URI &fileURI2 = URI::createFromFilePath(command.findOption('p', "pose", "pose.vpd"));
@@ -140,7 +140,8 @@ run(const bx::CommandLine &command)
                 model::BindPose pose;
                 ByteArray bytes;
                 FileUtils::read(scope, bytes, error);
-                pose.load(project->allModels()[0], bytes, error);
+                Model *model = project->allModels()->data()[0];
+                model->loadPose(bytes, error);
             }
         }
         service.destroyProject(project);

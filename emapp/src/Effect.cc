@@ -153,6 +153,7 @@ public:
         ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices);
     static void fillShaderImageDescriptions(const char *prefix, sg_shader_image_desc *desc, StringList &names);
     static void parseSubsetString(char *ptr, int numMaterials, Effect::MaterialIndexSet &output);
+    static bool hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT;
     static Vector3 angle(const Accessory *accessory);
 
     static inline void
@@ -949,6 +950,12 @@ PrivateEffectUtils::parseSubsetString(char *ptr, int numMaterials, Effect::Mater
             output.insert(materialIndex);
         }
     }
+}
+
+bool
+PrivateEffectUtils::hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT
+{
+    return (desc.vs.source && desc.fs.source) || (desc.vs.bytecode.size > 0 && desc.fs.bytecode.size > 0);
 }
 
 Vector3
@@ -1781,7 +1788,11 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         SG_POP_GROUP();
                         break;
                     }
-                    if (!error.hasReason()) {
+                    if (!PrivateEffectUtils::hasShaderSource(shaderDescription)) {
+                        m_logger->log("Creating the pass Effects/%s/%s/%s failed due to empty source",
+                            nameConstString(), techniquePtr->name, passPtr->name);
+                    }
+                    else if (!error.hasReason()) {
                         shaderDescription.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };
                         shaderDescription.attrs[1] = sg_shader_attr_desc { "a_normal", "NORMAL", 0 };
                         shaderDescription.attrs[2] = sg_shader_attr_desc { "a_texcoord0", "TEXCOORD", 0 };
@@ -1830,11 +1841,13 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                             techniquePtr->name, passPtr->name, error.reasonConstString());
                     }
                 }
-                effect::Technique *technique =
-                    nanoem_new(Technique(this, techniquePtr->name, techniqueAnnotations, passes));
-                m_hasScriptExternal |= technique->hasScriptExternal();
-                m_allTechniques.push_back(technique);
-                m_techniqueByPassTypes[technique->passType()].push_back(technique);
+                if (!passes.empty()) {
+                    effect::Technique *technique =
+                        nanoem_new(Technique(this, techniquePtr->name, techniqueAnnotations, passes));
+                    m_hasScriptExternal |= technique->hasScriptExternal();
+                    m_allTechniques.push_back(technique);
+                    m_techniqueByPassTypes[technique->passType()].push_back(technique);
+                }
             }
             m_needsBehaviorCompatibility = needsBehaviorCompatibility;
         }
@@ -2167,13 +2180,27 @@ Effect::createAllDrawableRenderTargetColorImages(const IDrawable *drawable)
          it != end; ++it) {
         const String &name = it->first;
         const RenderTargetColorImageContainer *sourceContainer = it->second;
-        if (!sourceContainer->isSharedTexture() && destContainers.find(name) == destContainers.end()) {
+        NamedRenderTargetColorImageContainerMap::const_iterator it2 = destContainers.find(name);
+        RenderTargetColorImageContainer *destContainer = nullptr;
+        if (it2 != destContainers.end()) {
+            if (sourceContainer->isSharedTexture()) {
+                it2->second->inherit(sourceContainer);
+            }
+        }
+        else {
             String label;
-            StringUtils::format(label, "%s/%s", it->first.c_str(), drawable->nameConstString());
-            RenderTargetColorImageContainer *destContainer = nanoem_new(RenderTargetColorImageContainer(label));
-            destContainer->setColorImageDescription(sourceContainer->colorImageDescription());
-            destContainer->setScaleFactor(sourceContainer->scaleFactor());
-            destContainer->create(this);
+            StringUtils::format(label, "%s/%s", name.c_str(), drawable->nameConstString());
+            destContainer = nanoem_new(RenderTargetColorImageContainer(label));
+            if (sourceContainer->isSharedTexture()) {
+                destContainer->share(sourceContainer);
+            }
+            else {
+                destContainer->setColorImageDescription(sourceContainer->colorImageDescription());
+                destContainer->setScaleFactor(sourceContainer->scaleFactor());
+                destContainer->create(this);
+            }
+        }
+        if (destContainer) {
             destContainers.insert(tinystl::make_pair(name, destContainer));
         }
     }
@@ -4044,7 +4071,8 @@ Effect::handleRenderColorTargetSemantic(
         else {
             Vector2 scaleFactor(0);
             const AnnotationMap &annotations = parameter.m_annotations;
-            const Vector4 size(self->determineImageSize(annotations, self->viewportImageSize(Vector2(1)), scaleFactor));
+            const Vector4 size(
+                self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
             const sg_pixel_format format =
                 self->determinePixelFormat(annotations, self->m_project->viewportPixelFormat());
             const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
@@ -4079,7 +4107,8 @@ Effect::handleRenderDepthStencilTargetSemantic(
     if (parameterType == kParameterTypeTexture || parameterType == kParameterTypeTexture2D) {
         Vector2 scaleFactor(0);
         const AnnotationMap &annotations = parameter.m_annotations;
-        const Vector4 size(self->determineImageSize(annotations, self->viewportImageSize(Vector2(1)), scaleFactor));
+        const Vector4 size(
+            self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
         const sg_pixel_format format =
             self->determineDepthStencilPixelFormat(annotations, SG_PIXELFORMAT_DEPTH_STENCIL);
         const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
@@ -4165,7 +4194,8 @@ Effect::handleOffscreenRenderTargetSemantic(
         else {
             Vector2 scaleFactor(0);
             const AnnotationMap &annotations = parameter.m_annotations;
-            const Vector4 size(self->determineImageSize(annotations, self->viewportImageSize(Vector2(1)), scaleFactor));
+            const Vector4 size(
+                self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
             const sg_pixel_format format = self->determinePixelFormat(annotations, SG_PIXELFORMAT_RGBA8);
             const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
             AnnotationMap::const_iterator it;
@@ -4450,7 +4480,7 @@ Effect::internalFindTechnique(
     effect::Technique *foundTechnique = nullptr;
     if (it != m_techniqueByPassTypes.end()) {
         tinystl::unordered_set<int, TinySTLAllocator> subset;
-        const int materialIndex = nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(material));
+        const int materialIndex = model::Material::index(material);
         const TechniqueList &techniques = it->second;
         for (TechniqueList::const_iterator it2 = techniques.begin(), end2 = techniques.end(); it2 != end2; ++it2) {
             effect::Technique *technique = *it2;
@@ -4686,10 +4716,10 @@ Effect::determineDepthStencilPixelFormat(
 }
 
 Vector4
-Effect::viewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT
+Effect::scaledViewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT
 {
     static const Vector2 kMaxSize(UINT16_MAX), kMinSize(1);
-    const Vector2 size(m_project->deviceScaleUniformedViewportImageSize()),
+    const Vector2 size(m_project->deviceScaleViewportPrimaryImageSize()),
         normalizedScaleFactor(glm::max(scaleFactor, 0.0f));
     return Vector4(glm::clamp(size * normalizedScaleFactor, kMinSize, kMaxSize), 1, normalizedScaleFactor.x);
 }
@@ -4702,7 +4732,7 @@ Effect::determineImageSize(
     Vector4 result(defaultValue);
     if (it != annotations.end()) {
         scaleFactor = it->second.m_vector;
-        result = viewportImageSize(scaleFactor);
+        result = scaledViewportImageSize(scaleFactor);
     }
     else {
         it = annotations.findAnnotation(kDimensionsKeyLiteral);
@@ -5294,6 +5324,7 @@ Effect::destroyAllTechniques()
     for (TechniqueList::iterator it = m_allTechniques.begin(), end = m_allTechniques.end(); it != end; ++it) {
         Technique *technique = *it;
         technique->destroy();
+        nanoem_delete(technique);
     }
     m_allTechniques.clear();
     SG_POP_GROUP();
@@ -5473,16 +5504,16 @@ Effect::findOffscreenOwnerObject(const IDrawable *ownerDrawable, const Project *
 {
     tinystl::pair<const Model *, const Accessory *> pair(nullptr, nullptr);
     const IEffect *ownerEffect = ownerDrawable->activeEffect();
-    const Project::ModelList &models = project->allModels();
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    const Project::ModelList *models = project->allModels();
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         if (model != ownerDrawable && model->activeEffect() == ownerEffect) {
             pair.first = model;
             break;
         }
     }
-    const Project::AccessoryList &accessories = project->allAccessories();
-    for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end; ++it) {
+    const Project::AccessoryList *accessories = project->allAccessories();
+    for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end; ++it) {
         Accessory *accessory = *it;
         if (accessory != ownerDrawable && accessory->activeEffect() == ownerEffect) {
             pair.second = accessory;

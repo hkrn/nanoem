@@ -6,11 +6,134 @@
 
 #include "emapp/internal/ModelObjectSelection.h"
 
+#include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/hash.hpp"
+
 namespace nanoem {
 namespace internal {
+namespace {
+
+class SortUtils : private NonCopyable {
+public:
+    static int compareVertex(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareMaterial(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareMorph(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareRigidBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareJoint(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+    static int compareSoftBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT;
+};
+
+int
+SortUtils::compareVertex(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_vertex_t *left = *static_cast<const nanoem_model_vertex_t *const *>(a),
+                                *right = *static_cast<const nanoem_model_vertex_t *const *>(b);
+    return model::Vertex::index(left) - model::Vertex::index(right);
+}
+
+int
+SortUtils::compareMaterial(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_material_t *left = *static_cast<const nanoem_model_material_t *const *>(a),
+                                  *right = *static_cast<const nanoem_model_material_t *const *>(b);
+    return model::Material::index(left) - model::Material::index(right);
+}
+
+int
+SortUtils::compareBone(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_bone_t *left = *static_cast<const nanoem_model_bone_t *const *>(a),
+                              *right = *static_cast<const nanoem_model_bone_t *const *>(b);
+    return model::Bone::index(left) - model::Bone::index(right);
+}
+
+int
+SortUtils::compareMorph(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_morph_t *left = *static_cast<const nanoem_model_morph_t *const *>(a),
+                               *right = *static_cast<const nanoem_model_morph_t *const *>(b);
+    return model::Morph::index(left) - model::Morph::index(right);
+}
+
+int
+SortUtils::compareRigidBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_rigid_body_t *left = *static_cast<const nanoem_model_rigid_body_t *const *>(a),
+                                    *right = *static_cast<const nanoem_model_rigid_body_t *const *>(b);
+    return model::RigidBody::index(left) - model::RigidBody::index(right);
+}
+
+int
+SortUtils::compareJoint(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_joint_t *left = *static_cast<const nanoem_model_joint_t *const *>(a),
+                               *right = *static_cast<const nanoem_model_joint_t *const *>(b);
+    return model::Joint::index(left) - model::Joint::index(right);
+}
+
+int
+SortUtils::compareSoftBody(const void *a, const void *b) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_soft_body_t *left = *static_cast<const nanoem_model_soft_body_t *const *>(a),
+                                   *right = *static_cast<const nanoem_model_soft_body_t *const *>(b);
+    return model::SoftBody::index(left) - model::SoftBody::index(right);
+}
+
+} /* namespace anonymous */
+
+void
+ModelObjectSelection::sortedVertexList(const IModelObjectSelection *selection, model::Vertex::List &vertices)
+{
+    vertices = ListUtils::toListFromSet(*selection->allVertexSet());
+    qsort(vertices.data(), vertices.size(), sizeof(vertices[0]), SortUtils::compareVertex);
+}
+
+void
+ModelObjectSelection::sortedMaterialList(const IModelObjectSelection *selection, model::Material::List &materials)
+{
+    materials = ListUtils::toListFromSet(*selection->allMaterialSet());
+    qsort(materials.data(), materials.size(), sizeof(materials[0]), SortUtils::compareMaterial);
+}
+
+void
+ModelObjectSelection::sortedBoneList(const IModelObjectSelection *selection, model::Bone::List &bones)
+{
+    bones = ListUtils::toListFromSet(*selection->allBoneSet());
+    qsort(bones.data(), bones.size(), sizeof(bones[0]), SortUtils::compareBone);
+}
+
+void
+ModelObjectSelection::sortedMorphList(const IModelObjectSelection *selection, model::Morph::List &morphs)
+{
+    morphs = ListUtils::toListFromSet(*selection->allMorphSet());
+    qsort(morphs.data(), morphs.size(), sizeof(morphs[0]), SortUtils::compareMorph);
+}
+
+void
+ModelObjectSelection::sortedRigidBodyList(const IModelObjectSelection *selection, model::RigidBody::List &rigidBodies)
+{
+    rigidBodies = ListUtils::toListFromSet(*selection->allRigidBodySet());
+    qsort(rigidBodies.data(), rigidBodies.size(), sizeof(rigidBodies[0]), SortUtils::compareRigidBody);
+}
+
+void
+ModelObjectSelection::sortedJointList(const IModelObjectSelection *selection, model::Joint::List &joints)
+{
+    joints = ListUtils::toListFromSet(*selection->allJointSet());
+    qsort(joints.data(), joints.size(), sizeof(joints[0]), SortUtils::compareJoint);
+}
+
+void
+ModelObjectSelection::sortedSoftBodyList(const IModelObjectSelection *selection, model::SoftBody::List &softBodies)
+{
+    softBodies = ListUtils::toListFromSet(*selection->allSoftBodySet());
+    qsort(softBodies.data(), softBodies.size(), sizeof(softBodies[0]), SortUtils::compareSoftBody);
+}
 
 ModelObjectSelection::ModelObjectSelection(Model *parent)
     : m_parent(parent)
@@ -22,8 +145,8 @@ ModelObjectSelection::ModelObjectSelection(Model *parent)
     , m_hoveredRigidBody(nullptr)
     , m_hoveredJoint(nullptr)
     , m_hoveredSoftBody(nullptr)
-    , m_editingType(kEditingTypeNone)
-    , m_targetMode(kSelectTargetModeTypePoint)
+    , m_editingType(kObjectTypeFirstEnum)
+    , m_targetMode(kTargetModeTypePoint)
     , m_boxSelectedBoneModeEnabled(false)
 {
 }
@@ -35,50 +158,72 @@ ModelObjectSelection::~ModelObjectSelection() NANOEM_DECL_NOEXCEPT
 void
 ModelObjectSelection::addVertex(const nanoem_model_vertex_t *value)
 {
-    m_selectedVertexSet.insert(value);
+    if (value) {
+        m_selectedVertexSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addBone(const nanoem_model_bone_t *value)
 {
-    m_selectedBoneSet.insert(value);
-    m_parent->setActiveBone(value);
+    if (value) {
+        m_selectedBoneSet.insert(value);
+        m_parent->setActiveBone(value);
+    }
 }
 
 void
 ModelObjectSelection::addMaterial(const nanoem_model_material_t *value)
 {
-    m_selectedMaterialSet.insert(value);
+    if (value) {
+        m_selectedMaterialSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addMorph(const nanoem_model_morph_t *value)
 {
-    m_selectedMorphSet.insert(value);
+    if (value) {
+        m_selectedMorphSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addLabel(const nanoem_model_label_t *value)
 {
-    m_selectedLabelSet.insert(value);
+    if (value) {
+        m_selectedLabelSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addRigidBody(const nanoem_model_rigid_body_t *value)
 {
-    m_selectedRigidBodySet.insert(value);
+    if (value) {
+        m_selectedRigidBodySet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addJoint(const nanoem_model_joint_t *value)
 {
-    m_selectedJointSet.insert(value);
+    if (value) {
+        m_selectedJointSet.insert(value);
+    }
 }
 
 void
 ModelObjectSelection::addSoftBody(const nanoem_model_soft_body_t *value)
 {
-    m_selectedSoftBodySet.insert(value);
+    if (value) {
+        m_selectedSoftBodySet.insert(value);
+    }
+}
+
+void
+ModelObjectSelection::addFace(const Vector4UI32 &value)
+{
+    m_selectedFaceSet.insert(value);
 }
 
 void
@@ -204,6 +349,12 @@ ModelObjectSelection::removeSoftBody(const nanoem_model_soft_body_t *value)
 }
 
 void
+ModelObjectSelection::removeFace(const Vector4UI32 &value)
+{
+    m_selectedFaceSet.erase(value);
+}
+
+void
 ModelObjectSelection::removeAllVertices()
 {
     m_selectedVertexSet.clear();
@@ -254,6 +405,12 @@ ModelObjectSelection::removeAllSoftBodies()
 }
 
 void
+ModelObjectSelection::removeAllFaces()
+{
+    m_selectedFaceSet.clear();
+}
+
+void
 ModelObjectSelection::clearAll()
 {
     removeAllBones();
@@ -264,6 +421,7 @@ ModelObjectSelection::clearAll()
     removeAllMaterials();
     removeAllRigidBodies();
     removeAllSoftBodies();
+    removeAllFaces();
     m_hoveredBone = nullptr;
     m_hoveredJoint = nullptr;
     m_hoveredLabel = nullptr;
@@ -292,161 +450,267 @@ ModelObjectSelection::toggleSelectAndActiveBone(const nanoem_model_bone_t *bone,
     }
 }
 
-void
-ModelObjectSelection::setHoveredVertex(nanoem_model_vertex_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllVertices() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredVertex = value;
+    return m_selectedVertexSet.size();
 }
 
-void
-ModelObjectSelection::setHoveredMaterial(nanoem_model_material_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllMaterials() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredMaterial = value;
+    return m_selectedMaterialSet.size();
 }
 
-void
-ModelObjectSelection::setHoveredBone(nanoem_model_bone_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllBones() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredBone = value;
+    return m_selectedBoneSet.size();
 }
 
-void
-ModelObjectSelection::setHoveredMorph(nanoem_model_morph_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllMorphs() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredMorph = value;
+    return m_selectedMorphSet.size();
 }
 
-void
-ModelObjectSelection::setHoveredLabel(nanoem_model_label_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllLabels() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredLabel = value;
+    return m_selectedLabelSet.size();
 }
 
-void
-ModelObjectSelection::setHoveredRigidBody(nanoem_model_rigid_body_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllRigidBodies() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredRigidBody = value;
+    return m_selectedRigidBodySet.size();
 }
 
-void
-ModelObjectSelection::setHoveredJoint(nanoem_model_joint_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllJoints() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredJoint = value;
+    return m_selectedJointSet.size();
 }
 
-void
-ModelObjectSelection::setHoveredSoftBody(nanoem_model_soft_body_t *value)
+nanoem_rsize_t
+ModelObjectSelection::countAllSoftBodies() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredSoftBody = value;
+    return m_selectedSoftBodySet.size();
 }
 
-void
-ModelObjectSelection::resetAllHoveredObjects()
+nanoem_rsize_t
+ModelObjectSelection::countAllFaces() const NANOEM_DECL_NOEXCEPT
 {
-    m_hoveredVertex = nullptr;
-    m_hoveredMaterial = nullptr;
-    m_hoveredBone = nullptr;
-    m_hoveredMorph = nullptr;
-    m_hoveredLabel = nullptr;
-    m_hoveredRigidBody = nullptr;
-    m_hoveredJoint = nullptr;
-    m_hoveredSoftBody = nullptr;
+    return m_selectedFaceSet.size();
 }
 
-nanoem_model_vertex_t *
-ModelObjectSelection::hoveredVertex() NANOEM_DECL_NOEXCEPT
+const model::Vertex::Set *
+ModelObjectSelection::allVertexSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredVertex;
+    return &m_selectedVertexSet;
 }
 
-nanoem_model_material_t *
-ModelObjectSelection::hoveredMaterial() NANOEM_DECL_NOEXCEPT
+const model::Bone::Set *
+ModelObjectSelection::allBoneSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredMaterial;
+    return &m_selectedBoneSet;
 }
 
-nanoem_model_bone_t *
-ModelObjectSelection::hoveredBone() NANOEM_DECL_NOEXCEPT
+const model::Material::Set *
+ModelObjectSelection::allMaterialSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredBone;
+    return &m_selectedMaterialSet;
 }
 
-nanoem_model_morph_t *
-ModelObjectSelection::hoveredMorph() NANOEM_DECL_NOEXCEPT
+const model::Morph::Set *
+ModelObjectSelection::allMorphSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredMorph;
+    return &m_selectedMorphSet;
 }
 
-nanoem_model_label_t *
-ModelObjectSelection::hoveredLabel() NANOEM_DECL_NOEXCEPT
+const model::Label::Set *
+ModelObjectSelection::allLabelSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredLabel;
+    return &m_selectedLabelSet;
 }
 
-nanoem_model_rigid_body_t *
-ModelObjectSelection::hoveredRigidBody() NANOEM_DECL_NOEXCEPT
+const model::RigidBody::Set *
+ModelObjectSelection::allRigidBodySet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredRigidBody;
+    return &m_selectedRigidBodySet;
 }
 
-nanoem_model_joint_t *
-ModelObjectSelection::hoveredJoint() NANOEM_DECL_NOEXCEPT
+const model::Joint::Set *
+ModelObjectSelection::allJointSet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredJoint;
+    return &m_selectedJointSet;
 }
 
-nanoem_model_soft_body_t *
-ModelObjectSelection::hoveredSoftBody() NANOEM_DECL_NOEXCEPT
+const model::SoftBody::Set *
+ModelObjectSelection::allSoftBodySet() const NANOEM_DECL_NOEXCEPT
 {
-    return m_hoveredSoftBody;
+    return &m_selectedSoftBodySet;
 }
 
-model::Vertex::Set
-ModelObjectSelection::allVertexSet() const
+IModelObjectSelection::FaceList
+ModelObjectSelection::allFaces() const
 {
-    return m_selectedVertexSet;
+    return ListUtils::toListFromSet(m_selectedFaceSet);
 }
 
-model::Bone::Set
-ModelObjectSelection::allBoneSet() const
+Matrix4x4
+ModelObjectSelection::pivotMatrix() const
 {
-    return m_selectedBoneSet;
-}
-
-model::Material::Set
-ModelObjectSelection::allMaterialSet() const
-{
-    return m_selectedMaterialSet;
-}
-
-model::Morph::Set
-ModelObjectSelection::allMorphSet() const
-{
-    return m_selectedMorphSet;
-}
-
-model::Label::Set
-ModelObjectSelection::allLabelSet() const
-{
-    return m_selectedLabelSet;
-}
-
-model::RigidBody::Set
-ModelObjectSelection::allRigidBodySet() const
-{
-    return m_selectedRigidBodySet;
-}
-
-model::Joint::Set
-ModelObjectSelection::allJointSet() const
-{
-    return m_selectedJointSet;
-}
-
-model::SoftBody::Set
-ModelObjectSelection::allSoftBodySet() const
-{
-    return m_selectedSoftBodySet;
+    typedef tinystl::unordered_map<const nanoem_model_material_t *, nanoem_rsize_t, TinySTLAllocator> MaterialOffsetMap;
+    Matrix4x4 matrix(0);
+    Vector3 aabbMin(FLT_MAX), aabbMax(-FLT_MAX);
+    switch (objectType()) {
+    case IModelObjectSelection::kObjectTypeBone: {
+        const model::Bone::Set *selectedBoneSet = allBoneSet();
+        if (!selectedBoneSet->empty()) {
+            for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end();
+                 it != end; ++it) {
+                const nanoem_model_bone_t *bonePtr = *it;
+                const Vector3 origin(model::Bone::origin(bonePtr));
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    case IModelObjectSelection::kObjectTypeFace: {
+        const IModelObjectSelection::FaceList selectedFaces(allFaces());
+        if (!selectedFaces.empty()) {
+            nanoem_rsize_t numVertices;
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_parent->data(), &numVertices);
+            for (IModelObjectSelection::FaceList::const_iterator it = selectedFaces.begin(), end = selectedFaces.end();
+                 it != end; ++it) {
+                const Vector4UI32 &face = *it;
+                for (nanoem_rsize_t i = 1; i < 4; i++) {
+                    const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[face[i]])));
+                    assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+                }
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    case IModelObjectSelection::kObjectTypeJoint: {
+        const model::Joint::Set *selectedJointSet = allJointSet();
+        if (!selectedJointSet->empty()) {
+            for (model::Joint::Set::const_iterator it = selectedJointSet->begin(), end = selectedJointSet->end();
+                 it != end; ++it) {
+                const nanoem_model_joint_t *jointPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelJointGetOrigin(jointPtr)));
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    case IModelObjectSelection::kObjectTypeMaterial: {
+        const model::Material::Set *selectedMaterialSet = allMaterialSet();
+        if (!selectedMaterialSet->empty()) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+            const nanoem_model_t *opaque = m_parent->data();
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+            MaterialOffsetMap materialOffsets;
+            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *materialPtr = materials[i];
+                const model::Material *material = model::Material::cast(materialPtr);
+                if (material && material->isVisible()) {
+                    materialOffsets.insert(tinystl::make_pair(materialPtr, offset));
+                }
+                offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
+            }
+            for (model::Material::Set::const_iterator it = selectedMaterialSet->begin(),
+                                                      end = selectedMaterialSet->end();
+                 it != end; ++it) {
+                const nanoem_model_material_t *materialPtr = *it;
+                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                if (it2 != materialOffsets.end()) {
+                    nanoem_rsize_t offset = it2->second, indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    for (nanoem_rsize_t i = 0; i < indices; i++) {
+                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                        assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+                    }
+                }
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    case IModelObjectSelection::kObjectTypeRigidBody: {
+        const model::RigidBody::Set *selectedRigidBodySet = allRigidBodySet();
+        if (!selectedRigidBodySet->empty()) {
+            for (model::RigidBody::Set::const_iterator it = selectedRigidBodySet->begin(),
+                                                       end = selectedRigidBodySet->end();
+                 it != end; ++it) {
+                const nanoem_model_rigid_body_t *rigidBodyPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelRigidBodyGetOrigin(rigidBodyPtr)));
+                assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    case IModelObjectSelection::kObjectTypeSoftBody: {
+        const model::SoftBody::Set *selectedSoftBodySet = allSoftBodySet();
+        if (!selectedSoftBodySet->empty()) {
+            nanoem_rsize_t numMaterials, numVertices, numVertexIndices;
+            const nanoem_model_t *opaque = m_parent->data();
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(opaque, &numMaterials);
+            nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(opaque, &numVertices);
+            const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(opaque, &numVertexIndices);
+            MaterialOffsetMap materialOffsets;
+            for (nanoem_rsize_t i = 0, offset = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *materialPtr = materials[i];
+                const model::Material *material = model::Material::cast(materialPtr);
+                if (material && material->isVisible()) {
+                    materialOffsets.insert(tinystl::make_pair(materialPtr, offset));
+                }
+                offset += nanoemModelMaterialGetNumVertexIndices(materialPtr);
+            }
+            for (model::SoftBody::Set::const_iterator it = selectedSoftBodySet->begin(),
+                                                      end = selectedSoftBodySet->end();
+                 it != end; ++it) {
+                const nanoem_model_soft_body_t *softBodyPtr = *it;
+                const nanoem_model_material_t *materialPtr = nanoemModelSoftBodyGetMaterialObject(softBodyPtr);
+                MaterialOffsetMap::const_iterator it2 = materialOffsets.find(materialPtr);
+                if (it2 != materialOffsets.end()) {
+                    nanoem_rsize_t offset = it2->second, indices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+                    for (nanoem_rsize_t i = 0; i < indices; i++) {
+                        const nanoem_u32_t vertexIndex = vertexIndices[offset + i];
+                        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertices[vertexIndex])));
+                        assignAxisAlignedBoundingBox(origin, aabbMin, aabbMax);
+                    }
+                }
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    case IModelObjectSelection::kObjectTypeVertex: {
+        const model::Vertex::Set *selectedVertexSet = allVertexSet();
+        if (!selectedVertexSet->empty()) {
+            for (model::Vertex::Set::const_iterator it = selectedVertexSet->begin(), end = selectedVertexSet->end();
+                 it != end; ++it) {
+                const nanoem_model_vertex_t *vertexPtr = *it;
+                const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+                aabbMin = glm::min(aabbMin, origin);
+                aabbMax = glm::max(aabbMax, origin);
+            }
+            assignPivotMatrixFromAABB(aabbMin, aabbMax, matrix);
+        }
+        break;
+    }
+    default:
+        break;
+    }
+    return matrix;
 }
 
 bool
@@ -498,6 +762,12 @@ ModelObjectSelection::containsSoftBody(const nanoem_model_soft_body_t *value) co
 }
 
 bool
+ModelObjectSelection::containsFace(const Vector4UI32 &value) const NANOEM_DECL_NOEXCEPT
+{
+    return m_selectedFaceSet.find(value) != m_selectedFaceSet.end();
+}
+
+bool
 ModelObjectSelection::areAllBonesMovable() const NANOEM_DECL_NOEXCEPT
 {
     const nanoem_model_bone_t *activeBone = m_parent->activeBone();
@@ -514,7 +784,7 @@ ModelObjectSelection::areAllBonesMovable() const NANOEM_DECL_NOEXCEPT
     else {
         movable = nanoemModelBoneIsMovable(activeBone) != 0;
     }
-    return movable && !m_parent->project()->isModelEditing();
+    return movable && !m_parent->project()->isModelEditingEnabled();
 }
 
 bool
@@ -535,7 +805,7 @@ ModelObjectSelection::areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT
     else {
         rotateable = nanoemModelBoneIsRotateable(activeBone) != 0;
     }
-    return rotateable && !m_parent->project()->isModelEditing();
+    return rotateable && !m_parent->project()->isModelEditingEnabled();
 }
 
 bool
@@ -556,29 +826,55 @@ ModelObjectSelection::setBoxSelectedBoneModeEnabled(bool value)
     m_boxSelectedBoneModeEnabled = value;
 }
 
-ModelObjectSelection::EditingType
-ModelObjectSelection::editingType() const NANOEM_DECL_NOEXCEPT
+ModelObjectSelection::ObjectType
+ModelObjectSelection::objectType() const NANOEM_DECL_NOEXCEPT
 {
     return m_editingType;
 }
 
 void
-ModelObjectSelection::setEditingType(EditingType value)
+ModelObjectSelection::setObjectType(ObjectType value)
 {
     m_editingType = value;
 }
 
-ModelObjectSelection::SelectTargetModeType
+ModelObjectSelection::TargetModeType
 ModelObjectSelection::targetMode() const NANOEM_DECL_NOEXCEPT
 {
     return m_targetMode;
 }
 
 void
-ModelObjectSelection::setTargetMode(SelectTargetModeType value)
+ModelObjectSelection::setTargetMode(TargetModeType value)
 {
     m_targetMode = value;
 }
 
+void
+ModelObjectSelection::assignAxisAlignedBoundingBox(
+    const Vector3 &value, Vector3 &aabbMin, Vector3 &aabbMax) NANOEM_DECL_NOEXCEPT
+{
+    aabbMin = glm::min(aabbMin, value);
+    aabbMax = glm::max(aabbMax, value);
+}
+
+void
+ModelObjectSelection::assignPivotMatrixFromAABB(
+    const Vector3 &aabbMin, const Vector3 &aabbMax, Matrix4x4 &matrix) NANOEM_DECL_NOEXCEPT
+{
+    matrix = glm::translate(Constants::kIdentity, (aabbMax + aabbMin) * 0.5f);
+}
+
 } /* namespace internal */
 } /* namespace nanoem */
+
+namespace tinystl {
+
+template <>
+inline size_t
+hash(const nanoem::Vector4UI32 &value)
+{
+    return std::hash<nanoem::Vector4UI32>()(value);
+}
+
+} /* namespace tinystl */

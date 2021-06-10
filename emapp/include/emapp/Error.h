@@ -58,6 +58,8 @@ public:
     int code() const NANOEM_DECL_NOEXCEPT;
     bool isCancelled() const NANOEM_DECL_NOEXCEPT;
 
+    void operator=(const Error &value) NANOEM_DECL_NOEXCEPT;
+
 private:
     char m_reason[kMaxReasonLength];
     char m_recoverySuggestion[kMaxRecoverySuggestionLength];

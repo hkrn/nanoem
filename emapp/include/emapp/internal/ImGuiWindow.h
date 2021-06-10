@@ -17,6 +17,7 @@
 
 namespace nanoem {
 
+class IModelObjectSelection;
 class IVectorValueState;
 
 namespace internal {
@@ -36,10 +37,17 @@ class ImGuiApplicationMenuBuilder;
 class LightColorVectorValueState;
 class LightDirectionVectorValueState;
 
+namespace imgui {
+class GizmoController;
+class ModelParameterDialog;
+} /* namespace imgui */
+
 class ImGuiWindow NANOEM_DECL_SEALED : public IUIWindow, private NonCopyable {
 public:
-    static const Vector2UI16 kMinimumWindowSize;
+    static const Vector2UI16 kMinimumMainWindowSize;
+    static const Vector2UI16 kMinimumViewportWindowSize;
     static const nanoem_f32_t kFontSize;
+    static const nanoem_f32_t kWindowRounding;
     static const nanoem_f32_t kLeftPaneWidth;
     static const nanoem_f32_t kTranslationStepFactor;
     static const nanoem_f32_t kOrientationStepFactor;
@@ -47,6 +55,12 @@ public:
     static const nanoem_f32_t kTimelineMinWidthRatio;
     static const nanoem_f32_t kTimelineMaxWidthRatio;
     static const nanoem_f32_t kTimelineSnapGridRatio;
+    static const nanoem_f32_t kTimelineSeekerPanelWidth;
+    static const nanoem_f32_t kTimelineUndoPanelWidth;
+    static const nanoem_f32_t kTimelineTrackMaxWidth;
+    static const nanoem_f32_t kTimelineKeyframeActionPanelWidth;
+    static const nanoem_f32_t kModelEditCommandWidth;
+    static const nanoem_f32_t kDrawCircleSegmentCount;
     static const ImGuiDataType kFrameIndexDataType;
     static const ImU32 kMainWindowFlags;
     static const ImU32 kColorWindowBg;
@@ -86,6 +100,7 @@ public:
     static const ImU32 kColorInterpolationCurveBezierLine;
     static const ImU32 kColorInterpolationCurveControlLine;
     static const ImU32 kColorInterpolationCurveControlPoint;
+    static const ImU32 kColorSelectedModelObject;
     static const nanoem_u8_t kFAArrows[];
     static const nanoem_u8_t kFARefresh[];
     static const nanoem_u8_t kFAZoom[];
@@ -102,12 +117,15 @@ public:
     static const nanoem_u8_t kFAFolderOpen[];
     static const nanoem_u8_t kFAFolderClose[];
     static const nanoem_u8_t kFACircle[];
+    static const nanoem_u8_t kFALink[];
+    static const nanoem_u8_t kFAExpand[];
 
     struct ILazyExecutionCommand {
         virtual ~ILazyExecutionCommand() NANOEM_DECL_NOEXCEPT
         {
         }
         virtual void execute(Project *project) = 0;
+        virtual void destroy(Project *project) = 0;
     };
     typedef tinystl::vector<ILazyExecutionCommand *, TinySTLAllocator> LazyExecutionCommandList;
     struct INoModalDialogWindow {
@@ -115,6 +133,7 @@ public:
         {
         }
         virtual bool draw(Project *project) = 0;
+        virtual void destroy(Project *project) = 0;
     };
     typedef tinystl::unordered_map<const char *, INoModalDialogWindow *, TinySTLAllocator> NoModalDialogWindowList;
 
@@ -123,6 +142,21 @@ public:
     static bool handleArrowButton(const char *label, ImGuiDir dir, bool enabled);
     static bool handleRadioButton(const char *label, bool value, bool enabled);
     static bool handleCheckBox(const char *label, bool *value, bool enabled);
+    static bool handleDragFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+        nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleDragFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+        nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleDragScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
+        bool enabled, nanoem_f32_t factor, const void *min, const void *max, const char *format,
+        ImGuiSliderFlags flags);
+    static bool handleSliderFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min,
+        nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleSliderFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min,
+        nanoem_f32_t max, const char *format, ImGuiSliderFlags flags);
+    static bool handleSliderInt(
+        const char *label, int *value, bool enabled, int min, int max, const char *format, ImGuiSliderFlags flags);
+    static bool handleSliderScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
+        bool enabled, const void *min, const void *max, const char *format, ImGuiSliderFlags flags);
     static void saveDefaultStyle(nanoem_f32_t devicePixelRatio);
     static void restoreDefaultStyle();
 
@@ -140,10 +174,11 @@ public:
     void openCameraKeyframeBezierInterpolationCurveGraphDialog(Project *project);
     void openModelOutsideParentDialog(Project *project);
     void openAccessoryOutsideParentDialog(Project *project);
-    void openSelfShadowConfigurationDialog(Project *project);
+    void openSelfShadowConfigurationDialog();
+    void openUVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel);
 
-    void initialize(nanoem_f32_t devicePixelRatio) NANOEM_DECL_OVERRIDE;
-    void reset() NANOEM_DECL_OVERRIDE;
+    void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) NANOEM_DECL_OVERRIDE;
+    void reset(Project *project) NANOEM_DECL_OVERRIDE;
     void destroy() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setFontPointSize(nanoem_f32_t pointSize) NANOEM_DECL_OVERRIDE;
     void setKeyPressed(BaseApplicationService::KeyType key) NANOEM_DECL_OVERRIDE;
@@ -170,18 +205,18 @@ public:
     void openModelEdgeDialog(Project *project) NANOEM_DECL_OVERRIDE;
     void openScaleAllSelectedKeyframesDialog() NANOEM_DECL_OVERRIDE;
     void openEffectParameterDialog(Project *project) NANOEM_DECL_OVERRIDE;
-    void openModelParameterDialog(Project *project) NANOEM_DECL_OVERRIDE;
+    void openModelParameterDialog(Project *project, Error &error) NANOEM_DECL_OVERRIDE;
     void openPreferenceDialog() NANOEM_DECL_OVERRIDE;
     bool openModelIOPluginDialog(Project *project, plugin::ModelIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) NANOEM_DECL_OVERRIDE;
     bool openMotionIOPluginDialog(Project *project, plugin::MotionIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) NANOEM_DECL_OVERRIDE;
+    void openSaveProjectDialog(Project *project) NANOEM_DECL_OVERRIDE;
 
     void resizeDevicePixelWindowSize(const Vector2UI16 &value) NANOEM_DECL_OVERRIDE;
     void setDevicePixelRatio(float value) NANOEM_DECL_OVERRIDE;
-    void drawAll2DPrimitives(
-        Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
-    void drawAllWindows(Project *project, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
+    void setAntiAliasEnabled(bool value) NANOEM_DECL_OVERRIDE;
+    void drawAllWindows(Project *project, IState *state, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     void drawWindow(Project *project, ImDrawData *drawData, bool load);
 
     const IModalDialog *currentModalDialog() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -205,7 +240,7 @@ private:
     {
         Vector4 m_position;
         Vector3 m_uv;
-        glm::u8vec4 m_color;
+        Vector4U8 m_color;
     };
     struct Buffer {
         Buffer();
@@ -291,6 +326,8 @@ private:
     static nanoem_rsize_t findTrack(const void *opaque, ITrack::Type targetTrackType, Project::TrackList &tracks);
     static bool isRhombusReactionSelectable(RhombusReactionType type) NANOEM_DECL_NOEXCEPT;
     static bool handleVectorValueState(IVectorValueState *state);
+    static void appendDrawFlags(
+        const Model *activeModel, const imgui::ModelParameterDialog *dialog, nanoem_u32_t &flags) NANOEM_DECL_NOEXCEPT;
 
     ITrack *selectTrack(nanoem_rsize_t offset, ITrack::Type targetTrackType, Project::TrackList &tracks);
     const char *tr(const char *id) NANOEM_DECL_NOEXCEPT;
@@ -322,11 +359,12 @@ private:
     void handleDraggingMorphSliderState();
     void setEditingMode(Project *project, Project::EditingMode mode);
     void toggleEditingMode(Project *project, Project::EditingMode mode);
-    void drawMainWindow(const Vector2 &devicePixelWindowSize, Project *project, bool &seekable);
+    void drawMainWindow(
+        const Vector2 &devicePixelWindowSize, Project *project, IState *state, nanoem_u32_t flags, bool &seekable);
     void drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project);
-    void drawSeekerPanel(
-        Project *project, nanoem_frame_index_t &frameIndex, bool &frameIndexChanged, bool &forward, bool &backward);
-    void drawUndoPanel(Project *project);
+    void drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_frame_index_t &frameIndex,
+        bool &frameIndexChanged, bool &forward, bool &backward);
+    void drawUndoPanel(Project *project, nanoem_f32_t padding);
     void drawWavePanel(nanoem_f32_t tracksWidth, Project *project, nanoem_u32_t &numVisibleMarkers);
     void drawAllTracksPanel(const ImVec2 &panelSize, Project::TrackList &tracks, Project *project);
     void drawTrack(ITrack *track, int i, Model *activeModel, TrackSet &selectedTracks);
@@ -335,10 +373,10 @@ private:
         const ImVec2 &panelSize, const Project::TrackList &tracks, nanoem_u32_t numVisibleMarkers, Project *project);
     RhombusReactionType drawMarkerRhombus(nanoem_frame_index_t frameIndex, ITrack *track, nanoem_f32_t extent,
         nanoem_f32_t radius, IMotionKeyframeSelection *source, Project *project);
-    void drawKeyframeActionPanel(Project *project);
-    void drawKeyframeSelectionPanel(Project *project);
+    void drawKeyframeActionPanel(Project *project, nanoem_f32_t padding);
+    void drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding);
     void drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t padding, Project *project);
-    void drawViewport(nanoem_f32_t viewportHeight, Project *project);
+    void drawViewport(Project *project, IState *state, nanoem_u32_t flags);
     void drawViewportParameterBox(Project *project);
     void drawCommonInterpolationControls(Project *project);
     void drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
@@ -351,16 +389,19 @@ private:
     void drawMorphPanel(const ImVec2 &panelSize, Model *activeModel, Project *project);
     void drawViewPanel(const ImVec2 &panelSize, Project *project);
     void drawPlayPanel(const ImVec2 &panelSize, Project *project);
+    void drawModelEditPanel(Project *project, nanoem_f32_t height);
     void drawAllNonModalWindows(Project *project);
-    void drawTransformHandleSet(
-        const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int rectType, bool handleable);
-    void drawTransformHandleSet(const Project *project, const ImVec2 &offset);
-    void drawModelEditingIcon(const Project *project);
-    void drawEffectIcon(const Project *project, const ImVec2 &offset);
+    void drawPrimitive2D(Project *project, IState *state, nanoem_u32_t flags);
+    void drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
+        int baseRectType, int intercectedRectType, bool handleable);
+    void drawTransformHandleSet(const Project *project, IState *state, const ImVec2 &offset);
+    void drawOrientationAxes(bool intersected, nanoem_u32_t rectangleType, const IModelObjectSelection *selection,
+        const Model *activeModel, const Project *project, IState *state);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
-    void drawHardwareMonitor(const Project *project, const ImVec2 &offset);
+    void drawPerformanceMonitor(const Project *project, const ImVec2 &offset);
     void drawBoneTooltip(Project *project);
-    void drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, int length);
+    void drawTextCentered(
+        const ImVec2 &offset, const Vector4 &rect, const char *text, size_t length, ImU32 color = IM_COL32_WHITE);
     void setupDeviceInput(Project *project);
     void handleVerticalSplitter(
         const ImVec2 &pos, const ImVec2 &size, nanoem_f32_t viewportHeight, nanoem_f32_t devicePixelRatio);
@@ -373,7 +414,7 @@ private:
 
     BaseApplicationService *m_applicationPtr;
     ImGuiApplicationMenuBuilder *m_menu;
-    Project::IViewportOverlay *m_viewportOverlayPtr;
+    imgui::GizmoController *m_gizmoController;
     CameraLookAtVectorValueState *m_cameraLookAtVectorValueState;
     CameraAngleVectorValueState *m_cameraAngleVectorValueState;
     CameraDistanceVectorValueState *m_cameraDistanceVectorValueState;

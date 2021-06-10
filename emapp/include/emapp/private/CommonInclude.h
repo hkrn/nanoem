@@ -184,6 +184,7 @@ public:
     static inline bool
     isDebuggerPresent()
     {
+#ifndef NDEBUG
 #if BX_PLATFORM_WINDOWS
         return ::IsDebuggerPresent() != 0;
 #elif BX_PLATFORM_OSX
@@ -205,9 +206,12 @@ public:
             }
         }
         return presented;
-#else
+#else /* BX_PLATFORM_* */
         return false;
 #endif /* BX_PLATFORM_* */
+#else /* NDEBUG */
+        return false;
+#endif /* NDEBUG */
     }
 };
 

@@ -49,7 +49,7 @@ struct ServiceHolder {
         ThreadedApplicationService::setup();
         m_service = new ThreadedApplicationService(m_root);
         m_service->setEventPublisher(publisher);
-        m_service->initialize(1.0f);
+        m_service->initialize(1.0f, 1.0f);
         m_project = m_service->createProject(glm::u16vec2(1), SG_PIXELFORMAT_RGBA8, 1.0f, 1.0f, nullptr);
     }
     ~ServiceHolder()

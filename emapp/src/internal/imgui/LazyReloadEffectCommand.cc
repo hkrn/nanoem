@@ -26,6 +26,12 @@ LazyReloadEffectCommand::execute(Project *project)
     project->reloadDrawableEffect(m_value, progress, error);
 }
 
+void
+LazyReloadEffectCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

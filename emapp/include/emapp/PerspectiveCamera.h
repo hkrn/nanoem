@@ -26,8 +26,8 @@ public:
     static const int kMaxFov;
     static const int kMinFov;
     static const int kInitialFov;
-    static const glm::u8vec4 kDefaultBezierControlPoint;
-    static const glm::u8vec4 kDefaultAutomaticBezierControlPoint;
+    static const Vector4U8 kDefaultBezierControlPoint;
+    static const Vector4U8 kDefaultAutomaticBezierControlPoint;
 
     PerspectiveCamera(Project *project);
     ~PerspectiveCamera() NANOEM_DECL_NOEXCEPT;
@@ -38,12 +38,11 @@ public:
     void synchronizeParameters(const Motion *motion, const nanoem_frame_index_t frameIndex) NANOEM_DECL_OVERRIDE;
     void synchronizeOutsideParent(const nanoem_motion_camera_keyframe_t *keyframe);
     void getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    Vector3 unprojected(const Vector3 &value, nanoem_f32_t zfar = FLT_MAX) const NANOEM_DECL_NOEXCEPT;
-    Vector2 toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    Vector2 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    Vector2 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    Ray createRay(const Vector2 &cursor, nanoem_f32_t zfar = FLT_MAX) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    bool intersectsRay(const Ray &ray, nanoem_f32_t intersectDistance) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    Vector3 unprojected(const Vector3 &value) const NANOEM_DECL_NOEXCEPT;
+    Vector2SI32 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    Vector2SI32 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    Ray createRay(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    bool castRay(const Vector2SI32 &position, Vector3 &intersection) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_f32_t aspectRatio() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     nanoem_f32_t zfar() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
@@ -64,11 +63,11 @@ public:
     void setFov(int value) NANOEM_DECL_OVERRIDE;
     nanoem_f32_t fovRadians() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setFovRadians(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
-    glm::u8vec4 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    glm::u8vec4 bezierControlPoints(
+    Vector4U8 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    Vector4U8 bezierControlPoints(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setBezierControlPoints(
-        nanoem_motion_camera_keyframe_interpolation_type_t index, const glm::u8vec4 &value) NANOEM_DECL_OVERRIDE;
+        nanoem_motion_camera_keyframe_interpolation_type_t index, const Vector4U8 &value) NANOEM_DECL_OVERRIDE;
     bool isLinearInterpolation(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool isPerspective() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -85,8 +84,6 @@ public:
     void setDirty(bool value) NANOEM_DECL_OVERRIDE;
 
 private:
-    Matrix4x4 internalPerspective(nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT;
-    Matrix4x4 internalDevicePerspective(nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t bezierCurve(const nanoem_motion_camera_keyframe_t *prev, const nanoem_motion_camera_keyframe_t *next,
         nanoem_motion_camera_keyframe_interpolation_type_t index, nanoem_f32_t value) const;
 
@@ -106,8 +103,8 @@ private:
     Vector3 m_angle;
     nanoem_f32_t m_distance;
     tinystl::pair<int, nanoem_f32_t> m_fov;
-    glm::u8vec4 m_bezierControlPoints[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
-    glm::u8vec4 m_automaticBezierControlPoint;
+    Vector4U8 m_bezierControlPoints[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
+    Vector4U8 m_automaticBezierControlPoint;
     FollowingType m_followingType;
     bool m_isLinearInterpolation[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     bool m_perspective;

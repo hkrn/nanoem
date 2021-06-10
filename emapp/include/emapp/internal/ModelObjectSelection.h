@@ -15,6 +15,14 @@ namespace internal {
 
 class ModelObjectSelection NANOEM_DECL_SEALED : public IModelObjectSelection {
 public:
+    static void sortedVertexList(const IModelObjectSelection *selection, model::Vertex::List &vertices);
+    static void sortedMaterialList(const IModelObjectSelection *selection, model::Material::List &materials);
+    static void sortedBoneList(const IModelObjectSelection *selection, model::Bone::List &bones);
+    static void sortedMorphList(const IModelObjectSelection *selection, model::Morph::List &morphs);
+    static void sortedRigidBodyList(const IModelObjectSelection *selection, model::RigidBody::List &rigidBodies);
+    static void sortedJointList(const IModelObjectSelection *selection, model::Joint::List &joints);
+    static void sortedSoftBodyList(const IModelObjectSelection *selection, model::SoftBody::List &softBodies);
+
     ModelObjectSelection(Model *parent);
     ~ModelObjectSelection() NANOEM_DECL_NOEXCEPT;
 
@@ -26,6 +34,7 @@ public:
     void addRigidBody(const nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
     void addJoint(const nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
     void addSoftBody(const nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
+    void addFace(const Vector4UI32 &value) NANOEM_DECL_OVERRIDE;
     void addAllBones() NANOEM_DECL_OVERRIDE;
     void addAllDirtyBones() NANOEM_DECL_OVERRIDE;
     void addAllMovableBones() NANOEM_DECL_OVERRIDE;
@@ -38,6 +47,7 @@ public:
     void removeRigidBody(const nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
     void removeJoint(const nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
     void removeSoftBody(const nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
+    void removeFace(const Vector4UI32 &value) NANOEM_DECL_OVERRIDE;
     void removeAllVertices() NANOEM_DECL_OVERRIDE;
     void removeAllBones() NANOEM_DECL_OVERRIDE;
     void removeAllMaterials() NANOEM_DECL_OVERRIDE;
@@ -46,35 +56,31 @@ public:
     void removeAllRigidBodies() NANOEM_DECL_OVERRIDE;
     void removeAllJoints() NANOEM_DECL_OVERRIDE;
     void removeAllSoftBodies() NANOEM_DECL_OVERRIDE;
+    void removeAllFaces() NANOEM_DECL_OVERRIDE;
     void clearAll() NANOEM_DECL_OVERRIDE;
     void toggleSelectAndActiveBone(const nanoem_model_bone_t *bone, bool isMultipleSelection) NANOEM_DECL_OVERRIDE;
 
-    void setHoveredVertex(nanoem_model_vertex_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredMaterial(nanoem_model_material_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredBone(nanoem_model_bone_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredMorph(nanoem_model_morph_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredLabel(nanoem_model_label_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredRigidBody(nanoem_model_rigid_body_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredJoint(nanoem_model_joint_t *value) NANOEM_DECL_OVERRIDE;
-    void setHoveredSoftBody(nanoem_model_soft_body_t *value) NANOEM_DECL_OVERRIDE;
-    void resetAllHoveredObjects() NANOEM_DECL_OVERRIDE;
-    nanoem_model_vertex_t *hoveredVertex() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_material_t *hoveredMaterial() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_bone_t *hoveredBone() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_morph_t *hoveredMorph() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_label_t *hoveredLabel() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_rigid_body_t *hoveredRigidBody() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_joint_t *hoveredJoint() NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    nanoem_model_soft_body_t *hoveredSoftBody() NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllVertices() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllMaterials() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllBones() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllMorphs() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllLabels() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllRigidBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllJoints() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    nanoem_rsize_t countAllFaces() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
-    model::Vertex::Set allVertexSet() const NANOEM_DECL_OVERRIDE;
-    model::Bone::Set allBoneSet() const NANOEM_DECL_OVERRIDE;
-    model::Material::Set allMaterialSet() const NANOEM_DECL_OVERRIDE;
-    model::Morph::Set allMorphSet() const NANOEM_DECL_OVERRIDE;
-    model::Label::Set allLabelSet() const NANOEM_DECL_OVERRIDE;
-    model::RigidBody::Set allRigidBodySet() const NANOEM_DECL_OVERRIDE;
-    model::Joint::Set allJointSet() const NANOEM_DECL_OVERRIDE;
-    model::SoftBody::Set allSoftBodySet() const NANOEM_DECL_OVERRIDE;
+    const model::Vertex::Set *allVertexSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Bone::Set *allBoneSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Material::Set *allMaterialSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Morph::Set *allMorphSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Label::Set *allLabelSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::RigidBody::Set *allRigidBodySet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::Joint::Set *allJointSet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    const model::SoftBody::Set *allSoftBodySet() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    FaceList allFaces() const NANOEM_DECL_OVERRIDE;
+    Matrix4x4 pivotMatrix() const NANOEM_DECL_OVERRIDE;
+
     bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -83,18 +89,25 @@ public:
     bool containsRigidBody(const nanoem_model_rigid_body_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsJoint(const nanoem_model_joint_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    bool containsFace(const Vector4UI32 &value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     bool containsAnyBone() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setBoxSelectedBoneModeEnabled(bool value) NANOEM_DECL_OVERRIDE;
-    EditingType editingType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setEditingType(EditingType value) NANOEM_DECL_OVERRIDE;
-    SelectTargetModeType targetMode() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setTargetMode(SelectTargetModeType value) NANOEM_DECL_OVERRIDE;
+    ObjectType objectType() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setObjectType(ObjectType value) NANOEM_DECL_OVERRIDE;
+    TargetModeType targetMode() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setTargetMode(TargetModeType value) NANOEM_DECL_OVERRIDE;
 
 private:
+    typedef tinystl::unordered_set<Vector4UI32, TinySTLAllocator> FaceSet;
+    static void assignAxisAlignedBoundingBox(
+        const Vector3 &value, Vector3 &aabbMin, Vector3 &aabbMax) NANOEM_DECL_NOEXCEPT;
+    static void assignPivotMatrixFromAABB(
+        const Vector3 &aabbMin, const Vector3 &aabbMax, Matrix4x4 &matrix) NANOEM_DECL_NOEXCEPT;
+
     Model *m_parent;
     model::Vertex::Set m_selectedVertexSet;
     model::Bone::Set m_selectedBoneSet;
@@ -104,6 +117,7 @@ private:
     model::RigidBody::Set m_selectedRigidBodySet;
     model::Joint::Set m_selectedJointSet;
     model::SoftBody::Set m_selectedSoftBodySet;
+    FaceSet m_selectedFaceSet;
     nanoem_model_vertex_t *m_hoveredVertex;
     nanoem_model_material_t *m_hoveredMaterial;
     nanoem_model_bone_t *m_hoveredBone;
@@ -112,8 +126,8 @@ private:
     nanoem_model_rigid_body_t *m_hoveredRigidBody;
     nanoem_model_joint_t *m_hoveredJoint;
     nanoem_model_soft_body_t *m_hoveredSoftBody;
-    EditingType m_editingType;
-    SelectTargetModeType m_targetMode;
+    ObjectType m_editingType;
+    TargetModeType m_targetMode;
     bool m_boxSelectedBoneModeEnabled;
 };
 

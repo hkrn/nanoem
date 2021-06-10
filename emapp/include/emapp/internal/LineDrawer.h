@@ -29,6 +29,7 @@ public:
         size_t m_offset;
         size_t m_numIndices;
         Matrix4x4 m_worldTransform;
+        Vector4 m_color;
         bool m_enableBlendMode;
         bool m_enableDepthTest;
     };

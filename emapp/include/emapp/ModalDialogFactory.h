@@ -71,6 +71,8 @@ public:
         const String &message, const StandardConfirmDialogCallbackPair &callbacks, void *userData);
     static IModalDialog *createConfirmSavingDialog(BaseApplicationService *applicationPtr, const String &title,
         const String &message, const SaveConfirmDialog &callbacks, void *userData);
+    static IModalDialog *createConfirmConvertingAccessoryToModelDialog(
+        Accessory *accessory, BaseApplicationService *applicationPtr);
     static IModalDialog *createConfirmDeletingAccessoryDialog(
         Accessory *accessory, BaseApplicationService *applicationPtr);
     static IModalDialog *createConfirmDeletingModelDialog(Model *model, BaseApplicationService *applicationPtr);

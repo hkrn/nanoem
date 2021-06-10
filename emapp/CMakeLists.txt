@@ -168,6 +168,9 @@ function(nanoem_emapp_organize_executables executables)
                  $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL>
                  IMGUI_USER_CONFIG="emapp/private/imgui/config.h")
   endif()
+  if(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
+    set_property(TARGET emapp embundle APPEND PROPERTY COMPILE_DEFINITIONS NANOEM_ENABLE_IMGUI_FILE_DIALOG)
+  endif()
   get_property(_include_directories TARGET nanoem PROPERTY INCLUDE_DIRECTORIES)
   target_include_directories(emapp PRIVATE
                              ${BX_COMPAT_INCLUDE_PATH}
@@ -175,6 +178,7 @@ function(nanoem_emapp_organize_executables executables)
                              ${BIMG_INCLUDE_DIR}
                              ${MINIZIP_INCLUDE_DIR}
                              ${PROJECT_SOURCE_DIR}/dependencies
+                             ${PROJECT_SOURCE_DIR}/dependencies/imgui
                              ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c
                              ${PROJECT_SOURCE_DIR}/emapp/bundle
                              ${PROJECT_BINARY_DIR}/emapp/resources/include

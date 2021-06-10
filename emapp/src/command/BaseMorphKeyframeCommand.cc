@@ -165,7 +165,7 @@ BaseMorphKeyframeCommand::writeMessage(void *messagePtr, nanoem_u32_t type)
             nanoem_new(Nanoem__Application__RedoMorphKeyframeCommand__Keyframe);
         nanoem__application__redo_morph_keyframe_command__keyframe__init(k);
         k->frame_index = keyframe.m_frameIndex;
-        k->morph_index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(m_model->findMorph(keyframe.m_name)));
+        k->morph_index = model::Morph::index(m_model->findMorph(keyframe.m_name));
         writeStateMessage(keyframe.m_state.first, &k->current_state);
         writeStateMessage(keyframe.m_state.second, &k->last_state);
         keyframes[offset++] = k;

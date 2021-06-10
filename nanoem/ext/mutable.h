@@ -565,6 +565,8 @@ nanoemMutableModelBoneSetTargetBoneObject(nanoem_mutable_model_bone_t *bone, con
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneSetConstraintObject(nanoem_mutable_model_bone_t *bone, nanoem_mutable_model_constraint_t *value);
 NANOEM_DECL_API void APIENTRY
+nanoemMutableModelBoneRemoveConstraintObject(nanoem_mutable_model_bone_t *bone, nanoem_mutable_model_constraint_t *value);
+NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneSetOrigin(nanoem_mutable_model_bone_t *bone, const nanoem_f32_t *value);
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneSetDestinationOrigin(nanoem_mutable_model_bone_t *bone, const nanoem_f32_t *value);

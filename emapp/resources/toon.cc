@@ -45,19 +45,18 @@ loadSharedTexture(const nanoem_u8_t *data, size_t size, int index, Image *&image
         desc.mag_filter = desc.min_filter = SG_FILTER_NEAREST;
         desc.wrap_u = desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
         const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(container->m_data);
-        bytes.assign(dataPtr, dataPtr + container->m_size);
-        desc.data.subimage[0][0].ptr = bytes.data();
-        desc.data.subimage[0][0].size = bytes.size();
+        nanoem_rsize_t dataSize = container->m_size;
+        bytes.assign(dataPtr, dataPtr + dataSize);
         desc.num_mipmaps = 1;
-        imageRef->m_filename = filename;
+        imageRef->setFilename(filename);
+        imageRef->setDescription(desc);
         if (Inline::isDebugLabelEnabled()) {
-            desc.label = imageRef->m_filename.c_str();
+            imageRef->setLabel(imageRef->filenameConstString());
         }
-        imageRef->m_description = desc;
-        imageRef->m_handle = sg::make_image(&desc);
-        const nanoem_u8_t *p = static_cast<const nanoem_u8_t *>(container->m_data);
-        imageRef->m_originData.assign(p, p + container->m_size);
-        SG_LABEL_IMAGE(imageRef->m_handle, filename.c_str());
+        imageRef->setOriginData(bytes.data(), dataSize);
+        imageRef->setFileExist(true);
+        imageRef->create();
+        SG_LABEL_IMAGE(imageRef->handle(), filename.c_str());
         bimg::imageFree(container);
     }
 }

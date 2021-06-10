@@ -22,6 +22,8 @@ public:
     ~BaseCameraVectorValueState();
 
 protected:
+    void update();
+
     Project *m_project;
     ICamera *m_camera;
 };

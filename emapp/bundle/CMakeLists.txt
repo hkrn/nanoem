@@ -4,7 +4,6 @@ function(nanoem_emapp_build_embundle)
   nanoem_cmake_enable_lto(embundle)
   if(WIN32)
     target_link_libraries(embundle psapi imm32)
-    target_compile_definitions(embundle PRIVATE SOKOL_GLCORE33)
   endif()
   set_property(TARGET embundle PROPERTY FOLDER nanoem)
   target_compile_definitions(embundle PRIVATE

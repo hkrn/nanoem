@@ -105,7 +105,7 @@ public:
         nanoem_delete(q);
     }
     static inline void
-    setInterpolation(const glm::u8vec4 &v, Nanoem__Common__Interpolation *&i)
+    setInterpolation(const Vector4U8 &v, Nanoem__Common__Interpolation *&i)
     {
         i = nanoem_new(Nanoem__Common__Interpolation);
         nanoem__common__interpolation__init(i);
@@ -115,7 +115,7 @@ public:
         i->y1 = v.w;
     }
     static inline void
-    getInterpolation(const Nanoem__Common__Interpolation *i, glm::u8vec4 &v)
+    getInterpolation(const Nanoem__Common__Interpolation *i, Vector4U8 &v)
     {
         v.x = i->x0;
         v.y = i->y0;
@@ -137,7 +137,7 @@ public:
             op->parent_model_handle = model->handle();
             if (const nanoem_model_bone_t *bonePtr = model->findBone(parent.second)) {
                 op->has_parent_model_bone_index = 1;
-                op->parent_model_bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+                op->parent_model_bone_index = model::Bone::index(bonePtr);
             }
         }
     }
@@ -147,13 +147,13 @@ public:
         op = nanoem_new(Nanoem__Application__OutsideParent);
         nanoem__application__outside_parent__init(op);
         op->has_bone_index = 1;
-        op->bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+        op->bone_index = model::Bone::index(bonePtr);
         if (const Model *model = project->findModelByName(parent.first)) {
             op->has_parent_model_handle = 1;
             op->parent_model_handle = model->handle();
             if (const nanoem_model_bone_t *bonePtr = model->findBone(parent.second)) {
                 op->has_parent_model_bone_index = 1;
-                op->parent_model_bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+                op->parent_model_bone_index = model::Bone::index(bonePtr);
             }
         }
     }

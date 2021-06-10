@@ -40,6 +40,14 @@ public:
     void setAllSelectedLabelObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
     void setAllSelectedRigidBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
     void setAllSelectedJointObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllSelectedSoftBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllMaskedVertexObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllMaskedMaterialObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllMaskedBoneObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllMaskedRigidBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllMaskedJointObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setAllMaskedSoftBodyObjectIndices(const int *indices, nanoem_rsize_t size, Error &error);
+    void setEditingModeEnabled(bool value);
     void setInputAudio(const IAudioPlayer *player, Error &error);
     void setInputCamera(const ICamera *camera, Error &error);
     void setInputLight(const ILight *light, Error &error);
@@ -88,6 +96,22 @@ private:
         nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
     typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices)(
         nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllMaskedVertexObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllMaskedMaterialObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllMaskedBoneObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllMaskedRigidBodyObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllMaskedJointObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices)(
+        nanoem_application_plugin_model_io_t *, const int *, nanoem_u32_t, int *);
+    typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetEditingModeEnabled)(
+        nanoem_application_plugin_model_io_t *, int);
     typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetAudioDescription)(
         nanoem_application_plugin_model_io_t *, const nanoem_u8_t *, nanoem_u32_t, int *);
     typedef void(APIENTRY *PFN_nanoemApplicationPluginModelIOSetCameraDescription)(
@@ -138,6 +162,14 @@ private:
     PFN_nanoemApplicationPluginModelIOSetAllSelectedLabelObjectIndices _modelIOSetAllSelectedLabelObjectIndices;
     PFN_nanoemApplicationPluginModelIOSetAllSelectedRigidBodyObjectIndices _modelIOSetAllSelectedRigidBodyObjectIndices;
     PFN_nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices _modelIOSetAllSelectedJointObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices _modelIOSetAllSelectedSoftBodyObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllMaskedVertexObjectIndices _modelIOSetAllMaskedVertexObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllMaskedMaterialObjectIndices _modelIOSetAllMaskedMaterialObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllMaskedBoneObjectIndices _modelIOSetAllMaskedBoneObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllMaskedRigidBodyObjectIndices _modelIOSetAllMaskedRigidBodyObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllMaskedJointObjectIndices _modelIOSetAllMaskedJointObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices _modelIOSetAllMaskedSoftBodyObjectIndices;
+    PFN_nanoemApplicationPluginModelIOSetEditingModeEnabled _modelIOSetEditingModeEnabled;
     PFN_nanoemApplicationPluginModelIOSetAudioDescription _modelIOSetAudioDescription;
     PFN_nanoemApplicationPluginModelIOSetCameraDescription _modelIOSetCameraDescription;
     PFN_nanoemApplicationPluginModelIOSetLightDescription _modelIOSetLightDescription;

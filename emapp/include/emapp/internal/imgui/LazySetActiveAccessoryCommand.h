@@ -16,7 +16,9 @@ namespace imgui {
 
 struct LazySetActiveAccessoryCommand : ImGuiWindow::ILazyExecutionCommand {
     LazySetActiveAccessoryCommand(Accessory *accessory, ImGuiWindow *parent);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     ImGuiWindow *m_parent;
     Accessory *m_value;

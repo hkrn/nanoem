@@ -563,8 +563,8 @@ struct FFmpegDecoder {
             int rc = av_find_best_stream(m_audioFormatContext, AVMEDIA_TYPE_AUDIO, -1, -1, nullptr, 0);
             if (rc >= 0) {
                 audioStreamIndex = rc;
-                AVStream *stream = m_audioFormatContext->streams[audioStreamIndex];
-                AVCodec *codec = avcodec_find_decoder(stream->codecpar->codec_id);
+                const AVStream *stream = m_audioFormatContext->streams[audioStreamIndex];
+                const AVCodec *codec = avcodec_find_decoder(stream->codecpar->codec_id);
                 m_audioCodecContext = avcodec_alloc_context3(codec);
                 if (!wrapCall(avcodec_parameters_to_context(m_audioCodecContext, stream->codecpar), status)) {
                     return 0;
@@ -589,8 +589,8 @@ struct FFmpegDecoder {
             int rc = av_find_best_stream(m_videoFormatContext, AVMEDIA_TYPE_VIDEO, -1, -1, nullptr, 0);
             if (rc >= 0) {
                 videoStreamIndex = rc;
-                AVStream *stream = m_videoFormatContext->streams[videoStreamIndex];
-                AVCodec *codec = avcodec_find_decoder(stream->codecpar->codec_id);
+                const AVStream *stream = m_videoFormatContext->streams[videoStreamIndex];
+                const AVCodec *codec = avcodec_find_decoder(stream->codecpar->codec_id);
                 m_videoCodecContext = avcodec_alloc_context3(codec);
                 if (!wrapCall(avcodec_parameters_to_context(m_videoCodecContext, stream->codecpar), status)) {
                     return 0;
@@ -702,13 +702,13 @@ struct FFmpegDecoder {
     }
     void
     decodeAudioFrame(nanoem_frame_index_t currentFrameIndex, nanoem_u8_t **data, nanoem_u32_t *size,
-        nanoem_application_plugin_status_t * /* status */)
+        nanoem_application_plugin_status_t *status)
     {
         const AVStream *stream = m_audioFormatContext->streams[m_audioStreamIndex];
         AVFrame *frame = av_frame_alloc();
         int result =
-            av_seek_frame(m_videoFormatContext, m_videoStreamIndex, convertTimestamp(currentFrameIndex, stream), 0);
-        if (result >= 0 && decodeFrame(m_audioFormatContext, m_audioCodecContext, frame)) {
+            av_seek_frame(m_audioFormatContext, m_audioStreamIndex, convertTimestamp(currentFrameIndex, stream), 0);
+        if (result >= 0 && decodeFrame(m_audioFormatContext, m_audioCodecContext, m_audioStreamIndex, frame, result)) {
             nanoem_u32_t length = nanoem_u32_t((nanoem_u32_t(m_audioCodecContext->sample_rate) / m_fps) *
                 nanoem_u32_t(av_get_bytes_per_sample(static_cast<AVSampleFormat>(frame->format))));
             nanoem_u8_t *dataPtr = *data = new nanoem_u8_t[length];
@@ -716,6 +716,7 @@ struct FFmpegDecoder {
             *size = length;
         }
         else {
+            makeFailureReason(result, status);
             *data = nullptr;
             *size = 0;
         }
@@ -729,7 +730,7 @@ struct FFmpegDecoder {
         AVFrame *frame = av_frame_alloc();
         int result =
             av_seek_frame(m_videoFormatContext, m_videoStreamIndex, convertTimestamp(currentFrameIndex, stream), 0);
-        if (result >= 0 && decodeFrame(m_videoFormatContext, m_videoCodecContext, frame)) {
+        if (result >= 0 && decodeFrame(m_videoFormatContext, m_videoCodecContext, m_videoStreamIndex, frame, result)) {
             nanoem_u8_t *frameData[4];
             int frameLineSize[4], height = frame->height;
             makeFailureReason(
@@ -743,6 +744,7 @@ struct FFmpegDecoder {
             *size = length;
         }
         else {
+            makeFailureReason(result, status);
             *data = nullptr;
             *size = 0;
         }
@@ -778,14 +780,22 @@ struct FFmpegDecoder {
     }
 
     bool
-    decodeFrame(AVFormatContext *format, AVCodecContext *codec, AVFrame *&frame)
+    decodeFrame(AVFormatContext *format, AVCodecContext *codec, int streamIndex, AVFrame *&frame, int &result)
     {
         AVPacket packet = {};
         av_init_packet(&packet);
-        int result = 0;
         while (true) {
-            av_read_frame(format, &packet);
-            avcodec_send_packet(codec, &packet);
+            result = av_read_frame(format, &packet);
+            if (result != 0) {
+                break;
+            }
+            else if (packet.stream_index != streamIndex) {
+                continue;
+            }
+            result = avcodec_send_packet(codec, &packet);
+            if (result != 0 && result != AVERROR(EAGAIN)) {
+                break;
+            }
             av_packet_unref(&packet);
             result = avcodec_receive_frame(codec, frame);
             if (result == 0 || result != AVERROR(EAGAIN)) {

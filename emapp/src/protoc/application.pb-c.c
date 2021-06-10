@@ -5683,6 +5683,51 @@ void   nanoem__application__confirm_before_exporting_video_command__free_unpacke
   assert(message->base.descriptor == &nanoem__application__confirm_before_exporting_video_command__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   nanoem__application__save_project_command__init
+                     (Nanoem__Application__SaveProjectCommand         *message)
+{
+  static const Nanoem__Application__SaveProjectCommand init_value = NANOEM__APPLICATION__SAVE_PROJECT_COMMAND__INIT;
+  *message = init_value;
+}
+size_t nanoem__application__save_project_command__get_packed_size
+                     (const Nanoem__Application__SaveProjectCommand *message)
+{
+  assert(message->base.descriptor == &nanoem__application__save_project_command__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t nanoem__application__save_project_command__pack
+                     (const Nanoem__Application__SaveProjectCommand *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &nanoem__application__save_project_command__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t nanoem__application__save_project_command__pack_to_buffer
+                     (const Nanoem__Application__SaveProjectCommand *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &nanoem__application__save_project_command__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Nanoem__Application__SaveProjectCommand *
+       nanoem__application__save_project_command__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Nanoem__Application__SaveProjectCommand *)
+     protobuf_c_message_unpack (&nanoem__application__save_project_command__descriptor,
+                                allocator, len, data);
+}
+void   nanoem__application__save_project_command__free_unpacked
+                     (Nanoem__Application__SaveProjectCommand *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &nanoem__application__save_project_command__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   nanoem__application__undo_command__init
                      (Nanoem__Application__UndoCommand         *message)
 {
@@ -11705,6 +11750,96 @@ void   nanoem__application__set_viewport_device_pixel_ratio_event__free_unpacked
   if(!message)
     return;
   assert(message->base.descriptor == &nanoem__application__set_viewport_device_pixel_ratio_event__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   nanoem__application__toggle_model_editing_enabled_event__init
+                     (Nanoem__Application__ToggleModelEditingEnabledEvent         *message)
+{
+  static const Nanoem__Application__ToggleModelEditingEnabledEvent init_value = NANOEM__APPLICATION__TOGGLE_MODEL_EDITING_ENABLED_EVENT__INIT;
+  *message = init_value;
+}
+size_t nanoem__application__toggle_model_editing_enabled_event__get_packed_size
+                     (const Nanoem__Application__ToggleModelEditingEnabledEvent *message)
+{
+  assert(message->base.descriptor == &nanoem__application__toggle_model_editing_enabled_event__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t nanoem__application__toggle_model_editing_enabled_event__pack
+                     (const Nanoem__Application__ToggleModelEditingEnabledEvent *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &nanoem__application__toggle_model_editing_enabled_event__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t nanoem__application__toggle_model_editing_enabled_event__pack_to_buffer
+                     (const Nanoem__Application__ToggleModelEditingEnabledEvent *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &nanoem__application__toggle_model_editing_enabled_event__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Nanoem__Application__ToggleModelEditingEnabledEvent *
+       nanoem__application__toggle_model_editing_enabled_event__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Nanoem__Application__ToggleModelEditingEnabledEvent *)
+     protobuf_c_message_unpack (&nanoem__application__toggle_model_editing_enabled_event__descriptor,
+                                allocator, len, data);
+}
+void   nanoem__application__toggle_model_editing_enabled_event__free_unpacked
+                     (Nanoem__Application__ToggleModelEditingEnabledEvent *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &nanoem__application__toggle_model_editing_enabled_event__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
+void   nanoem__application__quit_application_event__init
+                     (Nanoem__Application__QuitApplicationEvent         *message)
+{
+  static const Nanoem__Application__QuitApplicationEvent init_value = NANOEM__APPLICATION__QUIT_APPLICATION_EVENT__INIT;
+  *message = init_value;
+}
+size_t nanoem__application__quit_application_event__get_packed_size
+                     (const Nanoem__Application__QuitApplicationEvent *message)
+{
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t nanoem__application__quit_application_event__pack
+                     (const Nanoem__Application__QuitApplicationEvent *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t nanoem__application__quit_application_event__pack_to_buffer
+                     (const Nanoem__Application__QuitApplicationEvent *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Nanoem__Application__QuitApplicationEvent *
+       nanoem__application__quit_application_event__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Nanoem__Application__QuitApplicationEvent *)
+     protobuf_c_message_unpack (&nanoem__application__quit_application_event__descriptor,
+                                allocator, len, data);
+}
+void   nanoem__application__quit_application_event__free_unpacked
+                     (Nanoem__Application__QuitApplicationEvent *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &nanoem__application__quit_application_event__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
 void   nanoem__application__ping_pong_event__init
@@ -18854,6 +18989,24 @@ const ProtobufCMessageDescriptor nanoem__application__confirm_before_exporting_v
   (ProtobufCMessageInit) nanoem__application__confirm_before_exporting_video_command__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+#define nanoem__application__save_project_command__field_descriptors NULL
+#define nanoem__application__save_project_command__field_indices_by_name NULL
+#define nanoem__application__save_project_command__number_ranges NULL
+const ProtobufCMessageDescriptor nanoem__application__save_project_command__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "nanoem.application.SaveProjectCommand",
+  "SaveProjectCommand",
+  "Nanoem__Application__SaveProjectCommand",
+  "nanoem.application",
+  sizeof(Nanoem__Application__SaveProjectCommand),
+  0,
+  nanoem__application__save_project_command__field_descriptors,
+  nanoem__application__save_project_command__field_indices_by_name,
+  0,  nanoem__application__save_project_command__number_ranges,
+  (ProtobufCMessageInit) nanoem__application__save_project_command__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 static const ProtobufCFieldDescriptor nanoem__application__undo_command__field_descriptors[1] =
 {
   {
@@ -24477,7 +24630,7 @@ const ProtobufCMessageDescriptor nanoem__application__get_handle_file_urirequest
   (ProtobufCMessageInit) nanoem__application__get_handle_file_urirequest_command__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__application__command__field_descriptors[187] =
+static const ProtobufCFieldDescriptor nanoem__application__command__field_descriptors[188] =
 {
   {
     "timestamp",
@@ -25860,6 +26013,18 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
+    "save_project",
+    128,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Nanoem__Application__Command, type_case),
+    offsetof(Nanoem__Application__Command, save_project),
+    &nanoem__application__save_project_command__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
     "ping_pong",
     1000,
     PROTOBUF_C_LABEL_OPTIONAL,
@@ -26746,15 +26911,15 @@ static const unsigned nanoem__application__command__field_indices_by_name[] = {
   109,   /* field[109] = execute_exporting_video */
   104,   /* field[104] = execute_model_io_plugin */
   105,   /* field[105] = execute_motion_io_plugin */
-  121,   /* field[121] = get_all_accessories */
-  117,   /* field[117] = get_all_model_bones */
-  118,   /* field[118] = get_all_model_morphs */
-  122,   /* field[122] = get_all_models */
-  120,   /* field[120] = get_background_image_texture_handle */
-  126,   /* field[126] = get_handle_file_uri */
-  119,   /* field[119] = get_project_file_uri */
+  122,   /* field[122] = get_all_accessories */
+  118,   /* field[118] = get_all_model_bones */
+  119,   /* field[119] = get_all_model_morphs */
+  123,   /* field[123] = get_all_models */
+  121,   /* field[121] = get_background_image_texture_handle */
+  127,   /* field[127] = get_handle_file_uri */
+  120,   /* field[120] = get_project_file_uri */
   1,   /* field[1] = initialize */
-  116,   /* field[116] = is_project_dirty */
+  117,   /* field[117] = is_project_dirty */
   17,   /* field[17] = key_pressed */
   18,   /* field[18] = key_released */
   33,   /* field[33] = load_all_decoder_plugins */
@@ -26764,74 +26929,74 @@ static const unsigned nanoem__application__command__field_indices_by_name[] = {
   22,   /* field[22] = load_file */
   20,   /* field[20] = menu_action */
   24,   /* field[24] = new_project */
-  115,   /* field[115] = ping_pong */
+  116,   /* field[116] = ping_pong */
   14,   /* field[14] = pointer_moved */
   13,   /* field[13] = pointer_pressed */
   15,   /* field[15] = pointer_released */
   16,   /* field[16] = pointer_scrolled */
-  124,   /* field[124] = query_open_multiple_files_dialog */
-  123,   /* field[123] = query_open_single_file_dialog */
-  125,   /* field[125] = query_save_file_dialog */
+  125,   /* field[125] = query_open_multiple_files_dialog */
+  124,   /* field[124] = query_open_single_file_dialog */
+  126,   /* field[126] = query_save_file_dialog */
   87,   /* field[87] = recovery */
-  133,   /* field[133] = redo_add_accessory_keyframe */
-  166,   /* field[166] = redo_add_bone */
-  135,   /* field[135] = redo_add_bone_keyframe */
-  137,   /* field[137] = redo_add_camera_keyframe */
-  169,   /* field[169] = redo_add_constraint */
-  184,   /* field[184] = redo_add_face */
-  181,   /* field[181] = redo_add_joint */
-  175,   /* field[175] = redo_add_label */
-  139,   /* field[139] = redo_add_light_keyframe */
-  163,   /* field[163] = redo_add_material */
-  141,   /* field[141] = redo_add_model_keyframe */
-  172,   /* field[172] = redo_add_morph */
-  143,   /* field[143] = redo_add_morph_keyframe */
-  178,   /* field[178] = redo_add_rigid_body */
-  145,   /* field[145] = redo_add_self_shadow_keyframe */
-  160,   /* field[160] = redo_add_vertex */
-  157,   /* field[157] = redo_batch_undo_command_list */
-  153,   /* field[153] = redo_delete_accessory */
-  154,   /* field[154] = redo_delete_model */
-  150,   /* field[150] = redo_insert_empty_timeline_frame */
-  128,   /* field[128] = redo_load_accessory */
-  155,   /* field[155] = redo_load_audio */
-  129,   /* field[129] = redo_load_model */
-  130,   /* field[130] = redo_load_motion */
-  156,   /* field[156] = redo_load_video */
-  159,   /* field[159] = redo_model_header */
-  134,   /* field[134] = redo_remove_accessory_keyframe */
-  168,   /* field[168] = redo_remove_bone */
-  136,   /* field[136] = redo_remove_bone_keyframe */
-  138,   /* field[138] = redo_remove_camera_keyframe */
-  171,   /* field[171] = redo_remove_constraint */
-  186,   /* field[186] = redo_remove_face */
-  183,   /* field[183] = redo_remove_joint */
-  177,   /* field[177] = redo_remove_label */
-  140,   /* field[140] = redo_remove_light_keyframe */
-  165,   /* field[165] = redo_remove_material */
-  142,   /* field[142] = redo_remove_model_keyframe */
-  174,   /* field[174] = redo_remove_morph */
-  144,   /* field[144] = redo_remove_morph_keyframe */
-  180,   /* field[180] = redo_remove_rigid_body */
-  146,   /* field[146] = redo_remove_self_shadow_keyframe */
-  151,   /* field[151] = redo_remove_timeline_frame */
-  162,   /* field[162] = redo_remove_vertex */
-  158,   /* field[158] = redo_save_model_snapshot */
-  152,   /* field[152] = redo_save_motion_snapshot */
-  131,   /* field[131] = redo_transform_bone */
-  132,   /* field[132] = redo_transform_morph */
-  147,   /* field[147] = redo_update_accessory */
-  167,   /* field[167] = redo_update_bone */
-  148,   /* field[148] = redo_update_camera */
-  170,   /* field[170] = redo_update_constraint */
-  185,   /* field[185] = redo_update_face */
-  182,   /* field[182] = redo_update_joint */
-  176,   /* field[176] = redo_update_label */
-  149,   /* field[149] = redo_update_light */
-  164,   /* field[164] = redo_update_material */
-  173,   /* field[173] = redo_update_morph */
-  179,   /* field[179] = redo_update_rigid_body */
-  161,   /* field[161] = redo_update_vertex */
+  134,   /* field[134] = redo_add_accessory_keyframe */
+  167,   /* field[167] = redo_add_bone */
+  136,   /* field[136] = redo_add_bone_keyframe */
+  138,   /* field[138] = redo_add_camera_keyframe */
+  170,   /* field[170] = redo_add_constraint */
+  185,   /* field[185] = redo_add_face */
+  182,   /* field[182] = redo_add_joint */
+  176,   /* field[176] = redo_add_label */
+  140,   /* field[140] = redo_add_light_keyframe */
+  164,   /* field[164] = redo_add_material */
+  142,   /* field[142] = redo_add_model_keyframe */
+  173,   /* field[173] = redo_add_morph */
+  144,   /* field[144] = redo_add_morph_keyframe */
+  179,   /* field[179] = redo_add_rigid_body */
+  146,   /* field[146] = redo_add_self_shadow_keyframe */
+  161,   /* field[161] = redo_add_vertex */
+  158,   /* field[158] = redo_batch_undo_command_list */
+  154,   /* field[154] = redo_delete_accessory */
+  155,   /* field[155] = redo_delete_model */
+  151,   /* field[151] = redo_insert_empty_timeline_frame */
+  129,   /* field[129] = redo_load_accessory */
+  156,   /* field[156] = redo_load_audio */
+  130,   /* field[130] = redo_load_model */
+  131,   /* field[131] = redo_load_motion */
+  157,   /* field[157] = redo_load_video */
+  160,   /* field[160] = redo_model_header */
+  135,   /* field[135] = redo_remove_accessory_keyframe */
+  169,   /* field[169] = redo_remove_bone */
+  137,   /* field[137] = redo_remove_bone_keyframe */
+  139,   /* field[139] = redo_remove_camera_keyframe */
+  172,   /* field[172] = redo_remove_constraint */
+  187,   /* field[187] = redo_remove_face */
+  184,   /* field[184] = redo_remove_joint */
+  178,   /* field[178] = redo_remove_label */
+  141,   /* field[141] = redo_remove_light_keyframe */
+  166,   /* field[166] = redo_remove_material */
+  143,   /* field[143] = redo_remove_model_keyframe */
+  175,   /* field[175] = redo_remove_morph */
+  145,   /* field[145] = redo_remove_morph_keyframe */
+  181,   /* field[181] = redo_remove_rigid_body */
+  147,   /* field[147] = redo_remove_self_shadow_keyframe */
+  152,   /* field[152] = redo_remove_timeline_frame */
+  163,   /* field[163] = redo_remove_vertex */
+  159,   /* field[159] = redo_save_model_snapshot */
+  153,   /* field[153] = redo_save_motion_snapshot */
+  132,   /* field[132] = redo_transform_bone */
+  133,   /* field[133] = redo_transform_morph */
+  148,   /* field[148] = redo_update_accessory */
+  168,   /* field[168] = redo_update_bone */
+  149,   /* field[149] = redo_update_camera */
+  171,   /* field[171] = redo_update_constraint */
+  186,   /* field[186] = redo_update_face */
+  183,   /* field[183] = redo_update_joint */
+  177,   /* field[177] = redo_update_label */
+  150,   /* field[150] = redo_update_light */
+  165,   /* field[165] = redo_update_material */
+  174,   /* field[174] = redo_update_morph */
+  180,   /* field[180] = redo_update_rigid_body */
+  162,   /* field[162] = redo_update_vertex */
   50,   /* field[50] = register_accessory_keyframe */
   51,   /* field[51] = register_all_selected_bone_keyframes */
   55,   /* field[55] = register_all_selected_morph_keyframes */
@@ -26853,6 +27018,7 @@ static const unsigned nanoem__application__command__field_indices_by_name[] = {
   107,   /* field[107] = request_export_video_configuration */
   23,   /* field[23] = save_file */
   89,   /* field[89] = save_point */
+  115,   /* field[115] = save_project */
   111,   /* field[111] = screen_cursor_move */
   110,   /* field[110] = screen_cursor_press */
   112,   /* field[112] = screen_cursor_release */
@@ -26905,7 +27071,7 @@ static const unsigned nanoem__application__command__field_indices_by_name[] = {
   78,   /* field[78] = stop_debug_capture */
   4,   /* field[4] = terminate */
   0,   /* field[0] = timestamp */
-  127,   /* field[127] = undo */
+  128,   /* field[128] = undo */
   19,   /* field[19] = unicode_input */
   76,   /* field[76] = update_current_fps */
   49,   /* field[49] = update_model */
@@ -26919,9 +27085,9 @@ static const ProtobufCIntRange nanoem__application__command__number_ranges[6 + 1
   { 10, 1 },
   { 40, 29 },
   { 48, 35 },
-  { 1000, 115 },
-  { 2000, 127 },
-  { 0, 187 }
+  { 1000, 116 },
+  { 2000, 128 },
+  { 0, 188 }
 };
 const ProtobufCMessageDescriptor nanoem__application__command__descriptor =
 {
@@ -26931,7 +27097,7 @@ const ProtobufCMessageDescriptor nanoem__application__command__descriptor =
   "Nanoem__Application__Command",
   "nanoem.application",
   sizeof(Nanoem__Application__Command),
-  187,
+  188,
   nanoem__application__command__field_descriptors,
   nanoem__application__command__field_indices_by_name,
   6,  nanoem__application__command__number_ranges,
@@ -30362,6 +30528,62 @@ const ProtobufCMessageDescriptor nanoem__application__set_viewport_device_pixel_
   (ProtobufCMessageInit) nanoem__application__set_viewport_device_pixel_ratio_event__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+static const ProtobufCFieldDescriptor nanoem__application__toggle_model_editing_enabled_event__field_descriptors[1] =
+{
+  {
+    "value",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_BOOL,
+    0,   /* quantifier_offset */
+    offsetof(Nanoem__Application__ToggleModelEditingEnabledEvent, value),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned nanoem__application__toggle_model_editing_enabled_event__field_indices_by_name[] = {
+  0,   /* field[0] = value */
+};
+static const ProtobufCIntRange nanoem__application__toggle_model_editing_enabled_event__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 1 }
+};
+const ProtobufCMessageDescriptor nanoem__application__toggle_model_editing_enabled_event__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "nanoem.application.ToggleModelEditingEnabledEvent",
+  "ToggleModelEditingEnabledEvent",
+  "Nanoem__Application__ToggleModelEditingEnabledEvent",
+  "nanoem.application",
+  sizeof(Nanoem__Application__ToggleModelEditingEnabledEvent),
+  1,
+  nanoem__application__toggle_model_editing_enabled_event__field_descriptors,
+  nanoem__application__toggle_model_editing_enabled_event__field_indices_by_name,
+  1,  nanoem__application__toggle_model_editing_enabled_event__number_ranges,
+  (ProtobufCMessageInit) nanoem__application__toggle_model_editing_enabled_event__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
+#define nanoem__application__quit_application_event__field_descriptors NULL
+#define nanoem__application__quit_application_event__field_indices_by_name NULL
+#define nanoem__application__quit_application_event__number_ranges NULL
+const ProtobufCMessageDescriptor nanoem__application__quit_application_event__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "nanoem.application.QuitApplicationEvent",
+  "QuitApplicationEvent",
+  "Nanoem__Application__QuitApplicationEvent",
+  "nanoem.application",
+  sizeof(Nanoem__Application__QuitApplicationEvent),
+  0,
+  nanoem__application__quit_application_event__field_descriptors,
+  nanoem__application__quit_application_event__field_indices_by_name,
+  0,  nanoem__application__quit_application_event__number_ranges,
+  (ProtobufCMessageInit) nanoem__application__quit_application_event__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 #define nanoem__application__ping_pong_event__field_descriptors NULL
 #define nanoem__application__ping_pong_event__field_indices_by_name NULL
 #define nanoem__application__ping_pong_event__number_ranges NULL
@@ -31043,7 +31265,7 @@ const ProtobufCMessageDescriptor nanoem__application__get_handle_file_urirespons
   (ProtobufCMessageInit) nanoem__application__get_handle_file_uriresponse_event__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__application__event__field_descriptors[95] =
+static const ProtobufCFieldDescriptor nanoem__application__event__field_descriptors[97] =
 {
   {
     "timestamp",
@@ -32042,6 +32264,30 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
+    "toggle_model_editing_enabled",
+    91,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Nanoem__Application__Event, type_case),
+    offsetof(Nanoem__Application__Event, toggle_model_editing_enabled),
+    &nanoem__application__toggle_model_editing_enabled_event__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "quit_application",
+    92,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Nanoem__Application__Event, type_case),
+    offsetof(Nanoem__Application__Event, quit_application),
+    &nanoem__application__quit_application_event__descriptor,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
     "ping_pong",
     1000,
     PROTOBUF_C_LABEL_OPTIONAL,
@@ -32211,21 +32457,22 @@ static const unsigned nanoem__application__event__field_indices_by_name[] = {
   23,   /* field[23] = discard_project_after_confirm */
   48,   /* field[48] = enable_cursor */
   55,   /* field[55] = error */
-  89,   /* field[89] = get_all_accessories */
-  85,   /* field[85] = get_all_model_bones */
-  86,   /* field[86] = get_all_model_morphs */
-  90,   /* field[90] = get_all_models */
-  88,   /* field[88] = get_background_image_texture_handle */
-  94,   /* field[94] = get_handle_file_uri */
-  87,   /* field[87] = get_project_file_uri */
+  91,   /* field[91] = get_all_accessories */
+  87,   /* field[87] = get_all_model_bones */
+  88,   /* field[88] = get_all_model_morphs */
+  92,   /* field[92] = get_all_models */
+  90,   /* field[90] = get_background_image_texture_handle */
+  96,   /* field[96] = get_handle_file_uri */
+  89,   /* field[89] = get_project_file_uri */
   53,   /* field[53] = initialization_complete */
-  84,   /* field[84] = is_project_dirty */
+  86,   /* field[86] = is_project_dirty */
   18,   /* field[18] = pause */
-  83,   /* field[83] = ping_pong */
+  85,   /* field[85] = ping_pong */
   16,   /* field[16] = play */
-  92,   /* field[92] = query_open_multiple_files_dialog */
-  91,   /* field[91] = query_open_single_file_dialog */
-  93,   /* field[93] = query_save_file_dialog */
+  94,   /* field[94] = query_open_multiple_files_dialog */
+  93,   /* field[93] = query_open_single_file_dialog */
+  95,   /* field[95] = query_save_file_dialog */
+  84,   /* field[84] = quit_application */
   4,   /* field[4] = redo */
   13,   /* field[13] = remove_accessory */
   10,   /* field[10] = remove_model */
@@ -32271,6 +32518,7 @@ static const unsigned nanoem__application__event__field_indices_by_name[] = {
   46,   /* field[46] = toggle_active_model_vertex_shader_skinning */
   40,   /* field[40] = toggle_active_model_visible */
   29,   /* field[29] = toggle_grid_enabled */
+  83,   /* field[83] = toggle_model_editing_enabled */
   27,   /* field[27] = toggle_project_compute_shader_skinning_enabled */
   24,   /* field[24] = toggle_project_effect_enabled */
   25,   /* field[25] = toggle_project_ground_shadow_enabled */
@@ -32287,8 +32535,8 @@ static const ProtobufCIntRange nanoem__application__event__number_ranges[3 + 1] 
 {
   { 1, 0 },
   { 10, 2 },
-  { 1000, 83 },
-  { 0, 95 }
+  { 1000, 85 },
+  { 0, 97 }
 };
 const ProtobufCMessageDescriptor nanoem__application__event__descriptor =
 {
@@ -32298,7 +32546,7 @@ const ProtobufCMessageDescriptor nanoem__application__event__descriptor =
   "Nanoem__Application__Event",
   "nanoem.application",
   sizeof(Nanoem__Application__Event),
-  95,
+  97,
   nanoem__application__event__field_descriptors,
   nanoem__application__event__field_indices_by_name,
   3,  nanoem__application__event__number_ranges,

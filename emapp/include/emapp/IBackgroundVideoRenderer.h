@@ -22,7 +22,7 @@ public:
     {
     }
     virtual bool load(const URI &fileURI, Error &error) = 0;
-    virtual void draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) = 0;
+    virtual void draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) = 0;
     virtual void seek(nanoem_f64_t seconds) = 0;
     virtual void flush() = 0;
     virtual void destroy() = 0;

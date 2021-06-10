@@ -16,7 +16,9 @@ namespace imgui {
 
 struct LazySetCameraOutsideParenthCommand : ImGuiWindow::ILazyExecutionCommand {
     LazySetCameraOutsideParenthCommand(const StringPair &value);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     const StringPair m_value;
 };

@@ -123,7 +123,7 @@ BaseKeyframeInterpolationCurveGraphDialog::drawXCircle(ImDrawList *drawList, con
     ImGui::InvisibleButton("x", circleRect);
     if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         ImVec2 pos = ImGui::GetMousePos();
-        const glm::u8vec2 newControlPoint(
+        const Vector2U8 newControlPoint(
             glm::ceil((glm::clamp(pos.x - rectFrom.x, 0.0f, avail.y) / avail.x) * kInterpolationMaxFloatValue),
             kInterpolationMaxFloatValue -
                 glm::ceil((glm::clamp(pos.y - rectFrom.y, 0.0f, avail.y) / avail.y) * kInterpolationMaxFloatValue));
@@ -142,7 +142,7 @@ BaseKeyframeInterpolationCurveGraphDialog::drawYCircle(ImDrawList *drawList, con
     ImGui::InvisibleButton("y", circleRect);
     if (ImGui::IsItemActive() && ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
         ImVec2 pos = ImGui::GetMousePos();
-        const glm::u8vec2 newControlPoint(
+        const Vector2U8 newControlPoint(
             glm::ceil((glm::clamp(pos.x - rectFrom.x, 0.0f, avail.y) / avail.x) * kInterpolationMaxFloatValue),
             kInterpolationMaxFloatValue -
                 glm::ceil((glm::clamp(pos.y - rectFrom.y, 0.0f, avail.y) / avail.y) * kInterpolationMaxFloatValue));

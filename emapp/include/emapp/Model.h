@@ -21,9 +21,10 @@
 #include "emapp/model/RigidBody.h"
 #include "emapp/model/Vertex.h"
 
+struct Nanoem__Application__Command;
+struct par_shapes_mesh_s;
 struct undo_command_t;
 struct undo_stack_t;
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
 
 namespace nanoem {
 
@@ -35,6 +36,7 @@ class ISeekableReader;
 class IFileWriter;
 class IWriter;
 class IModelObjectSelection;
+class IPrimitive2D;
 class Image;
 class ImageLoader;
 class ModelProgramBundle;
@@ -48,12 +50,32 @@ class LineDrawer;
 
 namespace model {
 struct BindPose;
+class IGizmo;
+class IVertexWeightPainter;
 class ISkinDeformer;
 } /* namespace model */
 
 class Model NANOEM_DECL_SEALED : public IDrawable, private NonCopyable {
 public:
-    enum AxisType { kAxisTypeFirstEnum, kAxisCenter = kAxisTypeFirstEnum, kAxisX, kAxisY, kAxisZ, kAxisTypeMaxEnum };
+    enum AxisType {
+        kAxisTypeFirstEnum,
+        kAxisTypeNone = kAxisTypeFirstEnum,
+        kAxisTypeCenter,
+        kAxisTypeX,
+        kAxisTypeY,
+        kAxisTypeZ,
+        kAxisTypeMaxEnum
+    };
+    enum EditActionType {
+        kEditActionTypeFirstEnum,
+        kEditActionTypeNone = kEditActionTypeFirstEnum,
+        kEditActionTypeSelectModelObject,
+        kEditActionTypePaintVertexWeight,
+        kEditActionTypeCreateTriangleVertices,
+        kEditActionTypeCreateParentBone,
+        kEditActionTypeCreateTargetBone,
+        kEditActionTypeMaxEnum
+    };
     enum TransformCoordinateType {
         kTransformCoordinateTypeFirstEnum,
         kTransformCoordinateTypeGlobal = kTransformCoordinateTypeFirstEnum,
@@ -88,7 +110,6 @@ public:
         ~VertexUnit() NANOEM_DECL_NOEXCEPT;
         void setUVA(const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
         void performSkinning(nanoem_f32_t edgeSize, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
-        void setWeightColor(const model::Bone *bone, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT;
         void prepareSkinning(const model::Material::BoneIndexHashMap *indexHashMap, const model::Vertex *vertex)
             NANOEM_DECL_NOEXCEPT;
         static bx::simd128_t swizzleWeight(const model::Vertex *vertex, nanoem_rsize_t index) NANOEM_DECL_NOEXCEPT;
@@ -109,7 +130,11 @@ public:
         static void performSkinningByType(const model::Vertex *vertex, bx::simd128_t *p, bx::simd128_t *n)
             NANOEM_DECL_NOEXCEPT;
     };
-    struct ImportSetting {
+    struct NewModelDescription {
+        String m_name[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
+        String m_comment[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
+    };
+    struct ImportDescription {
         enum FileType {
             kFileTypeFirstEnum,
             kFileTypeNone = kFileTypeFirstEnum,
@@ -118,17 +143,17 @@ public:
             kFileTypeMetasequoia,
             kFileTypeMaxEnum
         };
-        ImportSetting(const URI &fileURI);
-        ~ImportSetting() NANOEM_DECL_NOEXCEPT;
+        ImportDescription(const URI &fileURI);
+        ~ImportDescription() NANOEM_DECL_NOEXCEPT;
         const URI m_fileURI;
         String m_name[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
         String m_comment[NANOEM_LANGUAGE_TYPE_MAX_ENUM];
         Matrix4x4 m_transform;
         FileType m_fileType;
     };
-    struct ExportSetting {
-        ExportSetting();
-        ~ExportSetting() NANOEM_DECL_NOEXCEPT;
+    struct ExportDescription {
+        ExportDescription();
+        ~ExportDescription() NANOEM_DECL_NOEXCEPT;
         Matrix4x4 m_transform;
     };
 
@@ -139,14 +164,16 @@ public:
     static bool isLoadableExtension(const URI &fileURI);
     static void setStandardPipelineDescription(sg_pipeline_desc &desc);
     static void setEdgePipelineDescription(sg_pipeline_desc &desc);
+    static void generateNewModelData(const NewModelDescription &desc, nanoem_unicode_string_factory_t *factory,
+        ByteArray &bytes, nanoem_status_t &status);
 
     Model(Project *project, nanoem_u16_t handle);
     ~Model() NANOEM_DECL_NOEXCEPT;
 
     bool load(const nanoem_u8_t *bytes, size_t length, Error &error);
     bool load(const ByteArray &bytes, Error &error);
-    bool load(const nanoem_u8_t *bytes, size_t length, const ImportSetting &setting, Error &error);
-    bool load(const ByteArray &bytes, const ImportSetting &setting, Error &error);
+    bool load(const nanoem_u8_t *bytes, size_t length, const ImportDescription &desc, Error &error);
+    bool load(const ByteArray &bytes, const ImportDescription &desc, Error &error);
     bool loadPose(const nanoem_u8_t *bytes, size_t length, Error &error);
     bool loadPose(const ByteArray &bytes, Error &error);
     bool loadArchive(const String &entryPoint, const Archiver &archiver, Error &error);
@@ -154,8 +181,8 @@ public:
     bool loadArchive(ISeekableReader *reader, Progress &progress, Error &error);
     bool save(IWriter *writer, Error &error) const;
     bool save(ByteArray &bytes, Error &error) const;
-    bool save(IWriter *writer, const ExportSetting &setting, Error &error) const;
-    bool save(ByteArray &bytes, const ExportSetting &setting, Error &error) const;
+    bool save(IWriter *writer, const ExportDescription &desc, Error &error) const;
+    bool save(ByteArray &bytes, const ExportDescription &desc, Error &error) const;
     bool savePose(IWriter *writer, Error &error);
     bool savePose(ByteArray &bytes, Error &error);
     bool saveArchive(const String &prefix, Archiver &archiver, Error &error);
@@ -166,6 +193,9 @@ public:
     bool uploadArchive(ISeekableReader *reader, Progress &progress, Error &error);
     nanoem_u32_t createAllImages();
     void loadAllImages(Progress &progress, Error &error);
+    void uploadDiffuseImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error);
+    void uploadSphereMapImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error);
+    void uploadToonImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error);
     void readLoadCommandMessage(const Nanoem__Application__Command *messagePtr);
     void writeLoadCommandMessage(Error &error);
     void writeDeleteCommandMessage(Error &error);
@@ -175,9 +205,13 @@ public:
         PhysicsEngine::SimulationTimingType timing);
     void synchronizeAllRigidBodiesTransformFeedbackFromSimulation(PhysicsEngine::RigidBodyFollowBoneType followType);
     void synchronizeAllRigidBodiesTransformFeedbackToSimulation();
+    void rebuildAllVertexBuffers(bool enableSkinFactory);
+    void rebuildIndexBuffer();
+    void clearAllDrawVertexBuffers();
     void performAllBonesTransform();
-    void performAllMorphsDeform(bool resetAll);
+    void resetAllMorphDeformStates();
     void deformAllMorphs(bool checkDirty);
+    bool isStagingVertexBufferDirty() const NANOEM_DECL_NOEXCEPT;
     void markStagingVertexBufferDirty();
     void updateStagingVertexBuffer();
     void resetLanguage();
@@ -187,10 +221,14 @@ public:
     void registerResetActiveBoneTransformCommand(ResetType type);
     void registerResetMorphSetWeightsCommand(const model::Morph::Set &morphSet);
     void registerResetAllMorphWeightsCommand();
-    void removeBone(const nanoem_model_bone_t *value);
-    void removeBone(const String &value);
-    void removeMorph(const nanoem_model_morph_t *value);
-    void removeMorph(const String &value);
+    void addBoneReference(nanoem_model_bone_t *value);
+    void addMorphReference(const nanoem_model_morph_t *value);
+    void removeBoneReference(const nanoem_model_bone_t *value);
+    void removeBoneReference(const String &value);
+    void removeMorphReference(const nanoem_model_morph_t *value);
+    void removeMorphReference(const String &value);
+    bool isFaceEditingMasked(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT;
+    void setFaceEditingMasked(nanoem_rsize_t index, bool value);
     void pushUndo(undo_command_t *command);
     void solveAllConstraints();
 
@@ -207,9 +245,9 @@ public:
     void clearAllBoneBoundsRigidBodies();
     void createAllBoneBoundsRigidBodies();
     bool intersectsBoneInWindow(
-        const Vector2 &devicePixelCursor, const model::Bone *bone, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
+        const Vector2 &devicePixelCursor, const model::Bone *bonePtr, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
     bool intersectsBoneInViewport(
-        const Vector2 &devicePixelCursor, const model::Bone *bone, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
+        const Vector2 &devicePixelCursor, const model::Bone *bonePtr, Vector2 &coord) const NANOEM_DECL_NOEXCEPT;
 
     void saveBindPose(model::BindPose &value) const;
     void restoreBindPose(const model::BindPose &value);
@@ -234,18 +272,22 @@ public:
     bool hasOutsideParent(const nanoem_model_bone_t *key) const NANOEM_DECL_NOEXCEPT;
     void setOutsideParent(const nanoem_model_bone_t *key, const StringPair &value);
     void removeOutsideParent(const nanoem_model_bone_t *key);
-    sg_image *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
+    IImageView *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
     bool isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
-    bool isMaterialSelected(const nanoem_model_material_t *material) const NANOEM_DECL_NOEXCEPT;
-    bool isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DECL_NOEXCEPT;
-    void drawBoneConnections(
-        const nanoem_model_bone_t *bone, const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
-    void drawBoneConnections(const Vector2 &devicePixelCursor);
-    void drawBoneTooltip(const nanoem_model_bone_t *bonePtr);
-    void drawConstraintConnections(const Vector2 &devicePixelCursor, const nanoem_model_constraint_t *constraint);
-    void drawConstraintConnections(const Vector2 &devicePixelCursor);
-    void drawConstraintsHeatMap(const nanoem_model_constraint_t *constraint);
-    void drawConstraintsHeatMap();
+    bool isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT;
+    bool isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
+    bool isBoneConnectionVisible(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
+    void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr,
+        const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness);
+    void drawAllBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor);
+    void drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
+    void drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr, const Vector2 &deviceScaleCursor);
+    void drawBoneTooltip(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr);
+    void drawConstraintConnections(
+        IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_constraint_t *constraint);
+    void drawConstraintConnections(IPrimitive2D *primitive, const Vector2 &devicePixelCursor);
+    void drawConstraintsHeatMap(IPrimitive2D *primitive, const nanoem_model_constraint_t *constraint);
+    void drawConstraintsHeatMap(IPrimitive2D *primitive);
 
     const Project *project() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     Project *project() NANOEM_DECL_NOEXCEPT;
@@ -270,21 +312,23 @@ public:
     nanoem_model_t *data() NANOEM_DECL_NOEXCEPT;
     model::Bone *sharedFallbackBone();
     const nanoem_model_bone_t *activeBone() const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_bone_t *activeBone() NANOEM_DECL_NOEXCEPT;
     void setActiveBone(const nanoem_model_bone_t *value);
     const nanoem_model_constraint_t *activeConstraint() const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_constraint_t *activeConstraint() NANOEM_DECL_NOEXCEPT;
     void setActiveConstraint(const nanoem_model_constraint_t *value);
     const nanoem_model_morph_t *activeMorph(nanoem_model_morph_category_t category) const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_morph_t *activeMorph(nanoem_model_morph_category_t category) NANOEM_DECL_NOEXCEPT;
     void setActiveMorph(nanoem_model_morph_category_t category, const nanoem_model_morph_t *value);
     const nanoem_model_morph_t *activeMorph() const NANOEM_DECL_NOEXCEPT;
-    nanoem_model_morph_t *activeMorph() NANOEM_DECL_NOEXCEPT;
     void setActiveMorph(const nanoem_model_morph_t *value);
     const nanoem_model_material_t *activeMaterial() const NANOEM_DECL_NOEXCEPT;
     void setActiveMaterial(const nanoem_model_material_t *value);
     const nanoem_model_bone_t *activeOutsideParentSubjectBone() const NANOEM_DECL_NOEXCEPT;
     void setActiveOutsideParentSubjectBone(const nanoem_model_bone_t *value);
+    const nanoem_model_bone_t *hoveredBone() const NANOEM_DECL_NOEXCEPT;
+    void setHoveredBone(const nanoem_model_bone_t *value);
+    const undo_stack_t *activeUndoStack() const NANOEM_DECL_NOEXCEPT;
+    undo_stack_t *activeUndoStack() NANOEM_DECL_NOEXCEPT;
+    const undo_stack_t *editingUndoStack() const NANOEM_DECL_NOEXCEPT;
+    undo_stack_t *editingUndoStack() NANOEM_DECL_NOEXCEPT;
     const undo_stack_t *undoStack() const NANOEM_DECL_NOEXCEPT;
     undo_stack_t *undoStack() NANOEM_DECL_NOEXCEPT;
     Matrix4x4 worldTransform() const NANOEM_DECL_NOEXCEPT;
@@ -298,7 +342,9 @@ public:
     bool isRigidBodyBound(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     model::Bone::Set findInherentBoneSet(const nanoem_model_bone_t *bone) const;
     const nanoem_model_bone_t *intersectsBone(
-        const Vector2 &devicePixelCursor, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT;
+        const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT;
+    nanoem_model_bone_t *intersectsBone(
+        const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) NANOEM_DECL_NOEXCEPT;
     const nanoem_model_bone_t *findBone(const nanoem_unicode_string_t *name) const;
     const nanoem_model_bone_t *findBone(const String &name) const NANOEM_DECL_NOEXCEPT;
     const nanoem_model_bone_t *findRedoBone(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT;
@@ -325,11 +371,19 @@ public:
     const IEffect *passiveEffect() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     IEffect *passiveEffect() NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setPassiveEffect(IEffect *value) NANOEM_DECL_OVERRIDE;
+    const model::IGizmo *gizmo() const NANOEM_DECL_NOEXCEPT;
+    model::IGizmo *gizmo();
+    void setGizmo(model::IGizmo *value);
+    const model::IVertexWeightPainter *vertexWeightPainter() const NANOEM_DECL_NOEXCEPT;
+    model::IVertexWeightPainter *vertexWeightPainter();
+    void setVertexWeightPainter(model::IVertexWeightPainter *value);
     UserData userData() const;
     void setUserData(const UserData &value);
-    TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     AxisType transformAxisType() const NANOEM_DECL_NOEXCEPT;
     void setTransformAxisType(AxisType value);
+    EditActionType editActionType() const NANOEM_DECL_NOEXCEPT;
+    void setEditActionType(EditActionType value);
+    TransformCoordinateType transformCoordinateType() const NANOEM_DECL_NOEXCEPT;
     void setTransformCoordinateType(TransformCoordinateType value);
     void toggleTransformCoordinateType();
     Vector4 edgeColor() const NANOEM_DECL_NOEXCEPT;
@@ -343,14 +397,22 @@ public:
     void setMorphWeightFocused(bool value);
     bool isShowAllBones() const NANOEM_DECL_NOEXCEPT;
     void setShowAllBones(bool value);
+    bool isShowAllVertexNormals() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllVertexNormals(bool value);
     bool isShowAllVertexPoints() const NANOEM_DECL_NOEXCEPT;
     void setShowAllVertexPoints(bool value);
     bool isShowAllVertexFaces() const NANOEM_DECL_NOEXCEPT;
     void setShowAllVertexFaces(bool value);
-    bool isShowAllRigidBodies() const NANOEM_DECL_NOEXCEPT;
-    void setShowAllRigidBodies(bool value);
-    bool isShowAllJoints() const NANOEM_DECL_NOEXCEPT;
-    void setShowAllJoints(bool value);
+    bool isShowAllRigidBodyShapes() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllRigidBodyShapes(bool value);
+    bool isShowAllJointShapes() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllJointShapes(bool value);
+    bool isShowAllMaterialOverlays() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllMaterialOverlays(bool value);
+    bool isShowAllVertexWeights() const NANOEM_DECL_NOEXCEPT;
+    void setShowAllVertexWeights(bool value);
+    bool isBlendingVertexWeightsEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setBlendingVertexWeightsEnabled(bool value);
     bool isGroundShadowEnabled() const NANOEM_DECL_NOEXCEPT;
     void setGroundShadowEnabled(bool value);
     bool isShadowMapEnabled() const NANOEM_DECL_NOEXCEPT;
@@ -370,6 +432,7 @@ public:
 
 private:
     struct LoadingImageItem;
+    typedef tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> LineVertexList;
     typedef tinystl::vector<LoadingImageItem *, TinySTLAllocator> LoadingImageItemList;
     typedef tinystl::unordered_map<String, Image *, TinySTLAllocator> ImageMap;
     typedef tinystl::unordered_map<String, const nanoem_model_bone_t *, TinySTLAllocator> BoneHashMap;
@@ -394,19 +457,25 @@ private:
         DrawArrayBuffer();
         ~DrawArrayBuffer() NANOEM_DECL_NOEXCEPT;
         void destroy();
+        LineVertexList m_vertices;
         sg_buffer m_buffer;
-        tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> m_vertices;
     };
     struct DrawIndexedBuffer {
         typedef nanoem_u32_t IndexType;
+        typedef tinystl::vector<IndexType, TinySTLAllocator> IndexList;
         DrawIndexedBuffer();
         ~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT;
-        nanoem_u32_t fillShape(const par_shapes_mesh *mesh, const nanoem::Vector4 &color);
+        nanoem_u32_t fillShape(const par_shapes_mesh_s *mesh, const nanoem::Vector4 &color);
+        void ensureVertexBufferInitialized(const char *name, nanoem_rsize_t numVertices);
+        void ensureIndexBufferInitialized(
+            const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices, bool line);
+        void update();
         void destroy();
+        LineVertexList m_vertices;
+        IndexList m_activeIndices;
         sg_buffer m_vertexBuffer;
         sg_buffer m_indexBuffer;
-        tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> m_vertices;
-        tinystl::vector<IndexType, TinySTLAllocator> m_indices;
+        sg_buffer m_activeIndexBuffer;
         Vector4 m_color;
     };
     struct OffscreenPassiveRenderTargetEffect {
@@ -431,17 +500,23 @@ private:
     IEffect *activeEffect(model::Material *material);
     IEffect *internalEffect(model::Material *material);
     const Image *createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32_t flags);
+    Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
+    void updateDiffuseImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
+    void updateSphereMapImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
+    void updateToonImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
     internal::LineDrawer *lineDrawer();
     void splitBonesPerMaterial(model::Material::BoneIndexHashMap &boneIndexHash) const;
     void bindConstraint(nanoem_model_constraint_t *constraintPtr);
     void applyAllBonesTransform(PhysicsEngine::SimulationTimingType timing);
     void internalClear();
     void internalSetOutsideParent(const nanoem_model_bone_t *key, const StringPair &value);
-    void createVertexIndexBuffers();
-    void initializeVertexBuffers();
+    void initializeAllStagingVertexBuffers();
+    void initializeStagingIndexBuffer();
     void initializeVertexBufferByteArray();
+    void createAllStagingVertexBuffers();
     void internalUpdateStagingVertexBuffer(nanoem_u8_t *ptr, nanoem_rsize_t numVertices);
     void clearAllLoadingImageItems();
+    void setAllPhysicsObjectsEnabled(bool value);
     void predeformMorph(const nanoem_model_morph_t *morphPtr);
     void deformMorph(const nanoem_model_morph_t *morphPtr, bool checkDirty);
     void solveConstraint(
@@ -458,7 +533,7 @@ private:
     bool getVertexIndexBuffer(const model::Material *material, IPass::Buffer &buffer) const NANOEM_DECL_NOEXCEPT;
     bool getEdgeIndexBuffer(const model::Material *material, IPass::Buffer &buffer) const NANOEM_DECL_NOEXCEPT;
     Vector4 connectionBoneColor(
-        const nanoem_model_bone_t *bone, const Vector4 &base, bool enableFixedAxis) const NANOEM_DECL_NOEXCEPT;
+        const nanoem_model_bone_t *bonePtr, const Vector4 &base, bool enableFixedAxis) const NANOEM_DECL_NOEXCEPT;
     Vector4 hoveredBoneColor(const Vector4 &inactive, bool selected) const NANOEM_DECL_NOEXCEPT;
     void drawColor(bool scriptExternalColor);
     void drawEdge(nanoem_f32_t edgeSizeScaleFactor);
@@ -466,15 +541,18 @@ private:
     void drawShadowMap();
     void drawAllJointShapes();
     void drawAllRigidBodyShapes();
+    void drawAllMaterialOverlays();
+    void drawAllVertexNormals();
     void drawAllVertexPoints();
     void drawAllVertexFaces();
+    void drawAllVertexWeights();
     void drawJointShape(const nanoem_model_joint_t *jointPtr);
     void drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr);
-    void drawBoneConnection(const nanoem_model_bone_t *from, const Vector3 &destinationPosition, const Vector4 &color,
-        nanoem_f32_t circleRadius, nanoem_f32_t thickness);
-    void drawBonePoint(const Vector2 &devicePixelCursor, const nanoem_model_bone_t *bonePtr, const Vector4 &inactive,
-        const Vector4 &hovered);
-    void drawConstraintPoint(const Vector4 &position, int j, int numIterations);
+    void drawBoneConnection(IPrimitive2D *primitive, const nanoem_model_bone_t *from,
+        const Vector3 &destinationPosition, const Vector4 &color, nanoem_f32_t circleRadius, nanoem_f32_t thickness);
+    void drawBonePoint(IPrimitive2D *primitive, const Vector2 &devicePixelCursor, const nanoem_model_bone_t *bonePtr,
+        const Vector4 &inactive, const Vector4 &hovered, nanoem_f32_t circleRadius, nanoem_f32_t thickness);
+    void drawConstraintPoint(IPrimitive2D *primitive, const Vector4 &position, int j, int numIterations);
 
     const nanoem_u16_t m_handle;
     Project *m_project;
@@ -482,17 +560,24 @@ private:
     IModelObjectSelection *m_selection;
     internal::LineDrawer *m_drawer;
     model::ISkinDeformer *m_skinDeformer;
+    model::IGizmo *m_gizmo;
+    model::IVertexWeightPainter *m_vertexWeightPainter;
     OffscreenPassiveRenderTargetEffectMap m_offscreenPassiveRenderTargetEffects;
-    DrawArrayBuffer m_drawAllPoints;
-    DrawIndexedBuffer m_drawAllLines;
+    DrawArrayBuffer m_drawAllVertexNormals;
+    DrawArrayBuffer m_drawAllVertexPoints;
+    DrawIndexedBuffer m_drawAllVertexFaces;
+    DrawIndexedBuffer m_drawAllVertexWeights;
     RigidBodyBuffers m_drawRigidBody;
     JointBuffers m_drawJoint;
     nanoem_model_t *m_opaque;
     undo_stack_t *m_undoStack;
+    undo_stack_t *m_editingUndoStack;
     const nanoem_model_morph_t *m_activeMorphPtr[NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM];
     const nanoem_model_constraint_t *m_activeConstraintPtr;
     const nanoem_model_material_t *m_activeMaterialPtr;
+    const nanoem_model_bone_t *m_hoveredBonePtr;
     ByteArray m_vertexBufferData;
+    VertexIndexList m_faceStates;
     tinystl::pair<const nanoem_model_bone_t *, const nanoem_model_bone_t *> m_activeBonePairPtr;
     tinystl::pair<IEffect *, IEffect *> m_activeEffectPtrPair;
     Image *m_screenImage;
@@ -520,6 +605,7 @@ private:
     sg_buffer m_indexBuffer;
     Vector4 m_edgeColor;
     AxisType m_transformAxisType;
+    EditActionType m_editActionType;
     TransformCoordinateType m_transformCoordinateType;
     URI m_fileURI;
     String m_name;

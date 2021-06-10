@@ -21,6 +21,7 @@ public:
         kMenuItemTypeFileFirstEnum,
         kMenuItemTypeFileTitle = kMenuItemTypeFileFirstEnum,
         kMenuItemTypeFileNewProject,
+        kMenuItemTypeFileNewModel,
         kMenuItemTypeFileOpenProject,
         kMenuItemTypeFileImportTitle,
         kMenuItemTypeFileImportModel,
@@ -87,6 +88,7 @@ public:
         kMenuItemTypeProjectOpenViewportDialog,
         kMenuItemTypeProjectOpenDrawOrderDialog,
         kMenuItemTypeProjectOpenTransformOrderDialog,
+        kMenuItemTypeProjectDetachViewportWindow,
         kMenuItemTypeProjectEnableLoop,
         kMenuItemTypeProjectEnableGrid,
         kMenuItemTypeProjectEnableGroundShadow,
@@ -161,6 +163,7 @@ public:
         kMenuItemTypeModelSelectAllBoneKeyframesFromSelectedBoneSet,
         kMenuItemTypeModelExpandAllTracks,
         kMenuItemTypeModelCollapseAllTracks,
+        kMenuItemTypeModelPerformValidation,
         kMenuItemTypeModelEditModeSelect,
         kMenuItemTypeModelEditModeRotate,
         kMenuItemTypeModelEditModeMove,
@@ -197,6 +200,7 @@ public:
         kMenuItemTypeAccessoryRegisterKeyframe,
         kMenuItemTypeAccessoryRemoveAllSelectedKeyframes,
         kMenuItemTypeAccessoryReset,
+        kMenuItemTypeAccessoryConvertToModel,
         kMenuItemTypeAccessoryDelete,
         kMenuItemTypeAccessoryMaxEnum,
         kMenuItemTypeMotionFirstEnum,
@@ -223,6 +227,7 @@ public:
         kMenuItemCheckedStateTrue,
     };
     static const char *menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT;
+    static const char *stripMnemonic(char *buffer, size_t size, const char *text);
     static bool validateMenuItem(const Project *project, MenuItemType type, MenuItemCheckedState &state);
 
     ApplicationMenuBuilder(BaseApplicationClient *client, bool enableModelEditing);
@@ -378,6 +383,7 @@ private:
     static void handleCanPasteEvent(void *userData, bool value);
     static void handleSetWindowPixelRatioEvent(void *userData, nanoem_f32_t value);
     static void handleSetViewportPixelRatioEvent(void *userData, nanoem_f32_t value);
+    static void handleToggleModelEditingEnabledEvent(void *userData, bool value);
 
     void addMorphMenuItems(const StringList &morphs, nanoem_model_morph_category_t category);
     void togglAllMutatingActionMenuItems(bool value);

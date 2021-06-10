@@ -10,7 +10,7 @@
 
 #include "emapp/URI.h"
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
+struct Nanoem__Application__Command;
 
 namespace nanoem {
 
@@ -121,6 +121,7 @@ public:
     typedef void (*pfn_handleToggleActiveAccessoryAddBlendEnabledEvent)(void *userData, bool value);
     typedef void (*pfn_handleToggleActiveAccessoryShadowEnabledEvent)(void *userData, bool value);
     typedef void (*pfn_handleToggleActiveAccessoryVisibleEvent)(void *userData, bool value);
+    typedef void (*pfn_handleToggleModelEditingEnabledEvent)(void *userData, bool value);
     typedef void (*pfn_handleUpdateProgressEvent)(
         void *userData, nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text);
     typedef void (*pfn_handleStartProgressEvent)(
@@ -145,6 +146,7 @@ public:
     typedef void (*pfn_handleCanPasteEvent)(void *userData, bool value);
     typedef void (*pfn_handleSetWindowDevicePixelRatioEvent)(void *userData, nanoem_f32_t value);
     typedef void (*pfn_handleSetViewportDevicePixelRatioEvent)(void *userData, nanoem_f32_t value);
+    typedef void (*pfn_handleQuitApplicationEvent)(void *userData);
     typedef void (*pfn_isProjectDirtyCallback)(void *userData, bool value);
     typedef void (*pfn_getProjectFileURICallback)(void *userData, const URI &value);
     typedef void (*pfn_getAllModelBonesCallback)(void *userData, nanoem_u16_t handle, const StringList &values);
@@ -180,6 +182,7 @@ public:
     void sendSaveFileMessage(const URI &fileURI, nanoem_u32_t type);
     void sendDropFileMessage(const URI &fileURI);
     void sendNewProjectMessage();
+    void sendSaveProjectMessage();
     void sendConfirmBeforeNewProjectMessage();
     void sendConfirmBeforeOpenProjectMessage();
     void sendConfirmBeforeExitApplicationMessage();
@@ -224,8 +227,8 @@ public:
     void sendRemoveAllSelectedMorphKeyframesMessage(nanoem_u16_t handle, const StringList &names);
     void sendRemoveSelfShadowKeyframeMessage();
     void sendBoneBezierControlPointMessage(
-        nanoem_u16_t handle, const String &name, const glm::u8vec4 &value, nanoem_u32_t type);
-    void sendCameraBezierControlPointMessage(const glm::u8vec4 &value, nanoem_u32_t type);
+        nanoem_u16_t handle, const String &name, const Vector4U8 &value, nanoem_u32_t type);
+    void sendCameraBezierControlPointMessage(const Vector4U8 &value, nanoem_u32_t type);
     void sendSelectBoneMessage(nanoem_u16_t handle, const String &name);
     void sendSelectAllBonesMessage(nanoem_u16_t handle);
     void sendSelectAllDirtyBonesMessage(nanoem_u16_t handle);
@@ -256,7 +259,7 @@ public:
     void sendSetModelShadowMapEnabledMessage(nanoem_u16_t handle, bool value);
     void sendSetDrawableOrderIndexMessage(nanoem_u16_t handle, int value);
     void sendSetModelTransformOrderIndexMessage(nanoem_u16_t handle, int value);
-    void sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const glm::u8vec4 *values);
+    void sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const Vector4U8 *values);
     void sendUpdatePerformanceMonitorMessage(
         nanoem_f32_t cpu, nanoem_u64_t currentMemorySize, nanoem_u64_t maxMemorySize);
     void sendLoadAllModelPluginsMessage(const URIList &values);
@@ -270,7 +273,7 @@ public:
     void sendScreenCursorPressMessage(const Vector2SI32 &coord, int type, int modifiers);
     void sendScreenCursorMoveMessage(const Vector2SI32 &coord, int type, int modifiers);
     void sendScreenCursorReleaseMessage(const Vector2SI32 &coord, int type, int modifiers);
-    void sendSetCameraKeyframeInterpolationMessage(const glm::u8vec4 *values);
+    void sendSetCameraKeyframeInterpolationMessage(const Vector4U8 *values);
     void sendIsProjectDirtyRequestMessage(pfn_isProjectDirtyCallback callback, void *userData);
     void sendGetProjectFileURIRequestMessage(pfn_getProjectFileURICallback callback, void *userData);
     void sendGetAllModelBonesRequestMessage(nanoem_u16_t handle, pfn_getAllModelBonesCallback callback, void *userData);
@@ -379,6 +382,8 @@ public:
         pfn_handleToggleActiveAccessoryShadowEnabledEvent listener, void *userData, bool once);
     void addToggleActiveAccessoryVisibleEventListener(
         pfn_handleToggleActiveAccessoryVisibleEvent listener, void *userData, bool once);
+    void addToggleModelEditingEnabledEventListener(
+        pfn_handleToggleModelEditingEnabledEvent listener, void *userData, bool once);
     void addUpdateProgressEventListener(pfn_handleUpdateProgressEvent listener, void *userData, bool once);
     void addStartProgressEventListener(pfn_handleStartProgressEvent listener, void *userData, bool once);
     void addStopProgressEventListener(pfn_handleStopProgressEvent listener, void *userData, bool once);
@@ -403,6 +408,7 @@ public:
         pfn_handleSetWindowDevicePixelRatioEvent listener, void *userData, bool once);
     void addSetViewportDevicePixelRatioEventListener(
         pfn_handleSetViewportDevicePixelRatioEvent listener, void *userData, bool once);
+    void addQuitApplicationEventListener(pfn_handleQuitApplicationEvent listener, void *userData, bool once);
     void clearAllProjectAfterConfirmOnceEventListeners();
     void clearAllCompleteLoadingFileOnceEventListeners();
     void clearAllCompleteSavingFileOnceEventListeners();
@@ -484,6 +490,7 @@ private:
             pfn_handleToggleActiveAccessoryAddBlendEnabledEvent handleToggleActiveAccessoryAddBlendEnabledEvent;
             pfn_handleToggleActiveAccessoryShadowEnabledEvent handleToggleActiveAccessoryShadowEnabledEvent;
             pfn_handleToggleActiveAccessoryVisibleEvent handleToggleActiveAccessoryVisibleEvent;
+            pfn_handleToggleModelEditingEnabledEvent handleToggleModelEditingEnabledEvent;
             pfn_handleUpdateProgressEvent handleUpdateProgressEvent;
             pfn_handleStartProgressEvent handleStartProgressEvent;
             pfn_handleStopProgressEvent handleStopProgressEvent;
@@ -500,6 +507,7 @@ private:
             pfn_handleCanPasteEvent handleCanPasteEvent;
             pfn_handleSetWindowDevicePixelRatioEvent handleSetWindowDevicePixelRatioEvent;
             pfn_handleSetViewportDevicePixelRatioEvent handleSetViewportDevicePixelRatioEvent;
+            pfn_handleQuitApplicationEvent handleQuitApplicationEvent;
         } u;
     };
     typedef tinystl::vector<EventListener, TinySTLAllocator> EventListenerList;

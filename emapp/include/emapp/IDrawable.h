@@ -26,7 +26,6 @@ public:
         kDrawTypeGroundShadow,
         kDrawTypeShadowMap,
         kDrawTypeScriptExternalColor,
-        kDrawTypeVertexWeight,
         kDrawTypeMaxEnum
     };
     typedef tinystl::unordered_map<String, IImageView *, TinySTLAllocator> ImageViewMap;
@@ -35,7 +34,7 @@ public:
     {
     }
     virtual void getAllImageViews(ImageViewMap &value) const = 0;
-    virtual sg_image *uploadImage(const String &filename, const sg_image_desc &desc) = 0;
+    virtual IImageView *uploadImage(const String &filename, const sg_image_desc &desc) = 0;
     virtual const IEffect *findOffscreenPassiveRenderTargetEffect(
         const String &ownerName) const NANOEM_DECL_NOEXCEPT = 0;
     virtual IEffect *findOffscreenPassiveRenderTargetEffect(const String &ownerName) NANOEM_DECL_NOEXCEPT = 0;

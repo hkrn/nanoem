@@ -100,6 +100,8 @@ static const nanoem_u64_t kEnablePhysicsSimulationForBoneKeyframe = 1ull << 26;
 static const nanoem_u64_t kEnableImageAnisotropy = 1ull << 27;
 static const nanoem_u64_t kEnableImageMipmap = 1ull << 28;
 static const nanoem_u64_t kEnablePowerSaving = 1ull << 29;
+static const nanoem_u64_t kEnableModelEditing = 1ull << 30;
+static const nanoem_u64_t kViewportWindowDetached = 1ull << 31;
 
 static const nanoem_u64_t kPrivateStateInitialValue = kDisplayTransformHandle | kDisplayUserInterface |
     kEnableMotionMerge | kEnableUniformedViewportImageSize | kEnableFPSCounter | kEnablePerformanceMonitor |
@@ -244,8 +246,6 @@ EnumStringifyUtils::toString(IDrawable::DrawType type) NANOEM_DECL_NOEXCEPT
         return "GroundShadow";
     case IDrawable::kDrawTypeShadowMap:
         return "ShadowMap";
-    case IDrawable::kDrawTypeVertexWeight:
-        return "VertexWeight";
     default:
         return "(Unknown)";
     }
@@ -363,12 +363,15 @@ struct Project::DrawQueue {
     static void registerCallback(CommandBuffer &buffer, sg::PassBlock::Callback callback, void *userData);
     static void drawPass(const PassCommandBuffer *pass, Project *project, bx::HashMurmur2A &hasher);
 
+    DrawQueue();
+    ~DrawQueue() NANOEM_DECL_NOEXCEPT;
+
     size_t size() const NANOEM_DECL_NOEXCEPT;
     void flush(Project *project);
 
     Project *m_project;
     PassCommandBufferList m_commandBuffers;
-    int m_counts = 0;
+    int m_counts;
 };
 
 void
@@ -573,6 +576,20 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
     SG_POP_GROUP();
 }
 
+Project::DrawQueue::DrawQueue()
+    : m_counts(0)
+{
+}
+
+Project::DrawQueue::~DrawQueue() NANOEM_DECL_NOEXCEPT
+{
+    for (PassCommandBufferList::const_iterator it = m_commandBuffers.begin(), end = m_commandBuffers.end(); it != end;
+         ++it) {
+        nanoem_delete(it->m_items);
+    }
+    m_commandBuffers.clear();
+}
+
 size_t
 Project::DrawQueue::size() const NANOEM_DECL_NOEXCEPT
 {
@@ -703,6 +720,7 @@ Project::BatchDrawQueue::draw(int offset, int count)
 {
     CommandBufferMap::iterator it = m_batch.find(m_pass.id);
     if (it != m_batch.end()) {
+        SG_INSERT_MARKERF("Project::BatchDrawQueue::draw(offset=%d, count=%d)", offset, count);
         DrawQueue::draw(*it->second, offset, count);
     }
 }
@@ -786,6 +804,11 @@ Project::SerialDrawQueue::beginPass(sg_pass pass, const sg_pass_action &action)
         }
     }
     if (!mergeable) {
+        SG_INSERT_MARKERF(
+            "Project::SerialDrawQueue::beginPass(offset=%d, handle=%d, name=%s, color=%s, depth=%s, stencil=%s)",
+            Inline::saturateInt32(buffers.size() + 1), pass, m_drawQueue->m_project->findRenderPassName(pass),
+            EnumStringifyUtils::toString(action.colors[0].action), EnumStringifyUtils::toString(action.depth.action),
+            EnumStringifyUtils::toString(action.stencil.action));
         DrawQueue::PassCommandBuffer buffer;
         DrawQueue::Command item;
         item.m_type = DrawQueue::kCommandTypeSetPassAction;
@@ -835,6 +858,7 @@ Project::SerialDrawQueue::applyUniformBlock(sg_shader_stage stage, const void *d
 void
 Project::SerialDrawQueue::draw(int offset, int count)
 {
+    SG_INSERT_MARKERF("Project::SerialDrawQueue::draw(offset=%d, count=%d)", offset, count);
     DrawQueue::draw(*m_drawQueue->m_commandBuffers.back().m_items, offset, count);
 }
 
@@ -846,27 +870,40 @@ Project::SerialDrawQueue::registerCallback(sg::PassBlock::Callback callback, voi
 
 struct Project::SaveState {
     SaveState(Project *project)
-        : activeModelPtr(nullptr)
-        , activeAccessoryPtr(nullptr)
-        , camera(project)
-        , light(project)
-        , localFrameIndex(0)
-        , stateFlags(0)
-        , confirmSeekFlags(0)
-        , lastPhysicsDebugFlags(0)
+        : m_tag(project)
+        , m_activeModel(nullptr)
+        , m_activeAccessory(nullptr)
+        , m_camera(project)
+        , m_light(project)
+        , m_physicsSimulationMode(PhysicsEngine::kSimulationModeDisable)
+        , m_localFrameIndex(0)
+        , m_stateFlags(0)
+        , m_confirmSeekFlags(0)
+        , m_lastPhysicsDebugFlags(0)
+        , m_visibleGrid(false)
     {
     }
     ~SaveState() NANOEM_DECL_NOEXCEPT
     {
+        m_tag = nullptr;
+        m_activeModel = nullptr;
+        m_activeAccessory = nullptr;
+        m_localFrameIndex = 0;
+        m_stateFlags = 0;
+        m_confirmSeekFlags = 0;
+        m_visibleGrid = false;
     }
-    Model *activeModelPtr;
-    Accessory *activeAccessoryPtr;
-    PerspectiveCamera camera;
-    DirectionalLight light;
-    nanoem_frame_index_t localFrameIndex;
-    nanoem_u64_t stateFlags;
-    nanoem_u64_t confirmSeekFlags;
-    nanoem_u32_t lastPhysicsDebugFlags;
+    const Project *m_tag;
+    Model *m_activeModel;
+    Accessory *m_activeAccessory;
+    PerspectiveCamera m_camera;
+    DirectionalLight m_light;
+    PhysicsEngine::SimulationModeType m_physicsSimulationMode;
+    nanoem_frame_index_t m_localFrameIndex;
+    nanoem_u64_t m_stateFlags;
+    nanoem_u64_t m_confirmSeekFlags;
+    nanoem_u32_t m_lastPhysicsDebugFlags;
+    bool m_visibleGrid;
 };
 
 Project::Pass::Pass(Project *project, const char *name)
@@ -1059,6 +1096,21 @@ Project::countColorAttachments(const sg_pass_desc &pd) NANOEM_DECL_NOEXCEPT
     return numAttachments;
 }
 
+StringList
+Project::loadableExtensions()
+{
+    static const String kLoadableMotionExtensions[] = { kFileSystemBasedNativeFormatFileExtension,
+        kPolygonMovieMakerFileExtension, kArchivedNativeFormatFileExtension, String() };
+    return StringList(
+        &kLoadableMotionExtensions[0], &kLoadableMotionExtensions[BX_COUNTOF(kLoadableMotionExtensions) - 1]);
+}
+
+StringSet
+Project::loadableExtensionsSet()
+{
+    return ListUtils::toSetFromList<String>(loadableExtensions());
+}
+
 bool
 Project::isArchiveURI(const URI &fileURI)
 {
@@ -1068,12 +1120,15 @@ Project::isArchiveURI(const URI &fileURI)
 }
 
 bool
+Project::isLoadableExtension(const String &extension)
+{
+    return FileUtils::isLoadableExtension(extension, loadableExtensionsSet());
+}
+
+bool
 Project::isLoadableExtension(const URI &fileURI)
 {
-    const String pathExtension(fileURI.pathExtension());
-    return StringUtils::equalsIgnoreCase(pathExtension.c_str(), Project::kFileSystemBasedNativeFormatFileExtension) ||
-        StringUtils::equalsIgnoreCase(pathExtension.c_str(), Project::kArchivedNativeFormatFileExtension) ||
-        StringUtils::equalsIgnoreCase(pathExtension.c_str(), Project::kPolygonMovieMakerFileExtension);
+    return isLoadableExtension(fileURI.pathExtension());
 }
 
 void
@@ -1179,6 +1234,7 @@ Project::Project(const Injector &injector)
     , m_scrollDelta(0)
     , m_windowSize(injector.m_windowSize)
     , m_viewportImageSize(kDefaultViewportImageSize)
+    , m_viewportPadding(0)
     , m_viewportBackgroundColor(1.0f)
     , m_objectHandleAllocator(nullptr)
     , m_viewportPrimaryPass(this, kViewportPrimaryName)
@@ -1188,6 +1244,7 @@ Project::Project(const Injector &injector)
     , m_boneInterpolationType(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_FIRST_ENUM)
     , m_cameraInterpolationType(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FIRST_ENUM)
     , m_transformPerformedAt(Motion::kMaxFrameIndex, 0)
+    , m_indicesOfMaterialToAttachEffect(bx::kInvalidHandle, ModelMaterialIndexSet())
     , m_windowDevicePixelRatio(injector.m_windowDevicePixelRatio, injector.m_windowDevicePixelRatio)
     , m_viewportDevicePixelRatio(injector.m_viewportDevicePixelRatio, injector.m_viewportDevicePixelRatio)
     , m_uptime(0.0, 0.0f)
@@ -1407,7 +1464,7 @@ Project::loadFromBinary(
     }
     case kBinaryFormatPMM: {
         internal::project::PMM loader(this);
-        succeeded = loader.load(data, size, error);
+        succeeded = loader.load(data, size, error, diagnostics);
         break;
     }
     default:
@@ -1746,6 +1803,63 @@ Project::containsMotion(const Motion *value) const NANOEM_DECL_NOEXCEPT
 }
 
 void
+Project::newModel(Error &error)
+{
+    static const nanoem_u8_t kNewModelInJapanese[] = { 0xe6, 0x96, 0xb0, 0xe8, 0xa6, 0x8f, 0xe3, 0x83, 0xa2, 0xe3, 0x83,
+        0x87, 0xe3, 0x83, 0xab, 0 };
+    const UUID uuid(generateUUID(this));
+    const String uuidString(uuid.toString());
+    Model::NewModelDescription desc;
+    char shortUUID[9], dateTimeBuffer[32];
+    StringUtils::copyString(shortUUID, uuidString.c_str(), sizeof(shortUUID));
+    StringUtils::formatDateTimeUTC(dateTimeBuffer, sizeof(dateTimeBuffer), "%Y-%m-%dT%H:%M:%SZ");
+    StringUtils::format(desc.m_name[NANOEM_LANGUAGE_TYPE_JAPANESE], "%s-%s", kNewModelInJapanese, shortUUID);
+    StringUtils::format(desc.m_name[NANOEM_LANGUAGE_TYPE_ENGLISH], "NewModel-%s", shortUUID);
+    StringUtils::format(desc.m_comment[NANOEM_LANGUAGE_TYPE_JAPANESE],
+        "This model was generated by nanoem\n\nUUID: %s\nDateTime: %s", uuidString.c_str(), dateTimeBuffer);
+    desc.m_comment[NANOEM_LANGUAGE_TYPE_ENGLISH] = desc.m_comment[NANOEM_LANGUAGE_TYPE_JAPANESE];
+    nanoem_unicode_string_factory_t *factory = unicodeStringFactory();
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    ByteArray bytes;
+    Model::generateNewModelData(desc, factory, bytes, status);
+    if (status == NANOEM_STATUS_SUCCESS) {
+        FileWriterScope scope;
+        const URI projectFileURI(fileURI());
+        if (!projectFileURI.isEmpty()) {
+            String newModelPath(fileURI().absolutePathByDeletingLastPathComponent());
+            newModelPath.append("/");
+            const char *filename = desc.m_name[castLanguage()].c_str();
+            newModelPath.append(filename);
+            newModelPath.append(".pmx");
+            const URI fileURI(URI::createFromFilePath(newModelPath.c_str()));
+            if (scope.open(fileURI, error)) {
+                FileUtils::write(scope.writer(), bytes, error);
+                Model *model = createModel();
+                if (model->load(bytes, error)) {
+                    model->setupAllBindings();
+                    model->upload();
+                    addModel(model);
+                    setActiveModel(model);
+                    model->writeLoadCommandMessage(error);
+                    scope.commit(error);
+                }
+                else {
+                    destroyModel(model);
+                    scope.rollback(error);
+                }
+            }
+        }
+        else {
+            error = Error(
+                translator()->translate("nanoem.error.project.new-model.reason"), "", Error::kDomainTypeApplication);
+        }
+    }
+    else {
+        error = Error(Error::convertStatusToMessage(status, translator()), "", Error::kDomainTypeNanoem);
+    }
+}
+
+void
 Project::addModel(Model *model)
 {
     nanoem_parameter_assert(model, "must not be nullptr");
@@ -1777,6 +1891,57 @@ Project::addAccessory(Accessory *accessory)
     undoStackClear(accessory->undoStack());
     addAccessoryMotion(motion, accessory);
     internalAttachOffscreenRenderTargetEffect(accessory);
+}
+
+void
+Project::convertAccessoryToModel(Accessory *accessory, Error &error)
+{
+    FileReaderScope scope(translator());
+    const URI accessoryFileURI(accessory->fileURI());
+    if (scope.open(accessoryFileURI, error)) {
+        const String name(URI::lastPathComponent(accessoryFileURI.absolutePath()));
+        ByteArray accessoryData, modelData;
+        Model::ImportDescription desc(accessoryFileURI);
+        desc.m_name[NANOEM_LANGUAGE_TYPE_JAPANESE] = name;
+        desc.m_name[NANOEM_LANGUAGE_TYPE_ENGLISH] = name;
+        desc.m_transform = Accessory::kInitialWorldMatrix;
+        FileUtils::read(scope.reader(), accessoryData, error);
+        if (!error.hasReason()) {
+            Model *model = createModel();
+            if (model->load(accessoryData, desc, error)) {
+                String newModelPath(accessoryFileURI.absolutePathByDeletingLastPathComponent()),
+                    filenameWithoutExtension(URI::stringByDeletingPathExtension(accessoryFileURI.lastPathComponent()));
+                newModelPath.append("/");
+                newModelPath.append(filenameWithoutExtension.c_str());
+                newModelPath.append(".pmx");
+                const URI modelFileURI(URI::createFromFilePath(newModelPath));
+                FileWriterScope scope;
+                if (model->save(modelData, error) && scope.open(modelFileURI, error)) {
+                    FileUtils::write(scope.writer(), modelData, error);
+                    model->setupAllBindings();
+                    Progress progress(this, model->createAllImages());
+                    model->upload();
+                    model->loadAllImages(progress, error);
+                    addModel(model);
+                    setActiveModel(model);
+                    model->writeLoadCommandMessage(error);
+                    scope.commit(error);
+                    model->setVisible(true);
+                    removeAccessory(accessory);
+                    accessory->writeDeleteCommandMessage(error);
+                    destroyAccessory(accessory);
+                    progress.complete();
+                }
+                else {
+                    destroyModel(model);
+                    scope.rollback(error);
+                }
+            }
+            else {
+                destroyModel(model);
+            }
+        }
+    }
 }
 
 void
@@ -2088,14 +2253,17 @@ Project::resizeWindowSize(const Vector2UI16 &value)
 void
 Project::resizeUniformedViewportLayout(const Vector4UI16 &value)
 {
-    const Vector2UI16 previousSize(m_uniformViewportLayoutRect.first.z, m_uniformViewportLayoutRect.first.w),
+    const Vector2UI16 previousOffset(m_uniformViewportLayoutRect.first), currentOffset(value),
+        previousSize(m_uniformViewportLayoutRect.first.z, m_uniformViewportLayoutRect.first.w),
         currentSize(value.z, value.w);
-    const bool sizeChanged = previousSize != currentSize && currentSize.x * currentSize.y > 0;
-    if ((EnumUtils::isEnabled(kViewportImageSizeChanged, m_stateFlags) || sizeChanged) && !isViewportCaptured()) {
+    const bool offsetChanged = previousOffset != currentOffset,
+               sizeChanged = previousSize != currentSize && currentSize.x * currentSize.y > 0;
+    if ((EnumUtils::isEnabled(kViewportImageSizeChanged, m_stateFlags) || offsetChanged || sizeChanged) &&
+        !isViewportCaptured()) {
         m_uniformViewportLayoutRect.second = value;
         if (isUniformedViewportImageSizeEnabled()) {
-            internalResizeUniformedViewportImage(
-                uniformedViewportImageSize(currentSize, m_uniformViewportImageSize.first));
+            const Vector2UI16 imageSize(uniformedViewportImageSize(currentSize, m_uniformViewportImageSize.first));
+            internalResizeUniformedViewportImage(imageSize);
         }
     }
     EnumUtils::setEnabled(kViewportImageSizeChanged, m_stateFlags, false);
@@ -2122,46 +2290,50 @@ Project::saveState(SaveState *&state)
         state = nanoem_new(SaveState(this));
     }
     const ICamera *camera = activeCamera();
-    PerspectiveCamera &c = state->camera;
+    PerspectiveCamera &c = state->m_camera;
     c.setAngle(camera->angle());
     c.setLookAt(camera->lookAt());
     c.setDistance(camera->distance());
     c.setFov(camera->fov());
     const ILight *light = activeLight();
-    DirectionalLight &l = state->light;
+    DirectionalLight &l = state->m_light;
     l.setColor(light->color());
     l.setDirection(light->direction());
-    state->activeAccessoryPtr = m_activeAccessoryPtr;
-    state->activeModelPtr = m_activeModelPairPtr.first;
-    state->localFrameIndex = currentLocalFrameIndex();
-    state->stateFlags = m_stateFlags;
-    state->confirmSeekFlags = m_confirmSeekFlags;
-    state->lastPhysicsDebugFlags = m_lastPhysicsDebugFlags;
+    state->m_activeAccessory = m_activeAccessoryPtr;
+    state->m_activeModel = m_activeModelPairPtr.first;
+    state->m_physicsSimulationMode = physicsEngine()->simulationMode();
+    state->m_localFrameIndex = currentLocalFrameIndex();
+    state->m_stateFlags = m_stateFlags;
+    state->m_confirmSeekFlags = m_confirmSeekFlags;
+    state->m_lastPhysicsDebugFlags = m_lastPhysicsDebugFlags;
+    state->m_visibleGrid = grid()->isVisible();
 }
 
 void
 Project::restoreState(const SaveState *state, bool forceSeek)
 {
-    if (state) {
-        setActiveAccessory(state->activeAccessoryPtr);
-        setActiveModel(state->activeModelPtr);
-        const PerspectiveCamera &c = state->camera;
+    if (state && state->m_tag == this) {
+        setActiveAccessory(state->m_activeAccessory);
+        setActiveModel(state->m_activeModel);
+        const PerspectiveCamera &c = state->m_camera;
         ICamera *camera = activeCamera();
         camera->setAngle(c.angle());
         camera->setLookAt(c.lookAt());
         camera->setDistance(c.distance());
         camera->setFov(c.fov());
         camera->update();
-        const DirectionalLight &l = state->light;
+        const DirectionalLight &l = state->m_light;
         ILight *light = activeLight();
         light->setColor(l.color());
         light->setDirection(l.direction());
         if (forceSeek) {
-            internalSeek(state->localFrameIndex);
+            internalSeek(state->m_localFrameIndex);
         }
-        m_stateFlags = state->stateFlags;
-        m_confirmSeekFlags = state->confirmSeekFlags;
-        m_lastPhysicsDebugFlags = state->lastPhysicsDebugFlags;
+        m_stateFlags = state->m_stateFlags;
+        m_confirmSeekFlags = state->m_confirmSeekFlags;
+        m_lastPhysicsDebugFlags = state->m_lastPhysicsDebugFlags;
+        setPhysicsSimulationMode(state->m_physicsSimulationMode);
+        grid()->setVisible(state->m_visibleGrid);
     }
 }
 
@@ -2354,12 +2526,15 @@ Project::clearBackgroundVideo()
 void
 Project::play()
 {
-    const nanoem_frame_index_t durationAt = duration(), localFrameIndexAt = currentLocalFrameIndex();
-    preparePlaying();
-    synchronizeAllMotions(playingSegment().frameIndexFrom(), 0, PhysicsEngine::kSimulationTimingBefore);
-    resetPhysicsSimulation();
-    m_audioPlayer->play();
-    eventPublisher()->publishPlayEvent(durationAt, localFrameIndexAt);
+    const bool playable = !isModelEditingEnabled();
+    if (playable) {
+        const nanoem_frame_index_t durationAt = duration(), localFrameIndexAt = currentLocalFrameIndex();
+        preparePlaying();
+        synchronizeAllMotions(playingSegment().frameIndexFrom(), 0, PhysicsEngine::kSimulationTimingBefore);
+        resetPhysicsSimulation();
+        m_audioPlayer->play();
+        eventPublisher()->publishPlayEvent(durationAt, localFrameIndexAt);
+    }
 }
 
 void
@@ -2393,7 +2568,8 @@ Project::pause(bool force)
 void
 Project::resume(bool force)
 {
-    if (force || m_audioPlayer->wasPlaying()) {
+    const bool resumeable = (force || m_audioPlayer->wasPlaying()) && !isModelEditingEnabled();
+    if (resumeable) {
         const nanoem_frame_index_t lastDuration = duration(), lastLocalFrameIndex = currentLocalFrameIndex();
         preparePlaying();
         m_audioPlayer->resume();
@@ -2447,22 +2623,24 @@ Project::seek(nanoem_frame_index_t frameIndex, bool forceSeek)
 void
 Project::seek(nanoem_frame_index_t frameIndex, nanoem_f32_t amount, bool forceSeek)
 {
-    if (forceSeek || canSeek()) {
-        const nanoem_frame_index_t lastDuration = duration(), seekFrom = currentLocalFrameIndex();
-        const nanoem_u32_t fps = preferredMotionFPS(), base = baseFPS(),
-                           denominator = glm::max(m_audioPlayer->sampleRate(), fps), fpsRate = fps / base;
-        const nanoem_f64_t seconds = static_cast<nanoem_f64_t>(frameIndex) / static_cast<nanoem_f32_t>(baseFPS());
-        const nanoem_f32_t delta =
-            frameIndex > seekFrom ? (frameIndex - seekFrom) * fpsRate * physicsSimulationTimeStep() : 0;
-        const IAudioPlayer::Rational rational = { static_cast<nanoem_u64_t>(seconds * denominator), denominator };
-        setBaseDuration(frameIndex);
-        m_audioPlayer->seek(rational);
-        m_audioPlayer->update();
-        internalSeek(frameIndex, amount, delta);
-        eventPublisher()->publishSeekEvent(lastDuration, frameIndex, seekFrom);
-    }
-    else {
-        m_confirmer->seek(frameIndex, this);
+    if (canSeek()) {
+        if (forceSeek) {
+            const nanoem_frame_index_t lastDuration = duration(), seekFrom = currentLocalFrameIndex();
+            const nanoem_u32_t fps = preferredMotionFPS(), base = baseFPS(),
+                               denominator = glm::max(m_audioPlayer->sampleRate(), fps), fpsRate = fps / base;
+            const nanoem_f64_t seconds = static_cast<nanoem_f64_t>(frameIndex) / static_cast<nanoem_f32_t>(baseFPS());
+            const nanoem_f32_t delta =
+                frameIndex > seekFrom ? (frameIndex - seekFrom) * fpsRate * physicsSimulationTimeStep() : 0;
+            const IAudioPlayer::Rational rational = { static_cast<nanoem_u64_t>(seconds * denominator), denominator };
+            setBaseDuration(frameIndex);
+            m_audioPlayer->seek(rational);
+            m_audioPlayer->update();
+            internalSeek(frameIndex, amount, delta);
+            eventPublisher()->publishSeekEvent(lastDuration, frameIndex, seekFrom);
+        }
+        else {
+            m_confirmer->seek(frameIndex, this);
+        }
     }
 }
 
@@ -2483,7 +2661,7 @@ Project::update()
             : 0;
         internalSeek(frameIndex * invertFPSRate, amount, delta);
     }
-    else if (m_physicsEngine->mode() == PhysicsEngine::kSimulationModeEnableAnytime) {
+    else if (m_physicsEngine->simulationMode() == PhysicsEngine::kSimulationModeEnableAnytime) {
         for (ModelList::const_iterator it = m_allModelPtrs.begin(), end = m_allModelPtrs.end(); it != end; ++it) {
             Model *model = *it;
             model->synchronizeAllRigidBodiesTransformFeedbackToSimulation();
@@ -2522,7 +2700,7 @@ bool
 Project::resetAllPasses()
 {
     bool performed = false;
-    if (EnumUtils::isEnabled(kResetAllPasses, m_stateFlags)) {
+    if (isResetAllPassesPending()) {
         const Vector2UI16 layoutSize(
             Vector2(m_uniformViewportLayoutRect.second.z, m_uniformViewportLayoutRect.second.w) *
             m_viewportDevicePixelRatio.second);
@@ -2563,7 +2741,7 @@ Project::pushUndo(undo_command_t *command)
     nanoem_assert(!isPlaying(), "must not be called while playing");
     if (!isPlaying()) {
         undoStackPushCommand(undoStack(), command);
-        eventPublisher()->publishUndoChangeEvent();
+        eventPublisher()->publishPushUndoCommandEvent(command);
     }
     else {
         undoCommandDestroy(command);
@@ -2573,7 +2751,7 @@ Project::pushUndo(undo_command_t *command)
 bool
 Project::canSeek() const NANOEM_DECL_NOEXCEPT
 {
-    bool seekable = true;
+    bool seekable = !isModelEditingEnabled();
     if (const Model *model = activeModel()) {
         seekable &= !(model->hasAnyDirtyBone() && isConfirmSeekEnabled(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_BONE));
         seekable &= !(model->hasAnyDirtyMorph() && isConfirmSeekEnabled(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MORPH));
@@ -2600,6 +2778,20 @@ Project::resetPhysicsSimulation()
         model->markStagingVertexBufferDirty();
     }
     m_physicsEngine->stepSimulation(0);
+}
+
+void
+Project::resetAllModelEdges()
+{
+    for (Project::ModelList::const_iterator it = m_allModelPtrs.begin(), end = m_allModelPtrs.end(); it != end; ++it) {
+        Model *model = *it;
+        if (model->edgeSizeScaleFactor() > 0.0f && !model->isStagingVertexBufferDirty()) {
+            model->resetAllMorphDeformStates();
+            model->deformAllMorphs(false);
+            model->performAllBonesTransform();
+            model->markStagingVertexBufferDirty();
+        }
+    }
 }
 
 void
@@ -2892,7 +3084,7 @@ Project::getOriginOffscreenRenderPassColorImageDescription(
                 id.pixel_format = format.m_colorPixelFormats[0];
                 id.sample_count = format.m_numSamples;
                 pd.color_attachments[0].image = colorImage;
-                const Vector2UI16 imageSize(deviceScaleUniformedViewportImageSize());
+                const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
                 id.width = imageSize.x;
                 id.height = imageSize.y;
             }
@@ -2943,7 +3135,7 @@ Project::getViewportRenderPassColorImageDescription(sg_pass_desc &pd, sg_image_d
     id.pixel_format = viewportPixelFormat();
     id.sample_count = sampleCount();
     pd.color_attachments[0].image = viewportPrimaryImage();
-    const Vector2UI16 imageSize(deviceScaleUniformedViewportImageSize());
+    const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
     id.width = imageSize.x;
     id.height = imageSize.y;
 }
@@ -3052,13 +3244,18 @@ Project::attachEffectToSelectedDrawable(Effect *targetEffect, Error &error)
             for (DrawableSet::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
                 IDrawable *drawable = *it;
                 setOffscreenPassiveRenderTargetEffect(
-                    drawable, m_drawablesToAttachOffscreenRenderTargetEffect.first, targetEffect);
+                    m_drawablesToAttachOffscreenRenderTargetEffect.first, drawable, targetEffect);
             }
         }
         else {
             error = Error(m_translator->translate("nanoem.error.effect.offscreen-not-found.reason"), nullptr,
                 Error::kDomainTypeApplication);
         }
+    }
+    else {
+        error = Error(m_translator->translate("nanoem.error.effect.invalid-attachment.reason"),
+            m_translator->translate("nanoem.error.effect.invalid-attachment.recovery-suggestion"),
+            Error::kDomainTypeApplication);
     }
 }
 
@@ -3073,7 +3270,7 @@ Project::attachModelMaterialEffect(model::Material *material, Effect *effect)
 
 void
 Project::setOffscreenPassiveRenderTargetEffect(
-    IDrawable *drawable, const String &offscreenOwnerName, Effect *targetEffect)
+    const String &offscreenOwnerName, IDrawable *drawable, Effect *targetEffect)
 {
     if (drawable && targetEffect) {
         drawable->setOffscreenPassiveRenderTargetEffect(offscreenOwnerName, targetEffect);
@@ -3288,13 +3485,13 @@ Project::pasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex
 }
 
 void
-Project::reversePasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error)
+Project::symmetricPasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error)
 {
-    reversePasteAllSelectedKeyframes(activeModel(), frameIndex, error);
+    symmetricPasteAllSelectedKeyframes(activeModel(), frameIndex, error);
 }
 
 void
-Project::reversePasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error)
+Project::symmetricPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error)
 {
     internalPasteAllSelectedKeyframes(model, frameIndex, true, error);
     restart();
@@ -3536,8 +3733,8 @@ Project::copyAllSelectedBones(Model *model, Error &error)
         nanoem_mutable_model_morph_t *morph = nanoemMutableModelMorphCreate(originModel, &status);
         nanoemMutableModelMorphSetCategory(morph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
         nanoemMutableModelMorphSetType(morph, NANOEM_MODEL_MORPH_TYPE_BONE);
-        const model::Bone::Set &bones = model->selection()->allBoneSet();
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        const model::Bone::Set *boneSet = model->selection()->allBoneSet();
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const model::Bone *bone = model::Bone::cast(*it);
             if (bone && StringUtils::tryGetString(factory, bone->name(), scope)) {
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
@@ -3575,13 +3772,13 @@ Project::pasteAllSelectedBones(Model *model, Error &error)
 }
 
 void
-Project::reversePasteAllSelectedBones(Error &error)
+Project::symmetricPasteAllSelectedBones(Error &error)
 {
-    reversePasteAllSelectedBones(activeModel(), error);
+    symmetricPasteAllSelectedBones(activeModel(), error);
 }
 
 void
-Project::reversePasteAllSelectedBones(Model *model, Error &error)
+Project::symmetricPasteAllSelectedBones(Model *model, Error &error)
 {
     internalPasteAllSelectedBones(model, true, error);
 }
@@ -3591,9 +3788,9 @@ Project::selectAllBoneKeyframesFromSelectedBoneSet(Model *model)
 {
     if (Motion *motion = resolveMotion(model)) {
         const nanoem_frame_index_t frameIndex = currentLocalFrameIndex();
-        const model::Bone::Set &bones = model->selection()->allBoneSet();
+        const model::Bone::Set *boneSet = model->selection()->allBoneSet();
         IMotionKeyframeSelection *selection = motion->selection();
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bone = *it;
             const nanoem_unicode_string_t *name = nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
             selection->add(motion->findBoneKeyframe(name, frameIndex));
@@ -3728,9 +3925,7 @@ Project::isDirty() const NANOEM_DECL_NOEXCEPT
 {
     bool dirty = false;
     dirty |= globalCamera()->isDirty();
-    dirty |= activeCamera()->isDirty();
     dirty |= globalLight()->isDirty();
-    dirty |= activeLight()->isDirty();
     dirty |= shadowCamera()->isDirty();
     for (AccessoryList::const_iterator it = m_allAccessoryPtrs.begin(), end = m_allAccessoryPtrs.end(); it != end;
          ++it) {
@@ -3845,10 +4040,10 @@ Project::motionFPSScaleFactor() const NANOEM_DECL_NOEXCEPT
     return preferredMotionFPS() / nanoem_f32_t(baseFPS());
 }
 
-Project::DrawableList
-Project::drawableOrderList() const
+const Project::DrawableList *
+Project::drawableOrderList() const NANOEM_DECL_NOEXCEPT
 {
-    return m_drawableOrderList;
+    return &m_drawableOrderList;
 }
 
 void
@@ -3875,10 +4070,10 @@ Project::setDrawableOrderList(const DrawableList &value)
     m_drawableOrderList = v;
 }
 
-Project::ModelList
-Project::transformOrderList() const
+const Project::ModelList *
+Project::transformOrderList() const NANOEM_DECL_NOEXCEPT
 {
-    return m_transformModelOrderList;
+    return &m_transformModelOrderList;
 }
 
 void
@@ -3898,28 +4093,28 @@ Project::setTransformOrderList(const ModelList &value)
     m_transformModelOrderList = v;
 }
 
-Project::ModelList
-Project::allModels() const
+const Project::ModelList *
+Project::allModels() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allModelPtrs;
+    return &m_allModelPtrs;
 }
 
-Project::AccessoryList
-Project::allAccessories() const
+const Project::AccessoryList *
+Project::allAccessories() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allAccessoryPtrs;
+    return &m_allAccessoryPtrs;
 }
 
-Project::MotionList
-Project::allMotions() const
+const Project::MotionList *
+Project::allMotions() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allMotions;
+    return &m_allMotions;
 }
 
-Project::TrackList
-Project::allTracks() const
+const Project::TrackList *
+Project::allTracks() const NANOEM_DECL_NOEXCEPT
 {
-    return m_allTracks;
+    return &m_allTracks;
 }
 
 Project::TrackList
@@ -4188,7 +4383,7 @@ void
 Project::setActiveModel(Model *value)
 {
     Model *lastActiveModel = activeModel();
-    if (value != lastActiveModel) {
+    if (value != lastActiveModel && !isModelEditingEnabled()) {
         m_activeModelPairPtr = tinystl::make_pair(value, lastActiveModel);
         if (m_editingMode == kEditingModeNone) {
             m_editingMode = kEditingModeSelect;
@@ -4203,7 +4398,7 @@ Project::setActiveModel(Model *value)
         e->publishToggleActiveModelShadowMapEnabledEvent(value ? value->isShadowMapEnabled() : false);
         e->publishToggleActiveModelVisibleEvent(value ? value->isVisible() : false);
         e->publishToggleActiveModelShowAllBonesEvent(value ? value->isShowAllBones() : false);
-        e->publishToggleActiveModelShowAllRigidBodiesEvent(value ? value->isShowAllRigidBodies() : false);
+        e->publishToggleActiveModelShowAllRigidBodiesEvent(value ? value->isShowAllRigidBodyShapes() : false);
         e->publishToggleActiveModelShowAllVertexFacesEvent(value ? value->isShowAllVertexFaces() : false);
         e->publishToggleActiveModelShowAllVertexPointsEvent(value ? value->isShowAllVertexPoints() : false);
         rebuildAllTracks();
@@ -4411,7 +4606,7 @@ Project::activeUndoStack() const NANOEM_DECL_NOEXCEPT
 {
     const undo_stack_t *stack;
     if (const Model *model = activeModel()) {
-        stack = model->undoStack();
+        stack = model->activeUndoStack();
     }
     else {
         stack = undoStack();
@@ -4424,7 +4619,7 @@ Project::activeUndoStack() NANOEM_DECL_NOEXCEPT
 {
     undo_stack_t *stack;
     if (Model *model = activeModel()) {
-        stack = model->undoStack();
+        stack = model->activeUndoStack();
     }
     else {
         stack = undoStack();
@@ -4613,6 +4808,8 @@ Project::logicalScaleUniformedViewportImageRect() const NANOEM_DECL_NOEXCEPT
     const Vector4 viewportLayoutRect(logicalScaleUniformedViewportLayoutRect());
     Vector4 viewportImageRect(viewportLayoutRect);
     adjustViewportImageRect(viewportLayoutRect, logicalScaleUniformedViewportImageSize(), viewportImageRect);
+    viewportImageRect.x -= m_viewportPadding.x;
+    viewportImageRect.y -= m_viewportPadding.y;
     return viewportImageRect;
 }
 
@@ -4635,7 +4832,7 @@ Vector4UI16
 Project::deviceScaleUniformedViewportLayoutRect() const NANOEM_DECL_NOEXCEPT
 {
     const nanoem_f32_t dpr = viewportDevicePixelRatio(), s = windowDevicePixelRatio() / dpr;
-    return Vector4(m_uniformViewportLayoutRect.first) * dpr * s;
+    return Vector4(logicalScaleUniformedViewportLayoutRect()) * dpr * s;
 }
 
 Vector2UI16
@@ -4647,7 +4844,29 @@ Project::logicalScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT
 Vector2UI16
 Project::deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT
 {
-    return Vector2(m_uniformViewportImageSize.first) * viewportDevicePixelRatio();
+    const nanoem_f32_t dpr = viewportDevicePixelRatio(), s = windowDevicePixelRatio() / dpr;
+    return Vector2(m_uniformViewportImageSize.first) * dpr * s;
+}
+
+Vector2UI16
+Project::logicalViewportPadding() const NANOEM_DECL_NOEXCEPT
+{
+    return m_viewportPadding;
+}
+
+void
+Project::setLogicalViewportPadding(const Vector2UI16 &value)
+{
+    m_viewportPadding = value;
+}
+
+Vector2SI32
+Project::resolveLogicalCursorPositionInViewport(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT
+{
+    const Vector2UI16 size(m_uniformViewportImageSize.first),
+        offset(Vector2UI16(m_uniformViewportLayoutRect.first) + m_viewportPadding),
+        coord(value.x - offset.x, size.y - (value.y - offset.y));
+    return coord;
 }
 
 Vector4
@@ -4691,6 +4910,12 @@ nanoem_f32_t
 Project::windowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT
 {
     return m_windowDevicePixelRatio.first;
+}
+
+nanoem_f32_t
+Project::pendingWindowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT
+{
+    return m_windowDevicePixelRatio.second;
 }
 
 void
@@ -5007,6 +5232,12 @@ Project::getAllOffscreenRenderTargetEffects(const IEffect *ownerEffect, LoadedEf
     }
 }
 
+Vector2UI16
+Project::deviceScaleViewportPrimaryImageSize() const NANOEM_DECL_NOEXCEPT
+{
+    return Vector2(logicalScaleUniformedViewportImageSize()) * viewportDevicePixelRatio();
+}
+
 sg_pass
 Project::viewportPrimaryPass() const NANOEM_DECL_NOEXCEPT
 {
@@ -5197,12 +5428,6 @@ Project::editingMode() const NANOEM_DECL_NOEXCEPT
     return m_editingMode;
 }
 
-bool
-Project::isModelEditing() const NANOEM_DECL_NOEXCEPT
-{
-    return m_editingMode == Project::kEditingModeModel;
-}
-
 void
 Project::setEditingMode(EditingMode value)
 {
@@ -5236,7 +5461,7 @@ Project::setFilePathMode(FilePathMode value)
 bool
 Project::isPhysicsSimulationEnabled() const NANOEM_DECL_NOEXCEPT
 {
-    switch (m_physicsEngine->mode()) {
+    switch (m_physicsEngine->simulationMode()) {
     case PhysicsEngine::kSimulationModeDisable:
     case PhysicsEngine::kSimulationModeMaxEnum:
     default:
@@ -5252,9 +5477,9 @@ Project::isPhysicsSimulationEnabled() const NANOEM_DECL_NOEXCEPT
 void
 Project::setPhysicsSimulationMode(PhysicsEngine::SimulationModeType value)
 {
-    if (m_physicsEngine->mode() != value) {
+    if (m_physicsEngine->simulationMode() != value) {
         m_physicsEngine->setDebugGeometryFlags(value ? m_lastPhysicsDebugFlags : 0);
-        m_physicsEngine->setMode(value);
+        m_physicsEngine->setSimulationMode(value);
         resetPhysicsSimulation();
         restart(currentLocalFrameIndex());
         eventPublisher()->publishSetPhysicsSimulationModeEvent(static_cast<nanoem_u32_t>(value));
@@ -5531,6 +5756,12 @@ Project::setSampleLevel(nanoem_u32_t value)
 }
 
 bool
+Project::isResetAllPassesPending() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kResetAllPasses, m_stateFlags);
+}
+
+bool
 Project::isDisplaySyncDisabled() const NANOEM_DECL_NOEXCEPT
 {
     return EnumUtils::isEnabled(kDisableDisplaySync, m_stateFlags);
@@ -5757,6 +5988,20 @@ Project::setViewportHovered(bool value)
 }
 
 bool
+Project::isViewportWindowDetached() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kViewportWindowDetached, m_stateFlags);
+}
+
+void
+Project::setViewportWindowDetached(bool value)
+{
+    if (isViewportWindowDetached() != value) {
+        EnumUtils::setEnabled(kViewportWindowDetached, m_stateFlags, value);
+    }
+}
+
+bool
 Project::isPrimaryCursorTypeLeft() const NANOEM_DECL_NOEXCEPT
 {
     return EnumUtils::isEnabled(kPrimaryCursorTypeLeft, m_stateFlags);
@@ -5917,6 +6162,32 @@ Project::setPowerSavingEnabled(bool value)
 }
 
 bool
+Project::isModelEditingEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kEnableModelEditing, m_stateFlags);
+}
+
+void
+Project::setModelEditingEnabled(bool value)
+{
+    Model *model = activeModel();
+    if (model && isModelEditingEnabled() != value) {
+        model->rebuildAllVertexBuffers(value ? false : true);
+        undoStackClear(model->editingUndoStack());
+        EnumUtils::setEnabled(kEnableModelEditing, m_stateFlags, value);
+        IEventPublisher *ev = eventPublisher();
+        ev->publishToggleModelEditingEnabledEvent(value);
+        if (value) {
+            ev->publishUndoEvent(false, false);
+        }
+        else {
+            const undo_stack_t *stack = model->undoStack();
+            ev->publishUndoEvent(undoStackCanUndo(stack), undoStackCanRedo(stack));
+        }
+    }
+}
+
+bool
 Project::isActive() const NANOEM_DECL_NOEXCEPT
 {
     return m_active;
@@ -5964,14 +6235,6 @@ Project::internalQueryRectangle(RectangleType type, const Vector4UI16 &viewportR
     }
     case kRectangleCameraZoom: {
         rect = Vector4UI16(offsetX + shift * 1, offsetCameraY, width, width);
-        break;
-    }
-    case kRectangleEffect: {
-        rect = Vector4UI16(offset.x + margin * 2, offset.y + margin * 2, width, width);
-        break;
-    }
-    case kRectangleModelEditing: {
-        rect = Vector4UI16(offset.x + shift * 1 + margin * 2, offset.y + margin * 2, width, width);
         break;
     }
     case kRectangleOrientateX: {
@@ -6030,7 +6293,7 @@ Project::adjustViewportImageRect(
         viewportImageRect.z = viewportImageSize.x;
     }
     if (viewportLayoutRect.w > viewportImageSize.y) {
-        viewportImageRect.y += (viewportLayoutRect.w - viewportImageSize.y) * 0.5f;
+        viewportImageRect.y += ((viewportLayoutRect.w - viewportImageSize.y) * 0.5f);
         viewportImageRect.w = viewportImageSize.y;
     }
 }
@@ -6064,7 +6327,7 @@ Project::matchDrawableEffect(const IDrawable *drawable, const Effect *ownerEffec
 }
 
 void
-Project::reverseLocalTransformBone(
+Project::symmetricLocalTransformBone(
     const String &name, const Vector3 &translation, const Quaternion &orientation, Model *model)
 {
     if (model::Bone *newBone = model::Bone::cast(model->findBone(name))) {
@@ -6281,7 +6544,7 @@ Project::loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, cons
 }
 
 void
-Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool reverse, Error &error)
+Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool symmetric, Error &error)
 {
     nanoem_assert(!isPlaying(), "must not be called while playing");
     if (!isMotionClipboardEmpty()) {
@@ -6290,7 +6553,7 @@ Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t fr
             ByteArray snapshot;
             if (Motion *modelMotionPtr = resolveMotion(model)) {
                 modelMotionPtr->save(snapshot, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
-                modelMotionPtr->overrideAllKeyframes(source, reverse);
+                modelMotionPtr->overrideAllKeyframes(source, symmetric);
                 model->pushUndo(command::MotionSnapshotCommand::create(modelMotionPtr, model, snapshot,
                     NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_BONE | NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MODEL |
                         NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MORPH));
@@ -6331,7 +6594,7 @@ Project::internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t fr
 }
 
 void
-Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
+Project::internalPasteAllSelectedBones(Model *model, bool symmetric, Error &error)
 {
     nanoem_assert(!isPlaying(), "must not be called while playing");
     if (model && !isModelClipboardEmpty()) {
@@ -6348,7 +6611,7 @@ Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
                 nanoem_model_morph_bone_t *const *boneMorphs =
                     nanoemModelMorphGetAllBoneMorphObjects(rootMorph, &numBoneMorphs);
                 model::Bone::Set originBones;
-                StringSet reversedBoneNameSet;
+                StringSet symmetricBoneNameSet;
                 for (nanoem_rsize_t i = 0; i < numBoneMorphs; i++) {
                     const nanoem_model_morph_bone_t *boneMorph = boneMorphs[i];
                     const nanoem_model_bone_t *sourceBone = nanoemModelMorphBoneGetBoneObject(boneMorph);
@@ -6359,24 +6622,24 @@ Project::internalPasteAllSelectedBones(Model *model, bool reverse, Error &error)
                     if (model::Bone *bone = model::Bone::cast(originBone)) {
                         const Vector3 translation(glm::make_vec3(nanoemModelMorphBoneGetTranslation(boneMorph)));
                         const Quaternion orientation(glm::make_quat(nanoemModelMorphBoneGetOrientation(boneMorph)));
-                        static const nanoem_u8_t kJapaneseLeft[] = { 0xe5, 0xb7, 0xa6, 0x0 },
-                                                 kJapaneseRight[] = { 0xe5, 0x8f, 0xb3, 0x0 };
                         const char *namePtr = bone->canonicalNameConstString();
-                        if (reverse) {
-                            if (StringUtils::hasPrefix(namePtr, reinterpret_cast<const char *>(kJapaneseLeft))) {
-                                const String &newName = StringUtils::substitutedPrefixString(
-                                    reinterpret_cast<const char *>(kJapaneseRight), namePtr);
-                                if (reversedBoneNameSet.find(newName) == reversedBoneNameSet.end()) {
-                                    reverseLocalTransformBone(newName, translation, orientation, model);
-                                    reversedBoneNameSet.insert(newName);
+                        if (symmetric) {
+                            if (StringUtils::hasPrefix(
+                                    namePtr, reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese))) {
+                                const String newName(StringUtils::substitutedPrefixString(
+                                    reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese), namePtr));
+                                if (symmetricBoneNameSet.find(newName) == symmetricBoneNameSet.end()) {
+                                    symmetricLocalTransformBone(newName, translation, orientation, model);
+                                    symmetricBoneNameSet.insert(newName);
                                 }
                             }
-                            if (StringUtils::hasPrefix(namePtr, reinterpret_cast<const char *>(kJapaneseRight))) {
-                                const String &newName = StringUtils::substitutedPrefixString(
-                                    reinterpret_cast<const char *>(kJapaneseLeft), namePtr);
-                                if (reversedBoneNameSet.find(newName) == reversedBoneNameSet.end()) {
-                                    reverseLocalTransformBone(newName, translation, orientation, model);
-                                    reversedBoneNameSet.insert(newName);
+                            if (StringUtils::hasPrefix(
+                                    namePtr, reinterpret_cast<const char *>(model::Bone::kNameRightInJapanese))) {
+                                const String newName(StringUtils::substitutedPrefixString(
+                                    reinterpret_cast<const char *>(model::Bone::kNameLeftInJapanese), namePtr));
+                                if (symmetricBoneNameSet.find(newName) == symmetricBoneNameSet.end()) {
+                                    symmetricLocalTransformBone(newName, translation, orientation, model);
+                                    symmetricBoneNameSet.insert(newName);
                                 }
                             }
                         }
@@ -6441,17 +6704,18 @@ Project::destroyDetachedEffect(Effect *effect)
 void
 Project::synchronizeCamera(nanoem_frame_index_t frameIndex, nanoem_f32_t amount)
 {
+    static const Vector3 kCamraDirection(-1, 1, 1);
     PerspectiveCamera camera0(this), camera1(this);
     camera0.synchronizeParameters(m_cameraMotionPtr, frameIndex);
     if (amount > 0 && !m_cameraMotionPtr->findCameraKeyframe(frameIndex + 1)) {
         camera1.synchronizeParameters(m_cameraMotionPtr, frameIndex + 1);
-        m_camera->setAngle(glm::mix(camera0.angle(), camera1.angle(), amount));
+        m_camera->setAngle(glm::mix(camera0.angle(), camera1.angle(), amount) * kCamraDirection);
         m_camera->setDistance(glm::mix(camera0.distance(), camera1.distance(), amount));
         m_camera->setFovRadians(glm::mix(camera0.fovRadians(), camera1.fovRadians(), amount));
         m_camera->setLookAt(glm::mix(camera0.lookAt(), camera1.lookAt(), amount));
     }
     else {
-        m_camera->setAngle(camera0.angle());
+        m_camera->setAngle(camera0.angle() * kCamraDirection);
         m_camera->setDistance(camera0.distance());
         m_camera->setFovRadians(camera0.fovRadians());
         m_camera->setLookAt(camera0.lookAt());
@@ -6777,13 +7041,14 @@ Project::clearViewportPrimaryPass()
 void
 Project::drawBackgroundVideo()
 {
+    const sg_pass pass = currentRenderPass();
     if (m_backgroundVideoRect == Vector4SI32()) {
-        m_backgroundVideoRenderer->draw(kRectCoordination, m_backgroundVideoScaleFactor, this);
+        m_backgroundVideoRenderer->draw(pass, kRectCoordination, m_backgroundVideoScaleFactor, this);
     }
     else {
         const Vector4 base(deviceScaleUniformedViewportLayoutRect()), den(base.z, base.w, base.z, base.w);
         const Vector4 rect(Vector4(m_backgroundVideoRect) / den);
-        m_backgroundVideoRenderer->draw(rect, m_backgroundVideoScaleFactor, this);
+        m_backgroundVideoRenderer->draw(pass, rect, m_backgroundVideoScaleFactor, this);
     }
 }
 
@@ -6831,12 +7096,19 @@ Project::blitRenderPass(
     if (sourceRenderPass.id != destRenderPass.id) {
         RenderPassBundleMap::const_iterator source = m_renderPassBundleMap.find(sourceRenderPass.id);
         if (source != m_renderPassBundleMap.end()) {
-            sg_image image = source->second.m_desciption.color_attachments[0].image;
-            const PixelFormat format(findRenderPassPixelFormat(destRenderPass));
+            sg_image sourceColorImage = source->second.m_desciption.color_attachments[0].image;
+            /* prevent blitting dest(viewportPrimaryPass) == source(viewportPrimaryPass) */
+            if (sourceColorImage.id == m_viewportPrimaryPass.m_colorImage.id &&
+                destRenderPass.id != m_viewportSecondaryPass.m_handle.id) {
+                blitter->blit(drawQueue, tinystl::make_pair(m_viewportSecondaryPass.m_handle, kViewportSecondaryName),
+                    tinystl::make_pair(sourceColorImage, kViewportPrimaryName), kRectCoordination,
+                    findRenderPassPixelFormat(m_viewportSecondaryPass.m_handle));
+                sourceColorImage = m_viewportSecondaryPass.m_colorImage;
+            }
             blitter->blit(drawQueue,
                 tinystl::make_pair(destRenderPass, findRenderPassName(destRenderPass, "(unknown)")),
-                tinystl::make_pair(image, findRenderPassName(sourceRenderPass, "(unknown)")), kRectCoordination,
-                format);
+                tinystl::make_pair(sourceColorImage, findRenderPassName(sourceRenderPass, "(unknown)")),
+                kRectCoordination, findRenderPassPixelFormat(destRenderPass));
         }
     }
 }
@@ -6947,7 +7219,7 @@ Project::internalAttachOffscreenRenderTargetEffect(IDrawable *drawable, Effect *
                 if (matched) {
                     if (!condition.m_hidden) {
                         if (!condition.m_none) {
-                            setOffscreenPassiveRenderTargetEffect(drawable, ownerName, condition.m_passiveEffect);
+                            setOffscreenPassiveRenderTargetEffect(ownerName, drawable, condition.m_passiveEffect);
                         }
                         else {
                             drawable->setOffscreenDefaultRenderTargetEffect(ownerName);

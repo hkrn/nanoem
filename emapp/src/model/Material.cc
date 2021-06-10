@@ -6,14 +6,26 @@
 
 #include "emapp/model/Material.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace model {
+namespace {
 
+enum PrivateStateFlags {
+    kPrivateStateVisible = 1 << 1,
+    kPrivateStateDisplayDiffuseTextureUVMeshEnabled = 1 << 2,
+    kPrivateStateDisplaySphereMapTextureUVMeshEnabled = 1 << 3,
+    kPrivateStateReserved = 1 << 31,
+};
+static const nanoem_u32_t kPrivateStateInitialValue =
+    kPrivateStateVisible | kPrivateStateDisplayDiffuseTextureUVMeshEnabled;
 static const nanoem_f32_t kMiniumSpecularPower = 0.1f;
+
+} /* namespace anonymous */
 
 void
 Material::Color::reset(nanoem_f32_t v)
@@ -58,8 +70,7 @@ Material::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelMaterialGetName(material, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Material%d", nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(material)));
+            StringUtils::format(m_canonicalName, "Material%d", index(material));
         }
     }
     if (m_name.empty()) {
@@ -82,6 +93,11 @@ Material::reset(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT
     eb.m_color = glm::make_vec3(nanoemModelMaterialGetEdgeColor(material));
     eb.m_opacity = nanoemModelMaterialGetEdgeOpacity(material);
     eb.m_size = nanoemModelMaterialGetEdgeSize(material);
+}
+
+void
+Material::resetDeform()
+{
     m_color.mul.reset(1);
     m_color.add.reset(0);
     m_edge.mul.reset(1);
@@ -89,28 +105,29 @@ Material::reset(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT
 }
 
 void
-Material::update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT
+Material::deform(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT
 {
     nanoem_parameter_assert(morph, "must not be nullptr");
+    static const Vector4 kOneV4(1.0f);
+    static const Vector3 kOneV3(1.0f);
     const Vector4 diffuseTextureBlendFactor(glm::make_vec4(nanoemModelMorphMaterialGetDiffuseTextureBlend(morph)));
     const Vector4 sphereTextureBlendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(morph)));
     const Vector4 toonTextureBlendFactor(glm::make_vec4(nanoemModelMorphMaterialGetSphereMapTextureBlend(morph)));
     switch (nanoemModelMorphMaterialGetOperationType(morph)) {
     case NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_MULTIPLY: {
         Color &cm = m_color.mul;
-        static const Vector3 kOne(1.0f);
-        cm.m_ambient *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetAmbientColor(morph)), weight);
-        cm.m_diffuse *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(morph)), weight);
-        cm.m_specular *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetSpecularColor(morph)), weight);
+        cm.m_ambient *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetAmbientColor(morph)), weight);
+        cm.m_diffuse *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetDiffuseColor(morph)), weight);
+        cm.m_specular *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetSpecularColor(morph)), weight);
         cm.m_diffuseOpacity = glm::mix(cm.m_diffuseOpacity, nanoemModelMorphMaterialGetDiffuseOpacity(morph), weight);
         cm.m_specularPower =
             glm::max(glm::mix(cm.m_specularPower, nanoemModelMorphMaterialGetSpecularPower(morph), weight),
                 kMiniumSpecularPower);
-        cm.m_diffuseTextureBlendFactor *= glm::mix(Vector4(1), diffuseTextureBlendFactor, weight);
-        cm.m_sphereTextureBlendFactor *= glm::mix(Vector4(1), sphereTextureBlendFactor, weight);
-        cm.m_toonTextureBlendFactor *= glm::mix(Vector4(1), toonTextureBlendFactor, weight);
+        cm.m_diffuseTextureBlendFactor *= glm::mix(kOneV4, diffuseTextureBlendFactor, weight);
+        cm.m_sphereTextureBlendFactor *= glm::mix(kOneV4, sphereTextureBlendFactor, weight);
+        cm.m_toonTextureBlendFactor *= glm::mix(kOneV4, toonTextureBlendFactor, weight);
         Edge &em = m_edge.mul;
-        em.m_color *= glm::mix(kOne, glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morph)), weight);
+        em.m_color *= glm::mix(kOneV3, glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morph)), weight);
         em.m_opacity = glm::mix(em.m_opacity, nanoemModelMorphMaterialGetEdgeOpacity(morph), weight);
         em.m_size = glm::mix(em.m_size, nanoemModelMorphMaterialGetEdgeSize(morph), weight);
         break;
@@ -127,9 +144,9 @@ Material::update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight
         ca.m_specularPower =
             glm::max(glm::mix(ca.m_specularPower, nanoemModelMorphMaterialGetSpecularPower(morph), weight),
                 kMiniumSpecularPower);
-        ca.m_diffuseTextureBlendFactor += glm::mix(Vector4(0), diffuseTextureBlendFactor, weight);
-        ca.m_sphereTextureBlendFactor += glm::mix(Vector4(0), sphereTextureBlendFactor, weight);
-        ca.m_toonTextureBlendFactor += glm::mix(Vector4(0), toonTextureBlendFactor, weight);
+        ca.m_diffuseTextureBlendFactor += glm::mix(Constants::kZeroV4, diffuseTextureBlendFactor, weight);
+        ca.m_sphereTextureBlendFactor += glm::mix(Constants::kZeroV4, sphereTextureBlendFactor, weight);
+        ca.m_toonTextureBlendFactor += glm::mix(Constants::kZeroV4, toonTextureBlendFactor, weight);
         Edge &ea = m_edge.add;
         ea.m_color += glm::mix(Constants::kZeroV3, glm::make_vec3(nanoemModelMorphMaterialGetEdgeColor(morph)), weight);
         ea.m_opacity = glm::mix(ea.m_opacity, nanoemModelMorphMaterialGetEdgeOpacity(morph), weight);
@@ -218,10 +235,31 @@ Material::edge() const NANOEM_DECL_NOEXCEPT
     return e;
 }
 
-Material *
-Material::cast(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT
+int
+Material::index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelMaterialGetModelObject(material);
+    return nanoemModelObjectGetIndex(nanoemModelMaterialGetModelObject(materialPtr));
+}
+
+const char *
+Material::nameConstString(const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Material *material = cast(materialPtr);
+    return material ? material->nameConstString() : placeHolder;
+}
+
+const char *
+Material::canonicalNameConstString(
+    const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Material *material = cast(materialPtr);
+    return material ? material->canonicalNameConstString() : placeHolder;
+}
+
+Material *
+Material::cast(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelMaterialGetModelObject(materialPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Material *>(nanoemUserDataGetOpaqueData(userData));
 }
@@ -311,15 +349,45 @@ Material::setToonColor(const Vector4 &value)
 }
 
 bool
+Material::isDisplayDiffuseTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateDisplayDiffuseTextureUVMeshEnabled, m_states);
+}
+
+void
+Material::setDisplayDiffuseTextureUVMeshEnabled(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateDisplayDiffuseTextureUVMeshEnabled, m_states, value);
+}
+
+bool
+Material::isDisplaySphereMapTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateDisplaySphereMapTextureUVMeshEnabled, m_states);
+}
+
+void
+Material::setDisplaySphereMapTextureUVMeshEnabled(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateDisplaySphereMapTextureUVMeshEnabled, m_states, value);
+}
+
+bool
+Material::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return isVisible() ? false : true;
+}
+
+bool
 Material::isVisible() const NANOEM_DECL_NOEXCEPT
 {
-    return m_visible;
+    return EnumUtils::isEnabled(kPrivateStateVisible, m_states);
 }
 
 void
 Material::setVisible(bool value)
 {
-    m_visible = value;
+    EnumUtils::setEnabled(kPrivateStateVisible, m_states, value);
 }
 
 void
@@ -335,8 +403,9 @@ Material::Material(sg_image fallbackImage) NANOEM_DECL_NOEXCEPT : m_effect(nullp
                                                                   m_sphereMapImagePtr(nullptr),
                                                                   m_toonImagePtr(nullptr),
                                                                   m_toonColor(1),
-                                                                  m_visible(true)
+                                                                  m_states(kPrivateStateInitialValue)
 {
+    resetDeform();
     m_fallbackImage = fallbackImage;
 }
 

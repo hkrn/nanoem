@@ -23,28 +23,29 @@ namespace nanoem {
 
 class IModelObjectSelection {
 public:
-    enum EditingType {
-        kEditingTypeFirstEnum,
-        kEditingTypeNone = kEditingTypeFirstEnum,
-        kEditingTypeInfo,
-        kEditingTypeVertex,
-        kEditingTypeFace,
-        kEditingTypeMaterial,
-        kEditingTypeBone,
-        kEditingTypeMorph,
-        kEditingTypeLabel,
-        kEditingTypeRigidBody,
-        kEditingTypeJoint,
-        kEditingTypeSoftBody,
-        kEditingTypeMaxEnum
+    typedef tinystl::vector<Vector4UI32, TinySTLAllocator> FaceList;
+    enum ObjectType {
+        kObjectTypeFirstEnum,
+        kObjectTypeNull = kObjectTypeFirstEnum,
+        kObjectTypeVertex,
+        kObjectTypeFace,
+        kObjectTypeMaterial,
+        kObjectTypeBone,
+        kObjectTypeMorph,
+        kObjectTypeLabel,
+        kObjectTypeRigidBody,
+        kObjectTypeJoint,
+        kObjectTypeSoftBody,
+        kObjectTypeMaxEnum
     };
-    enum SelectTargetModeType {
-        kSelectTargetModeTypeFirstEnum,
-        kSelectTargetModeTypePoint = kSelectTargetModeTypeFirstEnum,
-        kSelectTargetModeTypeBox,
-        kSelectTargetModeTypeCircle,
-        kSelectTargetModeTypeMaxEnum
+    enum TargetModeType {
+        kTargetModeTypeFirstEnum,
+        kTargetModeTypePoint = kTargetModeTypeFirstEnum,
+        kTargetModeTypeRectangle,
+        kTargetModeTypeCircle,
+        kTargetModeTypeMaxEnum
     };
+
     virtual ~IModelObjectSelection() NANOEM_DECL_NOEXCEPT
     {
     }
@@ -57,6 +58,7 @@ public:
     virtual void addRigidBody(const nanoem_model_rigid_body_t *value) = 0;
     virtual void addJoint(const nanoem_model_joint_t *value) = 0;
     virtual void addSoftBody(const nanoem_model_soft_body_t *value) = 0;
+    virtual void addFace(const Vector4UI32 &value) = 0;
     virtual void addAllBones() = 0;
     virtual void addAllDirtyBones() = 0;
     virtual void addAllMovableBones() = 0;
@@ -69,6 +71,7 @@ public:
     virtual void removeRigidBody(const nanoem_model_rigid_body_t *value) = 0;
     virtual void removeJoint(const nanoem_model_joint_t *value) = 0;
     virtual void removeSoftBody(const nanoem_model_soft_body_t *value) = 0;
+    virtual void removeFace(const Vector4UI32 &value) = 0;
     virtual void removeAllVertices() = 0;
     virtual void removeAllBones() = 0;
     virtual void removeAllMaterials() = 0;
@@ -77,35 +80,31 @@ public:
     virtual void removeAllRigidBodies() = 0;
     virtual void removeAllJoints() = 0;
     virtual void removeAllSoftBodies() = 0;
+    virtual void removeAllFaces() = 0;
     virtual void clearAll() = 0;
     virtual void toggleSelectAndActiveBone(const nanoem_model_bone_t *bone, bool isMultipleSelection) = 0;
 
-    virtual void setHoveredVertex(nanoem_model_vertex_t *value) = 0;
-    virtual void setHoveredMaterial(nanoem_model_material_t *value) = 0;
-    virtual void setHoveredBone(nanoem_model_bone_t *value) = 0;
-    virtual void setHoveredMorph(nanoem_model_morph_t *value) = 0;
-    virtual void setHoveredLabel(nanoem_model_label_t *value) = 0;
-    virtual void setHoveredRigidBody(nanoem_model_rigid_body_t *value) = 0;
-    virtual void setHoveredJoint(nanoem_model_joint_t *value) = 0;
-    virtual void setHoveredSoftBody(nanoem_model_soft_body_t *value) = 0;
-    virtual void resetAllHoveredObjects() = 0;
-    virtual nanoem_model_vertex_t *hoveredVertex() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_material_t *hoveredMaterial() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_bone_t *hoveredBone() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_morph_t *hoveredMorph() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_label_t *hoveredLabel() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_rigid_body_t *hoveredRigidBody() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_joint_t *hoveredJoint() NANOEM_DECL_NOEXCEPT = 0;
-    virtual nanoem_model_soft_body_t *hoveredSoftBody() NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllVertices() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllMaterials() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllBones() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllMorphs() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllLabels() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllRigidBodies() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllJoints() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllSoftBodies() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual nanoem_rsize_t countAllFaces() const NANOEM_DECL_NOEXCEPT = 0;
 
-    virtual model::Vertex::Set allVertexSet() const = 0;
-    virtual model::Bone::Set allBoneSet() const = 0;
-    virtual model::Material::Set allMaterialSet() const = 0;
-    virtual model::Morph::Set allMorphSet() const = 0;
-    virtual model::Label::Set allLabelSet() const = 0;
-    virtual model::RigidBody::Set allRigidBodySet() const = 0;
-    virtual model::Joint::Set allJointSet() const = 0;
-    virtual model::SoftBody::Set allSoftBodySet() const = 0;
+    virtual const model::Vertex::Set *allVertexSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Bone::Set *allBoneSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Material::Set *allMaterialSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Morph::Set *allMorphSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Label::Set *allLabelSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::RigidBody::Set *allRigidBodySet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::Joint::Set *allJointSet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual const model::SoftBody::Set *allSoftBodySet() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual FaceList allFaces() const = 0;
+    virtual Matrix4x4 pivotMatrix() const = 0;
+
     virtual bool containsVertex(const nanoem_model_vertex_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsBone(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsMaterial(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT = 0;
@@ -114,16 +113,17 @@ public:
     virtual bool containsRigidBody(const nanoem_model_rigid_body_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsJoint(const nanoem_model_joint_t *value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsSoftBody(const nanoem_model_soft_body_t *value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual bool containsFace(const Vector4UI32 &value) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool containsAnyBone() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesMovable() const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool areAllBonesRotateable() const NANOEM_DECL_NOEXCEPT = 0;
 
     virtual bool isBoxSelectedBoneModeEnabled() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBoxSelectedBoneModeEnabled(bool value) = 0;
-    virtual EditingType editingType() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual void setEditingType(EditingType value) = 0;
-    virtual SelectTargetModeType targetMode() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual void setTargetMode(SelectTargetModeType value) = 0;
+    virtual ObjectType objectType() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setObjectType(ObjectType value) = 0;
+    virtual TargetModeType targetMode() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual void setTargetMode(TargetModeType value) = 0;
 };
 
 } /* namespace nanoem */

@@ -31,9 +31,9 @@ extern void __par_free(void *ptr, const char *file, int line);
 #define PAR_REALLOC(T, p, size) ((T *) __par_realloc((p), (size) * sizeof(T), __FILE__, __LINE__))
 #define PAR_FREE(p) __par_free((p), __FILE__, __LINE__)
 #else
-#define PAR_MALLOC(T, size) ((T *) __par_malloc((size) * sizeof(T), 0, 0))
-#define PAR_CALLOC(T, size) ((T *) __par_calloc((size) * sizeof(T), 1, 0, 0))
-#define PAR_REALLOC(T, p, size) ((T *) __par_realloc((p), (size) * sizeof(T), 0, 0))
+#define PAR_MALLOC(T, size) ((T *) __par_malloc((size) * sizeof(T), NULL, 0))
+#define PAR_CALLOC(T, size) ((T *) __par_calloc((size) * sizeof(T), 1, NULL, 0))
+#define PAR_REALLOC(T, p, size) ((T *) __par_realloc((p), (size) * sizeof(T), NULL, 0))
 #define PAR_FREE(p) __par_free((p), 0, 0)
 #endif
 #if defined(_MSC_VER)
@@ -41,15 +41,11 @@ __pragma(warning(push))
 __pragma(warning(disable:4244))
 __pragma(warning(disable:4305))
 #endif /* _MSC_VER */
+#define PAR_SHAPES_T uint32_t
 #include "par/par_shapes.h"
 #if defined(_MSC_VER)
 __pragma(warning(pop))
 #endif /* _MSC_VER */
-
-/* add "__" prefix to prevent confliction of stb.h */
-extern void *__stb_malloc(size_t size, const char *file, int line);
-extern void *__stb_realloc(void *ptr, size_t size, const char *file, int line);
-extern void __stb_free(void *ptr, const char *file, int line);
 
 /* stb */
 #define STB_SPRINTF_IMPLEMENTATION
@@ -61,3 +57,23 @@ extern void __stb_free(void *ptr, const char *file, int line);
 /* sokol_time */
 #define SOKOL_IMPL
 #include "sokol/sokol_time.h"
+
+/* tinyobjcloader-c */
+extern void *__tinyobj_malloc(size_t size, const char *file, int line);
+extern void *__tinyobj_calloc(size_t size, size_t count, const char *file, int line);
+extern void *__tinyobj_realloc(void *ptr, size_t size, const char *file, int line);
+extern void __tinyobj_free(void *ptr, const char *file, int line);
+
+#ifndef NDEBUG
+#define TINYOBJ_MALLOC(size) __tinyobj_malloc((size), __FILE__, __LINE__)
+#define TINYOBJ_CALLOC(size, count) __tinyobj_calloc((size), (count), __FILE__, __LINE__)
+#define TINYOBJ_REALLOC(p, size) __tinyobj_realloc((p), (size), __FILE__, __LINE__)
+#define TINYOBJ_FREE(p) __tinyobj_free((p), __FILE__, __LINE__)
+#else
+#define TINYOBJ_MALLOC(size) __tinyobj_malloc((size), NULL, 0)
+#define TINYOBJ_CALLOC(size, count) __tinyobj_calloc((size), (count), NULL, 0)
+#define TINYOBJ_REALLOC(p, size) __tinyobj_realloc((p), (size), NULL, 0)
+#define TINYOBJ_FREE(p) __tinyobj_free((p), NULL, 0)
+#endif
+#define TINYOBJ_LOADER_C_IMPLEMENTATION
+#include "tinyobjloader-c/tinyobj_loader_c.h"

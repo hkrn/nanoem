@@ -38,8 +38,7 @@ Morph::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelMorphGetName(morph, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Morph%d", nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morph)));
+            StringUtils::format(m_canonicalName, "Morph%d", index(morph));
         }
     }
     if (m_name.empty()) {
@@ -70,10 +69,30 @@ Morph::synchronizeMotion(
     }
 }
 
-Morph *
-Morph::cast(const nanoem_model_morph_t *morph) NANOEM_DECL_NOEXCEPT
+int
+Morph::index(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelMorphGetModelObject(morph);
+    return nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morphPtr));
+}
+
+const char *
+Morph::nameConstString(const nanoem_model_morph_t *morphPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Morph *morph = cast(morphPtr);
+    return morph ? morph->nameConstString() : placeHolder;
+}
+
+const char *
+Morph::canonicalNameConstString(const nanoem_model_morph_t *morphPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Morph *morph = cast(morphPtr);
+    return morph ? morph->canonicalNameConstString() : placeHolder;
+}
+
+Morph *
+Morph::cast(const nanoem_model_morph_t *morphPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelMorphGetModelObject(morphPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Morph *>(nanoemUserDataGetOpaqueData(userData));
 }

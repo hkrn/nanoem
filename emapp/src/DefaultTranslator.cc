@@ -33,7 +33,7 @@ bool
 DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
 {
     if (Nanoem__Translation__Bundle *bundle = nanoem__translation__bundle__unpack(g_protobufc_allocator, length, ptr)) {
-        m_phrases.clear();
+        StringMap phrases;
         for (size_t i = 0, numUnits = bundle->n_units; i < numUnits; i++) {
             const Nanoem__Translation__Unit *unit = bundle->units[i];
             const bool match =
@@ -42,11 +42,12 @@ DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
             if (match) {
                 for (size_t j = 0, numPhrases = unit->n_phrases; j < numPhrases; j++) {
                     const Nanoem__Translation__Phrase *phrase = unit->phrases[j];
-                    m_phrases.insert(tinystl::make_pair(String(phrase->id), String(phrase->text)));
+                    phrases.insert(tinystl::make_pair(String(phrase->id), String(phrase->text)));
                 }
             }
         }
         nanoem__translation__bundle__free_unpacked(bundle, g_protobufc_allocator);
+        m_phrases = phrases;
     }
     return m_message.empty();
 }

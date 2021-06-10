@@ -51,7 +51,8 @@ public:
         nanoem_language_type_t language);
     void destroy() NANOEM_DECL_NOEXCEPT;
     void reset(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT;
-    void update(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT;
+    void resetDeform();
+    void deform(const nanoem_model_morph_material_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT;
     String name() const;
     String canonicalName() const;
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;
@@ -62,7 +63,12 @@ public:
     Color color() const NANOEM_DECL_NOEXCEPT;
     Edge edge() const NANOEM_DECL_NOEXCEPT;
 
-    static Material *cast(const nanoem_model_material_t *material) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_material_t *materialPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static Material *cast(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT;
     static Material *create(sg_image fallbackTexture);
 
     const IImageView *diffuseImage() const NANOEM_DECL_NOEXCEPT;
@@ -78,6 +84,11 @@ public:
     void setIndexHash(const UInt32HashMap &value);
     Vector4 toonColor() const NANOEM_DECL_NOEXCEPT;
     void setToonColor(const Vector4 &value);
+    bool isDisplayDiffuseTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setDisplayDiffuseTextureUVMeshEnabled(bool value);
+    bool isDisplaySphereMapTextureUVMeshEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setDisplaySphereMapTextureUVMeshEnabled(bool value);
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
     bool isVisible() const NANOEM_DECL_NOEXCEPT;
     void setVisible(bool value);
 
@@ -104,7 +115,7 @@ private:
     sg_image m_fallbackImage;
     UInt32HashMap m_indexHash;
     Vector4 m_toonColor;
-    bool m_visible;
+    uint32_t m_states;
 };
 
 } /* namespace model */

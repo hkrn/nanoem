@@ -21,6 +21,7 @@
 #include "emapp/IModalDialog.h"
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/IMotionKeyframeSelection.h"
+#include "emapp/IState.h"
 #include "emapp/ITrack.h"
 #include "emapp/ListUtils.h"
 #include "emapp/ModalDialogFactory.h"
@@ -31,6 +32,7 @@
 #include "emapp/Progress.h"
 #include "emapp/ResourceBundle.h"
 #include "emapp/StringUtils.h"
+#include "emapp/command/ModelObjectCommand.h"
 #include "emapp/command/UpdateCameraCommand.h"
 #include "emapp/internal/AccessoryValueState.h"
 #include "emapp/internal/BoneValueState.h"
@@ -53,6 +55,7 @@
 #include "emapp/internal/imgui/CameraParentModelSelector.h"
 #include "emapp/internal/imgui/ConstraintSelector.h"
 #include "emapp/internal/imgui/EffectParameterDialog.h"
+#include "emapp/internal/imgui/GizmoController.h"
 #include "emapp/internal/imgui/LazyPublishCanCopyEventCommand.h"
 #include "emapp/internal/imgui/LazyPublishCanPasteEventCommand.h"
 #include "emapp/internal/imgui/LazyReloadEffectCommand.h"
@@ -64,6 +67,7 @@
 #include "emapp/internal/imgui/LazySetFrameIndexCommand.h"
 #include "emapp/internal/imgui/ModelDrawOrderDialog.h"
 #include "emapp/internal/imgui/ModelEdgeDialog.h"
+#include "emapp/internal/imgui/ModelEditCommandDialog.h"
 #include "emapp/internal/imgui/ModelIOPluginDialog.h"
 #include "emapp/internal/imgui/ModelKeyframeSelector.h"
 #include "emapp/internal/imgui/ModelOutsideParentDialog.h"
@@ -77,16 +81,21 @@
 #include "emapp/internal/imgui/ProjectKeyframeSelector.h"
 #include "emapp/internal/imgui/ScaleAllSelectedKeyframesDialog.h"
 #include "emapp/internal/imgui/SelfShadowConfigurationDialog.h"
+#include "emapp/internal/imgui/UVEditDialog.h"
 #include "emapp/internal/imgui/UberMotionKeyframeSelection.h"
+#include "emapp/internal/imgui/VertexWeightPainter.h"
 #include "emapp/internal/imgui/ViewportSettingDialog.h"
+#include "emapp/model/IGizmo.h"
 #include "emapp/private/CommonInclude.h"
 
+#include "glm/gtx/matrix_query.hpp"
 #include "sokol/sokol_time.h"
+
+#define PAR_SHAPES_T uint32_t
+#include "par/par_shapes.h"
 
 #define SOKOL_GFX_INCLUDED /* stub */
 #include "sokol/util/sokol_gfx_imgui.h"
-
-#include "imguizmo/ImGuizmo.h"
 
 namespace nanoem {
 namespace internal {
@@ -112,12 +121,719 @@ UniformBlock
     ImVec4 m_add;
 };
 
+static const Vector4 kColorRed(1, 0, 0, 1);
+static const Vector4 kColorGreen(0, 1, 0, 1);
+static const Vector4 kColorBlue(0, 0, 1, 1);
+static const Vector4 kColorTranslucentRed(1, 0, 0, 0.5f);
+static const Vector4 kColorTranslucentGreen(0, 1, 0, 0.5f);
+static const Vector4 kColorTranslucentBlue(0, 0, 1, 0.5f);
+static const Vector4 kColorGray(0.5f, 0.5f, 0.5f, 1);
+
+static bool
+isSelectingBoneHandle(const IModelObjectSelection *selection, Project::RectangleType type) NANOEM_DECL_NOEXCEPT
+{
+    const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable();
+    return (movable && type >= Project::kRectangleTranslateX && type <= Project::kRectangleTranslateZ) ||
+        (rotateable && type >= Project::kRectangleOrientateX && type <= Project::kRectangleOrientateZ);
+}
+
+static bool
+isDraggingBoneAxisAlignedState(const IState *state) NANOEM_DECL_NOEXCEPT
+{
+    bool result = false;
+    if (state && state->isGrabbingHandle()) {
+        switch (state->type()) {
+        case IState::kTypeDraggingBoneAxisAlignedOrientateActiveBoneState:
+        case IState::kTypeDraggingBoneAxisAlignedTranslateActiveBoneState:
+            result = true;
+            break;
+        default:
+            break;
+        }
+    }
+    return result;
+}
+
+class VertexWeightPainterUtils : private NonCopyable {
+public:
+    static const char *selectedVertexType(const nanoem_model_vertex_type_t type) NANOEM_DECL_NOEXCEPT;
+    static const char *selectedVertexWeightPainterType(
+        const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT;
+    static void layoutSelectBoneComboBox(
+        Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter);
+};
+
+const char *
+VertexWeightPainterUtils::selectedVertexType(const nanoem_model_vertex_type_t type) NANOEM_DECL_NOEXCEPT
+{
+    switch (type) {
+    case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
+        return "BDEF1";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_BDEF2: {
+        return "BDEF2";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_BDEF4: {
+        return "BDEF4";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
+        return "SDEF";
+    }
+    case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
+        return "QDEF";
+    }
+    default:
+        return "(Unknown)";
+    }
+}
+
+const char *
+VertexWeightPainterUtils::selectedVertexWeightPainterType(
+    const model::IVertexWeightPainter::Type type, const ITranslator *translator) NANOEM_DECL_NOEXCEPT
+{
+    switch (type) {
+    case model::IVertexWeightPainter::kTypeAirBrush:
+        return translator->translate("nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brush");
+    case model::IVertexWeightPainter::kTypeBaseBrush:
+        return translator->translate("nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brush");
+    default:
+        return "(Unknown)";
+    }
+}
+
+void
+VertexWeightPainterUtils::layoutSelectBoneComboBox(
+    Model *activeModel, nanoem_rsize_t offset, model::IVertexWeightPainter *painter)
+{
+    char buffer[Inline::kNameStackBufferSize];
+    const nanoem_model_bone_t *activeBonePtr = painter->vertexBone(offset);
+    const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+    StringUtils::format(buffer, sizeof(buffer), "##bones[%jd]", offset);
+    if (ImGui::BeginCombo(buffer, activeBone ? activeBone->nameConstString() : "(null)")) {
+        nanoem_rsize_t numBones;
+        nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(activeModel->data(), &numBones);
+        for (nanoem_rsize_t i = 0; i < numBones; i++) {
+            const nanoem_model_bone_t *bonePtr = bones[i];
+            if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
+                const bool selected = bonePtr == activeBonePtr;
+                StringUtils::format(buffer, sizeof(buffer), "%s##bones[%jd][%jd]", bone->nameConstString(), offset, i);
+                if (ImGui::Selectable(buffer, selected)) {
+                    painter->setVertexBone(bonePtr, offset);
+                }
+            }
+        }
+        ImGui::EndCombo();
+    }
+}
+
+struct WaveFormPanelDrawer {
+    typedef nanoem_f32_t (*CallbackHandler)(void *data, int idx);
+
+    static nanoem_f32_t callback(void *userData, int offset) NANOEM_DECL_NOEXCEPT;
+    WaveFormPanelDrawer(const Project *project, nanoem_u32_t numVisibleMarkers);
+
+    nanoem_f32_t plotSample24(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_f32_t plotSample16(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_f32_t plotSample8(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_rsize_t sampleBytesOffset(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT;
+
+    const ByteArray *m_linearPCMSamplesPtr;
+    nanoem_rsize_t m_base;
+    nanoem_rsize_t m_length;
+    nanoem_rsize_t m_bytesPerSample;
+};
+
+nanoem_f32_t
+WaveFormPanelDrawer::callback(void *userData, int offset) NANOEM_DECL_NOEXCEPT
+{
+    const WaveFormPanelDrawer *drawer = static_cast<const WaveFormPanelDrawer *>(userData);
+    nanoem_f32_t value = 0.0f;
+    switch (drawer->m_bytesPerSample) {
+    case 3: {
+        value = drawer->plotSample24(offset);
+        break;
+    }
+    case 2: {
+        value = drawer->plotSample16(offset);
+        break;
+    }
+    case 1: {
+        value = drawer->plotSample8(offset);
+        break;
+    }
+    default:
+        break;
+    }
+    return glm::clamp(value, -1.0f, 1.0f);
+}
+
+WaveFormPanelDrawer::WaveFormPanelDrawer(const Project *project, nanoem_u32_t numVisibleMarkers)
+    : m_linearPCMSamplesPtr(nullptr)
+    , m_base(0)
+    , m_length(0)
+    , m_bytesPerSample(0)
+{
+    const IAudioPlayer *player = project->audioPlayer();
+    if (player->isLoaded()) {
+        const nanoem_f64_t denominator(project->baseFPS());
+        const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
+        const nanoem_u32_t bytesPerSample = player->bitsPerSample() / 8,
+                           bytesPerSecond = player->sampleRate() * player->numChannels() * bytesPerSample,
+                           length = static_cast<nanoem_u32_t>((numVisibleMarkers / denominator) * bytesPerSecond),
+                           base = static_cast<nanoem_u32_t>((frameIndex / denominator) * bytesPerSecond);
+        m_linearPCMSamplesPtr = player->linearPCMSamples();
+        m_length = length - length % bytesPerSample;
+        m_base = base - base % bytesPerSample;
+        m_bytesPerSample = bytesPerSample;
+    }
+}
+
+nanoem_f32_t
+WaveFormPanelDrawer::plotSample24(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t value = 0;
+    const nanoem_rsize_t offset = sampleBytesOffset(index);
+    if (m_linearPCMSamplesPtr && offset < m_linearPCMSamplesPtr->size() - m_bytesPerSample) {
+        const nanoem_u8_t *ptr = m_linearPCMSamplesPtr->data() + offset;
+        int v = 0;
+        if ((ptr[2] & 0x80) != 0) {
+            v = (0xff << 24) | (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+        }
+        else {
+            v = (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+        }
+        value = v / 8388607.0f;
+    }
+    return value;
+}
+
+nanoem_f32_t
+WaveFormPanelDrawer::plotSample16(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t value = 0;
+    const nanoem_rsize_t offset = sampleBytesOffset(index);
+    if (m_linearPCMSamplesPtr && offset < m_linearPCMSamplesPtr->size() - m_bytesPerSample) {
+        value = *reinterpret_cast<const nanoem_i16_t *>(m_linearPCMSamplesPtr->data() + offset) / 32767.0f;
+    }
+    return value;
+}
+
+nanoem_f32_t
+WaveFormPanelDrawer::plotSample8(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT
+{
+    nanoem_f32_t value = 0;
+    const nanoem_rsize_t offset = sampleBytesOffset(index);
+    if (m_linearPCMSamplesPtr && offset < m_linearPCMSamplesPtr->size() - m_bytesPerSample) {
+        value = *reinterpret_cast<const char *>(m_linearPCMSamplesPtr->data() + offset) / 127.0f;
+    }
+    return value;
+}
+
+nanoem_rsize_t
+WaveFormPanelDrawer::sampleBytesOffset(nanoem_rsize_t sample) const NANOEM_DECL_NOEXCEPT
+{
+    return m_base + sample * m_bytesPerSample;
+}
+
+class BasePrimitiveDialog : public imgui::BaseNonModalDialogWindow {
+protected:
+    BasePrimitiveDialog(BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s);
+
+    void layoutTransform();
+    void applyTransform(par_shapes_mesh *mesh);
+    void createUndoCommand(Project *project, const par_shapes_mesh *mesh);
+
+private:
+    Vector3 m_translation;
+    Vector3 m_rotation;
+    Vector3 m_scale;
+};
+
+BasePrimitiveDialog::BasePrimitiveDialog(
+    BaseApplicationService *applicationPtr, const Vector3 &t, const Vector3 &r, const Vector3 &s)
+    : imgui::BaseNonModalDialogWindow(applicationPtr)
+    , m_translation(t)
+    , m_rotation(r)
+    , m_scale(s)
+{
+}
+
+void
+BasePrimitiveDialog::layoutTransform()
+{
+    ImGui::TextUnformatted(
+        tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation"));
+    ImGui::DragFloat3("##translation", glm::value_ptr(m_translation));
+    ImGui::TextUnformatted(
+        tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation"));
+    ImGui::DragFloat3("##rotation", glm::value_ptr(m_rotation), 1.0f, -180.0f, 180.0f);
+    ImGui::TextUnformatted(
+        tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scale"));
+    ImGui::DragFloat3("##scale", glm::value_ptr(m_scale), 1.0f, 0.0001f, 10000.0f);
+}
+
+void
+BasePrimitiveDialog::applyTransform(par_shapes_mesh *mesh)
+{
+    const Quaternion q(glm::radians(m_rotation));
+    par_shapes_scale(mesh, m_scale.x, m_scale.y, m_scale.z);
+    par_shapes_rotate(mesh, glm::angle(q), glm::value_ptr(glm::axis(q)));
+    par_shapes_translate(mesh, m_translation.x, m_translation.y, m_translation.z);
+}
+
+void
+BasePrimitiveDialog::createUndoCommand(Project *project, const par_shapes_mesh *mesh)
+{
+    command::CreateMaterialCommand::MutableVertexList vertices;
+    nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    Model *activeModel = project->activeModel();
+    for (nanoem_rsize_t i = 0, numPoints = mesh->npoints; i < numPoints; i++) {
+        nanoem_mutable_model_vertex_t *vertexPtr = nanoemMutableModelVertexCreate(activeModel->data(), &status);
+        {
+            const Vector4 position(glm::make_vec3(&mesh->points[i * 3]), 1);
+            nanoemMutableModelVertexSetOrigin(vertexPtr, glm::value_ptr(position));
+        }
+        if (mesh->normals) {
+            const Vector4 normal(glm::make_vec3(&mesh->normals[i * 3]), 0);
+            nanoemMutableModelVertexSetNormal(vertexPtr, glm::value_ptr(normal));
+        }
+        if (mesh->tcoords) {
+            const Vector4 texcoord(glm::make_vec2(&mesh->tcoords[i * 2]), 0, 0);
+            nanoemMutableModelVertexSetTexCoord(vertexPtr, glm::value_ptr(texcoord));
+        }
+        vertices.push_back(vertexPtr);
+    }
+    VertexIndexList indices;
+    for (nanoem_rsize_t i = 0, numTriangles = mesh->ntriangles; i < numTriangles; i++) {
+        const PAR_SHAPES_T *triangles = &mesh->triangles[i * 3];
+        indices.push_back(*triangles);
+        indices.push_back(*(triangles + 1));
+        indices.push_back(*(triangles + 2));
+    }
+    undo_command_t *command = command::CreateMaterialCommand::create(activeModel, String(), vertices, indices);
+    activeModel->pushUndo(command);
+}
+
+class CreateConePrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateConePrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateConePrimitiveDialog::kIdentifier = "dialog.model.primitive.cone";
+
+CreateConePrimitiveDialog::CreateConePrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Vector3(-90, 0, 0), Vector3(5))
+    , m_slices(16)
+    , m_stacks(10)
+{
+}
+
+bool
+CreateConePrimitiveDialog::draw(Project *project)
+{
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 10;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Cone", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 10000,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_cone(m_slices, m_stacks);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateCubePrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateCubePrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+};
+
+const char *const CreateCubePrimitiveDialog::kIdentifier = "dialog.model.primitive.cube";
+
+CreateCubePrimitiveDialog::CreateCubePrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Vector3(-2.5f, 0, -2.5f), Constants::kZeroV3, Vector3(5))
+{
+}
+
+bool
+CreateCubePrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 6;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Cube", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_cube();
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateCylinderPrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateCylinderPrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateCylinderPrimitiveDialog::kIdentifier = "dialog.model.primitive.cylinder";
+
+CreateCylinderPrimitiveDialog::CreateCylinderPrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Vector3(-90, 0, 0), Vector3(5))
+    , m_slices(16)
+    , m_stacks(10)
+{
+}
+
+bool
+CreateCylinderPrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 8;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Cylinder", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_cylinder(m_slices, m_stacks);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateSpherePrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateSpherePrimitiveDialog(BaseApplicationService *applicationPtr);
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateSpherePrimitiveDialog::kIdentifier = "dialog.model.primitive.sphere";
+
+CreateSpherePrimitiveDialog::CreateSpherePrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Vector3(0, 5, 0), Constants::kZeroV3, Vector3(5))
+    , m_slices(16)
+    , m_stacks(10)
+{
+}
+
+bool
+CreateSpherePrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 8;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Sphere", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 1, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_parametric_sphere(m_slices, m_stacks);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class CreateTorusPrimitiveDialog : public BasePrimitiveDialog {
+public:
+    static const char *const kIdentifier;
+
+    CreateTorusPrimitiveDialog(BaseApplicationService *applicationPtr);
+    ~CreateTorusPrimitiveDialog() NANOEM_DECL_NOEXCEPT;
+
+    bool draw(Project *project) NANOEM_DECL_OVERRIDE;
+
+private:
+    nanoem_f32_t m_radius;
+    int m_slices;
+    int m_stacks;
+};
+
+const char *const CreateTorusPrimitiveDialog::kIdentifier = "dialog.model.primitive.torus";
+
+CreateTorusPrimitiveDialog::CreateTorusPrimitiveDialog(BaseApplicationService *service)
+    : BasePrimitiveDialog(service, Constants::kZeroV3, Vector3(90, 0, 0), Vector3(5))
+    , m_radius(0.5f)
+    , m_slices(16)
+    , m_stacks(10)
+{
+}
+
+CreateTorusPrimitiveDialog::~CreateTorusPrimitiveDialog() NANOEM_DECL_NOEXCEPT
+{
+}
+
+bool
+CreateTorusPrimitiveDialog::draw(Project *project)
+{
+    BX_UNUSED_1(project);
+    const nanoem_f32_t height = ImGui::GetFrameHeightWithSpacing() * 9;
+    bool visible = project->isModelEditingEnabled();
+    if (open("Create Torus", kIdentifier, &visible, height)) {
+        ImGui::PushItemWidth(-1);
+        layoutTransform();
+        addSeparator();
+        ImGui::DragInt("##slices", &m_slices, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices"));
+        ImGui::DragInt("##stacks", &m_stacks, 1.0f, 3, 256,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks"));
+        ImGui::SliderFloat("##radius", &m_radius, 0.1f, 1.0f,
+            tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius"));
+        addSeparator();
+        switch (layoutCommonButtons(&visible)) {
+        case kResponseTypeOK: {
+            par_shapes_mesh *mesh = par_shapes_create_torus(m_slices, m_stacks, m_radius);
+            applyTransform(mesh);
+            createUndoCommand(project, mesh);
+            par_shapes_free_mesh(mesh);
+            break;
+        }
+        case kResponseTypeCancel: {
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+    }
+    close();
+    return visible;
+}
+
+class DrawUtils NANOEM_DECL_SEALED : private NonCopyable {
+public:
+    static const Vector3 kColorRed;
+    static const Vector3 kColorGreen;
+    static const Vector3 kColorBlue;
+    static const Vector3 kColorYellow;
+    static const nanoem_f32_t kKappa;
+
+    static Vector2SI32 deviceScaleCursorActiveBoneInViewport(const Project *project) NANOEM_DECL_NOEXCEPT;
+    static bool isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT;
+    static void drawBoneMoveHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
+    static void drawBoneRotateHandle(IPrimitive2D *primitive, const Model *model, bool isGrabbingHandle);
+    static void drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project);
+    static void drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project);
+    static void drawVertexWeightPainter(
+        IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project);
+};
+
+const Vector3 DrawUtils::kColorRed = Vector3(1, 0, 0);
+const Vector3 DrawUtils::kColorGreen = Vector3(0, 1, 0);
+const Vector3 DrawUtils::kColorBlue = Vector3(0, 0, 1);
+const Vector3 DrawUtils::kColorYellow = Vector3(1, 1, 0);
+const nanoem_f32_t DrawUtils::kKappa = 0.5522847498307933984022516322796f;
+
+Vector2SI32
+DrawUtils::deviceScaleCursorActiveBoneInViewport(const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    Vector2SI32 deviceScaleCursor(0);
+    if (const Model *model = project->activeModel()) {
+        if (const model::Bone *bone = model::Bone::cast(model->activeBone())) {
+            deviceScaleCursor =
+                project->activeCamera()->toDeviceScreenCoordinateInViewport(bone->worldTransformOrigin());
+        }
+    }
+    return deviceScaleCursor;
+}
+
+bool
+DrawUtils::isDraggingBoneState(const IState *value) NANOEM_DECL_NOEXCEPT
+{
+    bool result = false;
+    if (value) {
+        switch (value->type()) {
+        case IState::kTypeDraggingBoneAxisAlignedOrientateActiveBoneState:
+        case IState::kTypeDraggingBoneAxisAlignedTranslateActiveBoneState:
+        case IState::kTypeDraggingBoneOrientateActiveBoneState:
+        case IState::kTypeDraggingBoneTranslateActiveBoneState:
+            result = true;
+            break;
+        default:
+            break;
+        }
+    }
+    return result;
+}
+
+void
+DrawUtils::drawBoneMoveHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
+{
+    const Project *project = activeModel->project();
+    const Model::AxisType type = activeModel->transformAxisType();
+    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
+    const nanoem_f32_t length = project->deviceScaleCircleRadius() * 10.0f,
+                       thickness = project->logicalScaleCircleRadius();
+    primitive->strokeLine(center, Vector2(center.x + length, center.y),
+        Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    primitive->strokeLine(center, Vector2(center.x, center.y - length),
+        Vector4(kColorGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+}
+
+void
+DrawUtils::drawBoneRotateHandle(IPrimitive2D *primitive, const Model *activeModel, bool isGrabbingHandle)
+{
+    const Project *project = activeModel->project();
+    const Model::AxisType type = activeModel->transformAxisType();
+    const Vector2 center(deviceScaleCursorActiveBoneInViewport(project));
+    nanoem_f32_t radius = project->deviceScaleCircleRadius() * 7.5f,
+                 thickness = project->logicalScaleCircleRadius() * 1.5f;
+    const nanoem_f32_t x1 = center.x - radius;
+    const nanoem_f32_t y1 = center.y - radius;
+    const nanoem_f32_t x2 = center.x + radius;
+    const nanoem_f32_t y2 = center.y + radius;
+    primitive->strokeLine(Vector2(center.x - radius, center.y), Vector2(center.x + radius, center.y),
+        Vector4(kColorBlue, type == Model::kAxisTypeZ || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    primitive->strokeLine(Vector2(center.x, center.y - radius), Vector2(center.x, center.y + radius),
+        Vector4(kColorRed, type == Model::kAxisTypeX || !isGrabbingHandle ? 1.0 : 0.25), thickness);
+    const Vector4 green(kColorGreen, type == Model::kAxisTypeY || !isGrabbingHandle ? 1.0 : 0.25);
+    primitive->strokeCurve(Vector2(x1, center.y + 1), Vector2(x1, center.y - radius * kKappa),
+        Vector2(center.x - radius * kKappa, y1), Vector2(center.x + 1, y1), green, thickness);
+    primitive->strokeCurve(Vector2(center.x - 1, y1), Vector2(center.x + radius * kKappa, y1),
+        Vector2(x2, center.y - radius * kKappa), Vector2(x2, center.y + 1), green, thickness);
+    primitive->strokeCurve(Vector2(x2, center.y - 1), Vector2(x2, center.y + radius * kKappa),
+        Vector2(center.x + radius * kKappa, y2), Vector2(center.x - 1, y2), green, thickness);
+    primitive->strokeCurve(Vector2(center.x + 1, y2), Vector2(center.x - radius * kKappa, y2),
+        Vector2(x1, center.y + radius * kKappa), Vector2(x1, center.y - 1), green, thickness);
+}
+
+void
+DrawUtils::drawActiveBonePoint(IPrimitive2D *primitive, const Vector4 &activeBoneColor, const Project *project)
+{
+    const Vector2SI32 center(deviceScaleCursorActiveBoneInViewport(project));
+    if (center.x != 0 && center.y != 0) {
+        const nanoem_f32_t radius = project->deviceScaleCircleRadius(), extent = radius * 2;
+        primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), activeBoneColor);
+    }
+}
+
+void
+DrawUtils::drawCameraLookAtPoint(IPrimitive2D *primitive, const ICamera *camera, const Project *project)
+{
+    const Vector2 center(camera->toDeviceScreenCoordinateInViewport(camera->boundLookAt()));
+    const nanoem_f32_t circleRadius = project->deviceScaleCircleRadius();
+    const nanoem_f32_t innerRadius = circleRadius * 0.65f;
+    primitive->strokeCircle(
+        Vector4(center.x - circleRadius, center.y - circleRadius, circleRadius * 2, circleRadius * 2),
+        Vector4(1, 0, 0, 1), 2.0f);
+    primitive->fillCircle(
+        Vector4(center.x - innerRadius, center.y - innerRadius, innerRadius * 2, innerRadius * 2), Vector4(1, 0, 0, 1));
+}
+
+void
+DrawUtils::drawVertexWeightPainter(
+    IPrimitive2D *primitive, const model::IVertexWeightPainter *brush, const Project *project)
+{
+    const Vector4UI16 layoutRect(project->deviceScaleUniformedViewportLayoutRect());
+    const Vector2SI32 center(project->deviceScaleMovingCursorPosition() - Vector2SI32(layoutRect));
+    const nanoem_f32_t radius = brush->radius(), extent = radius * 2;
+    primitive->fillCircle(Vector4(center.x - radius, center.y - radius, extent, extent), Vector4(kColorRed, 0.5));
+}
+
 } /* namespace anonymous */
 
 using namespace imgui;
 
-const Vector2UI16 ImGuiWindow::kMinimumWindowSize = Vector2UI16(1080, 700);
+const Vector2UI16 ImGuiWindow::kMinimumMainWindowSize = Vector2UI16(1080, 700);
+const Vector2UI16 ImGuiWindow::kMinimumViewportWindowSize = Vector2UI16(720, 480);
 const nanoem_f32_t ImGuiWindow::kFontSize = 16.0f;
+const nanoem_f32_t ImGuiWindow::kWindowRounding = 5.0f;
 const nanoem_f32_t ImGuiWindow::kLeftPaneWidth = 150.0f;
 const nanoem_f32_t ImGuiWindow::kTranslationStepFactor = 0.1f;
 const nanoem_f32_t ImGuiWindow::kOrientationStepFactor = 0.1f;
@@ -125,6 +841,12 @@ const nanoem_f32_t ImGuiWindow::kTimelineDefaultWidthRatio = 0.3f;
 const nanoem_f32_t ImGuiWindow::kTimelineMinWidthRatio = 0.25f;
 const nanoem_f32_t ImGuiWindow::kTimelineMaxWidthRatio = 0.75f;
 const nanoem_f32_t ImGuiWindow::kTimelineSnapGridRatio = 0.02f;
+const nanoem_f32_t ImGuiWindow::kTimelineSeekerPanelWidth = 240.0f;
+const nanoem_f32_t ImGuiWindow::kTimelineUndoPanelWidth = 180.0f;
+const nanoem_f32_t ImGuiWindow::kTimelineTrackMaxWidth = 150.0f;
+const nanoem_f32_t ImGuiWindow::kTimelineKeyframeActionPanelWidth = 320.0f;
+const nanoem_f32_t ImGuiWindow::kModelEditCommandWidth = 270.0f;
+const nanoem_f32_t ImGuiWindow::kDrawCircleSegmentCount = 24.0f;
 const ImGuiDataType ImGuiWindow::kFrameIndexDataType = ImGuiDataType_U32;
 const ImU32 ImGuiWindow::kMainWindowFlags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoBringToFrontOnFocus;
 const ImU32 ImGuiWindow::kColorWindowBg = IM_COL32(45, 45, 45, 255);
@@ -164,6 +886,7 @@ const ImU32 ImGuiWindow::kColorRhombusMoving = IM_COL32(255, 127, 0, 127);
 const ImU32 ImGuiWindow::kColorInterpolationCurveBezierLine = IM_COL32(255, 127, 0, 255);
 const ImU32 ImGuiWindow::kColorInterpolationCurveControlLine = IM_COL32(0, 255, 0, 127);
 const ImU32 ImGuiWindow::kColorInterpolationCurveControlPoint = IM_COL32(255, 0, 0, 255);
+const ImU32 ImGuiWindow::kColorSelectedModelObject = IM_COL32(255, 127, 0, 255);
 const nanoem_u8_t ImGuiWindow::kFAArrows[] = { 0xef, 0x81, 0x87, 0 };
 const nanoem_u8_t ImGuiWindow::kFARefresh[] = { 0xef, 0x80, 0xa1, 0 };
 const nanoem_u8_t ImGuiWindow::kFAZoom[] = { 0xef, 0x80, 0x82, 0 };
@@ -180,6 +903,8 @@ const nanoem_u8_t ImGuiWindow::kFAArrowDown[] = { 0xef, 0x81, 0xa3, 0x0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderOpen[] = { 0xef, 0x84, 0xba, 0 };
 const nanoem_u8_t ImGuiWindow::kFAFolderClose[] = { 0xef, 0x84, 0xb8, 0 };
 const nanoem_u8_t ImGuiWindow::kFACircle[] = { 0xef, 0x84, 0x91, 0 };
+const nanoem_u8_t ImGuiWindow::kFALink[] = { 0xef, 0x83, 0x81, 0 };
+const nanoem_u8_t ImGuiWindow::kFAExpand[] = { 0xef, 0x81, 0xa5, 0 };
 
 bool
 ImGuiWindow::handleButton(const char *label)
@@ -258,6 +983,75 @@ ImGuiWindow::handleCheckBox(const char *label, bool *value, bool enabled)
     return pressed;
 }
 
+bool
+ImGuiWindow::handleDragFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+    nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleDragScalarN(label, ImGuiDataType_Float, value, 3, enabled, factor, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleDragFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t factor,
+    nanoem_f32_t min, nanoem_f32_t max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleDragScalarN(label, ImGuiDataType_Float, value, 1, enabled, factor, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleDragScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents, bool enabled,
+    nanoem_f32_t factor, const void *min, const void *max, const char *format, ImGuiSliderFlags flags)
+{
+    bool reacted = false;
+    if (enabled) {
+        reacted = ImGui::DragScalarN(label, dataType, value, numComponents, factor, min, max, format, flags);
+    }
+    else {
+        ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
+        ImGui::InputScalarN(
+            label, dataType, value, numComponents, nullptr, nullptr, format, ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopStyleColor();
+    }
+    return reacted;
+}
+
+bool
+ImGuiWindow::handleSliderFloat3(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min,
+    nanoem_f32_t max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleSliderScalarN(label, ImGuiDataType_Float, value, 3, enabled, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleSliderFloat(const char *label, nanoem_f32_t *value, bool enabled, nanoem_f32_t min, nanoem_f32_t max,
+    const char *format, ImGuiSliderFlags flags)
+{
+    return handleSliderScalarN(label, ImGuiDataType_Float, value, 1, enabled, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleSliderInt(
+    const char *label, int *value, bool enabled, int min, int max, const char *format, ImGuiSliderFlags flags)
+{
+    return handleSliderScalarN(label, ImGuiDataType_S32, value, 1, enabled, &min, &max, format, flags);
+}
+
+bool
+ImGuiWindow::handleSliderScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
+    bool enabled, const void *min, const void *max, const char *format, ImGuiSliderFlags flags)
+{
+    bool reacted = false;
+    if (enabled) {
+        reacted = ImGui::SliderScalarN(label, dataType, value, numComponents, min, max, format, flags);
+    }
+    else {
+        ImGui::PushStyleColor(ImGuiCol_Text, kColorTextDisabled);
+        ImGui::InputScalarN(
+            label, dataType, value, numComponents, nullptr, nullptr, format, ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopStyleColor();
+    }
+    return reacted;
+}
+
 void
 ImGuiWindow::saveDefaultStyle(nanoem_f32_t deviceScaleRatio)
 {
@@ -310,7 +1104,7 @@ ImGuiWindow::restoreDefaultStyle()
 ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
     : m_applicationPtr(application)
     , m_menu(nullptr)
-    , m_viewportOverlayPtr(nullptr)
+    , m_gizmoController(nullptr)
     , m_cameraLookAtVectorValueState(nullptr)
     , m_cameraAngleVectorValueState(nullptr)
     , m_cameraDistanceVectorValueState(nullptr)
@@ -378,7 +1172,7 @@ ImGuiWindow::~ImGuiWindow()
     }
     m_allModalDialogs.clear();
     nanoem_delete_safe(m_menu);
-    reset();
+    nanoem_delete_safe(m_gizmoController);
 }
 
 bool
@@ -486,9 +1280,8 @@ ImGuiWindow::openAccessoryOutsideParentDialog(Project *project)
 }
 
 void
-ImGuiWindow::openSelfShadowConfigurationDialog(Project *project)
+ImGuiWindow::openSelfShadowConfigurationDialog()
 {
-    BX_UNUSED_1(project);
     if (m_dialogWindows.find(SelfShadowConfigurationDialog::kIdentifier) == m_dialogWindows.end()) {
         INoModalDialogWindow *dialog = nanoem_new(SelfShadowConfigurationDialog(m_applicationPtr, this));
         m_dialogWindows.insert(tinystl::make_pair(SelfShadowConfigurationDialog::kIdentifier, dialog));
@@ -496,7 +1289,16 @@ ImGuiWindow::openSelfShadowConfigurationDialog(Project *project)
 }
 
 void
-ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
+ImGuiWindow::openUVEditDialog(const nanoem_model_material_t *materialPtr, Model *activeModel)
+{
+    if (m_dialogWindows.find(UVEditDialog::kIdentifier) == m_dialogWindows.end()) {
+        INoModalDialogWindow *dialog = nanoem_new(UVEditDialog(materialPtr, activeModel, m_applicationPtr));
+        m_dialogWindows.insert(tinystl::make_pair(UVEditDialog::kIdentifier, dialog));
+    }
+}
+
+void
+ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio)
 {
     SG_PUSH_GROUP("ImGuiWindow::initialize()");
     ImGuiContext *context = m_context = ImGui::CreateContext(&m_atlas);
@@ -504,8 +1306,9 @@ ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
     ImGuiIO &io = ImGui::GetIO();
     io.IniFilename = nullptr;
     io.LogFilename = nullptr;
-    io.FontGlobalScale = deviceScaleRatio;
-    io.DisplayFramebufferScale = ImVec2(deviceScaleRatio, deviceScaleRatio);
+    io.ConfigWindowsMoveFromTitleBarOnly = true;
+    io.FontGlobalScale = windowDevicePixelRatio;
+    io.DisplayFramebufferScale = ImVec2(windowDevicePixelRatio, windowDevicePixelRatio);
     io.KeyMap[ImGuiKey_Tab] = BaseApplicationService::kKeyType_TAB;
     io.KeyMap[ImGuiKey_LeftArrow] = BaseApplicationService::kKeyType_LEFT;
     io.KeyMap[ImGuiKey_RightArrow] = BaseApplicationService::kKeyType_RIGHT;
@@ -527,9 +1330,9 @@ ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
     io.KeyMap[ImGuiKey_Y] = BaseApplicationService::kKeyType_Y;
     io.KeyMap[ImGuiKey_Z] = BaseApplicationService::kKeyType_Z;
     ImGui::StyleColorsDark(&m_style);
-    m_style.AntiAliasedFill = m_style.AntiAliasedLines = false;
+    m_style.AntiAliasedFill = m_style.AntiAliasedLines = viewportDevicePixelRatio > 1.0f;
     ImGui::GetStyle() = m_style;
-    ImGui::GetStyle().ScaleAllSizes(deviceScaleRatio);
+    ImGui::GetStyle().ScaleAllSizes(windowDevicePixelRatio);
     sg_shader_desc sd;
     Inline::clearZeroMemory(sd);
     const sg_backend backend = sg::query_backend();
@@ -659,13 +1462,14 @@ ImGuiWindow::initialize(nanoem_f32_t deviceScaleRatio)
 }
 
 void
-ImGuiWindow::reset()
+ImGuiWindow::reset(Project *project)
 {
     if (!m_lazyExecutionCommands.empty()) {
         for (LazyExecutionCommandList::const_iterator it = m_lazyExecutionCommands.begin(),
                                                       end = m_lazyExecutionCommands.end();
              it != end; ++it) {
             ILazyExecutionCommand *command = *it;
+            command->destroy(project);
             nanoem_delete(command);
         }
         m_lazyExecutionCommands.clear();
@@ -674,6 +1478,7 @@ ImGuiWindow::reset()
         for (NoModalDialogWindowList::const_iterator it = m_dialogWindows.begin(), end = m_dialogWindows.end();
              it != end; ++it) {
             INoModalDialogWindow *window = it->second;
+            window->destroy(project);
             nanoem_delete(window);
         }
         m_dialogWindows.clear();
@@ -941,9 +1746,14 @@ ImGuiWindow::openEffectParameterDialog(Project *project)
 }
 
 void
-ImGuiWindow::openModelParameterDialog(Project *project)
+ImGuiWindow::openModelParameterDialog(Project *project, Error &error)
 {
-    if (m_dialogWindows.find(ModelParameterDialog::kIdentifier) == m_dialogWindows.end()) {
+    if (project->isDirty()) {
+        const ITranslator *translator = project->translator();
+        error =
+            Error(translator->translate("nanoem.error.project.open-model.reason"), "", Error::kDomainTypeApplication);
+    }
+    else if (m_dialogWindows.find(ModelParameterDialog::kIdentifier) == m_dialogWindows.end()) {
         if (Model *activeModel = project->activeModel()) {
             INoModalDialogWindow *dialog =
                 nanoem_new(ModelParameterDialog(activeModel, project, m_applicationPtr, this));
@@ -1002,6 +1812,14 @@ ImGuiWindow::openMotionIOPluginDialog(Project *project, plugin::MotionIOPlugin *
 }
 
 void
+ImGuiWindow::openSaveProjectDialog(Project *project)
+{
+    if (m_menu) {
+        m_menu->openSaveProjectDialog(project);
+    }
+}
+
+void
 ImGuiWindow::resizeDevicePixelWindowSize(const Vector2UI16 &value)
 {
     ImGuiIO &io = ImGui::GetIO();
@@ -1013,45 +1831,23 @@ ImGuiWindow::resizeDevicePixelWindowSize(const Vector2UI16 &value)
 void
 ImGuiWindow::setDevicePixelRatio(float value)
 {
+    float devicePixelRatio = glm::max(value, 1.0f);
     ImGuiIO &io = ImGui::GetIO();
-    io.DisplayFramebufferScale = ImVec2(value, value);
+    io.DisplayFramebufferScale = ImVec2(devicePixelRatio, devicePixelRatio);
     io.FontGlobalScale = 1.0f;
     ImGui::GetStyle() = m_style;
-    ImGui::GetStyle().ScaleAllSizes(value);
+    ImGui::GetStyle().ScaleAllSizes(devicePixelRatio);
 }
 
 void
-ImGuiWindow::drawAll2DPrimitives(Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags)
+ImGuiWindow::setAntiAliasEnabled(bool value)
 {
-    const Model *activeModel = project->activeModel();
-    if (activeModel && !activeModel->isMorphWeightFocused()) {
-        Project::EditingMode editingMode = project->editingMode();
-        switch (editingMode) {
-        case Project::kEditingModeSelect: {
-            flags |= Project::kDrawTypeBoneConnections;
-            break;
-        }
-        case Project::kEditingModeMove: {
-            flags |= Project::kDrawTypeActiveBone | Project::kDrawTypeBoneMoveHandle;
-            break;
-        }
-        case Project::kEditingModeRotate: {
-            flags |= Project::kDrawTypeActiveBone | Project::kDrawTypeBoneRotateHandle;
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    else if (!activeModel) {
-        flags |= Project::kDrawTypeCameraLookAt;
-    }
-    m_viewportOverlayPtr = overlay;
-    m_viewportOverlayFlags = flags;
+    ImGuiStyle &style = ImGui::GetStyle();
+    style.AntiAliasedFill = style.AntiAliasedLines = value;
 }
 
 void
-ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
+ImGuiWindow::drawAllWindows(Project *project, IState *state, nanoem_u32_t flags)
 {
     BX_UNUSED_2(project, flags);
     sg_pass_action pa;
@@ -1070,9 +1866,11 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
         m_applicationPtr->beginDefaultPass(0, pa, deviceScaleWindowSize.x, deviceScaleWindowSize.y, sampleCount);
         setupDeviceInput(project);
         ImGui::NewFrame();
-        ImGuizmo::BeginFrame();
+        if (m_gizmoController) {
+            m_gizmoController->begin();
+        }
         bool seekable = false;
-        drawMainWindow(deviceScaleWindowSize, project, seekable);
+        drawMainWindow(deviceScaleWindowSize, project, state, flags, seekable);
         drawAllNonModalWindows(project);
         handleModalDialogWindow(deviceScaleWindowSize, project);
 #if !defined(NDEBUG)
@@ -1086,20 +1884,20 @@ ImGuiWindow::drawAllWindows(Project *project, nanoem_u32_t flags)
         renderDrawList(project, ImGui::GetDrawData(), sampleCount, buffer, m_bindings, pb);
         m_applicationPtr->endDefaultPass();
         batchLazySetAllObjects(project, seekable);
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+        SG_POP_GROUP();
+#if defined(IMGUI_HAS_VIEWPORT)
         if (EnumUtils::isEnabledT<ImGuiConfigFlags>(ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault(nullptr, this);
         }
 #endif /* IMGUI_HAS_VIEWPORT */
-        SG_POP_GROUP();
     }
 }
 
 void
 ImGuiWindow::drawWindow(Project *project, ImDrawData *drawData, bool load)
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     SG_PUSH_GROUPF("ImGuiWindow::drawWindow(ID=%u, x=%.1f, y=%.1f, width=%.1f, height=%.1f)",
         drawData->OwnerViewport->ID, drawData->OwnerViewport->Pos.x, drawData->OwnerViewport->Pos.y,
         drawData->OwnerViewport->Size.x, drawData->OwnerViewport->Size.y);
@@ -1107,10 +1905,10 @@ ImGuiWindow::drawWindow(Project *project, ImDrawData *drawData, bool load)
     sg::PassBlock pb;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = load ? SG_ACTION_LOAD : SG_ACTION_CLEAR;
-    pa.colors[0].val[0] = 0.0f;
-    pa.colors[0].val[1] = 0.5f;
-    pa.colors[0].val[2] = 0.7f;
-    pa.colors[0].val[3] = 1.0f;
+    pa.colors[0].value.r = 0.0f;
+    pa.colors[0].value.g = 0.5f;
+    pa.colors[0].value.b = 0.7f;
+    pa.colors[0].value.a = 1.0f;
     ImGuiID id = drawData->OwnerViewport->ID;
     int sampleCount;
     m_applicationPtr->beginDefaultPass(id, pa, drawData->DisplaySize.x, drawData->DisplaySize.y, sampleCount);
@@ -1120,7 +1918,7 @@ ImGuiWindow::drawWindow(Project *project, ImDrawData *drawData, bool load)
     SG_POP_GROUP();
 #else
     BX_UNUSED_3(project, drawData, load);
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
 }
 
 const IModalDialog *
@@ -1219,8 +2017,7 @@ ImGuiWindow::setSGXDebbugerEnabled(bool value)
 Vector4
 ImGuiWindow::createViewportImageRect(const Project *project, const Vector4 &viewportLayoutRect) NANOEM_DECL_NOEXCEPT
 {
-    const Vector2 scaleFactor(project->deviceScaleViewportScaleFactor()),
-        viewportImageSize(scaleFactor * Vector2(project->deviceScaleUniformedViewportImageSize()));
+    const Vector2 viewportImageSize(project->deviceScaleUniformedViewportImageSize());
     nanoem_f32_t x = viewportLayoutRect.x, y = viewportLayoutRect.y;
     x += (viewportLayoutRect.z - viewportImageSize.x) * 0.5f;
     y += (viewportLayoutRect.w - viewportImageSize.y) * 0.5f;
@@ -1307,6 +2104,40 @@ ImGuiWindow::handleVectorValueState(IVectorValueState *state)
         deletable = false;
     }
     return deletable;
+}
+
+void
+ImGuiWindow::appendDrawFlags(
+    const Model *activeModel, const ModelParameterDialog *dialog, nanoem_u32_t &flags) NANOEM_DECL_NOEXCEPT
+{
+    static const nanoem_u32_t kActiveBoneFlags = IState::kDrawTypeActiveBone | IState::kDrawTypeActiveBoneConnection;
+    if (!activeModel->isMorphWeightFocused()) {
+        const Project::EditingMode editingMode = activeModel->project()->editingMode();
+        switch (editingMode) {
+        case Project::kEditingModeSelect: {
+            if (dialog && dialog->isActiveBoneShown()) {
+                flags |= IState::kDrawTypeActiveBoneConnection;
+            }
+            else {
+                flags |= IState::kDrawTypeAllBoneConnections;
+            }
+            break;
+        }
+        case Project::kEditingModeMove: {
+            flags |= kActiveBoneFlags | IState::kDrawTypeBoneMoveHandle;
+            break;
+        }
+        case Project::kEditingModeRotate: {
+            flags |= kActiveBoneFlags | IState::kDrawTypeBoneRotateHandle;
+            break;
+        }
+        default:
+            break;
+        }
+        if (activeModel->isShowAllVertexWeights()) {
+            flags |= IState::kDrawTypeVertexWeightPainter;
+        }
+    }
 }
 
 ITrack *
@@ -1465,6 +2296,7 @@ ImGuiWindow::setCameraPerspective(bool value, ICamera *camera, Project *project)
     BX_UNUSED_1(project);
     camera->setPerspective(value);
     camera->update();
+    project->resetAllModelEdges();
 }
 
 void
@@ -1581,8 +2413,8 @@ ImGuiWindow::clearAllKeyframeSelection(Project *project)
         project->cameraMotion()->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
         project->lightMotion()->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
         project->selfShadowMotion()->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
-        Project::AccessoryList accessories(project->allAccessories());
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        const Project::AccessoryList *accessories = project->allAccessories();
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             Motion *motion = project->resolveMotion(*it);
             motion->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
@@ -1637,8 +2469,8 @@ ImGuiWindow::copyAllKeyframeSelection(const IMotionKeyframeSelection *selection,
              it != end; ++it) {
             destSelfShadow->add(*it);
         }
-        Project::AccessoryList accessories(project->allAccessories());
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        const Project::AccessoryList *accessories = project->allAccessories();
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             Motion *motion = project->resolveMotion(*it);
             Motion::AccessoryKeyframeList accessoryKeyframes;
@@ -1680,12 +2512,12 @@ ImGuiWindow::toggleEditingMode(Project *project, Project::EditingMode mode)
 }
 
 void
-ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *project, bool &seekable)
+ImGuiWindow::drawMainWindow(
+    const Vector2 &deviceScaleWindowSize, Project *project, IState *state, nanoem_u32_t flags, bool &seekable)
 {
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
     saveDefaultStyle(deviceScaleRatio);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     if (EnumUtils::isEnabledT<ImGuiConfigFlags>(ImGui::GetIO().ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
         ImGuiViewport *viewport = ImGui::GetMainViewport();
         ImGui::SetNextWindowViewport(viewport->ID);
@@ -1700,32 +2532,53 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
     ImGui::SetNextWindowSize(ImVec2(deviceScaleWindowSize.x, deviceScaleWindowSize.y));
     ImGui::SetNextWindowSizeConstraints(
         ImVec2(deviceScaleWindowSize.x, deviceScaleWindowSize.y), ImVec2(FLT_MAX, FLT_MAX));
-    nanoem_u32_t flags = kMainWindowFlags;
+    nanoem_u32_t windowFlags = kMainWindowFlags;
     if (m_menu) {
-        flags |= ImGuiWindowFlags_MenuBar;
+        windowFlags |= ImGuiWindowFlags_MenuBar;
     }
-    ImGui::Begin("main", nullptr, flags);
+    ImGui::Begin("main", nullptr, windowFlags);
     seekable = ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows);
     if (m_menu) {
         m_menu->draw(m_debugger);
     }
-    {
+    if (!project->isModelEditingEnabled()) {
         const ImGuiStyle &style = ImGui::GetStyle();
+        const ImVec2 size(ImGui::GetContentRegionAvail());
         const nanoem_f32_t panelHeight =
             (ImGui::GetFrameHeightWithSpacing() * 8 + style.ItemSpacing.y * 6 + style.WindowPadding.y * 2) *
             (1.0f / deviceScaleRatio);
-        const ImVec2 &size = ImGui::GetContentRegionAvail();
-        const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
-                           viewportHeight = size.y - panelHeight * deviceScaleRatio;
-        drawTimeline(timelineWidth, viewportHeight, project);
-        ImGui::SameLine();
-        ImVec2 posFrom(ImGui::GetCursorScreenPos());
-        drawViewport(viewportHeight, project);
-        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
-            handleVerticalSplitter(posFrom, size, viewportHeight, deviceScaleRatio);
+        bool viewportWindowDetached = project->isViewportWindowDetached();
+        if (viewportWindowDetached) {
+            const ImVec2 minimumViewportSize(
+                kMinimumViewportWindowSize.x * deviceScaleRatio, kMinimumViewportWindowSize.y * deviceScaleRatio);
+            const nanoem_f32_t timelineWidth = size.x, viewportHeight = size.y - (panelHeight * deviceScaleRatio);
+            m_defaultTimelineWidth = size.x;
+            drawTimeline(timelineWidth, viewportHeight, project);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);
+            ImGui::SetNextWindowSizeConstraints(minimumViewportSize, ImVec2(FLT_MAX, FLT_MAX));
+            if (ImGui::Begin(tr("nanoem.gui.viewport.title"), &viewportWindowDetached)) {
+                drawViewport(project, state, flags);
+            }
+            ImGui::End();
+            ImGui::PopStyleVar();
+            if (!viewportWindowDetached) {
+                project->setViewportWindowDetached(viewportWindowDetached);
+                m_defaultTimelineWidth = 0;
+            }
         }
-    }
-    {
+        else {
+            const nanoem_f32_t timelineWidth = calculateTimelineWidth(size),
+                               viewportHeight = size.y - (panelHeight * deviceScaleRatio);
+            drawTimeline(timelineWidth, viewportHeight, project);
+            ImGui::SameLine();
+            const ImVec2 viewportFrom(ImGui::GetCursorScreenPos());
+            ImGui::BeginChild("viewport", ImVec2(ImGui::GetContentRegionAvail().x, viewportHeight), false);
+            drawViewport(project, state, flags);
+            ImGui::EndChild();
+            if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows)) {
+                handleVerticalSplitter(viewportFrom, size, viewportHeight, deviceScaleRatio);
+            }
+        }
         Model *activeModel = project->activeModel();
         ImGui::BeginChild("panel", ImGui::GetContentRegionAvail(), true);
         const ImVec2 &innerSize = ImGui::GetContentRegionAvail();
@@ -1751,7 +2604,19 @@ ImGuiWindow::drawMainWindow(const Vector2 &deviceScaleWindowSize, Project *proje
         drawPlayPanel(panelSize, project);
         ImGui::EndChild();
     }
-    ImGui::PopStyleVar();
+    else {
+        nanoem_f32_t height = ImGui::GetContentRegionAvail().y;
+        drawModelEditPanel(project, height);
+        ImGui::SameLine();
+        ImGui::BeginChild("viewport", ImGui::GetContentRegionAvail(), false, ImGuiWindowFlags_MenuBar);
+        NoModalDialogWindowList::const_iterator it = m_dialogWindows.find(ModelParameterDialog::kIdentifier);
+        if (it != m_dialogWindows.end()) {
+            ModelParameterDialog *dialog = static_cast<ModelParameterDialog *>(it->second);
+            dialog->drawMenuBar(project);
+        }
+        drawViewport(project, state, flags);
+        ImGui::EndChild();
+    }
     ImGui::End();
     restoreDefaultStyle();
 }
@@ -1760,21 +2625,48 @@ void
 ImGuiWindow::drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeight, Project *project)
 {
     ImGui::BeginChild("timeline", ImVec2(timelineWidth, viewportHeight), true);
-    const nanoem_f32_t tracksWidth = m_defaultTimelineWidth * 0.3f;
+    const nanoem_f32_t devicePixelRatio = project->windowDevicePixelRatio();
     nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
     bool frameIndexChanged = false, forward = false, backward = false;
-    drawSeekerPanel(project, frameIndex, frameIndexChanged, forward, backward);
-    drawUndoPanel(project);
-    nanoem_u32_t numVisibleMarkers;
-    drawWavePanel(tracksWidth, project, numVisibleMarkers);
-    const nanoem_f32_t tracksHeight = ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing() * 4;
-    Project::TrackList tracks;
-    drawAllTracksPanel(ImVec2(tracksWidth, tracksHeight), tracks, project);
-    handleTrackSelection(tracks, project);
-    ImGui::SameLine();
-    drawAllMarkersPanel(ImVec2(ImGui::GetContentRegionAvail().x, tracksHeight), tracks, numVisibleMarkers, project);
-    drawKeyframeActionPanel(project);
-    drawKeyframeSelectionPanel(project);
+    {
+        const nanoem_f32_t seekerPanelWidth = kTimelineSeekerPanelWidth * devicePixelRatio;
+        nanoem_f32_t padding = 0;
+        if (timelineWidth > seekerPanelWidth) {
+            padding += (timelineWidth - seekerPanelWidth - 10) * 0.5f;
+        }
+        drawSeekerPanel(project, padding, frameIndex, frameIndexChanged, forward, backward);
+    }
+    {
+        const nanoem_f32_t undoPanelWidth = kTimelineUndoPanelWidth * devicePixelRatio;
+        nanoem_f32_t padding = 0;
+        if (timelineWidth > undoPanelWidth) {
+            padding += (timelineWidth - undoPanelWidth - 10) * 0.5f;
+        }
+        drawUndoPanel(project, padding);
+    }
+    {
+        const nanoem_f32_t tracksWidth =
+            glm::min(m_defaultTimelineWidth * 0.3f, kTimelineTrackMaxWidth * devicePixelRatio);
+        nanoem_u32_t numVisibleMarkers;
+        drawWavePanel(tracksWidth, project, numVisibleMarkers);
+        const nanoem_f32_t tracksHeight = ImGui::GetContentRegionAvail().y - ImGui::GetFrameHeightWithSpacing() * 4;
+        Project::TrackList tracks;
+        drawAllTracksPanel(ImVec2(tracksWidth, tracksHeight), tracks, project);
+        handleTrackSelection(tracks, project);
+        ImGui::SameLine();
+        drawAllMarkersPanel(ImVec2(ImGui::GetContentRegionAvail().x, tracksHeight), tracks, numVisibleMarkers, project);
+    }
+    {
+        const nanoem_f32_t keyframeActionPanelWidth = kTimelineKeyframeActionPanelWidth * devicePixelRatio;
+        nanoem_f32_t padding = 0;
+        if (timelineWidth > keyframeActionPanelWidth) {
+            padding = (timelineWidth - keyframeActionPanelWidth - 10) * 0.5f;
+            ImGui::Dummy(ImVec2(padding, 0));
+            ImGui::SameLine();
+        }
+        drawKeyframeActionPanel(project, padding);
+        drawKeyframeSelectionPanel(project, padding);
+    }
     ImGui::EndChild();
     nanoem_frame_index_t newFrameIndex;
     if (frameIndexChanged) {
@@ -1789,13 +2681,9 @@ ImGuiWindow::drawTimeline(nanoem_f32_t timelineWidth, nanoem_f32_t viewportHeigh
 }
 
 void
-ImGuiWindow::drawSeekerPanel(
-    Project *project, nanoem_frame_index_t &frameIndex, bool &frameIndexChanged, bool &forward, bool &backward)
+ImGuiWindow::drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_frame_index_t &frameIndex,
+    bool &frameIndexChanged, bool &forward, bool &backward)
 {
-    nanoem_f32_t padding = m_defaultTimelineWidth * 0.125f;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding += (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
-    }
     ImGui::Dummy(ImVec2(padding, 0));
     ImGui::SameLine();
     ImGui::PushButtonRepeat(true);
@@ -1828,12 +2716,8 @@ ImGuiWindow::drawSeekerPanel(
 }
 
 void
-ImGuiWindow::drawUndoPanel(Project *project)
+ImGuiWindow::drawUndoPanel(Project *project, nanoem_f32_t padding)
 {
-    nanoem_f32_t padding = m_defaultTimelineWidth * 0.2f;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding += (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
-    }
     ImGui::Dummy(ImVec2(padding, 0));
     ImGui::SameLine();
     if (handleTranslatedButton(
@@ -1856,71 +2740,10 @@ ImGuiWindow::drawWavePanel(nanoem_f32_t tracksWidth, Project *project, nanoem_u3
         (ImGui::GetContentRegionAvail().x - tracksWidth - ImGui::GetStyle().ScrollbarSize) /
         (ImGui::GetTextLineHeight());
     numVisibleMarkers = nanoem_u32_t(numVisibleMarkersWidth) - 1;
-    struct WaveDrawer {
-        typedef nanoem_f32_t (*CallbackHandler)(void *data, int idx);
-        static nanoem_f32_t
-        callback(void *userData, int offset)
-        {
-            const WaveDrawer *drawer = static_cast<const WaveDrawer *>(userData);
-            switch (drawer->m_bytesPerSample) {
-            case 2:
-                return drawer->plot16(offset);
-            case 1:
-                return drawer->plot8(offset);
-            default:
-                return 0;
-            }
-        }
-        WaveDrawer(const Project *project, nanoem_u32_t numVisibleMarkers)
-            : m_linearPCMSamplesPtr(nullptr)
-            , m_offset(0)
-            , m_length(0)
-        {
-            const IAudioPlayer *player = project->audioPlayer();
-            if (player->isLoaded()) {
-                const nanoem_f64_t denominator(project->baseFPS());
-                const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-                const nanoem_u32_t bytesPerSample = m_bytesPerSample = player->bitsPerSample() / 8;
-                const nanoem_u32_t bytesPerSecond = player->sampleRate() * player->numChannels() * bytesPerSample;
-                m_linearPCMSamplesPtr = player->linearPCMSamples();
-                m_length = static_cast<nanoem_rsize_t>((numVisibleMarkers / denominator) * bytesPerSecond);
-                m_offset = static_cast<nanoem_rsize_t>((frameIndex / denominator) * bytesPerSecond);
-                switch (bytesPerSample) {
-                case 2:
-                    break;
-                case 1:
-                    break;
-                }
-            }
-        }
-        nanoem_f32_t
-        plot16(int offset) const
-        {
-            nanoem_f32_t value = 0;
-            const nanoem_rsize_t actual = m_offset + nanoem_rsize_t(offset);
-            if (m_linearPCMSamplesPtr && actual < m_linearPCMSamplesPtr->size() && actual % sizeof(nanoem_i16_t) == 0) {
-                value = *reinterpret_cast<const nanoem_i16_t *>(m_linearPCMSamplesPtr->data() + actual) / 32767.0f;
-            }
-            return value;
-        }
-        nanoem_f32_t
-        plot8(int offset) const
-        {
-            nanoem_f32_t value = 0;
-            const nanoem_rsize_t actual = m_offset + nanoem_rsize_t(offset);
-            if (m_linearPCMSamplesPtr && actual < m_linearPCMSamplesPtr->size()) {
-                value = *reinterpret_cast<const char *>(m_linearPCMSamplesPtr->data() + actual) / 255.0f;
-            }
-            return value;
-        }
-        const ByteArray *m_linearPCMSamplesPtr;
-        nanoem_rsize_t m_offset;
-        nanoem_rsize_t m_length;
-        nanoem_u32_t m_bytesPerSample;
-    };
-    WaveDrawer drawer(project, numVisibleMarkers);
-    ImGui::PlotHistogram("##timeline.wave", WaveDrawer::callback, &drawer, Inline::saturateInt32(drawer.m_length), 0,
-        nullptr, -1, 1, ImVec2(ImGui::GetContentRegionAvail().x, histogramHeight));
+    WaveFormPanelDrawer drawer(project, numVisibleMarkers);
+    ImGui::PlotHistogram("##timeline.wave", WaveFormPanelDrawer::callback, &drawer,
+        Inline::saturateInt32(drawer.m_length), 0, nullptr, -1, 1,
+        ImVec2(ImGui::GetContentRegionAvail().x, histogramHeight));
 }
 
 void
@@ -1933,8 +2756,8 @@ ImGuiWindow::drawAllTracksPanel(const ImVec2 &panelSize, Project::TrackList &tra
     else {
         ImGui::SetScrollY(m_scrollTimelineY);
     }
-    Project::TrackList allTracks(project->allTracks());
-    for (Project::TrackList::const_iterator it = allTracks.begin(), end = allTracks.end(); it != end; ++it) {
+    const Project::TrackList *allTracks = project->allTracks();
+    for (Project::TrackList::const_iterator it = allTracks->begin(), end = allTracks->end(); it != end; ++it) {
         ITrack *track = *it;
         tracks.push_back(track);
         if (track->isExpanded()) {
@@ -1966,7 +2789,7 @@ ImGuiWindow::drawAllTracksPanel(const ImVec2 &panelSize, Project::TrackList &tra
         }
     }
     if (!selectedTracks.empty()) {
-        for (Project::TrackList::const_iterator it = allTracks.begin(), end = allTracks.end(); it != end; ++it) {
+        for (Project::TrackList::const_iterator it = allTracks->begin(), end = allTracks->end(); it != end; ++it) {
             ITrack *track = *it;
             if (selectedTracks.find(track) == selectedTracks.end()) {
                 track->setSelected(false);
@@ -2056,7 +2879,7 @@ ImGuiWindow::drawTrack(ITrack *track, int i, Model *activeModel, TrackSet &selec
             Accessory *accessory = static_cast<Accessory *>(track->opaque());
             addLazyExecutionCommand(nanoem_new(LazySetActiveAccessoryCommand(accessory, this)));
         }
-        else if (type == ITrack::kTypeModelLabel) {
+        else if (type == ITrack::kTypeModelLabel && activeModel) {
             const ITrack *trackConst = track;
             const nanoem_model_label_t *labelPtr = static_cast<const nanoem_model_label_t *>(trackConst->opaque());
             nanoem_rsize_t numLabels;
@@ -2075,7 +2898,7 @@ ImGuiWindow::drawTrack(ITrack *track, int i, Model *activeModel, TrackSet &selec
                 }
             }
         }
-        else if (type == ITrack::kTypeModelBone) {
+        else if (type == ITrack::kTypeModelBone && activeModel) {
             const ITrack *trackConst = track;
             const nanoem_model_bone_t *bonePtr = static_cast<const nanoem_model_bone_t *>(trackConst->opaque());
             IModelObjectSelection *selection = activeModel->selection();
@@ -2538,7 +3361,7 @@ ImGuiWindow::drawMarkerRhombus(nanoem_frame_index_t frameIndex, ITrack *track, n
 }
 
 void
-ImGuiWindow::drawKeyframeActionPanel(Project *project)
+ImGuiWindow::drawKeyframeActionPanel(Project *project, nanoem_f32_t padding)
 {
     const bool buttonEnabled = !project->isPlaying(),
                hasKeyframeSelection = buttonEnabled && project->hasKeyframeSelection(),
@@ -2550,12 +3373,6 @@ ImGuiWindow::drawKeyframeActionPanel(Project *project)
     if (hasKeyframeCopied != m_lastKeyframeCopied) {
         addLazyExecutionCommand(nanoem_new(LazyPublishCanPasteEventCommand(hasKeyframeCopied)));
         m_lastKeyframeCopied = hasKeyframeCopied;
-    }
-    nanoem_f32_t padding = 0;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding = (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
-        ImGui::Dummy(ImVec2(padding, 0));
-        ImGui::SameLine();
     }
     if (handleButton(tr("nanoem.gui.keyframe.copy"), (ImGui::GetContentRegionAvail().x - padding) / 3.0f,
             hasKeyframeSelection)) {
@@ -2588,7 +3405,7 @@ ImGuiWindow::drawKeyframeActionPanel(Project *project)
     if (handleButton(tr("nanoem.gui.keyframe.inverse-paste"), (ImGui::GetContentRegionAvail().x - padding) / 3.0f,
             hasKeyframeCopied)) {
         Error error;
-        project->reversePasteAllSelectedKeyframes(project->currentLocalFrameIndex(), error);
+        project->symmetricPasteAllSelectedKeyframes(project->currentLocalFrameIndex(), error);
         error.notify(project->eventPublisher());
     }
     ImGui::SameLine();
@@ -2609,11 +3426,9 @@ ImGuiWindow::drawKeyframeActionPanel(Project *project)
 }
 
 void
-ImGuiWindow::drawKeyframeSelectionPanel(Project *project)
+ImGuiWindow::drawKeyframeSelectionPanel(Project *project, nanoem_f32_t padding)
 {
-    nanoem_f32_t padding = 0;
-    if (m_timelineWidth > m_defaultTimelineWidth) {
-        padding = (m_timelineWidth - m_defaultTimelineWidth - 10) * 0.5f;
+    if (padding > 0) {
         ImGui::Dummy(ImVec2(padding, 0));
         ImGui::SameLine();
     }
@@ -2638,17 +3453,18 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     const nanoem_frame_index_t duration = project->duration();
+    const bool playing = project->isPlaying();
     TimelineSegment segment = project->selectionSegment();
     ImGui::PushItemWidth((ImGui::GetContentRegionAvail().x - padding) / 2.0f);
-    if (ImGui::DragScalar("##timeline.select.range.from", kFrameIndexDataType, &segment.m_from, 1.0f, nullptr,
-            &segment.m_to, "From: %u")) {
+    if (handleDragScalarN("##timeline.select.range.from", kFrameIndexDataType, &segment.m_from, 1, !playing, 1.0f,
+            nullptr, &segment.m_to, "From: %u", ImGuiSliderFlags_None)) {
         project->setSelectionSegment(segment);
     }
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - padding);
-    if (ImGui::DragScalar("##timeline.select.range.to", kFrameIndexDataType, &segment.m_to, 1.0f, &segment.m_from,
-            &duration, "To: %u")) {
+    if (handleDragScalarN("##timeline.select.range.to", kFrameIndexDataType, &segment.m_to, 1, !playing, 1.0f,
+            &segment.m_from, &duration, "To: %u", ImGuiSliderFlags_None)) {
         project->setSelectionSegment(segment);
     }
     ImGui::PopItemWidth();
@@ -2676,33 +3492,47 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
 }
 
 void
-ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
+ImGuiWindow::drawViewport(Project *project, IState *state, nanoem_u32_t flags)
 {
-    ImGui::BeginChild("viewport", ImVec2(ImGui::GetContentRegionAvail().x, viewportHeight), false);
-    const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
+    const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio(),
+                       invertDeviceScaleRatio = 1.0f / deviceScaleRatio;
     if (const Model *activeModel = project->activeModel()) {
-        const model::Bone *activeBone = model::Bone::cast(activeModel->activeBone());
-        ImGui::Text("%s: %s", activeModel->nameConstString(), activeBone ? activeBone->nameConstString() : nullptr);
+        ImGui::Text(
+            "%s: %s", activeModel->nameConstString(), model::Bone::nameConstString(activeModel->activeBone(), nullptr));
+    }
+    else if (const Accessory *activeAccessory = project->activeAccessory()) {
+        ImGui::Text("%s: %s", tr("nanoem.gui.panel.model.default"), activeAccessory->nameConstString());
     }
     else {
-        const Accessory *activeAccessory = project->activeAccessory();
-        ImGui::Text("%s: %s", tr("nanoem.gui.panel.model.default"),
-            activeAccessory ? activeAccessory->nameConstString() : nullptr);
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.default"));
     }
     // ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetFrameHeightWithSpacing()));
-    ImVec2 offset = ImGui::GetCursorScreenPos(), size = ImGui::GetContentRegionAvail();
-    size.y -= ImGui::GetFrameHeightWithSpacing();
-    const Vector4 viewportLayout(offset.x, offset.y, size.x, size.y);
-    project->resizeUniformedViewportLayout(viewportLayout / deviceScaleRatio);
-    project->setViewportHovered(ImGui::IsWindowHovered());
+    const ImVec2 offset(ImGui::GetCursorScreenPos());
+    ImVec2 size(ImGui::GetContentRegionAvail()), innerOffset(offset), basePos;
+#if defined(IMGUI_HAS_VIEWPORT)
+    basePos = ImGui::GetWindowViewport()->Pos;
+#endif /* IMGUI_HAS_VIEWPORT */
+    innerOffset.x -= basePos.x;
+    innerOffset.y -= basePos.y;
+    const bool isModelEditingEnabled = project->isModelEditingEnabled();
+    if (!isModelEditingEnabled) {
+        size.y -= ImGui::GetFrameHeightWithSpacing();
+    }
+    const Vector4 viewportLayout(innerOffset.x, innerOffset.y, size.x, size.y);
+    bool hovered = ImGui::IsWindowHovered();
+    project->resizeUniformedViewportLayout(viewportLayout * invertDeviceScaleRatio);
     const Vector4 viewportImageRect(createViewportImageRect(project, viewportLayout));
     const sg_image viewportImageHandle = project->viewportPrimaryImage();
     ImGui::Dummy(size);
     ImDrawList *drawList = ImGui::GetWindowDrawList();
     const ImVec2 a(offset.x, offset.y), b(offset.x + size.x, offset.y + size.y),
-        viewportImageFrom(viewportImageRect.x, viewportImageRect.y),
-        viewportImageTo(viewportImageRect.x + viewportImageRect.z, viewportImageRect.y + viewportImageRect.w);
+        viewportImageFrom(basePos.x + viewportImageRect.x, basePos.y + viewportImageRect.y),
+        viewportImageTo(viewportImageFrom.x + viewportImageRect.z, viewportImageFrom.y + viewportImageRect.w);
     const nanoem_f32_t tileSizeRatio = 1.0f / (16.0f * deviceScaleRatio);
+    const Vector2UI16 viewportPadding(
+        viewportImageFrom.x > a.y ? (viewportImageFrom.x - a.x) * invertDeviceScaleRatio : 0,
+        viewportImageFrom.y > a.y ? (viewportImageFrom.y - a.y) * invertDeviceScaleRatio : 0);
+    project->setLogicalViewportPadding(viewportPadding);
     drawList->PushClipRect(a, b);
     drawList->AddImage(reinterpret_cast<ImTextureID>(m_transparentTileImage.id), viewportImageFrom, viewportImageTo,
         ImVec2(0, 0), ImVec2(viewportImageRect.z * tileSizeRatio, viewportImageRect.w * tileSizeRatio));
@@ -2716,34 +3546,32 @@ ImGuiWindow::drawViewport(nanoem_f32_t viewportHeight, Project *project)
     }
     drawList->AddImage(
         reinterpret_cast<ImTextureID>(viewportImageHandle.id), viewportImageFrom, viewportImageTo, uv0, uv1);
-    if (project->isModelEditing()) {
-        Matrix4x4 view, projection, matrix(1);
-        ImGuizmo::SetDrawlist(drawList);
-        ImGuizmo::SetRect(offset.x, offset.y, size.x, size.y);
-        project->globalCamera()->getViewTransform(view, projection);
-        ImGuizmo::DrawCubes(glm::value_ptr(view), glm::value_ptr(projection), glm::value_ptr(matrix), 1);
-        ImGuizmo::OPERATION op = ImGuizmo::TRANSLATE;
-        ImGuizmo::MODE mode = ImGuizmo::LOCAL;
-        ImGuizmo::Manipulate(glm::value_ptr(view), glm::value_ptr(projection), op, mode, glm::value_ptr(matrix));
+    if (isModelEditingEnabled) {
+        if (m_gizmoController) {
+            hovered &= m_gizmoController->draw(drawList, offset, size, project);
+        }
+        else {
+            m_gizmoController = nanoem_new(GizmoController);
+        }
     }
-    if (m_viewportOverlayPtr) {
+    {
         m_primitive2D.setBaseOffset(offset);
         m_primitive2D.setScaleFactor(deviceScaleRatio);
-        m_viewportOverlayPtr->drawPrimitive2D(&m_primitive2D, m_viewportOverlayFlags);
-        drawTransformHandleSet(project, offset);
-        drawEffectIcon(project, offset);
-        drawModelEditingIcon(project);
+        drawPrimitive2D(project, state, flags);
+        drawTransformHandleSet(project, state, offset);
         if (project->isFPSCounterEnabled()) {
             drawFPSCounter(project, offset);
         }
         if (project->isPerformanceMonitorEnabled()) {
-            drawHardwareMonitor(project, offset);
+            drawPerformanceMonitor(project, offset);
         }
         drawBoneTooltip(project);
     }
     drawList->PopClipRect();
-    drawViewportParameterBox(project);
-    ImGui::EndChild();
+    if (!isModelEditingEnabled) {
+        drawViewportParameterBox(project);
+    }
+    project->setViewportHovered(hovered);
 }
 
 void
@@ -2751,18 +3579,17 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
 {
     const nanoem_f32_t width = ImGui::GetContentRegionAvail().x;
     if (Model *activeModel = project->activeModel()) {
-        const nanoem_model_bone_t *activeBoenPtr = activeModel->activeBone();
-        model::Bone *activeBone = model::Bone::cast(activeBoenPtr);
+        const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
+        model::Bone *activeBone = model::Bone::cast(activeBonePtr);
         ImGui::PushItemWidth(width * 0.2f);
         ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.model.translation"));
         ImGui::PopItemWidth();
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 translation(activeBone ? activeBone->localUserTranslation() : Constants::kZeroV3);
-        if (ImGui::DragFloat3(
-                "##viewport.bone.translation", glm::value_ptr(translation), kTranslationStepFactor, 0, 0, "%.2f") &&
-            activeBone) {
-            setModelBoneTranslation(translation, activeBoenPtr, activeModel, project);
+        if (handleDragFloat3("##viewport.bone.translation", glm::value_ptr(translation),
+                model::Bone::isMovable(activeBonePtr), kTranslationStepFactor, 0, 0, "%.2f", ImGuiSliderFlags_None)) {
+            setModelBoneTranslation(translation, activeBonePtr, activeModel, project);
         }
         if (handleVectorValueState(m_boneTranslationValueState)) {
             nanoem_delete_safe(m_boneTranslationValueState);
@@ -2776,10 +3603,10 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 orientation(
             activeBone ? glm::degrees(glm::eulerAngles(activeBone->localUserOrientation())) : Constants::kZeroV3);
-        if (ImGui::DragFloat3("##viewport.bone.orientation", glm::value_ptr(orientation), kOrientationStepFactor, -180,
-                180, "%.1f") &&
-            activeBone) {
-            setModelBoneOrientation(glm::radians(orientation), activeBoenPtr, activeModel, project);
+        if (handleDragFloat3("##viewport.bone.orientation", glm::value_ptr(orientation),
+                model::Bone::isRotateable(activeBonePtr), kOrientationStepFactor, -180, 180, "%.1f",
+                ImGuiSliderFlags_None)) {
+            setModelBoneOrientation(glm::radians(orientation), activeBonePtr, activeModel, project);
         }
         if (handleVectorValueState(m_boneOrientationValueState)) {
             nanoem_delete_safe(m_boneOrientationValueState);
@@ -2787,6 +3614,7 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::PopItemWidth();
     }
     else {
+        const bool playing = project->isPlaying();
         ICamera *camera = project->activeCamera();
         ImGui::PushItemWidth(width * 0.2f);
         ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.look-at"));
@@ -2794,8 +3622,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 lookAt(camera->lookAt());
-        if (ImGui::DragFloat3(
-                "##viewport.camera.look-at", glm::value_ptr(lookAt), kTranslationStepFactor, 0, 0, "%.2f")) {
+        if (handleDragFloat3("##viewport.camera.look-at", glm::value_ptr(lookAt), !playing, kTranslationStepFactor, 0,
+                0, "%.2f", ImGuiSliderFlags_None)) {
             setCameraLookAt(lookAt, camera, project);
         }
         if (handleVectorValueState(m_cameraLookAtVectorValueState)) {
@@ -2809,8 +3637,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::SameLine();
         ImGui::PushItemWidth(width * 0.3f);
         Vector3 angle(glm::degrees(camera->angle()));
-        if (ImGui::DragFloat3(
-                "##viewport.camera.angle", glm::value_ptr(angle), kOrientationStepFactor, -180, 180, "%.1f")) {
+        if (handleDragFloat3("##viewport.camera.angle", glm::value_ptr(angle), !playing, kOrientationStepFactor, -180,
+                180, "%.1f", ImGuiSliderFlags_None)) {
             setCameraAngle(angle, camera, project);
         }
         if (handleVectorValueState(m_cameraAngleVectorValueState)) {
@@ -2824,7 +3652,8 @@ ImGuiWindow::drawViewportParameterBox(Project *project)
         ImGui::PushItemWidth(width * 0.2f);
         ImGui::SameLine();
         nanoem_f32_t distance(camera->distance());
-        if (ImGui::DragFloat("##viewport.camera.distance", &distance, 1.0f, 1, 100000.0f, "%.1f")) {
+        if (handleDragFloat(
+                "##viewport.camera.distance", &distance, !playing, 1.0f, 1, 100000.0f, "%.1f", ImGuiSliderFlags_None)) {
             setCameraDistance(distance, camera, project);
         }
         if (handleVectorValueState(m_cameraDistanceVectorValueState)) {
@@ -2860,13 +3689,13 @@ ImGuiWindow::drawCommonInterpolationControls(Project *project)
 void
 ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeModel, Project *project)
 {
-    static const glm::u8vec4 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
+    static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
     ImGui::BeginChild("interpolation", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
-    glm::u8vec4 controlPoint(20, 20, 107, 107);
+    Vector4U8 controlPoint(20, 20, 107, 107);
     nanoem_motion_bone_keyframe_interpolation_type_t type = project->boneKeyframeInterpolationType();
     model::Bone *bone = nullptr;
     if (Motion *activeMotion = project->resolveMotion(activeModel)) {
@@ -2899,9 +3728,9 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
         ImGui::EndCombo();
     }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x0", ImGuiDataType_U8, &controlPoint.x, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X0: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.x0", ImGuiDataType_U8, &controlPoint.x, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X0: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -2909,18 +3738,18 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y0", ImGuiDataType_U8, &controlPoint.y, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y0: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.y0", ImGuiDataType_U8, &controlPoint.y, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y0: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
     }
     ImGui::PopItemWidth();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x1", ImGuiDataType_U8, &controlPoint.z, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X1: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.x1", ImGuiDataType_U8, &controlPoint.z, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X1: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -2928,9 +3757,9 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y1", ImGuiDataType_U8, &controlPoint.w, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y1: %d") &&
-        bone) {
+    if (handleSliderScalarN("##curve.y1", ImGuiDataType_U8, &controlPoint.w, 1, bone != nullptr,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y1: %d",
+            ImGuiSliderFlags_None)) {
         bone->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -2944,13 +3773,14 @@ ImGuiWindow::drawBoneInterpolationPanel(const ImVec2 &panelSize, Model *activeMo
 void
 ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *project)
 {
-    static const glm::u8vec4 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
+    static const Vector4U8 kMinCurvePointValue(0), kMaxCurvePointValue(0x7f);
+    const bool playing = project->isPlaying();
     ImGui::BeginChild("interpolation", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.interpolation.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
-    glm::u8vec4 controlPoint(20, 20, 107, 107);
+    Vector4U8 controlPoint(20, 20, 107, 107);
     nanoem_motion_camera_keyframe_interpolation_type_t type = project->cameraKeyframeInterpolationType();
     controlPoint = project->globalCamera()->bezierControlPoints(type);
     if (handleButton(reinterpret_cast<const char *>(kFACogs))) {
@@ -2970,8 +3800,9 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
         ImGui::EndCombo();
     }
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x0", ImGuiDataType_U8, &controlPoint.x, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X0: %d")) {
+    if (handleSliderScalarN("##curve.x0", ImGuiDataType_U8, &controlPoint.x, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X0: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -2979,16 +3810,18 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y0", ImGuiDataType_U8, &controlPoint.y, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y0: %d")) {
+    if (handleSliderScalarN("##curve.y0", ImGuiDataType_U8, &controlPoint.y, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y0: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
     }
     ImGui::PopItemWidth();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
-    if (ImGui::SliderScalar("##curve.x1", ImGuiDataType_U8, &controlPoint.z, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "X1: %d")) {
+    if (handleSliderScalarN("##curve.x1", ImGuiDataType_U8, &controlPoint.z, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "X1: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -2996,8 +3829,9 @@ ImGuiWindow::drawCameraInterpolationPanel(const ImVec2 &panelSize, Project *proj
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::SliderScalar("##curve.y1", ImGuiDataType_U8, &controlPoint.w, glm::value_ptr(kMinCurvePointValue),
-            glm::value_ptr(kMaxCurvePointValue), "Y1: %d")) {
+    if (handleSliderScalarN("##curve.y1", ImGuiDataType_U8, &controlPoint.w, 1, !playing,
+            glm::value_ptr(kMinCurvePointValue), glm::value_ptr(kMaxCurvePointValue), "Y1: %d",
+            ImGuiSliderFlags_None)) {
         project->globalCamera()->setBezierControlPoints(type, controlPoint);
     }
     else if (ImGui::IsItemDeactivatedAfterEdit()) {
@@ -3013,7 +3847,7 @@ ImGuiWindow::drawModelPanel(const ImVec2 &panelSize, Project *project)
 {
     Model *activeModel = project->activeModel();
     ImGui::BeginChild("model", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.model"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.model.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
@@ -3102,10 +3936,15 @@ ImGuiWindow::drawModelPanel(const ImVec2 &panelSize, Project *project)
         {
         }
         void
-        execute(Project * /* project */)
+        execute(Project * /* project */) NANOEM_DECL_OVERRIDE
         {
             m_constraint->setEnabled(m_enabled);
             m_model->performAllBonesTransform();
+        }
+        void
+        destroy(Project *project) NANOEM_DECL_OVERRIDE
+        {
+            BX_UNUSED_1(project);
         }
         Model *m_model;
         model::Constraint *m_constraint;
@@ -3130,13 +3969,14 @@ ImGuiWindow::drawCameraPanel(const ImVec2 &panelSize, Project *project)
 {
     ICamera *activeCamera = project->activeCamera();
     ImGui::BeginChild("camera", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.camera"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.camera.title"));
     ImGui::Separator();
     ImGui::Spacing();
     bool buttonEnabled = !project->isPlaying();
     if (handleTranslatedButton("nanoem.gui.panel.camera.reset", -1, buttonEnabled)) {
         activeCamera->reset();
         activeCamera->update();
+        project->resetAllModelEdges();
     }
     bool perspective = activeCamera->isPerspective();
     if (handleCheckBox(tr("nanoem.gui.panel.camera.perspective"), &perspective, buttonEnabled)) {
@@ -3144,7 +3984,8 @@ ImGuiWindow::drawCameraPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PushItemWidth(-1);
     int fov = activeCamera->fov();
-    if (ImGui::SliderInt("##fov", &fov, 1, 135, tr("nanoem.gui.panel.camera.fov.format"))) {
+    if (handleSliderInt(
+            "##fov", &fov, buttonEnabled, 1, 135, tr("nanoem.gui.panel.camera.fov.format"), ImGuiSliderFlags_None)) {
         setCameraFov(static_cast<nanoem_f32_t>(fov), activeCamera, project);
     }
     if (handleVectorValueState(m_cameraFovVectorValueState)) {
@@ -3177,7 +4018,7 @@ ImGuiWindow::drawLightPanel(const ImVec2 &panelSize, Project *project)
 {
     ILight *activeLight = project->activeLight();
     ImGui::BeginChild("light", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.light"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.light.title"));
     ImGui::Separator();
     ImGui::Spacing();
     bool buttonEnabled = !project->isPlaying();
@@ -3195,7 +4036,8 @@ ImGuiWindow::drawLightPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::TextUnformatted(tr("nanoem.gui.panel.light.direction"));
     Vector3 direction(activeLight->direction());
-    if (ImGui::SliderFloat3("##light.direction", glm::value_ptr(direction), -1.0f, 1.0f, "%.2f")) {
+    if (handleSliderFloat3("##light.direction", glm::value_ptr(direction), buttonEnabled, -1.0f, 1.0f, "%.2f",
+            ImGuiSliderFlags_None)) {
         setLightDirection(direction, activeLight, project);
     }
     if (handleVectorValueState(m_lightDirectionVectorValueState)) {
@@ -3203,7 +4045,7 @@ ImGuiWindow::drawLightPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PopItemWidth();
     if (handleTranslatedButton("nanoem.gui.panel.light.self-shadow", -1, buttonEnabled)) {
-        openSelfShadowConfigurationDialog(project);
+        openSelfShadowConfigurationDialog();
     }
     if (handleTranslatedButton("nanoem.gui.panel.light.register", -1, buttonEnabled)) {
         CommandRegistrator registrator(project);
@@ -3217,7 +4059,7 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
 {
     Accessory *activeAccessory = project->activeAccessory();
     ImGui::BeginChild("accessory", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.accessory"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.accessory.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ImGui::PushItemWidth(-1);
@@ -3246,7 +4088,7 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
         }
     }
     ImGui::PopItemWidth();
-    bool buttonEnabled = !project->isPlaying();
+    const bool buttonEnabled = !project->isPlaying();
     if (handleTranslatedButton(
             "nanoem.gui.panel.accessory.load", ImGui::GetContentRegionAvail().x * 0.5f, buttonEnabled)) {
         StringList extensions(Accessory::loadableExtensions());
@@ -3274,8 +4116,8 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PushItemWidth(-1);
     Vector3 translation(activeAccessory ? activeAccessory->translation() : Constants::kZeroV3);
-    if (ImGui::DragFloat3(
-            "##accessory.translation", glm::value_ptr(translation), kTranslationStepFactor, 0.0f, 0.0f, "%.2f")) {
+    if (handleDragFloat3("##accessory.translation", glm::value_ptr(translation), activeAccessory && buttonEnabled,
+            kTranslationStepFactor, 0.0f, 0.0f, "%.2f", ImGuiSliderFlags_None)) {
         setAccessoryTranslation(translation, activeAccessory);
     }
     if (handleVectorValueState(m_accessoryTranslationVectorValueState)) {
@@ -3285,8 +4127,8 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
         drawTextTooltip(project->translator()->translate("nanoem.gui.panel.accessory.translation"));
     }
     Vector3 orientation(glm::degrees(activeAccessory ? activeAccessory->orientation() : Constants::kZeroV3));
-    if (ImGui::DragFloat3(
-            "##accessory.orientation", glm::value_ptr(orientation), kOrientationStepFactor, -180.0f, 180.0f, "%.1f")) {
+    if (handleDragFloat3("##accessory.orientation", glm::value_ptr(orientation), activeAccessory && buttonEnabled,
+            kOrientationStepFactor, -180.0f, 180.0f, "%.1f", ImGuiSliderFlags_None)) {
         setAccessoryOrientation(glm::radians(orientation), activeAccessory);
     }
     if (handleVectorValueState(m_accessoryOrientationVectorValueState)) {
@@ -3298,7 +4140,9 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
     ImGui::PopItemWidth();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
     nanoem_f32_t scaleFactor = activeAccessory ? activeAccessory->scaleFactor() : 0.0f;
-    if (ImGui::DragFloat("##accessory.scale", &scaleFactor, 0.0025f, 0.01f, FLT_MAX, "Si: %.2f") && activeAccessory) {
+    if (handleDragFloat("##accessory.scale", &scaleFactor, activeAccessory && buttonEnabled, 0.0025f, 0.01f, FLT_MAX,
+            "Si: %.2f", ImGuiSliderFlags_None) &&
+        activeAccessory) {
         setAccessoryScaleFactor(scaleFactor, activeAccessory);
     }
     if (handleVectorValueState(m_accessoryScaleFactorValueState)) {
@@ -3311,7 +4155,8 @@ ImGuiWindow::drawAccessoryPanel(const ImVec2 &panelSize, Project *project)
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     nanoem_f32_t opacity = activeAccessory ? activeAccessory->opacity() : 0.0f;
-    if (ImGui::SliderFloat("##accessory.opacity", &opacity, 0.0f, 1.0f, "Tr: %.2f") && activeAccessory) {
+    if (handleSliderFloat("##accessory.opacity", &opacity, activeAccessory && buttonEnabled, 0.0f, 1.0f, "Tr: %.2f",
+            ImGuiSliderFlags_None)) {
         setAccessoryOpacity(opacity, activeAccessory);
     }
     if (handleVectorValueState(m_accessoryOpacityValueState)) {
@@ -3333,7 +4178,7 @@ ImGuiWindow::drawBonePanel(const ImVec2 &panelSize, Model *activeModel, Project 
 {
     IModelObjectSelection *selection = activeModel->selection();
     ImGui::BeginChild("bone", ImVec2(panelSize.x * 1.3f, panelSize.y), true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.bone"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.bone.title"));
     ImGui::Separator();
     ImGui::Columns(2, nullptr, false);
     const nanoem_model_bone_t *activeBone = activeModel->activeBone();
@@ -3390,7 +4235,7 @@ ImGuiWindow::drawBonePanel(const ImVec2 &panelSize, Model *activeModel, Project 
     if (handleTranslatedButton(
             "nanoem.gui.panel.bone.inverse-paste", ImGui::GetContentRegionAvail().x / 2.0f, buttonEnabled)) {
         Error error;
-        project->reversePasteAllSelectedBones(error);
+        project->symmetricPasteAllSelectedBones(error);
         error.notify(project->eventPublisher());
     }
     ImGui::SameLine();
@@ -3410,7 +4255,7 @@ void
 ImGuiWindow::drawMorphPanel(const ImVec2 &panelSize, Model *activeModel, Project *project)
 {
     ImGui::BeginChild("morph", ImVec2(panelSize.x * 1.7f, panelSize.y), true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.morph"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.morph.title"));
     ImGui::Separator();
     ImGui::Spacing();
     const ITranslator *translator = project->translator();
@@ -3521,7 +4366,7 @@ void
 ImGuiWindow::drawViewPanel(const ImVec2 &panelSize, Project *project)
 {
     ImGui::BeginChild("view", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.view"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.view.title"));
     ImGui::Separator();
     ImGui::Spacing();
     ICamera *camera = project->activeCamera();
@@ -3563,7 +4408,7 @@ void
 ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
 {
     ImGui::BeginChild("play", panelSize, true);
-    ImGui::TextUnformatted(tr("nanoem.gui.panel.play"));
+    ImGui::TextUnformatted(tr("nanoem.gui.panel.play.title"));
     ImGui::Separator();
     ImGui::Spacing();
     const bool isPlaying = project->isPlaying();
@@ -3589,27 +4434,398 @@ ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
     }
     ImGui::PopItemWidth();
     TimelineSegment segment(project->playingSegment());
-    if (handleCheckBox("##play.start.enabled", &segment.m_enableFrom, true)) {
+    if (handleCheckBox("##play.start.enabled", &segment.m_enableFrom, !isPlaying)) {
         project->setPlayingSegment(segment);
     }
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     const nanoem_frame_index_t duration = project->duration();
-    if (ImGui::DragScalar(
-            "##play.start.value", kFrameIndexDataType, &segment.m_from, 1.0f, nullptr, &segment.m_to, "From: %u")) {
+    if (handleDragScalarN("##play.start.value", kFrameIndexDataType, &segment.m_from, 1, !isPlaying, 1.0f, nullptr,
+            &segment.m_to, "From: %u", ImGuiSliderFlags_None)) {
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();
-    if (handleCheckBox("##play.end.enabled", &segment.m_enableTo, true)) {
+    if (handleCheckBox("##play.end.enabled", &segment.m_enableTo, !isPlaying)) {
         project->setPlayingSegment(segment);
     }
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
-    if (ImGui::DragScalar(
-            "##play.end.value", kFrameIndexDataType, &segment.m_to, 1.0f, &segment.m_from, &duration, "To: %u")) {
+    if (handleDragScalarN("##play.end.value", kFrameIndexDataType, &segment.m_to, 1, !isPlaying, 1.0f, &segment.m_from,
+            &duration, "To: %u", ImGuiSliderFlags_None)) {
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();
+    ImGui::EndChild();
+}
+
+void
+ImGuiWindow::drawModelEditPanel(Project *project, nanoem_f32_t height)
+{
+    char buffer[Inline::kLongNameStackBufferSize];
+    Model *activeModel = project->activeModel();
+    const Model::EditActionType editActionType = activeModel->editActionType();
+    ImGui::BeginChild("command", ImVec2(kModelEditCommandWidth * project->windowDevicePixelRatio(), height));
+    StringUtils::format(buffer, sizeof(buffer), "%s##operation", tr("nanoem.gui.panel.model.edit.operation.title"));
+    IModelObjectSelection *selection = activeModel->selection();
+    const IModelObjectSelection::ObjectType objectType = selection->objectType();
+    if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.title"))) {
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.camera.title"), nullptr,
+                editActionType == Model::kEditActionTypeNone)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            selection->setObjectType(IModelObjectSelection::kObjectTypeNull);
+            activeModel->setEditActionType(Model::kEditActionTypeNone);
+        }
+        if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.selection.title"))) {
+            bool isSelection = editActionType == Model::kEditActionTypeSelectModelObject;
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.vertex"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeVertex)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.face"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeFace)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeFace, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.material"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeMaterial)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeMaterial, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.bone"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeBone)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeBone, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.rigid-body"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeRigidBody)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeRigidBody, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.joint"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeJoint)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeJoint, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.window.model.menu.soft-body"), nullptr,
+                    isSelection && objectType == IModelObjectSelection::kObjectTypeSoftBody)) {
+                ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+                ModelEditCommandDialog::afterToggleEditingMode(
+                    IModelObjectSelection::kObjectTypeSoftBody, activeModel, project);
+                activeModel->setEditActionType(Model::kEditActionTypeSelectModelObject);
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::Separator();
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-parent-bone.title"), nullptr,
+                editActionType == Model::kEditActionTypeCreateParentBone)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            ModelEditCommandDialog::afterToggleEditingMode(
+                IModelObjectSelection::kObjectTypeBone, activeModel, project);
+            activeModel->setEditActionType(Model::kEditActionTypeCreateParentBone);
+        }
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-target-bone.title"), nullptr,
+                editActionType == Model::kEditActionTypeCreateTargetBone)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            ModelEditCommandDialog::afterToggleEditingMode(
+                IModelObjectSelection::kObjectTypeBone, activeModel, project);
+            activeModel->setEditActionType(Model::kEditActionTypeCreateTargetBone);
+        }
+        if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.title"), nullptr,
+                editActionType == Model::kEditActionTypePaintVertexWeight)) {
+            ModelEditCommandDialog::beforeToggleEditingMode(objectType, activeModel, project);
+            ModelEditCommandDialog::afterToggleEditingMode(
+                IModelObjectSelection::kObjectTypeVertex, activeModel, project);
+            activeModel->setEditActionType(Model::kEditActionTypePaintVertexWeight);
+            activeModel->setShowAllVertexWeights(true);
+            if (!activeModel->vertexWeightPainter()) {
+                activeModel->setVertexWeightPainter(nanoem_new(VertexWeightPainter(activeModel)));
+            }
+        }
+        ImGui::Separator();
+        if (ImGui::BeginMenu(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.title"))) {
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cone")) &&
+                m_dialogWindows.find(CreateConePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateConePrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateConePrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cube")) &&
+                m_dialogWindows.find(CreateCubePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateCubePrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateCubePrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(
+                    tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinder")) &&
+                m_dialogWindows.find(CreateCylinderPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateCylinderPrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateCylinderPrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphere")) &&
+                m_dialogWindows.find(CreateSpherePrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateSpherePrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateSpherePrimitiveDialog::kIdentifier, dialog));
+            }
+            if (ImGui::MenuItem(tr("nanoem.gui.panel.model.edit.operation.action.create-material-primitive.torus")) &&
+                m_dialogWindows.find(CreateTorusPrimitiveDialog::kIdentifier) == m_dialogWindows.end()) {
+                INoModalDialogWindow *dialog = nanoem_new(CreateTorusPrimitiveDialog(m_applicationPtr));
+                m_dialogWindows.insert(tinystl::make_pair(CreateTorusPrimitiveDialog::kIdentifier, dialog));
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenu();
+    }
+    const bool isSelectionMode = objectType >= IModelObjectSelection::kObjectTypeVertex &&
+        objectType < IModelObjectSelection::kObjectTypeMaxEnum;
+    if (isSelectionMode &&
+        ImGui::CollapsingHeader(
+            tr("nanoem.gui.panel.model.edit.operation.selection.title"), ImGuiTreeNodeFlags_DefaultOpen)) {
+        const IModelObjectSelection::TargetModeType targetMode = selection->targetMode();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.circle"),
+                targetMode == IModelObjectSelection::kTargetModeTypeCircle, isSelectionMode)) {
+            selection->setTargetMode(IModelObjectSelection::kTargetModeTypeCircle);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.rectangle"),
+                targetMode == IModelObjectSelection::kTargetModeTypeRectangle, isSelectionMode)) {
+            selection->setTargetMode(IModelObjectSelection::kTargetModeTypeRectangle);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.operation.selection.point"),
+                targetMode == IModelObjectSelection::kTargetModeTypePoint, isSelectionMode)) {
+            selection->setTargetMode(IModelObjectSelection::kTargetModeTypePoint);
+        }
+        ImGui::Spacing();
+    }
+    model::IGizmo *gizmo = activeModel->gizmo();
+    const bool isGizmoEnabled = gizmo ? !glm::isNull(gizmo->pivotMatrix(), Constants::kEpsilon) : false;
+    StringUtils::format(buffer, sizeof(buffer), "%s##gizmo", tr("nanoem.gui.panel.model.edit.gizmo.title"));
+    if (isGizmoEnabled && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.gizmo.operation.title"));
+        model::IGizmo::OperationType op = gizmo->operationType();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.translate"),
+                op == model::IGizmo::kOperationTypeTranslate, isGizmoEnabled)) {
+            gizmo->setOperationType(model::IGizmo::kOperationTypeTranslate);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.rotate"),
+                op == model::IGizmo::kOperationTypeRotate, isGizmoEnabled)) {
+            gizmo->setOperationType(model::IGizmo::kOperationTypeRotate);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.operation.scale"),
+                op == model::IGizmo::kOperationTypeScale, isGizmoEnabled)) {
+            gizmo->setOperationType(model::IGizmo::kOperationTypeScale);
+        }
+        ImGui::Separator();
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.title"));
+        model::IGizmo::TransformCoordinateType coord = gizmo->transformCoordinateType();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.global"),
+                coord == model::IGizmo::kTransformCoordinateTypeGlobal, isGizmoEnabled)) {
+            gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeGlobal);
+        }
+        ImGui::SameLine();
+        if (handleRadioButton(tr("nanoem.gui.panel.model.edit.gizmo.coordinate.local"),
+                coord == model::IGizmo::kTransformCoordinateTypeLocal, isGizmoEnabled)) {
+            gizmo->setTransformCoordinateType(model::IGizmo::kTransformCoordinateTypeLocal);
+        }
+        ImGui::Spacing();
+    }
+    const bool paintMode = editActionType == Model::kEditActionTypePaintVertexWeight;
+    StringUtils::format(
+        buffer, sizeof(buffer), "%s##vertex-weight-paint", tr("nanoem.gui.panel.model.edit.weight-paint.title"));
+    if (paintMode && ImGui::CollapsingHeader(buffer, ImGuiTreeNodeFlags_DefaultOpen)) {
+        const ITranslator *translator = project->translator();
+        ImGui::PushItemWidth(-1);
+        model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+        model::IVertexWeightPainter::Type painterType = painter->type();
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.painter-type"));
+        if (ImGui::BeginCombo(
+                "##painter-type", VertexWeightPainterUtils::selectedVertexWeightPainterType(painterType, translator))) {
+            for (int i = model::IVertexWeightPainter::kTypeFirstEnum; i < model::IVertexWeightPainter::kTypeMaxEnum;
+                 i++) {
+                const model::IVertexWeightPainter::Type type = static_cast<model::IVertexWeightPainter::Type>(i);
+                if (ImGui::Selectable(VertexWeightPainterUtils::selectedVertexWeightPainterType(type, translator),
+                        type == painterType)) {
+                    painter->setType(type);
+                }
+            }
+            ImGui::EndCombo();
+        }
+        switch (painter->type()) {
+        case model::IVertexWeightPainter::kTypeBaseBrush: {
+            nanoem_model_vertex_type_t vertexType = painter->vertexType();
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.vertex-type"));
+            if (ImGui::BeginCombo("##vertex-type", VertexWeightPainterUtils::selectedVertexType(vertexType))) {
+                for (int i = NANOEM_MODEL_VERTEX_TYPE_FIRST_ENUM; i < NANOEM_MODEL_VERTEX_TYPE_MAX_ENUM; i++) {
+                    const nanoem_model_vertex_type_t type = static_cast<nanoem_model_vertex_type_t>(i);
+                    if (ImGui::Selectable(VertexWeightPainterUtils::selectedVertexType(type), type == vertexType)) {
+                        painter->setVertexType(type);
+                    }
+                }
+                ImGui::EndCombo();
+            }
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
+            switch (vertexType) {
+            case NANOEM_MODEL_VERTEX_TYPE_BDEF1: {
+                VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, 0, painter);
+                break;
+            }
+            case NANOEM_MODEL_VERTEX_TYPE_BDEF2:
+            case NANOEM_MODEL_VERTEX_TYPE_SDEF: {
+                for (nanoem_rsize_t i = 0; i < 2; i++) {
+                    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+                    VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, i, painter);
+                    ImGui::PopItemWidth();
+                    ImGui::SameLine();
+                    nanoem_f32_t weight = painter->vertexWeight(i);
+                    StringUtils::format(buffer, sizeof(buffer), "##weights[%jd]", i);
+                    if (ImGui::SliderFloat(buffer, &weight, 0.0f, 1.0f, "Weight: %.2f")) {
+                        painter->setVertexWeight(weight, i);
+                    }
+                }
+                if (ImGui::Button(tr("nanoem.gui.panel.model.edit.weight-paint.normalize"))) {
+                    nanoem_f32_t weight = glm::clamp(painter->vertexWeight(0), 0.0f, 1.0f);
+                    painter->setVertexWeight(weight, 0);
+                    painter->setVertexWeight(1.0f - weight, 1);
+                }
+                break;
+            }
+            case NANOEM_MODEL_VERTEX_TYPE_BDEF4:
+            case NANOEM_MODEL_VERTEX_TYPE_QDEF: {
+                for (nanoem_rsize_t i = 0; i < 4; i++) {
+                    ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+                    VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, i, painter);
+                    ImGui::PopItemWidth();
+                    ImGui::SameLine();
+                    nanoem_f32_t weight = painter->vertexWeight(i);
+                    StringUtils::format(buffer, sizeof(buffer), "##weights[%jd]", i);
+                    if (ImGui::SliderFloat(buffer, &weight, 0.0f, 1.0f, "Weight: %.2f")) {
+                        painter->setVertexWeight(weight, i);
+                    }
+                }
+                if (ImGui::Button(tr("nanoem.gui.panel.model.edit.weight-paint.normalize"))) {
+                    nanoem_f32_t sum = 0.0f;
+                    for (nanoem_rsize_t i = 0; i < 4; i++) {
+                        if (painter->vertexBone(i)) {
+                            sum += painter->vertexWeight(i);
+                        }
+                    }
+                    for (nanoem_rsize_t i = 0; i < 4; i++) {
+                        nanoem_f32_t weight = 0;
+                        if (painter->vertexBone(i)) {
+                            weight = painter->vertexWeight(i) / sum;
+                        }
+                        painter->setVertexWeight(weight, i);
+                    }
+                }
+                break;
+            }
+            default:
+                break;
+            }
+            break;
+        }
+        case model::IVertexWeightPainter::kTypeAirBrush: {
+            ImGui::TextUnformatted(tr("nanoem.gui.panel.model.edit.weight-paint.bone"));
+            VertexWeightPainterUtils::layoutSelectBoneComboBox(activeModel, 0, painter);
+            nanoem_f32_t radius = painter->radius(), delta = painter->delta();
+            ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x * 0.5f);
+            if (ImGui::DragFloat(
+                    "##radius", &radius, 0.5f, 0.5f, 100.0f, tr("nanoem.gui.panel.model.edit.weight-paint.radius"))) {
+                painter->setRadius(radius);
+            }
+            ImGui::SameLine();
+            if (ImGui::DragFloat(
+                    "##delta", &delta, 0.005f, -1.0f, 1.0f, tr("nanoem.gui.panel.model.edit.weight-paint.delta"))) {
+                painter->setDelta(delta);
+            }
+            bool automaticNormalization = painter->isAutomaticNormalizationEnabled();
+            StringUtils::format(buffer, sizeof(buffer), "%s##automatic-normalization",
+                tr("nanoem.gui.panel.model.edit.weight-paint.automatic-normalization"));
+            if (ImGui::Checkbox(buffer, &automaticNormalization)) {
+                painter->setAutomaticNormalizationEnabled(automaticNormalization);
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        ImGui::PopItemWidth();
+        ImGui::Spacing();
+    }
+    StringUtils::format(buffer, sizeof(buffer), "%s##camera", tr("nanoem.gui.panel.camera.title"));
+    if (ImGui::CollapsingHeader(buffer)) {
+        ICamera *camera = project->activeCamera();
+        Vector3 lookAt(camera->lookAt()), angle(glm::degrees(camera->angle()));
+        nanoem_f32_t distance = camera->distance();
+        int fov = camera->fov();
+        bool perspective = camera->isPerspective(), changed = false;
+        ImGui::PushItemWidth(-1);
+        ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.look-at"));
+        if (ImGui::DragFloat3("##look-at", glm::value_ptr(lookAt))) {
+            camera->setLookAt(glm::radians(lookAt));
+            changed = true;
+        }
+        ImGui::TextUnformatted(tr("nanoem.gui.viewport.parameter.camera.angle"));
+        if (ImGui::DragFloat3("##angle", glm::value_ptr(angle))) {
+            camera->setAngle(glm::radians(angle));
+            changed = true;
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s: %%.1f", tr("nanoem.gui.viewport.parameter.camera.distance"));
+        if (ImGui::DragFloat("##distance", &distance, 0.1f, 0.0f, 0.0f, buffer)) {
+            camera->setDistance(distance);
+            changed = true;
+        }
+        if (ImGui::DragInt("##fov", &fov, 0.1f, 1, 135, tr("nanoem.gui.panel.camera.fov.format"))) {
+            camera->setFov(fov);
+            changed = true;
+        }
+        if (ImGui::Checkbox("Perspective##perspective", &perspective)) {
+            camera->setPerspective(perspective);
+            changed = true;
+        }
+        if (ImGui::Button("Initialize##initialize", ImVec2(-1, 0))) {
+            camera->reset();
+            changed = true;
+        }
+        ImGui::PopItemWidth();
+        if (changed) {
+            camera->update();
+            project->resetAllModelEdges();
+        }
+        ImGui::Spacing();
+    }
+    StringUtils::format(buffer, sizeof(buffer), "%s##light", tr("nanoem.gui.panel.light.title"));
+    if (ImGui::CollapsingHeader(buffer)) {
+        ILight *light = project->activeLight();
+        Vector3 color(light->color()), direction(light->direction());
+        ImGui::PushItemWidth(-1);
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.light.color"));
+        if (ImGui::ColorEdit3("##color", glm::value_ptr(color))) {
+            light->setColor(color);
+        }
+        ImGui::TextUnformatted(tr("nanoem.gui.panel.light.direction"));
+        if (ImGui::DragFloat3("##direction", glm::value_ptr(direction), 0.01f, -1.0f, 1.0f)) {
+            light->setDirection(direction);
+        }
+        StringUtils::format(buffer, sizeof(buffer), "%s##initialize", tr("nanoem.gui.panel.light.reset"));
+        if (ImGui::Button(buffer, ImVec2(-1, 0))) {
+            light->reset();
+        }
+        ImGui::PopItemWidth();
+    }
     ImGui::EndChild();
 }
 
@@ -3633,6 +4849,7 @@ ImGuiWindow::drawAllNonModalWindows(Project *project)
                 NoModalDialogWindowList::const_iterator it2 = m_dialogWindows.find(*it);
                 if (it2 != m_dialogWindows.end()) {
                     INoModalDialogWindow *window = it2->second;
+                    window->destroy(project);
                     m_dialogWindows.erase(it2);
                     nanoem_delete(window);
                 }
@@ -3643,25 +4860,79 @@ ImGuiWindow::drawAllNonModalWindows(Project *project)
 }
 
 void
-ImGuiWindow::drawTransformHandleSet(
-    const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon, int rectType, bool handleable)
+ImGuiWindow::drawTransformHandleSet(const Vector4UI16 *rects, const ImVec2 &offset, const nanoem_u8_t *icon,
+    int baseRectType, int intercectedRectType, bool handleable)
 {
-    static const Vector4 kRed(1, 0, 0, 1);
-    static const Vector4 kGreen(0, 1, 0, 1);
-    static const Vector4 kBlue(0, 0, 1, 1);
-    static const Vector4 kGray(0.5f, 0.5f, 0.5f, 1);
-    Vector4 x(rects[rectType + 0]), y(rects[rectType + 1]), z(rects[rectType + 2]);
-    m_primitive2D.fillCircle(x, handleable ? kRed : kGray);
-    m_primitive2D.fillCircle(y, handleable ? kGreen : kGray);
-    m_primitive2D.fillCircle(z, handleable ? kBlue : kGray);
+    const Vector4 x(rects[baseRectType + 0]), y(rects[baseRectType + 1]), z(rects[baseRectType + 2]);
+    const bool intersectsX = baseRectType == intercectedRectType;
+    m_primitive2D.fillCircle(x, handleable ? (intersectsX ? kColorRed : kColorTranslucentRed) : kColorGray);
+    const bool intersectsY = baseRectType + 1 == intercectedRectType;
+    m_primitive2D.fillCircle(y, handleable ? (intersectsY ? kColorGreen : kColorTranslucentGreen) : kColorGray);
+    const bool intersectsZ = baseRectType + 2 == intercectedRectType;
+    m_primitive2D.fillCircle(z, handleable ? (intersectsZ ? kColorBlue : kColorTranslucentBlue) : kColorGray);
     const char *p = reinterpret_cast<const char *>(icon);
-    drawTextCentered(offset, x, p, Inline::saturateInt32(StringUtils::length(p)));
-    drawTextCentered(offset, y, p, Inline::saturateInt32(StringUtils::length(p)));
-    drawTextCentered(offset, z, p, Inline::saturateInt32(StringUtils::length(p)));
+    size_t length = StringUtils::length(p);
+    drawTextCentered(offset, x, p, length);
+    drawTextCentered(offset, y, p, length);
+    drawTextCentered(offset, z, p, length);
 }
 
 void
-ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset)
+ImGuiWindow::drawPrimitive2D(Project *project, IState *state, nanoem_u32_t flags)
+{
+    if (state) {
+        state->onDrawPrimitive2D(&m_primitive2D);
+    }
+    Model *activeModel = project->activeModel();
+    if (activeModel && activeModel->isVisible()) {
+        const Vector2SI32 deviceScaleCursor(project->deviceScaleMovingCursorPosition());
+        Vector4 activeBoneColor(DrawUtils::kColorRed, 1);
+        NoModalDialogWindowList::const_iterator it = m_dialogWindows.find(ModelParameterDialog::kIdentifier);
+        const ModelParameterDialog *dialog = nullptr;
+        if (it != m_dialogWindows.end()) {
+            dialog = static_cast<ModelParameterDialog *>(it->second);
+        }
+        appendDrawFlags(activeModel, dialog, flags);
+        if (EnumUtils::isEnabled(IState::kDrawTypeAllBoneConnections, flags)) {
+            activeModel->drawAllBoneConnections(&m_primitive2D, deviceScaleCursor);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeConstraintConnections, flags)) {
+            activeModel->drawConstraintConnections(&m_primitive2D, deviceScaleCursor);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeConstraintHeatmaps, flags)) {
+            activeModel->drawConstraintsHeatMap(&m_primitive2D);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeBoneMoveHandle, flags)) {
+            activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
+            const bool isGrabbingHandle = DrawUtils::isDraggingBoneState(state) && state->isGrabbingHandle();
+            DrawUtils::drawBoneMoveHandle(&m_primitive2D, activeModel, isGrabbingHandle);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeActiveBoneConnection, flags)) {
+            const nanoem_model_bone_t *bonePtr = activeModel->activeBone();
+            activeModel->drawBoneConnections(&m_primitive2D, bonePtr);
+            activeModel->drawBonePoint(&m_primitive2D, bonePtr, deviceScaleCursor);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeBoneRotateHandle, flags)) {
+            activeBoneColor = Vector4(DrawUtils::kColorYellow, 1);
+            const bool isGrabbingHandle = DrawUtils::isDraggingBoneState(state) && state->isGrabbingHandle();
+            DrawUtils::drawBoneRotateHandle(&m_primitive2D, activeModel, isGrabbingHandle);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeActiveBone, flags)) {
+            DrawUtils::drawActiveBonePoint(&m_primitive2D, activeBoneColor, project);
+        }
+        if (EnumUtils::isEnabled(IState::kDrawTypeVertexWeightPainter, flags)) {
+            const model::IVertexWeightPainter *painter = activeModel->vertexWeightPainter();
+            DrawUtils::drawVertexWeightPainter(&m_primitive2D, painter, project);
+        }
+    }
+    const ICamera *camera = project->activeCamera();
+    if (EnumUtils::isEnabled(IState::kDrawTypeCameraLookAt, flags) && camera) {
+        DrawUtils::drawCameraLookAtPoint(&m_primitive2D, camera, project);
+    }
+}
+
+void
+ImGuiWindow::drawTransformHandleSet(const Project *project, IState *state, const ImVec2 &offset)
 {
     nanoem_parameter_assert(project, "must not be nullptr");
     if (project->isTransformHandleVisible()) {
@@ -3671,12 +4942,25 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             deviceScaleRects[i] =
                 project->queryDevicePixelRectangle(static_cast<Project::RectangleType>(i), Vector2UI16());
         }
+        Project::RectangleType intersectedRectangleType = Project::kRectangleTypeMaxEnum;
+        const ImGuiIO &io = ImGui::GetIO();
+        ImVec2 mousePos(io.MousePos), basePos;
+#if defined(IMGUI_HAS_VIEWPORT)
+        basePos = ImGui::GetMainViewport()->Pos;
+#endif /* IMGUI_HAS_VIEWPORT */
+        mousePos.x -= basePos.x;
+        mousePos.y -= basePos.y;
+        const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
+        const bool intersected = project->intersectsTransformHandle(
+            Vector2(mousePos.x * invertedScale.x, mousePos.y * invertedScale.y), intersectedRectangleType);
         if (const Model *activeModel = project->activeModel()) {
             const IModelObjectSelection *selection = activeModel->selection();
-            const bool movable = selection->areAllBonesMovable();
-            const bool rotateable = selection->areAllBonesRotateable();
-            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, rotateable);
-            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, movable);
+            drawOrientationAxes(intersected, intersectedRectangleType, selection, activeModel, project, state);
+            const bool movable = selection->areAllBonesMovable(), rotateable = selection->areAllBonesRotateable();
+            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX,
+                intersectedRectangleType, rotateable);
+            drawTransformHandleSet(
+                deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, movable);
             const Vector4 rect(deviceScaleRects[Project::kRectangleTransformCoordinateType]);
             internalFillRect(rect, deviceScaleRatio);
             switch (activeModel->transformCoordinateType()) {
@@ -3698,8 +4982,10 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
             }
         }
         else if (const ICamera *activeCamera = project->activeCamera()) {
-            drawTransformHandleSet(deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, true);
-            drawTransformHandleSet(deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, true);
+            drawTransformHandleSet(
+                deviceScaleRects, offset, kFARefresh, Project::kRectangleOrientateX, intersectedRectangleType, true);
+            drawTransformHandleSet(
+                deviceScaleRects, offset, kFAArrows, Project::kRectangleTranslateX, intersectedRectangleType, true);
             const Vector4 rect(deviceScaleRects[Project::kRectangleTransformCoordinateType]);
             internalFillRect(rect, deviceScaleRatio);
             switch (activeCamera->transformCoordinateType()) {
@@ -3734,46 +5020,49 @@ ImGuiWindow::drawTransformHandleSet(const Project *project, const ImVec2 &offset
 }
 
 void
-ImGuiWindow::drawModelEditingIcon(const Project *project)
+ImGuiWindow::drawOrientationAxes(bool intersected, nanoem_u32_t rectangleType, const IModelObjectSelection *selection,
+    const Model *activeModel, const Project *project, IState *state)
 {
-#if 0
-    if (project->activeModel() && m_applicationPtr->isModelEditingEnabled()) {
-        struct nk_command_buffer *buffer = nk_window_get_canvas(&m_globalPrimitive);
-        const nanoem_f32_t rounding = 4.0f * project->windowDevicePixelRatio();
-        const struct nk_rect rect =
-            nk_rectv(glm::value_ptr(Vector4(project->queryDevicePixelRectangle(Project::kRectangleModelEditing, Vector2UI16())) *
-                project->deviceScaleViewportRatio()));
-        nk_fill_rect(buffer, rect, rounding, nk_rgba(0, 0, 0, 0xcf));
-        drawTextCentered(buffer, &m_iconFont, rect, reinterpret_cast<const char *>(kFAPencil), sizeof(kFAPencil) - 1);
+    const ImGuiIO &io = ImGui::GetIO();
+    const ImVec2 scale(io.DisplayFramebufferScale), invertedScale(1.0f / scale.x, 1.0f / scale.y);
+    const nanoem_model_bone_t *activeBonePtr = activeModel->activeBone();
+    const model::Bone *activeBone = model::Bone::cast(activeBonePtr);
+    bool showXYZAxes = activeBone && !nanoemModelBoneHasFixedAxis(activeBonePtr) &&
+        ((intersected && isSelectingBoneHandle(selection, static_cast<Project::RectangleType>(rectangleType))) ||
+            isDraggingBoneAxisAlignedState(state));
+    NoModalDialogWindowList::const_iterator it = m_dialogWindows.find(ModelParameterDialog::kIdentifier);
+    if (it != m_dialogWindows.end()) {
+        const ModelParameterDialog *dialog = static_cast<ModelParameterDialog *>(it->second);
+        showXYZAxes |= dialog->isLocalAxesShown();
     }
-#else
-    BX_UNUSED_1(project);
-#endif
-}
-
-void
-ImGuiWindow::drawEffectIcon(const Project *project, const ImVec2 &offset)
-{
-#if 0
-    if (project->isEffectPluginEnabled() && hasAnyActiveEffect(project)) {
-        struct nk_command_buffer *buffer = nk_window_get_canvas(&m_globalPrimitive);
-        const nanoem_f32_t rounding = 4.0f * project->windowDevicePixelRatio();
-        const struct nk_rect rect =
-            nk_rectv(glm::value_ptr(Vector4(project->queryDevicePixelRectangle(Project::kRectangleEffect, Vector2UI16())) *
-                project->deviceScaleViewportRatio()));
-        nk_fill_rect(buffer, rect, rounding, nk_rgba(0, 0, 0, 0xcf));
-        if (project->editingMode() == Project::kEditingModeEffect) {
-            drawTextCentered(
-                buffer, &m_iconFont, rect, reinterpret_cast<const char *>(kFATHList), sizeof(kFATHList) - 1);
+    if (showXYZAxes) {
+        Quaternion orientation(Constants::kZeroQ);
+        if (activeModel->transformCoordinateType() == Model::kTransformCoordinateTypeLocal) {
+            orientation = activeBone->localOrientation() * glm::quat_cast(model::Bone::localAxes(activeBonePtr));
         }
-        else {
-            drawTextCentered(
-                buffer, &m_iconFont, rect, reinterpret_cast<const char *>(kFAMagicWand), sizeof(kFAMagicWand) - 1);
+        const Vector3 base(activeBone->worldTransformOrigin()), scaleFactor(3),
+            unitX(orientation * Constants::kUnitX * scaleFactor), unitY(orientation * Constants::kUnitY * scaleFactor),
+            unitZ(orientation * Constants::kUnitZ * -scaleFactor);
+        const ICamera *camera = project->activeCamera();
+        const Vector2SI32 p(camera->toDeviceScreenCoordinateInViewport(base)),
+            x(camera->toDeviceScreenCoordinateInViewport(base + unitX)),
+            y(camera->toDeviceScreenCoordinateInViewport(base + unitY)),
+            z(camera->toDeviceScreenCoordinateInViewport(base + unitZ)),
+            windowSize(Vector2(project->windowSize()) * project->windowDevicePixelRatio());
+        const Vector4SI32 rect(-windowSize, windowSize * 2);
+        if (Inline::intersectsRectPoint(rect, p)) {
+            const nanoem_f32_t thickness = 3.0f;
+            if (Inline::intersectsRectPoint(rect, x)) {
+                m_primitive2D.strokeLine(p, x, kColorRed, thickness);
+            }
+            if (Inline::intersectsRectPoint(rect, y)) {
+                m_primitive2D.strokeLine(p, y, kColorGreen, thickness);
+            }
+            if (Inline::intersectsRectPoint(rect, z)) {
+                m_primitive2D.strokeLine(p, z, kColorBlue, thickness);
+            }
         }
     }
-#else
-    BX_UNUSED_2(project, offset);
-#endif
 }
 
 void
@@ -3794,7 +5083,7 @@ ImGuiWindow::drawFPSCounter(const Project *project, const ImVec2 &offset)
 }
 
 void
-ImGuiWindow::drawHardwareMonitor(const Project *project, const ImVec2 &offset)
+ImGuiWindow::drawPerformanceMonitor(const Project *project, const ImVec2 &offset)
 {
     static const nanoem_f32_t kSpacingSize = 10, kMarginSize = 5;
     const nanoem_f32_t deviceScaleRatio = project->windowDevicePixelRatio();
@@ -3818,22 +5107,22 @@ ImGuiWindow::drawHardwareMonitor(const Project *project, const ImVec2 &offset)
 }
 
 void
-ImGuiWindow::drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, int length)
+ImGuiWindow::drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const char *text, size_t length, ImU32 color)
 {
     ImDrawList *drawList = ImGui::GetWindowDrawList();
     ImVec2 t(ImGui::CalcTextSize(text)),
         c(offset.x + rect.x + (rect.z - t.x) * 0.5f, offset.y + rect.y + (rect.w - t.y) * 0.5f);
-    drawList->AddText(c, IM_COL32_WHITE, text, text + length);
+    drawList->AddText(c, color, text, text + length);
 }
 
 void
 ImGuiWindow::drawBoneTooltip(Project *project)
 {
     if (Model *activeModel = project->activeModel()) {
-        const nanoem_model_bone_t *bonePtr = activeModel->selection()->hoveredBone();
-        bool enabled = EnumUtils::isEnabled(Project::kDrawTypeBoneTooltip, m_viewportOverlayFlags);
+        const nanoem_model_bone_t *bonePtr = activeModel->hoveredBone();
+        bool enabled = EnumUtils::isEnabled(IState::kDrawTypeBoneTooltip, m_viewportOverlayFlags);
         if (activeModel && bonePtr && enabled) {
-            activeModel->drawBoneTooltip(bonePtr);
+            activeModel->drawBoneTooltip(primitiveContext(), bonePtr);
         }
     }
 }
@@ -3846,7 +5135,7 @@ ImGuiWindow::setupDeviceInput(Project *project)
     io.MouseWheelH = static_cast<nanoem_f32_t>(delta.x);
     io.MouseWheel = static_cast<nanoem_f32_t>(delta.y);
     io.DeltaTime = static_cast<nanoem_f32_t>(stm_sec(stm_laptime(&m_elapsedTime)));
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     if (EnumUtils::isEnabledT<ImGuiConfigFlags>(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
         io.MousePos.x = m_screenCursor.m_x;
         io.MousePos.y = m_screenCursor.m_y;
@@ -3859,7 +5148,7 @@ ImGuiWindow::setupDeviceInput(Project *project)
         io.KeyShift = EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeShift);
     }
     else
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
     {
         const Vector2SI32 offset(project->deviceScaleMovingCursorPosition());
         io.MousePos.x = static_cast<nanoem_f32_t>(offset.x);
@@ -3881,19 +5170,20 @@ ImGuiWindow::handleVerticalSplitter(
     ImVec2 posFrom(pos);
     nanoem_f32_t thumbWidth = 10 * deviceScaleRatio;
     posFrom.x -= thumbWidth;
-    const ImVec2 posTo(posFrom.x + thumbWidth, posFrom.y + viewportHeight);
+    const ImVec2 posTo(posFrom.x + thumbWidth * 0.5f, posFrom.y + viewportHeight);
     if (m_lastTimelineWidth > 0) {
         if (ImGui::IsMouseDragging(ImGuiMouseButton_Left)) {
-            const nanoem_f32_t threshold = size.x * kTimelineSnapGridRatio;
+            const nanoem_f32_t snapThreshold = size.x * kTimelineSnapGridRatio;
             nanoem_f32_t width = glm::clamp(m_lastTimelineWidth + ImGui::GetMouseDragDelta().x,
                              size.x * kTimelineMinWidthRatio, size.x * kTimelineMaxWidthRatio),
                          delta = width - m_defaultTimelineWidth;
-            if (delta > -threshold && delta < threshold) {
+            if (delta > -snapThreshold && delta < snapThreshold) {
                 width = m_defaultTimelineWidth;
             }
             m_timelineWidth = width;
             m_timelineWidthRatio = width / size.x;
-            ImGui::GetWindowDrawList()->AddRectFilled(posFrom, posTo, IM_COL32(255, 255, 0, 255));
+            ImGui::GetWindowDrawList()->AddRectFilled(
+                posFrom, posTo, ImGui::ColorConvertFloat4ToU32(ImVec4(0.10f, 0.40f, 0.75f, 1.00f)));
         }
         else if (ImGui::IsMouseReleased(ImGuiMouseButton_Left)) {
             m_lastTimelineWidth = 0;
@@ -3903,7 +5193,8 @@ ImGuiWindow::handleVerticalSplitter(
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
             m_lastTimelineWidth = m_timelineWidth;
         }
-        ImGui::GetWindowDrawList()->AddRectFilled(posFrom, posTo, IM_COL32(0, 255, 0, 255));
+        ImGui::GetWindowDrawList()->AddRectFilled(
+            posFrom, posTo, ImGui::ColorConvertFloat4ToU32(ImVec4(0.10f, 0.40f, 0.75f, 0.78f)));
     }
 }
 
@@ -3971,13 +5262,14 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
     const Vector4 desiredWindowSize(dialog->desiredWindowSize(deviceScaleWindowSize, deviceScaleRatio));
     ImVec2 actualWindowPos(desiredWindowSize.x, desiredWindowSize.y),
         actualWindowSize(desiredWindowSize.z, desiredWindowSize.w);
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     const ImVec2 &viewportPosition = ImGui::GetMainViewport()->Pos;
     actualWindowPos.x += viewportPosition.x;
     actualWindowPos.y += viewportPosition.y;
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
     ImGui::SetNextWindowPos(actualWindowPos);
     ImGui::SetNextWindowSize(actualWindowSize);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, kWindowRounding * deviceScaleRatio);
     if (ImGui::BeginPopupModal(dialog->title(), nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
         const nanoem_u64_t buttons = dialog->buttons();
         dialog->draw(project);
@@ -4029,6 +5321,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
         }
         ImGui::EndPopup();
     }
+    ImGui::PopStyleVar();
     restoreDefaultStyle();
 }
 
@@ -4048,7 +5341,16 @@ ImGuiWindow::batchLazySetAllObjects(Project *project, bool seekable)
     if (seekable && m_allModalDialogs.empty()) {
         const ImGuiIO &io = ImGui::GetIO();
         const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-        if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_RightArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
+        if (Inline::isDebuggerPresent()) {
+            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow), false) &&
+                frameIndex < Motion::kMaxFrameIndex) {
+                project->seek(frameIndex + 1, false);
+            }
+            else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow), false) && frameIndex > 0) {
+                project->seek(frameIndex - 1, false);
+            }
+        }
+        else if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_RightArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
             frameIndex < Motion::kMaxFrameIndex) {
             project->seek(frameIndex + 1, false);
         }
@@ -4086,7 +5388,7 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
         m_pipelines.insert(tinystl::make_pair(hash, pipeline));
     }
     if (drawData->CmdListsCount > 0) {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
         const ImVec2 &displayPos = drawData->DisplayPos, &displaySize = drawData->DisplaySize;
         const nanoem_f32_t normalizedWidth = 1.0f / displaySize.x, normalizedHeight = 1.0f / displaySize.y;
         const ImVec4 viewportRect(
@@ -4291,56 +5593,57 @@ void
 ImGuiWindow::PrimitiveContext::strokeLine(
     const Vector2 &from, const Vector2 &to, const Vector4 &color, nanoem_f32_t thickness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 a(m_offset.x + from.x, m_offset.y + from.y), b(m_offset.x + to.x, m_offset.y + to.y);
-    ImGui::GetWindowDrawList()->AddLine(a, b, col, thickness * m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddLine(a, b, c, thickness * m_scaleFactor);
 }
 
 void
 ImGuiWindow::PrimitiveContext::strokeRect(
     const Vector4 &rect, const Vector4 &color, nanoem_f32_t roundness, nanoem_f32_t thickness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 a(m_offset.x + rect.x, m_offset.y + rect.y), b(a.x + rect.z, a.y + rect.w);
-    ImGui::GetWindowDrawList()->AddRect(a, b, col, roundness, ImDrawCornerFlags_All, thickness * m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddRect(a, b, c, roundness, ImDrawFlags_RoundCornersAll, thickness * m_scaleFactor);
 }
 
 void
 ImGuiWindow::PrimitiveContext::fillRect(const Vector4 &rect, const Vector4 &color, nanoem_f32_t roundness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 col(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 a(m_offset.x + rect.x, m_offset.y + rect.y), b(a.x + rect.z, a.y + rect.w);
-    ImGui::GetWindowDrawList()->AddRectFilled(a, b, col, roundness, ImDrawCornerFlags_All);
+    ImGui::GetWindowDrawList()->AddRectFilled(a, b, col, roundness, ImDrawFlags_RoundCornersAll);
 }
 
 void
 ImGuiWindow::PrimitiveContext::strokeCircle(const Vector4 &rect, const Vector4 &color, nanoem_f32_t thickness)
 {
     static const nanoem_f32_t kScaleFactor = 0.5f / glm::sqrt(2.0f);
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
-    ImGui::GetWindowDrawList()->AddCircle(center, radius, col, int(16.0f * m_scaleFactor), thickness *m_scaleFactor);
+    ImGui::GetWindowDrawList()->AddCircle(
+        center, radius, c, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
 }
 
 void
 ImGuiWindow::PrimitiveContext::fillCircle(const Vector4 &rect, const Vector4 &color)
 {
     static const nanoem_f32_t kScaleFactor = 0.5f / glm::sqrt(2.0f);
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
-    ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, col, int(16.0f * m_scaleFactor));
+    ImGui::GetWindowDrawList()->AddCircleFilled(center, radius, c, int(kDrawCircleSegmentCount * m_scaleFactor));
 }
 
 void
 ImGuiWindow::PrimitiveContext::strokeCurve(const Vector2 &a, const Vector2 &c0, const Vector2 &c1, const Vector2 &b,
     const Vector4 &color, nanoem_f32_t thickness)
 {
-    const ImU32 &col = ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w));
+    const ImU32 c(ImGui::ColorConvertFloat4ToU32(ImVec4(color.x, color.y, color.z, color.w)));
     ImGui::GetWindowDrawList()->AddBezierCubic(ImVec2(m_offset.x + a.x, m_offset.y + a.y),
         ImVec2(m_offset.x + c0.x, m_offset.y + c0.y), ImVec2(m_offset.x + c1.x, m_offset.y + c1.y),
-        ImVec2(m_offset.x + b.x, m_offset.y + b.y), col, thickness * m_scaleFactor);
+        ImVec2(m_offset.x + b.x, m_offset.y + b.y), c, thickness * m_scaleFactor);
 }
 
 void

@@ -150,7 +150,7 @@ MainWindow::initialize(HWND windowHandle, Error &error)
     }
     updateDisplayFrequency();
     const Vector2UI16 windowSize(
-        glm::vec2(BaseApplicationService::minimumRequiredWindowSize()) * glm::vec2(m_devicePixelRatio));
+        Vector2(BaseApplicationService::minimumRequiredWindowSize()) * Vector2(m_devicePixelRatio));
     String sokolPath(
         json_object_dotget_string(json_object(m_service->applicationConfiguration()), "win32.plugin.path"));
     const ApplicationPreference preference(m_service);
@@ -171,7 +171,7 @@ MainWindow::initialize(HWND windowHandle, Error &error)
         pixelFormat = SG_PIXELFORMAT_BGRA8;
     }
     if (result) {
-        m_logicalWindowSize = glm::vec2(windowSize) * invertedDevicePixelRatio();
+        m_logicalWindowSize = Vector2(windowSize) * invertedDevicePixelRatio();
         const ApplicationPreference preference(m_service);
         const ApplicationPreference::HighDPIViewportModeType mode = preference.highDPIViewportMode();
         ThreadedApplicationClient::InitializeMessageDescription desc(
@@ -366,6 +366,49 @@ MainWindow::saveFile(const URI &fileURI, IFileManager::DialogType type)
     m_client->sendSaveFileMessage(fileURI, type);
 }
 
+void
+MainWindow::exportImage()
+{
+    m_client->addCompleteExportImageConfigurationEventListener(
+        [](void *userData, const StringList &availableExtensions) {
+            if (!availableExtensions.empty()) {
+                auto self = static_cast<MainWindow *>(userData);
+                Dialog dialog(self->m_windowHandle);
+                Dialog::FilterList filters;
+                if (dialog.save("Exportable Image Format (*.%s)", availableExtensions,
+                        self->localizedString("nanoem.dialog.filename.untitled"))) {
+                    self->m_client->sendExecuteExportingImageMessage(dialog.fileURI());
+                }
+            }
+        },
+        this, true);
+    m_client->sendRequestExportImageConfigurationMessage();
+}
+
+void
+MainWindow::exportVideo()
+{
+    m_client->addAvailableAllExportingVideoExtensionsEvent(
+        [](void *userData, const StringList & /* extensions */) {
+            auto self = static_cast<MainWindow *>(userData);
+            self->m_client->addCompleteExportVideoConfigurationEventListener(
+                [](void *userData, const StringList &availableExtensions) {
+                    if (!availableExtensions.empty()) {
+                        auto self = static_cast<MainWindow *>(userData);
+                        Dialog dialog(self->m_windowHandle);
+                        if (dialog.save("Exportable Video Format (*.%s)", availableExtensions,
+                                self->localizedString("nanoem.dialog.filename.untitled"))) {
+                            self->m_client->sendExecuteExportingVideoMessage(dialog.fileURI());
+                        }
+                    }
+                },
+                self, true);
+            self->m_client->sendRequestExportVideoConfigurationMessage();
+        },
+        this, true);
+    m_client->sendLoadAllEncoderPluginsMessage(cachedAggregateAllPlugins());
+}
+
 LRESULT CALLBACK
 MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
@@ -395,7 +438,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
         if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
-            const glm::vec2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+            const Vector2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseDown(hwnd, coord, convertCursorType(msg, wparam));
         }
         break;
@@ -405,7 +448,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_RBUTTONUP:
     case WM_XBUTTONUP: {
         if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
-            const glm::vec2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
+            const Vector2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseUp(hwnd, coord, convertCursorType(msg, wparam));
         }
         break;
@@ -493,9 +536,13 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
             auto rect = reinterpret_cast<const RECT *>(lparam);
             const LONG width = rect->right - rect->left, height = rect->bottom - rect->top;
-            nanoem_f32_t devicePixelRatio = LOWORD(wparam) / Win32ThreadedApplicationService::kStandardDPIValue;
+            const nanoem_f32_t devicePixelRatio = LOWORD(wparam) / Win32ThreadedApplicationService::kStandardDPIValue,
+                               invertDevicePixelRatio = 1.0f / devicePixelRatio;
+            const Vector2UI32 newSize(width * invertDevicePixelRatio, height * invertDevicePixelRatio);
             self->m_devicePixelRatio = devicePixelRatio;
             self->m_client->sendChangeDevicePixelRatioMessage(devicePixelRatio);
+            self->m_client->sendResizeWindowMessage(newSize);
+            self->m_logicalWindowSize = newSize;
             SetWindowPos(hwnd, NULL, rect->left, rect->top, width, height, SWP_NOZORDER | SWP_NOACTIVATE);
         }
         break;
@@ -539,7 +586,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         }
         return DefWindowProcW(hwnd, msg, wparam, lparam);
     }
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     case Win32ThreadedApplicationService::ViewportData::kMessageTypeCreateWindow: {
         auto viewport = reinterpret_cast<const ImGuiViewport *>(wparam);
         if (auto userData = static_cast<Win32ThreadedApplicationService::ViewportData *>(viewport->PlatformUserData)) {
@@ -1432,10 +1479,16 @@ MainWindow::handleMouseDown(HWND hwnd, const Vector2SI32 &coord, int type)
 void
 MainWindow::handleMouseMove(HWND hwnd, const Vector2SI32 &coord, int type)
 {
-    const Vector2SI32 logicalPosition(Vector2(coord) * invertedDevicePixelRatio()),
-        delta = logicalPosition - m_lastLogicalCursorPosition;
+    const Vector2SI32 logicalPosition(Vector2(coord) * invertedDevicePixelRatio());
     const int modifiers = cursorModifiers();
+    Vector2SI32 delta(0);
     m_client->sendScreenCursorMoveMessage(devicePixelScreenPosition(hwnd, coord), type, modifiers);
+    if (m_disabledCursorState == kDisabledCursorStateInitial) {
+        m_disabledCursorState = kDisabledCursorStateMoving;
+    }
+    else {
+        delta = logicalPosition - lastLogicalCursorPosition();
+    }
     if (m_windowHandle == hwnd) {
         const Vector2SI32 virtualPosition(virtualLogicalCursorPosition(logicalPosition));
         m_client->sendCursorMoveMessage(virtualPosition, delta, 0, modifiers);
@@ -1691,42 +1744,47 @@ MainWindow::handleMenuItem(HWND hwnd, ApplicationMenuBuilder::MenuItemType menuT
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExportImage: {
-        m_client->addCompleteExportImageConfigurationEventListener(
-            [](void *userData, const StringList &availableExtensions) {
-                if (!availableExtensions.empty()) {
-                    auto self = static_cast<MainWindow *>(userData);
-                    Dialog dialog(self->m_windowHandle);
-                    Dialog::FilterList filters;
-                    if (dialog.save("Exportable Image Format (*.%s)", availableExtensions,
-                            self->localizedString("nanoem.dialog.filename.untitled"))) {
-                        self->m_client->sendExecuteExportingImageMessage(dialog.fileURI());
-                    }
-                }
+        m_client->addSaveProjectAfterConfirmEventListener(
+            [](void *userData) {
+                auto self = static_cast<MainWindow *>(userData);
+                self->m_client->addCompleteSavingFileEventListener(
+                    [](void *userData, const URI & /* fileURI */, uint32_t /* type */, uint64_t /* ticks */) {
+                        auto self = static_cast<MainWindow *>(userData);
+                        self->exportImage();
+                    },
+                    self, true);
+                self->saveProject();
             },
             this, true);
-        m_client->sendRequestExportImageConfigurationMessage();
+        m_client->addDiscardProjectAfterConfirmEventListener(
+            [](void *userData) {
+                auto self = static_cast<MainWindow *>(userData);
+                self->exportImage();
+            },
+            this, true);
+        m_client->sendConfirmBeforeExportingImageMessage();
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExportVideo: {
-        m_client->addAvailableAllExportingVideoExtensionsEvent(
-            [](void *userData, const StringList & /* extensions */) {
+        m_client->addSaveProjectAfterConfirmEventListener(
+            [](void *userData) {
                 auto self = static_cast<MainWindow *>(userData);
-                self->m_client->addCompleteExportVideoConfigurationEventListener(
-                    [](void *userData, const StringList &availableExtensions) {
-                        if (!availableExtensions.empty()) {
-                            auto self = static_cast<MainWindow *>(userData);
-                            Dialog dialog(self->m_windowHandle);
-                            if (dialog.save("Exportable Video Format (*.%s)", availableExtensions,
-                                    self->localizedString("nanoem.dialog.filename.untitled"))) {
-                                self->m_client->sendExecuteExportingVideoMessage(dialog.fileURI());
-                            }
-                        }
+                self->m_client->addCompleteSavingFileEventListener(
+                    [](void *userData, const URI & /* fileURI */, uint32_t /* type */, uint64_t /* ticks */) {
+                        auto self = static_cast<MainWindow *>(userData);
+                        self->exportVideo();
                     },
                     self, true);
-                self->m_client->sendRequestExportVideoConfigurationMessage();
+                self->saveProject();
             },
             this, true);
-        m_client->sendLoadAllEncoderPluginsMessage(cachedAggregateAllPlugins());
+        m_client->addDiscardProjectAfterConfirmEventListener(
+            [](void *userData) {
+                auto self = static_cast<MainWindow *>(userData);
+                self->exportVideo();
+            },
+            this, true);
+        m_client->sendConfirmBeforeExportingVideoMessage();
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExit: {
@@ -2152,8 +2210,8 @@ MainWindow::registerAllPrerequisiteEventListeners()
                     StringUtils::getMultiBytesString(userProfilePath, userProfileString);
                     std::string maskedPathString(value, StringUtils::length(value));
                     size_t startPos = 0, len = userProfileString.size() - 1;
-                    while ((startPos = maskedPathString.find(userProfileString.data(), startPos)) !=
-                        std::string::npos) {
+                    while (
+                        (startPos = maskedPathString.find(userProfileString.data(), startPos)) != std::string::npos) {
                         maskedPathString.replace(startPos, len, "{HOME}");
                         startPos += len;
                     }
@@ -2197,15 +2255,15 @@ MainWindow::registerAllPrerequisiteEventListeners()
         },
         this, false);
     m_client->addDisableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
+        [](void *userData, const Vector2SI32 &logicalCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            self->disableCursor(coord);
+            self->disableCursor(logicalCursorPosition);
         },
         this, false);
     m_client->addEnableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
+        [](void *userData, const Vector2SI32 &logicalCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            self->enableCursor(coord);
+            self->enableCursor(logicalCursorPosition);
         },
         this, false);
     m_client->addErrorEventListener(
@@ -2221,6 +2279,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
             if (dialog.open("", allowedExtensions)) {
                 self->m_client->sendQueryOpenSingleFileDialogMessage(types, dialog.fileURI());
             }
+            else {
+                self->m_client->sendQueryOpenSingleFileDialogMessage(types, URI());
+            }
         },
         this, false);
     m_client->addQueryOpenMultipleFilesDialogEventListener(
@@ -2231,14 +2292,21 @@ MainWindow::registerAllPrerequisiteEventListeners()
             if (dialog.open("", allowedExtensions)) {
                 self->m_client->sendQueryOpenMultipleFilesDialogMessage(types, fileURIs);
             }
+            else {
+                self->m_client->sendQueryOpenMultipleFilesDialogMessage(types, URIList());
+            }
         },
         this, false);
     m_client->addQuerySaveFileDialogEventListener(
         [](void *userData, uint32_t types, const StringList &allowedExtensions) {
             auto self = static_cast<MainWindow *>(userData);
             Dialog dialog(self->m_windowHandle);
-            if (dialog.open("", allowedExtensions)) {
+            if (dialog.save("Available Format (*.%s)", allowedExtensions,
+                    self->localizedString("nanoem.dialog.filename.untitled"))) {
                 self->m_client->sendQuerySaveFileDialogMessage(types, dialog.fileURI());
+            }
+            else {
+                self->m_client->sendQuerySaveFileDialogMessage(types, URI());
             }
         },
         this, false);
@@ -2374,7 +2442,7 @@ MainWindow::closeProgressDialog()
 Vector2SI32
 MainWindow::virtualLogicalCursorPosition(const Vector2SI32 &value) const
 {
-    return m_cursorHidden.first ? m_virtualLogicalCursorPosition : value;
+    return isCursorHidden() ? m_virtualLogicalCursorPosition : value;
 }
 
 Vector2SI32
@@ -2386,7 +2454,7 @@ MainWindow::lastLogicalCursorPosition() const
 bool
 MainWindow::isCursorHidden() const
 {
-    return m_cursorHidden.first;
+    return m_disabledCursorState != kDisabledCursorStateNone;
 }
 
 void
@@ -2444,20 +2512,21 @@ MainWindow::lockCursor(LPPOINT devicePoint)
 }
 
 void
-MainWindow::disableCursor(const Vector2SI32 &position)
+MainWindow::disableCursor(const Vector2SI32 &logicalCursorPosition)
 {
     POINT devicePoint;
     lockCursor(&devicePoint);
-    m_virtualLogicalCursorPosition = position;
-    m_lastLogicalCursorPosition = glm::vec2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio();
-    m_restoreHiddenDeviceCursorPosition = glm::vec2(position) * m_devicePixelRatio;
-    m_cursorHidden.first = true;
+    setLastLogicalCursorPosition(Vector2(devicePoint.x, devicePoint.y) * invertedDevicePixelRatio());
+    m_virtualLogicalCursorPosition = logicalCursorPosition;
+    m_restoreHiddenLogicalCursorPosition = logicalCursorPosition;
+    m_disabledCursorState = kDisabledCursorStateInitial;
 }
 
 void
-MainWindow::unlockCursor()
+MainWindow::unlockCursor(const Vector2SI32 &logicalCursorPosition)
 {
-    POINT devicePoint = { LONG(m_restoreHiddenDeviceCursorPosition.x), LONG(m_restoreHiddenDeviceCursorPosition.y) };
+    const Vector2 deviceCursorPosition(Vector2(logicalCursorPosition) * m_devicePixelRatio);
+    POINT devicePoint = { LONG(deviceCursorPosition.x), LONG(deviceCursorPosition.y) };
     setCursorPosition(devicePoint);
     ClipCursor(nullptr);
     ReleaseCapture();
@@ -2465,32 +2534,39 @@ MainWindow::unlockCursor()
 }
 
 void
-MainWindow::enableCursor(const Vector2SI32 & /* position */)
+MainWindow::enableCursor(const Vector2SI32 &logicalCursorPosition)
 {
-    unlockCursor();
-    m_lastLogicalCursorPosition = glm::vec2(m_restoreHiddenDeviceCursorPosition) * invertedDevicePixelRatio();
-    m_restoreHiddenDeviceCursorPosition = Vector2SI32();
-    m_cursorHidden.first = false;
+    Vector2SI32 position;
+    if (logicalCursorPosition.x != 0 && logicalCursorPosition.y != 0) {
+        position = logicalCursorPosition;
+    }
+    else {
+        position = m_restoreHiddenLogicalCursorPosition;
+    }
+    unlockCursor(position);
+    setLastLogicalCursorPosition(position);
+    m_restoreHiddenLogicalCursorPosition = Vector2SI32();
+    m_disabledCursorState = kDisabledCursorStateNone;
 }
 
 void
 MainWindow::setFocus()
 {
-    if (m_cursorHidden.second) {
+    if (m_disabledCursorResigned) {
         POINT devicePoint;
         lockCursor(&devicePoint);
-        m_cursorHidden.second = false;
-        m_cursorHidden.first = true;
+        m_disabledCursorState = kDisabledCursorStateInitial;
+        m_disabledCursorResigned = false;
     }
 }
 
 void
 MainWindow::killFocus()
 {
-    if (m_cursorHidden.first) {
-        unlockCursor();
-        m_cursorHidden.first = false;
-        m_cursorHidden.second = true;
+    if (isCursorHidden()) {
+        unlockCursor(Vector2SI32(0));
+        m_disabledCursorState = kDisabledCursorStateNone;
+        m_disabledCursorResigned = true;
     }
 }
 
@@ -2500,11 +2576,11 @@ MainWindow::recenterCursor()
     if (isCursorHidden()) {
         POINT deviceCenterPoint;
         getWindowCenterPoint(&deviceCenterPoint);
-        const Vector2SI32 &logicalCenterPoint =
-            glm::vec2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio();
-        if (m_lastLogicalCursorPosition != logicalCenterPoint) {
+        const Vector2SI32 logicalCenterPoint(
+            Vector2(deviceCenterPoint.x, deviceCenterPoint.y) * invertedDevicePixelRatio());
+        if (lastLogicalCursorPosition() != logicalCenterPoint) {
             setCursorPosition(deviceCenterPoint);
-            m_lastLogicalCursorPosition = logicalCenterPoint;
+            setLastLogicalCursorPosition(logicalCenterPoint);
         }
     }
 }
@@ -2527,19 +2603,19 @@ MainWindow::resizeWindow()
     RECT rect;
     GetClientRect(m_windowHandle, &rect);
     const nanoem_f32_t dpr = invertedDevicePixelRatio();
-    const Vector2UI32 windowSize((rect.right - rect.left) * dpr, (rect.bottom - rect.top) * dpr);
-    resizeWindow(windowSize);
+    const Vector2UI32 logicalWindowSize((rect.right - rect.left) * dpr, (rect.bottom - rect.top) * dpr);
+    resizeWindow(logicalWindowSize);
 }
 
 void
-MainWindow::resizeWindow(const Vector2UI32 &windowSize)
+MainWindow::resizeWindow(const Vector2UI32 &logicalWindowSize)
 {
-    if (m_logicalWindowSize != windowSize) {
-        m_client->sendResizeWindowMessage(windowSize);
+    if (m_logicalWindowSize != logicalWindowSize) {
+        m_client->sendResizeWindowMessage(logicalWindowSize);
         if (isCursorHidden()) {
             updateClipCursorRect();
         }
-        m_logicalWindowSize = windowSize;
+        m_logicalWindowSize = logicalWindowSize;
         DrawMenuBar(m_windowHandle);
     }
 }

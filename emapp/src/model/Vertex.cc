@@ -7,11 +7,22 @@
 #include "emapp/model/Vertex.h"
 
 #include "emapp/Constants.h"
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateSkinningEnabled = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
+    kPrivateStateReserved = 1 << 31,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespace anonymous */
 
 static BX_FORCE_INLINE void
 assignBone(Model *model, const nanoem_model_vertex_t *vertexPtr, nanoem_rsize_t i, model::Bone **bones)
@@ -31,23 +42,28 @@ void
 Vertex::bind(nanoem_model_vertex_t *vertexPtr)
 {
     nanoem_parameter_assert(vertexPtr, "must not be nullptr");
+    initialize(vertexPtr);
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+    nanoem_user_data_t *userData = nanoemUserDataCreate(&status);
+    nanoemUserDataSetOnDestroyModelObjectCallback(userData, &Vertex::destroy);
+    nanoemUserDataSetOpaqueData(userData, this);
+    nanoemModelObjectSetUserData(nanoemModelVertexGetModelObjectMutable(vertexPtr), userData);
+}
+
+void
+Vertex::initialize(const nanoem_model_vertex_t *vertexPtr)
+{
     const bx::simd128_t direction = bx::simd_ld(glm::value_ptr(Vector4(Constants::kTranslateDirection, 1)));
     m_simd.m_origin = bx::simd_mul(bx::simd_ld(nanoemModelVertexGetOrigin(vertexPtr)), direction);
     m_simd.m_normal = bx::simd_mul(bx::simd_ld(nanoemModelVertexGetNormal(vertexPtr)), direction);
     const nanoem_f32_t *texcoord = nanoemModelVertexGetTexCoord(vertexPtr);
     m_simd.m_texcoord = bx::simd_ld(Inline::fract(texcoord[0]), Inline::fract(texcoord[1]), texcoord[2], texcoord[3]);
-    m_simd.m_info =
-        bx::simd_ld(nanoemModelVertexGetEdgeSize(vertexPtr), nanoem_f32_t(nanoemModelVertexGetType(vertexPtr)),
-            nanoem_f32_t(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr))), /* needTransform */ 1);
-    m_simd.m_indices = bx::simd_ld(nanoem_f32_t(nanoemModelObjectGetIndex(
-                                       nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 0)))),
-        nanoem_f32_t(
-            nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 1)))),
-        nanoem_f32_t(
-            nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 2)))),
-        nanoem_f32_t(
-            nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertexPtr, 3)))));
+    m_simd.m_info = bx::simd_ld(nanoemModelVertexGetEdgeSize(vertexPtr),
+        nanoem_f32_t(nanoemModelVertexGetType(vertexPtr)), nanoem_f32_t(index(vertexPtr)), /* needTransform */ 1);
+    m_simd.m_indices = bx::simd_ld(nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 0))),
+        nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 1))),
+        nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 2))),
+        nanoem_f32_t(model::Bone::index(nanoemModelVertexGetBoneObject(vertexPtr, 3))));
     m_simd.m_weights =
         bx::simd_ld(nanoemModelVertexGetBoneWeight(vertexPtr, 0), nanoemModelVertexGetBoneWeight(vertexPtr, 1),
             nanoemModelVertexGetBoneWeight(vertexPtr, 2), nanoemModelVertexGetBoneWeight(vertexPtr, 3));
@@ -60,10 +76,6 @@ Vertex::bind(nanoem_model_vertex_t *vertexPtr)
     m_simd.m_deltaUVA[2] = bx::simd_zero();
     m_simd.m_deltaUVA[3] = bx::simd_zero();
     m_simd.m_deltaUVA[4] = bx::simd_zero();
-    nanoem_user_data_t *userData = nanoemUserDataCreate(&status);
-    nanoemUserDataSetOnDestroyModelObjectCallback(userData, &Vertex::destroy);
-    nanoemUserDataSetOpaqueData(userData, this);
-    nanoemModelObjectSetUserData(nanoemModelVertexGetModelObjectMutable(vertexPtr), userData);
 }
 
 void
@@ -92,6 +104,12 @@ Vertex::setupBoneBinding(nanoem_model_vertex_t *vertexPtr, Model *model)
     default:
         break;
     }
+}
+
+int
+Vertex::index(const nanoem_model_vertex_t *vertexPtr)
+{
+    return nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
 }
 
 Vertex *
@@ -162,13 +180,25 @@ Vertex::hasSoftBody() const NANOEM_DECL_NOEXCEPT
 bool
 Vertex::isSkinningEnabled() const NANOEM_DECL_NOEXCEPT
 {
-    return m_skinningEnabled;
+    return EnumUtils::isEnabled(kPrivateStateSkinningEnabled, m_states);
 }
 
 void
 Vertex::setSkinningEnabled(bool value)
 {
-    m_skinningEnabled = value;
+    EnumUtils::setEnabled(kPrivateStateSkinningEnabled, m_states, value);
+}
+
+bool
+Vertex::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+Vertex::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
 }
 
 void
@@ -208,7 +238,7 @@ Vertex::destroy(void *opaque, nanoem_model_object_t * /* vertex */) NANOEM_DECL_
 Vertex::Vertex(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_materialPtr(nullptr),
                                                                         m_softBodyPtr(nullptr),
                                                                         m_opaque(nullptr),
-                                                                        m_skinningEnabled(false)
+                                                                        m_states(kPrivateStateInitialValue)
 {
     m_bones[0] = m_bones[1] = m_bones[2] = m_bones[3] = nullptr;
 }

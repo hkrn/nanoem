@@ -97,7 +97,7 @@ OpenGLBackgroundRenderer::~OpenGLBackgroundRenderer() noexcept
 }
 
 void
-OpenGLBackgroundRenderer::draw(const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer)
+OpenGLBackgroundRenderer::draw(sg_pass pass, const Vector4 &rect, Project *project, CVPixelBufferRef pixelBuffer)
 {
     IOSurfaceRef currentSurface = CVPixelBufferGetIOSurface(pixelBuffer);
     if (currentSurface) {
@@ -108,7 +108,6 @@ OpenGLBackgroundRenderer::draw(const Vector4 &rect, Project *project, CVPixelBuf
         }
         m_rect = rect;
         IOSurfaceIncrementUseCount(currentSurface);
-        sg_pass pass = project->viewportPrimaryPass();
         sg_pass_action pa = {};
         sg::PassBlock block(project->sharedBatchDrawQueue(), pass, pa);
         block.registerCallback(

@@ -73,6 +73,7 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 
 @interface MainWindowOpenGLView : NSOpenGLView {
     macos::MainWindow *m_window;
+    NSTrackingArea *m_trackingArea;
 }
 
 - (instancetype)initWithFrame:(NSRect)frameRect
@@ -85,6 +86,7 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 
 @interface MainWindowMetalView : MTKView <NSTextInputClient> {
     macos::MainWindow *m_window;
+    NSTrackingArea *m_trackingArea;
 }
 
 - (instancetype)initWithFrame:(CGRect)frameRect device:(id<MTLDevice>)device mainWindow:(macos::MainWindow *)window;
@@ -103,6 +105,18 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
         m_window = window;
     }
     return self;
+}
+
+- (void)updateTrackingAreas
+{
+    if (m_trackingArea != nil) {
+        [self removeTrackingArea:m_trackingArea];
+    }
+    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow |
+        NSTrackingEnabledDuringMouseDrag | NSTrackingCursorUpdate | NSTrackingInVisibleRect | NSTrackingAssumeInside;
+    m_trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds options:options owner:self userInfo:nil];
+    [self addTrackingArea:m_trackingArea];
+    [super updateTrackingAreas];
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
@@ -140,6 +154,11 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 - (void)mouseUp:(NSEvent *)event
 {
     m_window->handleMouseUp(event);
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    m_window->handleMouseExit(event);
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -272,6 +291,18 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
     return self;
 }
 
+- (void)updateTrackingAreas
+{
+    if (m_trackingArea != nil) {
+        [self removeTrackingArea:m_trackingArea];
+    }
+    const NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited | NSTrackingActiveInKeyWindow |
+        NSTrackingEnabledDuringMouseDrag | NSTrackingCursorUpdate | NSTrackingInVisibleRect | NSTrackingAssumeInside;
+    m_trackingArea = [[NSTrackingArea alloc] initWithRect:self.bounds options:options owner:self userInfo:nil];
+    [self addTrackingArea:m_trackingArea];
+    [super updateTrackingAreas];
+}
+
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender
 {
     return handleDraggingEntered(sender);
@@ -307,6 +338,11 @@ handlePerformDragOperation(id<NSDraggingInfo> sender, macos::MainWindow *window)
 - (void)mouseUp:(NSEvent *)event
 {
     m_window->handleMouseUp(event);
+}
+
+- (void)mouseExited:(NSEvent *)event
+{
+    m_window->handleMouseExit(event);
 }
 
 - (void)rightMouseDown:(NSEvent *)event
@@ -508,7 +544,9 @@ MainWindow::initialize()
         id<MTLDevice> device = MTLCreateSystemDefaultDevice();
         initializeMetal(device, pixelFormat);
         pluginPath.append("/sokol_metal_macos.dylib");
+#ifdef NDEBUG
         isLowPower = device.lowPower == YES;
+#endif /* NDEBUG */
         m_textInputContext = [[NSTextInputContext alloc] initWithClient:m_nativeWindow.contentView];
     }
     else {
@@ -517,7 +555,7 @@ MainWindow::initialize()
     }
     const ApplicationPreference *preference = m_preference->applicationPreference();
     const CGSize &frameSize = m_nativeWindow.contentView.frame.size;
-    const glm::u16vec2 logicalWindowSize(frameSize.width, frameSize.height);
+    const Vector2UI16 logicalWindowSize(frameSize.width, frameSize.height);
     ThreadedApplicationClient::InitializeMessageDescription desc(
         logicalWindowSize, pixelFormat, m_nativeWindow.backingScaleFactor, pluginPath);
     ApplicationPreference::HighDPIViewportModeType highDPIViewportMode = preference->highDPIViewportMode();
@@ -633,15 +671,15 @@ MainWindow::markedRange() const noexcept
 NSRect
 MainWindow::firstRectForCharacterRange()
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
-    const glm::i32vec2 origin(m_service->textInputOrigin());
-    return NSMakeRect(origin.x, m_screenHeight - origin.y, 0, 0);
+#if defined(IMGUI_HAS_VIEWPORT)
+    const Vector2SI32 origin(m_service->textInputOrigin());
+    return NSMakeRect(origin.x, origin.y, 0, 0);
 #else
     const NSRect rect([m_nativeWindow contentRectForFrameRect:m_nativeWindow.frame]);
-    const glm::i32vec2 origin(m_service->textInputOrigin());
+    const Vector2SI32 origin(m_service->textInputOrigin());
     CGFloat x = rect.origin.x + origin.x, y = rect.origin.y + rect.size.height - origin.y;
     return NSMakeRect(x, y, 0, 0);
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
 }
 
 bool
@@ -659,28 +697,22 @@ MainWindow::hasMarkedText() const noexcept
 void
 MainWindow::handleAssignFocus()
 {
-    if (m_cursorHidden.second) {
-        glm::i32vec2 centerPoint;
+    if (m_disabledCursorResigned) {
+        Vector2SI32 centerPoint;
         internalDisableCursor(centerPoint);
-        m_cursorHidden.second = false;
-        m_cursorHidden.first = true;
+        m_disabledCursorResigned = false;
+        m_disabledCursorState = kDisabledCursorStateInitial;
     }
 }
 
 void
 MainWindow::handleResignFocus()
 {
-    if (m_cursorHidden.first) {
-        internalEnableCursor(m_restoreHiddenCursorPosition);
-        m_cursorHidden.first = false;
-        m_cursorHidden.second = true;
+    if (m_disabledCursorState != kDisabledCursorStateNone) {
+        internalEnableCursor(m_restoreHiddenLogicalCursorPosition);
+        m_disabledCursorState = kDisabledCursorStateNone;
+        m_disabledCursorResigned = true;
     }
-}
-
-void
-MainWindow::handleScreenChange()
-{
-    m_screenHeight = [NSScreen mainScreen].frame.size.height;
 }
 
 void
@@ -688,7 +720,7 @@ MainWindow::handleWindowResize()
 {
     resizeDrawableSize();
     const NSSize size = m_nativeWindow.contentView.bounds.size;
-    m_client->sendResizeWindowMessage(glm::u32vec2(size.width, size.height));
+    m_client->sendResizeWindowMessage(Vector2UI32(size.width, size.height));
 }
 
 void
@@ -701,30 +733,30 @@ MainWindow::handleWindowChangeDevicePixelRatio()
 void
 MainWindow::handleMouseDown(const NSEvent *event)
 {
-    glm::i32vec2 cursor, delta;
-    if (getCursorPosition(event, cursor, delta)) {
+    Vector2SI32 position, delta;
+    if (getLogicalCursorPosition(event, position, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
-        m_client->sendScreenCursorPressMessage(devicePixelScreenPosition(event), button, modifiers);
+        m_client->sendScreenCursorPressMessage(deviceScaleScreenPosition(event), button, modifiers);
         if (event.window == m_nativeWindow) {
-            m_client->sendCursorPressMessage(cursor, button, modifiers);
+            m_client->sendCursorPressMessage(position, button, modifiers);
         }
-        setLastCursorPosition(cursor);
+        setLastLogicalCursorPosition(position);
     }
 }
 
 void
 MainWindow::handleMouseMoved(const NSEvent *event)
 {
-    glm::i32vec2 cursor, delta;
-    if (getCursorPosition(event, cursor, delta)) {
+    Vector2SI32 position, delta;
+    if (getLogicalCursorPosition(event, position, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
-        m_client->sendScreenCursorMoveMessage(devicePixelScreenPosition(event), button, modifiers);
+        m_client->sendScreenCursorMoveMessage(deviceScaleScreenPosition(event), button, modifiers);
         if (event.window == m_nativeWindow) {
-            m_client->sendCursorMoveMessage(cursor, delta, button, modifiers);
+            m_client->sendCursorMoveMessage(position, delta, button, modifiers);
         }
-        setLastCursorPosition(cursor, delta);
+        setLastLogicalCursorPosition(position, delta);
     }
 }
 
@@ -737,16 +769,22 @@ MainWindow::handleMouseDragged(const NSEvent *event)
 void
 MainWindow::handleMouseUp(const NSEvent *event)
 {
-    glm::i32vec2 cursor, delta;
-    if (getCursorPosition(event, cursor, delta)) {
+    Vector2SI32 position, delta;
+    if (getLogicalCursorPosition(event, position, delta)) {
         const int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event),
                   button = [event buttonNumber];
-        m_client->sendScreenCursorReleaseMessage(devicePixelScreenPosition(event), button, modifiers);
+        m_client->sendScreenCursorReleaseMessage(deviceScaleScreenPosition(event), button, modifiers);
         if (event.window == m_nativeWindow) {
-            m_client->sendCursorReleaseMessage(cursor, button, modifiers);
+            m_client->sendCursorReleaseMessage(position, button, modifiers);
         }
-        setLastCursorPosition(Vector2());
+        setLastLogicalCursorPosition(Vector2());
     }
+}
+
+void
+MainWindow::handleMouseExit(const NSEvent *event)
+{
+    handleMouseUp(event);
 }
 
 void
@@ -809,11 +847,11 @@ MainWindow::handleKeyUp(NSEvent *event)
 void
 MainWindow::handleScrollWheel(const NSEvent *event)
 {
-    glm::i32vec2 mouseCursor, mouseDelta;
-    if (getCursorPosition(event, mouseCursor, mouseDelta)) {
+    Vector2SI32 position, delta;
+    if (getLogicalCursorPosition(event, position, delta)) {
         const Vector2 scrollDelta(CocoaThreadedApplicationService::scrollWheelDelta(event));
         int modifiers = CocoaThreadedApplicationService::convertToCursorModifiers(event);
-        m_client->sendCursorScrollMessage(mouseCursor, scrollDelta, modifiers);
+        m_client->sendCursorScrollMessage(position, scrollDelta, modifiers);
     }
 }
 
@@ -932,7 +970,7 @@ MainWindow::confirmBeforeClose()
 void
 MainWindow::clearTitle()
 {
-    m_nativeWindow.title = @"nanoem";
+    m_nativeWindow.title = CocoaThreadedApplicationService::kDefaultWindowTitle;
 }
 
 void
@@ -944,7 +982,8 @@ MainWindow::setTitle(NSURL *fileURL)
 void
 MainWindow::setTitle(NSString *lastPathComponent)
 {
-    NSString *title = [[NSString alloc] initWithFormat:@"%@ - nanoem", lastPathComponent];
+    NSString *title = [[NSString alloc]
+        initWithFormat:@"%@ - %@", lastPathComponent, CocoaThreadedApplicationService::kDefaultWindowTitle];
     m_nativeWindow.title = title;
 }
 
@@ -1319,10 +1358,10 @@ MainWindow::handleRemovingWatchEffectSource(void *userData, uint16_t handle, con
     self->resetWatchEffectSource();
 }
 
-glm::i32vec2
-MainWindow::devicePixelScreenPosition(const NSEvent *event) noexcept
+Vector2SI32
+MainWindow::deviceScaleScreenPosition(const NSEvent *event) noexcept
 {
-    return CocoaThreadedApplicationService::devicePixelScreenPosition(event, m_nativeWindow, m_screenHeight);
+    return CocoaThreadedApplicationService::deviceScaleScreenPosition(event, m_nativeWindow);
 }
 
 float
@@ -1409,7 +1448,7 @@ MainWindow::initializeOpenGL()
 }
 
 void
-MainWindow::getWindowCenterPoint(glm::i32vec2 *value)
+MainWindow::getWindowCenterPoint(Vector2SI32 *value)
 {
     const NSRect &rect = m_nativeWindow.contentView.frame;
     value->x = rect.size.width * 0.5f;
@@ -1417,18 +1456,25 @@ MainWindow::getWindowCenterPoint(glm::i32vec2 *value)
 }
 
 bool
-MainWindow::getCursorPosition(const NSEvent *event, glm::i32vec2 &position, glm::i32vec2 &delta)
+MainWindow::getLogicalCursorPosition(const NSEvent *event, Vector2SI32 &position, Vector2SI32 &delta)
 {
-    bool result = false;
-    if (m_cursorHidden.first) {
-        position = m_virtualCursorPosition;
-        delta = Vector2(event.deltaX, event.deltaY);
-        result = true;
+    bool result = true;
+    /* prevent generating warped cursor delta values */
+    if (m_disabledCursorState == kDisabledCursorStateInitial) {
+        position = m_virtualLogicalCursorPosition;
+        delta = Vector2SI32(0);
+        m_disabledCursorState = kDisabledCursorStateMoving;
+    }
+    else if (m_disabledCursorState == kDisabledCursorStateMoving) {
+        position = m_virtualLogicalCursorPosition;
+        delta = Vector2SI32(event.deltaX, event.deltaY);
     }
     else if ([m_nativeWindow isKeyWindow]) {
-        position = cursorLocationInWindow(event);
-        delta = position - m_lastCursorPosition;
-        result = true;
+        position = logicalCursorLocationInWindow(event);
+        delta = position - m_lastLogicalCursorPosition;
+    }
+    else {
+        result = false;
     }
     return result;
 }
@@ -1436,17 +1482,17 @@ MainWindow::getCursorPosition(const NSEvent *event, glm::i32vec2 &position, glm:
 void
 MainWindow::recenterCursorPosition()
 {
-    if (m_cursorHidden.first) {
-        glm::i32vec2 value;
+    if (m_disabledCursorState != kDisabledCursorStateNone) {
+        Vector2SI32 value;
         getWindowCenterPoint(&value);
-        if (m_lastCursorPosition != value) {
-            m_lastCursorPosition = value;
+        if (m_lastLogicalCursorPosition != value) {
+            m_lastLogicalCursorPosition = value;
         }
     }
 }
 
 Vector2
-MainWindow::cursorLocationInWindow(const NSEvent *event) const
+MainWindow::logicalCursorLocationInWindow(const NSEvent *event) const
 {
     const NSRect &rect = [m_nativeWindow contentRectForFrameRect:m_nativeWindow.frame];
     const NSPoint &location = event.locationInWindow;
@@ -1456,46 +1502,50 @@ MainWindow::cursorLocationInWindow(const NSEvent *event) const
 }
 
 Vector2
-MainWindow::lastCursorPosition() const
+MainWindow::lastLogicalCursorPosition() const
 {
-    return m_lastCursorPosition;
+    return m_lastLogicalCursorPosition;
 }
 
 void
-MainWindow::setLastCursorPosition(const glm::i32vec2 &value)
+MainWindow::setLastLogicalCursorPosition(const Vector2SI32 &value)
 {
-    m_lastCursorPosition = value;
+    m_lastLogicalCursorPosition = value;
 }
 
 void
-MainWindow::setLastCursorPosition(const glm::i32vec2 &value, const glm::i32vec2 &delta)
+MainWindow::setLastLogicalCursorPosition(const Vector2SI32 &value, const Vector2SI32 &delta)
 {
-    m_virtualCursorPosition += delta;
-    m_lastCursorPosition = value;
+    m_virtualLogicalCursorPosition += delta;
+    m_lastLogicalCursorPosition = value;
 }
 
 void
-MainWindow::disableCursor(const glm::i32vec2 &position)
+MainWindow::disableCursor(const Vector2SI32 &logicalCursorPosition)
 {
-    glm::i32vec2 centerPoint;
+    Vector2SI32 centerPoint;
     internalDisableCursor(centerPoint);
-    m_virtualCursorPosition = position;
-    m_lastCursorPosition = centerPoint;
-    m_restoreHiddenCursorPosition = position;
-    m_cursorHidden.first = true;
+    m_virtualLogicalCursorPosition = logicalCursorPosition;
+    m_lastLogicalCursorPosition = centerPoint;
+    m_restoreHiddenLogicalCursorPosition = logicalCursorPosition;
+    m_disabledCursorState = kDisabledCursorStateInitial;
 }
 
 void
-MainWindow::enableCursor(const glm::i32vec2 &position)
+MainWindow::enableCursor(const Vector2SI32 &logicalCursorPosition)
 {
-    BX_UNUSED_1(position);
-    internalEnableCursor(m_restoreHiddenCursorPosition);
-    m_restoreHiddenCursorPosition = glm::i32vec2();
-    m_cursorHidden.first = false;
+    if (logicalCursorPosition.x != 0 && logicalCursorPosition.y != 0) {
+        internalEnableCursor(logicalCursorPosition);
+    }
+    else {
+        internalEnableCursor(m_restoreHiddenLogicalCursorPosition);
+    }
+    m_restoreHiddenLogicalCursorPosition = Vector2SI32();
+    m_disabledCursorState = kDisabledCursorStateNone;
 }
 
 void
-MainWindow::internalDisableCursor(glm::i32vec2 &centerLocation)
+MainWindow::internalDisableCursor(Vector2SI32 &centerLocation)
 {
     [NSCursor hide];
     getWindowCenterPoint(&centerLocation);
@@ -1503,13 +1553,15 @@ MainWindow::internalDisableCursor(glm::i32vec2 &centerLocation)
 }
 
 void
-MainWindow::internalEnableCursor(const glm::i32vec2 &location)
+MainWindow::internalEnableCursor(const Vector2SI32 &logicalCursorPocation)
 {
+    const CGDirectDisplayID displayID = CGMainDisplayID();
     const CGFloat viewHeight = m_nativeWindow.contentView.frame.size.height,
-                  displayHeight = CGDisplayBounds(CGMainDisplayID()).size.height;
-    const NSRect &rect = [m_nativeWindow convertRectToScreen:NSMakeRect(location.x, viewHeight - location.y, 0, 0)];
+                  displayHeight = CGDisplayBounds(displayID).size.height;
+    const NSRect &rect = [m_nativeWindow
+        convertRectToScreen:NSMakeRect(logicalCursorPocation.x, viewHeight - logicalCursorPocation.y, 0, 0)];
     CGAssociateMouseAndMouseCursorPosition(true);
-    CGWarpMouseCursorPosition(CGPointMake(rect.origin.x, displayHeight - rect.origin.y));
+    CGDisplayMoveCursorToPoint(displayID, CGPointMake(rect.origin.x, displayHeight - rect.origin.y));
     [NSCursor unhide];
 }
 
@@ -1519,7 +1571,6 @@ MainWindow::registerAllPrerequisiteEventListeners()
     m_client->addInitializationCompleteEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
-            self->m_screenHeight = [NSScreen mainScreen].frame.size.height;
             dispatch_async(self->m_metricsQueue, ^() {
                 self->sendPerformanceMonitorPeriodically();
             });
@@ -1589,7 +1640,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                 BaseApplicationService::SentryDescription desc;
                 NSString *clientUUID = self->m_preference->clientUUID();
                 desc.m_clientUUID = clientUUID.UTF8String;
-                desc.m_databaseDirectoryPath =json_object_dotget_string(config, "macos.sentry.database.path");
+                desc.m_databaseDirectoryPath = json_object_dotget_string(config, "macos.sentry.database.path");
                 desc.m_deviceModelName = hardwareModelName;
                 desc.m_dllFilePath = libSentryDllURL.path.UTF8String;
                 desc.m_dsn = sentryDSN;
@@ -1636,6 +1687,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                 self->m_client->sendLoadAllModelPluginsMessage(plugins);
                 self->m_client->sendLoadAllMotionPluginsMessage(plugins);
             });
+#ifdef NANOEM_ENABLE_DEBUG_LABEL
             const bx::CommandLine *cmd = self->m_commandLine;
             if (cmd->hasArg("bootstrap-project-from-clipboard")) {
                 URIList plugins;
@@ -1647,7 +1699,8 @@ MainWindow::registerAllPrerequisiteEventListeners()
                 self->m_client->sendLoadAllDecoderPluginsMessage(plugins);
                 for (NSString *item in fileURLs) {
                     NSString *trimmedItem = [item stringByTrimmingCharactersInSet:characterSet];
-                    const URI &fileURI = URI::createFromFilePath(trimmedItem.UTF8String);
+                    NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:trimmedItem];
+                    const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(fileURL));
                     self->m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
                     NSString *path = [[NSString alloc] initWithUTF8String:fileURI.absolutePathConstString()];
                     self->setTitle([[NSURL alloc] initFileURLWithPath:path]);
@@ -1656,7 +1709,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
             else if (cmd->hasArg("bootstrap-project")) {
                 URIList plugins;
                 CocoaApplicationMenuBuilder::aggregateAllPlugins(plugins);
-                const URI &fileURI = URI::createFromFilePath(cmd->findOption("bootstrap-project"));
+                NSString *filePath = [[NSString alloc] initWithUTF8String:cmd->findOption("bootstrap-project")];
+                NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:filePath];
+                const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(fileURL));
                 self->m_client->sendLoadAllDecoderPluginsMessage(plugins);
                 if (FileUtils::exists(fileURI)) {
                     self->m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
@@ -1695,6 +1750,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                     self->m_client->sendRecoveryMessage(fileURI);
                 }
             }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
             self->m_client->sendActivateMessage();
         },
         this, true);
@@ -1710,13 +1766,13 @@ MainWindow::registerAllPrerequisiteEventListeners()
         },
         this, false);
     m_client->addDisableCursorEventListener(
-        [](void *userData, const glm::i32vec2 &coord) {
+        [](void *userData, const Vector2SI32 &logicalCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            self->disableCursor(coord);
+            self->disableCursor(logicalCursorPosition);
         },
         this, false);
     m_client->addEnableCursorEventListener(
-        [](void *userData, const glm::i32vec2 &coord) {
+        [](void *userData, const Vector2SI32 &coord) {
             auto self = static_cast<MainWindow *>(userData);
             self->enableCursor(coord);
         },
@@ -1739,6 +1795,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
                               if (result == NSModalResponseOK) {
                                   const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(panel.URL));
                                   self->m_client->sendQueryOpenSingleFileDialogMessage(type, fileURI);
+                              }
+                              else {
+                                  self->m_client->sendQueryOpenSingleFileDialogMessage(type, URI());
                               }
                           }];
         },
@@ -1773,6 +1832,9 @@ MainWindow::registerAllPrerequisiteEventListeners()
                               if (result == NSModalResponseOK) {
                                   const URI fileURI(CocoaThreadedApplicationService::canonicalFileURI(panel.URL));
                                   self->m_client->sendQuerySaveFileDialogMessage(type, fileURI);
+                              }
+                              else {
+                                  self->m_client->sendQuerySaveFileDialogMessage(type, URI());
                               }
                           }];
         },

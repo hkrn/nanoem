@@ -79,18 +79,33 @@ public:
     Image();
     ~Image();
 
+    void create();
+    void destroy();
+    void setOriginData(const nanoem_u8_t *data, nanoem_rsize_t size);
+    void setMipmapData(nanoem_rsize_t index, const nanoem_u8_t *data, nanoem_rsize_t size);
+    void resizeMipmapData(nanoem_rsize_t value);
+    void setLabel(const String &value);
+
     sg_image handle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setHandle(sg_image value);
     sg_image_desc description() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setDescription(const sg_image_desc &value);
     const ByteArray *originData() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     const ByteArray *mipmapData(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     const char *filenameConstString() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     String filename() const NANOEM_DECL_OVERRIDE;
+    void setFilename(const String &value);
+    bool isFileExist() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setFileExist(bool value);
 
+private:
     String m_filename;
+    String m_label;
     sg_image m_handle;
     sg_image_desc m_description;
     ByteArray m_originData;
     ByteArrayList m_mipmapData;
+    bool m_fileExist;
 };
 
 class ImageLoader NANOEM_DECL_SEALED : private NonCopyable {
@@ -119,8 +134,8 @@ public:
     ImageLoader(const Project *project);
     ~ImageLoader();
 
-    sg_image *load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_u32_t flags, Error &error);
-    sg_image *decode(const ByteArray &bytes, const String &filename, IDrawable *drawable, sg_wrap wrap,
+    IImageView *load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_u32_t flags, Error &error);
+    IImageView *decode(const ByteArray &bytes, const String &filename, IDrawable *drawable, sg_wrap wrap,
         nanoem_u32_t flags, Error &error);
 
 private:
@@ -169,7 +184,7 @@ private:
         const int m_anisotropy;
         const nanoem_u32_t m_flags;
     };
-    static sg_image *decodeImageContainer(
+    static IImageView *decodeImageContainer(
         const ImmutableImageContainer &textureData, IDrawable *drawable, Error &error);
     static void generateMipmapImagesRGBA32F(const bimg::ImageContainer *container, int numMips, bool flip,
         ByteArrayList &mipmapPayloads, sg_image_desc &descRef);

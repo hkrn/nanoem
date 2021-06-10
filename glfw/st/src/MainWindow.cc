@@ -17,7 +17,6 @@
 #include "GLFW/glfw3.h"
 
 #include "bx/os.h"
-#include "nfd.h"
 
 namespace nanoem {
 namespace glfw {
@@ -50,69 +49,30 @@ MainWindow::MainWindow(GLFWApplicationService *service, GLFWApplicationClient *c
     : m_service(service)
     , m_client(client)
 {
-    m_client->addQueryOpenSingleFileDialogEventListener(
-        [](void *userData, nanoem_u32_t types, const StringList &allowedExtensions) {
-            auto self = static_cast<MainWindow *>(userData);
-            nfdchar_t *outPath = nullptr;
-            String filter;
-            buildFileFilter(allowedExtensions, filter);
-            if (NFD_OpenDialog(filter.c_str(), nullptr, &outPath) == NFD_OKAY) {
-                String canonicalizedPath;
-                FileUtils::canonicalizePathSeparator(outPath, canonicalizedPath);
-                const URI &fileURI = URI::createFromFilePath(canonicalizedPath);
-                self->setTitle(fileURI);
-                self->m_client->sendLoadFileMessage(fileURI, types);
-            }
-            free(outPath);
-        },
-        this, false);
-    m_client->addQueryOpenMultipleFilesDialogEventListener(
-        [](void *userData, nanoem_u32_t types, const StringList &allowedExtensions) {
-            auto self = static_cast<MainWindow *>(userData);
-            nfdpathset_t outPaths;
-            String filter;
-            buildFileFilter(allowedExtensions, filter);
-            if (NFD_OpenDialogMultiple(filter.c_str(), nullptr, &outPaths) == NFD_OKAY) {
-                String canonicalizedPath;
-                for (size_t i = 0, count = NFD_PathSet_GetCount(&outPaths); i < count; i++) {
-                    nfdchar_t *path = NFD_PathSet_GetPath(&outPaths, i);
-                    FileUtils::canonicalizePathSeparator(path, canonicalizedPath);
-                    const URI &fileURI = URI::createFromFilePath(canonicalizedPath);
-                    self->setTitle(fileURI);
-                    self->m_client->sendLoadFileMessage(fileURI, types);
-                }
-                NFD_PathSet_Free(&outPaths);
-            }
-        },
-        this, false);
-    m_client->addQuerySaveFileDialogEventListener(
-        [](void *userData, nanoem_u32_t types, const StringList &allowedExtensions) {
-            auto self = static_cast<MainWindow *>(userData);
-            nfdchar_t *outPath = nullptr;
-            String filter;
-            buildFileFilter(allowedExtensions, filter);
-            if (NFD_SaveDialog(filter.c_str(), nullptr, &outPath) == NFD_OKAY) {
-                String canonicalizedPath;
-                FileUtils::canonicalizePathSeparator(outPath, canonicalizedPath);
-                const URI &fileURI = URI::createFromFilePath(canonicalizedPath);
-                self->setTitle(fileURI);
-                self->m_client->sendSaveFileMessage(fileURI, types);
-            }
-            free(outPath);
-        },
-        this, false);
     m_client->addDisableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
-            BX_UNUSED_1(coord);
+        [](void *userData, const Vector2SI32 &logicalScaleCursorPosition) {
+            BX_UNUSED_1(logicalScaleCursorPosition);
             auto self = static_cast<MainWindow *>(userData);
             glfwSetInputMode(self->m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         },
         this, false);
     m_client->addEnableCursorEventListener(
-        [](void *userData, const Vector2SI32 &coord) {
-            BX_UNUSED_1(coord);
+        [](void *userData, const Vector2SI32 &logicalScaleCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
-            glfwSetInputMode(self->m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            GLFWwindow *window = self->m_window;
+            glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            if (logicalScaleCursorPosition.x != 0 && logicalScaleCursorPosition.y != 0) {
+                Vector2 contentScale;
+                glfwGetWindowContentScale(window, &contentScale.x, &contentScale.y);
+                const Vector2 deviceScaleCursorPosition(Vector2(logicalScaleCursorPosition) * contentScale);
+                glfwSetCursorPos(window, deviceScaleCursorPosition.x, deviceScaleCursorPosition.y);
+            }
+        },
+        this, false);
+    m_client->addQuitApplicationEventListener(
+        [](void *userData) {
+            auto self = static_cast<MainWindow *>(userData);
+            handleCloseCallback(self->m_window);
         },
         this, false);
 }
@@ -159,7 +119,7 @@ MainWindow::initialize()
                 desc.m_handlerFilePath = json_object_dotget_string(config, "glfw.sentry.handler.path");
                 desc.m_isModelEditingEnabled = preference.isModelEditingEnabled();
                 desc.m_localeName = json_object_dotget_string(config, "project.locale");
-                desc.m_maskString = [](const char* value) { return sentry_value_new_string(value); };
+                desc.m_maskString = [](const char *value) { return sentry_value_new_string(value); };
                 desc.m_rendererName = nullptr;
                 desc.m_transportSendEnvelope = nullptr;
                 desc.m_transportUserData = nullptr;
@@ -223,7 +183,7 @@ MainWindow::handleCloseCallback(GLFWwindow *window)
                                 self->destroyWindow();
                             },
                             self, true);
-                        self->saveProject();
+                        self->m_client->sendSaveProjectMessage();
                     },
                     self, true);
                 client->addDiscardProjectAfterConfirmEventListener(
@@ -258,9 +218,9 @@ void
 MainWindow::handleCursorCallback(GLFWwindow *window, double xpos, double ypos)
 {
     auto self = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
-    const Vector2SI32 position(GLFWApplicationService::scaleCursorCoordinate(xpos, ypos, window)),
+    const Vector2SI32 position(GLFWApplicationService::logicalScaleCursorPosition(xpos, ypos, window)),
         delta(position - self->m_lastCursorPosition),
-        screenPosition(GLFWApplicationService::devicePixelScreenPosition(window, position));
+        screenPosition(GLFWApplicationService::deviceScaleCursorPosition(xpos, ypos, window));
     self->m_client->sendScreenCursorMoveMessage(
         screenPosition, self->m_pressedCursorType, self->m_pressedCursorModifiers);
     self->m_client->sendCursorMoveMessage(position, delta, self->m_pressedCursorType, self->m_pressedCursorModifiers);
@@ -273,8 +233,8 @@ MainWindow::handleMouseButtonCallback(GLFWwindow *window, int button, int action
     auto self = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    const Vector2SI32 position(GLFWApplicationService::scaleCursorCoordinate(xpos, ypos, window)),
-        screenPosition(GLFWApplicationService::devicePixelScreenPosition(window, position));
+    const Vector2SI32 position(GLFWApplicationService::logicalScaleCursorPosition(xpos, ypos, window)),
+        screenPosition(GLFWApplicationService::deviceScaleCursorPosition(xpos, ypos, window));
     int cursorModifiers = GLFWApplicationService::convertCursorModifier(mods),
         cursorType = GLFWApplicationService::convertCursorType(button);
     switch (action) {
@@ -304,7 +264,7 @@ MainWindow::handleScrollCallback(GLFWwindow *window, double x, double y)
     auto self = static_cast<MainWindow *>(glfwGetWindowUserPointer(window));
     double xpos, ypos;
     glfwGetCursorPos(window, &xpos, &ypos);
-    const Vector2SI32 position(GLFWApplicationService::scaleCursorCoordinate(xpos, ypos, window)), delta(x, y);
+    const Vector2SI32 position(GLFWApplicationService::logicalScaleCursorPosition(xpos, ypos, window)), delta(x, y);
     self->m_client->sendCursorScrollMessage(position, delta, 0);
 }
 
@@ -415,51 +375,6 @@ MainWindow::setupWindow(String &pluginPath)
         gl3wInit();
     }
     return m_window != nullptr;
-}
-
-void
-MainWindow::saveProject()
-{
-    m_client->sendGetProjectFileURIRequestMessage(
-        [](void *userData, const URI &fileURI) {
-            auto self = static_cast<MainWindow *>(userData);
-            const String &pathExtension = fileURI.pathExtension();
-            if (!fileURI.isEmpty() &&
-                (pathExtension == String(Project::kArchivedNativeFormatFileExtension) ||
-                    pathExtension == String(Project::kFileSystemBasedNativeFormatFileExtension))) {
-                self->saveFile(fileURI, IFileManager::kDialogTypeSaveProjectFile);
-            }
-            else {
-                self->saveProjectAs();
-            }
-        },
-        this);
-}
-
-void
-MainWindow::saveProjectAs()
-{
-    StringList allowedExtensions;
-    allowedExtensions.push_back(Project::kArchivedNativeFormatFileExtension);
-    allowedExtensions.push_back(Project::kFileSystemBasedNativeFormatFileExtension);
-    String filter;
-    buildFileFilter(allowedExtensions, filter);
-    nfdchar_t *outPath = nullptr;
-    if (NFD_SaveDialog(filter.c_str(), nullptr, &outPath) == NFD_OKAY) {
-        const URI fileURI(URI::createFromFilePath(outPath));
-        setTitle(fileURI);
-        saveFile(fileURI, IFileManager::kDialogTypeSaveProjectFile);
-    }
-    else {
-        m_client->clearAllCompleteSavingFileOnceEventListeners();
-    }
-    free(outPath);
-}
-
-void
-MainWindow::saveFile(const URI &fileURI, IFileManager::DialogType type)
-{
-    m_client->sendSaveFileMessage(fileURI, type);
 }
 
 void

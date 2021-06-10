@@ -25,6 +25,11 @@ public:
     typedef tinystl::unordered_set<const nanoem_model_soft_body_t *, TinySTLAllocator> Set;
     typedef tinystl::unordered_set<nanoem_model_soft_body_t *, TinySTLAllocator> MutableSet;
 
+    static int index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static SoftBody *cast(const nanoem_model_soft_body_t *softBodyPtr);
     static SoftBody *create();
 
@@ -51,6 +56,8 @@ public:
     const char *canonicalNameConstString() const NANOEM_DECL_NOEXCEPT;
     PhysicsEngine *physicsEngine() const NANOEM_DECL_NOEXCEPT;
     nanoem_physics_soft_body_t *physicsSoftBody() const NANOEM_DECL_NOEXCEPT;
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
 private:
     struct PlaceHolder {
@@ -69,6 +76,7 @@ private:
     nanoem_physics_soft_body_t *m_physicsSoftBody;
     String m_name;
     String m_canonicalName;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

@@ -40,6 +40,7 @@ CameraParametersDialog::draw(Project *project)
         if (lookAtChanged) {
             m_camera->setLookAt(lookAt);
             m_camera->update();
+            project->resetAllModelEdges();
         }
         ImGui::TextUnformatted(tr("nanoem.gui.window.camera.parameter.angle"));
         bool angleChanged = false;
@@ -58,17 +59,18 @@ CameraParametersDialog::draw(Project *project)
         if (ImGui::DragFloat("##distance", &distance, ImGuiWindow::kTranslationStepFactor)) {
             m_camera->setDistance(distance);
             m_camera->update();
+            project->resetAllModelEdges();
         }
         ImGui::PopItemWidth();
         ImGui::Spacing();
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
             project->pushUndo(command::UpdateCameraCommand::create(
-                project, m_camera, lookAt, angle, distance, m_camera->fovRadians()));
+                project, m_camera, lookAt, angle, distance, m_camera->fovRadians(), m_camera->isPerspective()));
             break;
         }
         case kResponseTypeCancel: {
-            reset();
+            reset(project);
             break;
         }
         default:
@@ -76,19 +78,20 @@ CameraParametersDialog::draw(Project *project)
         }
     }
     else if (!visible) {
-        reset();
+        reset(project);
     }
     close();
     return visible;
 }
 
 void
-CameraParametersDialog::reset()
+CameraParametersDialog::reset(Project *project)
 {
     m_camera->setLookAt(m_lookAt);
     m_camera->setAngle(m_angle);
     m_camera->setDistance(m_distance);
     m_camera->update();
+    project->resetAllModelEdges();
 }
 
 } /* namespace imgui */

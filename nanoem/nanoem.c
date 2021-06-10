@@ -1938,6 +1938,8 @@ nanoemModelConstraintCreate(const nanoem_model_t *model, nanoem_status_t *status
     constraint = (nanoem_model_constraint_t *) nanoem_calloc(1, sizeof(*constraint), status);
     if (nanoem_is_not_null(constraint)) {
         nanoemModelObjectInitialize(&constraint->base, model);
+        constraint->effector_bone_index = -1;
+        constraint->target_bone_index = -1;
     }
     return constraint;
 }
@@ -3648,6 +3650,12 @@ nanoemModelBoneGetTargetBoneObject(const nanoem_model_bone_t *bone)
 
 const nanoem_model_constraint_t *APIENTRY
 nanoemModelBoneGetConstraintObject(const nanoem_model_bone_t *bone)
+{
+    return nanoem_is_not_null(bone) ? bone->constraint : NULL;
+}
+
+nanoem_model_constraint_t *APIENTRY
+nanoemModelBoneGetConstraintObjectMutable(nanoem_model_bone_t *bone)
 {
     return nanoem_is_not_null(bone) ? bone->constraint : NULL;
 }

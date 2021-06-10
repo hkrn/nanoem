@@ -15,6 +15,25 @@
 #include "imgui/imgui_tables.cpp"
 #include "imgui/imgui_widgets.cpp"
 
+/* ImGuiFileDialog */
+#if defined(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
+#define createDirButtonString u8"\uf067"
+#define okButtonString u8"\uf00c OK"
+#define cancelButtonString u8"\uf00d Cancel"
+#define resetButtonString u8"\uf064"
+#define drivesButtonString u8"\uf0a0"
+#define searchString u8"\uf002"
+#define dirEntryString u8"\uf07b"
+#define linkEntryString u8"\uf1c9"
+#define fileEntryString u8"\uf15b"
+#define OverWriteDialogConfirmButtonString u8"\uf00c Confirm"
+#define OverWriteDialogCancelButtonString u8"\uf00d Cancel "
+#define USE_CUSTOM_SORTING_ICON
+#define tableHeaderAscendingIcon u8"\uf077"
+#define tableHeaderDescendingIcon u8"\uf078"
+#include "imguifiledialog/ImGuiFileDialog.cpp"
+#endif /* NANOEM_ENABLE_IMGUI_FILE_DIALOG */
+
 /* ImGuizmo */
 /* workaround of near/far keywords on win32 */
 #undef near
@@ -26,6 +45,7 @@ extern bx::AllocatorI *g_dd_allocator;
 extern bx::AllocatorI *g_par_allocator;
 extern bx::AllocatorI *g_sokol_allocator;
 extern bx::AllocatorI *g_stb_allocator;
+extern bx::AllocatorI *g_tinyobj_allocator;
 #include "sha256.c"
 }
 
@@ -186,6 +206,30 @@ extern "C" void
 __dd_free(void *ptr, const char *file, int line)
 {
     bx::free(g_dd_allocator, ptr, 0, file, line);
+}
+
+extern "C" void *
+__tinyobj_malloc(size_t size, const char *file, int line)
+{
+    return bx::alloc(g_tinyobj_allocator, size, 0, file, line);
+}
+extern "C" void *
+__tinyobj_calloc(size_t size, size_t count, const char *file, int line)
+{
+    const size_t allocateSize = size * count;
+    void *ptr = __tinyobj_malloc(allocateSize, file, line);
+    SecureZeroMemory(ptr, allocateSize);
+    return ptr;
+}
+extern "C" void *
+__tinyobj_realloc(void *ptr, size_t size, const char *file, int line)
+{
+    return bx::realloc(g_tinyobj_allocator, ptr, size, 0, file, line);
+}
+extern "C" void
+__tinyobj_free(void *ptr, const char *file, int line)
+{
+    bx::free(g_tinyobj_allocator, ptr, 0, file, line);
 }
 
 /* Debug Draw */

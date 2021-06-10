@@ -158,7 +158,7 @@ typedef double nanoem_f64_t;
 #ifdef RSIZE_MAX
 #define NANOEM_RSIZE_MAX RSIZE_MAX
 #else
-#define NANOEM_RSIZE_MAX ((~(size_t)(0)) >> 1)
+#define NANOEM_RSIZE_MAX ((~(size_t) (0)) >> 1)
 #endif /* RSIZE_MAX */
 #endif /* NANOEM_RSIZE_MAX */
 

@@ -15,9 +15,11 @@ namespace nanoem {
 class Error;
 class Project;
 
+namespace command {
+
 class IUndoCommand {
 public:
-    virtual ~IUndoCommand()
+    virtual ~IUndoCommand() NANOEM_DECL_NOEXCEPT
     {
     }
 
@@ -27,6 +29,7 @@ public:
     virtual const char *name() const NANOEM_DECL_NOEXCEPT = 0;
 };
 
+} /* namespace command */
 } /* namespace nanoem */
 
 #endif /* NANOEM_EMAPP_COMMAND_IUNDOCOMMAND_H_ */

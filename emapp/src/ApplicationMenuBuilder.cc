@@ -12,6 +12,7 @@
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/ShadowCamera.h"
+#include "emapp/StringUtils.h"
 #include "emapp/ThreadedApplicationClient.h"
 #include "emapp/private/CommonInclude.h"
 
@@ -42,7 +43,10 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
         text = "nanoem.menu.file.title";
         break;
     case kMenuItemTypeFileNewProject:
-        text = "nanoem.menu.file.new";
+        text = "nanoem.menu.file.new.project";
+        break;
+    case kMenuItemTypeFileNewModel:
+        text = "nanoem.menu.file.new.model";
         break;
     case kMenuItemTypeFileOpenProject:
         text = "nanoem.menu.file.open";
@@ -211,6 +215,9 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
         break;
     case kMenuItemTypeProjectOpenTransformOrderDialog:
         text = "nanoem.menu.project.order.transform";
+        break;
+    case kMenuItemTypeProjectDetachViewportWindow:
+        text = "nanoem.menu.project.viewport.detach";
         break;
     case kMenuItemTypeProjectEnableLoop:
         text = "nanoem.menu.project.enable.loop";
@@ -410,6 +417,9 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
     case kMenuItemTypeModelCollapseAllTracks:
         text = "nanoem.menu.model.select.collapse-all-tracks";
         break;
+    case kMenuItemTypeModelPerformValidation:
+        text = "nanoem.menu.model.validation";
+        break;
     case kMenuItemTypeModelEditModeSelect:
         text = "nanoem.menu.model.edit-mode.select";
         break;
@@ -506,6 +516,9 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
     case kMenuItemTypeAccessoryReset:
         text = "nanoem.menu.accessory.reset";
         break;
+    case kMenuItemTypeAccessoryConvertToModel:
+        text = "nanoem.menu.accessory.convert-to-model";
+        break;
     case kMenuItemTypeAccessoryDelete:
         text = "nanoem.menu.accessory.delete-active";
         break;
@@ -551,6 +564,28 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
         break;
     }
     return text;
+}
+
+const char *
+ApplicationMenuBuilder::stripMnemonic(char *buffer, size_t size, const char *text)
+{
+    const char *p = text;
+    size_t q = 0;
+    for (size_t i = 0; i < size && *p; i++) {
+        char c = *p;
+        if (size - i >= 4 && c == '(' && *(p + 1) == '&' && bx::isAlpha(*(p + 2)) && *(p + 3) == ')') {
+            p += 4;
+        }
+        else if (c == '&') {
+            p++;
+        }
+        else {
+            buffer[q++] = c;
+            p++;
+        }
+    }
+    buffer[glm::min(q, size - 1)] = 0;
+    return buffer;
 }
 
 bool
@@ -620,22 +655,23 @@ ApplicationMenuBuilder::validateMenuItem(const Project *project, MenuItemType ty
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime: {
-            state =
-                convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableAnytime);
+            state = convertCheckedState(
+                project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableAnytime);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnablePlaying: {
-            state =
-                convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnablePlaying);
+            state = convertCheckedState(
+                project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnablePlaying);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableTracing: {
-            state =
-                convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+            state = convertCheckedState(
+                project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationDisable: {
-            state = convertCheckedState(project->physicsEngine()->mode() == PhysicsEngine::kSimulationModeDisable);
+            state = convertCheckedState(
+                project->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeDisable);
             break;
         }
         case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableDrawingWireframe: {
@@ -717,10 +753,10 @@ ApplicationMenuBuilder::validateMenuItem(const Project *project, MenuItemType ty
                         state = convertCheckedState(activeModel->isShowAllBones());
                         break;
                     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowRigidBodies:
-                        state = convertCheckedState(activeModel->isShowAllRigidBodies());
+                        state = convertCheckedState(activeModel->isShowAllRigidBodyShapes());
                         break;
                     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowJoints:
-                        state = convertCheckedState(activeModel->isShowAllJoints());
+                        state = convertCheckedState(activeModel->isShowAllJointShapes());
                         break;
                     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowVertexFaces:
                         state = convertCheckedState(activeModel->isShowAllVertexFaces());
@@ -837,6 +873,7 @@ ApplicationMenuBuilder::build()
     m_client->addCanPasteEventListener(handleCanPasteEvent, this, false);
     m_client->addSetWindowDevicePixelRatioEventListener(handleSetWindowPixelRatioEvent, this, false);
     m_client->addSetViewportDevicePixelRatioEventListener(handleSetViewportPixelRatioEvent, this, false);
+    m_client->addToggleModelEditingEnabledEventListener(handleToggleModelEditingEnabledEvent, this, false);
 }
 
 void
@@ -869,6 +906,9 @@ ApplicationMenuBuilder::createFileMenu(MainMenuBarHandle mainMenu)
     m_fileMenu = createMenuBar(kMenuItemTypeFileTitle);
     setParentMenu(fileMenu, m_fileMenu);
     appendMenuItem(m_fileMenu, kMenuItemTypeFileNewProject);
+    if (m_enableModelEditing) {
+        appendMenuItem(m_fileMenu, kMenuItemTypeFileNewModel);
+    }
     appendMenuSeparator(m_fileMenu);
     appendMenuItem(m_fileMenu, kMenuItemTypeFileOpenProject);
     m_importMenu = createMenuBar();
@@ -1131,6 +1171,7 @@ ApplicationMenuBuilder::createModelMenu(MainMenuBarHandle bar)
     createModelBoneMenu(m_modelMenu);
     createModelMorphMenu(m_modelMenu);
     appendMenuItem(m_modelMenu, kMenuItemTypeModelEdgeConfiguraiton);
+    appendMenuItem(m_modelMenu, kMenuItemTypeModelPerformValidation);
     appendMenuSeparator(m_modelMenu);
     appendMenuItem(m_modelMenu, kMenuItemTypeModelRegisterKeyframe);
     appendMenuItem(m_modelMenu, kMenuItemTypeModelRemoveAllSelectedKeyframes);
@@ -1202,6 +1243,9 @@ ApplicationMenuBuilder::createAccessoryMenu(MainMenuBarHandle bar)
     appendMenuSeparator(m_accessoryMenu);
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryReset);
     appendMenuSeparator(m_accessoryMenu);
+    if (m_enableModelEditing) {
+        appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryConvertToModel);
+    }
     appendMenuItem(m_accessoryMenu, kMenuItemTypeAccessoryDelete);
     setAllAccessoryMenuItemsEnabled(false);
 }
@@ -1218,6 +1262,7 @@ ApplicationMenuBuilder::createProjectMenu(MainMenuBarHandle bar)
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectOpenViewportDialog);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectOpenDrawOrderDialog);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectOpenTransformOrderDialog);
+    appendMenuItem(m_projectMenu, kMenuItemTypeProjectDetachViewportWindow);
     appendMenuSeparator(m_projectMenu);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectEnableLoop);
     appendMenuItem(m_projectMenu, kMenuItemTypeProjectEnableGrid);
@@ -1800,6 +1845,33 @@ ApplicationMenuBuilder::handleSetViewportPixelRatioEvent(void *userData, nanoem_
 {
     ApplicationMenuBuilder *self = static_cast<ApplicationMenuBuilder *>(userData);
     self->setMenuItemChecked(kMenuItemTypeProjectEnableHighResolutionViewport, value > 1.0f);
+}
+
+void
+ApplicationMenuBuilder::handleToggleModelEditingEnabledEvent(void *userData, bool value)
+{
+    ApplicationMenuBuilder *self = static_cast<ApplicationMenuBuilder *>(userData);
+    const bool invert = value ? false : true;
+    self->setMenuItemEnable(kMenuItemTypeProjectPlay, invert);
+    self->setMenuItemEnable(kMenuItemTypeFileImportCameraMotion, invert);
+    self->setMenuItemEnable(kMenuItemTypeFileImportLightMotion, invert);
+    self->setMenuItemEnable(kMenuItemTypeFileImportModelMotion, invert);
+    self->setMenuItemEnable(kMenuItemTypeModelRegisterKeyframe, invert);
+    self->setMenuItemEnable(kMenuItemTypeMotionInsertEmptyTimelineFrame, invert);
+    self->setMenuItemEnable(kMenuItemTypeMotionRemoveTimelineFrame, invert);
+    self->setMenuItemEnable(kMenuItemTypeMotionReset, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditSelectAll, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRegisterAllMorphs, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllEyeKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllEyebrowKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMorphRemoveAllLipKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditModelPluginTitle, invert);
+    self->setMenuItemEnable(kMenuItemTypeEditMotionPluginTitle, invert);
+    self->setMenuItemEnable(kMenuItemTypeModelRemoveAllSelectedKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeCameraRegisterKeyframe, invert);
+    self->setMenuItemEnable(kMenuItemTypeCameraRemoveAllSelectedKeyframes, invert);
+    self->setMenuItemEnable(kMenuItemTypeLightRegisterKeyframe, invert);
+    self->setMenuItemEnable(kMenuItemTypeLightRemoveAllSelectedKeyframes, invert);
 }
 
 void

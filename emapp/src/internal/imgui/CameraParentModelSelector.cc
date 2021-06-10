@@ -24,7 +24,7 @@ CameraParentModelSelector::callback(void *userData, int index, const char **out)
 
 CameraParentModelSelector::CameraParentModelSelector(const Project *project)
     : m_translator(project->translator())
-    , m_models(project->allModels())
+    , m_models(*project->allModels())
 {
 }
 

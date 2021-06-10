@@ -13,7 +13,7 @@ namespace nanoem {
 const Vector2 BezierCurve::kP0 = Vector2(0);
 const Vector2 BezierCurve::kP1 = Vector2(127);
 
-BezierCurve::BezierCurve(const glm::u8vec2 &c0, const glm::u8vec2 &c1, nanoem_frame_index_t interval)
+BezierCurve::BezierCurve(const Vector2U8 &c0, const Vector2U8 &c1, nanoem_frame_index_t interval)
     : m_c0(c0)
     , m_c1(c1)
     , m_interval(interval)
@@ -71,19 +71,19 @@ BezierCurve::split(const nanoem_f32_t t) const
     return Pair(lvalue, rvalue);
 }
 
-glm::u8vec4
+Vector4U8
 BezierCurve::toParameters() const NANOEM_DECL_NOEXCEPT
 {
-    return glm::u8vec4(m_c0, m_c1);
+    return Vector4U8(m_c0, m_c1);
 }
 
-glm::u8vec2
+Vector2U8
 BezierCurve::c0() const NANOEM_DECL_NOEXCEPT
 {
     return m_c0;
 }
 
-glm::u8vec2
+Vector2U8
 BezierCurve::c1() const NANOEM_DECL_NOEXCEPT
 {
     return m_c1;

@@ -23,8 +23,8 @@ struct emapp_model_dragging_orientate_bone_parameter_t {
 TEST_CASE("model_dragging_orientate_bone", "[emapp][model]")
 {
     const emapp_model_dragging_orientate_bone_parameter_t parameters[] = {
-        { Model::kAxisX, Vector2(480, 240), Vector2(500, 260), Vector3(0.999999, 0.000000, 0.000000), 0.349066f },
-        { Model::kAxisZ, Vector2(480, 240), Vector2(500, 260), Vector3(0.000000, -0.000000, -0.999999), 0.349066f }
+        { Model::kAxisTypeX, Vector2(480, 240), Vector2(500, 260), Vector3(1, 0, 0), 0.349066f },
+        { Model::kAxisTypeZ, Vector2(480, 240), Vector2(500, 260), Vector3(0, 0, -1), 0.349066f }
     };
     TestScope scope;
     for (const auto &parameter : parameters) {
@@ -69,6 +69,51 @@ TEST_CASE("model_dragging_orientate_bone", "[emapp][model]")
             scope.recover(project);
             {
                 Model *activeModel = project->activeModel();
+                const Quaternion q(model::Bone::cast(activeModel->activeBone())->localUserOrientation());
+                CHECK_THAT(
+                    model::Bone::cast(activeModel->activeBone())->localUserTranslation(), Equals(Constants::kZeroV3));
+                CHECK(glm::all(glm::epsilonEqual(glm::axis(q), parameter.expectedAxis, Vector3(0.00001f))));
+                CHECK(glm::angle(q) == Approx(parameter.expectedAngle));
+            }
+        }
+    }
+}
+
+TEST_CASE("model_dragging_orientate_bone_nan", "[emapp][model]")
+{
+    TestScope scope;
+    const emapp_model_dragging_orientate_bone_parameter_t parameters[] = {
+        { Model::kAxisTypeY, Vector2(480, 240), Vector2(480, 240), Vector3(0, 0, 1), 0 },
+    };
+    for (const auto &parameter : parameters) {
+        {
+            ProjectPtr o = scope.createProject();
+            Project *project = o->withRecoverable();
+            Model *activeModel = o->createModel();
+            project->addModel(activeModel);
+            project->setActiveModel(activeModel);
+            activeModel->setTransformAxisType(parameter.axisType);
+            std::unique_ptr<DraggingBoneState> state(
+                new OrientateActiveBoneState(project, activeModel, parameter.cursorFrom, parameter.cursorFrom));
+            state->transform(parameter.cursorTo);
+            state->commit(parameter.cursorTo);
+            {
+                const Quaternion q(model::Bone::cast(activeModel->activeBone())->localUserOrientation());
+                CHECK_THAT(
+                    model::Bone::cast(activeModel->activeBone())->localUserTranslation(), Equals(Constants::kZeroV3));
+                CHECK(glm::all(glm::epsilonEqual(glm::axis(q), parameter.expectedAxis, Vector3(0.00001f))));
+                CHECK(glm::angle(q) == Approx(parameter.expectedAngle));
+            }
+            project->handleUndoAction();
+            {
+                const Quaternion q(model::Bone::cast(activeModel->activeBone())->localUserOrientation());
+                CHECK_THAT(
+                    model::Bone::cast(activeModel->activeBone())->localUserTranslation(), Equals(Constants::kZeroV3));
+                CHECK_THAT(glm::axis(q), Equals(Vector3(0, 0, 1)));
+                CHECK(glm::angle(q) == Approx(0.0f));
+            }
+            project->handleRedoAction();
+            {
                 const Quaternion q(model::Bone::cast(activeModel->activeBone())->localUserOrientation());
                 CHECK_THAT(
                     model::Bone::cast(activeModel->activeBone())->localUserTranslation(), Equals(Constants::kZeroV3));

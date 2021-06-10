@@ -35,10 +35,9 @@ struct Parser {
         kStateMorphWeight,
         kStateMaxEnum
     };
-    Parser(Model *model, Error &error)
-        : m_model(model)
-        , m_error(error)
-        , m_factory(nullptr)
+    Parser(nanoem_unicode_string_factory_t *factory, Error &error)
+        : m_error(error)
+        , m_factory(factory)
         , m_state(kStateFirstEnum)
         , m_offset(0)
         , m_line(1)
@@ -46,7 +45,6 @@ struct Parser {
         , m_depth(0)
         , m_ignore(false)
     {
-        m_factory = model->project()->unicodeStringFactory();
     }
     void
     take(char ch)
@@ -123,36 +121,28 @@ struct Parser {
             break;
         }
         case kStateBoneTranslation: {
-            if (const nanoem_model_bone_t *bonePtr = m_model->findBone(m_objectName)) {
-                model::Bone *bone = model::Bone::cast(bonePtr);
-                char *stringPtr = m_buffer;
-                const nanoem_f32_t x = StringUtils::parseFloat(stringPtr, &stringPtr);
-                StringUtils::parseComma(const_cast<const char **>(&stringPtr));
-                const nanoem_f32_t y = StringUtils::parseFloat(stringPtr, &stringPtr);
-                StringUtils::parseComma(const_cast<const char **>(&stringPtr));
-                const nanoem_f32_t z = StringUtils::parseFloat(stringPtr, &stringPtr);
-                bone->setLocalUserTranslation(Vector3(x, y, z));
-                bone->setDirty(true);
-                clear();
-            }
+            char *stringPtr = m_buffer;
+            const nanoem_f32_t x = StringUtils::parseFloat(stringPtr, &stringPtr);
+            StringUtils::parseComma(const_cast<const char **>(&stringPtr));
+            const nanoem_f32_t y = StringUtils::parseFloat(stringPtr, &stringPtr);
+            StringUtils::parseComma(const_cast<const char **>(&stringPtr));
+            const nanoem_f32_t z = StringUtils::parseFloat(stringPtr, &stringPtr);
+            m_transforms[m_objectName].first = Vector3(x, y, z);
+            clear();
             m_state = kStateBoneOrientation;
             break;
         }
         case kStateBoneOrientation: {
-            if (const nanoem_model_bone_t *bonePtr = m_model->findBone(m_objectName)) {
-                model::Bone *bone = model::Bone::cast(bonePtr);
-                char *stringPtr = m_buffer;
-                const nanoem_f32_t x = StringUtils::parseFloat(stringPtr, &stringPtr);
-                StringUtils::parseComma(const_cast<const char **>(&stringPtr));
-                const nanoem_f32_t y = StringUtils::parseFloat(stringPtr, &stringPtr);
-                StringUtils::parseComma(const_cast<const char **>(&stringPtr));
-                const nanoem_f32_t z = StringUtils::parseFloat(stringPtr, &stringPtr);
-                StringUtils::parseComma(const_cast<const char **>(&stringPtr));
-                const nanoem_f32_t w = StringUtils::parseFloat(stringPtr, &stringPtr);
-                bone->setLocalUserOrientation(Quaternion(w, x, y, z));
-                bone->setDirty(true);
-                clear();
-            }
+            char *stringPtr = m_buffer;
+            const nanoem_f32_t x = StringUtils::parseFloat(stringPtr, &stringPtr);
+            StringUtils::parseComma(const_cast<const char **>(&stringPtr));
+            const nanoem_f32_t y = StringUtils::parseFloat(stringPtr, &stringPtr);
+            StringUtils::parseComma(const_cast<const char **>(&stringPtr));
+            const nanoem_f32_t z = StringUtils::parseFloat(stringPtr, &stringPtr);
+            StringUtils::parseComma(const_cast<const char **>(&stringPtr));
+            const nanoem_f32_t w = StringUtils::parseFloat(stringPtr, &stringPtr);
+            m_transforms[m_objectName].second = Quaternion(w, x, y, z);
+            clear();
             m_state = m_objectIndex < m_numObjects ? kStateBoneIndex : kStateMorphIndex;
             break;
         }
@@ -170,11 +160,8 @@ struct Parser {
             break;
         }
         case kStateMorphWeight: {
-            if (const nanoem_model_morph_t *morphPtr = m_model->findMorph(m_objectName)) {
-                model::Morph *morph = model::Morph::cast(morphPtr);
-                morph->setWeight(StringUtils::parseFloat(m_buffer, nullptr));
-                clear();
-            }
+            m_weights[m_objectName] = StringUtils::parseFloat(m_buffer, nullptr);
+            clear();
             m_state = m_objectIndex < m_numObjects ? kStateBoneIndex : kStateMorphIndex;
             break;
         }
@@ -224,8 +211,9 @@ struct Parser {
         return result;
     }
 
-    Model *m_model;
     Error &m_error;
+    BindPose::BoneTransformMap m_transforms;
+    BindPose::MorphWeightMap m_weights;
     nanoem_unicode_string_factory_t *m_factory;
     State m_state;
     String m_objectName;
@@ -359,22 +347,26 @@ BindPose::~BindPose() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-BindPose::load(Model *model, const nanoem_u8_t *data, nanoem_rsize_t size, Error &error) const
+BindPose::load(const nanoem_u8_t *data, nanoem_rsize_t size, nanoem_unicode_string_factory_t *factory,
+    BoneTransformMap &transforms, MorphWeightMap &weights, Error &error) const
 {
-    Parser parser(model, error);
+    Parser parser(factory, error);
     nanoem_rsize_t offset = 0;
     while (offset < size && !error.hasReason()) {
         nanoem_u8_t ch = data[offset];
         parser.take(ch);
         offset++;
     }
+    transforms = parser.m_transforms;
+    weights = parser.m_weights;
     return parser.checkState();
 }
 
 bool
-BindPose::load(Model *model, const ByteArray &bytes, Error &error) const
+BindPose::load(const ByteArray &bytes, nanoem_unicode_string_factory_t *factory, BoneTransformMap &transforms,
+    MorphWeightMap &weights, Error &error) const
 {
-    return load(model, bytes.data(), bytes.size(), error);
+    return load(bytes.data(), bytes.size(), factory, transforms, weights, error);
 }
 
 bool
@@ -453,7 +445,7 @@ BindPose::saveAllMessages(void *states, size_t &numStates) const
         Nanoem__Application__RedoTransformBoneCommand__State *state =
             nanoem_new(Nanoem__Application__RedoTransformBoneCommand__State);
         nanoem__application__redo_transform_bone_command__state__init(state);
-        state->bone_index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(p.m_bonePtr));
+        state->bone_index = model::Bone::index(p.m_bonePtr);
         CommandMessageUtil::setVector(p.m_localUserTranslation, state->local_user_translation);
         CommandMessageUtil::setQuaternion(p.m_localUserOrientation, state->local_user_orientation);
         CommandMessageUtil::setVector(p.m_localMorphTranslation, state->local_morph_translation);

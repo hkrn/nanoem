@@ -18,7 +18,7 @@ public:
     Exporter(const Model *model);
     ~Exporter() NANOEM_DECL_NOEXCEPT;
 
-    bool execute(IWriter *writer, const Model::ExportSetting &setting, Error &error);
+    bool execute(IWriter *writer, const Model::ExportDescription &desc, Error &error);
 
 private:
     const Model *m_model;

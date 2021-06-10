@@ -11,6 +11,8 @@
 #include "emapp/Forward.h"
 #include "emapp/ITranslator.h"
 
+#include "bx/mutex.h"
+
 namespace nanoem {
 
 class DefaultTranslator NANOEM_DECL_SEALED : public ITranslator, private NonCopyable {

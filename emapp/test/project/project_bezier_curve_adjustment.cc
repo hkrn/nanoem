@@ -13,7 +13,7 @@ using namespace nanoem;
 using namespace test;
 
 struct EqualsTranslationInterpolation : Catch::Matchers::Impl::MatcherBase<const nanoem_motion_bone_keyframe_t *> {
-    EqualsTranslationInterpolation(const glm::u8vec4 &v)
+    EqualsTranslationInterpolation(const Vector4U8 &v)
         : m_data(v)
     {
     }
@@ -38,7 +38,7 @@ struct EqualsTranslationInterpolation : Catch::Matchers::Impl::MatcherBase<const
     {
         return "of bone keyframe interpolation equals " + glm::to_string(m_data);
     }
-    glm::u8vec4 m_data;
+    Vector4U8 m_data;
 };
 
 TEST_CASE("project_bezier_curve_adjustment_bone", "[emapp][project]")
@@ -74,11 +74,11 @@ TEST_CASE("project_bezier_curve_adjustment_bone", "[emapp][project]")
         registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         {
             const nanoem_motion_bone_keyframe_t *firstKeyframe = first->findBoneKeyframe(activeModel, 0);
-            CHECK_THAT(firstKeyframe, EqualsTranslationInterpolation(glm::u8vec4(15, 0, 27, 7)));
+            CHECK_THAT(firstKeyframe, EqualsTranslationInterpolation(Vector4U8(15, 0, 27, 7)));
         }
         {
             const nanoem_motion_bone_keyframe_t *secondKeyframe = first->findBoneKeyframe(activeModel, 334);
-            CHECK_THAT(secondKeyframe, EqualsTranslationInterpolation(glm::u8vec4(79, 127, 67, 55)));
+            CHECK_THAT(secondKeyframe, EqualsTranslationInterpolation(Vector4U8(79, 127, 67, 55)));
         }
     }
     SECTION("split at 75%")
@@ -90,11 +90,11 @@ TEST_CASE("project_bezier_curve_adjustment_bone", "[emapp][project]")
         registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         {
             const nanoem_motion_bone_keyframe_t *firstKeyframe = first->findBoneKeyframe(activeModel, 0);
-            CHECK_THAT(firstKeyframe, EqualsTranslationInterpolation(glm::u8vec4(47, 0, 59, 71)));
+            CHECK_THAT(firstKeyframe, EqualsTranslationInterpolation(Vector4U8(47, 0, 59, 71)));
         }
         {
             const nanoem_motion_bone_keyframe_t *secondKeyframe = first->findBoneKeyframe(activeModel, 1002);
-            CHECK_THAT(secondKeyframe, EqualsTranslationInterpolation(glm::u8vec4(111, 127, 99, 119)));
+            CHECK_THAT(secondKeyframe, EqualsTranslationInterpolation(Vector4U8(111, 127, 99, 119)));
         }
     }
 }

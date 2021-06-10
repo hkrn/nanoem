@@ -8,7 +8,6 @@
 #ifndef NANOEM_EMAPP_COMMAND_BASEUNDOCOMMAND_H_
 #define NANOEM_EMAPP_COMMAND_BASEUNDOCOMMAND_H_
 
-#include "emapp/Forward.h"
 #include "emapp/command/IUndoCommand.h"
 
 struct ProtobufCBinaryData;

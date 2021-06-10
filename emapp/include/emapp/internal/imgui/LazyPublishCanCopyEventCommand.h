@@ -16,7 +16,9 @@ namespace imgui {
 
 struct LazyPublishCanCopyEventCommand : ImGuiWindow::ILazyExecutionCommand {
     LazyPublishCanCopyEventCommand(bool value);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     const bool m_value;
 };

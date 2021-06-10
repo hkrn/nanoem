@@ -27,6 +27,8 @@ nanoemMutableModeVertexApplyChangeAllObjectIndices(nanoem_model_t *origin_model,
     nanoem_model_morph_type_t type;
     nanoem_model_morph_vertex_t *morph_vertex;
     nanoem_model_morph_uv_t *morph_uv;
+    nanoem_model_soft_body_t *soft_body;
+    nanoem_model_soft_body_anchor_t *anchor;
     nanoem_rsize_t num_objects, num_items, i, j;
     num_objects = origin_model->num_morphs;
     for (i = 0; i < num_objects; i++) {
@@ -47,6 +49,15 @@ nanoemMutableModeVertexApplyChangeAllObjectIndices(nanoem_model_t *origin_model,
             }
         }
     }
+    num_objects = origin_model->num_soft_bodies;
+    for (i = 0; i < num_objects; i++) {
+        soft_body = origin_model->soft_bodies[i];
+        num_items = soft_body->num_anchors;
+        for (j = 0; j < num_items; j++) {
+            anchor = soft_body->anchors[j];
+            nanoemMutableModelObjectApplyChangeObjectIndex(&anchor->vertex_index, vertex_index, delta);
+        }
+    }
 }
 
 static void
@@ -54,6 +65,7 @@ nanoemMutableModelMaterialApplyChangeAllObjectIndices(nanoem_model_t *origin_mod
 {
     nanoem_model_morph_t *morph;
     nanoem_model_morph_material_t *material;
+    nanoem_model_soft_body_t *soft_body;
     nanoem_model_morph_type_t type;
     nanoem_rsize_t num_objects, num_items, i, j;
     num_objects = origin_model->num_morphs;
@@ -67,6 +79,11 @@ nanoemMutableModelMaterialApplyChangeAllObjectIndices(nanoem_model_t *origin_mod
                 nanoemMutableModelObjectApplyChangeObjectIndex(&material->material_index, material_index, delta);
             }
         }
+    }
+    num_objects = origin_model->num_soft_bodies;
+    for (i = 0; i < num_objects; i++) {
+        soft_body = origin_model->soft_bodies[i];
+        nanoemMutableModelObjectApplyChangeObjectIndex(&soft_body->material_index, material_index, delta);
     }
 }
 
@@ -167,13 +184,39 @@ nanoemMutableModelMorphApplyChangeAllObjectIndices(nanoem_model_t *origin_model,
 static void
 nanoemMutableModelRigidBodyApplyChangeAllObjectIndices(nanoem_model_t *origin_model, int rigid_body_index, int delta)
 {
+    nanoem_model_morph_t *morph;
+    nanoem_model_morph_impulse_t *impulse;
     nanoem_model_joint_t *joint;
-    nanoem_rsize_t num_objects, i;
+    nanoem_model_soft_body_t *soft_body;
+    nanoem_model_soft_body_anchor_t *anchor;
+    nanoem_model_morph_type_t type;
+    nanoem_rsize_t num_objects, num_items, i, j;
+    num_objects = origin_model->num_morphs;
+    for (i = 0; i < num_objects; i++) {
+        morph = origin_model->morphs[i];
+        type = nanoemModelMorphGetType(morph);
+        if (type == NANOEM_MODEL_MORPH_TYPE_IMPULUSE) {
+            num_items = morph->num_objects;
+            for (j = 0; j < num_items; j++) {
+                impulse = morph->u.impulses[j];
+                nanoemMutableModelObjectApplyChangeObjectIndex(&impulse->rigid_body_index, rigid_body_index, delta);
+            }
+        }
+    }
     num_objects = origin_model->num_joints;
     for (i = 0; i < num_objects; i++) {
         joint = origin_model->joints[i];
         nanoemMutableModelObjectApplyChangeObjectIndex(&joint->rigid_body_a_index, rigid_body_index, delta);
         nanoemMutableModelObjectApplyChangeObjectIndex(&joint->rigid_body_b_index, rigid_body_index, delta);
+    }
+    num_objects = origin_model->num_soft_bodies;
+    for (i = 0; i < num_objects; i++) {
+        soft_body = origin_model->soft_bodies[i];
+        num_items = soft_body->num_anchors;
+        for (j = 0; j < num_items; j++) {
+            anchor = soft_body->anchors[j];
+            nanoemMutableModelObjectApplyChangeObjectIndex(&anchor->rigid_body_index, rigid_body_index, delta);
+        }
     }
 }
 
@@ -4029,6 +4072,16 @@ nanoemMutableModelBoneSetConstraintObject(nanoem_mutable_model_bone_t *bone, nan
         bone->origin->constraint = value->origin;
         bone->origin->u.flags.has_constraint = 1;
         value->base.is_in_model = nanoem_true;
+    }
+}
+
+void APIENTRY
+nanoemMutableModelBoneRemoveConstraintObject(nanoem_mutable_model_bone_t *bone, nanoem_mutable_model_constraint_t *value)
+{
+    if (nanoem_is_not_null(bone) && nanoem_is_not_null(value) && bone->origin->constraint == value->origin) {
+        bone->origin->constraint = NULL;
+        bone->origin->u.flags.has_constraint = 0;
+        value->base.is_in_model = nanoem_false;
     }
 }
 

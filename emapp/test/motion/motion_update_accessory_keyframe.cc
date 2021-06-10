@@ -28,8 +28,8 @@ TEST_CASE("motion_update_accessory_keyframe", "[emapp][motion]")
             project->addAccessory(activeAccessory);
             project->setActiveAccessory(activeAccessory);
             project->addModel(bindingModel);
-            REQUIRE(project->allAccessories().size() == 3);
-            REQUIRE(project->allModels().size() == 1);
+            REQUIRE(project->allAccessories()->size() == 3);
+            REQUIRE(project->allModels()->size() == 1);
             REQUIRE(project->activeAccessory() == activeAccessory);
             project->seek(1337, true);
             activeAccessory->setTranslation(Vector3(42, 84, 126));

@@ -26,9 +26,10 @@ class ShadowCamera;
 class IPass : private NonCopyable {
 public:
     struct Buffer {
-        Buffer(nanoem_rsize_t numIndices, nanoem_rsize_t offset)
+        Buffer(nanoem_rsize_t numIndices, nanoem_rsize_t offset, bool depthEnabled)
             : m_numIndices(int(glm::min(numIndices, size_t(0x7fffffff))))
             , m_offset(int(glm::min(offset, size_t(0x7fffffff))))
+            , m_depthEnabled(depthEnabled)
         {
             m_vertexBuffer = { SG_INVALID_ID };
             m_indexBuffer = { SG_INVALID_ID };
@@ -37,6 +38,7 @@ public:
         int m_offset;
         sg_buffer m_vertexBuffer;
         sg_buffer m_indexBuffer;
+        bool m_depthEnabled;
     };
     virtual ~IPass() NANOEM_DECL_NOEXCEPT
     {

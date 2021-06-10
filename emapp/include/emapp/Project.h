@@ -26,7 +26,7 @@
 
 #include "bimg/bimg.h"
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
+struct Nanoem__Application__Command;
 
 struct undo_command_t;
 struct undo_stack_t;
@@ -113,26 +113,12 @@ public:
         kCursorModifierTypeAlt = 0x4,
         kCursorModifierTypeMaxEnum = 0x8
     };
-    enum DrawType {
-        kDrawTypeActiveBone = 0x1,
-        kDrawTypeBoneConnections = 0x2,
-        kDrawTypeConstraintConnections = 0x4,
-        kDrawTypeConstraintHeatmaps = 0x8,
-        kDrawTypeBoneTooltip = 0x10,
-        kDrawTypeBoneMoveHandle = 0x20,
-        kDrawTypeBoneRotateHandle = 0x40,
-        kDrawTypeBoneLocalAxes = 0x80,
-        kDrawTypeCameraLookAt = 0x100,
-        kDrawTypeMaxEnum = 0x200
-    };
     enum EditingMode {
         kEditingModeFirstEnum,
         kEditingModeNone = kEditingModeFirstEnum,
         kEditingModeSelect,
         kEditingModeMove,
         kEditingModeRotate,
-        kEditingModeModel,
-        kEditingModeEffect,
         kEditingModeMaxEnum
     };
     enum FilePathMode {
@@ -152,8 +138,6 @@ public:
         kRectangleTransformCoordinateType,
         kRectangleCameraLookAt,
         kRectangleCameraZoom,
-        kRectangleEffect,
-        kRectangleModelEditing,
         kRectangleActualFPS,
         kRectangleTypeMaxEnum,
     };
@@ -210,12 +194,6 @@ public:
         }
         virtual nanoem_unicode_string_factory_t *unicodeStringFactory() const NANOEM_DECL_NOEXCEPT = 0;
     };
-    struct IViewportOverlay {
-        virtual ~IViewportOverlay() NANOEM_DECL_NOEXCEPT
-        {
-        }
-        virtual void drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags) = 0;
-    };
     struct IDiagnostics {
         virtual void addNotFoundFileURI(const URI &fileURI) = 0;
         virtual void addDigestMismatchFileURI(const URI &fileURI) = 0;
@@ -249,7 +227,10 @@ public:
     static String resolveNameConfliction(const IDrawable *drawable, StringSet &reservedNameSet);
     static String resolveNameConfliction(const String &name, StringSet &reservedNameSet);
     static int countColorAttachments(const sg_pass_desc &pd) NANOEM_DECL_NOEXCEPT;
+    static StringList loadableExtensions();
+    static StringSet loadableExtensionsSet();
     static bool isArchiveURI(const URI &fileURI);
+    static bool isLoadableExtension(const String &extension);
     static bool isLoadableExtension(const URI &fileURI);
     static void setAlphaBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT;
     static void setAddBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT;
@@ -320,8 +301,10 @@ public:
     const nanoem_model_bone_t *resolveBone(const StringPair &value) const NANOEM_DECL_NOEXCEPT;
     bool containsMotion(const Motion *value) const NANOEM_DECL_NOEXCEPT;
 
+    void newModel(Error &error);
     void addModel(Model *model);
     void addAccessory(Accessory *accessory);
+    void convertAccessoryToModel(Accessory *accessory, Error &error);
     void performModelSkinDeformer(Model *model);
     bool loadAttachedDrawableEffect(IDrawable *drawable, Progress &progress, Error &error);
     bool reloadAllDrawableEffects(Progress &progress, Error &error);
@@ -373,6 +356,7 @@ public:
     bool canSeek() const NANOEM_DECL_NOEXCEPT;
 
     void resetPhysicsSimulation();
+    void resetAllModelEdges();
     void performPhysicsSimulationOnce();
     void synchronizeAllMotions(
         nanoem_frame_index_t frameIndex, nanoem_f32_t amount, PhysicsEngine::SimulationTimingType timing);
@@ -420,7 +404,7 @@ public:
         Progress &progress, Error &error);
     void attachEffectToSelectedDrawable(Effect *effect, Error &error);
     void attachModelMaterialEffect(model::Material *material, Effect *effect);
-    void setOffscreenPassiveRenderTargetEffect(IDrawable *drawable, const String &name, Effect *targetEffect);
+    void setOffscreenPassiveRenderTargetEffect(const String &name, IDrawable *drawable, Effect *targetEffect);
 
     void setRedoDrawable(nanoem_u32_t key, IDrawable *value);
     Accessory *resolveRedoAccessory(nanoem_u32_t key);
@@ -436,8 +420,8 @@ public:
     void copyAllSelectedKeyframes(Model *model, Error &error);
     void pasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error);
     void pasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error);
-    void reversePasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error);
-    void reversePasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error);
+    void symmetricPasteAllSelectedKeyframes(nanoem_frame_index_t frameIndex, Error &error);
+    void symmetricPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, Error &error);
     void selectAllKeyframesInColumn();
     void selectAllKeyframesInColumn(Model *model);
     void selectAllMotionKeyframesIn(const TimelineSegment &range);
@@ -452,8 +436,8 @@ public:
     void copyAllSelectedBones(Model *model, Error &error);
     void pasteAllSelectedBones(Error &error);
     void pasteAllSelectedBones(Model *model, Error &error);
-    void reversePasteAllSelectedBones(Error &error);
-    void reversePasteAllSelectedBones(Model *model, Error &error);
+    void symmetricPasteAllSelectedBones(Error &error);
+    void symmetricPasteAllSelectedBones(Model *model, Error &error);
     void selectAllBoneKeyframesFromSelectedBoneSet(Model *model);
     bool isModelClipboardEmpty() const NANOEM_DECL_NOEXCEPT;
     bool isMotionClipboardEmpty() const NANOEM_DECL_NOEXCEPT;
@@ -484,14 +468,14 @@ public:
     TimelineSegment selectionSegment() const NANOEM_DECL_NOEXCEPT;
     void setSelectionSegment(const TimelineSegment &value);
     nanoem_f32_t motionFPSScaleFactor() const NANOEM_DECL_NOEXCEPT;
-    DrawableList drawableOrderList() const;
+    const DrawableList *drawableOrderList() const NANOEM_DECL_NOEXCEPT;
     void setDrawableOrderList(const DrawableList &value);
-    ModelList transformOrderList() const;
+    const ModelList *transformOrderList() const NANOEM_DECL_NOEXCEPT;
     void setTransformOrderList(const ModelList &value);
-    ModelList allModels() const;
-    AccessoryList allAccessories() const;
-    MotionList allMotions() const;
-    TrackList allTracks() const;
+    const ModelList *allModels() const NANOEM_DECL_NOEXCEPT;
+    const AccessoryList *allAccessories() const NANOEM_DECL_NOEXCEPT;
+    const MotionList *allMotions() const NANOEM_DECL_NOEXCEPT;
+    const TrackList *allTracks() const NANOEM_DECL_NOEXCEPT;
     TrackList allFixedTracks() const;
     SGHandleStringMap allViewNames() const;
     Model *createModel();
@@ -588,6 +572,9 @@ public:
     Vector4UI16 deviceScaleUniformedViewportLayoutRect() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 logicalScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 deviceScaleUniformedViewportImageSize() const NANOEM_DECL_NOEXCEPT;
+    Vector2UI16 logicalViewportPadding() const NANOEM_DECL_NOEXCEPT;
+    void setLogicalViewportPadding(const Vector2UI16 &value);
+    Vector2SI32 resolveLogicalCursorPositionInViewport(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT;
     Vector4 viewportBackgroundColor() const NANOEM_DECL_NOEXCEPT;
     void setViewportBackgroundColor(const Vector4 &value);
     nanoem_f64_t currentUptimeSeconds() const NANOEM_DECL_NOEXCEPT;
@@ -595,6 +582,7 @@ public:
     void setUptimeSeconds(nanoem_f64_t value);
     nanoem_f32_t deviceScaleViewportScaleFactor() const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t windowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT;
+    nanoem_f32_t pendingWindowDevicePixelRatio() const NANOEM_DECL_NOEXCEPT;
     void setWindowDevicePixelRatio(nanoem_f32_t value);
     nanoem_f32_t viewportDevicePixelRatio() const NANOEM_DECL_NOEXCEPT;
     void setViewportDevicePixelRatio(nanoem_f32_t value);
@@ -628,6 +616,7 @@ public:
     void attachDrawableOffscreenEffects(IDrawable *drawable);
     void releaseAllOffscreenRenderTarget(Effect *ownerEffect);
     void getAllOffscreenRenderTargetEffects(const IEffect *ownerEffect, LoadedEffectSet &allRenderTargetEffects) const;
+    Vector2UI16 deviceScaleViewportPrimaryImageSize() const NANOEM_DECL_NOEXCEPT;
     sg_pass viewportPrimaryPass() const NANOEM_DECL_NOEXCEPT;
     sg_image viewportPrimaryImage() const NANOEM_DECL_NOEXCEPT;
     sg_image viewportSecondaryImage() const NANOEM_DECL_NOEXCEPT;
@@ -651,7 +640,6 @@ public:
     ITrack *selectedTrack() NANOEM_DECL_NOEXCEPT;
     void setSelectedTrack(ITrack *value);
     EditingMode editingMode() const NANOEM_DECL_NOEXCEPT;
-    bool isModelEditing() const NANOEM_DECL_NOEXCEPT;
     void setEditingMode(EditingMode value);
     FilePathMode filePathMode() const NANOEM_DECL_NOEXCEPT;
     void setFilePathMode(FilePathMode value);
@@ -690,6 +678,7 @@ public:
     int sampleCount() const NANOEM_DECL_NOEXCEPT;
     nanoem_u32_t sampleLevel() const NANOEM_DECL_NOEXCEPT;
     void setSampleLevel(nanoem_u32_t value);
+    bool isResetAllPassesPending() const NANOEM_DECL_NOEXCEPT;
     bool isDisplaySyncDisabled() const NANOEM_DECL_NOEXCEPT;
     bool isHiddenBoneBoundsRigidBodyDisabled() const NANOEM_DECL_NOEXCEPT;
     void setHiddenBoneBoundsRigidBodyDisabled(bool value);
@@ -717,6 +706,8 @@ public:
     void setViewportCaptured(bool value);
     bool isViewportHovered() const NANOEM_DECL_NOEXCEPT;
     void setViewportHovered(bool value);
+    bool isViewportWindowDetached() const NANOEM_DECL_NOEXCEPT;
+    void setViewportWindowDetached(bool value);
     bool isPrimaryCursorTypeLeft() const NANOEM_DECL_NOEXCEPT;
     void setPrimaryCursorTypeLeft(bool value);
     bool isPlayingAudioPartEnabled() const NANOEM_DECL_NOEXCEPT;
@@ -743,6 +734,8 @@ public:
     void setMipmapEnabled(bool value);
     bool isPowerSavingEnabled() const NANOEM_DECL_NOEXCEPT;
     void setPowerSavingEnabled(bool value);
+    bool isModelEditingEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setModelEditingEnabled(bool value);
     bool isActive() const NANOEM_DECL_NOEXCEPT;
     void setActive(bool value);
 
@@ -823,7 +816,7 @@ private:
     static void adjustViewportImageRect(const Vector4 viewportLayoutRect, const Vector2 &viewportImageSize,
         Vector4 &viewportImageRect) NANOEM_DECL_NOEXCEPT;
     static bool matchDrawableEffect(const IDrawable *drawable, const Effect *ownerEffect, const String &expr);
-    static void reverseLocalTransformBone(
+    static void symmetricLocalTransformBone(
         const String &name, const Vector3 &translation, const Quaternion &orientation, Model *model);
 
     void addEffectOrderSet(IDrawable *drawable);
@@ -843,8 +836,8 @@ private:
     bool loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const URI &fileURI,
         const StringPair &condition, const ByteArray &bytes, OffscreenRenderTargetConditionList &newConditionsoid,
         Progress &progress, Error &error);
-    void internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool reverse, Error &error);
-    void internalPasteAllSelectedBones(Model *model, bool invert, Error &error);
+    void internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool symmetric, Error &error);
+    void internalPasteAllSelectedBones(Model *model, bool symmetric, Error &error);
     void internalSeek(nanoem_frame_index_t frameIndex);
     void internalSeek(nanoem_frame_index_t frameIndex, nanoem_f32_t amount, nanoem_f32_t delta);
     void destroyDetachedEffect(Effect *effect);
@@ -954,6 +947,7 @@ private:
     Vector2SI32 m_scrollDelta;
     Vector2UI16 m_windowSize;
     Vector2UI16 m_viewportImageSize;
+    Vector2UI16 m_viewportPadding;
     Vector4 m_viewportBackgroundColor;
     OffscreenRenderTargetConditionListMap m_allOffscreenRenderTargets;
     OffscreenRenderTargetEffectSetMap m_allOffscreenRenderTargetEffectSets;

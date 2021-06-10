@@ -27,13 +27,17 @@
 #include "emapp/Project.h"
 #include "emapp/ResourceBundle.h"
 #include "emapp/StringUtils.h"
+#include "emapp/UUID.h"
 #include "emapp/command/TransformBoneCommand.h"
 #include "emapp/command/TransformMorphCommand.h"
+#include "emapp/internal/DebugDrawer.h"
 #include "emapp/internal/LineDrawer.h"
 #include "emapp/internal/ModelObjectSelection.h"
 #include "emapp/model/BindPose.h"
 #include "emapp/model/Exporter.h"
+#include "emapp/model/IGizmo.h"
 #include "emapp/model/ISkinDeformer.h"
+#include "emapp/model/IVertexWeightPainter.h"
 #include "emapp/model/Importer.h"
 #include "emapp/model/Joint.h"
 #include "emapp/model/Label.h"
@@ -42,6 +46,7 @@
 #include "emapp/model/Vertex.h"
 #include "emapp/private/CommonInclude.h"
 
+#include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtx/dual_quaternion.hpp"
 #include "glm/gtx/matrix_interpolation.hpp"
 #include "glm/gtx/quaternion.hpp"
@@ -51,9 +56,8 @@
 #include "sokol/sokol_time.h"
 #include "undo/undo.h"
 
-#include "emapp/internal/DebugDrawer.h"
-
-#include <glm/gtc/matrix_inverse.hpp>
+#define PAR_SHAPES_T uint32_t
+#include "par/par_shapes.h"
 
 #if defined(NANOEM_ENABLE_TBB)
 #include "tbb/tbb.h"
@@ -65,7 +69,9 @@
 namespace nanoem {
 namespace {
 
-const int kMaxBoneUniforms = 55;
+static const nanoem_f32_t kDrawBoneConnectionThickness = 1.0f;
+static const nanoem_f32_t kDrawVertexNormalScaleFactor = 0.1f;
+static const int kMaxBoneUniforms = 55;
 
 enum PrivateStateFlags {
     kPrivateStateVisible = 1 << 1,
@@ -74,22 +80,134 @@ enum PrivateStateFlags {
     kPrivateStateShowAllBones = 1 << 4,
     kPrivateStateShowAllVertexPoints = 1 << 5,
     kPrivateStateShowAllVertexFaces = 1 << 6,
-    kPrivateStateShowAllRigidBodies = 1 << 7,
-    kPrivateStateShowAllRigidBodiesColorByShape = 1 << 8,
+    kPrivateStateShowAllRigidBodyShapes = 1 << 7,
+    kPrivateStateShowAllRigidBodyShapesColorByShape = 1 << 8,
     kPrivateStateComputeShaderSkinning = 1 << 9,
     kPrivateStateMorphWeightFocus = 1 << 10,
     kPrivateStateEnableShadow = 1 << 11,
     kPrivateStateEnableShadowMap = 1 << 12,
     kPrivateStateEnableAddBlend = 1 << 13,
-    kPrivateStateShowAllJoints = 1 << 14,
+    kPrivateStateShowAllJointShapes = 1 << 14,
     kPrivateStateDirty = 1 << 15,
     kPrivateStateDirtyStagingBuffer = 1 << 16,
     kPrivateStateDirtyMorph = 1 << 17,
     kPrivateStatePhysicsSimulation = 1 << 18,
     kPrivateStateEnableGroundShadow = 1 << 19,
+    kPrivateStateShowAllMaterialShapes = 1 << 20,
+    kPrivateStateShowAllVertexWeights = 1 << 21,
+    kPrivateStateBlendingVertexWeightsEnabled = 1 << 22,
+    kPrivateStateShowAllVertexNormals = 1 << 23,
     kPrivateStateReserved = 1 << 31,
 };
 static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStatePhysicsSimulation | kPrivateStateEnableGroundShadow;
+
+struct PrivateModelUtils : private NonCopyable {
+    static inline Matrix4x4
+    boneWorldMatrix(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        return bone ? bone->worldTransform() : Constants::kIdentity;
+    }
+    static inline bool
+    isBoneDirty(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        return bone ? bone->isDirty() : false;
+    }
+    static inline bool
+    isBoneEditingVisible(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Bone *bone = model::Bone::cast(bonePtr);
+        return bone ? !bone->isEditingMasked() : false;
+    }
+    static inline bool
+    isMaterialVisible(const nanoem_model_material_t *materialPtr) NANOEM_DECL_NOEXCEPT
+    {
+        const model::Material *material = model::Material::cast(materialPtr);
+        return material ? material->isVisible() : false;
+    }
+};
+
+struct DummyLight : ILight {
+    DummyLight(Project *project)
+        : m_project(project)
+    {
+    }
+    void
+    destroy() NANOEM_DECL_NOEXCEPT
+    {
+    }
+    void
+    reset() NANOEM_DECL_NOEXCEPT
+    {
+    }
+    void
+    synchronizeParameters(const Motion *motion, const nanoem_frame_index_t frameIndex)
+    {
+        BX_UNUSED_2(motion, frameIndex);
+    }
+    void
+    getShadowTransform(Matrix4x4 &value) const
+    {
+        value = Constants::kIdentity;
+    }
+    const Project *
+    project() const NANOEM_DECL_NOEXCEPT
+    {
+        return m_project;
+    }
+    Project *
+    project() NANOEM_DECL_NOEXCEPT
+    {
+        return m_project;
+    }
+    Vector3
+    color() const NANOEM_DECL_NOEXCEPT
+    {
+        return Vector3(1);
+    }
+    void
+    setColor(const Vector3 &value)
+    {
+        BX_UNUSED_1(value);
+    }
+    Vector3
+    direction() const NANOEM_DECL_NOEXCEPT
+    {
+        return m_project->activeLight()->direction();
+    }
+    void
+    setDirection(const Vector3 &value)
+    {
+        BX_UNUSED_1(value);
+    }
+    Vector3
+    groundShadowColor() const NANOEM_DECL_NOEXCEPT
+    {
+        return Vector3(1, 0, 0);
+    }
+    bool
+    isTranslucentGroundShadowEnabled() const NANOEM_DECL_NOEXCEPT
+    {
+        return true;
+    }
+    void
+    setTranslucentGroundShadowEnabled(bool value)
+    {
+        BX_UNUSED_1(value);
+    }
+    bool
+    isDirty() const NANOEM_DECL_NOEXCEPT
+    {
+        return false;
+    }
+    void
+    setDirty(bool value)
+    {
+        BX_UNUSED_1(value);
+    }
+    Project *m_project;
+};
 
 } /* namespace anonymous */
 
@@ -148,37 +266,6 @@ Model::VertexUnit::performSkinning(nanoem_f32_t edgeSizeFactor, const model::Ver
 }
 
 void
-Model::VertexUnit::setWeightColor(const model::Bone *bone, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT
-{
-    performSkinningByType(vertex, &m_position, &m_normal);
-    Vector3 color(Constants::kZeroV3);
-    for (nanoem_rsize_t i = 0; i < 4; i++) {
-        const model::Bone *item = vertex->bone(i);
-        if (item && item == bone) {
-            nanoem_f32_t component = 0;
-            switch (i) {
-            case 0:
-                component = bx::simd_x(vertex->m_simd.m_weights);
-                break;
-            case 1:
-                component = bx::simd_y(vertex->m_simd.m_weights);
-                break;
-            case 2:
-                component = bx::simd_z(vertex->m_simd.m_weights);
-                break;
-            case 3:
-                component = bx::simd_w(vertex->m_simd.m_weights);
-                break;
-            }
-            color = Color::jet(component);
-            break;
-        }
-    }
-    m_info = bx::simd_ld(glm::value_ptr(Vector4(color, 1)));
-    setUVA(vertex);
-}
-
-void
 Model::VertexUnit::prepareSkinning(
     const model::Material::BoneIndexHashMap *indexHashMap, const model::Vertex *vertex) NANOEM_DECL_NOEXCEPT
 {
@@ -189,8 +276,7 @@ Model::VertexUnit::prepareSkinning(
             const Int32HashMap &hashMap = it->second;
             nanoem_f32_t values[4];
             for (int i = 0; i < 4; i++) {
-                int vertexBoneIndex = nanoemModelObjectGetIndex(
-                    nanoemModelBoneGetModelObject(nanoemModelVertexGetBoneObject(vertex->data(), i)));
+                int vertexBoneIndex = model::Bone::index(nanoemModelVertexGetBoneObject(vertex->data(), i));
                 Int32HashMap::const_iterator it2 = hashMap.find(vertexBoneIndex);
                 values[i] = nanoem_f32_t(it2 != hashMap.end() ? it2->second : -1);
             }
@@ -384,10 +470,13 @@ Model::VertexUnit::performSkinningByType(
     static pfn_performSkinning s_funcs[] = { performSkinningBdef1, performSkinningBdef2, performSkinningBdef4,
         performSkinningSdef, performSkinningQdef };
     nanoem_model_vertex_type_t type = nanoemModelVertexGetType(vertex->data());
-    s_funcs[type](vertex, bx::simd_add(vertex->m_simd.m_origin, vertex->m_simd.m_delta), vertex->m_simd.m_normal, p, n);
+    if (type >= NANOEM_MODEL_VERTEX_TYPE_FIRST_ENUM && type < NANOEM_MODEL_VERTEX_TYPE_MAX_ENUM) {
+        s_funcs[type](
+            vertex, bx::simd_add(vertex->m_simd.m_origin, vertex->m_simd.m_delta), vertex->m_simd.m_normal, p, n);
+    }
 }
 
-Model::ImportSetting::ImportSetting(const URI &fileURI)
+Model::ImportDescription::ImportDescription(const URI &fileURI)
     : m_fileURI(fileURI)
     , m_transform(1)
     , m_fileType(kFileTypeNone)
@@ -424,16 +513,16 @@ Model::ImportSetting::ImportSetting(const URI &fileURI)
     m_comment[NANOEM_LANGUAGE_TYPE_JAPANESE] = m_comment[NANOEM_LANGUAGE_TYPE_ENGLISH] = comment;
 }
 
-Model::ImportSetting::~ImportSetting() NANOEM_DECL_NOEXCEPT
+Model::ImportDescription::~ImportDescription() NANOEM_DECL_NOEXCEPT
 {
 }
 
-Model::ExportSetting::ExportSetting()
+Model::ExportDescription::ExportDescription()
     : m_transform(1)
 {
 }
 
-Model::ExportSetting::~ExportSetting() NANOEM_DECL_NOEXCEPT
+Model::ExportDescription::~ExportDescription() NANOEM_DECL_NOEXCEPT
 {
 }
 
@@ -471,13 +560,17 @@ void
 Model::DrawArrayBuffer::destroy()
 {
     SG_INSERT_MARKERF("Model::DrawArrayBuffer::destroy(vertex=%d", m_buffer.id);
-    sg::destroy_buffer(m_buffer);
-    m_buffer = { SG_INVALID_ID };
+    if (sg::is_valid(m_buffer)) {
+        sg::destroy_buffer(m_buffer);
+        m_buffer = { SG_INVALID_ID };
+    }
+    m_vertices.clear();
 }
 
 Model::DrawIndexedBuffer::DrawIndexedBuffer()
+    : m_color(0xff)
 {
-    m_vertexBuffer = m_indexBuffer = { SG_INVALID_ID };
+    m_vertexBuffer = m_indexBuffer = m_activeIndexBuffer = { SG_INVALID_ID };
 }
 
 Model::DrawIndexedBuffer::~DrawIndexedBuffer() NANOEM_DECL_NOEXCEPT
@@ -496,7 +589,7 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
     if (!sg::is_valid(m_vertexBuffer)) {
         size_t size = sizeof(m_vertices[0]) * numVertices;
         m_vertices.resize(numVertices);
-        const glm::u8vec4 &normalizedColor = color * Vector4(0xff);
+        const Vector4U8 &normalizedColor = color * Vector4(0xff);
         for (nanoem_u32_t i = 0; i < numVertices; i++) {
             sg::LineVertexUnit &unit = m_vertices[i];
             unit.m_position = Vector4(glm::make_vec3(&shape->points[i * 3]), 1);
@@ -512,14 +605,15 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
     }
     if (!sg::is_valid(m_indexBuffer)) {
         nanoem_u32_t numIndices = Inline::saturateInt32U(shape->ntriangles) * 3;
-        size_t size = sizeof(m_indices[0]) * numIndices;
-        m_indices.resize(numIndices);
+        VertexIndexList indices(numIndices);
+        size_t size = sizeof(indices[0]) * numIndices;
+        indices.resize(numIndices);
         for (nanoem_u32_t i = 0; i < numIndices; i++) {
-            m_indices[i] = shape->triangles[i];
+            indices[i] = shape->triangles[i];
         }
         sg_buffer_desc desc;
         Inline::clearZeroMemory(desc);
-        desc.data.ptr = m_indices.data();
+        desc.data.ptr = indices.data();
         desc.data.size = desc.size = size;
         desc.usage = SG_USAGE_IMMUTABLE;
         desc.type = SG_BUFFERTYPE_INDEXBUFFER;
@@ -527,6 +621,96 @@ Model::DrawIndexedBuffer::fillShape(const par_shapes_mesh *shape, const Vector4 
         nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
     }
     return numVertices;
+}
+
+void
+Model::DrawIndexedBuffer::ensureVertexBufferInitialized(const char *name, nanoem_rsize_t numVertices)
+{
+    if (!sg::is_valid(m_vertexBuffer)) {
+        m_vertices.resize(glm::max(numVertices, size_t(1)));
+        sg_buffer_desc desc;
+        Inline::clearZeroMemory(desc);
+        desc.size = sizeof(m_vertices[0]) * m_vertices.size();
+        desc.usage = SG_USAGE_DYNAMIC;
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/Lines/VertexBuffer", name);
+            desc.label = label;
+        }
+        m_vertexBuffer = sg::make_buffer(&desc);
+        nanoem_assert(sg::query_buffer_state(m_vertexBuffer) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
+        SG_LABEL_BUFFER(m_vertexBuffer, desc.label);
+    }
+}
+
+void
+Model::DrawIndexedBuffer::ensureIndexBufferInitialized(
+    const char *name, const nanoem_u32_t *vertexIndices, nanoem_rsize_t numVertexIndices, bool line)
+{
+    if (!sg::is_valid(m_indexBuffer)) {
+        nanoem_u32_t numAllocateVertexIndices;
+        IndexList indices;
+        if (line) {
+            numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
+            indices.resize(numAllocateVertexIndices);
+            IndexType *indexBuffer = indices.data();
+            for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
+                const nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1],
+                                   vertexIndex2 = vertexIndices[i + 2];
+                const nanoem_rsize_t offset = i * 2;
+                indexBuffer[offset + 0] = vertexIndex0;
+                indexBuffer[offset + 1] = vertexIndex1;
+                indexBuffer[offset + 2] = vertexIndex1;
+                indexBuffer[offset + 3] = vertexIndex2;
+                indexBuffer[offset + 4] = vertexIndex2;
+                indexBuffer[offset + 5] = vertexIndex0;
+            }
+        }
+        else {
+            numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices);
+            indices.resize(numAllocateVertexIndices);
+            IndexType *indexBuffer = indices.data();
+            for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
+                const nanoem_u32_t vertexIndex0 = vertexIndices[i], vertexIndex1 = vertexIndices[i + 1],
+                                   vertexIndex2 = vertexIndices[i + 2];
+                indexBuffer[i + 0] = vertexIndex0;
+                indexBuffer[i + 1] = vertexIndex1;
+                indexBuffer[i + 2] = vertexIndex2;
+            }
+        }
+        sg_buffer_desc desc;
+        Inline::clearZeroMemory(desc);
+        if (numVertexIndices > 0) {
+            desc.data.size = desc.size = sizeof(indices[0]) * numAllocateVertexIndices;
+            desc.data.ptr = indices.data();
+        }
+        else {
+            static const IndexType kDummyIndex = 0;
+            desc.data.size = desc.size = sizeof(kDummyIndex);
+            desc.data.ptr = &kDummyIndex;
+        }
+        desc.usage = SG_USAGE_IMMUTABLE;
+        desc.type = SG_BUFFERTYPE_INDEXBUFFER;
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/Lines/IndexBuffer", name);
+            desc.label = label;
+        }
+        m_indexBuffer = sg::make_buffer(&desc);
+        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
+        SG_LABEL_BUFFER(m_indexBuffer, desc.label);
+    }
+}
+
+void
+Model::DrawIndexedBuffer::update()
+{
+    const int vertexBufferSize = Inline::saturateInt32(m_vertices.size() * sizeof(m_vertices[0]));
+    sg::update_buffer(m_vertexBuffer, m_vertices.data(), vertexBufferSize);
+    if (sg::is_valid(m_activeIndexBuffer)) {
+        const int activeIndexBufferSize = Inline::saturateInt32(m_activeIndices.size() * sizeof(m_activeIndices[0]));
+        sg::update_buffer(m_activeIndexBuffer, m_activeIndices.data(), activeIndexBufferSize);
+    }
 }
 
 void
@@ -541,12 +725,18 @@ Model::DrawIndexedBuffer::destroy()
         sg::destroy_buffer(m_indexBuffer);
         m_indexBuffer = { SG_INVALID_ID };
     }
+    if (sg::is_valid(m_activeIndexBuffer)) {
+        sg::destroy_buffer(m_activeIndexBuffer);
+        m_activeIndexBuffer = { SG_INVALID_ID };
+    }
+    m_vertices.clear();
+    m_activeIndices.clear();
 }
 
 StringList
 Model::loadableExtensions()
 {
-    static const String kLoadableModelExtensions[] = { String("pmd"), String("pmx"), String() };
+    static const String kLoadableModelExtensions[] = { String("pmx"), String("pmd"), String() };
     return StringList(
         &kLoadableModelExtensions[0], &kLoadableModelExtensions[BX_COUNTOF(kLoadableModelExtensions) - 1]);
 }
@@ -587,6 +777,82 @@ Model::setEdgePipelineDescription(sg_pipeline_desc &desc)
     ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_info), SG_VERTEXFORMAT_FLOAT4 };
 }
 
+void
+Model::generateNewModelData(const NewModelDescription &desc, nanoem_unicode_string_factory_t *factory, ByteArray &bytes,
+    nanoem_status_t &status)
+{
+    nanoem_mutable_buffer_t *mutableBuffer = nanoemMutableBufferCreate(&status);
+    nanoem_mutable_model_t *mutableModel = nanoemMutableModelCreate(factory, &status);
+    nanoem_model_t *originModel = nanoemMutableModelGetOriginObject(mutableModel);
+    StringUtils::UnicodeStringScope scope(factory);
+    {
+        nanoemMutableModelSetAdditionalUVSize(mutableModel, 0);
+        nanoemMutableModelSetCodecType(mutableModel, NANOEM_CODEC_TYPE_UTF16);
+        nanoemMutableModelSetFormatType(mutableModel, NANOEM_MODEL_FORMAT_TYPE_PMX_2_0);
+        for (int i = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; i < NANOEM_LANGUAGE_TYPE_MAX_ENUM; i++) {
+            const nanoem_language_type_t language = static_cast<nanoem_language_type_t>(i);
+            if (StringUtils::tryGetString(factory, desc.m_name[i], scope)) {
+                nanoemMutableModelSetName(mutableModel, scope.value(), language, &status);
+            }
+            if (StringUtils::tryGetString(factory, desc.m_comment[i], scope)) {
+                nanoemMutableModelSetComment(mutableModel, scope.value(), language, &status);
+            }
+        }
+    }
+    nanoem_mutable_model_bone_t *mutableCenterBone = nanoemMutableModelBoneCreate(originModel, &status);
+    {
+        if (StringUtils::tryGetString(
+                factory, reinterpret_cast<const char *>(model::Bone::kNameCenterInJapanese), scope)) {
+            nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, "Center", scope)) {
+            nanoemMutableModelBoneSetName(mutableCenterBone, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        nanoemMutableModelBoneSetVisible(mutableCenterBone, true);
+        nanoemMutableModelBoneSetMovable(mutableCenterBone, true);
+        nanoemMutableModelBoneSetRotateable(mutableCenterBone, true);
+        nanoemMutableModelBoneSetUserHandleable(mutableCenterBone, true);
+        nanoemMutableModelInsertBoneObject(mutableModel, mutableCenterBone, -1, &status);
+    }
+    {
+        nanoem_mutable_model_label_t *mutableRootLabel = nanoemMutableModelLabelCreate(originModel, &status);
+        if (StringUtils::tryGetString(factory, "Root", scope)) {
+            nanoemMutableModelLabelSetName(mutableRootLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+            nanoemMutableModelLabelSetName(mutableRootLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        nanoem_mutable_model_label_item_t *mutableLabelItem = nanoemMutableModelLabelItemCreateFromBoneObject(
+            mutableRootLabel, nanoemMutableModelBoneGetOriginObject(mutableCenterBone), &status);
+        nanoemMutableModelLabelInsertItemObject(mutableRootLabel, mutableLabelItem, -1, &status);
+        nanoemMutableModelLabelItemDestroy(mutableLabelItem);
+        nanoemMutableModelLabelSetSpecial(mutableRootLabel, 1);
+        nanoemMutableModelInsertLabelObject(mutableModel, mutableRootLabel, -1, &status);
+        nanoemMutableModelLabelDestroy(mutableRootLabel);
+    }
+    {
+        nanoem_mutable_model_label_t *mutableExpressionLabel = nanoemMutableModelLabelCreate(originModel, &status);
+        if (StringUtils::tryGetString(
+                factory, reinterpret_cast<const char *>(model::Label::kNameExpressionInJapanese), scope)) {
+            nanoemMutableModelLabelSetName(
+                mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, "Expression", scope)) {
+            nanoemMutableModelLabelSetName(
+                mutableExpressionLabel, scope.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        }
+        nanoemMutableModelLabelSetSpecial(mutableExpressionLabel, 1);
+        nanoemMutableModelInsertLabelObject(mutableModel, mutableExpressionLabel, -1, &status);
+        nanoemMutableModelLabelDestroy(mutableExpressionLabel);
+    }
+    nanoemMutableModelBoneDestroy(mutableCenterBone);
+    nanoemMutableModelSaveToBuffer(mutableModel, mutableBuffer, &status);
+    nanoem_buffer_t *buffer = nanoemMutableBufferCreateBufferObject(mutableBuffer, &status);
+    const nanoem_u8_t *dataPtr = nanoemBufferGetDataPtr(buffer);
+    bytes.assign(dataPtr, dataPtr + nanoemBufferGetLength(buffer));
+    nanoemBufferDestroy(buffer);
+    nanoemMutableModelDestroy(mutableModel);
+    nanoemMutableBufferDestroy(mutableBuffer);
+}
+
 Model::Model(Project *project, nanoem_u16_t handle)
     : m_handle(handle)
     , m_project(project)
@@ -594,17 +860,21 @@ Model::Model(Project *project, nanoem_u16_t handle)
     , m_selection(nullptr)
     , m_drawer(nullptr)
     , m_skinDeformer(nullptr)
+    , m_gizmo(nullptr)
+    , m_vertexWeightPainter(nullptr)
     , m_opaque(nullptr)
     , m_undoStack(nullptr)
+    , m_editingUndoStack(nullptr)
     , m_activeConstraintPtr(nullptr)
     , m_activeMaterialPtr(nullptr)
+    , m_hoveredBonePtr(nullptr)
     , m_activeBonePairPtr(nullptr, nullptr)
     , m_activeEffectPtrPair(nullptr, nullptr)
     , m_screenImage(nullptr)
     , m_sharedFallbackBone(nullptr)
     , m_userData(nullptr, nullptr)
     , m_edgeColor(0, 0, 0, 1)
-    , m_transformAxisType(kAxisTypeMaxEnum)
+    , m_transformAxisType(kAxisTypeNone)
     , m_transformCoordinateType(kTransformCoordinateTypeLocal)
     , m_states(kPrivateStateInitialValue)
     , m_edgeSizeScaleFactor(1.0f)
@@ -616,11 +886,12 @@ Model::Model(Project *project, nanoem_u16_t handle)
     nanoem_assert(m_project, "must not be nullptr");
     Inline::clearZeroMemory(m_activeMorphPtr);
     m_vertexBuffers[0] = m_vertexBuffers[1] = m_indexBuffer = { SG_INVALID_ID };
-    m_drawAllPoints.m_buffer = m_drawAllLines.m_vertexBuffer = m_drawAllLines.m_indexBuffer = { SG_INVALID_ID };
     m_activeEffectPtrPair.first = m_project->sharedResourceRepository()->modelProgramBundle();
     m_activeEffectPtrPair.second = nullptr;
     m_selection = nanoem_new(internal::ModelObjectSelection(this));
-    m_undoStack = undoStackCreateWithSoftLimit(undoStackGetSoftLimit(m_project->undoStack()));
+    undo_stack_t *projectUndoStack = m_project->undoStack();
+    m_undoStack = undoStackCreateWithSoftLimit(undoStackGetSoftLimit(projectUndoStack));
+    m_editingUndoStack = undoStackCreateWithSoftLimit(undoStackGetSoftLimit(projectUndoStack));
     m_camera = project->createCamera();
     const ICamera *camera = project->globalCamera();
     m_camera->setAngle(camera->angle());
@@ -637,10 +908,14 @@ Model::~Model() NANOEM_DECL_NOEXCEPT
     nanoem_delete_safe(m_camera);
     nanoem_delete_safe(m_drawer);
     nanoem_delete_safe(m_skinDeformer);
+    nanoem_delete_safe(m_gizmo);
+    nanoem_delete_safe(m_vertexWeightPainter);
     nanoem_delete_safe(m_selection);
     nanoem_delete_safe(m_screenImage);
     undoStackDestroy(m_undoStack);
     m_undoStack = nullptr;
+    undoStackDestroy(m_editingUndoStack);
+    m_editingUndoStack = nullptr;
     nanoemModelDestroy(m_opaque);
     m_activeBonePairPtr.first = m_activeBonePairPtr.second = nullptr;
     m_activeEffectPtrPair.first = nullptr;
@@ -700,25 +975,52 @@ Model::load(const ByteArray &bytes, Error &error)
 }
 
 bool
-Model::load(const nanoem_u8_t *bytes, size_t length, const ImportSetting &setting, Error &error)
+Model::load(const nanoem_u8_t *bytes, size_t length, const ImportDescription &desc, Error &error)
 {
     model::Importer importer(this);
-    return importer.execute(bytes, length, setting, error);
+    bool succeeded = importer.execute(bytes, length, desc, error);
+    if (succeeded) {
+        const nanoem_language_type_t language = m_project->castLanguage();
+        m_name = m_canonicalName = desc.m_name[language];
+        m_comment = desc.m_comment[language];
+        if (m_canonicalName.empty()) {
+            m_canonicalName = desc.m_name[NANOEM_LANGUAGE_TYPE_FIRST_ENUM];
+        }
+    }
+    return succeeded;
 }
 
 bool
-Model::load(const ByteArray &bytes, const ImportSetting &setting, Error &error)
+Model::load(const ByteArray &bytes, const ImportDescription &desc, Error &error)
 {
-    return load(bytes.data(), bytes.size(), setting, error);
+    return load(bytes.data(), bytes.size(), desc, error);
 }
 
 bool
 Model::loadPose(const nanoem_u8_t *bytes, size_t length, Error &error)
 {
     model::BindPose pose;
-    bool result = pose.load(this, bytes, length, error);
+    model::BindPose::BoneTransformMap transforms;
+    model::BindPose::MorphWeightMap weights;
+    bool result = pose.load(bytes, length, project()->unicodeStringFactory(), transforms, weights, error);
     if (result) {
-        performAllMorphsDeform(false);
+        for (model::BindPose::BoneTransformMap::const_iterator it = transforms.begin(), end = transforms.end();
+             it != end; ++it) {
+            if (model::Bone *bone = model::Bone::cast(findBone(it->first))) {
+                bone->setLocalUserTranslation(it->second.first);
+                bone->setLocalUserOrientation(it->second.second);
+                bone->setDirty(true);
+            }
+        }
+        for (model::BindPose::MorphWeightMap::const_iterator it = weights.begin(), end = weights.end(); it != end;
+             ++it) {
+            if (model::Morph *morph = model::Morph::cast(findMorph(it->first))) {
+                morph->setWeight(it->second);
+                morph->setDirty(true);
+            }
+        }
+        deformAllMorphs(true);
+        performAllBonesTransform();
     }
     return result;
 }
@@ -810,17 +1112,17 @@ Model::save(ByteArray &bytes, Error &error) const
 }
 
 bool
-Model::save(IWriter *writer, const ExportSetting &setting, Error &error) const
+Model::save(IWriter *writer, const ExportDescription &desc, Error &error) const
 {
     model::Exporter exporter(this);
-    return exporter.execute(writer, setting, error);
+    return exporter.execute(writer, desc, error);
 }
 
 bool
-Model::save(ByteArray &bytes, const ExportSetting &setting, Error &error) const
+Model::save(ByteArray &bytes, const ExportDescription &desc, Error &error) const
 {
     MemoryWriter writer(&bytes);
-    return save(&writer, setting, error);
+    return save(&writer, desc, error);
 }
 
 bool
@@ -898,53 +1200,16 @@ Model::saveArchive(IFileWriter *writer, Error &error)
 nanoem_u32_t
 Model::createAllImages()
 {
-    const bool flip = !sg::query_features().origin_top_left;
-    Project::ISharedResourceRepository *repository = m_project->sharedResourceRepository();
     nanoem_rsize_t numMaterials;
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-    nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+    sg_wrap mode;
+    nanoem_u32_t flags;
     clearAllLoadingImageItems();
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
-        model::Material *material = model::Material::cast(materialPtr);
-        if (const nanoem_model_texture_t *diffuseTexture = nanoemModelMaterialGetDiffuseTextureObject(materialPtr)) {
-            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(diffuseTexture);
-            nanoem_rsize_t length;
-            nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-            nanoem_u8_t utf8Path[16];
-            nanoemUnicodeStringFactoryToUtf8OnStackEXT(factory, path, &length, utf8Path, sizeof(utf8Path), &status);
-            if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(utf8Path))) {
-                m_screenImage = nanoem_new(Image);
-                m_screenImage->m_filename = Project::kViewportSecondaryName;
-                m_screenImage->m_handle = m_project->viewportSecondaryImage();
-                Inline::clearZeroMemory(m_screenImage->m_description);
-                material->setDiffuseImage(m_screenImage);
-            }
-            else {
-                const nanoem_u32_t flags = ImageLoader::kFlagsEnableMipmap | ImageLoader::kFlagsFallbackWhiteOpaque;
-                material->setDiffuseImage(createImage(path, SG_WRAP_REPEAT, flags));
-            }
-        }
-        if (const nanoem_model_texture_t *sphereTexture = nanoemModelMaterialGetSphereMapTextureObject(materialPtr)) {
-            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(sphereTexture);
-            uint32_t flags = nanoemModelMaterialGetSphereMapTextureType(materialPtr) ==
-                    NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD
-                ? ImageLoader::kFlagsFallbackBlackOpaque
-                : ImageLoader::kFlagsFallbackWhiteOpaque;
-            if (flip) {
-                flags |= ImageLoader::kFlagsEnableFlipY;
-            }
-            material->setSphereMapImage(createImage(path, SG_WRAP_CLAMP_TO_EDGE, flags));
-        }
-        if (nanoemModelMaterialIsToonShared(materialPtr)) {
-            const int index = nanoemModelMaterialGetToonTextureIndex(materialPtr);
-            material->setToonImage(repository->toonImage(index));
-            material->setToonColor(repository->toonColor(index) / Vector4(0xff));
-        }
-        else if (const nanoem_model_texture_t *toonTexture = nanoemModelMaterialGetToonTextureObject(materialPtr)) {
-            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(toonTexture);
-            material->setToonImage(createImage(path, SG_WRAP_CLAMP_TO_EDGE, ImageLoader::kFlagsFallbackWhiteOpaque));
-        }
+        updateDiffuseImage(materialPtr, mode, flags);
+        updateSphereMapImage(materialPtr, mode, flags);
+        updateToonImage(materialPtr, mode, flags);
     }
     return Inline::saturateInt32U(m_loadingImageItems.size());
 }
@@ -987,8 +1252,8 @@ Model::setupAllBindings()
         model::Bone *bone = model::Bone::create();
         bone->bind(bonePtr);
         bone->resetLanguage(bonePtr, factory, language);
-        if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bonePtr)) {
-            bindConstraint(const_cast<nanoem_model_constraint_t *>(constraint));
+        if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(bonePtr)) {
+            bindConstraint(constraintPtr);
         }
         if (nanoemModelBoneHasInherentOrientation(bonePtr) || nanoemModelBoneHasInherentTranslation(bonePtr)) {
             const nanoem_model_bone_t *parentBone = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
@@ -1106,7 +1371,8 @@ Model::upload()
 {
     SG_PUSH_GROUPF("Model::upload(name=%s)", canonicalNameConstString());
     model::Material::IndexHashMap materialIndexHash;
-    createVertexIndexBuffers();
+    initializeAllStagingVertexBuffers();
+    initializeStagingIndexBuffer();
     setActiveEffect(m_project->sharedResourceRepository()->modelProgramBundle());
 #if defined(__APPLE__)
 #ifdef NDEBUG
@@ -1156,7 +1422,7 @@ Model::uploadArchive(const Archiver &archiver, Progress &progress, Error &error)
             else {
                 ImageLoader::fill1x1TransparentPixelImage(desc);
             }
-            uploadImage(item->m_filename, desc);
+            internalUploadImage(item->m_filename, desc, false);
         }
     }
     clearAllLoadingImageItems();
@@ -1203,12 +1469,39 @@ Model::loadAllImages(Progress &progress, Error &error)
             else {
                 ImageLoader::fill1x1TransparentPixelImage(desc);
             }
-            uploadImage(item->m_filename, desc);
+            internalUploadImage(item->m_filename, desc, false);
         }
         progress.increment();
     }
     clearAllLoadingImageItems();
     SG_POP_GROUP();
+}
+
+void
+Model::uploadDiffuseImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error)
+{
+    sg_wrap mode;
+    nanoem_u32_t flags;
+    updateDiffuseImage(materialPtr, mode, flags);
+    m_project->sharedImageLoader()->load(fileURI, this, mode, flags, error);
+}
+
+void
+Model::uploadSphereMapImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error)
+{
+    sg_wrap mode;
+    nanoem_u32_t flags;
+    updateSphereMapImage(materialPtr, mode, flags);
+    m_project->sharedImageLoader()->load(fileURI, this, mode, flags, error);
+}
+
+void
+Model::uploadToonImage(const nanoem_model_material_t *materialPtr, const URI &fileURI, Error &error)
+{
+    sg_wrap mode;
+    nanoem_u32_t flags;
+    updateToonImage(materialPtr, mode, flags);
+    m_project->sharedImageLoader()->load(fileURI, this, mode, flags, error);
 }
 
 void
@@ -1253,10 +1546,11 @@ Model::writeLoadCommandMessage(Error &error)
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         Nanoem__Application__Bone *b = nanoem_new(Nanoem__Application__Bone);
         nanoem__application__bone__init(b);
-        const nanoem_model_bone_t *bone = bones[i];
-        b->index = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bone));
+        const nanoem_model_bone_t *bonePtr = bones[i];
+        b->index = model::Bone::index(bonePtr);
         b->name = reinterpret_cast<char *>(nanoemUnicodeStringFactoryGetByteArrayEncoding(factory,
-            nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8, &status));
+            nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8,
+            &status));
         command.bones[i] = b;
     }
     nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_opaque, &numMorphs);
@@ -1266,7 +1560,7 @@ Model::writeLoadCommandMessage(Error &error)
         Nanoem__Application__Morph *m = nanoem_new(Nanoem__Application__Morph);
         nanoem__application__morph__init(m);
         const nanoem_model_morph_t *morph = morphs[i];
-        m->index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(morph));
+        m->index = model::Morph::index(morph);
         m->name = reinterpret_cast<char *>(nanoemUnicodeStringFactoryGetByteArrayEncoding(factory,
             nanoemModelMorphGetName(morph, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), &length, NANOEM_CODEC_TYPE_UTF8, &status));
         command.morphs[i] = m;
@@ -1447,12 +1741,63 @@ Model::synchronizeAllRigidBodiesTransformFeedbackToSimulation()
 }
 
 void
+Model::rebuildAllVertexBuffers(bool enableSkinFactory)
+{
+    if (m_skinDeformer) {
+        m_skinDeformer->destroy(m_vertexBuffers[0], 0);
+        m_skinDeformer->destroy(m_vertexBuffers[1], 1);
+        nanoem_delete_safe(m_skinDeformer);
+    }
+    else {
+        sg::destroy_buffer(m_vertexBuffers[0]);
+        sg::destroy_buffer(m_vertexBuffers[1]);
+    }
+    clearAllDrawVertexBuffers();
+    m_vertexBuffers[0] = m_vertexBuffers[1] = { SG_INVALID_ID };
+    {
+        nanoem_rsize_t numVertices;
+        nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            const nanoem_model_vertex_t *vertexPtr = vertices[i];
+            if (model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+                vertex->initialize(vertexPtr);
+            }
+        }
+    }
+    if (enableSkinFactory) {
+        initializeAllStagingVertexBuffers();
+    }
+    else {
+        initializeVertexBufferByteArray();
+        createAllStagingVertexBuffers();
+    }
+    markStagingVertexBufferDirty();
+}
+
+void
+Model::rebuildIndexBuffer()
+{
+    sg::destroy_buffer(m_indexBuffer);
+    m_indexBuffer = { SG_INVALID_ID };
+    initializeStagingIndexBuffer();
+}
+
+void
+Model::clearAllDrawVertexBuffers()
+{
+    m_drawAllVertexFaces.destroy();
+    m_drawAllVertexNormals.destroy();
+    m_drawAllVertexPoints.destroy();
+    m_drawAllVertexWeights.destroy();
+}
+
+void
 Model::performAllBonesTransform()
 {
     applyAllBonesTransform(PhysicsEngine::kSimulationTimingBefore);
     solveAllConstraints();
     PhysicsEngine *engine = m_project->physicsEngine();
-    if (engine->mode() == PhysicsEngine::kSimulationModeEnableAnytime) {
+    if (engine->simulationMode() == PhysicsEngine::kSimulationModeEnableAnytime) {
         synchronizeAllRigidBodiesTransformFeedbackToSimulation();
         engine->stepSimulation(m_project->physicsSimulationTimeStep());
         synchronizeAllRigidBodiesTransformFeedbackFromSimulation(PhysicsEngine::kRigidBodyFollowBoneSkip);
@@ -1465,89 +1810,85 @@ Model::performAllBonesTransform()
 }
 
 void
-Model::performAllMorphsDeform(bool resetAll)
+Model::resetAllMorphDeformStates()
 {
-    if (resetAll) {
-        nanoem_rsize_t numObjects, numChildren;
-        nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_opaque, &numObjects);
-        const Motion *motion = m_project->resolveMotion(this);
-        nanoem_frame_index_t currentFrameIndex = m_project->currentLocalFrameIndex();
-        model::Morph::Set activeMorphs;
-        for (int i = NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM; i < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM; i++) {
-            activeMorphs.insert(activeMorph(static_cast<nanoem_model_morph_category_t>(i)));
+    nanoem_rsize_t numObjects, numChildren;
+    nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_opaque, &numObjects);
+    const Motion *motion = m_project->resolveMotion(this);
+    nanoem_frame_index_t currentFrameIndex = m_project->currentLocalFrameIndex();
+    model::Morph::Set activeMorphs;
+    for (int i = NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM; i < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM; i++) {
+        activeMorphs.insert(activeMorph(static_cast<nanoem_model_morph_category_t>(i)));
+    }
+    for (nanoem_rsize_t i = 0; i < numObjects; i++) {
+        const nanoem_model_morph_t *morphPtr = morphs[i];
+        switch (nanoemModelMorphGetType(morphPtr)) {
+        case NANOEM_MODEL_MORPH_TYPE_BONE: {
+            const nanoem_model_morph_bone_t *const *children =
+                nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_bone_t *child = children[i];
+                const nanoem_model_bone_t *targetBonePtr = nanoemModelMorphBoneGetBoneObject(child);
+                if (model::Bone *bone = model::Bone::cast(targetBonePtr)) {
+                    const nanoem_model_rigid_body_t *rigidBodyPtr = nullptr;
+                    BoneBoundRigidBodyMap::const_iterator it = m_boneBoundRigidBodies.find(targetBonePtr);
+                    if (it != m_boneBoundRigidBodies.end()) {
+                        rigidBodyPtr = it->second;
+                    }
+                    bone->resetMorphTransform();
+                    bone->synchronizeMotion(motion, targetBonePtr, rigidBodyPtr, currentFrameIndex, 0);
+                }
+            }
+            break;
         }
-        for (nanoem_rsize_t i = 0; i < numObjects; i++) {
-            const nanoem_model_morph_t *morphPtr = morphs[i];
-            switch (nanoemModelMorphGetType(morphPtr)) {
-            case NANOEM_MODEL_MORPH_TYPE_BONE: {
-                const nanoem_model_morph_bone_t *const *children =
-                    nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_bone_t *child = children[i];
-                    const nanoem_model_bone_t *targetBonePtr = nanoemModelMorphBoneGetBoneObject(child);
-                    if (model::Bone *bone = model::Bone::cast(targetBonePtr)) {
-                        const nanoem_model_rigid_body_t *rigidBodyPtr = nullptr;
-                        BoneBoundRigidBodyMap::const_iterator it = m_boneBoundRigidBodies.find(targetBonePtr);
-                        if (it != m_boneBoundRigidBodies.end()) {
-                            rigidBodyPtr = it->second;
-                        }
-                        bone->resetMorphTransform();
-                        bone->synchronizeMotion(motion, targetBonePtr, rigidBodyPtr, currentFrameIndex, 0);
+        case NANOEM_MODEL_MORPH_TYPE_FLIP: {
+            const nanoem_model_morph_flip_t *const *children =
+                nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_flip_t *child = children[i];
+                const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphFlipGetMorphObject(child);
+                if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
+                    if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
+                        const nanoem_unicode_string_t *name =
+                            nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+                        morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
                     }
                 }
-                break;
             }
-            case NANOEM_MODEL_MORPH_TYPE_FLIP: {
-                const nanoem_model_morph_flip_t *const *children =
-                    nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_flip_t *child = children[i];
-                    const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphFlipGetMorphObject(child);
-                    if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
-                        if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
-                            const nanoem_unicode_string_t *name =
-                                nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
-                            morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
-                        }
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_GROUP: {
+            const nanoem_model_morph_group_t *const *children =
+                nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_group_t *child = children[i];
+                const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphGroupGetMorphObject(child);
+                if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
+                    if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
+                        const nanoem_unicode_string_t *name =
+                            nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+                        morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
                     }
                 }
-                break;
             }
-            case NANOEM_MODEL_MORPH_TYPE_GROUP: {
-                const nanoem_model_morph_group_t *const *children =
-                    nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_group_t *child = children[i];
-                    const nanoem_model_morph_t *targetMorphPtr = nanoemModelMorphGroupGetMorphObject(child);
-                    if (activeMorphs.find(targetMorphPtr) == activeMorphs.end()) {
-                        if (model::Morph *morph = model::Morph::cast(targetMorphPtr)) {
-                            const nanoem_unicode_string_t *name =
-                                nanoemModelMorphGetName(targetMorphPtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
-                            morph->synchronizeMotion(motion, name, currentFrameIndex, 0);
-                        }
-                    }
+            break;
+        }
+        case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
+            const nanoem_model_morph_material_t *const *children =
+                nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numChildren);
+            for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+                const nanoem_model_morph_material_t *child = children[i];
+                const nanoem_model_material_t *targetMaterialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
+                if (model::Material *material = model::Material::cast(targetMaterialPtr)) {
+                    material->reset(targetMaterialPtr);
                 }
-                break;
             }
-            case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
-                const nanoem_model_morph_material_t *const *children =
-                    nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numChildren);
-                for (nanoem_rsize_t i = 0; i < numChildren; i++) {
-                    const nanoem_model_morph_material_t *child = children[i];
-                    const nanoem_model_material_t *targetMaterialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
-                    if (model::Material *material = model::Material::cast(targetMaterialPtr)) {
-                        material->reset(targetMaterialPtr);
-                    }
-                }
-                break;
-            }
-            default:
-                break;
-            }
+            break;
+        }
+        default:
+            break;
         }
     }
-    deformAllMorphs(true);
-    performAllBonesTransform();
 }
 
 void
@@ -1563,6 +1904,12 @@ Model::deformAllMorphs(bool checkDirty)
         const nanoem_model_morph_t *morphPtr = morphs[i];
         deformMorph(morphPtr, checkDirty);
     }
+}
+
+bool
+Model::isStagingVertexBufferDirty() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateDirtyStagingBuffer, m_states);
 }
 
 void
@@ -1762,16 +2109,60 @@ Model::resetLanguage()
 }
 
 void
-Model::removeBone(const nanoem_model_bone_t *value)
+Model::addBoneReference(nanoem_model_bone_t *value)
+{
+    if (value) {
+        if (nanoem_model_constraint_t *constraintPtr = nanoemModelBoneGetConstraintObjectMutable(value)) {
+            bindConstraint(constraintPtr);
+        }
+        if (nanoemModelBoneHasInherentOrientation(value) || nanoemModelBoneHasInherentTranslation(value)) {
+            const nanoem_model_bone_t *parentBone = nanoemModelBoneGetInherentParentBoneObject(value);
+            m_inherentBones[parentBone].insert(value);
+        }
+        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+        String objectName;
+        for (nanoem_rsize_t j = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; j < NANOEM_LANGUAGE_TYPE_MAX_ENUM; j++) {
+            StringUtils::getUtf8String(
+                nanoemModelBoneGetName(value, static_cast<nanoem_language_type_t>(j)), factory, objectName);
+            if (!objectName.empty()) {
+                m_bones[objectName] = value;
+            }
+        }
+        if (m_skinDeformer) {
+            m_skinDeformer->rebuildAllBones();
+        }
+        m_project->rebuildAllTracks();
+    }
+}
+
+void
+Model::addMorphReference(const nanoem_model_morph_t *value)
+{
+    if (value) {
+        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+        String objectName;
+        for (nanoem_rsize_t j = NANOEM_LANGUAGE_TYPE_FIRST_ENUM; j < NANOEM_LANGUAGE_TYPE_MAX_ENUM; j++) {
+            StringUtils::getUtf8String(
+                nanoemModelMorphGetName(value, static_cast<nanoem_language_type_t>(j)), factory, objectName);
+            if (!objectName.empty()) {
+                m_morphs.insert(tinystl::make_pair(objectName, value));
+            }
+        }
+        m_project->rebuildAllTracks();
+    }
+}
+
+void
+Model::removeBoneReference(const nanoem_model_bone_t *value)
 {
     String s;
     const nanoem_unicode_string_t *name = nanoemModelBoneGetName(value, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
     StringUtils::getUtf8String(name, m_project->unicodeStringFactory(), s);
-    removeBone(s);
+    removeBoneReference(s);
 }
 
 void
-Model::removeBone(const String &value)
+Model::removeBoneReference(const String &value)
 {
     BoneHashMap::const_iterator it = m_bones.find(value);
     if (it != m_bones.end()) {
@@ -1802,24 +2193,45 @@ Model::removeBone(const String &value)
         if (m_skinDeformer) {
             m_skinDeformer->rebuildAllBones();
         }
+        m_project->rebuildAllTracks();
     }
 }
 
 void
-Model::removeMorph(const nanoem_model_morph_t *value)
+Model::removeMorphReference(const nanoem_model_morph_t *value)
 {
     String s;
     const nanoem_unicode_string_t *name = nanoemModelMorphGetName(value, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
     StringUtils::getUtf8String(name, m_project->unicodeStringFactory(), s);
-    removeMorph(s);
+    removeMorphReference(s);
 }
 
 void
-Model::removeMorph(const String &value)
+Model::removeMorphReference(const String &value)
 {
     MorphHashMap::const_iterator it = m_morphs.find(value);
     if (it != m_morphs.end()) {
         m_morphs.erase(it);
+        m_project->rebuildAllTracks();
+    }
+}
+
+bool
+Model::isFaceEditingMasked(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT
+{
+    return !m_faceStates.empty() && index < m_faceStates.size() ? m_faceStates[index] != 0 : false;
+}
+
+void
+Model::setFaceEditingMasked(nanoem_rsize_t index, bool value)
+{
+    if (m_faceStates.empty()) {
+        nanoem_rsize_t numVertices;
+        nanoemModelGetAllVertexIndices(m_opaque, &numVertices);
+        m_faceStates.resize(numVertices / 3);
+    }
+    if (index < m_faceStates.size()) {
+        m_faceStates[index] = value ? 1 : 0;
     }
 }
 
@@ -1828,8 +2240,15 @@ Model::pushUndo(undo_command_t *command)
 {
     nanoem_assert(!m_project->isPlaying(), "must not be called while playing");
     if (!m_project->isPlaying()) {
-        undoStackPushCommand(undoStack(), command);
-        m_project->eventPublisher()->publishUndoChangeEvent();
+        undo_stack_t *stackPtr = nullptr;
+        if (!m_project->isModelEditingEnabled()) {
+            stackPtr = undoStack();
+        }
+        else {
+            stackPtr = editingUndoStack();
+        }
+        undoStackPushCommand(stackPtr, command);
+        m_project->eventPublisher()->publishPushUndoCommandEvent(command);
     }
     else {
         undoCommandDestroy(command);
@@ -1882,20 +2301,32 @@ Model::draw(DrawType type)
     if (isVisible()) {
         switch (type) {
         case IDrawable::kDrawTypeColor:
-        case IDrawable::kDrawTypeScriptExternalColor:
-        case IDrawable::kDrawTypeVertexWeight: {
-            drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
+        case IDrawable::kDrawTypeScriptExternalColor: {
+            if (isShowAllVertexWeights()) {
+                if (isBlendingVertexWeightsEnabled()) {
+                    drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
+                }
+                drawAllVertexWeights();
+            }
+            else {
+                drawColor(type == IDrawable::kDrawTypeScriptExternalColor);
+            }
             if (isShowAllVertexFaces()) {
                 drawAllVertexFaces();
             }
             if (isShowAllVertexPoints()) {
                 drawAllVertexPoints();
             }
-            const bool enabled = isPhysicsSimulationEnabled() && m_project->isPhysicsSimulationEnabled();
-            if (isShowAllRigidBodies() && enabled) {
+            if (isShowAllVertexNormals()) {
+                drawAllVertexNormals();
+            }
+            if (isShowAllMaterialOverlays()) {
+                drawAllMaterialOverlays();
+            }
+            if (isShowAllRigidBodyShapes()) {
                 drawAllRigidBodyShapes();
             }
-            if (isShowAllJoints() && enabled) {
+            if (isShowAllJointShapes()) {
                 drawAllJointShapes();
             }
             break;
@@ -1962,6 +2393,9 @@ Model::setOffscreenPassiveRenderTargetEffect(const String &ownerName, IEffect *v
             else {
                 const OffscreenPassiveRenderTargetEffect effect = { value, true };
                 m_offscreenPassiveRenderTargetEffects.insert(tinystl::make_pair(ownerName, effect));
+                if (Effect *innerEffect = m_project->upcastEffect(value)) {
+                    innerEffect->createAllDrawableRenderTargetColorImages(this);
+                }
             }
         }
     }
@@ -2007,71 +2441,96 @@ Model::setOffscreenPassiveRenderTargetEffectEnabled(const String &ownerName, boo
 bool
 Model::isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return isShowAllBones() || model::Bone::isSelectable(value);
+    return isBoneConnectionVisible(value) || model::Bone::isSelectable(value);
 }
 
 bool
-Model::isMaterialSelected(const nanoem_model_material_t *material) const NANOEM_DECL_NOEXCEPT
+Model::isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return !m_activeMaterialPtr || m_activeMaterialPtr == material || m_selection->containsMaterial(material);
+    const bool selected =
+        (!m_activeMaterialPtr || m_activeMaterialPtr == value || m_selection->containsMaterial(value));
+    return selected && PrivateModelUtils::isMaterialVisible(value);
 }
 
 bool
-Model::isBoneConnectionDrawable(const nanoem_model_bone_t *bone) const NANOEM_DECL_NOEXCEPT
+Model::isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
 {
-    return model::Bone::isSelectable(bone) && !isRigidBodyBound(bone);
+    return !(isShowAllBones() && !PrivateModelUtils::isBoneEditingVisible(value)) && model::Bone::isSelectable(value) &&
+        !isRigidBodyBound(value);
+}
+
+bool
+Model::isBoneConnectionVisible(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT
+{
+    return isShowAllBones() && PrivateModelUtils::isBoneEditingVisible(value);
 }
 
 void
-Model::drawBoneConnections(
-    const nanoem_model_bone_t *bone, const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness)
+Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr,
+    const nanoem_model_bone_t *parentBone, nanoem_f32_t thickness)
 {
     if (const model::Bone *toBone = model::Bone::cast(parentBone)) {
         const Vector3 destinationPosition(worldTransform(toBone->worldTransform())[3]);
-        if (isBoneConnectionDrawable(bone) && isBoneConnectionDrawable(parentBone)) {
-            const Vector4 color(connectionBoneColor(bone, Vector4(0, 0, 1, 1), false));
-            drawBoneConnection(bone, destinationPosition, color, m_project->deviceScaleCircleRadius(), thickness);
+        const nanoem_f32_t radius = m_project->deviceScaleCircleRadius();
+        if (isBoneConnectionDrawable(bonePtr)) {
+            const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
+            drawBoneConnection(primitive, bonePtr, destinationPosition, color, radius, thickness);
         }
-        else if (isShowAllBones()) {
-            const Vector4 color(connectionBoneColor(bone, Vector4(0.25f, 0.25f, 0.25f, 1), false));
-            drawBoneConnection(bone, destinationPosition, color, m_project->deviceScaleCircleRadius(), thickness);
+        else if (isBoneConnectionVisible(bonePtr)) {
+            const Vector4 color(connectionBoneColor(bonePtr, Vector4(0.25f, 0.25f, 0.25f, 1), false));
+            drawBoneConnection(primitive, bonePtr, destinationPosition, color, radius, thickness);
         }
     }
 }
 
 void
-Model::drawBoneConnections(const Vector2 &deviceScaleCursor)
+Model::drawAllBoneConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor)
 {
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
-    nanoem_f32_t circleRadius = m_project->deviceScaleCircleRadius();
-    nanoem_f32_t thickness = m_project->windowDevicePixelRatio();
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
-        const nanoem_model_bone_t *bone = bones[i];
-        if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bone)) {
-            drawBoneConnections(bone, targetBone, thickness);
-        }
-        else if (isShowAllBones() || isBoneConnectionDrawable(bone)) {
-            const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bone);
-            const Matrix4x4 transform(worldTransform(model::Bone::cast(bone)->worldTransform()));
-            const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
-            const Vector4 color(connectionBoneColor(bone, Vector4(0, 0, 1, 1), false));
-            drawBoneConnection(bone, destinationPositon, color, circleRadius, thickness);
-        }
+        const nanoem_model_bone_t *bonePtr = bones[i];
+        drawBoneConnections(primitive, bonePtr);
     }
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
-        const nanoem_model_bone_t *bone = bones[i];
-        const bool selected = m_selection->containsBone(bone);
-        if (isBoneConnectionDrawable(bone)) {
-            const Vector4 inactive(connectionBoneColor(bone, Vector4(0, 0, 1, 1), true));
-            const Vector4 hovered(hoveredBoneColor(inactive, selected));
-            drawBonePoint(deviceScaleCursor, bone, inactive, hovered);
-        }
-        else if (isShowAllBones()) {
-            const Vector4 inactive(connectionBoneColor(bone, Vector4(0.25f, 0.25f, 0.25f, 1), true));
-            const Vector4 hovered(hoveredBoneColor(inactive, selected));
-            drawBonePoint(deviceScaleCursor, bone, inactive, hovered);
-        }
+        const nanoem_model_bone_t *bonePtr = bones[i];
+        drawBonePoint(primitive, bonePtr, deviceScaleCursor);
+    }
+}
+
+void
+Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr)
+{
+    const nanoem_f32_t circleRadius = m_project->deviceScaleCircleRadius();
+    if (const nanoem_model_bone_t *targetBone = nanoemModelBoneGetTargetBoneObject(bonePtr)) {
+        drawBoneConnections(primitive, bonePtr, targetBone, kDrawBoneConnectionThickness);
+    }
+    else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) &&
+        PrivateModelUtils::isBoneEditingVisible(bonePtr)) {
+        const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bonePtr);
+        const Matrix4x4 transform(worldTransform(PrivateModelUtils::boneWorldMatrix(bonePtr)));
+        const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
+        const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
+        drawBoneConnection(primitive, bonePtr, destinationPositon, color, circleRadius, kDrawBoneConnectionThickness);
+    }
+}
+
+void
+Model::drawBonePoint(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr, const Vector2 &deviceScaleCursor)
+{
+    const nanoem_f32_t circleRadius = m_project->deviceScaleCircleRadius();
+    const bool selected = m_selection->containsBone(bonePtr);
+    if (isBoneConnectionDrawable(bonePtr)) {
+        const Vector4 inactive(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), true));
+        const Vector4 hovered(hoveredBoneColor(inactive, selected));
+        drawBonePoint(
+            primitive, deviceScaleCursor, bonePtr, inactive, hovered, circleRadius, kDrawBoneConnectionThickness);
+    }
+    else if (isBoneConnectionVisible(bonePtr)) {
+        const Vector4 inactive(connectionBoneColor(bonePtr, Vector4(0.25f, 0.25f, 0.25f, 1), true));
+        const Vector4 hovered(hoveredBoneColor(inactive, selected));
+        drawBonePoint(
+            primitive, deviceScaleCursor, bonePtr, inactive, hovered, circleRadius, kDrawBoneConnectionThickness);
     }
 }
 
@@ -2359,55 +2818,10 @@ Model::removeOutsideParent(const nanoem_model_bone_t *key)
     }
 }
 
-sg_image *
+IImageView *
 Model::uploadImage(const String &filename, const sg_image_desc &desc)
 {
-    SG_PUSH_GROUPF("Model::uploadImage(name=%s, width=%d, height=%d)", filename.c_str(), desc.width, desc.height);
-    sg_image *handlePtr = nullptr;
-    ImageMap::iterator it = m_imageHandles.find(filename);
-    if (it != m_imageHandles.end()) {
-        Image *image = it->second;
-        sg_image &handleRef = image->m_handle;
-        sg::destroy_image(handleRef);
-        if (Inline::isDebugLabelEnabled()) {
-            char label[Inline::kMarkerStringLength];
-            StringUtils::format(label, sizeof(label), "Models/%s/%s", canonicalNameConstString(), filename.c_str());
-            sg_image_desc newDesc(desc);
-            newDesc.label = label;
-            handleRef = sg::make_image(&newDesc);
-            handlePtr = &handleRef;
-            SG_LABEL_IMAGE(handleRef, label);
-        }
-        else {
-            handleRef = sg::make_image(&desc);
-            handlePtr = &handleRef;
-        }
-        ImageLoader::copyImageDescrption(desc, image);
-        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
-        StringUtils::UnicodeStringScope scope(factory);
-        StringUtils::tryGetString(factory, filename, scope);
-        nanoem_rsize_t numMaterials;
-        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-        for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-            const nanoem_model_material_t *materialPtr = materials[i];
-            if (!nanoemModelMaterialIsToonShared(materialPtr)) {
-                const nanoem_model_texture_t *texture = nanoemModelMaterialGetToonTextureObject(materialPtr);
-                const nanoem_unicode_string_t *texturePath = nanoemModelTextureGetPath(texture);
-                if (nanoemUnicodeStringFactoryCompareString(factory, scope.value(), texturePath) == 0) {
-                    if (model::Material *material = model::Material::cast(materialPtr)) {
-                        /* fetch left-bottom corner pixel */
-                        const nanoem_rsize_t offset = nanoem_rsize_t(glm::max(desc.height - 1, 0)) * desc.width * 4;
-                        const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(desc.data.subimage[0][0].ptr);
-                        const Vector4 toonColor(glm::make_vec4(dataPtr + offset));
-                        material->setToonColor(toonColor / Vector4(0xff));
-                    }
-                }
-            }
-        }
-        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), handleRef.id);
-    }
-    SG_POP_GROUP();
-    return handlePtr;
+    return internalUploadImage(filename, desc, true);
 }
 
 int
@@ -2431,10 +2845,6 @@ Model::handlePerformSkinningVertexTransform(void *opaque, size_t index)
     case IDrawable::kDrawTypeShadowMap:
     case IDrawable::kDrawTypeScriptExternalColor:
         p.performSkinning(s->m_edgeSizeScaleFactor, vertex);
-        vertex->reset();
-        break;
-    case IDrawable::kDrawTypeVertexWeight:
-        p.setWeightColor(model::Bone::cast(s->m_model->activeBone()), vertex);
         vertex->reset();
         break;
     default:
@@ -2502,11 +2912,9 @@ Model::createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32
                 imagePtr = it->second;
             }
             else {
-                const URI &imageURI = Project::resolveArchiveURI(resolvedFileURI(), filename);
+                const URI imageURI(Project::resolveArchiveURI(resolvedFileURI(), filename));
                 Image *image = nanoem_new(Image);
-                image->m_filename = filename;
-                image->m_handle = { SG_INVALID_ID };
-                Inline::clearZeroMemory(image->m_description);
+                image->setFilename(filename);
                 m_imageHandles.insert(tinystl::make_pair(filename, image));
                 m_imageURIs.insert(tinystl::make_pair(filename, imageURI));
                 m_loadingImageItems.push_back(nanoem_new(LoadingImageItem(imageURI, filename, wrap, flags)));
@@ -2515,6 +2923,115 @@ Model::createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32
         }
     }
     return imagePtr;
+}
+
+Image *
+Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist)
+{
+    SG_PUSH_GROUPF("Model::internalUploadImage(name=%s, width=%d, height=%d, fileExist=%d)", filename.c_str(),
+        desc.width, desc.height, fileExist);
+    Image *image = nullptr;
+    ImageMap::iterator it = m_imageHandles.find(filename);
+    if (it != m_imageHandles.end()) {
+        image = it->second;
+        ImageLoader::copyImageDescrption(desc, image);
+        if (Inline::isDebugLabelEnabled()) {
+            char label[Inline::kMarkerStringLength];
+            StringUtils::format(label, sizeof(label), "Models/%s/%s", canonicalNameConstString(), filename.c_str());
+            image->setLabel(label);
+        }
+        image->setFileExist(fileExist);
+        image->create();
+        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+        StringUtils::UnicodeStringScope scope(factory);
+        StringUtils::tryGetString(factory, filename, scope);
+        nanoem_rsize_t numMaterials;
+        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+        for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+            const nanoem_model_material_t *materialPtr = materials[i];
+            if (!nanoemModelMaterialIsToonShared(materialPtr)) {
+                const nanoem_model_texture_t *texture = nanoemModelMaterialGetToonTextureObject(materialPtr);
+                const nanoem_unicode_string_t *texturePath = nanoemModelTextureGetPath(texture);
+                if (nanoemUnicodeStringFactoryCompareString(factory, scope.value(), texturePath) == 0) {
+                    if (model::Material *material = model::Material::cast(materialPtr)) {
+                        /* fetch left-bottom corner pixel */
+                        const nanoem_rsize_t offset = nanoem_rsize_t(glm::max(desc.height - 1, 0)) * desc.width * 4;
+                        const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(desc.data.subimage[0][0].ptr);
+                        const Vector4 toonColor(glm::make_vec4(dataPtr + offset));
+                        material->setToonColor(toonColor / Vector4(0xff));
+                    }
+                }
+            }
+        }
+        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
+    }
+    SG_POP_GROUP();
+    return image;
+}
+
+void
+Model::updateDiffuseImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags)
+{
+    mode = SG_WRAP_REPEAT;
+    flags = 0;
+    if (const nanoem_model_texture_t *diffuseTexture = nanoemModelMaterialGetDiffuseTextureObject(materialPtr)) {
+        const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(diffuseTexture);
+        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+        nanoem_rsize_t length;
+        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+        nanoem_u8_t utf8Path[16];
+        nanoemUnicodeStringFactoryToUtf8OnStackEXT(factory, path, &length, utf8Path, sizeof(utf8Path), &status);
+        model::Material *material = model::Material::cast(materialPtr);
+        if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(utf8Path))) {
+            m_screenImage = nanoem_new(Image);
+            m_screenImage->setFilename(Project::kViewportSecondaryName);
+            m_screenImage->setHandle(m_project->viewportSecondaryImage());
+            material->setDiffuseImage(m_screenImage);
+        }
+        else {
+            flags = ImageLoader::kFlagsEnableMipmap | ImageLoader::kFlagsFallbackWhiteOpaque;
+            material->setDiffuseImage(createImage(path, SG_WRAP_REPEAT, flags));
+        }
+    }
+}
+
+void
+Model::updateSphereMapImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags)
+{
+    mode = SG_WRAP_CLAMP_TO_EDGE;
+    flags = 0;
+    if (const nanoem_model_texture_t *sphereTexture = nanoemModelMaterialGetSphereMapTextureObject(materialPtr)) {
+        const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(sphereTexture);
+        flags =
+            nanoemModelMaterialGetSphereMapTextureType(materialPtr) == NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD
+            ? ImageLoader::kFlagsFallbackBlackOpaque
+            : ImageLoader::kFlagsFallbackWhiteOpaque;
+        if (!sg::query_features().origin_top_left) {
+            flags |= ImageLoader::kFlagsEnableFlipY;
+        }
+        model::Material *material = model::Material::cast(materialPtr);
+        material->setSphereMapImage(createImage(path, mode, flags));
+    }
+}
+
+void
+Model::updateToonImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags)
+{
+    mode = SG_WRAP_CLAMP_TO_EDGE;
+    flags = 0;
+    if (model::Material *material = model::Material::cast(materialPtr)) {
+        if (nanoemModelMaterialIsToonShared(materialPtr)) {
+            Project::ISharedResourceRepository *repository = m_project->sharedResourceRepository();
+            const int index = nanoemModelMaterialGetToonTextureIndex(materialPtr);
+            material->setToonImage(repository->toonImage(index));
+            material->setToonColor(repository->toonColor(index) / Vector4(0xff));
+        }
+        else if (const nanoem_model_texture_t *toonTexture = nanoemModelMaterialGetToonTextureObject(materialPtr)) {
+            const nanoem_unicode_string_t *path = nanoemModelTextureGetPath(toonTexture);
+            flags = ImageLoader::kFlagsFallbackWhiteOpaque;
+            material->setToonImage(createImage(path, mode, flags));
+        }
+    }
 }
 
 internal::LineDrawer *
@@ -2547,7 +3064,7 @@ Model::splitBonesPerMaterial(model::Material::BoneIndexHashMap &boneIndexHash) c
             const nanoem_model_vertex_t *vertex = vertices[vertexIndex];
             for (nanoem_rsize_t k = 0; k < 4; k++) {
                 const nanoem_model_bone_t *bone = nanoemModelVertexGetBoneObject(vertex, k);
-                int boneIndex = nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bone));
+                int boneIndex = model::Bone::index(bone);
                 if (boneIndex >= 0) {
                     if (indexHash.insert(tinystl::make_pair(boneIndex, uniqueBoneIndexPerMaterial)).second) {
                         uniqueBoneIndexPerMaterial++;
@@ -2672,9 +3189,10 @@ Model::internalClear()
         }
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
-        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", it->second->m_handle.id, it->first.c_str());
-        sg::destroy_image(it->second->m_handle);
-        nanoem_delete(it->second);
+        Image *image = it->second;
+        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", image->handle().id, it->first.c_str());
+        image->destroy();
+        nanoem_delete(image);
     }
     SG_INSERT_MARKERF("Model::internalClear(vertex0=%d, vertex1=%d, index=%d)", m_vertexBuffers[0].id,
         m_vertexBuffers[1].id, m_indexBuffer.id);
@@ -2691,8 +3209,10 @@ Model::internalClear()
     m_vertexBuffers[1] = { SG_INVALID_ID };
     sg::destroy_buffer(m_indexBuffer);
     m_indexBuffer = { SG_INVALID_ID };
-    m_drawAllLines.destroy();
-    m_drawAllPoints.destroy();
+    m_drawAllVertexFaces.destroy();
+    m_drawAllVertexWeights.destroy();
+    m_drawAllVertexNormals.destroy();
+    m_drawAllVertexPoints.destroy();
     for (RigidBodyBuffers::iterator it = m_drawRigidBody.begin(), end = m_drawRigidBody.end(); it != end; ++it) {
         it->second.destroy();
     }
@@ -2714,41 +3234,7 @@ Model::internalSetOutsideParent(const nanoem_model_bone_t *key, const StringPair
 }
 
 void
-Model::createVertexIndexBuffers()
-{
-    initializeVertexBuffers();
-    nanoem_rsize_t numIndices;
-    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numIndices);
-    sg_buffer_desc desc;
-    Inline::clearZeroMemory(desc);
-    desc.type = SG_BUFFERTYPE_INDEXBUFFER;
-    desc.usage = SG_USAGE_IMMUTABLE;
-    sg::destroy_buffer(m_indexBuffer);
-    if (numIndices > 0) {
-        desc.data.ptr = indices;
-        desc.data.size = desc.size = numIndices * sizeof(*indices);
-        char label[Inline::kMarkerStringLength];
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(label, sizeof(label), "Models/%s/IndexBuffer", canonicalNameConstString());
-            desc.label = label;
-        }
-        else {
-            *label = 0;
-        }
-        m_indexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
-        SG_LABEL_BUFFER(m_indexBuffer, label);
-    }
-    else {
-        static const int kDummyIndex = 0;
-        desc.data.ptr = &kDummyIndex;
-        desc.data.size = desc.size = sizeof(kDummyIndex);
-        m_indexBuffer = sg::make_buffer(&desc);
-    }
-}
-
-void
-Model::initializeVertexBuffers()
+Model::initializeAllStagingVertexBuffers()
 {
     nanoem_rsize_t numVertices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
@@ -2757,7 +3243,6 @@ Model::initializeVertexBuffers()
     Inline::clearZeroMemory(desc);
     desc.usage = SG_USAGE_STREAM;
     if (numVertices > 0 && !initialized) {
-        char label[Inline::kMarkerStringLength];
         Project::ISkinDeformerFactory *factory = m_project->skinDeformerFactory();
         nanoem_rsize_t numSoftBodies;
         nanoemModelGetAllSoftBodyObjects(m_opaque, &numSoftBodies);
@@ -2765,6 +3250,7 @@ Model::initializeVertexBuffers()
         if (factory && numSoftBodies == 0) {
             if (model::ISkinDeformer *skinDeformer = factory->create(this)) {
                 ByteArray vertexBufferData(numVertices * sizeof(VertexUnit));
+                char label[Inline::kMarkerStringLength];
                 for (nanoem_rsize_t i = 0; i < numVertices; i++) {
                     if (const model::Vertex *v = model::Vertex::cast(vertices[i])) {
                         VertexUnit &unit = reinterpret_cast<VertexUnit *>(vertexBufferData.data())[i];
@@ -2801,22 +3287,7 @@ Model::initializeVertexBuffers()
         }
         if (!m_skinDeformer) {
             initializeVertexBufferByteArray();
-            desc.size = m_vertexBufferData.size();
-            if (Inline::isDebugLabelEnabled()) {
-                StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Even", canonicalNameConstString());
-                desc.label = label;
-            }
-            else {
-                *label = 0;
-            }
-            m_vertexBuffers[0] = sg::make_buffer(&desc);
-            SG_LABEL_BUFFER(m_vertexBuffers[0], label);
-            if (Inline::isDebugLabelEnabled()) {
-                StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Odd", canonicalNameConstString());
-                desc.label = label;
-            }
-            m_vertexBuffers[1] = sg::make_buffer(&desc);
-            SG_LABEL_BUFFER(m_vertexBuffers[1], label);
+            createAllStagingVertexBuffers();
         }
         nanoem_assert(
             sg::query_buffer_state(m_vertexBuffers[0]) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
@@ -2831,12 +3302,69 @@ Model::initializeVertexBuffers()
 }
 
 void
+Model::initializeStagingIndexBuffer()
+{
+    nanoem_rsize_t numIndices;
+    const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numIndices);
+    sg_buffer_desc desc;
+    Inline::clearZeroMemory(desc);
+    desc.type = SG_BUFFERTYPE_INDEXBUFFER;
+    desc.usage = SG_USAGE_IMMUTABLE;
+    if (numIndices > 0) {
+        desc.data.ptr = indices;
+        desc.data.size = desc.size = numIndices * sizeof(*indices);
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/IndexBuffer", canonicalNameConstString());
+            desc.label = label;
+        }
+        else {
+            *label = 0;
+        }
+        m_indexBuffer = sg::make_buffer(&desc);
+        nanoem_assert(sg::query_buffer_state(m_indexBuffer) == SG_RESOURCESTATE_VALID, "index buffer must be valid");
+        SG_LABEL_BUFFER(m_indexBuffer, label);
+    }
+    else {
+        static const int kDummyIndex = 0;
+        desc.data.ptr = &kDummyIndex;
+        desc.data.size = desc.size = sizeof(kDummyIndex);
+        m_indexBuffer = sg::make_buffer(&desc);
+    }
+}
+
+void
 Model::initializeVertexBufferByteArray()
 {
     ParallelSkinningTaskData s(this, m_project->drawType(), edgeSize());
     m_vertexBufferData.resize(sizeof(Model::VertexUnit) * glm::max(s.m_numVertices, nanoem_rsize_t(1)));
     s.m_output = m_vertexBufferData.data();
     dispatchParallelTasks(&Model::handlePerformSkinningVertexTransform, &s, s.m_numVertices);
+}
+
+void
+Model::createAllStagingVertexBuffers()
+{
+    char label[Inline::kMarkerStringLength];
+    sg_buffer_desc desc;
+    Inline::clearZeroMemory(desc);
+    desc.usage = SG_USAGE_STREAM;
+    desc.size = m_vertexBufferData.size();
+    if (Inline::isDebugLabelEnabled()) {
+        StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Even", canonicalNameConstString());
+        desc.label = label;
+    }
+    else {
+        *label = 0;
+    }
+    m_vertexBuffers[0] = sg::make_buffer(&desc);
+    SG_LABEL_BUFFER(m_vertexBuffers[0], label);
+    if (Inline::isDebugLabelEnabled()) {
+        StringUtils::format(label, sizeof(label), "Models/%s/VertexBuffer/Odd", canonicalNameConstString());
+        desc.label = label;
+    }
+    m_vertexBuffers[1] = sg::make_buffer(&desc);
+    SG_LABEL_BUFFER(m_vertexBuffers[1], label);
 }
 
 void
@@ -2880,6 +3408,49 @@ Model::clearAllLoadingImageItems()
 }
 
 void
+Model::setAllPhysicsObjectsEnabled(bool value)
+{
+    nanoem_rsize_t numRigidBodies, numJoints, numSoftBodies;
+    nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_opaque, &numRigidBodies);
+    nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_opaque, &numJoints);
+    nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(m_opaque, &numSoftBodies);
+    if (value) {
+        for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+            if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
+                softBody->enable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+            if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
+                rigidBody->enable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+            if (model::Joint *joint = model::Joint::cast(joints[i])) {
+                joint->enable();
+            }
+        }
+    }
+    else {
+        for (nanoem_rsize_t i = 0; i < numJoints; i++) {
+            if (model::Joint *joint = model::Joint::cast(joints[i])) {
+                joint->disable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
+            if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
+                rigidBody->disable();
+            }
+        }
+        for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
+            if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
+                softBody->disable();
+            }
+        }
+    }
+}
+
+void
 Model::predeformMorph(const nanoem_model_morph_t *morphPtr)
 {
     nanoem_parameter_assert(morphPtr, "must not be nullptr");
@@ -2917,8 +3488,29 @@ Model::predeformMorph(const nanoem_model_morph_t *morphPtr)
         }
         break;
     }
+    case NANOEM_MODEL_MORPH_TYPE_MATERIAL: {
+        nanoem_rsize_t numChildren, numMaterials;
+        const nanoem_model_morph_material_t *const *children =
+            nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numChildren);
+        const nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+        for (nanoem_rsize_t i = 0; i < numChildren; i++) {
+            const nanoem_model_morph_material_t *child = children[i];
+            const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
+            if (model::Material *material = model::Material::cast(materialPtr)) {
+                material->resetDeform();
+            }
+            else {
+                for (nanoem_rsize_t j = 0; j < numMaterials; j++) {
+                    const nanoem_model_material_t *materialPtr = materials[j];
+                    if (model::Material *material = model::Material::cast(materialPtr)) {
+                        material->resetDeform();
+                    }
+                }
+            }
+        }
+        break;
+    }
     case NANOEM_MODEL_MORPH_TYPE_IMPULUSE:
-    case NANOEM_MODEL_MORPH_TYPE_MATERIAL:
     case NANOEM_MODEL_MORPH_TYPE_BONE:
     case NANOEM_MODEL_MORPH_TYPE_VERTEX:
     case NANOEM_MODEL_MORPH_TYPE_TEXTURE:
@@ -2998,13 +3590,13 @@ Model::deformMorph(const nanoem_model_morph_t *morphPtr, bool checkDirty)
                 const nanoem_model_morph_material_t *child = children[i];
                 const nanoem_model_material_t *materialPtr = nanoemModelMorphMaterialGetMaterialObject(child);
                 if (model::Material *material = model::Material::cast(materialPtr)) {
-                    material->update(child, weight);
+                    material->deform(child, weight);
                 }
                 else {
                     for (nanoem_rsize_t j = 0; j < numMaterials; j++) {
                         const nanoem_model_material_t *materialPtr = materials[j];
                         if (model::Material *material = model::Material::cast(materialPtr)) {
-                            material->update(child, weight);
+                            material->deform(child, weight);
                         }
                     }
                 }
@@ -3300,7 +3892,7 @@ Model::saveAllAttachments(const String &prefix, const FileEntityMap &allAttachme
     const nanoem_u8_t *ptr;
     bool succeeded = true;
     if (Project::isArchiveURI(fileURI())) {
-        const URI &baseURI = resolvedFileURI();
+        const URI baseURI(resolvedFileURI());
         FileReaderScope scope(m_project->translator());
         if (scope.open(baseURI, error)) {
             Archiver sourceArchive(scope.reader());
@@ -3381,20 +3973,20 @@ Model::getEdgeIndexBuffer(const model::Material *material, IPass::Buffer &buffer
 
 Vector4
 Model::connectionBoneColor(
-    const nanoem_model_bone_t *bone, const Vector4 &base, bool enableFixedAxis) const NANOEM_DECL_NOEXCEPT
+    const nanoem_model_bone_t *bonePtr, const Vector4 &base, bool enableFixedAxis) const NANOEM_DECL_NOEXCEPT
 {
     static const nanoem_f32_t kOpacity = 1.0f;
     Vector4 color;
-    if (m_selection->containsBone(bone)) {
+    if (m_selection->containsBone(bonePtr)) {
         color = Vector4(1, 0, 0, kOpacity);
     }
-    else if (model::Bone::cast(bone)->isDirty()) {
+    else if (PrivateModelUtils::isBoneDirty(bonePtr)) {
         color = Vector4(0, 1, 0, kOpacity);
     }
-    else if (isConstraintJointBone(bone)) {
+    else if (isConstraintJointBone(bonePtr)) {
         color = Vector4(1, 1, 0, kOpacity);
     }
-    else if (enableFixedAxis && nanoemModelBoneHasFixedAxis(bone)) {
+    else if (enableFixedAxis && nanoemModelBoneHasFixedAxis(bonePtr)) {
         color = Vector4(1, 0, 1, kOpacity);
     }
     else {
@@ -3430,13 +4022,13 @@ Model::drawColor(bool scriptExternalColor)
     const String &passType = isShadowMapEnabled() && m_project->isShadowMapEnabled() ? Effect::kPassTypeObjectSelfShadow
                                                                                      : Effect::kPassTypeObject;
     if (m_screenImage) {
-        m_screenImage->m_handle = m_project->viewportSecondaryImage();
+        m_screenImage->setHandle(m_project->viewportSecondaryImage());
     }
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];
         numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
         model::Material *material = model::Material::cast(materialPtr);
-        IPass::Buffer buffer(numIndices, indexOffset);
+        IPass::Buffer buffer(numIndices, indexOffset, true);
         if (getVertexIndexBuffer(material, buffer)) {
             IEffect *effect = internalEffect(material);
             if (ITechnique *technique = effect->findTechnique(passType, materialPtr, i, numMaterials, this)) {
@@ -3476,7 +4068,7 @@ Model::drawEdge(nanoem_f32_t edgeSizeScaleFactor)
         if (nanoemModelMaterialIsEdgeEnabled(materialPtr) && !nanoemModelMaterialIsLineDrawEnabled(materialPtr) &&
             !nanoemModelMaterialIsPointDrawEnabled(materialPtr)) {
             model::Material *material = model::Material::cast(materialPtr);
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getEdgeIndexBuffer(material, buffer)) {
                 IEffect *effect = internalEffect(material);
                 if (ITechnique *technique =
@@ -3519,7 +4111,7 @@ Model::drawGroundShadow()
         if (nanoemModelMaterialIsCastingShadowEnabled(materialPtr) &&
             !nanoemModelMaterialIsPointDrawEnabled(materialPtr)) {
             model::Material *material = model::Material::cast(materialPtr);
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBuffer(material, buffer)) {
                 IEffect *effect = internalEffect(material);
                 if (ITechnique *technique =
@@ -3562,7 +4154,7 @@ Model::drawShadowMap()
         if (nanoemModelMaterialIsCastingShadowMapEnabled(materialPtr) &&
             !nanoemModelMaterialIsPointDrawEnabled(materialPtr)) {
             model::Material *material = model::Material::cast(materialPtr);
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBuffer(material, buffer)) {
                 IEffect *effect = internalEffect(material);
                 if (ITechnique *technique =
@@ -3589,6 +4181,123 @@ Model::drawShadowMap()
 }
 
 void
+Model::drawAllMaterialOverlays()
+{
+    SG_PUSH_GROUPF("Model::drawAllMaterialOverlays(name=%s)", canonicalNameConstString());
+    nanoem_rsize_t numMaterials, numIndices, indexOffset = 0;
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+    ModelProgramBundle *effect = m_project->sharedResourceRepository()->modelProgramBundle();
+    const ICamera *activeCamera = m_project->activeCamera();
+    const IModelObjectSelection *s = selection();
+    DummyLight dummyLight(m_project);
+    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        model::Material *material = model::Material::cast(materialPtr);
+        if (material->isVisible() && s->containsMaterial(materialPtr)) {
+            IPass::Buffer buffer(numIndices, indexOffset, false);
+            if (getVertexIndexBuffer(material, buffer)) {
+                if (ITechnique *technique =
+                        effect->findTechnique(Effect::kPassTypeShadow, materialPtr, i, numMaterials, this)) {
+                    SG_PUSH_GROUPF(
+                        "Model::drawMaterialOverlay(offset=%d, name=%s)", i, material->canonicalNameConstString());
+                    while (IPass *pass = technique->execute(this, false)) {
+                        pass->setGlobalParameters(this, m_project);
+                        pass->setCameraParameters(activeCamera, Constants::kIdentity);
+                        pass->setLightParameters(&dummyLight, false);
+                        pass->setAllModelParameters(this, m_project);
+                        pass->setMaterialParameters(materialPtr);
+                        pass->setGroundShadowParameters(&dummyLight, activeCamera, Constants::kIdentity);
+                        pass->execute(this, buffer);
+                    }
+                    if (!technique->hasNextScriptCommand()) {
+                        technique->resetScriptCommandState();
+                    }
+                    SG_POP_GROUP();
+                }
+            }
+        }
+        indexOffset += numIndices;
+    }
+    SG_POP_GROUP();
+}
+
+void
+Model::drawAllVertexNormals()
+{
+    nanoem_rsize_t numVertices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+    model::Vertex::List newVertices;
+    numVertices *= 2;
+    if (!m_activeMaterialPtr) {
+        newVertices.resize(numVertices);
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            newVertices[i] = vertices[i / 2];
+        }
+    }
+    else {
+        newVertices.reserve(numVertices);
+        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+            const nanoem_model_vertex_t *vertexPtr = vertices[i];
+            const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+            if (vertex && isMaterialSelected(vertex->material())) {
+                newVertices.push_back(vertexPtr);
+            }
+        }
+    }
+    const size_t numNewVertices = newVertices.size();
+    if (!sg::is_valid(m_drawAllVertexNormals.m_buffer)) {
+        sg_buffer_desc bd;
+        Inline::clearZeroMemory(bd);
+        bd.size = sizeof(m_drawAllVertexNormals.m_vertices[0]) * glm::max(numNewVertices, size_t(1));
+        bd.usage = SG_USAGE_DYNAMIC;
+        char label[Inline::kMarkerStringLength];
+        if (Inline::isDebugLabelEnabled()) {
+            StringUtils::format(label, sizeof(label), "Models/%s/Normals/VertexBuffer", canonicalNameConstString());
+            bd.label = label;
+        }
+        m_drawAllVertexNormals.m_buffer = sg::make_buffer(&bd);
+        m_drawAllVertexNormals.m_vertices.resize(numNewVertices);
+        nanoem_assert(sg::query_buffer_state(m_drawAllVertexNormals.m_buffer) == SG_RESOURCESTATE_VALID,
+            "vertex buffer must be valid");
+        SG_LABEL_BUFFER(m_drawAllVertexNormals.m_buffer, bd.label);
+    }
+    bx::simd128_t normal = bx::simd_zero();
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexNormals.m_vertices.data();
+    for (size_t i = 0; i < numNewVertices; i += 2) {
+        const nanoem_model_vertex_t *vertexPtr = newVertices[i];
+        const int index = model::Vertex::index(vertexPtr) * 2;
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[index];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
+            vertexUnit.m_color = m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity)
+                                                                        : Vector4U8(0x7f, 0x7f, 0x7f, opacity);
+            sg::LineVertexUnit &vertexUnit2 = vertexUnits[index + 1];
+            vertexUnit2 = vertexUnit;
+            vertexUnit2.m_position +=
+                glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&normal)) * kDrawVertexNormalScaleFactor;
+        }
+    }
+    const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
+    if (size > 0) {
+        sg::update_buffer(m_drawAllVertexNormals.m_buffer, vertexUnits, size);
+    }
+    internal::LineDrawer *drawer = lineDrawer();
+    internal::LineDrawer::Option option(m_drawAllVertexNormals.m_buffer, numNewVertices);
+    option.m_primitiveType = SG_PRIMITIVETYPE_LINES;
+    drawer->drawPass(option);
+}
+
+void
 Model::drawAllVertexPoints()
 {
     nanoem_rsize_t numVertices;
@@ -3609,47 +4318,49 @@ Model::drawAllVertexPoints()
         }
     }
     const size_t numNewVertices = newVertices.size();
-    if (!sg::is_valid(m_drawAllPoints.m_buffer)) {
+    if (!sg::is_valid(m_drawAllVertexPoints.m_buffer)) {
         sg_buffer_desc bd;
         Inline::clearZeroMemory(bd);
-        bd.size = sizeof(m_drawAllPoints.m_vertices[0]) * glm::max(numNewVertices, size_t(1));
+        bd.size = sizeof(m_drawAllVertexPoints.m_vertices[0]) * glm::max(numNewVertices, size_t(1));
         bd.usage = SG_USAGE_DYNAMIC;
         char label[Inline::kMarkerStringLength];
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "Models/%s/Points/VertexBuffer", canonicalNameConstString());
             bd.label = label;
         }
-        m_drawAllPoints.m_buffer = sg::make_buffer(&bd);
-        m_drawAllPoints.m_vertices.resize(numNewVertices);
-        nanoem_assert(
-            sg::query_buffer_state(m_drawAllPoints.m_buffer) == SG_RESOURCESTATE_VALID, "vertex buffer must be valid");
-        SG_LABEL_BUFFER(m_drawAllPoints.m_buffer, bd.label);
+        m_drawAllVertexPoints.m_buffer = sg::make_buffer(&bd);
+        m_drawAllVertexPoints.m_vertices.resize(numNewVertices);
+        nanoem_assert(sg::query_buffer_state(m_drawAllVertexPoints.m_buffer) == SG_RESOURCESTATE_VALID,
+            "vertex buffer must be valid");
+        SG_LABEL_BUFFER(m_drawAllVertexPoints.m_buffer, bd.label);
     }
     bx::simd128_t normal;
-    sg::LineVertexUnit *vertexUnits = m_drawAllPoints.m_vertices.data();
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexPoints.m_vertices.data();
     for (size_t i = 0; i < numNewVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = newVertices[i];
-        const int index = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        sg::LineVertexUnit &vertexUnit = vertexUnits[index];
-        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
-        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
-            bx::simd128_t position;
-            softBody->getVertexPosition(vertexPtr, &position);
-            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        const int index = model::Vertex::index(vertexPtr);
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[index];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            const nanoem_u8_t opacity = vertex->isEditingMasked() ? 1 : 0xff;
+            vertexUnit.m_color = m_selection->containsVertex(vertexPtr) ? Vector4U8(0xff, 0, 0, opacity)
+                                                                        : Vector4U8(0, 0, 0xff, opacity);
         }
-        else {
-            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
-        }
-        vertexUnit.m_color =
-            m_selection->containsVertex(vertexPtr) ? glm::u8vec4(0xff, 0, 0, 0xff) : glm::u8vec4(0, 0, 0xff, 0xff);
     }
-    const nanoem_rsize_t size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
+    const int size = Inline::saturateInt32(sizeof(*vertexUnits) * numNewVertices);
     if (size > 0) {
-        sg::update_buffer(m_drawAllPoints.m_buffer, vertexUnits, size);
+        sg::update_buffer(m_drawAllVertexPoints.m_buffer, vertexUnits, size);
     }
     internal::LineDrawer *drawer = lineDrawer();
-    internal::LineDrawer::Option option(m_drawAllPoints.m_buffer, numNewVertices);
+    internal::LineDrawer::Option option(m_drawAllVertexPoints.m_buffer, numNewVertices);
     option.m_primitiveType = SG_PRIMITIVETYPE_POINTS;
     drawer->drawPass(option);
 }
@@ -3660,91 +4371,153 @@ Model::drawAllVertexFaces()
     nanoem_rsize_t numMaterials, numVertices, numVertexIndices, indexOffset = 0;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
     nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-    if (!sg::is_valid(m_drawAllLines.m_vertexBuffer)) {
-        m_drawAllLines.m_vertices.resize(glm::max(numVertices, size_t(1)));
-        sg_buffer_desc desc;
-        Inline::clearZeroMemory(desc);
-        desc.size = sizeof(m_drawAllLines.m_vertices[0]) * m_drawAllLines.m_vertices.size();
-        desc.usage = SG_USAGE_DYNAMIC;
-        char label[Inline::kMarkerStringLength];
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(label, sizeof(label), "Models/%s/Lines/VertexBuffer", canonicalNameConstString());
-            desc.label = label;
-        }
-        m_drawAllLines.m_vertexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_drawAllLines.m_vertexBuffer) == SG_RESOURCESTATE_VALID,
-            "vertex buffer must be valid");
-        SG_LABEL_BUFFER(m_drawAllLines.m_vertexBuffer, desc.label);
-    }
-    if (!sg::is_valid(m_drawAllLines.m_indexBuffer)) {
-        const nanoem_u32_t *indices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
-        nanoem_u32_t numAllocateVertexIndices = Inline::saturateInt32U(numVertexIndices * 2);
-        m_drawAllLines.m_indices.resize(numAllocateVertexIndices);
-        DrawIndexedBuffer::IndexType *vertexIndices = m_drawAllLines.m_indices.data();
-        for (nanoem_rsize_t i = 0; i < numVertexIndices; i += 3) {
-            const DrawIndexedBuffer::IndexType vertexIndex0 = indices[i + 0];
-            const DrawIndexedBuffer::IndexType vertexIndex1 = indices[i + 1];
-            const DrawIndexedBuffer::IndexType vertexIndex2 = indices[i + 2];
-            size_t offset = i * 2;
-            vertexIndices[offset + 0] = vertexIndex0;
-            vertexIndices[offset + 1] = vertexIndex1;
-            vertexIndices[offset + 2] = vertexIndex1;
-            vertexIndices[offset + 3] = vertexIndex2;
-            vertexIndices[offset + 4] = vertexIndex2;
-            vertexIndices[offset + 5] = vertexIndex0;
-        }
-        sg_buffer_desc desc;
-        Inline::clearZeroMemory(desc);
-        if (numVertexIndices > 0) {
-            desc.data.ptr = vertexIndices;
-            desc.data.size = desc.size = sizeof(m_drawAllLines.m_indices[0]) * m_drawAllLines.m_indices.size();
-        }
-        else {
-            static const int kDummyIndex = 0;
-            desc.data.ptr = &kDummyIndex;
-            desc.data.size = desc.size = sizeof(kDummyIndex);
-        }
-        desc.usage = SG_USAGE_IMMUTABLE;
-        desc.type = SG_BUFFERTYPE_INDEXBUFFER;
-        char label[Inline::kMarkerStringLength];
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(label, sizeof(label), "Models/%s/Lines/IndexBuffer", canonicalNameConstString());
-            desc.label = label;
-        }
-        m_drawAllLines.m_indexBuffer = sg::make_buffer(&desc);
-        nanoem_assert(sg::query_buffer_state(m_drawAllLines.m_indexBuffer) == SG_RESOURCESTATE_VALID,
-            "index buffer must be valid");
-        SG_LABEL_BUFFER(m_drawAllLines.m_indexBuffer, desc.label);
-    }
-    sg::LineVertexUnit *vertexUnits = m_drawAllLines.m_vertices.data();
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
+    m_drawAllVertexFaces.ensureVertexBufferInitialized(canonicalNameConstString(), numVertices);
+    m_drawAllVertexFaces.ensureIndexBufferInitialized(
+        canonicalNameConstString(), vertexIndices, numVertexIndices, true);
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexFaces.m_vertices.data();
     bx::simd128_t normal;
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
-        const model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-        sg::LineVertexUnit &vertexUnit = vertexUnits[i];
-        bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
-        if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
-            bx::simd128_t position;
-            softBody->getVertexPosition(vertexPtr, &position);
-            vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[i];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            vertexUnit.m_color = Vector4U8(0xff);
         }
-        else {
-            Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
-        }
-        vertexUnit.m_color = glm::u8vec4(0, 0, 0, 0x7f);
     }
-    internal::LineDrawer *drawer = lineDrawer();
-    sg::update_buffer(m_drawAllLines.m_vertexBuffer, m_drawAllLines.m_vertices.data(),
-        Inline::saturateInt32(m_drawAllLines.m_vertices.size() * sizeof(m_drawAllLines.m_vertices[0])));
-    internal::LineDrawer::Option option(m_drawAllLines.m_vertexBuffer, 0);
-    option.m_indexBuffer = m_drawAllLines.m_indexBuffer;
-    option.m_primitiveType = SG_PRIMITIVETYPE_LINES;
+    const IModelObjectSelection::FaceList faces(m_selection->allFaces());
+    if (!faces.empty() && !sg::is_valid(m_drawAllVertexFaces.m_activeIndexBuffer)) {
+        sg_buffer_desc desc;
+        Inline::clearZeroMemory(desc);
+        nanoem_rsize_t numAllocateVertexIndices = numVertexIndices * 2;
+        desc.data.size = desc.size = sizeof(DrawIndexedBuffer::IndexType) * numAllocateVertexIndices;
+        desc.type = SG_BUFFERTYPE_INDEXBUFFER;
+        desc.usage = SG_USAGE_DYNAMIC;
+        m_drawAllVertexFaces.m_activeIndexBuffer = sg::make_buffer(&desc);
+        m_drawAllVertexFaces.m_activeIndices.resize(numAllocateVertexIndices);
+    }
+    DrawIndexedBuffer::IndexType *activeIndices = m_drawAllVertexFaces.m_activeIndices.data();
+    const nanoem_rsize_t numSelectedFaces = faces.size();
+    for (nanoem_rsize_t i = 0; i < numSelectedFaces; i++) {
+        const Vector4UI32 &face = faces[i];
+        nanoem_u32_t vertexIndex0 = face.y, vertexIndex1 = face.z, vertexIndex2 = face.w;
+        size_t offset = i * 6;
+        activeIndices[offset + 0] = vertexIndex0;
+        activeIndices[offset + 1] = vertexIndex1;
+        activeIndices[offset + 2] = vertexIndex1;
+        activeIndices[offset + 3] = vertexIndex2;
+        activeIndices[offset + 4] = vertexIndex2;
+        activeIndices[offset + 5] = vertexIndex0;
+    }
+    m_drawAllVertexFaces.update();
+    internal::LineDrawer::Option option(m_drawAllVertexFaces.m_vertexBuffer, 0);
+    option.m_indexBuffer = m_drawAllVertexFaces.m_indexBuffer;
     option.m_indexType = SG_INDEXTYPE_UINT32;
-    option.m_enableDepthTest = option.m_enableBlendMode = true;
+    option.m_enableDepthTest = true;
+    option.m_color = Vector4(0, 0, 1, 1);
+    internal::LineDrawer *drawer = lineDrawer();
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-        const nanoem_model_material_t *material = materials[i];
-        const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(material) * 2;
-        if (isMaterialSelected(material)) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr) * 2;
+        if (isMaterialSelected(materialPtr)) {
+            option.m_numIndices = numIndices;
+            option.m_offset = indexOffset;
+            drawer->drawPass(option);
+        }
+        indexOffset += numIndices;
+    }
+    if (sg::is_valid(m_drawAllVertexFaces.m_activeIndexBuffer)) {
+        option.m_indexBuffer = m_drawAllVertexFaces.m_activeIndexBuffer;
+        option.m_numIndices = numSelectedFaces * 6;
+        option.m_color = Vector4(1, 0, 0, 1);
+        option.m_offset = 0;
+        drawer->drawPass(option);
+    }
+}
+
+void
+Model::drawAllVertexWeights()
+{
+    nanoem_rsize_t numMaterials, numVertices, numVertexIndices, indexOffset = 0;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+    nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+    const nanoem_model_bone_t *activeBonePtr =
+        m_vertexWeightPainter ? m_vertexWeightPainter->vertexBone(0) : activeBone();
+    const model::Bone *activeBoneObject = model::Bone::cast(activeBonePtr);
+    const nanoem_u32_t *vertexIndices = nanoemModelGetAllVertexIndices(m_opaque, &numVertexIndices);
+    const bool enableBlending = isBlendingVertexWeightsEnabled();
+    m_drawAllVertexWeights.ensureVertexBufferInitialized(canonicalNameConstString(), numVertices);
+    m_drawAllVertexWeights.ensureIndexBufferInitialized(
+        canonicalNameConstString(), vertexIndices, numVertexIndices, false);
+    sg::LineVertexUnit *vertexUnits = m_drawAllVertexWeights.m_vertices.data();
+    bx::simd128_t normal;
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[i];
+        if (const model::Vertex *vertex = model::Vertex::cast(vertexPtr)) {
+            sg::LineVertexUnit &vertexUnit = vertexUnits[i];
+            bx::simd128_t *ptr = reinterpret_cast<bx::simd128_t *>(glm::value_ptr(vertexUnit.m_position));
+            if (const model::SoftBody *softBody = model::SoftBody::cast(vertex->softBody())) {
+                bx::simd128_t position;
+                softBody->getVertexPosition(vertexPtr, &position);
+                vertexUnit.m_position = glm::make_vec3(reinterpret_cast<const nanoem_f32_t *>(&position));
+            }
+            else {
+                Model::VertexUnit::performSkinningByType(vertex, ptr, &normal);
+            }
+            Vector3 color(0.25f);
+            nanoem_f32_t opacity = vertex->isEditingMasked() || enableBlending ? 0.0f : 1.0f;
+            for (nanoem_rsize_t j = 0; j < 4; j++) {
+                const model::Bone *bone = vertex->bone(j);
+                if (bone && bone == activeBoneObject) {
+                    nanoem_f32_t component = 0;
+                    switch (j) {
+                    case 0: {
+                        component = bx::simd_x(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    case 1: {
+                        component = bx::simd_y(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    case 2: {
+                        component = bx::simd_z(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    case 3: {
+                        component = bx::simd_w(vertex->m_simd.m_weights);
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                    color = Color::jet(component);
+                    opacity = 1.0f;
+                    break;
+                }
+            }
+            vertexUnit.m_color = Vector4(color, opacity) * 255.0f;
+        }
+    }
+    m_drawAllVertexWeights.update();
+    internal::LineDrawer::Option option(m_drawAllVertexWeights.m_vertexBuffer, 0);
+    option.m_indexBuffer = m_drawAllVertexWeights.m_indexBuffer;
+    option.m_primitiveType = SG_PRIMITIVETYPE_TRIANGLES;
+    option.m_indexType = SG_INDEXTYPE_UINT32;
+    option.m_enableDepthTest = true;
+    option.m_enableBlendMode = enableBlending;
+    internal::LineDrawer *drawer = lineDrawer();
+    for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+        const nanoem_model_material_t *materialPtr = materials[i];
+        const nanoem_rsize_t numIndices = nanoemModelMaterialGetNumVertexIndices(materialPtr);
+        if (isMaterialSelected(materialPtr)) {
             option.m_numIndices = numIndices;
             option.m_offset = indexOffset;
             drawer->drawPass(option);
@@ -3758,12 +4531,9 @@ Model::drawAllJointShapes()
 {
     nanoem_rsize_t numJoints;
     nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_opaque, &numJoints);
-    const nanoem_model_joint_t *hoveredJointPtr = m_selection->hoveredJoint();
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         const nanoem_model_joint_t *joint = joints[i];
-        if (!hoveredJointPtr || hoveredJointPtr == joint) {
-            drawJointShape(joint);
-        }
+        drawJointShape(joint);
     }
 }
 
@@ -3772,20 +4542,9 @@ Model::drawAllRigidBodyShapes()
 {
     nanoem_rsize_t numRigidBodies;
     nanoem_model_rigid_body_t *const *bodies = nanoemModelGetAllRigidBodyObjects(m_opaque, &numRigidBodies);
-    const nanoem_model_rigid_body_t *hoveredRigidBodyPtr = m_selection->hoveredRigidBody();
-    const nanoem_model_joint_t *hoveredJointPtr = m_selection->hoveredJoint();
     for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
         const nanoem_model_rigid_body_t *rigidBodyPtr = bodies[i];
-        if (hoveredJointPtr) {
-            const nanoem_model_rigid_body_t *bodyA = nanoemModelJointGetRigidBodyAObject(hoveredJointPtr);
-            const nanoem_model_rigid_body_t *bodyB = nanoemModelJointGetRigidBodyBObject(hoveredJointPtr);
-            if (bodyA == rigidBodyPtr || bodyB == rigidBodyPtr) {
-                drawRigidBodyShape(rigidBodyPtr);
-            }
-        }
-        else if (!hoveredRigidBodyPtr || hoveredRigidBodyPtr == rigidBodyPtr) {
-            drawRigidBodyShape(rigidBodyPtr);
-        }
+        drawRigidBodyShape(rigidBodyPtr);
     }
 }
 
@@ -3793,7 +4552,10 @@ void
 Model::drawJointShape(const nanoem_model_joint_t *jointPtr)
 {
     model::Joint *joint = model::Joint::cast(jointPtr);
-    if (const par_shapes_mesh_s *shape = joint->generateShapeMesh(jointPtr)) {
+    if (!joint || joint->isEditingMasked()) {
+        /* do nothing */
+    }
+    else if (const par_shapes_mesh_s *shape = joint->sharedShapeMesh(jointPtr)) {
         DrawIndexedBuffer &buffer = m_drawJoint[shape];
         const Vector3 color(m_selection->containsJoint(jointPtr) ? Vector3(1, 0, 0) : Vector3(1, 1, 0));
         nanoem_u32_t numVertices = buffer.fillShape(shape, Vector4(color, 0.25f));
@@ -3814,13 +4576,16 @@ void
 Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
 {
     model::RigidBody *rigidBody = model::RigidBody::cast(bodyPtr);
-    if (const par_shapes_mesh_s *shape = rigidBody->generateShapeMesh(bodyPtr)) {
+    if (!rigidBody || rigidBody->isEditingMasked()) {
+        /* do nothing */
+    }
+    else if (const par_shapes_mesh_s *shape = rigidBody->sharedShapeMesh(bodyPtr)) {
         DrawIndexedBuffer &buffer = m_drawRigidBody[shape];
         Vector3 color;
         if (m_selection->containsRigidBody(bodyPtr)) {
             color = Vector3(1, 0, 0);
         }
-        else if (EnumUtils::isEnabled(m_states, kPrivateStateShowAllRigidBodiesColorByShape)) {
+        else if (EnumUtils::isEnabled(m_states, kPrivateStateShowAllRigidBodyShapesColorByShape)) {
             color = model::RigidBody::colorByShapeType(bodyPtr);
         }
         else {
@@ -3839,8 +4604,8 @@ Model::drawRigidBodyShape(const nanoem_model_rigid_body_t *bodyPtr)
 }
 
 void
-Model::drawBoneConnection(const nanoem_model_bone_t *from, const Vector3 &destinationPosition, const Vector4 &color,
-    nanoem_f32_t circleRadius, nanoem_f32_t thickness)
+Model::drawBoneConnection(IPrimitive2D *primitive, const nanoem_model_bone_t *from, const Vector3 &destinationPosition,
+    const Vector4 &color, nanoem_f32_t circleRadius, nanoem_f32_t thickness)
 {
     nanoem_parameter_assert(from, "must not be nullptr");
     if (const model::Bone *fromBone = model::Bone::cast(from)) {
@@ -3858,28 +4623,25 @@ Model::drawBoneConnection(const nanoem_model_bone_t *from, const Vector3 &destin
         }
         nanoem_f32_t x = circleRadius * glm::cos(radians);
         nanoem_f32_t y = circleRadius * glm::sin(radians);
-        IPrimitive2D *primitive = m_project->primitive2D();
         primitive->strokeLine(fromCoord + Vector2(x, y), toCoord, color, thickness);
         primitive->strokeLine(fromCoord - Vector2(x, y), toCoord, color, thickness);
     }
 }
 
 void
-Model::drawBonePoint(const Vector2 &deviceScaleCursor, const nanoem_model_bone_t *bonePtr, const Vector4 &inactive,
-    const Vector4 &hovered)
+Model::drawBonePoint(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor, const nanoem_model_bone_t *bonePtr,
+    const Vector4 &inactive, const Vector4 &hovered, nanoem_f32_t circleRadius, nanoem_f32_t thickness)
 {
     nanoem_parameter_assert(bonePtr, "must not be nullptr");
     Vector2 coord;
     if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
         const bool intersected = intersectsBoneInViewport(deviceScaleCursor, bone, coord);
         const Vector4 color(intersected ? hovered : inactive);
-        const nanoem_f32_t &circleRadius = m_project->deviceScaleCircleRadius();
-        IPrimitive2D *primitive = m_project->primitive2D();
         if (nanoemModelBoneIsMovable(bonePtr)) {
             const nanoem_f32_t outerOffset = circleRadius, innerOffset = outerOffset * 0.75f,
                                innerWidth = circleRadius * 1.5f, outerWidth = circleRadius * 2.0f;
             primitive->strokeRect(
-                Vector4(coord.x - outerOffset, coord.y - outerOffset, outerWidth, outerWidth), color, 0.0f, 2.0f);
+                Vector4(coord.x - outerOffset, coord.y - outerOffset, outerWidth, outerWidth), color, 0.0f, thickness);
             primitive->fillRect(
                 Vector4(coord.x - innerOffset, coord.y - innerOffset, innerWidth, innerWidth), color, 0.0f);
         }
@@ -3887,7 +4649,7 @@ Model::drawBonePoint(const Vector2 &deviceScaleCursor, const nanoem_model_bone_t
             const nanoem_f32_t innerRadius = circleRadius * 0.65f;
             primitive->strokeCircle(
                 Vector4(coord.x - circleRadius, coord.y - circleRadius, circleRadius * 2, circleRadius * 2), color,
-                2.0f);
+                thickness);
             primitive->fillCircle(
                 Vector4(coord.x - innerRadius, coord.y - innerRadius, innerRadius * 2, innerRadius * 2), color);
         }
@@ -3895,53 +4657,58 @@ Model::drawBonePoint(const Vector2 &deviceScaleCursor, const nanoem_model_bone_t
 }
 
 void
-Model::drawBoneTooltip(const nanoem_model_bone_t *bonePtr)
+Model::drawBoneTooltip(IPrimitive2D *primitive, const nanoem_model_bone_t *bonePtr)
 {
     nanoem_parameter_assert(bonePtr, "must not be nullptr");
     if (const model::Bone *bone = model::Bone::cast(bonePtr)) {
         const char *name = bone->nameConstString();
-        m_project->primitive2D()->drawTooltip(name, StringUtils::length(name));
+        primitive->drawTooltip(name, StringUtils::length(name));
     }
 }
 
 void
-Model::drawConstraintConnections(const Vector2 &deviceScaleCursor, const nanoem_model_constraint_t *constraint)
+Model::drawConstraintConnections(
+    IPrimitive2D *primitive, const Vector2 &deviceScaleCursor, const nanoem_model_constraint_t *constraint)
 {
     nanoem_parameter_assert(constraint, "must not be nullptr");
+    static const Vector4 kColorRed(1, 0, 0, 1);
     nanoem_rsize_t numJoints;
     nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraint, &numJoints);
-    nanoem_f32_t thickness = m_project->logicalScaleCircleRadius() * 0.75f;
-    nanoem_f32_t circleRadius = m_project->deviceScaleCircleRadius();
+    const nanoem_f32_t circleRadius = m_project->deviceScaleCircleRadius();
     for (nanoem_rsize_t j = 0; j < numJoints - 1; j++) {
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[j]);
         const nanoem_model_bone_t *nextJointBone = nanoemModelConstraintJointGetBoneObject(joints[j + 1]);
-        const Vector3 &destinationPosition =
-            Vector3(worldTransform(model::Bone::cast(nextJointBone)->worldTransform())[3]);
+        const Vector3 destinationPosition(worldTransform(PrivateModelUtils::boneWorldMatrix(nextJointBone))[3]);
         const Vector4 color(Color::hotToCold((numJoints - j - 1.5f) / nanoem_f32_t(numJoints)), 1);
-        drawBoneConnection(jointBone, destinationPosition, color, circleRadius, thickness);
+        drawBoneConnection(
+            primitive, jointBone, destinationPosition, color, circleRadius, kDrawBoneConnectionThickness);
     }
     if (numJoints > 0) {
         const nanoem_model_bone_t *effectorBone = nanoemModelConstraintGetEffectorBoneObject(constraint);
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[0]);
-        const Vector3 destinationPosition(worldTransform(model::Bone::cast(jointBone)->worldTransform())[3]);
+        const Vector3 destinationPosition(worldTransform(PrivateModelUtils::boneWorldMatrix(jointBone))[3]);
         const Vector4 color(Color::hotToCold(1.0f), 1);
-        drawBoneConnection(effectorBone, destinationPosition, color, circleRadius, thickness);
+        drawBoneConnection(
+            primitive, effectorBone, destinationPosition, color, circleRadius, kDrawBoneConnectionThickness);
     }
     for (nanoem_rsize_t j = 0; j < numJoints; j++) {
         const nanoem_model_bone_t *jointBone = nanoemModelConstraintJointGetBoneObject(joints[j]);
-        const Vector3 color(Color::hotToCold((numJoints - j - 1.0f) / nanoem_f32_t(numJoints)));
-        drawBonePoint(deviceScaleCursor, jointBone, Vector4(color.x, color.y, color.z, 1.0f), Vector4(1, 0, 0, 1));
+        const Vector4 color(Color::hotToCold((numJoints - j - 1.0f) / nanoem_f32_t(numJoints)), 1);
+        drawBonePoint(
+            primitive, deviceScaleCursor, jointBone, color, kColorRed, circleRadius, kDrawBoneConnectionThickness);
     }
     const nanoem_model_bone_t *effectorBone = nanoemModelConstraintGetEffectorBoneObject(constraint);
-    const Vector3 color(Color::hotToCold(1.0f));
-    drawBonePoint(deviceScaleCursor, effectorBone, Vector4(color.x, color.y, color.z, 1.0f), Vector4(1, 0, 0, 1));
+    const Vector4 color(Color::hotToCold(1.0f), 1.0f);
+    drawBonePoint(
+        primitive, deviceScaleCursor, effectorBone, color, kColorRed, circleRadius, kDrawBoneConnectionThickness);
     const nanoem_model_bone_t *targetBone = nanoemModelConstraintGetTargetBoneObject(constraint);
-    const Vector3 color2(Color::hotToCold(1.0f));
-    drawBonePoint(deviceScaleCursor, targetBone, Vector4(color2.x, color2.y, color2.z, 1.0f), Vector4(1, 0, 0, 1));
+    const Vector4 color2(Color::hotToCold(1.0f), 1.0f);
+    drawBonePoint(
+        primitive, deviceScaleCursor, targetBone, color2, kColorRed, circleRadius, kDrawBoneConnectionThickness);
 }
 
 void
-Model::drawConstraintConnections(const Vector2 &deviceScaleCursor)
+Model::drawConstraintConnections(IPrimitive2D *primitive, const Vector2 &deviceScaleCursor)
 {
     nanoem_rsize_t numBones, numConstraints;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
@@ -3949,29 +4716,28 @@ Model::drawConstraintConnections(const Vector2 &deviceScaleCursor)
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bone = bones[i];
         if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bone)) {
-            drawConstraintConnections(deviceScaleCursor, constraint);
+            drawConstraintConnections(primitive, deviceScaleCursor, constraint);
         }
     }
     for (nanoem_rsize_t i = 0; i < numConstraints; i++) {
         const nanoem_model_constraint_t *constraint = constraints[i];
-        drawConstraintConnections(deviceScaleCursor, constraint);
+        drawConstraintConnections(primitive, deviceScaleCursor, constraint);
     }
 }
 
 void
-Model::drawConstraintPoint(const Vector4 &position, int j, int numIterations)
+Model::drawConstraintPoint(IPrimitive2D *primitive, const Vector4 &position, int j, int numIterations)
 {
     const ICamera *camera = m_project->activeCamera();
     nanoem_f32_t radius = m_project->deviceScaleCircleRadius();
     const Vector2 coord(camera->toDeviceScreenCoordinateInViewport(Vector3(position)));
     const Vector3 jet(Color::jet((j + 1) / nanoem_f32_t(numIterations)));
     nanoem_f32_t extent = radius * 2;
-    m_project->primitive2D()->fillCircle(
-        Vector4(coord.x - radius, coord.y - radius, extent, extent), Vector4(jet, 1.0f));
+    primitive->fillCircle(Vector4(coord.x - radius, coord.y - radius, extent, extent), Vector4(jet, 1.0f));
 }
 
 void
-Model::drawConstraintsHeatMap(const nanoem_model_constraint_t *constraintPtr)
+Model::drawConstraintsHeatMap(IPrimitive2D *primitive, const nanoem_model_constraint_t *constraintPtr)
 {
     nanoem_parameter_assert(constraintPtr, "must not be nullptr");
     nanoem_rsize_t numJoints;
@@ -3980,7 +4746,6 @@ Model::drawConstraintsHeatMap(const nanoem_model_constraint_t *constraintPtr)
     const nanoem_rsize_t numIterations = nanoem_rsize_t(nanoemModelConstraintGetNumIterations(constraintPtr));
     model::Constraint *constraint = model::Constraint::cast(constraintPtr);
     nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
-    IPrimitive2D *primitive = m_project->primitive2D();
     nanoem_f32_t extent = radius * 2;
     for (nanoem_rsize_t j = 0; j < numJoints; j++) {
         const nanoem_model_constraint_joint_t *joint = joints[j];
@@ -4005,7 +4770,7 @@ Model::drawConstraintsHeatMap(const nanoem_model_constraint_t *constraintPtr)
 }
 
 void
-Model::drawConstraintsHeatMap()
+Model::drawConstraintsHeatMap(IPrimitive2D *primitive)
 {
     nanoem_rsize_t numBones, numConstraints;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
@@ -4013,12 +4778,12 @@ Model::drawConstraintsHeatMap()
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bone = bones[i];
         if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bone)) {
-            drawConstraintsHeatMap(constraint);
+            drawConstraintsHeatMap(primitive, constraint);
         }
     }
     for (nanoem_rsize_t i = 0; i < numConstraints; i++) {
         const nanoem_model_constraint_t *constraint = constraints[i];
-        drawConstraintsHeatMap(constraint);
+        drawConstraintsHeatMap(primitive, constraint);
     }
 }
 
@@ -4183,22 +4948,12 @@ Model::activeBone() const NANOEM_DECL_NOEXCEPT
     return m_activeBonePairPtr.first;
 }
 
-nanoem_model_bone_t *
-Model::activeBone() NANOEM_DECL_NOEXCEPT
-{
-    return const_cast<nanoem_model_bone_t *>(m_activeBonePairPtr.first);
-}
-
 void
 Model::setActiveBone(const nanoem_model_bone_t *value)
 {
     if (m_activeBonePairPtr.first != value) {
-        const model::Bone *bone = model::Bone::cast(value);
-        m_project->eventPublisher()->publishSetActiveBoneEvent(this, bone ? bone->nameConstString() : nullptr);
+        m_project->eventPublisher()->publishSetActiveBoneEvent(this, model::Bone::nameConstString(value, nullptr));
         m_activeBonePairPtr.first = value;
-        if (m_project->drawType() == kDrawTypeVertexWeight) {
-            markStagingVertexBufferDirty();
-        }
     }
 }
 
@@ -4206,12 +4961,6 @@ const nanoem_model_constraint_t *
 Model::activeConstraint() const NANOEM_DECL_NOEXCEPT
 {
     return m_activeConstraintPtr;
-}
-
-nanoem_model_constraint_t *
-Model::activeConstraint() NANOEM_DECL_NOEXCEPT
-{
-    return const_cast<nanoem_model_constraint_t *>(m_activeConstraintPtr);
 }
 
 void
@@ -4230,35 +4979,18 @@ Model::activeMorph(nanoem_model_morph_category_t category) const NANOEM_DECL_NOE
     return morph;
 }
 
-nanoem_model_morph_t *
-Model::activeMorph(nanoem_model_morph_category_t category) NANOEM_DECL_NOEXCEPT
-{
-    nanoem_model_morph_t *morph = nullptr;
-    if (category >= NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM && category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM) {
-        morph = const_cast<nanoem_model_morph_t *>(m_activeMorphPtr[category]);
-    }
-    return morph;
-}
-
 void
 Model::setActiveMorph(nanoem_model_morph_category_t category, const nanoem_model_morph_t *value)
 {
     if (category >= NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM && category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM &&
         m_activeMorphPtr[category] != value) {
-        const model::Morph *morph = model::Morph::cast(value);
-        m_project->eventPublisher()->publishSetActiveMorphEvent(this, morph ? morph->nameConstString() : nullptr);
+        m_project->eventPublisher()->publishSetActiveMorphEvent(this, model::Morph::nameConstString(value, nullptr));
         m_activeMorphPtr[category] = value;
     }
 }
 
 const nanoem_model_morph_t *
 Model::activeMorph() const NANOEM_DECL_NOEXCEPT
-{
-    return activeMorph(NANOEM_MODEL_MORPH_CATEGORY_BASE);
-}
-
-nanoem_model_morph_t *
-Model::activeMorph() NANOEM_DECL_NOEXCEPT
 {
     return activeMorph(NANOEM_MODEL_MORPH_CATEGORY_BASE);
 }
@@ -4279,6 +5011,8 @@ void
 Model::setActiveMaterial(const nanoem_model_material_t *value)
 {
     if (m_activeMaterialPtr != value) {
+        m_drawAllVertexNormals.destroy();
+        m_drawAllVertexPoints.destroy();
         m_activeMaterialPtr = value;
     }
 }
@@ -4295,6 +5029,42 @@ Model::setActiveOutsideParentSubjectBone(const nanoem_model_bone_t *value)
     if (m_activeBonePairPtr.second != value) {
         m_activeBonePairPtr.second = value;
     }
+}
+
+const nanoem_model_bone_t *
+Model::hoveredBone() const NANOEM_DECL_NOEXCEPT
+{
+    return m_hoveredBonePtr;
+}
+
+void
+Model::setHoveredBone(const nanoem_model_bone_t *value)
+{
+    m_hoveredBonePtr = value;
+}
+
+const undo_stack_t *
+Model::activeUndoStack() const NANOEM_DECL_NOEXCEPT
+{
+    return !m_project->isModelEditingEnabled() ? undoStack() : editingUndoStack();
+}
+
+undo_stack_t *
+Model::activeUndoStack() NANOEM_DECL_NOEXCEPT
+{
+    return !m_project->isModelEditingEnabled() ? undoStack() : editingUndoStack();
+}
+
+const undo_stack_t *
+Model::editingUndoStack() const NANOEM_DECL_NOEXCEPT
+{
+    return m_editingUndoStack;
+}
+
+undo_stack_t *
+Model::editingUndoStack() NANOEM_DECL_NOEXCEPT
+{
+    return m_editingUndoStack;
 }
 
 const undo_stack_t *
@@ -4329,8 +5099,8 @@ Model::containsBone(const nanoem_unicode_string_t *name) const NANOEM_DECL_NOEXC
     nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numObjects);
     for (nanoem_rsize_t i = 0; i < numObjects; i++) {
-        const nanoem_model_bone_t *bone = bones[i];
-        const nanoem_unicode_string_t *boneName = nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
+        const nanoem_model_bone_t *bonePtr = bones[i];
+        const nanoem_unicode_string_t *boneName = nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         if (nanoemUnicodeStringFactoryCompareString(factory, name, boneName) == 0) {
             return true;
         }
@@ -4419,23 +5189,53 @@ Model::findInherentBoneSet(const nanoem_model_bone_t *bone) const
 }
 
 const nanoem_model_bone_t *
-Model::intersectsBone(const Vector2 &deviceScaleCursor, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT
+Model::intersectsBone(
+    const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) const NANOEM_DECL_NOEXCEPT
 {
     Vector2 coord;
     nanoem_rsize_t numBones;
     nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
-    const bool showAllBones = isShowAllBones();
     model::Bone::List candidateBones;
     for (nanoem_rsize_t i = 0; i < numBones; i++) {
         const nanoem_model_bone_t *bonePtr = bones[i];
-        if (isBoneSelectable(bonePtr) && (showAllBones || !isRigidBodyBound(bonePtr))) {
+        if (isBoneSelectable(bonePtr) && !isRigidBodyBound(bonePtr)) {
             const model::Bone *bone = model::Bone::cast(bonePtr);
-            if (intersectsBoneInWindow(deviceScaleCursor, bone, coord)) {
+            if (intersectsBoneInWindow(deviceScaleCursorPosition, bone, coord)) {
                 candidateBones.push_back(bonePtr);
             }
         }
     }
     const nanoem_model_bone_t *bonePtr = nullptr;
+    if (candidateBones.size() > 1) {
+        candidateBoneIndex = (candidateBoneIndex + 1) % candidateBones.size();
+        bonePtr = candidateBones[candidateBoneIndex];
+    }
+    else {
+        candidateBoneIndex = 0;
+        if (candidateBones.size() == 1) {
+            bonePtr = candidateBones.front();
+        }
+    }
+    return bonePtr;
+}
+
+nanoem_model_bone_t *
+Model::intersectsBone(const Vector2 &deviceScaleCursorPosition, nanoem_rsize_t &candidateBoneIndex) NANOEM_DECL_NOEXCEPT
+{
+    Vector2 coord;
+    nanoem_rsize_t numBones;
+    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numBones);
+    tinystl::vector<nanoem_model_bone_t *, TinySTLAllocator> candidateBones;
+    for (nanoem_rsize_t i = 0; i < numBones; i++) {
+        nanoem_model_bone_t *bonePtr = bones[i];
+        if (isBoneSelectable(bonePtr) && !isRigidBodyBound(bonePtr)) {
+            const model::Bone *bone = model::Bone::cast(bonePtr);
+            if (intersectsBoneInWindow(deviceScaleCursorPosition, bone, coord)) {
+                candidateBones.push_back(bonePtr);
+            }
+        }
+    }
+    nanoem_model_bone_t *bonePtr = nullptr;
     if (candidateBones.size() > 1) {
         candidateBoneIndex = (candidateBoneIndex + 1) % candidateBones.size();
         bonePtr = candidateBones[candidateBoneIndex];
@@ -4526,10 +5326,10 @@ Model::findConstraint(const nanoem_unicode_string_t *name) const NANOEM_DECL_NOE
     else {
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_opaque, &numObjects);
         for (nanoem_rsize_t i = 0; i < numObjects; i++) {
-            const nanoem_model_bone_t *bone = bones[i];
-            if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bone)) {
+            const nanoem_model_bone_t *bonePtr = bones[i];
+            if (const nanoem_model_constraint_t *constraint = nanoemModelBoneGetConstraintObject(bonePtr)) {
                 if (nanoemUnicodeStringFactoryCompareString(
-                        factory, nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), name) == 0) {
+                        factory, nanoemModelBoneGetName(bonePtr, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), name) == 0) {
                     return constraint;
                 }
             }
@@ -4683,6 +5483,42 @@ Model::setPassiveEffect(IEffect *value)
     }
 }
 
+const model::IGizmo *
+Model::gizmo() const NANOEM_DECL_NOEXCEPT
+{
+    return m_gizmo;
+}
+
+model::IGizmo *
+Model::gizmo()
+{
+    return m_gizmo;
+}
+
+void
+Model::setGizmo(model::IGizmo *value)
+{
+    m_gizmo = value;
+}
+
+const model::IVertexWeightPainter *
+Model::vertexWeightPainter() const NANOEM_DECL_NOEXCEPT
+{
+    return m_vertexWeightPainter;
+}
+
+model::IVertexWeightPainter *
+Model::vertexWeightPainter()
+{
+    return m_vertexWeightPainter;
+}
+
+void
+Model::setVertexWeightPainter(model::IVertexWeightPainter *value)
+{
+    m_vertexWeightPainter = value;
+}
+
 Model::UserData
 Model::userData() const
 {
@@ -4709,7 +5545,26 @@ Model::setTransformAxisType(AxisType value)
             m_transformAxisType = value;
         }
         else {
-            m_transformAxisType = kAxisTypeMaxEnum;
+            m_transformAxisType = kAxisTypeNone;
+        }
+    }
+}
+
+Model::EditActionType
+Model::editActionType() const NANOEM_DECL_NOEXCEPT
+{
+    return m_project->isModelEditingEnabled() ? m_editActionType : kEditActionTypeNone;
+}
+
+void
+Model::setEditActionType(EditActionType value)
+{
+    if (value != m_editActionType) {
+        if (value >= kEditActionTypeFirstEnum && value < kEditActionTypeMaxEnum) {
+            m_editActionType = value;
+        }
+        else {
+            m_editActionType = kEditActionTypeNone;
         }
     }
 }
@@ -4767,7 +5622,8 @@ Model::edgeSize() const NANOEM_DECL_NOEXCEPT
     nanoem_f32_t value = 0;
     if (numBones > 1) {
         const ICamera *camera = m_project->activeCamera();
-        const Vector3 bonePosition(model::Bone::cast(bones[1])->worldTransformOrigin());
+        const model::Bone *bone = model::Bone::cast(bones[1]);
+        const Vector3 bonePosition(bone ? bone->worldTransformOrigin() : Constants::kZeroV3);
         value = glm::distance(bonePosition, camera->position()) * glm::clamp(camera->fov() / 30.0f, 0.0f, 1.0f) *
             0.001f * m_edgeSizeScaleFactor;
     }
@@ -4828,6 +5684,20 @@ Model::setShowAllBones(bool value)
 }
 
 bool
+Model::isShowAllVertexNormals() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateShowAllVertexNormals, m_states);
+}
+
+void
+Model::setShowAllVertexNormals(bool value)
+{
+    if (isShowAllVertexNormals() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllVertexNormals, m_states, value);
+    }
+}
+
+bool
 Model::isShowAllVertexPoints() const NANOEM_DECL_NOEXCEPT
 {
     return EnumUtils::isEnabled(kPrivateStateShowAllVertexPoints, m_states);
@@ -4862,16 +5732,16 @@ Model::setShowAllVertexFaces(bool value)
 }
 
 bool
-Model::isShowAllRigidBodies() const NANOEM_DECL_NOEXCEPT
+Model::isShowAllRigidBodyShapes() const NANOEM_DECL_NOEXCEPT
 {
-    return EnumUtils::isEnabled(kPrivateStateShowAllRigidBodies, m_states);
+    return EnumUtils::isEnabled(kPrivateStateShowAllRigidBodyShapes, m_states);
 }
 
 void
-Model::setShowAllRigidBodies(bool value)
+Model::setShowAllRigidBodyShapes(bool value)
 {
-    if (isShowAllRigidBodies() != value) {
-        EnumUtils::setEnabled(kPrivateStateShowAllRigidBodies, m_states, value);
+    if (isShowAllRigidBodyShapes() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllRigidBodyShapes, m_states, value);
         if (m_project->activeModel() == this) {
             m_project->eventPublisher()->publishToggleActiveModelShowAllRigidBodiesEvent(value);
         }
@@ -4879,16 +5749,58 @@ Model::setShowAllRigidBodies(bool value)
 }
 
 bool
-Model::isShowAllJoints() const NANOEM_DECL_NOEXCEPT
+Model::isShowAllJointShapes() const NANOEM_DECL_NOEXCEPT
 {
-    return EnumUtils::isEnabled(kPrivateStateShowAllJoints, m_states);
+    return EnumUtils::isEnabled(kPrivateStateShowAllJointShapes, m_states);
 }
 
 void
-Model::setShowAllJoints(bool value)
+Model::setShowAllJointShapes(bool value)
 {
-    if (isShowAllJoints() != value) {
-        EnumUtils::setEnabled(kPrivateStateShowAllJoints, m_states, value);
+    if (isShowAllJointShapes() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllJointShapes, m_states, value);
+    }
+}
+
+bool
+Model::isShowAllMaterialOverlays() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateShowAllMaterialShapes, m_states);
+}
+
+void
+Model::setShowAllMaterialOverlays(bool value)
+{
+    if (isShowAllMaterialOverlays() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllMaterialShapes, m_states, value);
+    }
+}
+
+bool
+Model::isShowAllVertexWeights() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateShowAllVertexWeights, m_states);
+}
+
+void
+Model::setShowAllVertexWeights(bool value)
+{
+    if (isShowAllVertexWeights() != value) {
+        EnumUtils::setEnabled(kPrivateStateShowAllVertexWeights, m_states, value);
+    }
+}
+
+bool
+Model::isBlendingVertexWeightsEnabled() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateBlendingVertexWeightsEnabled, m_states);
+}
+
+void
+Model::setBlendingVertexWeightsEnabled(bool value)
+{
+    if (isBlendingVertexWeightsEnabled() != value) {
+        EnumUtils::setEnabled(kPrivateStateBlendingVertexWeightsEnabled, m_states, value);
     }
 }
 
@@ -4933,45 +5845,8 @@ void
 Model::setPhysicsSimulationEnabled(bool value)
 {
     if (isPhysicsSimulationEnabled() != value) {
+        setAllPhysicsObjectsEnabled(value && isVisible());
         EnumUtils::setEnabled(kPrivateStatePhysicsSimulation, m_states, value);
-        nanoem_rsize_t numRigidBodies, numJoints, numSoftBodies;
-        nanoem_model_rigid_body_t *const *rigidBodies = nanoemModelGetAllRigidBodyObjects(m_opaque, &numRigidBodies);
-        nanoem_model_joint_t *const *joints = nanoemModelGetAllJointObjects(m_opaque, &numJoints);
-        nanoem_model_soft_body_t *const *softBodies = nanoemModelGetAllSoftBodyObjects(m_opaque, &numSoftBodies);
-        if (value) {
-            for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
-                if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
-                    softBody->enable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
-                if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
-                    rigidBody->enable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numJoints; i++) {
-                if (model::Joint *joint = model::Joint::cast(joints[i])) {
-                    joint->enable();
-                }
-            }
-        }
-        else {
-            for (nanoem_rsize_t i = 0; i < numJoints; i++) {
-                if (model::Joint *joint = model::Joint::cast(joints[i])) {
-                    joint->disable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numRigidBodies; i++) {
-                if (model::RigidBody *rigidBody = model::RigidBody::cast(rigidBodies[i])) {
-                    rigidBody->disable();
-                }
-            }
-            for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
-                if (model::SoftBody *softBody = model::SoftBody::cast(softBodies[i])) {
-                    softBody->disable();
-                }
-            }
-        }
     }
 }
 
@@ -5002,10 +5877,11 @@ void
 Model::setVisible(bool value)
 {
     if (isVisible() != value) {
-        EnumUtils::setEnabled(kPrivateStateVisible, m_states, value);
+        setAllPhysicsObjectsEnabled(value && isPhysicsSimulationEnabled());
         if (Effect *effect = m_project->resolveEffect(this)) {
             effect->setEnabled(value);
         }
+        EnumUtils::setEnabled(kPrivateStateVisible, m_states, value);
         if (m_project->activeModel() == this) {
             m_project->eventPublisher()->publishToggleActiveModelVisibleEvent(value);
         }

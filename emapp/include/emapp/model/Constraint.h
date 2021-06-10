@@ -43,17 +43,22 @@ public:
 
     ~Constraint() NANOEM_DECL_NOEXCEPT;
 
-    static Constraint *cast(const nanoem_model_constraint_t *constraint) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_constraint_t *constraintPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_constraint_t *constraintPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_constraint_t *constraintPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static Constraint *cast(const nanoem_model_constraint_t *constraintPtr) NANOEM_DECL_NOEXCEPT;
     static Constraint *create();
     static bool solveAxisAngle(const Matrix4x4 &transform, const Vector4 &effectorPosition,
         const Vector4 &targetPosition, Joint *result) NANOEM_DECL_NOEXCEPT;
     static bool hasUnitXConstraint(
         const nanoem_model_bone_t *bone, nanoem_unicode_string_factory_t *factory) NANOEM_DECL_NOEXCEPT;
 
-    void bind(nanoem_model_constraint_t *constraint);
-    void resetLanguage(const nanoem_model_constraint_t *constraint, nanoem_unicode_string_factory_t *factory,
+    void bind(nanoem_model_constraint_t *constraintPtr);
+    void resetLanguage(const nanoem_model_constraint_t *constraintPtr, nanoem_unicode_string_factory_t *factory,
         nanoem_language_type_t language);
-    void initialize(const nanoem_model_constraint_t *constraint);
+    void initialize(const nanoem_model_constraint_t *constraintPtr);
 
     const JointIterationResult *jointIterationResult() const NANOEM_DECL_NOEXCEPT;
     const JointIterationResult *effectorIterationResult() const NANOEM_DECL_NOEXCEPT;
@@ -76,7 +81,7 @@ private:
     JointIterationResult m_effectorIterationResult;
     String m_name;
     String m_canonicalName;
-    bool m_enabled;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

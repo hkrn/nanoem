@@ -207,6 +207,7 @@ D3D11SkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) no
 {
     sg::destroy_buffer(value);
     COMInline::safeRelease(m_outputBuffers[bufferIndex]);
+    COMInline::safeRelease(m_outputBuffersView[bufferIndex]);
 }
 
 void
@@ -292,11 +293,11 @@ void
 D3D11SkinDeformerFactory::Deformer::createInputBuffer(const sg_buffer_desc &desc, Error &error)
 {
     ID3D11Device *device = m_parent->m_device;
-    nanoem_rsize_t numItems = Inline::roundInt32(desc.size) / sizeof(Model::VertexUnit);
+    nanoem_rsize_t numItems = desc.size / sizeof(Model::VertexUnit);
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
     bufferDesc.StructureByteStride = sizeof(Model::VertexUnit);
-    bufferDesc.ByteWidth = Inline::roundInt32(desc.size);
+    bufferDesc.ByteWidth = Inline::saturateInt32U(desc.size);
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
     bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
     D3D11_SUBRESOURCE_DATA res = {};
@@ -322,7 +323,7 @@ D3D11SkinDeformerFactory::Deformer::createOutputBuffer(const sg_buffer_desc &des
     ID3D11Buffer *&buffer = m_outputBuffers[bufferIndex];
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER | D3D11_BIND_UNORDERED_ACCESS;
-    bufferDesc.ByteWidth = Inline::roundInt32(desc.size);
+    bufferDesc.ByteWidth = Inline::saturateInt32U(desc.size);
     bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
     COMInline::wrapCall(device->CreateBuffer(&bufferDesc, nullptr, &buffer), error);
     if (buffer) {
@@ -486,7 +487,7 @@ D3D11SkinDeformerFactory::Deformer::createVertexBuffer(nanoem_rsize_t numVertice
             auto position = nanoemModelMorphVertexGetPosition(it2->second);
             /* reserve index zero for non morph weight */
             int index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(it2->first)) + 1;
-            item[i] = bx::simd_ld(position[0], position[1], position[2], index);
+            item[i] = bx::simd_ld(position[0], position[1], position[2], float(index));
         }
         offset++;
     }

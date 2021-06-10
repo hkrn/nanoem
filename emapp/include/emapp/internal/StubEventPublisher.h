@@ -42,8 +42,9 @@ public:
         BX_UNUSED_2(canUndo, canRedo);
     }
     void
-    publishUndoChangeEvent() NANOEM_DECL_OVERRIDE
+    publishPushUndoCommandEvent(const undo_command_t *commandPtr) NANOEM_DECL_OVERRIDE
     {
+        BX_UNUSED_1(commandPtr);
     }
     void
     publishAddModelEvent(const Model *model) NANOEM_DECL_OVERRIDE
@@ -302,6 +303,11 @@ public:
         BX_UNUSED_1(value);
     }
     void
+    publishToggleModelEditingEnabledEvent(bool value) NANOEM_DECL_OVERRIDE
+    {
+        BX_UNUSED_1(value);
+    }
+    void
     publishUpdateProgressEvent(
         nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text) NANOEM_DECL_OVERRIDE
     {
@@ -366,6 +372,10 @@ public:
     publishEnableCursorEvent(const Vector2 &value) NANOEM_DECL_OVERRIDE
     {
         BX_UNUSED_1(value);
+    }
+    void
+    publishQuitApplicationEvent() NANOEM_DECL_OVERRIDE
+    {
     }
     void
     publishErrorEvent(const Error &error) NANOEM_DECL_OVERRIDE

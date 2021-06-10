@@ -174,8 +174,6 @@ setEffectCallback(Effect *effect, Project *project, Error &error)
 DefaultFileManager::DefaultFileManager(BaseApplicationService *applicationPtr)
     : m_applicationPtr(applicationPtr)
     , m_effectPlugin(nullptr)
-    , m_callback(nullptr)
-    , m_userData(nullptr)
 {
     const JSON_Object *config = json_object(applicationPtr->applicationConfiguration());
     const char *locale = json_object_dotget_string(config, "project.locale");
@@ -186,6 +184,7 @@ DefaultFileManager::DefaultFileManager(BaseApplicationService *applicationPtr)
         m_translator.setLanguage(ITranslator::kLanguageTypeEnglish);
     }
     m_applicationPtr->setTranslator(&m_translator);
+    Inline::clearZeroMemory(m_queryFileDialogCallbacks);
 }
 
 DefaultFileManager::~DefaultFileManager() NANOEM_DECL_NOEXCEPT
@@ -315,6 +314,16 @@ DefaultFileManager::initializeAllMotionIOPlugins(const URIList &fileURIs)
             }
         }
     }
+}
+
+void
+DefaultFileManager::cancelQueryFileDialog(Project *project)
+{
+    if (m_queryFileDialogCallbacks.m_cancel) {
+        m_queryFileDialogCallbacks.m_cancel(project, m_queryFileDialogCallbacks.m_opaque);
+        m_queryFileDialogCallbacks.m_cancel = nullptr;
+    }
+    resetTransientQueryFileDialogCallback();
 }
 
 void
@@ -550,11 +559,26 @@ DefaultFileManager::loadProject(const URI &fileURI, Project *project, Error &err
     return succeeded;
 }
 
-void
-DefaultFileManager::setTransientQueryFileDialogCallback(QueryFileDialogCallback callback, void *userData)
+bool
+DefaultFileManager::hasTransientQueryFileDialogCallback() const NANOEM_DECL_NOEXCEPT
 {
-    m_callback = callback;
-    m_userData = userData;
+    return m_queryFileDialogCallbacks.m_accept != nullptr;
+}
+
+void
+DefaultFileManager::setTransientQueryFileDialogCallback(QueryFileDialogCallbacks callbacks)
+{
+    m_queryFileDialogCallbacks = callbacks;
+}
+
+void
+DefaultFileManager::resetTransientQueryFileDialogCallback()
+{
+    if (m_queryFileDialogCallbacks.m_destory) {
+        m_queryFileDialogCallbacks.m_destory(m_queryFileDialogCallbacks.m_opaque);
+        m_queryFileDialogCallbacks.m_destory = nullptr;
+    }
+    Inline::clearZeroMemory(m_queryFileDialogCallbacks);
 }
 
 bool
@@ -745,11 +769,10 @@ DefaultFileManager::internalLoadFromFile(
             break;
         }
         case kDialogTypeUserCallback: {
-            if (m_callback) {
-                m_callback(fileURI, project, m_userData);
-                m_callback = nullptr;
-                m_userData = nullptr;
+            if (m_queryFileDialogCallbacks.m_accept) {
+                m_queryFileDialogCallbacks.m_accept(fileURI, project, error, m_queryFileDialogCallbacks.m_opaque);
             }
+            resetTransientQueryFileDialogCallback();
             break;
         }
         case kDialogTypeMaxEnum:
@@ -788,11 +811,10 @@ DefaultFileManager::saveAsFile(const URI &fileURI, DialogType type, Project *pro
         break;
     }
     case kDialogTypeUserCallback: {
-        if (m_callback) {
-            m_callback(fileURI, project, m_userData);
-            m_callback = nullptr;
-            m_userData = nullptr;
+        if (m_queryFileDialogCallbacks.m_accept) {
+            m_queryFileDialogCallbacks.m_accept(fileURI, project, error, m_queryFileDialogCallbacks.m_opaque);
         }
+        resetTransientQueryFileDialogCallback();
         break;
     }
     default:
@@ -869,9 +891,9 @@ DefaultFileManager::internalLoadEffectSourceFile(
         else {
             cancelled = error.isCancelled();
         }
-    }
-    if (cancelled || error.hasReason()) {
-        project->destroyEffect(effect);
+        if (cancelled || error.hasReason()) {
+            project->destroyEffect(effect);
+        }
     }
     return !error.hasReason();
 }
@@ -1036,9 +1058,17 @@ DefaultFileManager::loadCameraMotion(const URI &fileURI, Project *project, Error
     Motion *motion = project->createMotion();
     bool succeeded = false;
     if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
-        motion->writeLoadCameraCommandMessage(fileURI, error);
+        if (isCameraLightMotion(motion)) {
+            motion->writeLoadCameraCommandMessage(fileURI, error);
+            succeeded = !error.hasReason();
+        }
+        else {
+            error = Error(translator()->translate("nanoem.error.motion.not-camera-and-light.reason"), "",
+                Error::kDomainTypeApplication);
+        }
+    }
+    if (succeeded) {
         project->setCameraMotion(motion);
-        succeeded = !error.hasReason();
     }
     else {
         project->destroyMotion(motion);
@@ -1052,9 +1082,17 @@ DefaultFileManager::loadLightMotion(const URI &fileURI, Project *project, Error 
     Motion *motion = project->createMotion();
     bool succeeded = false;
     if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
-        motion->writeLoadLightCommandMessage(fileURI, error);
+        if (isCameraLightMotion(motion)) {
+            motion->writeLoadLightCommandMessage(fileURI, error);
+            succeeded = !error.hasReason();
+        }
+        else {
+            error = Error(translator()->translate("nanoem.error.motion.not-camera-and-light.reason"), "",
+                Error::kDomainTypeApplication);
+        }
+    }
+    if (succeeded) {
         project->setLightMotion(motion);
-        succeeded = !error.hasReason();
     }
     else {
         project->destroyMotion(motion);
@@ -1070,10 +1108,47 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
         if (Motion::isLoadableExtension(fileURI)) {
             Motion *motion = project->createMotion(), *lastMotionPtr = motion;
             if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
-                motion->writeLoadModelCommandMessage(model->handle(), fileURI, error);
+                if (!isCameraLightMotion(motion)) {
+                    motion->writeLoadModelCommandMessage(model->handle(), fileURI, error);
+                    succeeded = !error.hasReason();
+                }
+                else {
+                    error = Error(translator()->translate("nanoem.error.motion.not-model.reason"), "",
+                        Error::kDomainTypeApplication);
+                }
+            }
+            if (succeeded) {
+                StringSet bones, morphs;
+                if (!motion->testAllMissingModelObjects(model, bones, morphs)) {
+                    String message, name;
+                    StringUtils::getUtf8String(
+                        nanoemMotionGetTargetModelName(motion->data()), project->unicodeStringFactory(), name);
+                    StringUtils::format(
+                        message, translator()->translate("nanoem.motion.model.diagnostics.message"), name.c_str());
+                    message.append("\n");
+                    if (!bones.empty()) {
+                        StringUtils::format(message, "\n%s\n",
+                            translator()->translate("nanoem.motion.model.diagnostics.all-missing-bones"));
+                        for (StringSet::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+                            message.append("* ");
+                            message.append(it->c_str());
+                            message.append("\n");
+                        }
+                    }
+                    if (!morphs.empty()) {
+                        StringUtils::format(message, "\n%s\n",
+                            translator()->translate("nanoem.motion.model.diagnostics.all-missing-morphs"));
+                        for (StringSet::const_iterator it = morphs.begin(), end = morphs.end(); it != end; ++it) {
+                            message.append("* ");
+                            message.append(it->c_str());
+                            message.append("\n");
+                        }
+                    }
+                    m_applicationPtr->addModalDialog(ModalDialogFactory::createDisplayPlainTextDialog(
+                        m_applicationPtr, translator()->translate("nanoem.motion.model.diagnostics.title"), message));
+                }
                 lastMotionPtr = project->addModelMotion(motion, model);
                 project->restart();
-                succeeded = !error.hasReason();
             }
             project->destroyMotion(lastMotionPtr);
         }
@@ -1087,6 +1162,11 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
                 }
             }
         }
+    }
+    else {
+        error = Error(translator()->translate("nanoem.error.motion.no-active-model.reason"),
+            translator()->translate("nanoem.error.motion.no-active-model.recovery-suggestion"),
+            Error::kDomainTypeApplication);
     }
     return succeeded;
 }
@@ -1385,6 +1465,17 @@ DefaultFileManager::decodeAudioWave(
         }
     }
     return succeeded;
+}
+
+bool
+DefaultFileManager::isCameraLightMotion(const Motion *motion)
+{
+    nanoem_unicode_string_factory_t *factory = motion->project()->unicodeStringFactory();
+    const nanoem_unicode_string_t *name = nanoemMotionGetTargetModelName(motion->data());
+    String targetModelName;
+    StringUtils::getUtf8String(name, factory, targetModelName);
+    return StringUtils::equals(
+        reinterpret_cast<const char *>(Motion::kCameraAndLightTargetModelName), targetModelName.c_str());
 }
 
 } /* namespace nanoem */

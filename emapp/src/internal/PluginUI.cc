@@ -145,7 +145,7 @@ PluginUI::title() const NANOEM_DECL_NOEXCEPT
 }
 
 void
-PluginUI::drawComponent(const _Nanoem__Application__Plugin__UIComponent *component)
+PluginUI::drawComponent(const Nanoem__Application__Plugin__UIComponent *component)
 {
     char label[Inline::kLongNameStackBufferSize];
     switch (component->type_case) {

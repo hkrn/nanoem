@@ -64,13 +64,13 @@ public:
 
     void handleAssignFocus();
     void handleResignFocus();
-    void handleScreenChange();
     void handleWindowResize();
     void handleWindowChangeDevicePixelRatio();
     void handleMouseDown(const NSEvent *event);
     void handleMouseMoved(const NSEvent *event);
     void handleMouseDragged(const NSEvent *event);
     void handleMouseUp(const NSEvent *event);
+    void handleMouseExit(const NSEvent *event);
     void handleRightMouseDown(const NSEvent *event);
     void handleRightMouseDragged(const NSEvent *event);
     void handleRightMouseUp(const NSEvent *event);
@@ -93,6 +93,11 @@ public:
     void setTitle(NSString *lastPathComponent);
 
 private:
+    enum DisabledCursorState {
+        kDisabledCursorStateNone,
+        kDisabledCursorStateInitial,
+        kDisabledCursorStateMoving,
+    };
     struct FPSThresholder {
         FPSThresholder(uint32_t value, bool enabled);
         inline void
@@ -116,22 +121,22 @@ private:
     static void handleAddingWatchEffectSource(void *userData, nanoem_u16_t handle, const URI &fileURI);
     static void handleRemovingWatchEffectSource(void *userData, uint16_t handle, const char *name);
 
-    Vector2SI32 devicePixelScreenPosition(const NSEvent *event) noexcept;
+    Vector2SI32 deviceScaleScreenPosition(const NSEvent *event) noexcept;
     float invertedDevicePixelRatio() const noexcept;
 
     void initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat);
     void initializeOpenGL();
     void getWindowCenterPoint(Vector2SI32 *value);
-    bool getCursorPosition(const NSEvent *event, Vector2SI32 &position, Vector2SI32 &delta);
+    bool getLogicalCursorPosition(const NSEvent *event, Vector2SI32 &position, Vector2SI32 &delta);
     void recenterCursorPosition();
-    Vector2 cursorLocationInWindow(const NSEvent *event) const;
-    Vector2 lastCursorPosition() const;
-    void setLastCursorPosition(const Vector2SI32 &value);
-    void setLastCursorPosition(const Vector2SI32 &value, const Vector2SI32 &delta);
-    void disableCursor(const Vector2SI32 &position);
-    void enableCursor(const Vector2SI32 &position);
+    Vector2 logicalCursorLocationInWindow(const NSEvent *event) const;
+    Vector2 lastLogicalCursorPosition() const;
+    void setLastLogicalCursorPosition(const Vector2SI32 &value);
+    void setLastLogicalCursorPosition(const Vector2SI32 &value, const Vector2SI32 &delta);
+    void disableCursor(const Vector2SI32 &logicalCursorPosition);
+    void enableCursor(const Vector2SI32 &logicalCursorPosition);
     void internalDisableCursor(Vector2SI32 &centerLocation);
-    void internalEnableCursor(const Vector2SI32 &location);
+    void internalEnableCursor(const Vector2SI32 &logicalCursorPocation);
     void registerAllPrerequisiteEventListeners();
     bool isEditingDisplaySyncEnabled() const noexcept;
     void updateDisplayFrequency(CGDirectDisplayID displayId);
@@ -165,16 +170,16 @@ private:
     AnalyticsTracker m_tracker;
     CocoaApplicationMenuBuilder m_menu;
     FileHandleMap m_watchEffectSourceHandles;
-    Vector2SI32 m_lastCursorPosition;
-    Vector2SI32 m_virtualCursorPosition;
-    Vector2SI32 m_restoreHiddenCursorPosition;
-    tinystl::pair<bool, bool> m_cursorHidden = tinystl::make_pair(false, false);
+    Vector2SI32 m_lastLogicalCursorPosition = Vector2SI32(0);
+    Vector2SI32 m_virtualLogicalCursorPosition = Vector2SI32(0);
+    Vector2SI32 m_restoreHiddenLogicalCursorPosition = Vector2SI32(0);
+    DisabledCursorState m_disabledCursorState = kDisabledCursorStateNone;
     uint64_t m_quitAt = 0;
     uint32_t m_displayFrequency = 0;
-    nanoem_f32_t m_screenHeight = 0;
     std::atomic<bool> m_runningMetrics;
     bool m_runningWindow = true;
     bool m_vsyncAtPlaying = true;
+    bool m_disabledCursorResigned = false;
 };
 
 } /* namespace macos */

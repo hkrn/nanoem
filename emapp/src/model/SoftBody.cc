@@ -6,6 +6,7 @@
 
 #include "emapp/model/SoftBody.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/StringUtils.h"
@@ -14,6 +15,36 @@
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateEnabled = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespace anonymous */
+
+int
+SoftBody::index(const nanoem_model_soft_body_t *softBodyPtr) NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(softBodyPtr));
+}
+
+const char *
+SoftBody::nameConstString(const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const SoftBody *body = cast(softBodyPtr);
+    return body ? body->nameConstString() : placeHolder;
+}
+
+const char *
+SoftBody::canonicalNameConstString(
+    const nanoem_model_soft_body_t *softBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const SoftBody *body = cast(softBodyPtr);
+    return body ? body->canonicalNameConstString() : placeHolder;
+}
 
 SoftBody *
 SoftBody::cast(const nanoem_model_soft_body_t *softBodyPtr)
@@ -44,7 +75,7 @@ SoftBody::bind(nanoem_model_soft_body_t *softBodyPtr, PhysicsEngine *engine, Rig
     nanoemModelObjectSetUserData(nanoemModelSoftBodyGetModelObjectMutable(softBodyPtr), userData);
     m_physicsSoftBody = engine->createSoftBody(softBodyPtr, status);
     m_physicsEngine = engine;
-    engine->addSoftBody(m_physicsSoftBody);
+    enable();
     int numSoftBodyVertices = engine->numSoftBodyVertices(m_physicsSoftBody);
     for (int i = 0; i < numSoftBodyVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = engine->resolveSoftBodyVertexObject(m_physicsSoftBody, i);
@@ -72,8 +103,7 @@ SoftBody::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelSoftBodyGetName(body, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "SoftBody%d", nanoemModelObjectGetIndex(nanoemModelSoftBodyGetModelObject(body)));
+            StringUtils::format(m_canonicalName, "SoftBody%d", index(body));
         }
     }
     if (m_name.empty()) {
@@ -112,8 +142,7 @@ SoftBody::synchronizeTransformFeedbackFromSimulation(
     int numSoftBodyVertices = m_physicsEngine->numSoftBodyVertices(m_physicsSoftBody);
     for (int i = 0; i < numSoftBodyVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = m_physicsEngine->resolveSoftBodyVertexObject(m_physicsSoftBody, i);
-        nanoem_rsize_t vertexIndex =
-            static_cast<nanoem_rsize_t>(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr)));
+        nanoem_rsize_t vertexIndex = static_cast<nanoem_rsize_t>(model::Vertex::index(vertexPtr));
         if (nanoem_likely(vertexIndex < numVertices)) {
             Model::VertexUnit &vertexUnit = vertexUnits[vertexIndex];
             getVertexPosition(i, &vertexUnit.m_position);
@@ -131,8 +160,7 @@ SoftBody::synchronizeTransformFeedbackToSimulation(
     for (nanoem_rsize_t i = 0; i < numIndices; i++) {
         const nanoem_u32_t index = indices[i];
         const nanoem_model_vertex_t *vertexPtr = m_physicsEngine->resolveSoftBodyVertexObject(m_physicsSoftBody, index);
-        nanoem_rsize_t vertexIndex =
-            static_cast<nanoem_rsize_t>(nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr)));
+        nanoem_rsize_t vertexIndex = static_cast<nanoem_rsize_t>(model::Vertex::index(vertexPtr));
         if (nanoem_likely(vertexIndex < numVertices)) {
             const Model::VertexUnit &vertexUnit = vertexUnits[vertexIndex];
             setVertexPosition(index, &vertexUnit.m_position);
@@ -156,13 +184,19 @@ SoftBody::getVertexNormal(const nanoem_model_vertex_t *vertexPtr, bx::simd128_t 
 void
 SoftBody::enable()
 {
-    m_physicsEngine->addSoftBody(m_physicsSoftBody);
+    if (!EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->addSoftBody(m_physicsSoftBody);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, true);
+    }
 }
 
 void
 SoftBody::disable()
 {
-    m_physicsEngine->removeSoftBody(m_physicsSoftBody);
+    if (EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->removeSoftBody(m_physicsSoftBody);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, false);
+    }
 }
 
 String
@@ -201,6 +235,18 @@ SoftBody::physicsSoftBody() const NANOEM_DECL_NOEXCEPT
     return m_physicsSoftBody;
 }
 
+bool
+SoftBody::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+SoftBody::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
+}
+
 void
 SoftBody::destroy(void *opaque, nanoem_model_object_t * /* object */) NANOEM_DECL_NOEXCEPT
 {
@@ -211,7 +257,8 @@ SoftBody::destroy(void *opaque, nanoem_model_object_t * /* object */) NANOEM_DEC
 }
 
 SoftBody::SoftBody(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_physicsEngine(nullptr),
-                                                                            m_physicsSoftBody(nullptr)
+                                                                            m_physicsSoftBody(nullptr),
+                                                                            m_states(kPrivateStateInitialValue)
 {
 }
 

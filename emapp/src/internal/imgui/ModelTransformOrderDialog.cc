@@ -16,7 +16,7 @@ const char *const ModelTransformOrderDialog::kIdentifier = "dialog.model.order.t
 
 ModelTransformOrderDialog::ModelTransformOrderDialog(Project *project, BaseApplicationService *applicationPtr)
     : BaseNonModalDialogWindow(applicationPtr)
-    , m_lastTransformOrderList(project->transformOrderList())
+    , m_lastTransformOrderList(*project->transformOrderList())
     , m_orderState(m_lastTransformOrderList)
 {
 }
@@ -38,8 +38,8 @@ ModelTransformOrderDialog::draw(Project *project)
             changed = true;
         }
         ImGui::BeginChild("##models", ImVec2(0, height - ImGui::GetFrameHeightWithSpacing() * 3.5f), true);
-        Project::ModelList models(project->transformOrderList());
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        const Project::ModelList *models = project->transformOrderList();
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             Model *model = *it;
             if (ImGui::Selectable(model->nameConstString(), m_orderState.m_checkedTransformModel == model)) {
                 m_orderState.m_checkedTransformModel = model;

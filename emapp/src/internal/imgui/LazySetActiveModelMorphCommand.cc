@@ -33,6 +33,12 @@ LazySetActiveModelMorphCommand::execute(Project *project)
     }
 }
 
+void
+LazySetActiveModelMorphCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

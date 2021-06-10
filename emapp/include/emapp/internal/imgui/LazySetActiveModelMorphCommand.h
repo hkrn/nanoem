@@ -17,7 +17,9 @@ namespace imgui {
 struct LazySetActiveModelMorphCommand : ImGuiWindow::ILazyExecutionCommand {
     LazySetActiveModelMorphCommand(const nanoem_model_morph_t *morph);
     LazySetActiveModelMorphCommand(const nanoem_model_morph_t *morph, nanoem_model_morph_category_t category);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     const nanoem_model_morph_t *m_value;
     const nanoem_model_morph_category_t m_category;

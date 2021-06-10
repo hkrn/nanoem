@@ -10,8 +10,7 @@
 
 #include "emapp/PhysicsEngine.h"
 
-#include "par/par_shapes.h"
-
+struct par_shapes_mesh_s;
 struct nanoem_physics_rigid_body_t;
 
 namespace nanoem {
@@ -40,24 +39,30 @@ public:
         nanoem_model_rigid_body_transform_type_t transformType;
     };
 
-    static Vector3 colorByShapeType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT;
-    static Vector3 colorByObjectType(const nanoem_model_rigid_body_t *bodyPtr) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_rigid_body_t *rigidBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_rigid_body_t *rigidBodyPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static Vector3 colorByShapeType(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT;
+    static Vector3 colorByObjectType(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT;
     static RigidBody *cast(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT;
     static RigidBody *create();
     ~RigidBody() NANOEM_DECL_NOEXCEPT;
 
-    void bind(nanoem_model_rigid_body_t *body, PhysicsEngine *engine, bool isMorph, Resolver &resolver);
-    void resetLanguage(const nanoem_model_rigid_body_t *body, nanoem_unicode_string_factory_t *factory,
+    void bind(nanoem_model_rigid_body_t *rigidBodyPtr, PhysicsEngine *engine, bool isMorph, Resolver &resolver);
+    void resetLanguage(const nanoem_model_rigid_body_t *rigidBodyPtr, nanoem_unicode_string_factory_t *factory,
         nanoem_language_type_t language);
     void destroy() NANOEM_DECL_NOEXCEPT;
 
-    void getWorldTransform(const nanoem_model_rigid_body_t *body, nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
-    void synchronizeTransformFeedbackFromSimulation(
-        const nanoem_model_rigid_body_t *body, PhysicsEngine::RigidBodyFollowBoneType followType) NANOEM_DECL_NOEXCEPT;
+    void getWorldTransform(
+        const nanoem_model_rigid_body_t *rigidBodyPtr, nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
+    void synchronizeTransformFeedbackFromSimulation(const nanoem_model_rigid_body_t *rigidBodyPtr,
+        PhysicsEngine::RigidBodyFollowBoneType followType) NANOEM_DECL_NOEXCEPT;
     void synchronizeTransformFeedbackToSimulation(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT;
-    void applyAllForces(const nanoem_model_rigid_body_t *body) NANOEM_DECL_NOEXCEPT;
-    void initializeTransformFeedback(const nanoem_model_rigid_body_t *body);
-    void resetTransformFeedback(const nanoem_model_rigid_body_t *body);
+    void applyAllForces(const nanoem_model_rigid_body_t *rigidBodyPtr) NANOEM_DECL_NOEXCEPT;
+    void initializeTransformFeedback(const nanoem_model_rigid_body_t *rigidBodyPtr);
+    void resetTransformFeedback(const nanoem_model_rigid_body_t *rigidBodyPtr);
     void addGlobalTorqueForce(const Vector3 &value, nanoem_f32_t weight);
     void addGlobalVelocityForce(const Vector3 &value, nanoem_f32_t weight);
     void addLocalTorqueForce(const Vector3 &value, nanoem_f32_t weight);
@@ -78,8 +83,10 @@ public:
     Matrix4x4 worldTransform() const NANOEM_DECL_NOEXCEPT;
     Matrix4x4 initialTransform() const NANOEM_DECL_NOEXCEPT;
     bool isKinematic() const NANOEM_DECL_NOEXCEPT;
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
-    const par_shapes_mesh *generateShapeMesh(const nanoem_model_rigid_body_t *body);
+    const par_shapes_mesh_s *sharedShapeMesh(const nanoem_model_rigid_body_t *body);
 
 private:
     struct PlaceHolder {
@@ -98,7 +105,7 @@ private:
     tinystl::pair<Vector3, bool> m_localVelocityForce;
     String m_name;
     String m_canonicalName;
-    bool m_allForcesShouldReset;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

@@ -75,7 +75,7 @@ JSON::load(const JSON_Value *value)
     }
     JSON_Array *colorValue = json_object_dotget_array(root, "screen.color");
     if (json_array_get_count(colorValue) >= 4) {
-        const glm::u8vec4 screenColor(json_array_get_number(colorValue, 0), json_array_get_number(colorValue, 1),
+        const Vector4U8 screenColor(json_array_get_number(colorValue, 0), json_array_get_number(colorValue, 1),
             json_array_get_number(colorValue, 2), json_array_get_number(colorValue, 3));
         m_project->setViewportBackgroundColor(Vector4(screenColor) / Vector4(0xff));
     }
@@ -118,7 +118,8 @@ JSON::save(JSON_Value *value)
     json_object_dotset_boolean(root, "loop", m_project->isLoopEnabled());
     PhysicsEngine *engine = m_project->physicsEngine();
     json_object_dotset_number(root, "physics.debug", engine->debugGeometryFlags());
-    json_object_dotset_boolean(root, "physics.active", engine->mode() != PhysicsEngine::kSimulationModeDisable);
+    json_object_dotset_boolean(
+        root, "physics.active", engine->simulationMode() != PhysicsEngine::kSimulationModeDisable);
     json_object_dotset_number(root, "fps", m_project->preferredMotionFPS());
     json_object_dotset_number(root, "seek", m_project->currentLocalFrameIndex());
     const Grid *grid = m_project->grid();
@@ -141,7 +142,7 @@ JSON::save(JSON_Value *value)
     const ShadowCamera *shadowCamera = m_project->shadowCamera();
     json_object_dotset_number(root, "shadowmap.distance", shadowCamera->distance());
     json_object_dotset_number(root, "shadowmap.mode", shadowCamera->coverageMode());
-    const glm::u8vec4 color(m_project->viewportBackgroundColor() * Vector4(0xff));
+    const Vector4U8 color(m_project->viewportBackgroundColor() * Vector4(0xff));
     JSON_Value *colorValue = json_value_init_array();
     JSON_Array *colorArray = json_array(colorValue);
     json_array_append_number(colorArray, color.x);

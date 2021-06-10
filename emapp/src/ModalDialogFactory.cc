@@ -143,26 +143,28 @@ public:
     IModalDialog *onAccepted(Project *project) NANOEM_DECL_OVERRIDE;
 
 private:
-    String m_message;
     ModalDialogFactory::AddingModelDialogCallback m_callback;
     String m_title;
+    MutableString m_text;
     Model *m_model;
 };
 
 LoadingModelConfirmDialog::LoadingModelConfirmDialog(
     BaseApplicationService *applicationPtr, Model *model, ModalDialogFactory::AddingModelDialogCallback callback)
     : NoActionDialog(applicationPtr)
-    , m_message(model->comment())
     , m_callback(callback)
     , m_model(model)
 {
     StringUtils::format(m_title, applicationPtr->translator()->translate("nanoem.window.title.confirm.model"),
         model->canonicalNameConstString());
-    if (m_message.empty()) {
+    String comment(model->comment());
+    if (comment.empty()) {
         nanoem_unicode_string_factory_t *factory = model->project()->unicodeStringFactory();
         StringUtils::getUtf8String(
-            nanoemModelGetComment(model->data(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_message);
+            nanoemModelGetComment(model->data(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, comment);
     }
+    m_text.assign(comment.c_str(), comment.c_str() + comment.size());
+    m_text.push_back(0);
 }
 
 LoadingModelConfirmDialog::~LoadingModelConfirmDialog() NANOEM_DECL_NOEXCEPT
@@ -183,11 +185,9 @@ LoadingModelConfirmDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 LoadingModelConfirmDialog::draw(const Project *)
 {
-    MutableString s(m_message.c_str(), m_message.c_str() + m_message.size());
-    s.push_back(0);
     ImVec2 size(ImGui::GetContentRegionAvail());
     size.y -= ImGui::GetFrameHeightWithSpacing();
-    ImGui::InputTextMultiline("##text", s.data(), s.size(), size, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextMultiline("##text", m_text.data(), m_text.size(), size, ImGuiInputTextFlags_ReadOnly);
 }
 
 nanoem_u32_t
@@ -399,15 +399,16 @@ public:
 
 private:
     const String m_title;
-    const String m_message;
+    MutableString m_text;
 };
 
 DisplayPlainTextDialog::DisplayPlainTextDialog(
     BaseApplicationService *applicationPtr, const String &title, const String &message)
     : NoActionDialog(applicationPtr)
     , m_title(title)
-    , m_message(message)
 {
+    m_text.assign(message.c_str(), message.c_str() + message.size());
+    m_text.push_back(0);
 }
 
 DisplayPlainTextDialog::~DisplayPlainTextDialog() NANOEM_DECL_NOEXCEPT
@@ -423,11 +424,9 @@ DisplayPlainTextDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 DisplayPlainTextDialog::draw(const Project *)
 {
-    MutableString s(m_message.c_str(), m_message.c_str() + m_message.size());
-    s.push_back(0);
     ImVec2 size(ImGui::GetContentRegionAvail());
     size.y -= ImGui::GetFrameHeightWithSpacing();
-    ImGui::InputTextMultiline("##text", s.data(), s.size(), size, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextMultiline("##text", m_text.data(), m_text.size(), size, ImGuiInputTextFlags_ReadOnly);
 }
 
 nanoem_u32_t
@@ -597,6 +596,44 @@ ConfirmSavingDialog::onDiscarded(Project *project)
     return dialog;
 }
 
+struct ConvertingAccessoryConfirmDialogUserData {
+    ConvertingAccessoryConfirmDialogUserData(Accessory *accessory, BaseApplicationService *applicationPtr);
+
+    static IModalDialog *onAccepted(void *userData, Project *project);
+    static IModalDialog *onCancelled(void *userData, Project *project);
+
+    BaseApplicationService *m_applicationPtr;
+    Accessory *m_accessory;
+};
+
+ConvertingAccessoryConfirmDialogUserData::ConvertingAccessoryConfirmDialogUserData(
+    Accessory *accessory, BaseApplicationService *applicationPtr)
+    : m_applicationPtr(applicationPtr)
+    , m_accessory(accessory)
+{
+}
+
+IModalDialog *
+ConvertingAccessoryConfirmDialogUserData::onAccepted(void *userData, Project *project)
+{
+    ConvertingAccessoryConfirmDialogUserData *self = static_cast<ConvertingAccessoryConfirmDialogUserData *>(userData);
+    if (!project->isPlaying()) {
+        Error error;
+        project->convertAccessoryToModel(self->m_accessory, error);
+        error.notify(self->m_applicationPtr->eventPublisher());
+    }
+    nanoem_delete(self);
+    return nullptr;
+}
+
+IModalDialog *
+ConvertingAccessoryConfirmDialogUserData::onCancelled(void *userData, Project *project)
+{
+    BX_UNUSED_1(project);
+    nanoem_delete(static_cast<ConvertingAccessoryConfirmDialogUserData *>(userData));
+    return nullptr;
+}
+
 struct DeletingAccessoryConfirmDialogUserData {
     DeletingAccessoryConfirmDialogUserData(Accessory *accessory, BaseApplicationService *applicationPtr);
 
@@ -620,9 +657,10 @@ DeletingAccessoryConfirmDialogUserData::onAccepted(void *userData, Project *proj
     DeletingAccessoryConfirmDialogUserData *self = static_cast<DeletingAccessoryConfirmDialogUserData *>(userData);
     if (!project->isPlaying()) {
         Error error;
-        project->removeAccessory(self->m_accessory);
-        self->m_accessory->writeDeleteCommandMessage(error);
-        project->destroyAccessory(self->m_accessory);
+        Accessory *accessory = self->m_accessory;
+        project->removeAccessory(accessory);
+        accessory->writeDeleteCommandMessage(error);
+        project->destroyAccessory(accessory);
         error.notify(self->m_applicationPtr->eventPublisher());
     }
     nanoem_delete(self);
@@ -660,9 +698,10 @@ DeletingModelConfirmDialogUserData::onAccepted(void *userData, Project *project)
     DeletingModelConfirmDialogUserData *self = static_cast<DeletingModelConfirmDialogUserData *>(userData);
     if (!project->isPlaying()) {
         Error error;
-        project->removeModel(self->m_model);
-        self->m_model->writeDeleteCommandMessage(error);
-        project->destroyModel(self->m_model);
+        Model *model = self->m_model;
+        project->removeModel(model);
+        model->writeDeleteCommandMessage(error);
+        project->destroyModel(model);
         error.notify(self->m_applicationPtr->eventPublisher());
     }
     nanoem_delete(self);
@@ -782,12 +821,21 @@ public:
 
 private:
     String m_title;
+    MutableString m_text;
 };
 
 AboutDialog::AboutDialog(BaseApplicationService *applicationPtr)
     : NoActionDialog(applicationPtr)
 {
     StringUtils::format(m_title, "About nanoem %s", nanoemGetVersionString());
+    static const char kPrefixText[] = "Copyright (c) 2015-2021 hkrn All rights reserved\n\n";
+    m_text.assign(kPrefixText, kPrefixText + sizeof(kPrefixText));
+    const nanoem_u8_t *data = nullptr;
+    size_t length = 0;
+    resources::getCredits(data, length);
+    m_text.insert(
+        m_text.end() - 1, reinterpret_cast<const char *>(data), reinterpret_cast<const char *>(data + length));
+    m_text.push_back(0);
 }
 
 AboutDialog::~AboutDialog() NANOEM_DECL_NOEXCEPT
@@ -803,17 +851,9 @@ AboutDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 AboutDialog::draw(const Project *)
 {
-    static const char kPrefixText[] = "Copyright (c) 2015-2021 hkrn All rights reserved\n\n";
-    MutableString text;
-    text.insert(text.end(), kPrefixText, kPrefixText + sizeof(kPrefixText));
-    const nanoem_u8_t *data = nullptr;
-    size_t length = 0;
-    resources::getCredits(data, length);
-    text.insert(text.end() - 1, reinterpret_cast<const char *>(data), reinterpret_cast<const char *>(data + length));
-    text.push_back(0);
     ImVec2 size(ImGui::GetContentRegionAvail());
     size.y -= ImGui::GetFrameHeightWithSpacing();
-    ImGui::InputTextMultiline("##text", text.data(), text.size(), size, ImGuiInputTextFlags_ReadOnly);
+    ImGui::InputTextMultiline("##text", m_text.data(), m_text.size(), size, ImGuiInputTextFlags_ReadOnly);
 }
 
 nanoem_u32_t
@@ -906,6 +946,22 @@ ModalDialogFactory::createConfirmSavingDialog(BaseApplicationService *applicatio
 {
     nanoem_parameter_assert(applicationPtr, "must NOT be nullptr");
     return nanoem_new(ConfirmSavingDialog(applicationPtr, title, message, callbacks, userData));
+}
+
+IModalDialog *
+ModalDialogFactory::createConfirmConvertingAccessoryToModelDialog(
+    Accessory *accessory, BaseApplicationService *applicationPtr)
+{
+    nanoem_parameter_assert(accessory, "must NOT be nullptr");
+    nanoem_parameter_assert(applicationPtr, "must NOT be nullptr");
+    ConvertingAccessoryConfirmDialogUserData *self =
+        nanoem_new(ConvertingAccessoryConfirmDialogUserData(accessory, applicationPtr));
+    const ModalDialogFactory::StandardConfirmDialogCallbackPair pair(
+        ConvertingAccessoryConfirmDialogUserData::onAccepted, ConvertingAccessoryConfirmDialogUserData::onCancelled);
+    const ITranslator *translator = applicationPtr->translator();
+    return ModalDialogFactory::createStandardConfirmDialog(applicationPtr,
+        translator->translate("nanoem.window.dialog.converting-accessory.title"),
+        translator->translate("nanoem.window.dialog.converting-accessory.message"), pair, self);
 }
 
 IModalDialog *

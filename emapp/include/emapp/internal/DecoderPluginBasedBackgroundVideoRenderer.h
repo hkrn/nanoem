@@ -32,7 +32,7 @@ public:
     ~DecoderPluginBasedBackgroundVideoRenderer() NANOEM_DECL_NOEXCEPT;
 
     bool load(const URI &fileURI, Error &error) NANOEM_DECL_OVERRIDE;
-    void draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) NANOEM_DECL_OVERRIDE;
+    void draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) NANOEM_DECL_OVERRIDE;
     void seek(nanoem_f64_t value) NANOEM_DECL_OVERRIDE;
     void flush() NANOEM_DECL_OVERRIDE;
     void destroy() NANOEM_DECL_OVERRIDE;

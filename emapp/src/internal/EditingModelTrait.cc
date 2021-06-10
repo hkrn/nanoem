@@ -445,14 +445,12 @@ EditingModelTrait::Bone::compareCommon(const void *left, const void *right)
 void
 EditingModelTrait::Bone::createRootParentBone()
 {
-    static const nanoem_u8_t kRootParentBoneName[] = { 0xe5, 0x85, 0xa8, 0xe3, 0x81, 0xa6, 0xe3, 0x81, 0xae, 0xe8, 0xa6,
-        0xaa, 0x0 };
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_mutable_model_bone_t *rootBone = nanoemMutableModelBoneCreate(m_model->data(), &status);
     nanoem_unicode_string_factory_t *factory = m_model->project()->unicodeStringFactory();
     nanoem_rsize_t numObjects;
     StringUtils::UnicodeStringScope s(factory);
-    if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(kRootParentBoneName), s)) {
+    if (StringUtils::tryGetString(factory, reinterpret_cast<const char *>(model::Bone::kNameRootParentInJapanese), s)) {
         nanoemMutableModelBoneSetName(rootBone, s.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
     }
     if (StringUtils::tryGetString(factory, "root", s)) {

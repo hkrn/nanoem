@@ -270,7 +270,7 @@ TEST_CASE("project_shift_all_motion_keyframes_forward_redo", "[emapp][project]")
         ProjectPtr second = scope.createProject();
         Project *secondProject = second->m_project;
         scope.recover(secondProject);
-        Motion *motion = secondProject->resolveMotion(secondProject->allAccessories()[0]);
+        Motion *motion = secondProject->resolveMotion(secondProject->allAccessories()->data()[0]);
         CHECK_FALSE(motion->findAccessoryKeyframe(1335));
         CHECK(motion->findAccessoryKeyframe(1336));
         CHECK(motion->findAccessoryKeyframe(1337));

@@ -54,7 +54,7 @@
   phrase:
     en_US: Reload Effect
     ja_JP: エフェクトの再読込
-- key: nanoem.gui.panel.accessory
+- key: nanoem.gui.panel.accessory.title
   phrase:
     en_US: Accessory
     ja_JP: アクセサリ
@@ -110,7 +110,7 @@
   phrase:
     en_US: OP
     ja_JP: 外部親
-- key: nanoem.gui.panel.bone
+- key: nanoem.gui.panel.bone.title
   phrase:
     en_US: Bone
     ja_JP: ボーン
@@ -162,7 +162,7 @@
   phrase:
     en_US: Unreg
     ja_JP: 未登録
-- key: nanoem.gui.panel.camera
+- key: nanoem.gui.panel.camera.title
   phrase:
     en_US: Camera
     ja_JP: カメラ
@@ -202,7 +202,7 @@
   phrase:
     en_US: Register
     ja_JP: 登録
-- key: nanoem.gui.panel.interpolation
+- key: nanoem.gui.panel.interpolation.title
   phrase:
     en_US: Interpolation
     ja_JP: 補完曲線
@@ -262,7 +262,7 @@
   phrase:
     en_US: Paste
     ja_JP: ペースト
-- key: nanoem.gui.panel.light
+- key: nanoem.gui.panel.light.title
   phrase:
     en_US: Light
     ja_JP: 照明
@@ -286,7 +286,7 @@
   phrase:
     en_US: Register
     ja_JP: 登録
-- key: nanoem.gui.panel.model
+- key: nanoem.gui.panel.model.title
   phrase:
     en_US: Model
     ja_JP: モデル
@@ -338,7 +338,7 @@
   phrase:
     en_US: (none)
     ja_JP: (なし)
-- key: nanoem.gui.panel.morph
+- key: nanoem.gui.panel.morph.title
   phrase:
     en_US: Morph
     ja_JP: モーフ
@@ -386,7 +386,7 @@
   phrase:
     en_US: "Weight: %.2f"
     ja_JP: "ウェイト: %.2f"
-- key: nanoem.gui.panel.play
+- key: nanoem.gui.panel.play.title
   phrase:
     en_US: Play
     ja_JP: 再生
@@ -422,7 +422,7 @@
   phrase:
     en_US: "Volume: %d%%"
     ja_JP: "音量: %d%%"
-- key: nanoem.gui.panel.shadow
+- key: nanoem.gui.panel.shadow.title
   phrase:
     en_US: Self Shadow
     ja_JP: セルフシャドウ
@@ -446,7 +446,7 @@
   phrase:
     en_US: Register
     ja_JP: 登録
-- key: nanoem.gui.panel.view
+- key: nanoem.gui.panel.view.title
   phrase:
     en_US: View
     ja_JP: ビュー
@@ -486,6 +486,170 @@
   phrase:
     en_US: Up
     ja_JP: 上面
+- key: nanoem.gui.panel.model.edit.operation.title
+  phrase:
+    en_US: Operation
+    ja_JP: 操作
+- key: nanoem.gui.panel.model.edit.operation.action.title
+  phrase:
+    en_US: Action
+    ja_JP: アクション
+- key: nanoem.gui.panel.model.edit.operation.action.camera.title
+  phrase:
+    en_US: Camera
+    ja_JP: カメラ
+- key: nanoem.gui.panel.model.edit.operation.action.selection.title
+  phrase:
+    en_US: Selection
+    ja_JP: 選択
+- key: nanoem.gui.panel.model.edit.operation.action.create-parent-bone.title
+  phrase:
+    en_US: Create Parent Bone
+    ja_JP: 親ボーンの作成
+- key: nanoem.gui.panel.model.edit.operation.action.create-target-bone.title
+  phrase:
+    en_US: Create Target Bone
+    ja_JP: 表示先ボーンの作成
+- key: nanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.title
+  phrase:
+    en_US: Paint Vertex Weight
+    ja_JP: 頂点ウェイトを塗る
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.title
+  phrase:
+    en_US: Create Material Primitive
+    ja_JP: 材質プリミティブの作成
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cone
+  phrase:
+    en_US: Cone
+    ja_JP: 円錐
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cube
+  phrase:
+    en_US: Cube
+    ja_JP: 立方体
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinder
+  phrase:
+    en_US: Cylinder
+    ja_JP: 円筒
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphere
+  phrase:
+    en_US: Sphere
+    ja_JP: 球体
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.torus
+  phrase:
+    en_US: Torus
+    ja_JP: トーラス
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation
+  phrase:
+    en_US: Translation
+    ja_JP: 移動量
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation
+  phrase:
+    en_US: Rotation
+    ja_JP: 回転量
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scale
+  phrase:
+    en_US: Scale
+    ja_JP: スケール
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices
+  phrase:
+    en_US: "Slices: %d"
+    ja_JP: "円周分割数: %d"
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks
+  phrase:
+    en_US: "Stacks: %d"
+    ja_JP: "高さ分割数: %d"
+- key: nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius
+  phrase:
+    en_US: "Inner Radius: %.1f"
+    ja_JP: "内径: %.1f"
+- key: nanoem.gui.panel.model.edit.operation.selection.title
+  phrase:
+    en_US: Selection Mode
+    ja_JP: 選択モード
+- key: nanoem.gui.panel.model.edit.operation.selection.circle
+  phrase:
+    en_US: Circle
+    ja_JP: 円形
+- key: nanoem.gui.panel.model.edit.operation.selection.rectangle
+  phrase:
+    en_US: Rectangle
+    ja_JP: 矩形
+- key: nanoem.gui.panel.model.edit.operation.selection.point
+  phrase:
+    en_US: Point
+    ja_JP: 点
+- key: nanoem.gui.panel.model.edit.gizmo.title
+  phrase:
+    en_US: Gizmo
+    ja_JP: ギズモ
+- key: nanoem.gui.panel.model.edit.gizmo.operation.title
+  phrase:
+    en_US: Operation Type
+    ja_JP: 操作種別
+- key: nanoem.gui.panel.model.edit.gizmo.operation.translate
+  phrase:
+    en_US: Translate
+    ja_JP: 移動
+- key: nanoem.gui.panel.model.edit.gizmo.operation.rotate
+  phrase:
+    en_US: Rotate
+    ja_JP: 回転
+- key: nanoem.gui.panel.model.edit.gizmo.operation.scale
+  phrase:
+    en_US: Scale
+    ja_JP: スケール
+- key: nanoem.gui.panel.model.edit.gizmo.coordinate.title
+  phrase:
+    en_US: Coordinate Type
+    ja_JP: 座標種別
+- key: nanoem.gui.panel.model.edit.gizmo.coordinate.global
+  phrase:
+    en_US: Global
+    ja_JP: グローバル
+- key: nanoem.gui.panel.model.edit.gizmo.coordinate.local
+  phrase:
+    en_US: Global
+    ja_JP: グローバル
+- key: nanoem.gui.panel.model.edit.weight-paint.title
+  phrase:
+    en_US: Vertex Weight Paint
+    ja_JP: 頂点ウェイトペイント
+- key: nanoem.gui.panel.model.edit.weight-paint.painter-type
+  phrase:
+    en_US: Painter Type
+    ja_JP: ペイント種別
+- key: nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brush
+  phrase:
+    en_US: Base Brush
+    ja_JP: ベースブラシ
+- key: nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brush
+  phrase:
+    en_US: Air Brush
+    ja_JP: エアブラシ
+- key: nanoem.gui.panel.model.edit.weight-paint.vertex-type
+  phrase:
+    en_US: Vertex Type
+    ja_JP: 頂点種別
+- key: nanoem.gui.panel.model.edit.weight-paint.bone
+  phrase:
+    en_US: Bone
+    ja_JP: ボーン
+- key: nanoem.gui.panel.model.edit.weight-paint.radius
+  phrase:
+    en_US: "Radius: %.3f"
+    ja_JP: "半径: %.3f"
+- key: nanoem.gui.panel.model.edit.weight-paint.delta
+  phrase:
+    en_US: "Delta: %.3f"
+    ja_JP: "差分: %.3f"
+- key: nanoem.gui.panel.model.edit.weight-paint.normalize
+  phrase:
+    en_US: Normalize
+    ja_JP: 正規化
+- key: nanoem.gui.panel.model.edit.weight-paint.automatic-normalization
+  phrase:
+    en_US: Automatic Normalization
+    ja_JP: 自動正規化
 - key: nanoem.gui.redo
   phrase:
     en_US: Redo
@@ -498,14 +662,10 @@
   phrase:
     en_US: Undo
     ja_JP: 元に戻す
-- key: nanoem.gui.viewport.global
+- key: nanoem.gui.viewport.title
   phrase:
-    en_US: Viewport - Camera, Light, Accessory / Stage
-    ja_JP: ビューポート - カメラ、照明、アクセサリ / ステージ
-- key: nanoem.gui.viewport.model
-  phrase:
-    en_US: Viewport - %s
-    ja_JP: ビューポート - %s
+    en_US: Viewport
+    ja_JP: ビューポート
 - key: nanoem.gui.viewport.model-with-bone
   phrase:
     en_US: "Viewport - %s: %s"
@@ -818,6 +978,10 @@
   phrase:
     en_US: (None)
     ja_JP: （なし）
+- key: nanoem.gui.window.project.effect.offscreen.display-texture
+  phrase:
+    en_US: Display Render Target Texture
+    ja_JP: レンダーターゲットテクスチャを表示する
 - key: nanoem.gui.window.project.effect.material.none
   phrase:
     en_US: (None)
@@ -842,10 +1006,14 @@
   phrase:
     en_US: Model
     ja_JP: モデル
-- key: nanoem.gui.window.model.tab.info
+- key: nanoem.gui.window.model.tab.measure
   phrase:
-    en_US: Information
-    ja_JP: 情報
+    en_US: Measure
+    ja_JP: 測定
+- key: nanoem.gui.window.model.tab.system
+  phrase:
+    en_US: System
+    ja_JP: システム
 - key: nanoem.gui.window.model.tab.vertex
   phrase:
     en_US: Vertex
@@ -865,7 +1033,7 @@
 - key: nanoem.gui.window.model.tab.morph
   phrase:
     en_US: Morph
-    ja_JP: 表情（モーフ）
+    ja_JP: モーフ（表情）
 - key: nanoem.gui.window.model.tab.label
   phrase:
     en_US: Label
@@ -881,7 +1049,75 @@
 - key: nanoem.gui.window.model.tab.soft-body
   phrase:
     en_US: Soft Body
-    ja_JP: 柔体
+    ja_JP: ソフトボディ
+- key: nanoem.gui.window.model.menu.vertex
+  phrase:
+    en_US: Vertex
+    ja_JP: 頂点
+- key: nanoem.gui.window.model.menu.face
+  phrase:
+    en_US: Face
+    ja_JP: 面
+- key: nanoem.gui.window.model.menu.material
+  phrase:
+    en_US: Material
+    ja_JP: 材質
+- key: nanoem.gui.window.model.menu.bone
+  phrase:
+    en_US: Bone
+    ja_JP: ボーン
+- key: nanoem.gui.window.model.menu.morph
+  phrase:
+    en_US: Morph
+    ja_JP: モーフ
+- key: nanoem.gui.window.model.menu.type.bone
+  phrase:
+    en_US: Bone Morph
+    ja_JP: ボーンモーフ
+- key: nanoem.gui.window.model.menu.type.group
+  phrase:
+    en_US: Group Morph
+    ja_JP: グループモーフ
+- key: nanoem.gui.window.model.menu.type.material
+  phrase:
+    en_US: Material Morph
+    ja_JP: 材質モーフ
+- key: nanoem.gui.window.model.menu.type.texture
+  phrase:
+    en_US: Texture Morph
+    ja_JP: テクスチャモーフ
+- key: nanoem.gui.window.model.menu.type.uv
+  phrase:
+    en_US: Additional UV Morph
+    ja_JP: 拡張 UV モーフ
+- key: nanoem.gui.window.model.menu.type.vertex
+  phrase:
+    en_US: Vertex Morph
+    ja_JP: 頂点モーフ
+- key: nanoem.gui.window.model.menu.type.flip
+  phrase:
+    en_US: Flip Morph
+    ja_JP: フリップモーフ
+- key: nanoem.gui.window.model.menu.type.impulse
+  phrase:
+    en_US: Impulse Morph
+    ja_JP: インパルスモーフ
+- key: nanoem.gui.window.model.menu.label
+  phrase:
+    en_US: Label
+    ja_JP: 表示枠
+- key: nanoem.gui.window.model.menu.rigid-body
+  phrase:
+    en_US: Rigid Body
+    ja_JP: 剛体
+- key: nanoem.gui.window.model.menu.joint
+  phrase:
+    en_US: Joint
+    ja_JP: ジョイント
+- key: nanoem.gui.window.model.menu.soft-body
+  phrase:
+    en_US: Soft Body
+    ja_JP: ソフトボディ
 - key: nanoem.gui.window.preference.title
   phrase:
     en_US: Application Preference
@@ -1011,6 +1247,106 @@
     en_US: Relative Path
     ja_JP: 相対パス
 
+- key: nanoem.gui.model.edit.measure.vertex
+  phrase:
+    en_US: Vertices
+    ja_JP: 頂点数
+- key: nanoem.gui.model.edit.measure.face
+  phrase:
+    en_US: Faces
+    ja_JP: 面数
+- key: nanoem.gui.model.edit.measure.material
+  phrase:
+    en_US: Materials
+    ja_JP: 材質数
+- key: nanoem.gui.model.edit.measure.texture
+  phrase:
+    en_US: Textures
+    ja_JP: テクスチャ数
+- key: nanoem.gui.model.edit.measure.bone
+  phrase:
+    en_US: Bones
+    ja_JP: ボーン数
+- key: nanoem.gui.model.edit.measure.constraint
+  phrase:
+    en_US: IK Bones
+    ja_JP: IKボーン数
+- key: nanoem.gui.model.edit.measure.morph
+  phrase:
+    en_US: Morphs
+    ja_JP: モーフ数
+- key: nanoem.gui.model.edit.measure.label
+  phrase:
+    en_US: Labels
+    ja_JP: 表情枠数
+- key: nanoem.gui.model.edit.measure.rigid-body
+  phrase:
+    en_US: Rigid Bodies
+    ja_JP: 剛体数
+- key: nanoem.gui.model.edit.measure.joint
+  phrase:
+    en_US: Joints
+    ja_JP: ジョイント数
+- key: nanoem.gui.model.edit.measure.soft-body
+  phrase:
+    en_US: Soft Bodies
+    ja_JP: ソフトボディ数
+- key: nanoem.gui.model.edit.measure.transform.title
+  phrase:
+    en_US: Batch Model Transform
+    ja_JP: 一括モデル変形
+- key: nanoem.gui.model.edit.measure.transform.apply
+  phrase:
+    en_US: Apply
+    ja_JP: 適用
+- key: nanoem.gui.model.edit.measure.transform.reset
+  phrase:
+    en_US: Reset
+    ja_JP: リセット
+- key: nanoem.gui.model.edit.measure.transform.height-based.title
+  phrase:
+    en_US: Height Based
+    ja_JP: 身長ベース
+- key: nanoem.gui.model.edit.measure.transform.height-based.a
+  phrase:
+    en_US: "(A): Model Height on MMD"
+    ja_JP: "(A): MMD におけるモデルの身長"
+- key: nanoem.gui.model.edit.measure.transform.height-based.b
+  phrase:
+    en_US: "(B): Centimeter unit on MMD"
+    ja_JP: "(B): MMD におけるセンチメートルの単位"
+- key: nanoem.gui.model.edit.measure.transform.height-based.c
+  phrase:
+    en_US: "(C): Centimeter for Correction"
+    ja_JP: "(C): 補正用途のセンチメートル"
+- key: nanoem.gui.model.edit.measure.transform.height-based.result
+  phrase:
+    en_US: Model Height with Centimeter Unit = (A / B) + C
+    ja_JP: センチメートル単位のモデルの身長 = (A / B) + C
+- key: nanoem.gui.model.edit.measure.transform.height-based.scale-factor
+  phrase:
+    en_US: Calculated Scale Factor
+    ja_JP: 拡大率
+- key: nanoem.gui.model.edit.measure.transform.numeric-input.title
+  phrase:
+    en_US: Numeric Input
+    ja_JP: 数値入力
+- key: nanoem.gui.model.edit.system.name
+  phrase:
+    en_US: 'Name'
+    ja_JP: '名前'
+- key: nanoem.gui.model.edit.system.comment
+  phrase:
+    en_US: 'Comment'
+    ja_JP: 'コメント'
+- key: nanoem.gui.model.edit.system.encoding
+  phrase:
+    en_US: 'Character Encoding'
+    ja_JP: '文字エンコード'
+- key: nanoem.gui.model.edit.system.uva
+  phrase:
+    en_US: 'Additional UV Count'
+    ja_JP: '追加 UV 数'
 - key: nanoem.gui.model.edit.vertex.origin
   phrase:
     en_US: 'Origin'
@@ -1025,8 +1361,8 @@
     ja_JP: 'UV座標'
 - key: nanoem.gui.model.edit.vertex.type
   phrase:
-    en_US: 'Type'
-    ja_JP: '頂点種別'
+    en_US: 'Vertex Type and Influenced Bones'
+    ja_JP: '頂点種別と影響ボーン'
 - key: nanoem.gui.model.edit.vertex.weight
   phrase:
     en_US: 'Weight'
@@ -1043,6 +1379,10 @@
   phrase:
     en_US: 'SDEF (R1)'
     ja_JP: 'SDEF (R1)'
+- key: nanoem.gui.model.edit.vertex.material
+  phrase:
+    en_US: 'Attached Material'
+    ja_JP: '所属材質'
 - key: nanoem.gui.model.edit.vertex.edge
   phrase:
     en_US: 'Edge Width'
@@ -1079,6 +1419,10 @@
   phrase:
     en_US: 'Specular Power'
     ja_JP: '鏡面光色の強度'
+- key: nanoem.gui.model.edit.material.edge.title
+  phrase:
+    en_US: 'Edge'
+    ja_JP: 'エッジ'
 - key: nanoem.gui.model.edit.material.edge.color
   phrase:
     en_US: 'Edge Color'
@@ -1091,6 +1435,22 @@
   phrase:
     en_US: 'Edge Width'
     ja_JP: 'エッジ幅'
+- key: nanoem.gui.model.edit.material.primitive.type
+  phrase:
+    en_US: 'Primitive Type'
+    ja_JP: 'プリミティブ種別'
+- key: nanoem.gui.model.edit.material.spheremap.type
+  phrase:
+    en_US: 'Spheremap Type'
+    ja_JP: 'スフィアマップ種別'
+- key: nanoem.gui.model.edit.material.texture.title
+  phrase:
+    en_US: 'Textures'
+    ja_JP: 'テクスチャ'
+- key: nanoem.gui.model.edit.material.arbitrary-area
+  phrase:
+    en_US: 'Arbitrary User Area'
+    ja_JP: '任意ユーザ領域'
 - key: nanoem.gui.model.edit.material.texture.diffuse
   phrase:
     en_US: 'Diffuse Texture'
@@ -1103,6 +1463,14 @@
   phrase:
     en_US: 'Toon Texture'
     ja_JP: 'トゥーンテクスチャ'
+- key: nanoem.gui.model.edit.material.texture.display-uv-mesh
+  phrase:
+    en_US: 'Display UV Mesh'
+    ja_JP: 'UV メッシュを表示する'
+- key: nanoem.gui.model.edit.material.properties
+  phrase:
+    en_US: 'Properties'
+    ja_JP: 'プロパティ'
 - key: nanoem.gui.model.edit.material.property.shared-toon
   phrase:
     en_US: 'Enable Shared Toon Texture'
@@ -1131,26 +1499,6 @@
   phrase:
     en_US: 'Enable Vertex Color'
     ja_JP: '頂点カラー'
-- key: nanoem.gui.model.edit.material.sphere-texture.add
-  phrase:
-    en_US: 'Add'
-    ja_JP: '加算'
-- key: nanoem.gui.model.edit.material.sphere-texture.multiply
-  phrase:
-    en_US: 'Multiply'
-    ja_JP: '乗算'
-- key: nanoem.gui.model.edit.material.sphere-texture.none
-  phrase:
-    en_US: 'None'
-    ja_JP: 'なし'
-- key: nanoem.gui.model.edit.material.sphere-texture.sub-texture
-  phrase:
-    en_US: 'Sub Texture'
-    ja_JP: 'サブテクスチャ'
-- key: nanoem.gui.model.edit.material.sphere-texture.unknown
-  phrase:
-    en_US: 'Unknown'
-    ja_JP: '不明'
 - key: nanoem.gui.model.edit.material.primitive.point
   phrase:
     en_US: 'Point'
@@ -1163,19 +1511,19 @@
   phrase:
     en_US: 'Triangle'
     ja_JP: '三角（トライアングル）'
-- key: nanoem.gui.model.edit.material.sphere.type.none
+- key: nanoem.gui.model.edit.material.spheremap.type.none
   phrase:
     en_US: 'None'
     ja_JP: 'なし'
-- key: nanoem.gui.model.edit.material.sphere.type.add
+- key: nanoem.gui.model.edit.material.spheremap.type.add
   phrase:
     en_US: 'Additive'
     ja_JP: '加算'
-- key: nanoem.gui.model.edit.material.sphere.type.multiply
+- key: nanoem.gui.model.edit.material.spheremap.type.multiply
   phrase:
     en_US: 'Multiply'
     ja_JP: '乗算'
-- key: nanoem.gui.model.edit.material.sphere.type.sub-texture
+- key: nanoem.gui.model.edit.material.spheremap.type.sub-texture
   phrase:
     en_US: 'Sub-Texture'
     ja_JP: 'サブテクスチャ'
@@ -1195,14 +1543,18 @@
   phrase:
     en_US: 'Parent Bone'
     ja_JP: '親ボーン'
-- key: nanoem.gui.model.edit.bone.target
+- key: nanoem.gui.model.edit.bone.destination.bone
   phrase:
-    en_US: 'Target Bone'
+    en_US: 'Destination Bone'
     ja_JP: '接続先ボーン'
-- key: nanoem.gui.model.edit.bone.destination-origin
+- key: nanoem.gui.model.edit.bone.destination.origin
   phrase:
     en_US: 'Destination Origin'
     ja_JP: '接続先原点座標'
+- key: nanoem.gui.model.edit.bone.stage
+  phrase:
+    en_US: 'Transform Stage'
+    ja_JP: '変形階層'
 - key: nanoem.gui.model.edit.bone.properties
   phrase:
     en_US: 'Properties'
@@ -1229,12 +1581,12 @@
     ja_JP: 'IK 制約'
 - key: nanoem.gui.model.edit.bone.constraint.effector
   phrase:
-    en_US: 'Effector Bone'
-    ja_JP: 'エフェクター（作用）ボーン'
+    en_US: 'IK Target Bone'
+    ja_JP: 'IK ターゲットボーン'
 - key: nanoem.gui.model.edit.bone.constraint.target
   phrase:
-    en_US: 'Target Bone'
-    ja_JP: 'ターゲット（終点）ボーン'
+    en_US: 'IK Base Bone'
+    ja_JP: 'IK 元ボーン'
 - key: nanoem.gui.model.edit.bone.constraint.angle
   phrase:
     en_US: 'Angle'
@@ -1243,10 +1595,34 @@
   phrase:
     en_US: 'IK Link Bones'
     ja_JP: 'IK リンクボーン'
+- key: nanoem.gui.model.edit.bone.constraint.joints.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.bone.constraint.joints.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.bone.constraint.joint.angle-limit
+  phrase:
+    en_US: 'Enable Angle Limit'
+    ja_JP: '角度制限を有効にする'
+- key: nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower
+  phrase:
+    en_US: 'Lower Limit'
+    ja_JP: '角度下限'
+- key: nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper
+  phrase:
+    en_US: 'Upper Limit'
+    ja_JP: '角度上限'
 - key: nanoem.gui.model.edit.bone.constraint.iteration
   phrase:
     en_US: 'Iteration'
     ja_JP: '試行回数'
+- key: nanoem.gui.model.edit.bone.inherent.title
+  phrase:
+    en_US: 'Inherent Bone'
+    ja_JP: '付与ボーン'
 - key: nanoem.gui.model.edit.bone.inherent.translation
   phrase:
     en_US: 'Inherent Translation'
@@ -1267,11 +1643,15 @@
   phrase:
     en_US: 'Fixed Axis'
     ja_JP: '固定軸'
-- key: nanoem.gui.model.edit.bone.fixed-axis
+- key: nanoem.gui.model.edit.bone.fixed-axis.title
   phrase:
     en_US: 'Fixed Axis'
     ja_JP: '固定軸'
 - key: nanoem.gui.model.edit.bone.has-local-axes
+  phrase:
+    en_US: 'Local Axes'
+    ja_JP: 'ローカル軸'
+- key: nanoem.gui.model.edit.bone.local-axes.title
   phrase:
     en_US: 'Local Axes'
     ja_JP: 'ローカル軸'
@@ -1307,6 +1687,10 @@
   phrase:
     en_US: 'Type'
     ja_JP: '種別'
+- key: nanoem.gui.model.edit.morph.category.base
+  phrase:
+    en_US: 'System Reserved'
+    ja_JP: 'システム予約'
 - key: nanoem.gui.model.edit.morph.category.eye
   phrase:
     en_US: 'Eye'
@@ -1375,6 +1759,122 @@
   phrase:
     en_US: 'Unknown'
     ja_JP: '不明'
+- key: nanoem.gui.model.edit.morph.bone.translation
+  phrase:
+    en_US: 'Translation'
+    ja_JP: '移動量'
+- key: nanoem.gui.model.edit.morph.bone.orientation
+  phrase:
+    en_US: 'Orientation'
+    ja_JP: '回転量'
+- key: nanoem.gui.model.edit.morph.bone.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.bone.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.flip.weight
+  phrase:
+    en_US: 'Weight'
+    ja_JP: 'ウェイト'
+- key: nanoem.gui.model.edit.morph.flip.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.flip.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.group.weight
+  phrase:
+    en_US: 'Weight'
+    ja_JP: 'ウェイト'
+- key: nanoem.gui.model.edit.morph.group.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.group.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.impulse.torque
+  phrase:
+    en_US: 'Torque'
+    ja_JP: 'トルク（力）'
+- key: nanoem.gui.model.edit.morph.impulse.velocity
+  phrase:
+    en_US: 'Velocity'
+    ja_JP: 'ベロシティ（速度）'
+- key: nanoem.gui.model.edit.morph.impulse.local
+  phrase:
+    en_US: 'Enable Local Axis'
+    ja_JP: 'ローカル軸を有効にする'
+- key: nanoem.gui.model.edit.morph.impulse.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.impulse.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.material.operation
+  phrase:
+    en_US: 'Operation'
+    ja_JP: '動作種別'
+- key: nanoem.gui.model.edit.morph.material.ambient.color
+  phrase:
+    en_US: 'Ambient Color'
+    ja_JP: '環境光色'
+- key: nanoem.gui.model.edit.morph.material.diffuse.color
+  phrase:
+    en_US: 'Diffuse Color'
+    ja_JP: '拡散光色'
+- key: nanoem.gui.model.edit.morph.material.specular.color
+  phrase:
+    en_US: 'Specular Color'
+    ja_JP: '鏡面光色'
+- key: nanoem.gui.model.edit.morph.material.specular.power
+  phrase:
+    en_US: 'Specular Power'
+    ja_JP: '鏡面強度'
+- key: nanoem.gui.model.edit.morph.material.edge.color
+  phrase:
+    en_US: 'Edge Color'
+    ja_JP: 'エッジ色'
+- key: nanoem.gui.model.edit.morph.material.edge.size
+  phrase:
+    en_US: 'Edge Size'
+    ja_JP: 'エッジ幅'
+- key: nanoem.gui.model.edit.morph.material.blend.diffuse
+  phrase:
+    en_US: 'Diffuse Texture Blend'
+    ja_JP: '拡散光テクスチャブレンド'
+- key: nanoem.gui.model.edit.morph.material.blend.sphere-map
+  phrase:
+    en_US: 'Sphere Map Texture Blend'
+    ja_JP: 'スフィアマップテクスチャブレンド'
+- key: nanoem.gui.model.edit.morph.material.blend.toon
+  phrase:
+    en_US: 'Toon Texture Blend'
+    ja_JP: 'トゥーンテクスチャブレンド'
+- key: nanoem.gui.model.edit.morph.material.add
+  phrase:
+    en_US: 'Add'
+    ja_JP: '追加'
+- key: nanoem.gui.model.edit.morph.material.remove
+  phrase:
+    en_US: 'Remove'
+    ja_JP: '削除'
+- key: nanoem.gui.model.edit.morph.uv.position
+  phrase:
+    en_US: 'UV Coordinate'
+    ja_JP: 'UV 座標'
+- key: nanoem.gui.model.edit.morph.vertex.position
+  phrase:
+    en_US: 'Position'
+    ja_JP: '位置'
 - key: nanoem.gui.model.edit.label.name.japanese
   phrase:
     en_US: 'Name (Japanese)'
@@ -1426,11 +1926,11 @@
 - key: nanoem.gui.model.edit.rigid-body.linear-damping
   phrase:
     en_US: 'Linear Damping'
-    ja_JP: '線形減衰'
+    ja_JP: '移動減衰'
 - key: nanoem.gui.model.edit.rigid-body.angular-damping
   phrase:
     en_US: 'Angular Damping'
-    ja_JP: '傾斜減衰'
+    ja_JP: '回転減衰'
 - key: nanoem.gui.model.edit.rigid-body.friction
   phrase:
     en_US: 'Friction'
@@ -1439,6 +1939,14 @@
   phrase:
     en_US: 'Restitution'
     ja_JP: '反発係数'
+- key: nanoem.gui.model.edit.rigid-body.collision.group
+  phrase:
+    en_US: 'Collision Group'
+    ja_JP: '衝突グループ'
+- key: nanoem.gui.model.edit.rigid-body.collision.mask
+  phrase:
+    en_US: 'Collision Mask'
+    ja_JP: '衝突マスク'
 - key: nanoem.gui.model.edit.rigid-body.object-type.dynamic
   phrase:
     en_US: 'Feedback from Simulation'
@@ -1718,7 +2226,7 @@
 - key: nanoem.gui.model.edit.morph.title
   phrase:
     en_US: 'Morph'
-    ja_JP: '表情（モーフ）'
+    ja_JP: 'モーフ（表情）'
 - key: nanoem.gui.model.edit.label.title
   phrase:
     en_US: 'Label'
@@ -1739,15 +2247,474 @@
   phrase:
     en_US: 'Cancel'
     ja_JP: 'キャンセル'
-
-- key: nanoem.macos.expiration.title
+- key: nanoem.gui.model.edit.action.insert.new.title
   phrase:
-    en_US: Trial of nanoem PR edition has been expired
-    ja_JP: nanoem PR 版の試用期限が切れました
-- key: nanoem.macos.expiration.description
+    en_US: 'Insert New'
+    ja_JP: '新規追加'
+- key: nanoem.gui.model.edit.action.insert.at-last
   phrase:
-    en_US: The application has been expired due to specified expiration date and will be terminated. (If you continue using the application, You should grab the latest version and overwrite install this)
-    ja_JP: 使用期限が切れたため終了します（もし使用を継続する場合は最新版を取得して上書きインストールしてください）
+    en_US: 'at Last'
+    ja_JP: '最後尾'
+- key: nanoem.gui.model.edit.action.insert.new.after-selected
+  phrase:
+    en_US: 'after Selected'
+    ja_JP: '選択したオブジェクトの後ろ'
+- key: nanoem.gui.model.edit.action.insert.copy.title
+  phrase:
+    en_US: 'Insert Copy'
+    ja_JP: 'コピーを追加'
+- key: nanoem.gui.model.edit.action.insert.copy.at-next
+  phrase:
+    en_US: 'at Next'
+    ja_JP: '対象の次'
+- key: nanoem.gui.model.edit.action.selection.title
+  phrase:
+    en_US: 'Selection'
+    ja_JP: '選択'
+- key: nanoem.gui.model.edit.action.masking.title
+  phrase:
+    en_US: 'Masking'
+    ja_JP: 'マスキング'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all
+  phrase:
+    en_US: 'Select All Vertices'
+    ja_JP: '全ての頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.disable-all
+  phrase:
+    en_US: 'Deselect All Vertices'
+    ja_JP: '選択された全ての頂点を解除'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type
+  phrase:
+    en_US: 'Select All Vertices by Type of ...'
+    ja_JP: '次の種類に該当する頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-faces
+  phrase:
+    en_US: 'Select All Faces from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれる面を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-materials
+  phrase:
+    en_US: 'Select All Materials from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれる材質を選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs
+  phrase:
+    en_US: 'Select All Vertex Morphs from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれる頂点モーフを選択'
+- key: nanoem.gui.model.edit.action.selection.vertex.enable-all-texture-morphs
+  phrase:
+    en_US: 'Select All Texture Morphs from All Selected Vertices'
+    ja_JP: '選択された頂点が含まれるテクスチャモーフを選択'
+- key: nanoem.gui.model.edit.action.masking.vertex.enable-all
+  phrase:
+    en_US: 'Mask All Selected Vertices'
+    ja_JP: '選択された全ての頂点をマスキング'
+- key: nanoem.gui.model.edit.action.masking.vertex.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Vertices'
+    ja_JP: '選択された全ての頂点のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.vertex.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Vertices'
+    ja_JP: '全ての頂点のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.face.enable-all
+  phrase:
+    en_US: 'Select All Faces'
+    ja_JP: '全ての面を選択'
+- key: nanoem.gui.model.edit.action.selection.face.enable-all-materials
+  phrase:
+    en_US: 'Select All Materials from All Selected Faces'
+    ja_JP: '選択された面が含まれる材質を選択'
+- key: nanoem.gui.model.edit.action.selection.face.disable-all
+  phrase:
+    en_US: 'Deselect All Faces'
+    ja_JP: '選択された全ての面を解除'
+- key: nanoem.gui.model.edit.action.masking.face.enable-all
+  phrase:
+    en_US: 'Mask All Selected Face'
+    ja_JP: '選択された全ての面をマスキング'
+- key: nanoem.gui.model.edit.action.masking.face.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Face'
+    ja_JP: '選択された全ての面のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.face.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Face'
+    ja_JP: '全ての面のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all
+  phrase:
+    en_US: 'Select All Materials'
+    ja_JP: '全ての材質を選択'
+- key: nanoem.gui.model.edit.action.selection.material.disable-all
+  phrase:
+    en_US: 'Deselect All Materials'
+    ja_JP: '選択された全ての材質を解除'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all-bones
+  phrase:
+    en_US: 'Select All Bones from All Selected Materials'
+    ja_JP: '選択された材質に含まれる全てのボーンを選択する'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all-faces
+  phrase:
+    en_US: 'Select All Faces from All Selected Materials'
+    ja_JP: '選択された材質に含まれる全ての面を選択する'
+- key: nanoem.gui.model.edit.action.selection.material.enable-all-vertices
+  phrase:
+    en_US: 'Select All Vertices from All Selected Materials'
+    ja_JP: '選択された材質に含まれる全ての頂点を選択する'
+- key: nanoem.gui.model.edit.action.masking.material.enable-all
+  phrase:
+    en_US: 'Mask All Selected Materials'
+    ja_JP: '選択された全ての材質をマスキング'
+- key: nanoem.gui.model.edit.action.masking.material.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Materials'
+    ja_JP: '選択された全ての材質のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.material.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Materials'
+    ja_JP: '全ての材質のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all
+  phrase:
+    en_US: 'Select All Bones'
+    ja_JP: '全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-vertices
+  phrase:
+    en_US: 'Select All Vertices from All Selected Bones'
+    ja_JP: '選択されたボーンが含まれる頂点を選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-morphs
+  phrase:
+    en_US: 'Select All Bone Morphs from All Selected Bones'
+    ja_JP: '選択されたボーンが含まれるボーンモーフを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-rigid-bodies
+  phrase:
+    en_US: 'Select All Rigid Bodies from All Selected Bones'
+    ja_JP: '選択されたボーンが含まれる剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-visible
+  phrase:
+    en_US: 'Select All Visible Bones'
+    ja_JP: '全ての表示ボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-rotateable
+  phrase:
+    en_US: 'Select All Rotateable Bones'
+    ja_JP: '全ての回転可能ボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-all-movable
+  phrase:
+    en_US: 'Select All Movable Bones'
+    ja_JP: '全ての移動可能ボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.enable-symmetric
+  phrase:
+    en_US: 'Select Symmetric Bone(s)'
+    ja_JP: '左右対称のボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.bone.disable-all
+  phrase:
+    en_US: 'Deselect All Bones'
+    ja_JP: '選択された全てのボーンを解除'
+- key: nanoem.gui.model.edit.action.masking.bone.enable-all
+  phrase:
+    en_US: 'Mask All Selected Bones'
+    ja_JP: '選択された全てのボーンをマスキング'
+- key: nanoem.gui.model.edit.action.masking.bone.enable-all-invisible
+  phrase:
+    en_US: 'Mask All Invisible Bones'
+    ja_JP: '非表示の全てのボーンをマスキング'
+- key: nanoem.gui.model.edit.action.masking.bone.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Bones'
+    ja_JP: '選択された全てのボーンのマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.bone.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Bones'
+    ja_JP: '全てのボーンのマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.morph.enable-all
+  phrase:
+    en_US: 'Select All Morphs'
+    ja_JP: '全てのモーフを選択'
+- key: nanoem.gui.model.edit.action.selection.morph.disable-all
+  phrase:
+    en_US: 'Deselect All Morphs'
+    ja_JP: '選択された全てのモーフを解除'
+- key: nanoem.gui.model.edit.action.selection.morph.children-all
+  phrase:
+    en_US: 'Select All Model Objects from All Selected Morphs'
+    ja_JP: '選択されたモーフから該当する全てのモデルオブジェクトを選択'
+- key: nanoem.gui.model.edit.action.selection.label.enable-all
+  phrase:
+    en_US: 'Select All Labels'
+    ja_JP: '全ての表示枠を選択'
+- key: nanoem.gui.model.edit.action.selection.label.disable-all
+  phrase:
+    en_US: 'Deselect All Labels'
+    ja_JP: '選択された全ての表示枠を解除'
+- key: nanoem.gui.model.edit.action.selection.label.children-all
+  phrase:
+    en_US: 'Select All Bones/Morphs from All Selected Labels'
+    ja_JP: '選択された表示枠から該当する全てのボーンまたはモーフを選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.enable-all
+  phrase:
+    en_US: 'Select All Rigid Bodies'
+    ja_JP: '全ての剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones
+  phrase:
+    en_US: 'Select All Bones from All Selected Rigid Bodies'
+    ja_JP: '選択された剛体から該当する全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.enable-symmetric
+  phrase:
+    en_US: 'Select Symmetric Rigid Body'
+    ja_JP: '左右対称の剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.rigid-body.disable-all
+  phrase:
+    en_US: 'Deselect All Rigid Bodies'
+    ja_JP: '選択された全ての剛体を解除'
+- key: nanoem.gui.model.edit.action.masking.rigid-body.enable-all
+  phrase:
+    en_US: 'Mask All Selected Rigid Bodies'
+    ja_JP: '選択された全ての剛体をマスキング'
+- key: nanoem.gui.model.edit.action.masking.rigid-body.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Rigid Bodies'
+    ja_JP: '選択された全ての剛体のマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.rigid-body.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Rigid Bodies'
+    ja_JP: '全ての剛体のマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-all
+  phrase:
+    en_US: 'Select All Joints'
+    ja_JP: '全てのジョイントを選択'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-all-bones
+  phrase:
+    en_US: 'Select All Bones from All Selected Joints'
+    ja_JP: '選択されたジョイントから該当する全てのボーンを選択'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies
+  phrase:
+    en_US: 'Select All Rigid Bodies from All Selected Joints'
+    ja_JP: '選択されたジョイントから該当する全ての剛体を選択'
+- key: nanoem.gui.model.edit.action.selection.joint.enable-symmetric
+  phrase:
+    en_US: 'Select Symmetric Joint(s)'
+    ja_JP: '左右対称のジョイントを選択'
+- key: nanoem.gui.model.edit.action.selection.joint.disable-all
+  phrase:
+    en_US: 'Deselect All Joints'
+    ja_JP: '選択された全てのジョイントを解除'
+- key: nanoem.gui.model.edit.action.masking.joint.enable-all
+  phrase:
+    en_US: 'Mask All Selected Joints'
+    ja_JP: '選択された全てのジョイントをマスキング'
+- key: nanoem.gui.model.edit.action.masking.joint.disable-all
+  phrase:
+    en_US: 'Unmask All Selected Joints'
+    ja_JP: '選択された全てのジョイントのマスキングを解除'
+- key: nanoem.gui.model.edit.action.masking.joint.invert-all
+  phrase:
+    en_US: 'Invert All Mask/Unmask Joints'
+    ja_JP: '全てのジョイントのマスキング状態を反転'
+- key: nanoem.gui.model.edit.action.selection.soft-body.enable-all
+  phrase:
+    en_US: 'Select All Soft Bodies'
+    ja_JP: '全てのソフトボディを選択'
+- key: nanoem.gui.model.edit.action.selection.soft-body.disable-all
+  phrase:
+    en_US: 'Deselect All Soft Bodies'
+    ja_JP: '選択された全てのソフトボディを解除'
+- key: nanoem.gui.model.edit.action.vertex.create-bone
+  phrase:
+    en_US: 'Create a Bone in Center of Selected'
+    ja_JP: '選択された頂点の中心にボーンを追加'
+- key: nanoem.gui.model.edit.action.vertex.add-vertex-morph
+  phrase:
+    en_US: 'Add Selected to the Vertex Morph'
+    ja_JP: '選択された頂点を頂点モーフに追加'
+- key: nanoem.gui.model.edit.action.vertex.add-texture-morph
+  phrase:
+    en_US: 'Add Selected to the Texture Morph'
+    ja_JP: '選択された頂点をテクスチャモーフに追加'
+- key: nanoem.gui.model.edit.action.vertex.weight.title
+  phrase:
+    en_US: 'Weight Transfer'
+    ja_JP: 'ウェイト転送'
+- key: nanoem.gui.model.edit.action.vertex.weight.load
+  phrase:
+    en_US: 'Load from File'
+    ja_JP: 'ファイルから読み込み'
+- key: nanoem.gui.model.edit.action.vertex.weight.save
+  phrase:
+    en_US: 'Save as File'
+    ja_JP: 'ファイルに保存'
+- key: nanoem.gui.model.edit.action.vertex.weight.dialog.title
+  phrase:
+    en_US: 'Weight Transfer Result'
+    ja_JP: 'ウェイト転送結果'
+- key: nanoem.gui.model.edit.action.vertex.weight.dialog.message
+  phrase:
+    en_US: '%u (of %u) vertices are applied'
+    ja_JP: '%u (対象頂点数 %u) の頂点が適用されました。'
+- key: nanoem.gui.model.edit.action.material.copy-from-model
+  phrase:
+    en_US: 'Copy from Model with ...'
+    ja_JP: '次のモデルにある材質からコピーする'
+- key: nanoem.gui.model.edit.action.material.create-from-obj
+  phrase:
+    en_US: 'Create Material from File (.obj)'
+    ja_JP: 'ファイル (.obj) から材質を作成する'
+- key: nanoem.gui.model.edit.action.material.add-material-morph
+  phrase:
+    en_US: 'Add Selected to the Material Morph'
+    ja_JP: '選択された材質を材質モーフに追加'
+- key: nanoem.gui.model.edit.action.material.merge
+  phrase:
+    en_US: 'Merge the Material'
+    ja_JP: '材質をマージする'
+- key: nanoem.gui.model.edit.action.material.texture.diffuse.set
+  phrase:
+    en_US: 'Set Diffuse Texture'
+    ja_JP: '拡散光テクスチャを設定'
+- key: nanoem.gui.model.edit.action.material.texture.diffuse.clear
+  phrase:
+    en_US: 'Clear Diffuse Texture'
+    ja_JP: '拡散光テクスチャをクリア'
+- key: nanoem.gui.model.edit.action.material.texture.spheremap.set
+  phrase:
+    en_US: 'Set SphereMap Texture'
+    ja_JP: 'スフィアマップテクスチャを設定'
+- key: nanoem.gui.model.edit.action.material.texture.spheremap.clear
+  phrase:
+    en_US: 'Clear SphereMap Texture'
+    ja_JP: 'スフィアマップテクスチャをクリア'
+- key: nanoem.gui.model.edit.action.material.texture.toon.set
+  phrase:
+    en_US: 'Set Toon Texture'
+    ja_JP: 'トゥーンテクスチャを設定'
+- key: nanoem.gui.model.edit.action.material.texture.toon.clear
+  phrase:
+    en_US: 'Clear Toon Texture'
+    ja_JP: 'トゥーンテクスチャをクリア'
+- key: nanoem.gui.model.edit.action.bone.create.destination
+  phrase:
+    en_US: 'Creating Destination Bone of %s'
+    ja_JP: '「%s」の接続先ボーンを作成'
+- key: nanoem.gui.model.edit.action.bone.create.staging
+  phrase:
+    en_US: 'Creating Staging Bone'
+    ja_JP: '多段ボーンを作成'
+- key: nanoem.gui.model.edit.action.bone.create.staging.parent
+  phrase:
+    en_US: 'as Parent of %s'
+    ja_JP: '「%s」の親ボーンとして作成'
+- key: nanoem.gui.model.edit.action.bone.create.staging.child
+  phrase:
+    en_US: 'as Child of %s'
+    ja_JP: '「%s」の子ボーンとして作成'
+- key: nanoem.gui.model.edit.action.bone.add-constraint-joints
+  phrase:
+    en_US: 'Add Selected to the IK Bone'
+    ja_JP: '選択されたボーンを IK ボーンに追加'
+- key: nanoem.gui.model.edit.action.bone.add-label
+  phrase:
+    en_US: 'Add Selected to the Label'
+    ja_JP: '選択されたボーンを表示枠に追加'
+- key: nanoem.gui.model.edit.action.bone.add-bone-morph
+  phrase:
+    en_US: 'Add Selected to the Bone Morph'
+    ja_JP: '選択されたボーンをボーンモーフに追加'
+- key: nanoem.gui.model.edit.action.bone.axis.parent
+  phrase:
+    en_US: 'Set from Parent'
+    ja_JP: '親ボーンから設定'
+- key: nanoem.gui.model.edit.action.bone.axis.target
+  phrase:
+    en_US: 'Set from Target'
+    ja_JP: '接続先から設定'
+- key: nanoem.gui.model.edit.action.bone.axis.select
+  phrase:
+    en_US: 'Set from Bone with ...'
+    ja_JP: '次のボーンから設定'
+- key: nanoem.gui.model.edit.action.bone.axis.global
+  phrase:
+    en_US: 'Set from Global Axis with ...'
+    ja_JP: '次の方向のグローバル軸から設定'
+- key: nanoem.gui.model.edit.action.morph.create-bone-morph-from-file
+  phrase:
+    en_US: 'Create Bone Morph from Pose File'
+    ja_JP: 'ポーズファイルからボーンモーフを作成'
+- key: nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file
+  phrase:
+    en_US: 'Create Vertex Morph from Model File'
+    ja_JP: 'モデルファイルから頂点モーフを作成'
+- key: nanoem.gui.model.edit.action.morph.add-label
+  phrase:
+    en_US: 'Add Selected to the Label'
+    ja_JP: '選択されたモーフを表示枠に追加'
+- key: nanoem.gui.model.edit.action.morph.add-group-morph
+  phrase:
+    en_US: 'Add Selected to the Group Morph'
+    ja_JP: '選択されたモーフをグループモーフに追加'
+- key: nanoem.gui.model.edit.action.morph.add-flip-morph
+  phrase:
+    en_US: 'Add Selected to the Flip Morph'
+    ja_JP: '選択されたモーフをフリップモーフに追加'
+- key: nanoem.gui.model.edit.action.rigid-body.create-intermediate-joint
+  phrase:
+    en_US: 'Create Intermediate Joint from Two Rigid Bodies'
+    ja_JP: 'ふたつの剛体から中間ジョイントを作成'
+- key: nanoem.gui.model.edit.action.rigid-body.add-impulse-morph
+  phrase:
+    en_US: 'Add Selected to the Impulse Morph'
+    ja_JP: '選択された剛体をインパルスモーフに追加'
+- key: nanoem.gui.model.edit.batch.apply.vertex
+  phrase:
+    en_US: 'Apply Batch %u Vertices'
+    ja_JP: '%u 頂点を一括適用'
+- key: nanoem.gui.model.edit.batch.apply.material
+  phrase:
+    en_US: 'Apply Batch %u Materials'
+    ja_JP: '%u 材質を一括適用'
+- key: nanoem.gui.model.edit.batch.apply.bone
+  phrase:
+    en_US: 'Apply Batch %u Bones'
+    ja_JP: '%u ボーンを一括適用'
+- key: nanoem.gui.model.edit.batch.apply.morph
+  phrase:
+    en_US: 'Apply Batch %u Morphs'
+    ja_JP: '%u モーフを一括適用'
+- key: nanoem.gui.model.edit.batch.apply.rigid-body
+  phrase:
+    en_US: 'Apply Batch %u Rigid Bodies'
+    ja_JP: '%u 剛体を一括適用'
+- key: nanoem.gui.model.edit.batch.apply.joint
+  phrase:
+    en_US: 'Apply Batch %u Joints'
+    ja_JP: '%u ジョイントを一括適用'
+- key: nanoem.gui.model.edit.batch.apply.soft-body
+  phrase:
+    en_US: 'Apply Batch %u Soft Bodies'
+    ja_JP: '%u ソフトボディを一括適用'
+- key: nanoem.gui.model.edit.batch.copy.vertex
+  phrase:
+    en_US: 'Copy Vertex Parameter from'
+    ja_JP: '次の頂点からパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.material
+  phrase:
+    en_US: 'Copy Material Parameter from'
+    ja_JP: '次の材質からパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.bone
+  phrase:
+    en_US: 'Copy Bone Parameter from'
+    ja_JP: '次のボーンからパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.morph
+  phrase:
+    en_US: 'Copy Morph Parameter from'
+    ja_JP: '次のモーフからパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.rigid-body
+  phrase:
+    en_US: 'Copy Rigid Body Parameter from'
+    ja_JP: '次の剛体からパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.joint
+  phrase:
+    en_US: 'Copy Joint Parameter from'
+    ja_JP: '次のジョイントからパラメータをコピー'
+- key: nanoem.gui.model.edit.batch.copy.soft-body
+  phrase:
+    en_US: 'Copy Soft Body Parameter from'
+    ja_JP: '次のソフトボディからパラメータをコピー'
 
 - key: nanoem.version
   phrase:
@@ -1873,6 +2840,16 @@
   phrase:
     en_US: Confirm Deleting Accessory
     ja_JP: アクセサリ削除の確認
+  description: ''
+- key: nanoem.window.dialog.converting-accessory.message
+  phrase:
+    en_US: This action will delete the accessory and add it as a model. Do you want to convert the accessory to model?
+    ja_JP: 変換するとアクセサリが削除されてモデルとして追加されます。アクセサリをモデルに変換しますか？
+  description: ''
+- key: nanoem.window.dialog.converting-accessory.title
+  phrase:
+    en_US: Confirm Converting Accessory to Model
+    ja_JP: アクセサリのモデル変換の確認
   description: ''
 - key: nanoem.window.dialog.deleting-model.message
   phrase:
@@ -2115,332 +3092,82 @@
     en_US: ''
     ja_JP: Finder で開く
   description: ''
-- key: nanoem.window.title.accessory
-  phrase:
-    en_US: Accessory
-    ja_JP: アクセサリ
-  description: ''
-- key: nanoem.window.title.audio
-  phrase:
-    en_US: Audio Source
-    ja_JP: 音源
-  description: ''
-- key: nanoem.window.title.audio-video
-  phrase:
-    en_US: Audio Source and Background Video
-    ja_JP: 音源と背景動画
-  description: ''
-- key: nanoem.window.title.back
-  phrase:
-    en_US: Back
-    ja_JP: 戻る
-  description: ''
-- key: nanoem.window.title.bone
-  phrase:
-    en_US: Bone
-    ja_JP: ボーン
-  description: ''
-- key: nanoem.window.title.camera
-  phrase:
-    en_US: Camera
-    ja_JP: カメラ
-  description: ''
-- key: nanoem.window.title.cancel
-  phrase:
-    en_US: Cancel
-    ja_JP: キャンセル
-  description: ''
-- key: nanoem.window.title.cd-up
-  phrase:
-    en_US: ..
-    ja_JP: ..
-  description: ''
-- key: nanoem.window.title.change-order
-  phrase:
-    en_US: Drawing Order
-    ja_JP: 描画順序
-  description: ''
 - key: nanoem.window.title.confirm.model
   phrase:
     en_US: Confirm Loading of %s
     ja_JP: モデル「%s」の確認
   description: ''
-- key: nanoem.window.title.delete
-  phrase:
-    en_US: Delete
-    ja_JP: 削除
-  description: ''
-- key: nanoem.window.title.remove-keyframe
-  phrase:
-    en_US: Remove Selected Keyframe(s)
-    ja_JP: 選択されたキーフレームを削除
-  description: ''
-- key: nanoem.window.title.execute
-  phrase:
-    en_US: Execute
-    ja_JP: 実行
-  description: ''
-- key: nanoem.window.title.reset
-  phrase:
-    en_US: Initialize
-    ja_JP: 初期化
-  description: ''
-- key: nanoem.window.title.joint
-  phrase:
-    en_US: Joint
-    ja_JP: ジョイント
-  description: ''
-- key: nanoem.window.title.label
-  phrase:
-    en_US: Label
-    ja_JP: 表示枠
-  description: ''
-- key: nanoem.window.title.light
-  phrase:
-    en_US: Light
-    ja_JP: 照明光
-  description: ''
-- key: nanoem.window.title.material
-  phrase:
-    en_US: Material
-    ja_JP: 材質
-  description: ''
-- key: nanoem.window.title.model
-  phrase:
-    en_US: Model
-    ja_JP: モデル
-  description: ''
-- key: nanoem.window.title.morph
-  phrase:
-    en_US: Morph
-    ja_JP: モーフ
-  description: ''
-- key: nanoem.window.title.null
-  phrase:
-    en_US: (none)
-    ja_JP: (なし)
-  description: ''
-- key: nanoem.window.title.open
-  phrase:
-    en_US: Open
-    ja_JP: 開く
-  description: ''
-- key: nanoem.window.title.open-audio
-  phrase:
-    en_US: Open Audio Source
-    ja_JP: 音源の読み込み
-  description: ''
-- key: nanoem.window.title.open-camera-motion
-  phrase:
-    en_US: Open Camera Motion
-    ja_JP: カメラモーションの読み込み
-  description: ''
-- key: nanoem.window.title.open-effect
-  phrase:
-    en_US: Open Effect
-    ja_JP: エフェクトの読み込み
-  description: ''
-- key: nanoem.window.title.open-light-motion
-  phrase:
-    en_US: Open Light Motion
-    ja_JP: 照明光モーションの読み込み
-  description: ''
-- key: nanoem.window.title.open-model-accessory
-  phrase:
-    en_US: Open Model/Accessory
-    ja_JP: モデル/アクセサリの読み込み
-  description: ''
-- key: nanoem.window.title.open-model-motion
-  phrase:
-    en_US: Open Model Motion
-    ja_JP: モデルモーションの読み込み
-  description: ''
-- key: nanoem.window.title.open-motion
-  phrase:
-    en_US: Open Motion
-    ja_JP: モーションの読み込み
-  description: ''
-- key: nanoem.window.title.open-project
-  phrase:
-    en_US: Open Project
-    ja_JP: プロジェクトの読み込み
-  description: ''
-- key: nanoem.window.title.open-script
-  phrase:
-    en_US: Open Script
-    ja_JP: スクリプトの読み込み
-  description: ''
-- key: nanoem.window.title.open-texture
-  phrase:
-    en_US: Open Texture
-    ja_JP: テクスチャの読み込み
-  description: ''
-- key: nanoem.window.title.open-video
-  phrase:
-    en_US: Open Video
-    ja_JP: 動画の読み込み
-  description: ''
-- key: nanoem.window.title.preference
-  phrase:
-    en_US: Preferences
-    ja_JP: 設定
-  description: ''
-- key: nanoem.window.title.project
-  phrase:
-    en_US: Project
-    ja_JP: プロジェクト
-  description: ''
-- key: nanoem.window.title.redo
-  phrase:
-    en_US: Redo
-    ja_JP: リドゥ
-  description: ''
-- key: nanoem.window.title.register-keyframe
-  phrase:
-    en_US: Register Keyframe at Current Frame
-    ja_JP: キーフレームを登録
-  description: ''
-- key: nanoem.window.title.rigid-body
-  phrase:
-    en_US: Rigid Body
-    ja_JP: 剛体
-  description: ''
-- key: nanoem.window.title.save
-  phrase:
-    en_US: Save
-    ja_JP: 保存
-  description: ''
-- key: nanoem.window.title.save-as
-  phrase:
-    en_US: Save as
-    ja_JP: 保存
-  description: ''
-- key: nanoem.window.title.save-camera-motion
-  phrase:
-    en_US: Save Camera Motion
-    ja_JP: カメラモーションの保存
-  description: ''
-- key: nanoem.window.title.save-light-motion
-  phrase:
-    en_US: Save Light Motion
-    ja_JP: 照明光モーションの保存
-  description: ''
-- key: nanoem.window.title.save-model-motion
-  phrase:
-    en_US: Save Model Motion
-    ja_JP: モデルモーションの保存
-  description: ''
-- key: nanoem.window.title.save-project
-  phrase:
-    en_US: Save Project
-    ja_JP: プロジェクトの保存
-  description: ''
-- key: nanoem.window.title.undo
-  phrase:
-    en_US: Undo
-    ja_JP: アンドゥ
-  description: ''
-- key: nanoem.window.title.unknown
-  phrase:
-    en_US: (Unknown)
-    ja_JP: （不明）
-  description: ''
-- key: nanoem.window.title.vertex
-  phrase:
-    en_US: Vertex
-    ja_JP: 頂点
-  description: ''
-- key: nanoem.window.title.video
-  phrase:
-    en_US: Video
-    ja_JP: 動画
-  description: ''
 - key: nanoem.menu.file.title
-  phrase:
-    en_US: 'File'
-    ja_JP: 'ファイル'
-  description: ''
-- key: nanoem.menu.file.title.win32
   phrase:
     en_US: '&File'
     ja_JP: 'ファイル(&F)'
   description: ''
-- key: nanoem.menu.file.new
-  phrase:
-    en_US: 'New Project'
-    ja_JP: '新規プロジェクト'
-  description: ''
-- key: nanoem.menu.file.new.win32
+- key: nanoem.menu.file.new.project
   phrase:
     en_US: '&New Project'
     ja_JP: '新規プロジェクト(&N)'
   description: ''
-- key: nanoem.menu.file.open
+- key: nanoem.menu.file.new.model
   phrase:
-    en_US: 'Open Project'
-    ja_JP: 'プロジェクトを開く'
+    en_US: 'New Model'
+    ja_JP: '新規モデル'
   description: ''
-- key: nanoem.menu.file.open.win32
+- key: nanoem.menu.file.open
   phrase:
     en_US: '&Open Project'
     ja_JP: 'プロジェクトを開く(&O)'
   description: ''
 - key: nanoem.menu.file.import.model
   phrase:
-    en_US: 'Model'
-    ja_JP: 'モデル'
+    en_US: '&Model'
+    ja_JP: 'モデル(&M)'
   description: ''
 - key: nanoem.menu.file.import.accessory
   phrase:
-    en_US: 'Accessory'
-    ja_JP: 'アクセサリ'
+    en_US: '&Accessory'
+    ja_JP: 'アクセサリ(&A)'
   description: ''
 - key: nanoem.menu.file.import.pose
   phrase:
-    en_US: 'Model Pose'
-    ja_JP: 'モデルポーズ'
+    en_US: 'Model &Pose'
+    ja_JP: 'モデルポーズ(&P)'
   description: ''
 - key: nanoem.menu.file.import.motion.model
   phrase:
-    en_US: 'Model Motion'
-    ja_JP: 'モデルモーション'
+    en_US: 'M&odel Motion'
+    ja_JP: 'モデルモーション(&O)'
   description: ''
 - key: nanoem.menu.file.import.motion.camera
   phrase:
-    en_US: 'Camera Motion'
-    ja_JP: 'カメラモーション'
+    en_US: '&Camera Motion'
+    ja_JP: 'カメラモーション(&C)'
   description: ''
 - key: nanoem.menu.file.import.motion.light
   phrase:
-    en_US: 'Light Motion'
-    ja_JP: '照明モーション'
+    en_US: '&Light Motion'
+    ja_JP: '照明モーション(&L)'
   description: ''
 - key: nanoem.menu.file.import.motion.title
   phrase:
-    en_US: 'Motion'
-    ja_JP: 'モーション'
+    en_US: '&Motion'
+    ja_JP: 'モーション(&M)'
   description: ''
 - key: nanoem.menu.file.import.audio
   phrase:
-    en_US: 'Audio Source'
-    ja_JP: '音源'
+    en_US: 'A&udio Source'
+    ja_JP: '音源(&U)'
   description: ''
 - key: nanoem.menu.file.import.video
   phrase:
-    en_US: 'Background Video'
-    ja_JP: '背景動画'
+    en_US: 'Background &Video'
+    ja_JP: '背景動画(&V)'
   description: ''
 - key: nanoem.menu.file.import.title
   phrase:
-    en_US: 'Import...'
-    ja_JP: '開く'
+    en_US: '&Import...'
+    ja_JP: '開く(&I)'
   description: ''
 - key: nanoem.menu.file.save
-  phrase:
-    en_US: 'Save Project'
-    ja_JP: 'プロジェクトを保存'
-  description: ''
-- key: nanoem.menu.file.save.win32
   phrase:
     en_US: '&Save Project'
     ja_JP: 'プロジェクトを保存(&S)'
@@ -2452,23 +3179,23 @@
   description: ''
 - key: nanoem.menu.file.export.pose
   phrase:
-    en_US: 'Model Pose'
-    ja_JP: 'モデルポーズ'
+    en_US: 'Model &Pose'
+    ja_JP: 'モデルポーズ(&P)'
   description: ''
 - key: nanoem.menu.file.export.motion.model
   phrase:
-    en_US: 'Model Motion'
-    ja_JP: 'モデルモーション'
+    en_US: 'M&odel Motion'
+    ja_JP: 'モデルモーション(&O)'
   description: ''
 - key: nanoem.menu.file.export.motion.camera
   phrase:
-    en_US: 'Camera Motion'
-    ja_JP: 'カメラモーション'
+    en_US: '&Camera Motion'
+    ja_JP: 'カメラモーション(&C)'
   description: ''
 - key: nanoem.menu.file.export.motion.light
   phrase:
-    en_US: 'Light Motion'
-    ja_JP: '照明モーション'
+    en_US: '&Light Motion'
+    ja_JP: '照明モーション(&L)'
   description: ''
 - key: nanoem.menu.file.export.model
   phrase:
@@ -2477,45 +3204,30 @@
   description: ''
 - key: nanoem.menu.file.export.image
   phrase:
-    en_US: 'Image'
-    ja_JP: '画像'
+    en_US: '&Image'
+    ja_JP: '画像(&I)'
   description: ''
 - key: nanoem.menu.file.export.video
   phrase:
-    en_US: 'Video'
-    ja_JP: '動画'
+    en_US: '&Video'
+    ja_JP: '動画(&V)'
   description: ''
 - key: nanoem.menu.file.export.title
   phrase:
-    en_US: 'Export...'
-    ja_JP: '書き出し'
+    en_US: '&Export...'
+    ja_JP: '書き出し(&E)'
   description: ''
 - key: nanoem.menu.file.exit
-  phrase:
-    en_US: 'Exit'
-    ja_JP: '終了'
-  description: ''
-- key: nanoem.menu.file.exit.win32
   phrase:
     en_US: 'E&xit'
     ja_JP: '終了(&X)'
   description: ''
 - key: nanoem.menu.edit.undo
   phrase:
-    en_US: 'Undo'
-    ja_JP: '元に戻す'
-  description: ''
-- key: nanoem.menu.edit.undo.win32
-  phrase:
     en_US: '&Undo'
     ja_JP: '元に戻す(&U)'
   description: ''
 - key: nanoem.menu.edit.redo
-  phrase:
-    en_US: 'Redo'
-    ja_JP: 'やり直し'
-  description: ''
-- key: nanoem.menu.edit.redo.win32
   phrase:
     en_US: '&Redo'
     ja_JP: 'やり直し(&R)'
@@ -2527,20 +3239,10 @@
   description: ''
 - key: nanoem.menu.edit.copy
   phrase:
-    en_US: 'Copy'
-    ja_JP: 'コピー'
-  description: ''
-- key: nanoem.menu.edit.copy.win32
-  phrase:
     en_US: '&Copy'
     ja_JP: 'コピー(&C)'
   description: ''
 - key: nanoem.menu.edit.paste
-  phrase:
-    en_US: 'Paste'
-    ja_JP: '貼り付け'
-  description: ''
-- key: nanoem.menu.edit.paste.win32
   phrase:
     en_US: '&Paste'
     ja_JP: '貼り付け(&P)'
@@ -2565,11 +3267,6 @@
   description: ''
 - key: nanoem.menu.edit.select-all-keyframes
   phrase:
-    en_US: 'Select All Keyframes'
-    ja_JP: '全てのキーフレームを選択'
-  description: ''
-- key: nanoem.menu.edit.select-all-keyframes.win32
-  phrase:
     en_US: 'Select &All Keyframes'
     ja_JP: '全てのキーフレームを選択(&A)'
   description: ''
@@ -2578,37 +3275,17 @@
     en_US: 'Preferences'
     ja_JP: '設定'
   description: ''
-- key: nanoem.menu.edit.preference.win32
-  phrase:
-    en_US: '&Preferences'
-    ja_JP: '設定(&P)'
-  description: ''
 - key: nanoem.menu.edit.title
-  phrase:
-    en_US: 'Edit'
-    ja_JP: '編集'
-  description: ''
-- key: nanoem.menu.edit.title.win32
   phrase:
     en_US: '&Edit'
     ja_JP: '編集(&E)'
   description: ''
 - key: nanoem.menu.project.play
   phrase:
-    en_US: 'Play'
-    ja_JP: '再生'
-  description: ''
-- key: nanoem.menu.project.play.win32
-  phrase:
     en_US: '&Play'
     ja_JP: '再生(&P)'
   description: ''
 - key: nanoem.menu.project.stop
-  phrase:
-    en_US: 'Stop'
-    ja_JP: '停止'
-  description: ''
-- key: nanoem.menu.project.stop.win32
   phrase:
     en_US: '&Stop'
     ja_JP: '停止(&S)'
@@ -2628,15 +3305,20 @@
     en_US: 'Open Transform Order Dialog'
     ja_JP: '変形順ダイアログを開く'
   description: ''
+- key: nanoem.menu.project.viewport.detach
+  phrase:
+    en_US: '&Detach Viewport Window'
+    ja_JP: 'ビューポートウィンドウを分離(&D)'
+  description: ''
 - key: nanoem.menu.project.enable.loop
   phrase:
-    en_US: 'Enable Playing with Loop'
-    ja_JP: 'ループ再生を有効にする'
+    en_US: 'Enable Playing with &Loop'
+    ja_JP: 'ループ再生を有効にする(&L)'
   description: ''
 - key: nanoem.menu.project.enable.grid
   phrase:
-    en_US: 'Enable Grid'
-    ja_JP: '地面軸を有効にする'
+    en_US: 'Enable &Grid'
+    ja_JP: '地面軸を有効にする(&G)'
   description: ''
 - key: nanoem.menu.project.enable.ground-shadow
   phrase:
@@ -2645,18 +3327,13 @@
   description: ''
 - key: nanoem.menu.project.enable.effect
   phrase:
-    en_US: 'Enable Effect'
-    ja_JP: 'エフェクトを有効にする'
-  description: ''
-- key: nanoem.menu.project.enable.effect.win32
-  phrase:
     en_US: 'Enable &Effect'
     ja_JP: 'エフェクトを有効にする(&E)'
   description: ''
 - key: nanoem.menu.project.enable.high-resolution-viewport
   phrase:
-    en_US: 'Enable High Resolution Viewport'
-    ja_JP: '高解像度ビューポートを有効にする'
+    en_US: 'Enable &High Resolution Viewport'
+    ja_JP: '高解像度ビューポートを有効にする(&H)'
   description: ''
 - key: nanoem.menu.project.enable.compute-shader-skinning
   phrase:
@@ -2850,11 +3527,6 @@
   description: ''
 - key: nanoem.menu.camera.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.camera.register-keyframe.win32
-  phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
   description: ''
@@ -2865,20 +3537,10 @@
   description: ''
 - key: nanoem.menu.camera.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-  description: ''
-- key: nanoem.menu.camera.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
 - key: nanoem.menu.camera.title
-  phrase:
-    en_US: 'Camera'
-    ja_JP: 'カメラ'
-  description: ''
-- key: nanoem.menu.camera.title.win32
   phrase:
     en_US: '&Camera'
     ja_JP: 'カメラ(&C)'
@@ -2890,11 +3552,6 @@
   description: ''
 - key: nanoem.menu.light.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.light.register-keyframe.win32
-  phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
   description: ''
@@ -2905,28 +3562,18 @@
   description: ''
 - key: nanoem.menu.light.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-  description: ''
-- key: nanoem.menu.light.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
 - key: nanoem.menu.light.title
-  phrase:
-    en_US: 'Light'
-    ja_JP: '照明'
-  description: ''
-- key: nanoem.menu.light.title.win32
   phrase:
     en_US: '&Light'
     ja_JP: '照明(&L)'
   description: ''
 - key: nanoem.menu.light.self-shadow.title
   phrase:
-    en_US: 'Self Shadow'
-    ja_JP: 'セルフシャドウ'
+    en_US: '&Self Shadow'
+    ja_JP: 'セルフシャドウ(&S)'
   description: ''
 - key: nanoem.menu.light.self-shadow.disable
   phrase:
@@ -2945,8 +3592,8 @@
   description: ''
 - key: nanoem.menu.light.self-shadow.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレーム登録'
+    en_US: '&Register Keyframe at Current Frame'
+    ja_JP: 'キーフレーム登録(&R)'
   description: ''
 - key: nanoem.menu.light.self-shadow.remove-keyframe
   phrase:
@@ -2955,27 +3602,23 @@
   description: ''
 - key: nanoem.menu.light.self-shadow.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-- key: nanoem.menu.light.self-shadow.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
 - key: nanoem.menu.model.select.title
   phrase:
-    en_US: 'Select Model from...'
-    ja_JP: 'モデルを選択'
+    en_US: 'Select &Model from...'
+    ja_JP: 'モデルを選択(&M)'
   description: ''
 - key: nanoem.menu.model.select.bone.title
   phrase:
-    en_US: 'Select Bone from...'
-    ja_JP: 'ボーンを選択'
+    en_US: 'Select &Bone from...'
+    ja_JP: 'ボーンを選択(&B)'
   description: ''
 - key: nanoem.menu.model.select.morph.title
   phrase:
-    en_US: 'Select Morph from...'
-    ja_JP: 'モーフを選択'
+    en_US: 'Select M&orph from...'
+    ja_JP: 'モーフを選択(&O)'
   description: ''
 - key: nanoem.menu.model.select.bone.keyframes
   phrase:
@@ -3016,6 +3659,11 @@
   phrase:
     en_US: 'Collapse All Tracks'
     ja_JP: '全てのトラックを折りたたみ'
+  description: ''
+- key: nanoem.menu.model.validation
+  phrase:
+    en_US: 'Perform Model Data Validation'
+    ja_JP: 'モデルデータの検証を実行'
   description: ''
 - key: nanoem.menu.model.edit-mode.select
   phrase:
@@ -3069,25 +3717,20 @@
   description: ''
 - key: nanoem.menu.model.enable.add-blend
   phrase:
-    en_US: 'Enable Add Blend'
-    ja_JP: '加算ブレンドを有効にする'
+    en_US: 'Enable &Add Blend'
+    ja_JP: '加算ブレンドを有効にする(&A)'
   description: ''
 - key: nanoem.menu.model.enable.shadow-map
   phrase:
-    en_US: 'Enable Shadow Map'
-    ja_JP: 'シャドウマップを有効にする'
+    en_US: 'Enable &Shadow Map'
+    ja_JP: 'シャドウマップを有効にする(&S)'
   description: ''
 - key: nanoem.menu.model.enable.visible
   phrase:
-    en_US: 'Enable Visible'
-    ja_JP: '表示を有効にする'
+    en_US: 'Enable &Visible'
+    ja_JP: '表示を有効にする(&V)'
   description: ''
 - key: nanoem.menu.model.register-keyframe
-  phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.model.register-keyframe.win32
   phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
@@ -3149,20 +3792,10 @@
   description: ''
 - key: nanoem.menu.model.delete-active
   phrase:
-    en_US: 'Delete Active Model'
-    ja_JP: '選択されているモデルを削除'
-  description: ''
-- key: nanoem.menu.model.delete-active.win32
-  phrase:
     en_US: '&Delete Active Model'
-    ja_JP: '選択されているモデルを削除(&D)'
+    ja_JP: '現在選択中のモデルを削除(&D)'
   description: ''
 - key: nanoem.menu.model.title
-  phrase:
-    en_US: 'Model'
-    ja_JP: 'モデル'
-  description: ''
-- key: nanoem.menu.model.title.win32
   phrase:
     en_US: '&Model'
     ja_JP: 'モデル(&M)'
@@ -3179,11 +3812,6 @@
   description: ''
 - key: nanoem.menu.accessory.register-keyframe
   phrase:
-    en_US: 'Register Keyframe at Current Frame'
-    ja_JP: 'キーフレームを登録'
-  description: ''
-- key: nanoem.menu.accessory.register-keyframe.win32
-  phrase:
     en_US: '&Register Keyframe at Current Frame'
     ja_JP: 'キーフレームを登録(&R)'
   description: ''
@@ -3194,40 +3822,35 @@
   description: ''
 - key: nanoem.menu.accessory.enable.add-blend
   phrase:
-    en_US: 'Enable Add Blend'
-    ja_JP: '加算ブレンドを有効にする'
+    en_US: 'Enable &Add Blend'
+    ja_JP: '加算ブレンドを有効にする(&A)'
   description: ''
 - key: nanoem.menu.accessory.enable.shadow
   phrase:
-    en_US: 'Enable Ground Shadow'
-    ja_JP: '地面影を有効にする'
+    en_US: 'Enable Ground &Shadow'
+    ja_JP: '地面影を有効にする(&S)'
   description: ''
 - key: nanoem.menu.accessory.enable.visible
   phrase:
-    en_US: 'Enable Visible'
-    ja_JP: '表示を有効にする'
+    en_US: 'Enable &Visible'
+    ja_JP: '表示を有効にする(&V)'
   description: ''
 - key: nanoem.menu.accessory.reset
   phrase:
     en_US: 'Reset'
     ja_JP: 'リセット'
   description: ''
+- key: nanoem.menu.accessory.convert-to-model
+  phrase:
+    en_US: 'Convert Active Accessory to Model'
+    ja_JP: '現在選択中のアクセサリをモデルに変換'
+  description: ''
 - key: nanoem.menu.accessory.delete-active
   phrase:
-    en_US: 'Delete Active Accesosry'
-    ja_JP: '選択されているアクセサリを削除'
-  description: ''
-- key: nanoem.menu.accessory.delete-active.win32
-  phrase:
     en_US: '&Delete Active Accessory'
-    ja_JP: '選択されているアクセサリを削除(&D)'
+    ja_JP: '現在選択中のアクセサリを削除(&D)'
   description: ''
 - key: nanoem.menu.accessory.title
-  phrase:
-    en_US: 'Accessory'
-    ja_JP: 'アクセサリ'
-  description: ''
-- key: nanoem.menu.accessory.title.win32
   phrase:
     en_US: '&Accessory'
     ja_JP: 'アクセサリ(&A)'
@@ -3244,11 +3867,6 @@
   description: ''
 - key: nanoem.menu.project.motion.reset
   phrase:
-    en_US: 'Initialize'
-    ja_JP: '初期化'
-  description: ''
-- key: nanoem.menu.project.motion.reset.win32
-  phrase:
     en_US: '&Initialize'
     ja_JP: '初期化(&I)'
   description: ''
@@ -3258,11 +3876,6 @@
     ja_JP: 'モーション'
   description: ''
 - key: nanoem.menu.project.title
-  phrase:
-    en_US: 'Project'
-    ja_JP: 'プロジェクト'
-  description: ''
-- key: nanoem.menu.project.title.win32
   phrase:
     en_US: '&Project'
     ja_JP: 'プロジェクト(&P)'
@@ -3289,48 +3902,28 @@
   description: ''
 - key: nanoem.menu.window.title
   phrase:
-    en_US: 'Window'
-    ja_JP: 'ウィンドウ'
-  description: ''
-- key: nanoem.menu.window.title.win32
-  phrase:
     en_US: '&Window'
     ja_JP: 'ウィンドウ(&W)'
   description: ''
 - key: nanoem.menu.help.online
-  phrase:
-    en_US: 'Online Help'
-    ja_JP: 'オンラインヘルプ'
-  description: ''
-- key: nanoem.menu.help.online.win32
   phrase:
     en_US: '&Online Help'
     ja_JP: 'オンラインヘルプ(&O)'
   description: ''
 - key: nanoem.menu.help.about
   phrase:
-    en_US: 'About'
-    ja_JP: 'nanoem について'
-  description: ''
-- key: nanoem.menu.help.about.win32
-  phrase:
     en_US: '&About'
     ja_JP: 'nanoem について(&A)'
   description: ''
 - key: nanoem.menu.help.title
-  phrase:
-    en_US: 'Help'
-    ja_JP: 'ヘルプ'
-  description: ''
-- key: nanoem.menu.help.title.win32
   phrase:
     en_US: '&Help'
     ja_JP: 'ヘルプ(&H)'
   description: ''
 - key: nanoem.menu.edit.bone.title
   phrase:
-    en_US: 'Bone'
-    ja_JP: 'ボーン'
+    en_US: '&Bone'
+    ja_JP: 'ボーン(&B)'
   description: ''
 - key: nanoem.menu.edit.camera.title
   phrase:
@@ -3339,8 +3932,8 @@
   description: ''
 - key: nanoem.menu.edit.morph.title
   phrase:
-    en_US: 'Morph'
-    ja_JP: 'モーフ'
+    en_US: 'M&orph'
+    ja_JP: 'モーフ(&O)'
   description: ''
 - key: nanoem.menu.edit.bone.parameter
   phrase:
@@ -3468,6 +4061,26 @@
   phrase:
     en_US: 'Self Shadow'
     ja_JP: 'セルフシャドウ'
+- key: nanoem.project.track.select-all
+  phrase:
+    en_US: 'All Keyframes'
+    ja_JP: '全てのキーフレーム'
+- key: nanoem.project.track.selected-bones
+  phrase:
+    en_US: 'Selected Bones'
+    ja_JP: '選択ボーン'
+- key: nanoem.project.track.selected-morphs
+  phrase:
+    en_US: 'Selected Morphs'
+    ja_JP: '選択モーフ'
+- key: nanoem.project.track.all-morphs
+  phrase:
+    en_US: 'All Morphs'
+    ja_JP: '全てのモーフ'
+- key: nanoem.project.track.none
+  phrase:
+    en_US: '(none)'
+    ja_JP: '（なし）'
 
 - key: nanoem.error.convert-to-nmm.reason
   phrase:
@@ -3512,11 +4125,43 @@
 - key: nanoem.error.effect.model-effect-not-found.reason
   phrase:
     en_US: 'The model to attach the effect not found'
-    ja_JP: 'エフェクトに割り当てるモデルがありません'
+    ja_JP: 'エフェクトに割り当てるモデルが存在しません'
 - key: nanoem.error.effect.offscreen-not-found.reason
   phrase:
-    en_US: 'The model to attach the offscreen effect not found'
-    ja_JP: 'オフスクリーンエフェクトに割り当てるモデルがありません'
+    en_US: 'The object to attach the offscreen effect not found'
+    ja_JP: 'オフスクリーンエフェクトに割り当てる対象が存在しません'
+- key: nanoem.error.effect.invalid-attachment.reason
+  phrase:
+    en_US: 'The model or offscreen target to attach the effect is not configured'
+    ja_JP: 'エフェクトに割り当てるモデルまたはオフスクリーンの対象が設定されていません'
+- key: nanoem.error.effect.invalid-attachment.recovery-suggestion
+  phrase:
+    en_US: 'Set the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect file'
+    ja_JP: 'メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてください'
+- key: nanoem.error.motion.not-model.reason
+  phrase:
+    en_US: 'The loading motion is not intended for model'
+    ja_JP: '読み込まれたモーションはモデル用ではありません'
+- key: nanoem.error.motion.not-camera-and-light.reason
+  phrase:
+    en_US: 'The loading motion is not intended for camera/light'
+    ja_JP: '読み込まれたモーションはカメラ及び照明用ではありません'
+- key: nanoem.error.motion.no-active-model.reason
+  phrase:
+    en_US: 'The model is not selected to load the model motion'
+    ja_JP: 'モデルモーションを読み込むためのモデルが選択されていません'
+- key: nanoem.error.motion.no-active-model.recovery-suggestion
+  phrase:
+    en_US: 'Try selecting the model'
+    ja_JP: 'モデルを選択してください'
+- key: nanoem.error.project.new-model.reason
+  phrase:
+    en_US: 'Saving the project is required to create a new model'
+    ja_JP: '新規モデルを作成するにはプロジェクトの保存が必要です'
+- key: nanoem.error.project.open-model.reason
+  phrase:
+    en_US: 'Saving the project is required to open model parameter dialog'
+    ja_JP: 'モデル編集ダイアログを開くにはプロジェクトの保存が必要です'
 
 - key: nanoem.project.diagnostics.title
   phrase:
@@ -3534,6 +4179,244 @@
   phrase:
     en_US: 'Below files cannot be loaded due to file modification.'
     ja_JP: '次のファイルは保存時から変更があったため読み込めません'
+
+- key: nanoem.motion.model.diagnostics.title
+  phrase:
+    en_US: 'Loaded Model Motion Warning'
+    ja_JP: '読み込まれたモデルモーションの警告'
+- key: nanoem.motion.model.diagnostics.message
+  phrase:
+    en_US: 'Loading the model motion is succeeded, however below bones/morphs are missing due to made for "%s" so may not work as properly.'
+    ja_JP: 'モデルモーションの読み込みに成功しましたが、「%s」のために作られており以下のボーンあるいはモーフが不足しているため正常に動作しない可能性があります'
+- key: nanoem.motion.model.diagnostics.all-missing-bones
+  phrase:
+    en_US: 'All Missing Bones'
+    ja_JP: '不足しているボーン一覧'
+- key: nanoem.motion.model.diagnostics.all-missing-morphs
+  phrase:
+    en_US: 'All Missing Morphs'
+    ja_JP: '不足しているモーフ一覧'
+
+- key: nanoem.model.validator.result.title
+  phrase:
+    en_US: 'Validation result of %s'
+    ja_JP: '「%s」の検証結果'
+- key: nanoem.model.validator.result.success
+  phrase:
+    en_US: 'No validation problem found'
+    ja_JP: '検証した結果問題はありませんでした'
+- key: nanoem.model.validator.result.failure
+  phrase:
+    en_US: '%zu validation problem(s) found'
+    ja_JP: '検証した結果 %zu 件の問題が見つかりました'
+- key: nanoem.model.validator.vertex.model.name.empty
+  phrase:
+    en_US: 'The model name is empty'
+    ja_JP: 'モデル名が空です'
+- key: nanoem.model.validator.vertex.model.comment.empty
+  phrase:
+    en_US: 'Comment of the model is empty'
+    ja_JP: 'モデルのコメントが空です'
+- key: nanoem.model.validator.vertex.normal.invalid
+  phrase:
+    en_US: 'Normal of the vertex is invalid'
+    ja_JP: '頂点の法線が不正です'
+- key: nanoem.model.validator.vertex.texcoord.oob
+  phrase:
+    en_US: 'Texture coordinate of the vertex is out of bound'
+    ja_JP: '頂点のテクスチャ座標が範囲外です'
+- key: nanoem.model.validator.vertex.bone.null
+  phrase:
+    en_US: 'The bone of the vertex is not set'
+    ja_JP: '頂点に対応するボーンが設定されていません'
+- key: nanoem.model.validator.vertex.weight.not-normalized
+  phrase:
+    en_US: 'The bone weight of the vertex is not normalized'
+    ja_JP: '頂点のボーンウェイトが正規化されていません'
+- key: nanoem.model.validator.vertex.type.invalid
+  phrase:
+    en_US: 'The vertex type is invalid'
+    ja_JP: '頂点の種別が不正です'
+- key: nanoem.model.validator.face.not-triangulated
+  phrase:
+    en_US: 'The face is not triangulated'
+    ja_JP: '面が三角形になっていません'
+- key: nanoem.model.validator.face.vertex.null
+  phrase:
+    en_US: 'The vertex of the face is not set'
+    ja_JP: '面の頂点が設定されていません'
+- key: nanoem.model.validator.face.vertex.oob
+  phrase:
+    en_US: 'The face is out of bound of the vertices'
+    ja_JP: '面が頂点の範囲外にあります'
+- key: nanoem.model.validator.face.vertex.not-used
+  phrase:
+    en_US: 'The vertex is not referenced from the face'
+    ja_JP: '頂点が面から参照されていません'
+- key: nanoem.model.validator.material.name.empty
+  phrase:
+    en_US: 'The material name (of Japanese) is empty'
+    ja_JP: '材質名が設定されていません'
+- key: nanoem.model.validator.material.name.duplicated
+  phrase:
+    en_US: 'The material name (of Japanese) is duplicated'
+    ja_JP: '材質名が重複しています'
+- key: nanoem.model.validator.material.ambient.color.oob
+  phrase:
+    en_US: 'The material ambient color is out of bound'
+    ja_JP: '材質の環境光色が範囲外にあります'
+- key: nanoem.model.validator.material.diffuse.color.oob
+  phrase:
+    en_US: 'The material diffuse color is out of bound'
+    ja_JP: '材質の拡散光色が範囲外にあります'
+- key: nanoem.model.validator.material.diffuse.opacity.oob
+  phrase:
+    en_US: 'The material diffuse opacity is out of bound'
+    ja_JP: '材質の拡散光色の不透明度が範囲外にあります'
+- key: nanoem.model.validator.material.specular.color.oob
+  phrase:
+    en_US: 'The material specular color is out of bound'
+    ja_JP: '材質の鏡面色が範囲外にあります'
+- key: nanoem.model.validator.material.edge.color.oob
+  phrase:
+    en_US: 'The material edge color is out of bound'
+    ja_JP: '材質のエッジ色が範囲外にあります'
+- key: nanoem.model.validator.material.edge.opacity.oob
+  phrase:
+    en_US: 'The material edge opacity is out of bound'
+    ja_JP: '材質のエッジ色の不透明度が範囲外にあります'
+- key: nanoem.model.validator.material.texture.diffuse.not-found
+  phrase:
+    en_US: 'The material diffuse texture file is not found'
+    ja_JP: '材質の拡散光のテクスチャファイルが見つかりません'
+- key: nanoem.model.validator.material.texture.sphere-map.not-found
+  phrase:
+    en_US: 'The material sphere map texture file is not found'
+    ja_JP: '材質のスフィアマップテクスチャファイルが見つかりません'
+- key: nanoem.model.validator.material.texture.toon.not-found
+  phrase:
+    en_US: 'The material toon texture file is not found'
+    ja_JP: '材質のトゥーンテクスチャファイルが見つかりません'
+- key: nanoem.model.validator.material.face.not-fill
+  phrase:
+    en_US: 'All material vertex index count are less than corresponding all faces'
+    ja_JP: '全材質が参照するインデックスが対応する面の数よりも少ない状態です'
+- key: nanoem.model.validator.material.face.overflow
+  phrase:
+    en_US: 'All material vertex index count are greater than corresponding all faces'
+    ja_JP: '全材質が参照するインデックスが対応する面の数よりも多い状態です'
+- key: nanoem.model.validator.bone.name.too-long
+  phrase:
+    en_US: 'The bone name length (of Japanese) is greater than 15 bytes'
+    ja_JP: 'ボーン名が15バイトを超えてます'
+- key: nanoem.model.validator.bone.name.empty
+  phrase:
+    en_US: 'The bone name (of Japanese) is empty'
+    ja_JP: 'ボーン名が設定されていません'
+- key: nanoem.model.validator.bone.name.duplicated
+  phrase:
+    en_US: 'The bone name (of Japanese) is duplicated'
+    ja_JP: 'ボーン名が重複しています'
+- key: nanoem.model.validator.bone.transform-before-parent
+  phrase:
+    en_US: 'The bone will be transformed before its parent bone due to relation problem'
+    ja_JP: '親子関係の問題から親ボーンより先に変形されます'
+- key: nanoem.model.validator.bone.inherent.null
+  phrase:
+    en_US: 'The inherent bone is not set'
+    ja_JP: '付与ボーンが設定されていません'
+- key: nanoem.model.validator.bone.inherent.transform-before-parent
+  phrase:
+    en_US: 'The inherent bone will be transformed before its parent inherent bone due to relation problem'
+    ja_JP: '親子関係の問題から付与親ボーンより先に変形されます'
+- key: nanoem.model.validator.bone.constraint.transform-before-parent
+  phrase:
+    en_US: 'The IK bone will be transformed before its target bone due to relation problem'
+    ja_JP: '親子関係の問題からIKターゲットボーンより先に変形されます'
+- key: nanoem.model.validator.bone.fixed-axis.not-normalized
+  phrase:
+    en_US: 'Fixed axis of the bone is normalized'
+    ja_JP: '固定軸が正規化されていません'
+- key: nanoem.model.validator.morph.name.too-long
+  phrase:
+    en_US: 'The morph name (of Japanese) is greater than 15 bytes'
+    ja_JP: 'モーフ名が15バイトを超えてます'
+- key: nanoem.model.validator.morph.name.empty
+  phrase:
+    en_US: 'The morph name (of Japanese) is empty'
+    ja_JP: 'モーフ名が設定されていません'
+- key: nanoem.model.validator.morph.name.duplicated
+  phrase:
+    en_US: 'The morph name (of Japanese) is duplicated'
+    ja_JP: 'モーフ名が重複しています'
+- key: nanoem.model.validator.label.name.empty
+  phrase:
+    en_US: 'The label name (of Japanese) is empty'
+    ja_JP: '表示枠名が設定されていません'
+- key: nanoem.model.validator.label.name.duplicated
+  phrase:
+    en_US: 'The label name (of Japanese) is duplicated'
+    ja_JP: '表示枠名が重複しています'
+- key: nanoem.model.validator.label.empty
+  phrase:
+    en_US: 'The label item is empty'
+    ja_JP: '表示枠が空です'
+- key: nanoem.model.validator.label.not-assigned-bone
+  phrase:
+    en_US: 'The bone is not assigned to the label'
+    ja_JP: 'ボーンが表示枠に割り当てられていません'
+- key: nanoem.model.validator.label.not-assigned-morph
+  phrase:
+    en_US: 'The morph is not assigned to the label'
+    ja_JP: 'モーフが表示枠に割り当てられていません'
+- key: nanoem.model.validator.label.item.bone.null
+  phrase:
+    en_US: 'The bone in the label is not set'
+    ja_JP: '表示枠内のボーンが設定されていません'
+- key: nanoem.model.validator.label.item.morph.null
+  phrase:
+    en_US: 'The morph in the label is not set'
+    ja_JP: '表示枠内のモーフが設定されていません'
+- key: nanoem.model.validator.rigid-body.name.empty
+  phrase:
+    en_US: 'The rigid body name (of Japanese) is empty'
+    ja_JP: '剛体名が設定されていません'
+- key: nanoem.model.validator.rigid-body.name.duplicated
+  phrase:
+    en_US: 'The rigid body name (of Japanese) is duplicated'
+    ja_JP: '剛体名が重複しています'
+- key: nanoem.model.validator.rigid-body.bone.null
+  phrase:
+    en_US: 'The bone corresponding rigid body is not set'
+    ja_JP: '剛体に対応するボーンが設定されていません'
+- key: nanoem.model.validator.joint.name.empty
+  phrase:
+    en_US: 'The joint name (of Japanese) is empty'
+    ja_JP: 'ジョイント名が設定されていません'
+- key: nanoem.model.validator.joint.name.duplicated
+  phrase:
+    en_US: 'The joint name (of Japanese) is duplicated'
+    ja_JP: 'ジョイント名が重複しています'
+- key: nanoem.model.validator.joint.rigid-body-a.null
+  phrase:
+    en_US: 'The rigid body (A) corresponding joint is not set'
+    ja_JP: 'ジョイントに対応する剛体 (A) が設定されていません'
+- key: nanoem.model.validator.joint.rigid-body-b.null
+  phrase:
+    en_US: 'The rigid body (B) corresponding joint is not set'
+    ja_JP: 'ジョイントに対応する剛体 (B) が設定されていません'
+- key: nanoem.model.validator.soft-body.name.empty
+  phrase:
+    en_US: 'The soft body name (of Japanese) is empty'
+    ja_JP: 'ソフトボディ名が設定されていません'
+- key: nanoem.model.validator.soft-body.name.duplicated
+  phrase:
+    en_US: 'The soft body name (of Japanese) is duplicated'
+    ja_JP: 'ソフトボディ名が重複しています'
+- key: nanoem.model.validator.soft-body.material.null
+  phrase:
+    en_US: 'The material corresponding soft body is not set'
+    ja_JP: 'ソフトボディに対応する材質が設定されていません'
 
 - key: nanoem.status.SUCCESS
   phrase:

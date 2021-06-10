@@ -598,7 +598,7 @@ public:
     bool isButtonEnabled(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     void handleUIComponent(
-        const char *id, const _Nanoem__Application__Plugin__UIComponent *component) NANOEM_DECL_OVERRIDE;
+        const char *id, const Nanoem__Application__Plugin__UIComponent *component) NANOEM_DECL_OVERRIDE;
     bool reloadUILayout(ByteArray &bytes, Error &error) NANOEM_DECL_OVERRIDE;
 
 private:
@@ -825,7 +825,7 @@ CapturingPassAsVideoState::ModalDialog::isButtonEnabled(nanoem_u32_t value) cons
 
 void
 CapturingPassAsVideoState::ModalDialog::handleUIComponent(
-    const char *id, const _Nanoem__Application__Plugin__UIComponent *component)
+    const char *id, const Nanoem__Application__Plugin__UIComponent *component)
 {
     PluginFactory::EncoderPluginProxy proxy(m_plugin);
     const nanoem_rsize_t size = nanoem__application__plugin__uicomponent__get_packed_size(component);
@@ -874,7 +874,6 @@ CapturingPassState::CapturingPassState(StateController *stateControllerPtr, Proj
     , m_blitter(nullptr)
     , m_project(project)
     , m_saveState(nullptr)
-    , m_lastPhysicsSimulationMode(PhysicsEngine::kSimulationModeDisable)
     , m_state(kNone)
     , m_lastViewportDevicePixelRatio(0)
     , m_lastPreferredMotionFPS(0)
@@ -910,7 +909,6 @@ CapturingPassState::save(Project *project)
     m_outputPass = sg::make_pass(&m_outputPassDescription);
     m_lastLogicalScaleUniformedViewportImageSize = project->logicalScaleUniformedViewportImageSize();
     m_lastViewportDevicePixelRatio = project->viewportDevicePixelRatio();
-    m_lastPhysicsSimulationMode = project->physicsEngine()->mode();
     m_lastPreferredMotionFPS = project->preferredMotionFPS();
     m_lastSampleLevel = project->sampleLevel();
     m_displaySyncDisabled = project->isDisplaySyncDisabled();
@@ -918,7 +916,8 @@ CapturingPassState::save(Project *project)
     project->setActiveAccessory(nullptr);
     project->setActiveModel(nullptr);
     project->setSampleLevel(m_sampleLevel);
-    project->setPhysicsSimulationMode(m_lastPhysicsSimulationMode != PhysicsEngine::kSimulationModeDisable
+    project->setPhysicsSimulationMode(
+        project->physicsEngine()->simulationMode() != PhysicsEngine::kSimulationModeDisable
             ? PhysicsEngine::kSimulationModeEnableTracing
             : PhysicsEngine::kSimulationModeDisable);
     project->setPreferredMotionFPS(60, m_preventFrameMisalighmentEnabled ? false : true);
@@ -939,7 +938,6 @@ CapturingPassState::restore(Project *project)
         project->setPreferredMotionFPS(m_lastPreferredMotionFPS, m_displaySyncDisabled);
         project->setSampleLevel(m_lastSampleLevel);
         project->resizeUniformedViewportImage(m_lastLogicalScaleUniformedViewportImageSize);
-        project->setPhysicsSimulationMode(m_lastPhysicsSimulationMode);
         project->restart(project->currentLocalFrameIndex());
     }
 }

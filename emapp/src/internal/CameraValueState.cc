@@ -28,6 +28,13 @@ BaseCameraVectorValueState::~BaseCameraVectorValueState()
     m_camera = 0;
 }
 
+void
+BaseCameraVectorValueState::update()
+{
+    m_camera->update();
+    m_project->resetAllModelEdges();
+}
+
 CameraLookAtVectorValueState::CameraLookAtVectorValueState(Project *project, ICamera *camera)
     : BaseCameraVectorValueState(project, camera)
     , m_initialLookAt(camera->lookAt())
@@ -62,15 +69,15 @@ CameraLookAtVectorValueState::setValue(const nanoem_f32_t *value)
 {
     m_currentLookAt = glm::make_vec3(value);
     m_camera->setLookAt(m_currentLookAt);
-    m_camera->update();
+    update();
 }
 
 void
 CameraLookAtVectorValueState::commit()
 {
     if (m_project->globalCamera() == m_camera) {
-        m_project->pushUndo(command::UpdateCameraCommand::create(
-            m_project, m_camera, m_initialLookAt, m_camera->angle(), m_camera->distance(), m_camera->fovRadians()));
+        m_project->pushUndo(command::UpdateCameraCommand::create(m_project, m_camera, m_initialLookAt,
+            m_camera->angle(), m_camera->distance(), m_camera->fovRadians(), m_camera->isPerspective()));
     }
 }
 
@@ -78,7 +85,7 @@ void
 CameraLookAtVectorValueState::rollback()
 {
     m_camera->setLookAt(m_initialLookAt);
-    m_camera->update();
+    update();
 }
 
 CameraAngleVectorValueState::CameraAngleVectorValueState(Project *project, ICamera *camera)
@@ -115,15 +122,15 @@ CameraAngleVectorValueState::setValue(const nanoem_f32_t *value)
 {
     m_currentAngle = glm::make_vec3(value);
     m_camera->setAngle(m_currentAngle);
-    m_camera->update();
+    update();
 }
 
 void
 CameraAngleVectorValueState::commit()
 {
     if (m_project->globalCamera() == m_camera) {
-        m_project->pushUndo(command::UpdateCameraCommand::create(
-            m_project, m_camera, m_camera->lookAt(), m_initialAngle, m_camera->distance(), m_camera->fovRadians()));
+        m_project->pushUndo(command::UpdateCameraCommand::create(m_project, m_camera, m_camera->lookAt(),
+            m_initialAngle, m_camera->distance(), m_camera->fovRadians(), m_camera->isPerspective()));
     }
 }
 
@@ -131,7 +138,7 @@ void
 CameraAngleVectorValueState::rollback()
 {
     m_camera->setAngle(m_initialAngle);
-    m_camera->update();
+    update();
 }
 
 CameraFovVectorValueState::CameraFovVectorValueState(Project *project, ICamera *camera)
@@ -168,15 +175,15 @@ CameraFovVectorValueState::setValue(const nanoem_f32_t *value)
 {
     m_currentFov = *value;
     m_camera->setFov(int(m_currentFov));
-    m_camera->update();
+    update();
 }
 
 void
 CameraFovVectorValueState::commit()
 {
     if (m_project->globalCamera() == m_camera) {
-        m_project->pushUndo(command::UpdateCameraCommand::create(
-            m_project, m_camera, m_camera->lookAt(), m_camera->angle(), m_camera->distance(), m_initialFov));
+        m_project->pushUndo(command::UpdateCameraCommand::create(m_project, m_camera, m_camera->lookAt(),
+            m_camera->angle(), m_camera->distance(), m_initialFov, m_camera->isPerspective()));
     }
 }
 
@@ -184,7 +191,7 @@ void
 CameraFovVectorValueState::rollback()
 {
     m_camera->setFovRadians(m_initialFov);
-    m_camera->update();
+    update();
 }
 
 CameraDistanceVectorValueState::CameraDistanceVectorValueState(Project *project, ICamera *camera)
@@ -221,15 +228,15 @@ CameraDistanceVectorValueState::setValue(const nanoem_f32_t *value)
 {
     m_currentDistance = *value;
     m_camera->setDistance(m_currentDistance);
-    m_camera->update();
+    update();
 }
 
 void
 CameraDistanceVectorValueState::commit()
 {
     if (m_project->globalCamera() == m_camera) {
-        m_project->pushUndo(command::UpdateCameraCommand::create(
-            m_project, m_camera, m_camera->lookAt(), m_camera->angle(), m_initialDistance, m_camera->fovRadians()));
+        m_project->pushUndo(command::UpdateCameraCommand::create(m_project, m_camera, m_camera->lookAt(),
+            m_camera->angle(), m_initialDistance, m_camera->fovRadians(), m_camera->isPerspective()));
     }
 }
 
@@ -237,7 +244,7 @@ void
 CameraDistanceVectorValueState::rollback()
 {
     m_camera->setDistance(m_initialDistance);
-    m_camera->update();
+    update();
 }
 
 } /* namespace internal */

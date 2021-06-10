@@ -87,11 +87,12 @@ void
 CommandRegistrator::registerAddBoneKeyframesCommandBySelectedBoneSet(Model *model)
 {
     nanoem_parameter_assert(model, "must not be nullptr");
-    const model::Bone::Set &selectedBones = model->selection()->allBoneSet();
+    const model::Bone::Set *selectedBoneSet = model->selection()->allBoneSet();
     const nanoem_frame_index_t frameIndex = m_project->currentLocalFrameIndex();
     Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
-    if (!selectedBones.empty()) {
-        for (model::Bone::Set::const_iterator it = selectedBones.begin(), end = selectedBones.end(); it != end; ++it) {
+    if (!selectedBoneSet->empty()) {
+        for (model::Bone::Set::const_iterator it = selectedBoneSet->begin(), end = selectedBoneSet->end(); it != end;
+             ++it) {
             const nanoem_model_bone_t *bone = *it;
             boneFrameIndexListMap[bone].insert(frameIndex);
         }
@@ -308,10 +309,10 @@ CommandRegistrator::registerRemoveBoneKeyframesCommandByCurrentLocalFrameIndex(M
     nanoem_assert(!m_project->isPlaying(), "must not be called while playing");
     Motion *motion = m_project->resolveMotion(model);
     if (model && motion) {
-        const model::Bone::Set &bones = model->selection()->allBoneSet();
+        const model::Bone::Set *boneSet = model->selection()->allBoneSet();
         const nanoem_frame_index_t frameIndex = m_project->currentLocalFrameIndex();
         Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bone = *it;
             boneFrameIndexListMap[bone].insert(frameIndex);
         }
@@ -511,8 +512,8 @@ CommandRegistrator::registerInsertEmptyTimelineFrameCommand()
             }
         }
         else {
-            const Project::AccessoryList accessories(m_project->allAccessories());
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            const Project::AccessoryList *accessories = m_project->allAccessories();
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 if (Motion *motion = m_project->resolveMotion(*it)) {
                     commands.push_back(command::InsertEmptyTimelineFrameCommand::create(
@@ -561,8 +562,8 @@ CommandRegistrator::registerRemoveTimelineFrameCommand()
             }
         }
         else {
-            const Project::AccessoryList accessories(m_project->allAccessories());
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            const Project::AccessoryList *accessories = m_project->allAccessories();
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 if (Motion *motion = m_project->resolveMotion(*it)) {
                     commands.push_back(command::RemoveTimelineFrameCommand::create(
@@ -735,8 +736,8 @@ CommandRegistrator::registerRemoveAllSelectedKeyframesCommand(Model *model)
                 selfShadowKeyframes, m_project->shadowCamera(), motion));
             selection->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
         }
-        const Project::AccessoryList accessories(m_project->allAccessories());
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        const Project::AccessoryList *accessories = m_project->allAccessories();
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             Accessory *accessory = *it;
             if (Motion *motion = m_project->resolveMotion(accessory)) {
@@ -859,7 +860,7 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
         ResolveInherentParentBoneMap;
     const nanoem_frame_index_t duration = m_project->duration(),
                                lastLocalFrameIndex = m_project->currentLocalFrameIndex();
-    const PhysicsEngine::SimulationModeType lastSimulationMode = m_project->physicsEngine()->mode();
+    const PhysicsEngine::SimulationModeType lastSimulationMode = m_project->physicsEngine()->simulationMode();
     const ITranslator *translator = m_project->translator();
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     AllModelConstraintBoneSet allConstraintBoneSets;
@@ -869,10 +870,10 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
     Model *lastActiveModel = m_project->activeModel();
     m_project->seek(0, true);
     m_project->setPhysicsSimulationMode(PhysicsEngine::kSimulationModeEnableTracing);
-    Project::ModelList models(m_project->allModels());
+    const Project::ModelList *models = m_project->allModels();
     Project::MotionList motions;
-    motions.reserve(models.size());
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    motions.reserve(models->size());
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         Motion *motion = m_project->createMotion();
         motion->initialize(model);
@@ -880,7 +881,7 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
     }
     if (enableBakingConstraint) {
         ResolveInherentParentBoneMap resolveInherentParentBones;
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             Model *model = *it;
             nanoem_rsize_t numBones;
             nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(model->data(), &numBones);
@@ -921,9 +922,9 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
     }
     model::Bone::Set constraintBoneSet;
     for (nanoem_frame_index_t frameIndex = 0; frameIndex <= duration;) {
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             Model *model = *it;
-            nanoem_rsize_t offset = it - models.begin(), numBones, numConstraints, numMorphs;
+            nanoem_rsize_t offset = it - models->begin(), numBones, numConstraints, numMorphs;
             Motion *sourceMotion = m_project->resolveMotion(model), *destMotion = motions[offset];
             nanoem_motion_t *sourceMotionPtr = sourceMotion->data(), *dstMotionPtr = destMotion->data();
             nanoem_mutable_motion_t *m = nanoemMutableMotionCreateAsReference(dstMotionPtr, &status);
@@ -1066,10 +1067,10 @@ CommandRegistrator::registerBakeAllModelMotionsCommand(bool enableBakingConstrai
         m_project->seek(++frameIndex, true);
     }
     command::BatchUndoCommandListCommand::UndoCommandList commands;
-    for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+    for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
         Model *model = *it;
         ByteArray snapshot, bytes;
-        Motion *newMotion = motions[it - models.begin()];
+        Motion *newMotion = motions[it - models->begin()];
         nanoem_mutable_motion_t *m = nanoemMutableMotionCreateAsReference(newMotion->data(), &status);
         nanoemMutableMotionSortAllKeyframes(m);
         nanoemMutableMotionDestroy(m);
@@ -1138,8 +1139,8 @@ CommandRegistrator::internalMoveAllSelectedAccessoryKeyframes(
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_frame_index_t newFrameIndex;
     ByteArray bytes;
-    const Project::AccessoryList accessories(m_project->allAccessories());
-    for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end; ++it) {
+    const Project::AccessoryList *accessories = m_project->allAccessories();
+    for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end; ++it) {
         Accessory *accessory = *it;
         if (Motion *motion = m_project->resolveMotion(accessory)) {
             Motion::AccessoryKeyframeList keyframes;
@@ -1539,7 +1540,7 @@ CommandRegistrator::internalMoveAllSelectedSelfShadowKeyframes(
 bool
 CommandRegistrator::canRegisterMotionCommand() const NANOEM_DECL_NOEXCEPT
 {
-    return !(m_project->isPlaying() || m_project->isModelEditing());
+    return !(m_project->isPlaying() || m_project->isModelEditingEnabled());
 }
 
 } /* namespace nanoem */

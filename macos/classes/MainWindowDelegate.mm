@@ -89,7 +89,6 @@
 - (void)windowDidChangeScreen:(NSNotification *)notification
 {
     BX_UNUSED_1(notification);
-    m_window->handleScreenChange();
 }
 
 @end

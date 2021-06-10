@@ -12,6 +12,8 @@
 namespace nanoem {
 namespace model {
 
+const nanoem_u8_t Label::kNameExpressionInJapanese[] = { 0xe8, 0xa1, 0xa8, 0xe6, 0x83, 0x85, 0 };
+
 Label::~Label() NANOEM_DECL_NOEXCEPT
 {
 }
@@ -36,8 +38,7 @@ Label::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelLabelGetName(label, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Label%d", nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(label)));
+            StringUtils::format(m_canonicalName, "Label%d", index(label));
         }
     }
     if (m_name.empty()) {
@@ -45,10 +46,30 @@ Label::resetLanguage(
     }
 }
 
-Label *
-Label::cast(const nanoem_model_label_t *label) NANOEM_DECL_NOEXCEPT
+int
+Label::index(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelLabelGetModelObject(label);
+    return nanoemModelObjectGetIndex(nanoemModelLabelGetModelObject(labelPtr));
+}
+
+const char *
+Label::nameConstString(const nanoem_model_label_t *labelPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Label *label = cast(labelPtr);
+    return label ? label->nameConstString() : placeHolder;
+}
+
+const char *
+Label::canonicalNameConstString(const nanoem_model_label_t *labelPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Label *label = cast(labelPtr);
+    return label ? label->canonicalNameConstString() : placeHolder;
+}
+
+Label *
+Label::cast(const nanoem_model_label_t *labelPtr) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_model_object_t *object = nanoemModelLabelGetModelObject(labelPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Label *>(nanoemUserDataGetOpaqueData(userData));
 }

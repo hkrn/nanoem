@@ -83,7 +83,7 @@ struct Native::Context {
             if (const char *relativePath = value->relative_path) {
                 fileURI = URI::createFromFilePath(
                     FileUtils::canonicalizePath(baseURI.absolutePath(), relativePath), fragment ? fragment : "");
-                isAbsolutePath = true;
+                isAbsolutePath = false;
             }
             else if (const char *absolutePath = value->absolute_path) {
                 fileURI = URI::createFromFilePath(absolutePath, fragment ? fragment : "");
@@ -228,10 +228,11 @@ struct Native::Context {
         const Nanoem__Project__Motion *m, const ProtobufCBinaryData &payload, Motion *motion, Error &error);
     void loadMotion(const Nanoem__Project__Motion *m, const HandleMap &handles, bool &needsRestart, Error &error);
     void loadAllMotions(const Nanoem__Project__Project *p, const HandleMap &handles, bool &needsRestart, Error &error);
-    void loadOffscreenRenderTargetEffectAttachmentFromFile(
-        const URI &fileURI, const char *name, IDrawable *target, Error &error);
+    bool loadOffscreenRenderTargetEffectAttachmentFromFile(
+        const URI &fileURI, const char *ownerName, IDrawable *target, Error &error);
     void loadOffscreenRenderTargetEffectAttachment(
-        const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *name, Error &error);
+        const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *ownerName,
+        Error &error);
     void loadAllOffscreenRenderTargetEffects(const Nanoem__Project__Project *p, Error &error);
     void load(const Nanoem__Project__Project *p, FileType fileType, Error &error, Project::IDiagnostics *diagnostics);
 
@@ -261,7 +262,7 @@ struct Native::Context {
     void saveAllMotions(Nanoem__Project__Project *p, FileType fileType, const MotionAccessoryMap &m2a,
         const MotionModelMap &m2m, Error &error);
     Nanoem__Project__OffscreenRenderTargetEffect *saveOffscreenRenderTargetEffect(
-        const IDrawable *ownerEffect, const String &name, FileType fileType, Error &error);
+        const IDrawable *ownerEffect, const String &ownerName, FileType fileType, Error &error);
     void saveAllEffects(Nanoem__Project__Project *p, FileType fileType, Error &error);
     bool save(Nanoem__Project__Project *p, FileType fileType, Error &error);
     const Project::IncludeEffectSourceMap *findIncludeEffectSource(const IDrawable *drawable) const;
@@ -867,12 +868,9 @@ Native::Context::loadAccessoryFromFile(const Nanoem__Project__Accessory *a, nano
         IFileManager *manager = m_project->fileManager();
         if (testFileContentDigest(fileURI, a->file_checksum, error)) {
             if (manager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, error)) {
-                Accessory *accessory = m_project->allAccessories().back();
+                Accessory *accessory = m_project->allAccessories()->back();
                 loadAccessory(a, accessory, Inline::saturateInt32(numDrawables), drawableOrderList, activeAccessoryPtr);
                 handles.insert(tinystl::make_pair(static_cast<nanoem_u16_t>(a->accessory_handle), accessory->handle()));
-            }
-            else if (diagnostics) {
-                diagnostics->addNotFoundFileURI(fileURI);
             }
         }
         else if (diagnostics) {
@@ -951,6 +949,7 @@ Native::Context::loadAllModelMaterialEffects(
     const Nanoem__Project__Model *m, Model *model, Error &error, Project::IDiagnostics *diagnostics)
 {
     Progress progress(m_project, m->n_material_effect_attachments);
+    size_t numMaterialEffectAttachmentsSucceeded = 0;
     bool isAbsolutePath = true;
     for (nanoem_rsize_t i = 0, numMaterialEffectAttachments = m->n_material_effect_attachments;
          i < numMaterialEffectAttachments; i++) {
@@ -960,6 +959,7 @@ Native::Context::loadAllModelMaterialEffects(
             Effect *effect = m_project->findEffect(fileURI);
             if (effect) {
                 attachModelMaterialEffect(model, effect, attachment->offset);
+                numMaterialEffectAttachmentsSucceeded++;
             }
             else {
                 URI sourceURI;
@@ -968,6 +968,7 @@ Native::Context::loadAllModelMaterialEffects(
                 if (m_project->loadEffectFromSource(fileURI, effect, sourceURI, progress, error)) {
                     effect->setFileURI(sourceURI);
                     attached = attachModelMaterialEffect(model, effect, attachment->offset);
+                    numMaterialEffectAttachmentsSucceeded++;
                 }
                 if (!attached) {
                     m_project->destroyEffect(effect);
@@ -978,7 +979,7 @@ Native::Context::loadAllModelMaterialEffects(
             diagnostics->addDigestMismatchFileURI(fileURI);
         }
     }
-    if (isAbsolutePath) {
+    if (isAbsolutePath && numMaterialEffectAttachmentsSucceeded > 0) {
         m_project->setFilePathMode(Project::kFilePathModeAbsolute);
     }
 }
@@ -1022,10 +1023,11 @@ Native::Context::loadModelFromFile(const Nanoem__Project__Model *m, nanoem_rsize
         IFileManager *manager = m_project->fileManager();
         if (testFileContentDigest(fileURI, m->file_checksum, error) &&
             manager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, error)) {
-            Model *model = m_project->allModels().back();
+            Model *model = m_project->allModels()->back();
             loadModel(m, model, Inline::saturateInt32(numDrawables), drawableOrderList, transformOrderList,
                 activeModelPtr, error, diagnostics);
             handles.insert(tinystl::make_pair(static_cast<nanoem_u16_t>(m->model_handle), model->handle()));
+            model->setDirty(false);
         }
         if (isAbsolutePath) {
             m_project->setFilePathMode(Project::kFilePathModeAbsolute);
@@ -1096,9 +1098,10 @@ Native::Context::loadMotionPayload(
             motion->setFormat(NANOEM_MOTION_FORMAT_TYPE_NMD);
         }
         if (succeeded) {
+            const URI fileURI(toURI(m->file_uri, m_project->fileURI(), isAbsolutePath));
             motion->setAnnotations(toAnnotations(m->annotations, m->n_annotations));
-            motion->setFileURI(toURI(m->file_uri, m_project->fileURI(), isAbsolutePath));
-            if (isAbsolutePath) {
+            motion->setFileURI(fileURI);
+            if (!fileURI.isEmpty() && isAbsolutePath) {
                 m_project->setFilePathMode(Project::kFilePathModeAbsolute);
             }
             loaded = true;
@@ -1130,6 +1133,8 @@ Native::Context::loadMotion(
             if (Model *model = m_project->findModelByHandle(handle)) {
                 Motion *motion = m_project->resolveMotion(model);
                 needsRestart |= loadMotionPayload(m, item->payload, motion, error);
+                /* reset dirty morph state at initializing model to apply morph motion correctly */
+                model->updateStagingVertexBuffer();
             }
         }
         break;
@@ -1139,6 +1144,21 @@ Native::Context::loadMotion(
         if (item->has_payload) {
             Motion *motion = m_project->cameraMotion();
             loadMotionPayload(m, item->payload, motion, error);
+            if (!item->has_angle_x_axis_correction || item->angle_x_axis_correction == 0) {
+                nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+                nanoem_rsize_t numKeyframes;
+                nanoem_motion_camera_keyframe_t *const *keyframes =
+                    nanoemMotionGetAllCameraKeyframeObjects(motion->data(), &numKeyframes);
+                for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+                    nanoem_motion_camera_keyframe_t *keyframe = keyframes[i];
+                    const Vector4 angle(
+                        glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) * Vector4(-1, 1, 1, 1));
+                    nanoem_mutable_motion_camera_keyframe_t *mutableKeyframe =
+                        nanoemMutableMotionCameraKeyframeCreateAsReference(keyframe, &status);
+                    nanoemMutableMotionCameraKeyframeSetAngle(mutableKeyframe, glm::value_ptr(angle));
+                    nanoemMutableMotionCameraKeyframeDestroy(mutableKeyframe);
+                }
+            }
         }
         break;
     }
@@ -1176,56 +1196,61 @@ Native::Context::loadAllMotions(
     }
 }
 
-void
+bool
 Native::Context::loadOffscreenRenderTargetEffectAttachmentFromFile(
-    const URI &fileURI, const char *name, IDrawable *target, Error &error)
+    const URI &fileURI, const char *ownerName, IDrawable *target, Error &error)
 {
     PluginFactory::EffectPluginProxy proxy(m_project->fileManager()->sharedEffectPlugin());
     Progress progress(m_project, 0);
     ByteArray outputBinary;
-    bool continuable = false;
+    bool succeeded = false, created = false;
     Effect *effect = m_project->findEffect(fileURI);
     if (effect) {
-        m_project->setOffscreenPassiveRenderTargetEffect(target, name, effect);
-        continuable = !error.isCancelled() && !error.hasReason();
+        m_project->setOffscreenPassiveRenderTargetEffect(ownerName, target, effect);
+        succeeded = !error.isCancelled() && !error.hasReason();
     }
     else if (proxy.compile(fileURI, outputBinary)) {
         effect = m_project->createEffect();
         effect->setName(fileURI.lastPathComponent());
+        created = true;
         if (effect->load(outputBinary, progress, error)) {
             effect->setFileURI(fileURI);
             if (effect->upload(effect::kAttachmentTypeOffscreenPassive, progress, error)) {
-                m_project->setOffscreenPassiveRenderTargetEffect(target, name, effect);
-                continuable = !error.isCancelled() && !error.hasReason();
+                m_project->setOffscreenPassiveRenderTargetEffect(ownerName, target, effect);
+                succeeded = !error.isCancelled() && !error.hasReason();
             }
         }
     }
     else {
         error = proxy.error();
     }
-    if (!continuable) {
+    if (!succeeded && created) {
         m_project->destroyEffect(effect);
     }
+    return succeeded;
 }
 
 void
 Native::Context::loadOffscreenRenderTargetEffectAttachment(
-    const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *name, Error &error)
+    const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment, const char *ownerName, Error &error)
 {
     bool isAbsolutePath = true;
     if (IDrawable *target = findDrawable(attachment->handle)) {
         OffscreenRenderTargetEffectAttachment effect;
-        effect.m_name = name;
+        effect.m_name = ownerName;
         effect.m_target = target;
         effect.m_filePath = attachment->path;
         for (nanoem_rsize_t i = 0, numIncludePaths = attachment->n_include_paths; i < numIncludePaths; i++) {
             effect.m_includePaths.push_back(attachment->include_paths[i]);
         }
         const Nanoem__Project__URI *uri = attachment->file_uri;
-        if (uri && uri->absolute_path) {
+        if (uri && (uri->absolute_path || uri->relative_path)) {
             const URI fileURI(toURI(uri, m_project->fileURI(), isAbsolutePath));
-            loadOffscreenRenderTargetEffectAttachmentFromFile(fileURI, name, target, error);
-            if (isAbsolutePath) {
+            if (loadOffscreenRenderTargetEffectAttachmentFromFile(fileURI, ownerName, target, error)) {
+                target->setOffscreenPassiveRenderTargetEffectEnabled(
+                    ownerName, attachment->has_enabled ? attachment->enabled : true);
+            }
+            if (!fileURI.isEmpty() && isAbsolutePath) {
                 m_project->setFilePathMode(Project::kFilePathModeAbsolute);
             }
         }
@@ -1240,10 +1265,10 @@ Native::Context::loadAllOffscreenRenderTargetEffects(const Nanoem__Project__Proj
 {
     for (nanoem_rsize_t i = 0, numEffects = p->n_offscreen_render_target_effects; i < numEffects; i++) {
         const Nanoem__Project__OffscreenRenderTargetEffect *effect = p->offscreen_render_target_effects[i];
-        if (const char *name = effect->name) {
+        if (const char *ownerName = effect->name) {
             for (nanoem_rsize_t j = 0, numAttachments = effect->n_attachments; j < numAttachments; j++) {
                 const Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment = effect->attachments[j];
-                loadOffscreenRenderTargetEffectAttachment(attachment, name, error);
+                loadOffscreenRenderTargetEffectAttachment(attachment, ownerName, error);
             }
         }
     }
@@ -1286,9 +1311,11 @@ Native::Context::load(
     bool needsRestart = false;
     loadAllMotions(p, handles, needsRestart, error);
     if (needsRestart) {
+        /* restart project for applying offscreen render target parameters after restart */
         m_project->restart();
     }
     loadAllOffscreenRenderTargetEffects(p, error);
+    m_project->setActiveModel(activeModelPtr);
     m_project->setDrawableOrderList(drawableOrderList);
     m_project->setTransformOrderList(transformOrderList);
     const nanoem_frame_index_t currentLocalFrameIndex(p->timeline->current_frame_index);
@@ -1296,7 +1323,6 @@ Native::Context::load(
     m_project->restart(currentLocalFrameIndex);
     m_project->update();
     if (activeModelPtr) {
-        m_project->setActiveModel(activeModelPtr);
         activeModelPtr->setTransformAxisType(static_cast<Model::AxisType>(p->axis_type));
         activeModelPtr->setTransformCoordinateType(static_cast<Model::TransformCoordinateType>(p->transform_type));
     }
@@ -1485,7 +1511,7 @@ Native::Context::savePhysicsSimulation()
     ps->noise = engine->noise();
     ps->has_is_ground_enabled = 1;
     ps->is_ground_enabled = engine->isGroundEnabled();
-    ps->mode = engine->mode();
+    ps->mode = engine->simulationMode();
     ps->has_mode = 1;
     return ps;
 }
@@ -1614,12 +1640,12 @@ void
 Native::Context::saveAllAccessories(
     Nanoem__Project__Project *p, FileType fileType, MotionAccessoryMap &m2a, Error &error)
 {
-    const Project::AccessoryList accessories(m_project->allAccessories());
-    if (!accessories.empty()) {
-        p->n_accessories = accessories.size();
+    const Project::AccessoryList *accessories = m_project->allAccessories();
+    if (!accessories->empty()) {
+        p->n_accessories = accessories->size();
         p->accessories = new Nanoem__Project__Accessory *[p->n_accessories];
         nanoem_rsize_t index = 0;
-        for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+        for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
              ++it) {
             const Accessory *accessory = *it;
             p->accessories[index++] = saveAccessory(*it, fileType, error);
@@ -1716,18 +1742,19 @@ Native::Context::saveModel(Model *model, FileType fileType, Error &error)
     }
     saveAllModelMaterialAttachments(mo, model, fileType, error);
     saveAllIncludeEffectSources(mo, model);
+    model->setDirty(false);
     return mo;
 }
 
 void
 Native::Context::saveAllModels(Nanoem__Project__Project *p, FileType fileType, MotionModelMap &m2m, Error &error)
 {
-    const Project::ModelList models(m_project->allModels());
-    if (!models.empty()) {
-        p->n_models = models.size();
+    const Project::ModelList *models = m_project->allModels();
+    if (!models->empty()) {
+        p->n_models = models->size();
         p->models = new Nanoem__Project__Model *[p->n_models];
         nanoem_rsize_t index = 0;
-        for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+        for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
             const Model *model = *it;
             p->models[index++] = saveModel(*it, fileType, error);
             m2m.insert(tinystl::make_pair(m_project->resolveMotion(model), model));
@@ -1754,14 +1781,14 @@ void
 Native::Context::saveAllMotions(Nanoem__Project__Project *p, FileType fileType, const MotionAccessoryMap &m2a,
     const MotionModelMap &m2m, Error &error)
 {
-    const Project::MotionList motions(m_project->allMotions());
-    if (!motions.empty()) {
+    const Project::MotionList *motions = m_project->allMotions();
+    if (!motions->empty()) {
         const bool fillPayload = fileType == kFileTypeData;
-        p->n_motions = motions.size();
+        p->n_motions = motions->size();
         p->motions = new Nanoem__Project__Motion *[p->n_motions];
         nanoem_rsize_t index = 0;
         ByteArray bytes;
-        for (Project::MotionList::const_iterator it = motions.begin(), end = motions.end(); it != end; ++it) {
+        for (Project::MotionList::const_iterator it = motions->begin(), end = motions->end(); it != end; ++it) {
             const Model *model = nullptr;
             const Motion *motion = *it;
             Nanoem__Project__Motion *m = p->motions[index++] = saveMotion(*it);
@@ -1800,6 +1827,7 @@ Native::Context::saveAllMotions(Nanoem__Project__Project *p, FileType fileType, 
                 if (fillPayload) {
                     ptr->has_payload = 1;
                     payload = &ptr->payload;
+                    ptr->has_angle_x_axis_correction = ptr->angle_x_axis_correction = 1;
                 }
             }
             else if (motion == m_project->lightMotion()) {
@@ -1850,20 +1878,20 @@ Native::Context::saveAllMotions(Nanoem__Project__Project *p, FileType fileType, 
 
 Nanoem__Project__OffscreenRenderTargetEffect *
 Native::Context::saveOffscreenRenderTargetEffect(
-    const IDrawable *ownerEffect, const String &name, FileType fileType, Error &error)
+    const IDrawable *ownerEffect, const String &ownerName, FileType fileType, Error &error)
 {
     Nanoem__Project__OffscreenRenderTargetEffect *e = nanoem_new(Nanoem__Project__OffscreenRenderTargetEffect);
     nanoem__project__offscreen_render_target_effect__init(e);
-    copyString(e->name, name);
+    copyString(e->name, ownerName);
     if (ownerEffect) {
         e->has_owner_handle = 1;
         e->owner_handle = ownerEffect->handle();
     }
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
     nanoem_rsize_t actualItems = 0, index = 0;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
-        const Effect *effect = m_project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(name));
+        const Effect *effect = m_project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(ownerName));
         if (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard) {
             actualItems++;
         }
@@ -1871,14 +1899,16 @@ Native::Context::saveOffscreenRenderTargetEffect(
     if (actualItems > 0) {
         e->n_attachments = actualItems;
         e->attachments = new Nanoem__Project__OffscreenRenderTargetEffect__Attachment *[e->n_attachments];
-        for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
             const IDrawable *drawable = *it;
-            const Effect *effect = m_project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(name));
+            const Effect *effect = m_project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(ownerName));
             if (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard) {
                 Nanoem__Project__OffscreenRenderTargetEffect__Attachment *attachment = e->attachments[index++] =
                     nanoem_new(Nanoem__Project__OffscreenRenderTargetEffect__Attachment);
                 nanoem__project__offscreen_render_target_effect__attachment__init(attachment);
                 attachment->handle = drawable->handle();
+                attachment->enabled = drawable->isOffscreenPassiveRenderTargetEffectEnabled(ownerName);
+                attachment->has_enabled = 1;
                 const String filename(effect->filename());
                 copyString(attachment->path, filename);
                 const URI fileURI(effect->fileURI());
@@ -1907,11 +1937,11 @@ Native::Context::saveOffscreenRenderTargetEffect(
 void
 Native::Context::saveAllEffects(Nanoem__Project__Project *p, FileType fileType, Error &error)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
     typedef tinystl::vector<tinystl::pair<effect::OffscreenRenderTargetOption, const IDrawable *>, TinySTLAllocator>
         OffscreenRenderTargetPairList;
     OffscreenRenderTargetPairList allOptions;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
         if (const Effect *effect = m_project->resolveEffect(drawable)) {
             effect::OffscreenRenderTargetOptionList options;
@@ -2091,7 +2121,7 @@ Native::findMutableIncludeEffectSource(const IDrawable *drawable)
 void
 Native::getAllOffscreenRenderTargetEffectAttachments(OffscreenRenderTargetEffectAttachmentList &value) const
 {
-    return m_context->getAllOffscreenRenderTargetEffectAttachments(value);
+    m_context->getAllOffscreenRenderTargetEffectAttachments(value);
 }
 
 String

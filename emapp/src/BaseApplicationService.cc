@@ -29,6 +29,7 @@
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/IPrimitive2D.h"
+#include "emapp/IState.h"
 #include "emapp/ITranslator.h"
 #include "emapp/IVideoRecorder.h"
 #include "emapp/ImageLoader.h"
@@ -49,6 +50,7 @@
 #include "emapp/internal/ImGuiWindow.h"
 #include "emapp/internal/LightValueState.h"
 #include "emapp/model/Morph.h"
+#include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "emapp/command/AddAccessoryKeyframeCommand.h"
@@ -237,7 +239,8 @@ struct StubBackgroundVideoRenderer : IBackgroundVideoRenderer {
         return true;
     }
     void
-    draw(const Vector4 & /* rect */, nanoem_f32_t /* scaleFactor */, Project * /* project */) NANOEM_DECL_OVERRIDE
+    draw(sg_pass /* pass */, const Vector4 & /* rect */, nanoem_f32_t /* scaleFactor */,
+        Project * /* project */) NANOEM_DECL_OVERRIDE
     {
     }
     void seek(nanoem_f64_t /* seconds */) NANOEM_DECL_OVERRIDE
@@ -286,7 +289,7 @@ public:
         const char *screen, const char *action, const char *category, const char *label) NANOEM_DECL_OVERRIDE;
     void publishUndoEvent(bool canUndo, bool canRedo) NANOEM_DECL_OVERRIDE;
     void publishRedoEvent(bool canRedo, bool canUndo) NANOEM_DECL_OVERRIDE;
-    void publishUndoChangeEvent() NANOEM_DECL_OVERRIDE;
+    void publishPushUndoCommandEvent(const undo_command_t *commandPtr) NANOEM_DECL_OVERRIDE;
     void publishAddModelEvent(const Model *model) NANOEM_DECL_OVERRIDE;
     void publishSetActiveModelEvent(const Model *model) NANOEM_DECL_OVERRIDE;
     void publishSetActiveBoneEvent(const Model *model, const char *boneName) NANOEM_DECL_OVERRIDE;
@@ -342,6 +345,7 @@ public:
     void publishToggleActiveAccessoryAddBlendEnabledEvent(bool value) NANOEM_DECL_OVERRIDE;
     void publishToggleActiveAccessoryGroundShadowEnabledEvent(bool value) NANOEM_DECL_OVERRIDE;
     void publishToggleActiveAccessoryVisibleEvent(bool value) NANOEM_DECL_OVERRIDE;
+    void publishToggleModelEditingEnabledEvent(bool value) NANOEM_DECL_OVERRIDE;
     void publishUpdateProgressEvent(
         nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text) NANOEM_DECL_OVERRIDE;
     void publishStartProgressEvent(const char *title, const char *text, nanoem_u32_t total) NANOEM_DECL_OVERRIDE;
@@ -357,6 +361,7 @@ public:
     void publishSetViewportDevicePixelRatioEvent(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
     void publishDisableCursorEvent(const Vector2 &value) NANOEM_DECL_OVERRIDE;
     void publishEnableCursorEvent(const Vector2 &value) NANOEM_DECL_OVERRIDE;
+    void publishQuitApplicationEvent() NANOEM_DECL_OVERRIDE;
     void publishErrorEvent(const Error &error) NANOEM_DECL_OVERRIDE;
 
 private:
@@ -416,7 +421,7 @@ BaseApplicationService::EventPublisher::publishUndoEvent(bool canUndo, bool canR
     sendEventMessage(event);
     if (g_sentryAvailable) {
         sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo"));
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo.undo"));
         sentry_add_breadcrumb(breadcrumb);
     }
 }
@@ -434,13 +439,13 @@ BaseApplicationService::EventPublisher::publishRedoEvent(bool canRedo, bool canU
     sendEventMessage(event);
     if (g_sentryAvailable) {
         sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("redo"));
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo.redo"));
         sentry_add_breadcrumb(breadcrumb);
     }
 }
 
 void
-BaseApplicationService::EventPublisher::publishUndoChangeEvent()
+BaseApplicationService::EventPublisher::publishPushUndoCommandEvent(const undo_command_t *commandPtr)
 {
     Nanoem__Application__UndoChangeEvent base = NANOEM__APPLICATION__UNDO_CHANGE_EVENT__INIT;
     Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
@@ -448,6 +453,12 @@ BaseApplicationService::EventPublisher::publishUndoChangeEvent()
     event.type_case = NANOEM__APPLICATION__EVENT__TYPE_UNDO_CHANGE;
     event.undo_change = &base;
     sendEventMessage(event);
+    if (g_sentryAvailable) {
+        sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("undo.push"));
+        sentry_value_set_by_key(breadcrumb, "name", sentry_value_new_string(undoCommandGetName(commandPtr)));
+        sentry_add_breadcrumb(breadcrumb);
+    }
 }
 
 void
@@ -1287,6 +1298,19 @@ BaseApplicationService::EventPublisher::publishToggleActiveAccessoryVisibleEvent
 }
 
 void
+BaseApplicationService::EventPublisher::publishToggleModelEditingEnabledEvent(bool value)
+{
+    Nanoem__Application__ToggleModelEditingEnabledEvent base =
+        NANOEM__APPLICATION__TOGGLE_MODEL_EDITING_ENABLED_EVENT__INIT;
+    base.value = value;
+    Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
+    event.timestamp = internal::ApplicationUtils::timestamp();
+    event.type_case = NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED;
+    event.toggle_model_editing_enabled = &base;
+    sendEventMessage(event);
+}
+
+void
 BaseApplicationService::EventPublisher::publishUpdateProgressEvent(
     nanoem_u32_t value, nanoem_u32_t total, nanoem_u32_t type, const char *text)
 {
@@ -1471,6 +1495,17 @@ BaseApplicationService::EventPublisher::publishEnableCursorEvent(const Vector2 &
 }
 
 void
+BaseApplicationService::EventPublisher::publishQuitApplicationEvent()
+{
+    Nanoem__Application__QuitApplicationEvent base = NANOEM__APPLICATION__QUIT_APPLICATION_EVENT__INIT;
+    Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
+    event.timestamp = internal::ApplicationUtils::timestamp();
+    event.type_case = NANOEM__APPLICATION__EVENT__TYPE_QUIT_APPLICATION;
+    event.quit_application = &base;
+    sendEventMessage(event);
+}
+
+void
 BaseApplicationService::EventPublisher::publishErrorEvent(const Error &error)
 {
     if (error.hasReason() && !error.isCancelled()) {
@@ -1507,7 +1542,7 @@ BaseApplicationService::EventPublisher::sendEventMessage(const Nanoem__Applicati
 Vector2UI16
 BaseApplicationService::minimumRequiredWindowSize() NANOEM_DECL_NOEXCEPT
 {
-    return internal::ImGuiWindow::kMinimumWindowSize;
+    return internal::ImGuiWindow::kMinimumMainWindowSize;
 }
 
 void
@@ -1624,7 +1659,7 @@ BaseApplicationService::BaseApplicationService(const JSON_Value *root)
     , m_confirmer(this)
     , m_sharedCancelPublisherRepository(this)
     , m_sharedDebugCaptureRepository(this)
-    , m_defaultAuxFlags(Project::kDrawTypeBoneTooltip)
+    , m_defaultAuxFlags(IState::kDrawTypeBoneTooltip)
     , m_dllHandle(nullptr)
     , m_initialized(false)
 {
@@ -1648,16 +1683,10 @@ BaseApplicationService::~BaseApplicationService() NANOEM_DECL_NOEXCEPT
 }
 
 void
-BaseApplicationService::initialize(nanoem_f32_t devicePixelRatio)
+BaseApplicationService::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio)
 {
     m_window = nanoem_new(internal::ImGuiWindow(this));
-    m_window->initialize(devicePixelRatio);
-}
-
-void
-BaseApplicationService::setDevicePixelRatio(nanoem_f32_t devicePixelRatio)
-{
-    m_window->setFontPointSize(internal::ImGuiWindow::kFontSize * devicePixelRatio);
+    m_window->initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
 }
 
 void
@@ -1681,7 +1710,6 @@ BaseApplicationService::createProject(const Vector2UI16 &logicalPixelWindowSize,
     ApplicationPreference preference(this);
     m_eventPublisherPtr->publishSetupProjectEvent(
         logicalPixelWindowSize, windowDevicePixelRatio, viewportDevicePixelRatio);
-    m_window->reset();
     Error error;
     Project::Injector injector;
     injector.m_audioPlayer = createAudioPlayer();
@@ -1728,6 +1756,7 @@ void
 BaseApplicationService::destroyProject(Project *project)
 {
     if (nanoem_likely(project)) {
+        m_window->reset(project);
         project->stop();
         if (project->hasTransientPath()) {
             FileUtils::TransientPath path(project->transientPath());
@@ -1740,7 +1769,7 @@ BaseApplicationService::destroyProject(Project *project)
 }
 
 void
-BaseApplicationService::draw(Project *project, Project::IViewportOverlay *overlay)
+BaseApplicationService::draw(Project *project)
 {
     if (nanoem_likely(project)) {
         Error error;
@@ -1763,8 +1792,8 @@ BaseApplicationService::draw(Project *project, Project::IViewportOverlay *overla
                 error.addModalDialog(this);
             }
         }
-        m_window->drawAll2DPrimitives(project, overlay, m_defaultAuxFlags);
-        m_window->drawAllWindows(project, m_defaultAuxFlags);
+        IState *state = m_stateController->currentState();
+        m_window->drawAllWindows(project, state, m_defaultAuxFlags);
     }
 }
 
@@ -1781,6 +1810,10 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
     nanoem_parameter_assert(project, "must NOT be nullptr");
     bool handled = true;
     switch (type) {
+    case ApplicationMenuBuilder::kMenuItemTypeFileNewModel: {
+        project->newModel(error);
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeEditUndo: {
         project->handleUndoAction();
         break;
@@ -1886,7 +1919,7 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeEditOpenModelParameterWindow: {
-        m_window->openModelParameterDialog(project);
+        m_window->openModelParameterDialog(project, error);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeEditSelectAll: {
@@ -1917,6 +1950,10 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         m_window->openModelTransformOrderDialog(project);
         break;
     }
+    case ApplicationMenuBuilder::kMenuItemTypeProjectDetachViewportWindow: {
+        project->setViewportWindowDetached(true);
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableLoop: {
         project->setLoopEnabled(project->isLoopEnabled() ? false : true);
         break;
@@ -1935,29 +1972,24 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableHighResolutionViewport: {
-        const nanoem_f32_t dpr = project->windowDevicePixelRatio();
-        bool enabled = dpr == project->viewportDevicePixelRatio();
-        project->setViewportDevicePixelRatio(enabled ? 1.0f : dpr);
+        const nanoem_f32_t windowDevicePixelRatio = project->windowDevicePixelRatio();
+        const bool enabled = windowDevicePixelRatio > project->viewportDevicePixelRatio();
+        project->setViewportDevicePixelRatio(enabled ? windowDevicePixelRatio : 1.0f);
+        m_window->setAntiAliasEnabled(enabled || project->sampleLevel() > 0);
         break;
     }
-    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx16: {
-        project->setSampleLevel(4);
-        break;
-    }
-    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx8: {
-        project->setSampleLevel(3);
-        break;
-    }
-    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx4: {
-        project->setSampleLevel(2);
-        break;
-    }
+    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx16:
+    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx8:
+    case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx4:
     case ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx2: {
-        project->setSampleLevel(1);
+        const uint32_t level = ApplicationMenuBuilder::kMenuItemTypeProjectDisableMSAA - (type + 1);
+        project->setSampleLevel(level);
+        m_window->setAntiAliasEnabled(true);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectDisableMSAA: {
         project->setSampleLevel(0);
+        m_window->setAntiAliasEnabled(project->viewportDevicePixelRatio() > 1.0f);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime: {
@@ -2098,7 +2130,11 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeCameraReset: {
-        project->activeCamera()->reset();
+        ICamera *camera = project->activeCamera();
+        camera->reset();
+        camera->update();
+        project->resetAllModelEdges();
+        project->update();
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeLightSelfShadowDisable: {
@@ -2158,6 +2194,37 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         project->collapseAllTracks();
         break;
     }
+    case ApplicationMenuBuilder::kMenuItemTypeModelPerformValidation: {
+        if (const Model *activeModel = project->activeModel()) {
+            model::Validator validator;
+            model::Validator::DiagnosticsList diagnostics;
+            nanoem_u32_t filter = model::Validator::kSeverityTypeFatal | model::Validator::kSeverityTypeError;
+            if (project->isModelEditingEnabled()) {
+                filter |= model::Validator::kSeverityTypeWarning;
+            }
+            validator.validate(activeModel, filter, diagnostics);
+            String text;
+            if (diagnostics.empty()) {
+                text = m_translatorPtr->translate("nanoem.model.validator.result.success");
+            }
+            else {
+                StringUtils::format(
+                    text, m_translatorPtr->translate("nanoem.model.validator.result.failure"), diagnostics.size());
+                text.append("\n\n");
+                for (model::Validator::DiagnosticsList::const_iterator it = diagnostics.begin(),
+                                                                       end = diagnostics.end();
+                     it != end; ++it) {
+                    validator.format(*it, m_translatorPtr, text);
+                }
+            }
+            char title[Inline::kLongNameStackBufferSize];
+            StringUtils::format(title, sizeof(title), m_translatorPtr->translate("nanoem.model.validator.result.title"),
+                activeModel->nameConstString());
+            IModalDialog *dialog = ModalDialogFactory::createDisplayPlainTextDialog(this, title, text);
+            addModalDialog(dialog);
+        }
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeModelEditModeSelect: {
         project->setEditingMode(Project::kEditingModeSelect);
         break;
@@ -2195,30 +2262,15 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelMorphSetZero: {
-        if (Model *activeModel = project->activeModel()) {
-            if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
-                morph->setWeight(0.0f);
-                activeModel->performAllMorphsDeform(true);
-            }
-        }
+        setMorphWeight(0.0f, project);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelMorphSetHalf: {
-        if (Model *activeModel = project->activeModel()) {
-            if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
-                morph->setWeight(0.5f);
-                activeModel->performAllMorphsDeform(true);
-            }
-        }
+        setMorphWeight(0.5f, project);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelMorphSetOne: {
-        if (Model *activeModel = project->activeModel()) {
-            if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
-                morph->setWeight(1.0f);
-                activeModel->performAllMorphsDeform(true);
-            }
-        }
+        setMorphWeight(1.0f, project);
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelEnableAddBlend: {
@@ -2247,13 +2299,13 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowRigidBodies: {
         if (Model *activeModel = project->activeModel()) {
-            activeModel->setShowAllRigidBodies(activeModel->isShowAllRigidBodies() ? false : true);
+            activeModel->setShowAllRigidBodyShapes(activeModel->isShowAllRigidBodyShapes() ? false : true);
         }
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeModelPreferenceEnableShowJoints: {
         if (Model *activeModel = project->activeModel()) {
-            activeModel->setShowAllJoints(activeModel->isShowAllJoints() ? false : true);
+            activeModel->setShowAllJointShapes(activeModel->isShowAllJointShapes() ? false : true);
         }
         break;
     }
@@ -2333,6 +2385,12 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         }
         break;
     }
+    case ApplicationMenuBuilder::kMenuItemTypeAccessoryConvertToModel: {
+        if (Accessory *activeAccessory = project->activeAccessory()) {
+            addModalDialog(ModalDialogFactory::createConfirmConvertingAccessoryToModelDialog(activeAccessory, this));
+        }
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeAccessoryDelete: {
         if (Accessory *activeAccessory = project->activeAccessory()) {
             addModalDialog(ModalDialogFactory::createConfirmDeletingAccessoryDialog(activeAccessory, this));
@@ -2362,8 +2420,7 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         handled = false;
         break;
     }
-    error.notify(eventPublisher());
-    return handled;
+    return handled && !error.hasReason();
 }
 
 void
@@ -2705,21 +2762,27 @@ BaseApplicationService::loadFromFile(const URI &fileURI, Project *project, IFile
 {
     /* intercept pass to swap new loaded project */
     bool result = false;
-    if (type == IFileManager::kDialogTypeOpenProject) {
-        Project *newProject = m_stateController->createProject();
-        if (m_defaultFileManager->loadProject(fileURI, newProject, error)) {
-            int language = project->castLanguage();
-            setProject(newProject);
-            sendLoadingAllModelIOPluginsEventMessage(language);
-            sendLoadingAllMotionIOPluginsEventMessage(language);
-            result = true;
+    if (!fileURI.isEmpty()) {
+        if (type == IFileManager::kDialogTypeOpenProject) {
+            Project *newProject = m_stateController->createProject();
+            if (m_defaultFileManager->loadProject(fileURI, newProject, error)) {
+                int language = project->castLanguage();
+                setProject(newProject);
+                sendLoadingAllModelIOPluginsEventMessage(language);
+                sendLoadingAllMotionIOPluginsEventMessage(language);
+                result = true;
+            }
+            else {
+                destroyProject(newProject);
+            }
         }
-        else {
-            destroyProject(newProject);
+        else if (nanoem_likely(project)) {
+            result = fileManager()->loadFromFile(fileURI, type, project, error);
         }
     }
     else if (nanoem_likely(project)) {
-        result = fileManager()->loadFromFile(fileURI, type, project, error);
+        m_defaultFileManager->cancelQueryFileDialog(project);
+        result = true;
     }
     return result;
 }
@@ -2729,7 +2792,13 @@ BaseApplicationService::saveAsFile(const URI &fileURI, Project *project, IFileMa
 {
     bool result = false;
     if (nanoem_likely(project)) {
-        result = fileManager()->saveAsFile(fileURI, type, project, error);
+        if (!fileURI.isEmpty()) {
+            result = fileManager()->saveAsFile(fileURI, type, project, error);
+        }
+        else {
+            m_defaultFileManager->cancelQueryFileDialog(project);
+            result = true;
+        }
     }
     return result;
 }
@@ -2808,7 +2877,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         }
         const nanoem_f32_t windowDevicePixelRatio = glm::max(commandPtr->window_device_pixel_ratio, 1.0f);
         const nanoem_f32_t viewportDevicePixelRatio = glm::max(commandPtr->viewport_viewport_pixel_ratio, 1.0f);
-        initialize(windowDevicePixelRatio);
+        initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
         const Vector2UI16 viewportSize(commandPtr->window_width, commandPtr->window_height);
         createDefaultRenderTarget(Vector2(viewportSize) * windowDevicePixelRatio);
         sg_pixel_format pixelFormat = SG_PIXELFORMAT_RGBA8;
@@ -2850,9 +2919,12 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_VIEWPORT_RESIZED: {
         if (nanoem_likely(project)) {
+            const nanoem_f32_t devicePixelRatio = project->isResetAllPassesPending()
+                ? project->pendingWindowDevicePixelRatio()
+                : project->windowDevicePixelRatio();
             const Nanoem__Application__ViewportResizedCommand *commandPtr = command->viewport_resized;
             const Vector2UI16 logicalPixelWindowSize(commandPtr->width, commandPtr->height),
-                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * project->windowDevicePixelRatio());
+                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * devicePixelRatio);
             resizeDefaultRenderTarget(devicePixelWindowSize, project);
             project->resizeWindowSize(logicalPixelWindowSize);
             m_window->resizeDevicePixelWindowSize(devicePixelWindowSize);
@@ -2861,9 +2933,12 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_WINDOW_RESIZED: {
         if (nanoem_likely(project)) {
+            const nanoem_f32_t devicePixelRatio = project->isResetAllPassesPending()
+                ? project->pendingWindowDevicePixelRatio()
+                : project->windowDevicePixelRatio();
             const Nanoem__Application__WindowResizedCommand *commandPtr = command->window_resized;
             const Vector2UI16 logicalPixelWindowSize(commandPtr->width, commandPtr->height),
-                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * project->windowDevicePixelRatio());
+                devicePixelWindowSize(Vector2(logicalPixelWindowSize) * devicePixelRatio);
             resizeDefaultRenderTarget(devicePixelWindowSize, project);
             project->resizeWindowSize(logicalPixelWindowSize);
             m_window->resizeDevicePixelWindowSize(devicePixelWindowSize);
@@ -2952,26 +3027,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         const nanoem_u64_t startedAt = stm_now();
         succeeded = saveAsFile(fileURI, project, type, error);
         const nanoem_u64_t interval = stm_since(startedAt);
-        Nanoem__Application__CompleteSavingFileEvent base = NANOEM__APPLICATION__COMPLETE_SAVING_FILE_EVENT__INIT;
-        Nanoem__Application__URI uri2;
-        MutableString absolutePath, fragment;
-        base.file_uri = internal::ApplicationUtils::assignURI(&uri2, absolutePath, fragment, fileURI);
-        base.type = commandPtr->type;
-        base.ticks = interval;
-        base.has_ticks = 1;
-        Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
-        event.type_case = NANOEM__APPLICATION__EVENT__TYPE_COMPLETE_SAVING_FILE;
-        event.complete_saving_file = &base;
-        sendEventMessage(&event);
-        if (g_sentryAvailable && succeeded) {
-            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-            sentry_value_t data = sentry_value_new_object();
-            sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
-            sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
-            sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("saved"));
-            sentry_value_set_by_key(breadcrumb, "data", data);
-            sentry_add_breadcrumb(breadcrumb);
-        }
+        sendSaveFileMessage(fileURI, commandPtr->type, interval, succeeded);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_MODEL_BONES: {
@@ -3056,6 +3112,21 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         handleNewProject();
         break;
     }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT: {
+        if (nanoem_likely(project)) {
+            const URI fileURI(project->fileURI());
+            if (fileURI.isEmpty()) {
+                m_window->openSaveProjectDialog(project);
+            }
+            else {
+                const nanoem_u64_t startedAt = stm_now();
+                succeeded = saveAsFile(fileURI, project, IFileManager::kDialogTypeSaveProjectFile, error);
+                const nanoem_u64_t interval = stm_since(startedAt);
+                sendSaveFileMessage(fileURI, IFileManager::kDialogTypeSaveProjectFile, interval, succeeded);
+            }
+        }
+        break;
+    }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_PROJECT_FILE_URI: {
         if (nanoem_likely(project)) {
             Nanoem__Application__GetProjectFileURIResponseEvent base =
@@ -3072,12 +3143,12 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_CHANGE_DEVICE_PIXEL_RATIO: {
         nanoem_f32_t devicePixelRatio = command->change_device_pixel_ratio->value;
-        setDevicePixelRatio(devicePixelRatio);
         if (nanoem_likely(project)) {
             const Vector2 devicePixelWindowSize(Vector2(project->windowSize()) * devicePixelRatio);
             resizeDefaultRenderTarget(devicePixelWindowSize, project);
             project->setWindowDevicePixelRatio(devicePixelRatio);
             project->setViewportDevicePixelRatio(devicePixelRatio);
+            m_window->setFontPointSize(internal::ImGuiWindow::kFontSize * devicePixelRatio);
             m_window->setDevicePixelRatio(devicePixelRatio);
             m_window->resizeDevicePixelWindowSize(devicePixelWindowSize);
         }
@@ -3191,7 +3262,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
             fileURIs.push_back(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         }
         m_defaultFileManager->initializeAllModelIOPlugins(fileURIs);
-        sendLoadingAllModelIOPluginsEventMessage(project ? project->castLanguage() : 0);
+        sendLoadingAllModelIOPluginsEventMessage(nanoem_likely(project) ? project->castLanguage() : 0);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_LOAD_ALL_MOTION_IO_PLUGINS: {
@@ -3202,14 +3273,14 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
             fileURIs.push_back(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         }
         m_defaultFileManager->initializeAllMotionIOPlugins(fileURIs);
-        sendLoadingAllMotionIOPluginsEventMessage(project ? project->castLanguage() : 0);
+        sendLoadingAllMotionIOPluginsEventMessage(nanoem_likely(project) ? project->castLanguage() : 0);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REQUEST_EXPORT_IMAGE_CONFIGURATION: {
-        if (Project *project = m_stateController->currentProject()) {
-            const Project::ModelList models(project->allModels());
+        if (nanoem_likely(project)) {
+            const Project::ModelList *models = project->allModels();
             bool dirty = false;
-            for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
+            for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; ++it) {
                 const Model *model = *it;
                 dirty |= model->hasAnyDirtyBone() || model->hasAnyDirtyMorph();
             }
@@ -3322,13 +3393,13 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_ACCESSORIES: {
         if (nanoem_likely(project)) {
-            const Project::AccessoryList &accessories = project->allAccessories();
-            nanoem_rsize_t numItems = accessories.size();
+            const Project::AccessoryList *accessories = project->allAccessories();
+            nanoem_rsize_t numItems = accessories->size();
             Nanoem__Application__GetAllAccessoriesResponseEvent__Item **items =
                 new Nanoem__Application__GetAllAccessoriesResponseEvent__Item *[numItems];
             nanoem_rsize_t i = 0;
             MutableStringList names(numItems);
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 const Accessory *accessory = *it;
                 Nanoem__Application__GetAllAccessoriesResponseEvent__Item *item = items[i] =
@@ -3357,13 +3428,13 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_MODELS: {
         if (nanoem_likely(project)) {
-            const Project::ModelList &accessories = project->allModels();
-            nanoem_rsize_t numItems = accessories.size();
+            const Project::ModelList *accessories = project->allModels();
+            nanoem_rsize_t numItems = accessories->size();
             Nanoem__Application__GetAllModelsResponseEvent__Item **items =
                 new Nanoem__Application__GetAllModelsResponseEvent__Item *[numItems];
             nanoem_rsize_t i = 0;
             MutableStringList names(numItems);
-            for (Project::ModelList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            for (Project::ModelList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  ++it) {
                 const Model *model = *it;
                 Nanoem__Application__GetAllModelsResponseEvent__Item *item = items[i] =
@@ -3464,7 +3535,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_MENU_ACTION: {
-        dispatchMenuItemAction(project, command->menu_action->value, error);
+        succeeded = dispatchMenuItemAction(project, command->menu_action->value, error);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_RENDER_FRAME: {
@@ -3475,613 +3546,707 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_ACCESSORY: {
-        const Nanoem__Application__SetActiveAccessoryCommand *commandPtr = command->set_active_accessory;
-        project->setActiveAccessory(project->findAccessoryByHandle(commandPtr->accessory_handle));
-        writeRedoMessage(command, project, error);
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_MODEL: {
-        const Nanoem__Application__SetActiveModelCommand *commandPtr = command->set_active_model;
-        project->setActiveModel(project->findModelByHandle(commandPtr->model_handle));
-        writeRedoMessage(command, project, error);
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_MODEL_BONE: {
-        const Nanoem__Application__SetActiveModelBoneCommand *commandPtr = command->set_active_model_bone;
-        if (Model *model = project->activeModel()) {
-            if (const nanoem_model_bone_t *bone = model->findBone(commandPtr->name)) {
-                model->setActiveBone(bone);
-                writeRedoMessage(command, project, error);
-            }
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetActiveAccessoryCommand *commandPtr = command->set_active_accessory;
+            project->setActiveAccessory(project->findAccessoryByHandle(commandPtr->accessory_handle));
+            writeRedoMessage(command, project, error);
         }
         break;
     }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_MODEL_MORPH: {
-        const Nanoem__Application__SetActiveModelMorphCommand *commandPtr = command->set_active_model_morph;
-        if (Model *model = project->activeModel()) {
-            if (const nanoem_model_morph_t *morph = model->findMorph(commandPtr->name)) {
-                model->setActiveMorph(morph);
-                if (commandPtr->has_apply_category && commandPtr->apply_category) {
-                    model->setActiveMorph(nanoemModelMorphGetCategory(morph), morph);
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_MODEL: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetActiveModelCommand *commandPtr = command->set_active_model;
+            project->setActiveModel(project->findModelByHandle(commandPtr->model_handle));
+            writeRedoMessage(command, project, error);
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_MODEL_BONE: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetActiveModelBoneCommand *commandPtr = command->set_active_model_bone;
+            if (Model *model = project->activeModel()) {
+                if (const nanoem_model_bone_t *bone = model->findBone(commandPtr->name)) {
+                    model->setActiveBone(bone);
                     writeRedoMessage(command, project, error);
                 }
             }
         }
         break;
     }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACTIVE_MODEL_MORPH: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetActiveModelMorphCommand *commandPtr = command->set_active_model_morph;
+            if (Model *model = project->activeModel()) {
+                if (const nanoem_model_morph_t *morph = model->findMorph(commandPtr->name)) {
+                    model->setActiveMorph(morph);
+                    if (commandPtr->has_apply_category && commandPtr->apply_category) {
+                        model->setActiveMorph(nanoemModelMorphGetCategory(morph), morph);
+                        writeRedoMessage(command, project, error);
+                    }
+                }
+            }
+        }
+        break;
+    }
     case NANOEM__APPLICATION__COMMAND__TYPE_SEEK: {
-        const Nanoem__Application__SeekCommand *commandPtr = command->seek;
-        const nanoem_frame_index_t value =
-            nanoem_frame_index_t(glm::clamp(commandPtr->local_frame_index, uint64_t(0), uint64_t(UINT32_MAX)));
-        project->seek(value, true);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SeekCommand *commandPtr = command->seek;
+            const nanoem_frame_index_t value =
+                nanoem_frame_index_t(glm::clamp(commandPtr->local_frame_index, uint64_t(0), uint64_t(UINT32_MAX)));
+            project->seek(value, true);
+        }
         /* do not call writeRedoMessage due to many calls */
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_OPACITY: {
-        const Nanoem__Application__SetAccessoryOpacityCommand *commandPtr = command->set_accessory_opacity;
-        Accessory *accessory = commandPtr->has_accessory_handle
-            ? project->findAccessoryByHandle(commandPtr->accessory_handle)
-            : project->activeAccessory();
-        if (accessory) {
-            nanoem_f32_t value = commandPtr->opacity;
-            if (commandPtr->has_can_undo && commandPtr->can_undo) {
-                internal::AccessoryOpacityValueState *state =
-                    nanoem_new(internal::AccessoryOpacityValueState(accessory));
-                state->setValue(&value);
-                state->commit();
-                nanoem_delete(state);
-            }
-            else {
-                accessory->setOpacity(value);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryOpacityCommand *commandPtr = command->set_accessory_opacity;
+            Accessory *accessory = commandPtr->has_accessory_handle
+                ? project->findAccessoryByHandle(commandPtr->accessory_handle)
+                : project->activeAccessory();
+            if (accessory) {
+                nanoem_f32_t value = commandPtr->opacity;
+                if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                    internal::AccessoryOpacityValueState *state =
+                        nanoem_new(internal::AccessoryOpacityValueState(accessory));
+                    state->setValue(&value);
+                    state->commit();
+                    nanoem_delete(state);
+                }
+                else {
+                    accessory->setOpacity(value);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_ORIENTATION: {
-        const Nanoem__Application__SetAccessoryOrientationCommand *commandPtr = command->set_accessory_orientation;
-        Accessory *accessory = commandPtr->has_accessory_handle
-            ? project->findAccessoryByHandle(commandPtr->accessory_handle)
-            : project->activeAccessory();
-        if (accessory) {
-            const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
-            if (commandPtr->has_can_undo && commandPtr->can_undo) {
-                internal::AccessoryOrientationVectorValueState *state =
-                    nanoem_new(internal::AccessoryOrientationVectorValueState(accessory));
-                state->setValue(glm::value_ptr(value));
-                state->commit();
-                nanoem_delete(state);
-            }
-            else {
-                accessory->setOrientation(value);
-            }
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_SCALE_FACTOR: {
-        const Nanoem__Application__SetAccessoryScaleFactorCommand *commandPtr = command->set_accessory_scale_factor;
-        Accessory *accessory = commandPtr->has_accessory_handle
-            ? project->findAccessoryByHandle(commandPtr->accessory_handle)
-            : project->activeAccessory();
-        if (accessory) {
-            nanoem_f32_t value = commandPtr->scale_factor;
-            if (commandPtr->has_can_undo && commandPtr->can_undo) {
-                internal::AccessoryScaleFactorValueState *state =
-                    nanoem_new(internal::AccessoryScaleFactorValueState(accessory));
-                state->setValue(&value);
-                state->commit();
-                nanoem_delete(state);
-            }
-            else {
-                accessory->setOpacity(value);
-            }
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_TRANSLATION: {
-        const Nanoem__Application__SetAccessoryTranslationCommand *commandPtr = command->set_accessory_translation;
-        Accessory *accessory = commandPtr->has_accessory_handle
-            ? project->findAccessoryByHandle(commandPtr->accessory_handle)
-            : project->activeAccessory();
-        if (accessory) {
-            const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
-            if (commandPtr->has_can_undo && commandPtr->can_undo) {
-                internal::AccessoryTranslationVectorValueState *state =
-                    nanoem_new(internal::AccessoryTranslationVectorValueState(accessory));
-                state->setValue(glm::value_ptr(value));
-                state->commit();
-                nanoem_delete(state);
-            }
-            else {
-                accessory->setOrientation(value);
-            }
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_ANGLE: {
-        const Nanoem__Application__SetCameraAngleCommand *commandPtr = command->set_camera_angle;
-        const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
-        ICamera *camera = project->globalCamera();
-        if (commandPtr->has_can_undo && commandPtr->can_undo) {
-            internal::CameraAngleVectorValueState *state =
-                nanoem_new(internal::CameraAngleVectorValueState(project, camera));
-            state->setValue(glm::value_ptr(value));
-            state->commit();
-            nanoem_delete(state);
-        }
-        else {
-            camera->setAngle(value);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_DISTANCE: {
-        const Nanoem__Application__SetCameraDistanceCommand *commandPtr = command->set_camera_distance;
-        const nanoem_f32_t value = commandPtr->distance;
-        ICamera *camera = project->globalCamera();
-        if (commandPtr->has_can_undo && commandPtr->can_undo) {
-            internal::CameraDistanceVectorValueState *state =
-                nanoem_new(internal::CameraDistanceVectorValueState(project, camera));
-            state->setValue(&value);
-            state->commit();
-            nanoem_delete(state);
-        }
-        else {
-            camera->setDistance(value);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_FOV: {
-        const Nanoem__Application__SetCameraFovCommand *commandPtr = command->set_camera_fov;
-        ICamera *camera = project->globalCamera();
-        if (commandPtr->has_can_undo && commandPtr->can_undo) {
-            const nanoem_f32_t value = glm::radians(nanoem_f32_t(commandPtr->fov));
-            internal::CameraFovVectorValueState *state =
-                nanoem_new(internal::CameraFovVectorValueState(project, camera));
-            state->setValue(&value);
-            state->commit();
-            nanoem_delete(state);
-        }
-        else {
-            camera->setFov(commandPtr->fov);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_LOOK_AT: {
-        const Nanoem__Application__SetCameraLookAtCommand *commandPtr = command->set_camera_look_at;
-        const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
-        ICamera *camera = project->globalCamera();
-        if (commandPtr->has_can_undo && commandPtr->can_undo) {
-            internal::CameraLookAtVectorValueState *state =
-                nanoem_new(internal::CameraLookAtVectorValueState(project, camera));
-            state->setValue(glm::value_ptr(value));
-            state->commit();
-            nanoem_delete(state);
-        }
-        else {
-            camera->setLookAt(value);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_LIGHT_COLOR: {
-        const Nanoem__Application__SetLightColorCommand *commandPtr = command->set_light_color;
-        const Vector3 value(commandPtr->red, commandPtr->green, commandPtr->blue);
-        ILight *light = project->globalLight();
-        if (commandPtr->has_can_undo && commandPtr->can_undo) {
-            internal::LightColorVectorValueState *state =
-                nanoem_new(internal::LightColorVectorValueState(project, light));
-            state->setValue(glm::value_ptr(value));
-            state->commit();
-            nanoem_delete(state);
-        }
-        else {
-            light->setColor(value);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_LIGHT_DIRECTION: {
-        const Nanoem__Application__SetLightDirectionCommand *commandPtr = command->set_light_direction;
-        const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
-        ILight *light = project->globalLight();
-        if (commandPtr->has_can_undo && commandPtr->can_undo) {
-            internal::LightDirectionVectorValueState *state =
-                nanoem_new(internal::LightDirectionVectorValueState(project, light));
-            state->setValue(glm::value_ptr(value));
-            state->commit();
-            nanoem_delete(state);
-        }
-        else {
-            light->setDirection(value);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_BONE_ORIENTATION: {
-        const Nanoem__Application__SetModelBoneOrientationCommand *commandPtr = command->set_model_bone_orientation;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model && commandPtr->bone_name) {
-            if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
-                const Quaternion value(commandPtr->w, commandPtr->x, commandPtr->y, commandPtr->z);
-                model::Bone *bone = model::Bone::cast(bonePtr);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryOrientationCommand *commandPtr = command->set_accessory_orientation;
+            Accessory *accessory = commandPtr->has_accessory_handle
+                ? project->findAccessoryByHandle(commandPtr->accessory_handle)
+                : project->activeAccessory();
+            if (accessory) {
+                const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
                 if (commandPtr->has_can_undo && commandPtr->can_undo) {
-                    internal::BoneOrientationValueState *state =
-                        nanoem_new(internal::BoneOrientationValueState(bonePtr, model, project));
+                    internal::AccessoryOrientationVectorValueState *state =
+                        nanoem_new(internal::AccessoryOrientationVectorValueState(accessory));
                     state->setValue(glm::value_ptr(value));
                     state->commit();
                     nanoem_delete(state);
                 }
                 else {
-                    bone->setLocalUserOrientation(value);
+                    accessory->setOrientation(value);
+                }
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_SCALE_FACTOR: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryScaleFactorCommand *commandPtr = command->set_accessory_scale_factor;
+            Accessory *accessory = commandPtr->has_accessory_handle
+                ? project->findAccessoryByHandle(commandPtr->accessory_handle)
+                : project->activeAccessory();
+            if (accessory) {
+                nanoem_f32_t value = commandPtr->scale_factor;
+                if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                    internal::AccessoryScaleFactorValueState *state =
+                        nanoem_new(internal::AccessoryScaleFactorValueState(accessory));
+                    state->setValue(&value);
+                    state->commit();
+                    nanoem_delete(state);
+                }
+                else {
+                    accessory->setOpacity(value);
+                }
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_TRANSLATION: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryTranslationCommand *commandPtr = command->set_accessory_translation;
+            Accessory *accessory = commandPtr->has_accessory_handle
+                ? project->findAccessoryByHandle(commandPtr->accessory_handle)
+                : project->activeAccessory();
+            if (accessory) {
+                const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
+                if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                    internal::AccessoryTranslationVectorValueState *state =
+                        nanoem_new(internal::AccessoryTranslationVectorValueState(accessory));
+                    state->setValue(glm::value_ptr(value));
+                    state->commit();
+                    nanoem_delete(state);
+                }
+                else {
+                    accessory->setOrientation(value);
+                }
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_ANGLE: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetCameraAngleCommand *commandPtr = command->set_camera_angle;
+            const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
+            ICamera *camera = project->globalCamera();
+            if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                internal::CameraAngleVectorValueState *state =
+                    nanoem_new(internal::CameraAngleVectorValueState(project, camera));
+                state->setValue(glm::value_ptr(value));
+                state->commit();
+                nanoem_delete(state);
+            }
+            else {
+                camera->setAngle(value);
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_DISTANCE: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetCameraDistanceCommand *commandPtr = command->set_camera_distance;
+            const nanoem_f32_t value = commandPtr->distance;
+            ICamera *camera = project->globalCamera();
+            if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                internal::CameraDistanceVectorValueState *state =
+                    nanoem_new(internal::CameraDistanceVectorValueState(project, camera));
+                state->setValue(&value);
+                state->commit();
+                nanoem_delete(state);
+            }
+            else {
+                camera->setDistance(value);
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_FOV: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetCameraFovCommand *commandPtr = command->set_camera_fov;
+            ICamera *camera = project->globalCamera();
+            if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                const nanoem_f32_t value = glm::radians(nanoem_f32_t(commandPtr->fov));
+                internal::CameraFovVectorValueState *state =
+                    nanoem_new(internal::CameraFovVectorValueState(project, camera));
+                state->setValue(&value);
+                state->commit();
+                nanoem_delete(state);
+            }
+            else {
+                camera->setFov(commandPtr->fov);
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_LOOK_AT: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetCameraLookAtCommand *commandPtr = command->set_camera_look_at;
+            const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
+            ICamera *camera = project->globalCamera();
+            if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                internal::CameraLookAtVectorValueState *state =
+                    nanoem_new(internal::CameraLookAtVectorValueState(project, camera));
+                state->setValue(glm::value_ptr(value));
+                state->commit();
+                nanoem_delete(state);
+            }
+            else {
+                camera->setLookAt(value);
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_LIGHT_COLOR: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetLightColorCommand *commandPtr = command->set_light_color;
+            const Vector3 value(commandPtr->red, commandPtr->green, commandPtr->blue);
+            ILight *light = project->globalLight();
+            if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                internal::LightColorVectorValueState *state =
+                    nanoem_new(internal::LightColorVectorValueState(project, light));
+                state->setValue(glm::value_ptr(value));
+                state->commit();
+                nanoem_delete(state);
+            }
+            else {
+                light->setColor(value);
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_LIGHT_DIRECTION: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetLightDirectionCommand *commandPtr = command->set_light_direction;
+            const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
+            ILight *light = project->globalLight();
+            if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                internal::LightDirectionVectorValueState *state =
+                    nanoem_new(internal::LightDirectionVectorValueState(project, light));
+                state->setValue(glm::value_ptr(value));
+                state->commit();
+                nanoem_delete(state);
+            }
+            else {
+                light->setDirection(value);
+            }
+        }
+        break;
+    }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_BONE_ORIENTATION: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelBoneOrientationCommand *commandPtr = command->set_model_bone_orientation;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model && commandPtr->bone_name) {
+                if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
+                    const Quaternion value(commandPtr->w, commandPtr->x, commandPtr->y, commandPtr->z);
+                    model::Bone *bone = model::Bone::cast(bonePtr);
+                    if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                        internal::BoneOrientationValueState *state =
+                            nanoem_new(internal::BoneOrientationValueState(bonePtr, model, project));
+                        state->setValue(glm::value_ptr(value));
+                        state->commit();
+                        nanoem_delete(state);
+                    }
+                    else {
+                        bone->setLocalUserOrientation(value);
+                    }
                 }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_BONE_TRANSLATION: {
-        const Nanoem__Application__SetModelBoneTranslationCommand *commandPtr = command->set_model_bone_translation;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model && commandPtr->bone_name) {
-            if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
-                const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
-                model::Bone *bone = model::Bone::cast(bonePtr);
-                if (commandPtr->has_can_undo && commandPtr->can_undo) {
-                    internal::BoneTranslationValueState *state =
-                        nanoem_new(internal::BoneTranslationValueState(bonePtr, model, project));
-                    state->setValue(glm::value_ptr(value));
-                    state->commit();
-                    nanoem_delete(state);
-                }
-                else {
-                    bone->setLocalUserTranslation(value);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelBoneTranslationCommand *commandPtr = command->set_model_bone_translation;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model && commandPtr->bone_name) {
+                if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
+                    const Vector3 value(commandPtr->x, commandPtr->y, commandPtr->z);
+                    model::Bone *bone = model::Bone::cast(bonePtr);
+                    if (commandPtr->has_can_undo && commandPtr->can_undo) {
+                        internal::BoneTranslationValueState *state =
+                            nanoem_new(internal::BoneTranslationValueState(bonePtr, model, project));
+                        state->setValue(glm::value_ptr(value));
+                        state->commit();
+                        nanoem_delete(state);
+                    }
+                    else {
+                        bone->setLocalUserTranslation(value);
+                    }
                 }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_MORPH_WEIGHT: {
-        const Nanoem__Application__SetModelMorphWeightCommand *commandPtr = command->set_model_morph_weight;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model && commandPtr->morph_name) {
-            if (const nanoem_model_morph_t *morphPtr = model->findMorph(commandPtr->morph_name)) {
-                const nanoem_f32_t value = commandPtr->weight;
-                model::Morph *morph = model::Morph::cast(morphPtr);
-                morph->setWeight(value);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelMorphWeightCommand *commandPtr = command->set_model_morph_weight;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model && commandPtr->morph_name) {
+                if (const nanoem_model_morph_t *morphPtr = model->findMorph(commandPtr->morph_name)) {
+                    const nanoem_f32_t value = commandPtr->weight;
+                    model::Morph *morph = model::Morph::cast(morphPtr);
+                    morph->setWeight(value);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_ACCESSORY_KEYFRAME: {
-        const Nanoem__Application__RegisterAccessoryKeyframeCommand *commandPtr = command->register_accessory_keyframe;
-        Accessory *accessory = commandPtr->has_accessory_handle
-            ? project->findAccessoryByHandle(commandPtr->accessory_handle)
-            : project->activeAccessory();
-        if (accessory) {
-            CommandRegistrator registrator(project);
-            registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(accessory);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RegisterAccessoryKeyframeCommand *commandPtr =
+                command->register_accessory_keyframe;
+            Accessory *accessory = commandPtr->has_accessory_handle
+                ? project->findAccessoryByHandle(commandPtr->accessory_handle)
+                : project->activeAccessory();
+            if (accessory) {
+                CommandRegistrator registrator(project);
+                registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(accessory);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_ALL_SELECTED_BONE_KEYFRAMES: {
-        const Nanoem__Application__RegisterAllSelectedBoneKeyframesCommand *commandPtr =
-            command->register_all_selected_bone_keyframes;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            const nanoem_rsize_t numNames = commandPtr->n_bone_names;
-            CommandRegistrator registrator(project);
-            if (numNames > 0) {
-                const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-                Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
-                for (nanoem_rsize_t i = 0; i < numNames; i++) {
-                    if (const nanoem_model_bone_t *bone = model->findBone(commandPtr->bone_names[i])) {
-                        boneFrameIndexListMap[bone].insert(frameIndex);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RegisterAllSelectedBoneKeyframesCommand *commandPtr =
+                command->register_all_selected_bone_keyframes;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                const nanoem_rsize_t numNames = commandPtr->n_bone_names;
+                CommandRegistrator registrator(project);
+                if (numNames > 0) {
+                    const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
+                    Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
+                    for (nanoem_rsize_t i = 0; i < numNames; i++) {
+                        if (const nanoem_model_bone_t *bone = model->findBone(commandPtr->bone_names[i])) {
+                            boneFrameIndexListMap[bone].insert(frameIndex);
+                        }
                     }
+                    registrator.registerAddBoneKeyframesCommand(
+                        boneFrameIndexListMap, model, project->resolveMotion(model));
                 }
-                registrator.registerAddBoneKeyframesCommand(
-                    boneFrameIndexListMap, model, project->resolveMotion(model));
-            }
-            else {
-                IModelObjectSelection *selection = model->selection();
-                const model::Bone::Set bones(selection->allBoneSet());
-                selection->addAllDirtyBones();
-                for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
-                    selection->addBone(*it);
+                else {
+                    IModelObjectSelection *selection = model->selection();
+                    const model::Bone::Set *boneSet = selection->allBoneSet();
+                    selection->addAllDirtyBones();
+                    for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end;
+                         ++it) {
+                        selection->addBone(*it);
+                    }
+                    registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(model);
                 }
-                registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(model);
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_ALL_SELECTED_MORPH_KEYFRAMES: {
-        const Nanoem__Application__RegisterAllSelectedMorphKeyframesCommand *commandPtr =
-            command->register_all_selected_morph_keyframes;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            const nanoem_rsize_t numNames = commandPtr->n_morph_names;
-            CommandRegistrator registrator(project);
-            if (numNames > 0) {
-                Motion::MorphFrameIndexSetMap morphFrameIndexListMap;
-                const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-                for (nanoem_rsize_t i = 0; i < numNames; i++) {
-                    const nanoem_model_morph_t *morph = model->findMorph(commandPtr->morph_names[i]);
-                    const nanoem_model_morph_category_t category = nanoemModelMorphGetCategory(morph);
-                    if (category > NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM &&
-                        category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM) {
-                        morphFrameIndexListMap[morph].insert(frameIndex);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RegisterAllSelectedMorphKeyframesCommand *commandPtr =
+                command->register_all_selected_morph_keyframes;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                const nanoem_rsize_t numNames = commandPtr->n_morph_names;
+                CommandRegistrator registrator(project);
+                if (numNames > 0) {
+                    Motion::MorphFrameIndexSetMap morphFrameIndexListMap;
+                    const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
+                    for (nanoem_rsize_t i = 0; i < numNames; i++) {
+                        const nanoem_model_morph_t *morph = model->findMorph(commandPtr->morph_names[i]);
+                        const nanoem_model_morph_category_t category = nanoemModelMorphGetCategory(morph);
+                        if (category > NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM &&
+                            category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM) {
+                            morphFrameIndexListMap[morph].insert(frameIndex);
+                        }
                     }
+                    registrator.registerAddMorphKeyframesCommand(
+                        morphFrameIndexListMap, model, project->resolveMotion(model));
                 }
-                registrator.registerAddMorphKeyframesCommand(
-                    morphFrameIndexListMap, model, project->resolveMotion(model));
-            }
-            else {
-                registrator.registerAddMorphKeyframesCommandByAllMorphs(model);
+                else {
+                    registrator.registerAddMorphKeyframesCommandByAllMorphs(model);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_CAMERA_KEYFRAME: {
-        CommandRegistrator registrator(project);
-        registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
+        if (nanoem_likely(project)) {
+            CommandRegistrator registrator(project);
+            registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_LIGHT_KEYFRAME: {
-        CommandRegistrator registrator(project);
-        registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
+        if (nanoem_likely(project)) {
+            CommandRegistrator registrator(project);
+            registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_MODEL_KEYFRAME: {
-        const Nanoem__Application__RegisterModelKeyframeCommand *commandPtr = command->register_model_keyframe;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            CommandRegistrator registrator(project);
-            registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex(model);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RegisterModelKeyframeCommand *commandPtr = command->register_model_keyframe;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                CommandRegistrator registrator(project);
+                registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex(model);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REGISTER_SELF_SHADOW_KEYFRAME: {
-        CommandRegistrator registrator(project);
-        registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
+        if (nanoem_likely(project)) {
+            CommandRegistrator registrator(project);
+            registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_ACCESSORY_KEYFRAME: {
-        const Nanoem__Application__RemoveAccessoryKeyframeCommand *commandPtr = command->remove_accessory_keyframe;
-        Accessory *accessory = commandPtr->has_accessory_handle
-            ? project->findAccessoryByHandle(commandPtr->accessory_handle)
-            : project->activeAccessory();
-        if (accessory) {
-            CommandRegistrator registrator(project);
-            registrator.registerRemoveAccessoryKeyframesCommandByCurrentLocalFrameIndex(accessory);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RemoveAccessoryKeyframeCommand *commandPtr = command->remove_accessory_keyframe;
+            Accessory *accessory = commandPtr->has_accessory_handle
+                ? project->findAccessoryByHandle(commandPtr->accessory_handle)
+                : project->activeAccessory();
+            if (accessory) {
+                CommandRegistrator registrator(project);
+                registrator.registerRemoveAccessoryKeyframesCommandByCurrentLocalFrameIndex(accessory);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_ALL_SELECTED_BONE_KEYFRAMES: {
-        const Nanoem__Application__RemoveAllSelectedBoneKeyframesCommand *commandPtr =
-            command->remove_all_selected_bone_keyframes;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            const nanoem_rsize_t numNames = commandPtr->n_bone_names;
-            CommandRegistrator registrator(project);
-            if (numNames > 0) {
-                const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-                Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
-                for (nanoem_rsize_t i = 0; i < numNames; i++) {
-                    if (const nanoem_model_bone_t *bone = model->findBone(commandPtr->bone_names[i])) {
-                        boneFrameIndexListMap[bone].insert(frameIndex);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RemoveAllSelectedBoneKeyframesCommand *commandPtr =
+                command->remove_all_selected_bone_keyframes;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                const nanoem_rsize_t numNames = commandPtr->n_bone_names;
+                CommandRegistrator registrator(project);
+                if (numNames > 0) {
+                    const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
+                    Motion::BoneFrameIndexSetMap boneFrameIndexListMap;
+                    for (nanoem_rsize_t i = 0; i < numNames; i++) {
+                        if (const nanoem_model_bone_t *bone = model->findBone(commandPtr->bone_names[i])) {
+                            boneFrameIndexListMap[bone].insert(frameIndex);
+                        }
                     }
+                    registrator.registerRemoveBoneKeyframesCommand(
+                        boneFrameIndexListMap, model, project->resolveMotion(model));
                 }
-                registrator.registerRemoveBoneKeyframesCommand(
-                    boneFrameIndexListMap, model, project->resolveMotion(model));
-            }
-            else {
-                registrator.registerRemoveBoneKeyframesCommandByCurrentLocalFrameIndex(model);
+                else {
+                    registrator.registerRemoveBoneKeyframesCommandByCurrentLocalFrameIndex(model);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_ALL_SELECTED_MORPH_KEYFRAMES: {
-        const Nanoem__Application__RemoveAllSelectedMorphKeyframesCommand *commandPtr =
-            command->remove_all_selected_morph_keyframes;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            const nanoem_rsize_t numNames = commandPtr->n_morph_names;
-            CommandRegistrator registrator(project);
-            if (numNames > 0) {
-                Motion::MorphFrameIndexSetMap morphFrameIndexListMap;
-                const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
-                for (nanoem_rsize_t i = 0; i < numNames; i++) {
-                    const nanoem_model_morph_t *morph = model->findMorph(commandPtr->morph_names[i]);
-                    const nanoem_model_morph_category_t category = nanoemModelMorphGetCategory(morph);
-                    if (category > NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM &&
-                        category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM) {
-                        morphFrameIndexListMap[morph].insert(frameIndex);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RemoveAllSelectedMorphKeyframesCommand *commandPtr =
+                command->remove_all_selected_morph_keyframes;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                const nanoem_rsize_t numNames = commandPtr->n_morph_names;
+                CommandRegistrator registrator(project);
+                if (numNames > 0) {
+                    Motion::MorphFrameIndexSetMap morphFrameIndexListMap;
+                    const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
+                    for (nanoem_rsize_t i = 0; i < numNames; i++) {
+                        const nanoem_model_morph_t *morph = model->findMorph(commandPtr->morph_names[i]);
+                        const nanoem_model_morph_category_t category = nanoemModelMorphGetCategory(morph);
+                        if (category > NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM &&
+                            category < NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM) {
+                            morphFrameIndexListMap[morph].insert(frameIndex);
+                        }
                     }
+                    registrator.registerRemoveMorphKeyframesCommand(
+                        morphFrameIndexListMap, model, project->resolveMotion(model));
                 }
-                registrator.registerRemoveMorphKeyframesCommand(
-                    morphFrameIndexListMap, model, project->resolveMotion(model));
-            }
-            else {
-                registrator.registerRemoveMorphKeyframesCommandByCurrentLocalFrameIndex(model);
+                else {
+                    registrator.registerRemoveMorphKeyframesCommandByCurrentLocalFrameIndex(model);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_CAMERA_KEYFRAME: {
-        CommandRegistrator registrator(project);
-        registrator.registerRemoveCameraKeyframesCommandByCurrentLocalFrameIndex();
+        if (nanoem_likely(project)) {
+            CommandRegistrator registrator(project);
+            registrator.registerRemoveCameraKeyframesCommandByCurrentLocalFrameIndex();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_LIGHT_KEYFRAME: {
-        CommandRegistrator registrator(project);
-        registrator.registerRemoveLightKeyframesCommandByCurrentLocalFrameIndex();
+        if (nanoem_likely(project)) {
+            CommandRegistrator registrator(project);
+            registrator.registerRemoveLightKeyframesCommandByCurrentLocalFrameIndex();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_MODEL_KEYFRAME: {
-        const Nanoem__Application__RemoveModelKeyframeCommand *commandPtr = command->remove_model_keyframe;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            CommandRegistrator registrator(project);
-            registrator.registerRemoveModelKeyframesCommandByCurrentLocalFrameIndex(model);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RemoveModelKeyframeCommand *commandPtr = command->remove_model_keyframe;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                CommandRegistrator registrator(project);
+                registrator.registerRemoveModelKeyframesCommandByCurrentLocalFrameIndex(model);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REMOVE_SELF_SHADOW_KEYFRAME: {
-        CommandRegistrator registrator(project);
-        registrator.registerRemoveSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
+        if (nanoem_likely(project)) {
+            CommandRegistrator registrator(project);
+            registrator.registerRemoveSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_UPDATE_MODEL: {
-        const Nanoem__Application__UpdateModelCommand *commandPtr = command->update_model;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            model->performAllMorphsDeform(true);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__UpdateModelCommand *commandPtr = command->update_model;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                model->resetAllMorphDeformStates();
+                model->deformAllMorphs(true);
+                model->performAllBonesTransform();
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_BONE_BEZIER_CONTROL_POINT: {
-        const Nanoem__Application__SetBoneBezierControlPointCommand *commandPtr =
-            command->set_bone_bezier_control_point;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model && commandPtr->bone_name) {
-            if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
-                const glm::u8vec4 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
-                model::Bone *bone = model::Bone::cast(bonePtr);
-                bone->setBezierControlPoints(
-                    static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(commandPtr->type), value);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetBoneBezierControlPointCommand *commandPtr =
+                command->set_bone_bezier_control_point;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model && commandPtr->bone_name) {
+                if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
+                    const Vector4U8 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
+                    model::Bone *bone = model::Bone::cast(bonePtr);
+                    bone->setBezierControlPoints(
+                        static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(commandPtr->type), value);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_BEZIER_CONTROL_POINT: {
-        const Nanoem__Application__SetCameraBezierControlPointCommand *commandPtr =
-            command->set_camera_bezier_control_point;
-        const glm::u8vec4 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
-        project->globalCamera()->setBezierControlPoints(
-            static_cast<nanoem_motion_camera_keyframe_interpolation_type_t>(commandPtr->type), value);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetCameraBezierControlPointCommand *commandPtr =
+                command->set_camera_bezier_control_point;
+            const Vector4U8 value(commandPtr->x0, commandPtr->y0, commandPtr->x1, commandPtr->y1);
+            project->globalCamera()->setBezierControlPoints(
+                static_cast<nanoem_motion_camera_keyframe_interpolation_type_t>(commandPtr->type), value);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_ALL_BONES: {
-        const Nanoem__Application__SelectAllBonesCommand *commandPtr = command->select_all_bones;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            model->selection()->addAllBones();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectAllBonesCommand *commandPtr = command->select_all_bones;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                model->selection()->addAllBones();
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_ALL_DIRTY_BONES: {
-        const Nanoem__Application__SelectAllDirtyBonesCommand *commandPtr = command->select_all_dirty_bones;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            model->selection()->addAllDirtyBones();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectAllDirtyBonesCommand *commandPtr = command->select_all_dirty_bones;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                model->selection()->addAllDirtyBones();
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_ALL_MOVABLE_BONES: {
-        const Nanoem__Application__SelectAllMovableBonesCommand *commandPtr = command->select_all_movable_bones;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            model->selection()->addAllMovableBones();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectAllMovableBonesCommand *commandPtr = command->select_all_movable_bones;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                model->selection()->addAllMovableBones();
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_BONE: {
-        const Nanoem__Application__SelectBoneCommand *commandPtr = command->select_bone;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model && commandPtr->bone_name) {
-            if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
-                model->selection()->addBone(bonePtr);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectBoneCommand *commandPtr = command->select_bone;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model && commandPtr->bone_name) {
+                if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
+                    model->selection()->addBone(bonePtr);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_CLEAR_SELECT_ALL_BONES: {
-        const Nanoem__Application__SelectAllMovableBonesCommand *commandPtr = command->select_all_movable_bones;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model) {
-            model->selection()->removeAllBones();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectAllMovableBonesCommand *commandPtr = command->select_all_movable_bones;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model) {
+                model->selection()->removeAllBones();
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_CLEAR_SELECT_BONE: {
-        const Nanoem__Application__SelectBoneCommand *commandPtr = command->select_bone;
-        Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
-                                                    : project->activeModel();
-        if (model && commandPtr->bone_name) {
-            if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
-                model->selection()->removeBone(bonePtr);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectBoneCommand *commandPtr = command->select_bone;
+            Model *model = commandPtr->has_model_handle ? project->findModelByHandle(commandPtr->model_handle)
+                                                        : project->activeModel();
+            if (model && commandPtr->bone_name) {
+                if (const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name)) {
+                    model->selection()->removeBone(bonePtr);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_ALL_COLUMN_MOTION_KEYFRAMES: {
-        const Nanoem__Application__SelectAllColumnMotionKeyframesCommand *commandPtr =
-            command->select_all_column_motion_keyframes;
-        Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
-                                                       : project->resolveMotion(project->activeModel());
-        if (motion) {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectAllColumnMotionKeyframesCommand *commandPtr =
+                command->select_all_column_motion_keyframes;
+            Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
+                                                           : project->resolveMotion(project->activeModel());
+            if (motion) {
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_ALL_ROW_MOTION_KEYFRAMES: {
-        const Nanoem__Application__SelectAllRowMotionKeyframesCommand *commandPtr =
-            command->select_all_row_motion_keyframes;
-        Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
-                                                       : project->resolveMotion(project->activeModel());
-        if (motion) {
-            IMotionKeyframeSelection *selection = motion->selection();
-            const char *trackName = commandPtr->track_name;
-            nanoem_frame_index_t end = project->duration();
-            if (const Model *model = project->activeModel()) {
-                selection->addBoneKeyframes(model->findBone(trackName), 0, end);
-                selection->addMorphKeyframes(model->findMorph(trackName), 0, end);
-            }
-            else {
-                selection->addAccessoryKeyframes(0, end);
-                selection->addCameraKeyframes(0, end);
-                selection->addLightKeyframes(0, end);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectAllRowMotionKeyframesCommand *commandPtr =
+                command->select_all_row_motion_keyframes;
+            Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
+                                                           : project->resolveMotion(project->activeModel());
+            if (motion) {
+                IMotionKeyframeSelection *selection = motion->selection();
+                const char *trackName = commandPtr->track_name;
+                nanoem_frame_index_t end = project->duration();
+                if (const Model *model = project->activeModel()) {
+                    selection->addBoneKeyframes(model->findBone(trackName), 0, end);
+                    selection->addMorphKeyframes(model->findMorph(trackName), 0, end);
+                }
+                else {
+                    selection->addAccessoryKeyframes(0, end);
+                    selection->addCameraKeyframes(0, end);
+                    selection->addLightKeyframes(0, end);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SELECT_MOTION_KEYFRAME: {
-        const Nanoem__Application__SelectMotionKeyframeCommand *commandPtr = command->select_motion_keyframe;
-        Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
-                                                       : project->resolveMotion(project->activeModel());
-        if (motion) {
-            IMotionKeyframeSelection *selection = motion->selection();
-            const char *trackName = commandPtr->track_name;
-            const nanoem_frame_index_t frameIndexFrom = nanoem_frame_index_t(commandPtr->local_frame_index);
-            nanoem_frame_index_t frameIndexTo = frameIndexFrom + 1;
-            if (const Model *model = project->activeModel()) {
-                selection->addBoneKeyframes(model->findBone(trackName), frameIndexFrom, frameIndexTo);
-                selection->addMorphKeyframes(model->findMorph(trackName), frameIndexFrom, frameIndexTo);
-            }
-            else {
-                selection->addAccessoryKeyframes(frameIndexFrom, frameIndexTo);
-                selection->addCameraKeyframes(frameIndexFrom, frameIndexTo);
-                selection->addLightKeyframes(frameIndexFrom, frameIndexTo);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SelectMotionKeyframeCommand *commandPtr = command->select_motion_keyframe;
+            Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
+                                                           : project->resolveMotion(project->activeModel());
+            if (motion) {
+                IMotionKeyframeSelection *selection = motion->selection();
+                const char *trackName = commandPtr->track_name;
+                const nanoem_frame_index_t frameIndexFrom = nanoem_frame_index_t(commandPtr->local_frame_index);
+                nanoem_frame_index_t frameIndexTo = frameIndexFrom + 1;
+                if (const Model *model = project->activeModel()) {
+                    selection->addBoneKeyframes(model->findBone(trackName), frameIndexFrom, frameIndexTo);
+                    selection->addMorphKeyframes(model->findMorph(trackName), frameIndexFrom, frameIndexTo);
+                }
+                else {
+                    selection->addAccessoryKeyframes(frameIndexFrom, frameIndexTo);
+                    selection->addCameraKeyframes(frameIndexFrom, frameIndexTo);
+                    selection->addLightKeyframes(frameIndexFrom, frameIndexTo);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_CLEAR_SELECT_ALL_MOTION_KEYFRAMES: {
-        const Nanoem__Application__ClearSelectAllMotionKeyframesCommand *commandPtr =
-            command->clear_select_all_motion_keyframes;
-        Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
-                                                       : project->resolveMotion(project->activeModel());
-        if (motion) {
-            motion->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__ClearSelectAllMotionKeyframesCommand *commandPtr =
+                command->clear_select_all_motion_keyframes;
+            Motion *motion = commandPtr->has_motion_handle ? project->findMotionByHandle(commandPtr->motion_handle)
+                                                           : project->resolveMotion(project->activeModel());
+            if (motion) {
+                motion->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
+            }
         }
         break;
     }
@@ -4090,486 +4255,588 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_RELOAD_ACCESSORY_EFFECT: {
-        Nanoem__Application__ReloadAccessoryEffectCommand *commandPtr = command->reload_accessory_effect;
-        if (Accessory *accessory = project->findAccessoryByHandle(commandPtr->accessory_handle)) {
-            Progress progress(project, 0);
-            succeeded = project->reloadDrawableEffect(accessory, progress, error);
-            if (g_sentryAvailable) {
-                sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-                sentry_value_t data = sentry_value_new_object();
-                sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("effect.reload.accessory"));
-                sentry_value_set_by_key(data, "handle", sentry_value_new_int32(commandPtr->accessory_handle));
-                sentry_value_set_by_key(breadcrumb, "data", data);
-                sentry_add_breadcrumb(breadcrumb);
+        if (nanoem_likely(project)) {
+            Nanoem__Application__ReloadAccessoryEffectCommand *commandPtr = command->reload_accessory_effect;
+            if (Accessory *accessory = project->findAccessoryByHandle(commandPtr->accessory_handle)) {
+                Progress progress(project, 0);
+                succeeded = project->reloadDrawableEffect(accessory, progress, error);
+                if (g_sentryAvailable) {
+                    sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                    sentry_value_t data = sentry_value_new_object();
+                    sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("effect.reload.accessory"));
+                    sentry_value_set_by_key(data, "handle", sentry_value_new_int32(commandPtr->accessory_handle));
+                    sentry_value_set_by_key(breadcrumb, "data", data);
+                    sentry_add_breadcrumb(breadcrumb);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_RELOAD_MODEL_EFFECT: {
-        Nanoem__Application__ReloadModelEffectCommand *commandPtr = command->reload_model_effect;
-        if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
-            Progress progress(project, 0);
-            succeeded = project->reloadDrawableEffect(model, progress, error);
-            if (g_sentryAvailable) {
-                sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-                sentry_value_t data = sentry_value_new_object();
-                sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("effect.reload.model"));
-                sentry_value_set_by_key(data, "handle", sentry_value_new_int32(commandPtr->model_handle));
-                sentry_value_set_by_key(breadcrumb, "data", data);
-                sentry_add_breadcrumb(breadcrumb);
+        if (nanoem_likely(project)) {
+            Nanoem__Application__ReloadModelEffectCommand *commandPtr = command->reload_model_effect;
+            if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
+                Progress progress(project, 0);
+                succeeded = project->reloadDrawableEffect(model, progress, error);
+                if (g_sentryAvailable) {
+                    sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                    sentry_value_t data = sentry_value_new_object();
+                    sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("effect.reload.model"));
+                    sentry_value_set_by_key(data, "handle", sentry_value_new_int32(commandPtr->model_handle));
+                    sentry_value_set_by_key(breadcrumb, "data", data);
+                    sentry_add_breadcrumb(breadcrumb);
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_OUTSIDE_PARENT: {
-        const Nanoem__Application__SetAccessoryOutsideParentCommand *commandPtr = command->set_accessory_outside_parent;
-        const Model *parentModel = project->findModelByName(commandPtr->parent_model_name);
-        Accessory *accessory = project->findAccessoryByHandle(commandPtr->accessory_handle);
-        if (accessory && parentModel) {
-            const nanoem_model_bone_t *parentBonePtr = parentModel->findBone(commandPtr->parent_model_bone_name);
-            if (parentBonePtr) {
-                const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
-                const StringPair value(parentModel->canonicalName(), parentBone->canonicalName());
-                accessory->setOutsideParent(value);
-            }
-            writeRedoMessage(command, project, error);
-        }
-        break;
-    }
-    case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_CONSTRAINT_STATE: {
-        const Nanoem__Application__SetModelConstraintStateCommand *commandPtr = command->set_model_constraint_state;
-        if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
-            const char *constraintName = commandPtr->constraint_name;
-            nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-            StringUtils::UnicodeStringScope scope(factory);
-            const nanoem_model_constraint_t *constraintPtr = 0;
-            if (StringUtils::tryGetString(factory, constraintName, StringUtils::length(constraintName), scope)) {
-                constraintPtr = model->findConstraint(scope.value());
-            }
-            if (constraintPtr) {
-                model::Constraint *constraint = model::Constraint::cast(constraintPtr);
-                constraint->setEnabled(commandPtr->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryOutsideParentCommand *commandPtr =
+                command->set_accessory_outside_parent;
+            const Model *parentModel = project->findModelByName(commandPtr->parent_model_name);
+            Accessory *accessory = project->findAccessoryByHandle(commandPtr->accessory_handle);
+            if (accessory && parentModel) {
+                const nanoem_model_bone_t *parentBonePtr = parentModel->findBone(commandPtr->parent_model_bone_name);
+                if (parentBonePtr) {
+                    const model::Bone *parentBone = model::Bone::cast(parentBonePtr);
+                    const StringPair value(parentModel->canonicalName(), parentBone->canonicalName());
+                    accessory->setOutsideParent(value);
+                }
                 writeRedoMessage(command, project, error);
             }
         }
         break;
     }
+    case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_CONSTRAINT_STATE: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelConstraintStateCommand *commandPtr = command->set_model_constraint_state;
+            if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
+                const char *constraintName = commandPtr->constraint_name;
+                nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
+                StringUtils::UnicodeStringScope scope(factory);
+                const nanoem_model_constraint_t *constraintPtr = 0;
+                if (StringUtils::tryGetString(factory, constraintName, StringUtils::length(constraintName), scope)) {
+                    constraintPtr = model->findConstraint(scope.value());
+                }
+                if (constraintPtr) {
+                    model::Constraint *constraint = model::Constraint::cast(constraintPtr);
+                    constraint->setEnabled(commandPtr->value != 0);
+                    writeRedoMessage(command, project, error);
+                }
+            }
+        }
+        break;
+    }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_EDGE_COLOR: {
-        const Nanoem__Application__SetModelEdgeColorCommand *commandPtr = command->set_model_edge_color;
-        if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
-            const Vector4 color(commandPtr->red, commandPtr->green, commandPtr->blue, commandPtr->alpha);
-            model->setEdgeColor(color);
-            writeRedoMessage(command, project, error);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelEdgeColorCommand *commandPtr = command->set_model_edge_color;
+            if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
+                const Vector4 color(commandPtr->red, commandPtr->green, commandPtr->blue, commandPtr->alpha);
+                model->setEdgeColor(color);
+                writeRedoMessage(command, project, error);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_EDGE_SIZE: {
-        const Nanoem__Application__SetModelEdgeSizeCommand *commandPtr = command->set_model_edge_size;
-        if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
-            model->setEdgeSizeScaleFactor(commandPtr->value);
-            writeRedoMessage(command, project, error);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelEdgeSizeCommand *commandPtr = command->set_model_edge_size;
+            if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
+                model->setEdgeSizeScaleFactor(commandPtr->value);
+                writeRedoMessage(command, project, error);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_OUTSIDE_PARENT: {
-        const Nanoem__Application__SetModelOutsideParentCommand *commandPtr = command->set_model_outside_parent;
-        Model *model = project->findModelByHandle(commandPtr->model_handle);
-        if (model) {
-            const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name);
-            model->setOutsideParent(
-                bonePtr, StringPair(commandPtr->parent_model_name, commandPtr->parent_model_bone_name));
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelOutsideParentCommand *commandPtr = command->set_model_outside_parent;
+            Model *model = project->findModelByHandle(commandPtr->model_handle);
+            if (model) {
+                const nanoem_model_bone_t *bonePtr = model->findBone(commandPtr->bone_name);
+                model->setOutsideParent(
+                    bonePtr, StringPair(commandPtr->parent_model_name, commandPtr->parent_model_bone_name));
+            }
+            writeRedoMessage(command, project, error);
         }
-        writeRedoMessage(command, project, error);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_VISIBLE: {
-        const Nanoem__Application__SetModelVisibleCommand *commandPtr = command->set_model_visible;
-        if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
-            model->setVisible(commandPtr->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelVisibleCommand *commandPtr = command->set_model_visible;
+            if (Model *model = project->findModelByHandle(commandPtr->model_handle)) {
+                model->setVisible(commandPtr->value != 0);
+            }
+            writeRedoMessage(command, project, error);
         }
-        writeRedoMessage(command, project, error);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_ACCESSORY_KEYFRAME: {
-        Accessory *accessory = project->resolveRedoAccessory(command->redo_add_accessory_keyframe->accessory_handle);
-        Motion *motion = project->resolveMotion(accessory);
-        if (accessory && motion) {
-            performRedo(command::AddAccessoryKeyframeCommand::create(command, accessory, motion), project->undoStack(),
-                undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Accessory *accessory =
+                project->resolveRedoAccessory(command->redo_add_accessory_keyframe->accessory_handle);
+            Motion *motion = project->resolveMotion(accessory);
+            if (accessory && motion) {
+                performRedo(command::AddAccessoryKeyframeCommand::create(command, accessory, motion),
+                    project->undoStack(), undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_BONE_KEYFRAME: {
-        Model *model = project->resolveRedoModel(command->redo_add_bone_keyframe->model_handle);
-        Motion *motion = project->resolveMotion(model);
-        if (model && motion) {
-            performRedo(
-                command::AddBoneKeyframeCommand::create(command, model, motion), model->undoStack(), undoCommandPtr);
-            nanoem_rsize_t numKeyframes = 0;
-            nanoemMotionGetAllBoneKeyframeObjects(project->resolveMotion(model)->data(), &numKeyframes);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_add_bone_keyframe->model_handle);
+            Motion *motion = project->resolveMotion(model);
+            if (model && motion) {
+                performRedo(command::AddBoneKeyframeCommand::create(command, model, motion), model->undoStack(),
+                    undoCommandPtr);
+                nanoem_rsize_t numKeyframes = 0;
+                nanoemMotionGetAllBoneKeyframeObjects(project->resolveMotion(model)->data(), &numKeyframes);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_CAMERA_KEYFRAME: {
-        performRedo(
-            command::AddCameraKeyframeCommand::create(command, project->globalCamera(), project->cameraMotion()),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(
+                command::AddCameraKeyframeCommand::create(command, project->globalCamera(), project->cameraMotion()),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_LIGHT_KEYFRAME: {
-        performRedo(command::AddLightKeyframeCommand::create(command, project->globalLight(), project->lightMotion()),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(
+                command::AddLightKeyframeCommand::create(command, project->globalLight(), project->lightMotion()),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_MODEL_KEYFRAME: {
-        Model *model = project->resolveRedoModel(command->redo_add_model_keyframe->model_handle);
-        Motion *motion = project->resolveMotion(model);
-        if (model && motion) {
-            performRedo(
-                command::AddModelKeyframeCommand::create(command, model, motion), model->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_add_model_keyframe->model_handle);
+            Motion *motion = project->resolveMotion(model);
+            if (model && motion) {
+                performRedo(command::AddModelKeyframeCommand::create(command, model, motion), model->undoStack(),
+                    undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_MORPH_KEYFRAME: {
-        Model *model = project->resolveRedoModel(command->redo_add_morph_keyframe->model_handle);
-        Motion *motion = project->resolveMotion(model);
-        if (model && motion) {
-            performRedo(
-                command::AddMorphKeyframeCommand::create(command, model, motion), model->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_add_morph_keyframe->model_handle);
+            Motion *motion = project->resolveMotion(model);
+            if (model && motion) {
+                performRedo(command::AddMorphKeyframeCommand::create(command, model, motion), model->undoStack(),
+                    undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_ADD_SELF_SHADOW_KEYFRAME: {
-        performRedo(command::AddSelfShadowKeyframeCommand::create(
-                        command, project->shadowCamera(), project->selfShadowMotion()),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(command::AddSelfShadowKeyframeCommand::create(
+                            command, project->shadowCamera(), project->selfShadowMotion()),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_LOAD_ACCESSORY: {
-        const Nanoem__Application__RedoLoadAccessoryCommand *c = command->redo_load_accessory;
-        if (c->content_case == NANOEM__APPLICATION__REDO_LOAD_ACCESSORY_COMMAND__CONTENT_FILE_URI) {
-            const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
-            if (project->fileManager()->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, project, error)) {
-                Accessory *accessory = project->allAccessories().back();
-                project->setRedoDrawable(c->accessory_handle, accessory);
-            }
-            else {
-                error.notify(eventPublisher());
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RedoLoadAccessoryCommand *c = command->redo_load_accessory;
+            if (c->content_case == NANOEM__APPLICATION__REDO_LOAD_ACCESSORY_COMMAND__CONTENT_FILE_URI) {
+                const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
+                if (project->fileManager()->loadFromFile(
+                        fileURI, IFileManager::kDialogTypeLoadModelFile, project, error)) {
+                    Accessory *accessory = project->allAccessories()->back();
+                    project->setRedoDrawable(c->accessory_handle, accessory);
+                }
+                else {
+                    error.notify(eventPublisher());
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_LOAD_MODEL: {
-        const Nanoem__Application__RedoLoadModelCommand *c = command->redo_load_model;
-        if (c->content_case == NANOEM__APPLICATION__REDO_LOAD_MODEL_COMMAND__CONTENT_FILE_URI) {
-            const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
-            if (project->fileManager()->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, project, error)) {
-                Model *model = project->activeModel();
-                model->readLoadCommandMessage(command);
-                project->setRedoDrawable(c->model_handle, model);
-            }
-            else {
-                error.notify(eventPublisher());
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RedoLoadModelCommand *c = command->redo_load_model;
+            if (c->content_case == NANOEM__APPLICATION__REDO_LOAD_MODEL_COMMAND__CONTENT_FILE_URI) {
+                const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
+                if (project->fileManager()->loadFromFile(
+                        fileURI, IFileManager::kDialogTypeLoadModelFile, project, error)) {
+                    Model *model = project->activeModel();
+                    model->readLoadCommandMessage(command);
+                    project->setRedoDrawable(c->model_handle, model);
+                }
+                else {
+                    error.notify(eventPublisher());
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_LOAD_MOTION: {
-        const Nanoem__Application__RedoLoadMotionCommand *c = command->redo_load_motion;
-        if (c->content_case == NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__CONTENT_FILE_URI) {
-            const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
-            switch (c->type) {
-            case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__ACCESSORY: {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RedoLoadMotionCommand *c = command->redo_load_motion;
+            if (c->content_case == NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__CONTENT_FILE_URI) {
+                const URI &fileURI = URI::createFromFilePath(c->file_uri->absolute_path, c->file_uri->fragment);
+                switch (c->type) {
+                case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__ACCESSORY: {
 
-                break;
-            }
-            case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__CAMERA: {
-                if (!project->fileManager()->loadFromFile(
-                        fileURI, IFileManager::kDialogTypeOpenCameraMotionFile, project, error)) {
-                    error.notify(eventPublisher());
+                    break;
                 }
-                break;
-            }
-            case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__LIGHT: {
-                if (!project->fileManager()->loadFromFile(
-                        fileURI, IFileManager::kDialogTypeOpenLightMotionFile, project, error)) {
-                    error.notify(eventPublisher());
-                }
-                break;
-            }
-            case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__MODEL: {
-                Model *lastActiveModel = project->activeModel();
-                if (Model *model = project->resolveRedoModel(c->handle)) {
-                    project->setActiveModel(model);
+                case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__CAMERA: {
                     if (!project->fileManager()->loadFromFile(
-                            fileURI, IFileManager::kDialogTypeOpenModelMotionFile, project, error)) {
+                            fileURI, IFileManager::kDialogTypeOpenCameraMotionFile, project, error)) {
                         error.notify(eventPublisher());
                     }
-                    project->setActiveModel(lastActiveModel);
+                    break;
                 }
-                break;
-            }
-            case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__SELF_SHADOW: {
-                break;
-            }
-            default:
-                break;
+                case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__LIGHT: {
+                    if (!project->fileManager()->loadFromFile(
+                            fileURI, IFileManager::kDialogTypeOpenLightMotionFile, project, error)) {
+                        error.notify(eventPublisher());
+                    }
+                    break;
+                }
+                case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__MODEL: {
+                    Model *lastActiveModel = project->activeModel();
+                    if (Model *model = project->resolveRedoModel(c->handle)) {
+                        project->setActiveModel(model);
+                        if (!project->fileManager()->loadFromFile(
+                                fileURI, IFileManager::kDialogTypeOpenModelMotionFile, project, error)) {
+                            error.notify(eventPublisher());
+                        }
+                        project->setActiveModel(lastActiveModel);
+                    }
+                    break;
+                }
+                case NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__SELF_SHADOW: {
+                    break;
+                }
+                default:
+                    break;
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_ACCESSORY_KEYFRAME: {
-        Accessory *accessory = project->resolveRedoAccessory(command->remove_accessory_keyframe->accessory_handle);
-        Motion *motion = project->resolveMotion(accessory);
-        if (accessory && motion) {
-            performRedo(command::RemoveAccessoryKeyframeCommand::create(command, accessory, motion),
-                project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Accessory *accessory = project->resolveRedoAccessory(command->remove_accessory_keyframe->accessory_handle);
+            Motion *motion = project->resolveMotion(accessory);
+            if (accessory && motion) {
+                performRedo(command::RemoveAccessoryKeyframeCommand::create(command, accessory, motion),
+                    project->undoStack(), undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_BONE_KEYFRAME: {
-        Model *model = project->resolveRedoModel(command->redo_remove_bone_keyframe->model_handle);
-        Motion *motion = project->resolveMotion(model);
-        if (model && motion) {
-            performRedo(
-                command::RemoveBoneKeyframeCommand::create(command, model, motion), model->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_remove_bone_keyframe->model_handle);
+            Motion *motion = project->resolveMotion(model);
+            if (model && motion) {
+                performRedo(command::RemoveBoneKeyframeCommand::create(command, model, motion), model->undoStack(),
+                    undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_CAMERA_KEYFRAME: {
-        performRedo(
-            command::RemoveCameraKeyframeCommand::create(command, project->globalCamera(), project->cameraMotion()),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(
+                command::RemoveCameraKeyframeCommand::create(command, project->globalCamera(), project->cameraMotion()),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_LIGHT_KEYFRAME: {
-        performRedo(
-            command::RemoveLightKeyframeCommand::create(command, project->globalLight(), project->lightMotion()),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(
+                command::RemoveLightKeyframeCommand::create(command, project->globalLight(), project->lightMotion()),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_MODEL_KEYFRAME: {
-        Model *model = project->resolveRedoModel(command->redo_remove_model_keyframe->model_handle);
-        Motion *motion = project->resolveMotion(model);
-        if (model && motion) {
-            performRedo(command::RemoveModelKeyframeCommand::create(command, model, motion), model->undoStack(),
-                undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_remove_model_keyframe->model_handle);
+            Motion *motion = project->resolveMotion(model);
+            if (model && motion) {
+                performRedo(command::RemoveModelKeyframeCommand::create(command, model, motion), model->undoStack(),
+                    undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_MORPH_KEYFRAME: {
-        Model *model = project->resolveRedoModel(command->redo_remove_morph_keyframe->model_handle);
-        Motion *motion = project->resolveMotion(model);
-        if (model && motion) {
-            performRedo(command::RemoveMorphKeyframeCommand::create(command, model, motion), model->undoStack(),
-                undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_remove_morph_keyframe->model_handle);
+            Motion *motion = project->resolveMotion(model);
+            if (model && motion) {
+                performRedo(command::RemoveMorphKeyframeCommand::create(command, model, motion), model->undoStack(),
+                    undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_SELF_SHADOW_KEYFRAME: {
-        performRedo(command::RemoveSelfShadowKeyframeCommand::create(
-                        command, project->shadowCamera(), project->selfShadowMotion()),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(command::RemoveSelfShadowKeyframeCommand::create(
+                            command, project->shadowCamera(), project->selfShadowMotion()),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_SAVE_MOTION_SNAPSHOT: {
-        const Nanoem__Application__RedoSaveMotionSnapshotCommand *c = command->redo_save_motion_snapshot;
-        undo_stack_t *stack = nullptr;
-        if (c->has_handle) {
-            if (Model *model = project->resolveRedoModel(c->handle)) {
-                stack = model->undoStack();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RedoSaveMotionSnapshotCommand *c = command->redo_save_motion_snapshot;
+            undo_stack_t *stack = nullptr;
+            if (c->has_handle) {
+                if (Model *model = project->resolveRedoModel(c->handle)) {
+                    stack = model->undoStack();
+                }
             }
+            performRedo(command::MotionSnapshotCommand::create(command, project), stack ? stack : project->undoStack(),
+                undoCommandPtr);
         }
-        performRedo(command::MotionSnapshotCommand::create(command, project), stack ? stack : project->undoStack(),
-            undoCommandPtr);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_INSERT_EMPTY_TIMELINE_FRAME: {
-        performRedo(
-            command::InsertEmptyTimelineFrameCommand::create(command, project), project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(command::InsertEmptyTimelineFrameCommand::create(command, project), project->undoStack(),
+                undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_REMOVE_TIMELINE_FRAME: {
-        performRedo(
-            command::RemoveTimelineFrameCommand::create(command, project), project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(
+                command::RemoveTimelineFrameCommand::create(command, project), project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_TRANSFORM_BONE: {
-        Model *model = project->resolveRedoModel(command->redo_transform_bone->model_handle);
-        if (model) {
-            performRedo(
-                command::TransformBoneCommand::create(command, model, project), model->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_transform_bone->model_handle);
+            if (model) {
+                performRedo(
+                    command::TransformBoneCommand::create(command, model, project), model->undoStack(), undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_TRANSFORM_MORPH: {
-        Model *model = project->resolveRedoModel(command->redo_transform_morph->model_handle);
-        if (model) {
-            performRedo(
-                command::TransformMorphCommand::create(command, model, project), model->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Model *model = project->resolveRedoModel(command->redo_transform_morph->model_handle);
+            if (model) {
+                performRedo(command::TransformMorphCommand::create(command, model, project), model->undoStack(),
+                    undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_UNDO: {
-        const Nanoem__Application__UndoCommand *c = command->undo;
-        undo_stack_t *stack = nullptr;
-        undo_command_on_persist_undo_t cb = undoCommandGetOnPersistUndoCallback(undoCommandPtr);
-        undoCommandSetOnPersistUndoCallback(undoCommandPtr, nullptr);
-        if (c->has_model_handle) {
-            if (Model *model = project->resolveRedoModel(c->model_handle)) {
-                stack = model->undoStack();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__UndoCommand *c = command->undo;
+            undo_stack_t *stack = nullptr;
+            undo_command_on_persist_undo_t cb = undoCommandGetOnPersistUndoCallback(undoCommandPtr);
+            undoCommandSetOnPersistUndoCallback(undoCommandPtr, nullptr);
+            if (c->has_model_handle) {
+                if (Model *model = project->resolveRedoModel(c->model_handle)) {
+                    stack = model->undoStack();
+                }
             }
+            undoStackUndo(stack ? stack : project->undoStack());
+            undoCommandSetOnPersistUndoCallback(undoCommandPtr, cb);
         }
-        undoStackUndo(stack ? stack : project->undoStack());
-        undoCommandSetOnPersistUndoCallback(undoCommandPtr, cb);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_UPDATE_ACCESSORY: {
-        Accessory *accessory = project->resolveRedoAccessory(command->redo_update_accessory->accessory_handle);
-        if (accessory) {
-            performRedo(
-                command::UpdateAccessoryCommand::create(command, accessory), project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            Accessory *accessory = project->resolveRedoAccessory(command->redo_update_accessory->accessory_handle);
+            if (accessory) {
+                performRedo(
+                    command::UpdateAccessoryCommand::create(command, accessory), project->undoStack(), undoCommandPtr);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_UPDATE_CAMERA: {
-        performRedo(command::UpdateCameraCommand::create(command, project->globalCamera(), project),
-            project->undoStack(), undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(command::UpdateCameraCommand::create(command, project->globalCamera(), project),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_UPDATE_LIGHT: {
-        performRedo(command::UpdateLightCommand::create(command, project->globalLight(), project), project->undoStack(),
-            undoCommandPtr);
+        if (nanoem_likely(project)) {
+            performRedo(command::UpdateLightCommand::create(command, project->globalLight(), project),
+                project->undoStack(), undoCommandPtr);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_BATCH_UNDO_COMMAND_LIST: {
-        const Nanoem__Application__RedoBatchUndoCommandListCommand *c = command->redo_batch_undo_command_list;
-        Model *model = nullptr;
-        undo_stack_t *stack = nullptr;
-        if (c->has_model_handle) {
-            if (Model *model = project->resolveRedoModel(c->model_handle)) {
-                stack = model->undoStack();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__RedoBatchUndoCommandListCommand *c = command->redo_batch_undo_command_list;
+            Model *model = nullptr;
+            undo_stack_t *stack = nullptr;
+            if (c->has_model_handle) {
+                if (Model *model = project->resolveRedoModel(c->model_handle)) {
+                    stack = model->undoStack();
+                }
             }
+            performRedo(command::BatchUndoCommandListCommand::create(command, model, project),
+                stack ? stack : project->undoStack(), undoCommandPtr);
         }
-        performRedo(command::BatchUndoCommandListCommand::create(command, model, project),
-            stack ? stack : project->undoStack(), undoCommandPtr);
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_ADD_BLEND_ENABLED: {
-        const Nanoem__Application__SetAccessoryAddBlendEnabledCommand *c = command->set_accessory_add_blend_enabled;
-        if (Accessory *accessory = project->findAccessoryByHandle(c->accessory_handle)) {
-            accessory->setAddBlendEnabled(c->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryAddBlendEnabledCommand *c = command->set_accessory_add_blend_enabled;
+            if (Accessory *accessory = project->findAccessoryByHandle(c->accessory_handle)) {
+                accessory->setAddBlendEnabled(c->value != 0);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_SHADOW_ENABLED: {
-        const Nanoem__Application__SetAccessoryShadowEnabledCommand *c = command->set_accessory_shadow_enabled;
-        if (Accessory *accessory = project->findAccessoryByHandle(c->accessory_handle)) {
-            accessory->setShadowMapEnabled(c->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryShadowEnabledCommand *c = command->set_accessory_shadow_enabled;
+            if (Accessory *accessory = project->findAccessoryByHandle(c->accessory_handle)) {
+                accessory->setShadowMapEnabled(c->value != 0);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_ACCESSORY_VISIBLE: {
-        const Nanoem__Application__SetAccessoryVisibleCommand *c = command->set_accessory_visible;
-        if (Accessory *accessory = project->findAccessoryByHandle(c->accessory_handle)) {
-            accessory->setVisible(c->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetAccessoryVisibleCommand *c = command->set_accessory_visible;
+            if (Accessory *accessory = project->findAccessoryByHandle(c->accessory_handle)) {
+                accessory->setVisible(c->value != 0);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_DRAWABLE_ORDER_INDEX: {
-        const Nanoem__Application__SetDrawableOrderIndexCommand *c = command->set_drawable_order_index;
-        if (Accessory *accessory = project->findAccessoryByHandle(c->handle)) {
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetDrawableOrderIndexCommand *c = command->set_drawable_order_index;
+            if (Accessory *accessory = project->findAccessoryByHandle(c->handle)) {
+            }
+            else if (Model *model = project->findModelByHandle(c->handle)) {
+            }
+            DebugUtils::markUnimplemented("NANOEM__APPLICATION__COMMAND__TYPE_SET_DRAWABLE_ORDER_INDEX");
         }
-        else if (Model *model = project->findModelByHandle(c->handle)) {
-        }
-        DebugUtils::markUnimplemented("NANOEM__APPLICATION__COMMAND__TYPE_SET_DRAWABLE_ORDER_INDEX");
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_ADD_BLEND_ENABLED: {
-        const Nanoem__Application__SetModelAddBlendEnabledCommand *c = command->set_model_add_blend_enabled;
-        if (Model *model = project->findModelByHandle(c->model_handle)) {
-            model->setAddBlendEnabled(c->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelAddBlendEnabledCommand *c = command->set_model_add_blend_enabled;
+            if (Model *model = project->findModelByHandle(c->model_handle)) {
+                model->setAddBlendEnabled(c->value != 0);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_SHADOW_ENABLED: {
-        const Nanoem__Application__SetModelShadowEnabledCommand *c = command->set_model_shadow_enabled;
-        if (Model *model = project->findModelByHandle(c->model_handle)) {
-            DebugUtils::markUnimplemented(
-                "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_SHADOW_ENABLED not implemented");
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelShadowEnabledCommand *c = command->set_model_shadow_enabled;
+            if (Model *model = project->findModelByHandle(c->model_handle)) {
+                DebugUtils::markUnimplemented(
+                    "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_SHADOW_ENABLED not implemented");
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_SHADOW_MAP_ENABLED: {
-        const Nanoem__Application__SetModelShadowMapEnabledCommand *c = command->set_model_shadow_map_enabled;
-        if (Model *model = project->findModelByHandle(c->model_handle)) {
-            model->setShadowMapEnabled(c->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelShadowMapEnabledCommand *c = command->set_model_shadow_map_enabled;
+            if (Model *model = project->findModelByHandle(c->model_handle)) {
+                model->setShadowMapEnabled(c->value != 0);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_TRANSFORM_ORDER_INDEX: {
-        const Nanoem__Application__SetModelTransformOrderIndexCommand *c = command->set_model_transform_order_index;
-        if (Model *model = project->findModelByHandle(c->model_handle)) {
-            DebugUtils::markUnimplemented(
-                "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_TRANSFORM_ORDER_INDEX not implemented");
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelTransformOrderIndexCommand *c = command->set_model_transform_order_index;
+            if (Model *model = project->findModelByHandle(c->model_handle)) {
+                DebugUtils::markUnimplemented(
+                    "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_TRANSFORM_ORDER_INDEX not implemented");
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_PHYSICS_SIMULATION_ENABLED: {
-        const Nanoem__Application__SetModelPhysicsSimulationEnabledCommand *c =
-            command->set_model_physics_simulation_enabled;
-        if (Model *model = project->findModelByHandle(c->model_handle)) {
-            model->setPhysicsSimulationEnabled(c->value != 0);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelPhysicsSimulationEnabledCommand *c =
+                command->set_model_physics_simulation_enabled;
+            if (Model *model = project->findModelByHandle(c->model_handle)) {
+                model->setPhysicsSimulationEnabled(c->value != 0);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_CAMERA_KEYFRAME_INTERPOLATION: {
-        const Nanoem__Application__SetCameraKeyframeInterpolationCommand *c =
-            command->set_camera_keyframe_interpolation;
-        ICamera *camera = project->globalCamera();
-        camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X,
-            internal::ApplicationUtils::toU8V(c->interpolation->x));
-        camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y,
-            internal::ApplicationUtils::toU8V(c->interpolation->y));
-        camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z,
-            internal::ApplicationUtils::toU8V(c->interpolation->z));
-        camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE,
-            internal::ApplicationUtils::toU8V(c->interpolation->angle));
-        camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV,
-            internal::ApplicationUtils::toU8V(c->interpolation->fov));
-        camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE,
-            internal::ApplicationUtils::toU8V(c->interpolation->distance));
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetCameraKeyframeInterpolationCommand *c =
+                command->set_camera_keyframe_interpolation;
+            ICamera *camera = project->globalCamera();
+            camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X,
+                internal::ApplicationUtils::toU8V(c->interpolation->x));
+            camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y,
+                internal::ApplicationUtils::toU8V(c->interpolation->y));
+            camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z,
+                internal::ApplicationUtils::toU8V(c->interpolation->z));
+            camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE,
+                internal::ApplicationUtils::toU8V(c->interpolation->angle));
+            camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV,
+                internal::ApplicationUtils::toU8V(c->interpolation->fov));
+            camera->setBezierControlPoints(NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE,
+                internal::ApplicationUtils::toU8V(c->interpolation->distance));
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_BONE_KEYFRAME_INTERPOLATION: {
-        const Nanoem__Application__SetModelBoneKeyframeInterpolationCommand *c =
-            command->set_model_bone_keyframe_interpolation;
-        if (Model *model = project->findModelByHandle(c->model_handle)) {
-            const nanoem_model_bone_t *bonePtr = model->findBone(c->bone_name);
-            if (model::Bone *bone = model::Bone::cast(bonePtr)) {
-                bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X,
-                    internal::ApplicationUtils::toU8V(c->interpolation->x));
-                bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y,
-                    internal::ApplicationUtils::toU8V(c->interpolation->y));
-                bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z,
-                    internal::ApplicationUtils::toU8V(c->interpolation->z));
-                bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION,
-                    internal::ApplicationUtils::toU8V(c->interpolation->orientation));
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__SetModelBoneKeyframeInterpolationCommand *c =
+                command->set_model_bone_keyframe_interpolation;
+            if (Model *model = project->findModelByHandle(c->model_handle)) {
+                const nanoem_model_bone_t *bonePtr = model->findBone(c->bone_name);
+                if (model::Bone *bone = model::Bone::cast(bonePtr)) {
+                    bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X,
+                        internal::ApplicationUtils::toU8V(c->interpolation->x));
+                    bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y,
+                        internal::ApplicationUtils::toU8V(c->interpolation->y));
+                    bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z,
+                        internal::ApplicationUtils::toU8V(c->interpolation->z));
+                    bone->setBezierControlPoints(NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION,
+                        internal::ApplicationUtils::toU8V(c->interpolation->orientation));
+                }
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_DELETE_ACCESSORY: {
-        if (Accessory *accessory = project->resolveRedoAccessory(command->redo_delete_accessory->accessory_handle)) {
-            project->removeAccessory(accessory);
-            project->destroyAccessory(accessory);
+        if (nanoem_likely(project)) {
+            if (Accessory *accessory =
+                    project->resolveRedoAccessory(command->redo_delete_accessory->accessory_handle)) {
+                project->removeAccessory(accessory);
+                project->destroyAccessory(accessory);
+            }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_REDO_DELETE_MODEL: {
-        if (Model *model = project->resolveRedoModel(command->redo_delete_model->model_handle)) {
-            project->removeModel(model);
-            project->destroyModel(model);
+        if (nanoem_likely(project)) {
+            if (Model *model = project->resolveRedoModel(command->redo_delete_model->model_handle)) {
+                project->removeModel(model);
+                project->destroyModel(model);
+            }
         }
         break;
     }
@@ -4596,113 +4863,118 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_EXECUTE_MODEL_IO_PLUGIN: {
-        const Nanoem__Application__ExecuteModelIOPluginCommand *commandPtr = command->execute_model_io_plugin;
-        DefaultFileManager::ModelIOPluginList plugins;
-        m_defaultFileManager->getAllModelIOPlugins(plugins);
-        Model *activeModel = project->activeModel();
-        if (!activeModel) {
-            const ITranslator *tr = translator();
-            error = Error(tr->translate("nanoem.error.plugin.model.no-active-model.reason"),
-                tr->translate("nanoem.error.plugin.model.no-active-model.recovery-suggestion"),
-                Error::kDomainTypePlugin);
-            succeeded = false;
-        }
-        else if (commandPtr->plugin_handle < plugins.size()) {
-            ByteArray input;
-            activeModel->setCodecType(NANOEM_CODEC_TYPE_UTF8);
-            succeeded = activeModel->save(input, error);
-            if (succeeded) {
-                const int functionIndex = commandPtr->function_handle;
-                plugin::ModelIOPlugin *plugin = plugins[commandPtr->plugin_handle];
-                PluginFactory::ModelIOPluginProxy proxy(plugin);
-                ByteArray layout;
-                proxy.setLanguage(project->castLanguage());
-                proxy.setFunction(functionIndex, error);
-                proxy.setInputData(input, error);
-                proxy.setupSelection(activeModel, error);
-                proxy.setProjectDescription(project, error);
-                if (!error.hasReason()) {
-                    if (proxy.getUIWindowLayout(layout, error)) {
-                        m_window->openModelIOPluginDialog(project, plugin, input, layout, functionIndex);
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__ExecuteModelIOPluginCommand *commandPtr = command->execute_model_io_plugin;
+            DefaultFileManager::ModelIOPluginList plugins;
+            m_defaultFileManager->getAllModelIOPlugins(plugins);
+            Model *activeModel = project->activeModel();
+            if (!activeModel) {
+                const ITranslator *tr = translator();
+                error = Error(tr->translate("nanoem.error.plugin.model.no-active-model.reason"),
+                    tr->translate("nanoem.error.plugin.model.no-active-model.recovery-suggestion"),
+                    Error::kDomainTypePlugin);
+                succeeded = false;
+            }
+            else if (commandPtr->plugin_handle < plugins.size()) {
+                ByteArray input;
+                activeModel->setCodecType(NANOEM_CODEC_TYPE_UTF8);
+                succeeded = activeModel->save(input, error);
+                if (succeeded) {
+                    const int functionIndex = commandPtr->function_handle;
+                    plugin::ModelIOPlugin *plugin = plugins[commandPtr->plugin_handle];
+                    PluginFactory::ModelIOPluginProxy proxy(plugin);
+                    ByteArray layout;
+                    proxy.setLanguage(project->castLanguage());
+                    proxy.setFunction(functionIndex, error);
+                    proxy.setInputData(input, error);
+                    proxy.setupSelection(activeModel, error);
+                    proxy.setupEditingMask(activeModel, error);
+                    proxy.setProjectDescription(project, error);
+                    if (!error.hasReason()) {
+                        if (proxy.getUIWindowLayout(layout, error)) {
+                            m_window->openModelIOPluginDialog(project, plugin, input, layout, functionIndex);
+                        }
+                        else {
+                            proxy.execute(functionIndex, input, activeModel, project, error);
+                        }
+                        if (g_sentryAvailable) {
+                            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                            sentry_value_t data = sentry_value_new_object();
+                            sentry_value_set_by_key(data, "name", sentry_value_new_string(proxy.name().c_str()));
+                            sentry_value_set_by_key(data, "version", sentry_value_new_string(proxy.version().c_str()));
+                            sentry_value_set_by_key(data, "function", sentry_value_new_int32(functionIndex));
+                            sentry_value_set_by_key(
+                                breadcrumb, "category", sentry_value_new_string("plugin.model.execute"));
+                            sentry_value_set_by_key(breadcrumb, "data", data);
+                            sentry_add_breadcrumb(breadcrumb);
+                        }
                     }
-                    else {
-                        proxy.execute(functionIndex, input, activeModel, project, error);
-                    }
-                    if (g_sentryAvailable) {
-                        sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-                        sentry_value_t data = sentry_value_new_object();
-                        sentry_value_set_by_key(data, "name", sentry_value_new_string(proxy.name().c_str()));
-                        sentry_value_set_by_key(data, "version", sentry_value_new_string(proxy.version().c_str()));
-                        sentry_value_set_by_key(data, "function", sentry_value_new_int32(functionIndex));
-                        sentry_value_set_by_key(
-                            breadcrumb, "category", sentry_value_new_string("plugin.model.execute"));
-                        sentry_value_set_by_key(breadcrumb, "data", data);
-                        sentry_add_breadcrumb(breadcrumb);
-                    }
+                    succeeded = !error.hasReason();
                 }
-                succeeded = !error.hasReason();
             }
         }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_EXECUTE_MOTION_IO_PLUGIN: {
-        const Nanoem__Application__ExecuteMotionIOPluginCommand *commandPtr = command->execute_motion_io_plugin;
-        DefaultFileManager::MotionIOPluginList plugins;
-        m_defaultFileManager->getAllMotionIOPlugins(plugins);
-        if (commandPtr->plugin_handle < plugins.size()) {
-            plugin::MotionIOPlugin *plugin = plugins[commandPtr->plugin_handle];
-            Model *activeModel = project->activeModel();
-            Accessory *activeAccessory = project->activeAccessory();
-            ByteArray input;
-            if (Motion *motion = project->resolveMotion(activeModel)) {
-                succeeded = motion->save(input, activeModel, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
-            }
-            else if (Motion *motion = project->resolveMotion(activeAccessory)) {
-                succeeded = motion->save(input, nullptr, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
-            }
-            else {
-                Motion *tempMotion = project->createMotion();
-                tempMotion->mergeAllKeyframes(project->cameraMotion());
-                tempMotion->mergeAllKeyframes(project->lightMotion());
-                tempMotion->mergeAllKeyframes(project->selfShadowMotion());
-                succeeded = tempMotion->save(input, nullptr, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
-                project->destroyMotion(tempMotion);
-            }
-            if (succeeded) {
-                const int functionIndex = commandPtr->function_handle;
-                PluginFactory::MotionIOPluginProxy proxy(plugin);
-                proxy.setLanguage(project->castLanguage());
-                proxy.setFunction(functionIndex, error);
-                proxy.setInputData(input, error);
-                proxy.setProjectDescription(project, error);
-                succeeded = !error.hasReason();
+        if (nanoem_likely(project)) {
+            const Nanoem__Application__ExecuteMotionIOPluginCommand *commandPtr = command->execute_motion_io_plugin;
+            DefaultFileManager::MotionIOPluginList plugins;
+            m_defaultFileManager->getAllMotionIOPlugins(plugins);
+            if (commandPtr->plugin_handle < plugins.size()) {
+                plugin::MotionIOPlugin *plugin = plugins[commandPtr->plugin_handle];
+                Model *activeModel = project->activeModel();
+                Accessory *activeAccessory = project->activeAccessory();
+                ByteArray input;
                 if (Motion *motion = project->resolveMotion(activeModel)) {
-                    proxy.setupModelSelection(motion, activeModel, error);
+                    succeeded = motion->save(input, activeModel, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
                 }
                 else if (Motion *motion = project->resolveMotion(activeAccessory)) {
-                    proxy.setupAccessorySelection(motion, error);
+                    succeeded = motion->save(input, nullptr, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
                 }
-                if (!error.hasReason()) {
-                    ByteArray layout;
-                    if (proxy.getUIWindowLayout(layout, error)) {
-                        m_window->openMotionIOPluginDialog(project, plugin, input, layout, functionIndex);
-                    }
-                    else {
-                        proxy.execute(functionIndex, input, project, error);
-                    }
-                    if (g_sentryAvailable) {
-                        sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-                        sentry_value_t data = sentry_value_new_object();
-                        sentry_value_set_by_key(data, "name", sentry_value_new_string(proxy.name().c_str()));
-                        sentry_value_set_by_key(data, "version", sentry_value_new_string(proxy.version().c_str()));
-                        sentry_value_set_by_key(data, "function", sentry_value_new_int32(functionIndex));
-                        sentry_value_set_by_key(
-                            breadcrumb, "category", sentry_value_new_string("plugin.motion.execute"));
-                        sentry_value_set_by_key(breadcrumb, "data", data);
-                        sentry_add_breadcrumb(breadcrumb);
-                    }
+                else {
+                    Motion *tempMotion = project->createMotion();
+                    tempMotion->mergeAllKeyframes(project->cameraMotion());
+                    tempMotion->mergeAllKeyframes(project->lightMotion());
+                    tempMotion->mergeAllKeyframes(project->selfShadowMotion());
+                    succeeded = tempMotion->save(input, nullptr, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error);
+                    project->destroyMotion(tempMotion);
                 }
-                succeeded = succeeded && !error.hasReason();
+                if (succeeded) {
+                    const int functionIndex = commandPtr->function_handle;
+                    PluginFactory::MotionIOPluginProxy proxy(plugin);
+                    proxy.setLanguage(project->castLanguage());
+                    proxy.setFunction(functionIndex, error);
+                    proxy.setInputData(input, error);
+                    proxy.setProjectDescription(project, error);
+                    succeeded = !error.hasReason();
+                    if (Motion *motion = project->resolveMotion(activeModel)) {
+                        proxy.setupModelSelection(motion, activeModel, error);
+                    }
+                    else if (Motion *motion = project->resolveMotion(activeAccessory)) {
+                        proxy.setupAccessorySelection(motion, error);
+                    }
+                    if (!error.hasReason()) {
+                        ByteArray layout;
+                        if (proxy.getUIWindowLayout(layout, error)) {
+                            m_window->openMotionIOPluginDialog(project, plugin, input, layout, functionIndex);
+                        }
+                        else {
+                            proxy.execute(functionIndex, input, project, error);
+                        }
+                        if (g_sentryAvailable) {
+                            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                            sentry_value_t data = sentry_value_new_object();
+                            sentry_value_set_by_key(data, "name", sentry_value_new_string(proxy.name().c_str()));
+                            sentry_value_set_by_key(data, "version", sentry_value_new_string(proxy.version().c_str()));
+                            sentry_value_set_by_key(data, "function", sentry_value_new_int32(functionIndex));
+                            sentry_value_set_by_key(
+                                breadcrumb, "category", sentry_value_new_string("plugin.motion.execute"));
+                            sentry_value_set_by_key(breadcrumb, "data", data);
+                            sentry_add_breadcrumb(breadcrumb);
+                        }
+                    }
+                    succeeded = succeeded && !error.hasReason();
+                }
             }
         }
         break;
@@ -4718,9 +4990,14 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
             const Nanoem__Application__QueryOpenSingleFileDialogCommand *commandPtr =
                 command->query_open_single_file_dialog;
             const Nanoem__Application__URI *uri = commandPtr->file_uri;
-            const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-            IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
-            succeeded = project->fileManager()->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+            const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
+            if (!fileURI.isEmpty()) {
+                IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
+                succeeded = project->fileManager()->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+            }
+            else {
+                m_defaultFileManager->cancelQueryFileDialog(project);
+            }
         }
         break;
     }
@@ -4728,12 +5005,18 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             const Nanoem__Application__QueryOpenMultipleFilesDialogCommand *commandPtr =
                 command->query_open_multiple_files_dialog;
-            IFileManager *fileManager = project->fileManager();
             IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
-            for (nanoem_rsize_t i = 0, numItems = commandPtr->n_file_uri; i < numItems; i++) {
-                const Nanoem__Application__URI *uri = commandPtr->file_uri[i];
-                const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-                succeeded &= fileManager->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+            nanoem_rsize_t numItems = commandPtr->n_file_uri;
+            if (numItems > 0) {
+                IFileManager *fileManager = project->fileManager();
+                for (nanoem_rsize_t i = 0; i < numItems; i++) {
+                    const Nanoem__Application__URI *uri = commandPtr->file_uri[i];
+                    const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
+                    succeeded &= fileManager->loadFromFileWithModalDialog(fileURI, dialogType, project, error);
+                }
+            }
+            else {
+                m_defaultFileManager->cancelQueryFileDialog(project);
             }
         }
         break;
@@ -4742,9 +5025,14 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             const Nanoem__Application__QuerySaveFileDialogCommand *commandPtr = command->query_save_file_dialog;
             const Nanoem__Application__URI *uri = commandPtr->file_uri;
-            const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-            IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
-            succeeded = project->fileManager()->saveAsFile(fileURI, dialogType, project, error);
+            const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
+            if (!fileURI.isEmpty()) {
+                IFileManager::DialogType dialogType = static_cast<IFileManager::DialogType>(commandPtr->type);
+                succeeded = project->fileManager()->saveAsFile(fileURI, dialogType, project, error);
+            }
+            else {
+                m_defaultFileManager->cancelQueryFileDialog(project);
+            }
         }
         break;
     }
@@ -5056,15 +5344,13 @@ BaseApplicationService::drawDefaultPass()
         if (active) {
             OPTICK_FRAME(__PRETTY_FUNCTION__);
             beginDrawContext();
-            draw(project, m_stateController);
+            draw(project);
             sg::commit();
             presentDefaultPass(project);
             resetAllPasses = project->resetAllPasses();
             if (m_stateController->globalFrameIndex() % 2 == 0) {
                 postEmptyApplicationEvent();
             }
-        }
-        if (active) {
             m_stateController->consumeDefaultPass();
             endDrawContext();
         }
@@ -5203,9 +5489,7 @@ BaseApplicationService::SharedResourceRepository::SharedResourceRepository()
         m_sharedToonColors[i] = Constants::kZeroV4;
     }
     for (size_t i = 0; i < BX_COUNTOF(m_sharedToonImages); i++) {
-        Image *imageRef = m_sharedToonImages[i] = nanoem_new(Image);
-        Inline::clearZeroMemory(imageRef->m_description);
-        imageRef->m_handle = { SG_INVALID_ID };
+        m_sharedToonImages[i] = nanoem_new(Image);
     }
 }
 
@@ -5223,7 +5507,8 @@ void
 BaseApplicationService::SharedResourceRepository::destroy()
 {
     for (size_t i = 0; i < BX_COUNTOF(m_sharedToonImages); i++) {
-        sg::destroy_image(m_sharedToonImages[i]->m_handle);
+        Image *sharedToonImage = m_sharedToonImages[i];
+        sharedToonImage->destroy();
     }
     if (m_modelProgramBundle) {
         m_modelProgramBundle->destroy();
@@ -5418,6 +5703,44 @@ BaseApplicationService::performRedo(undo_command_t *commandPtr, undo_stack_t *st
     undoStackPushCommand(stack, commandPtr);
     undoCommandSetOnPersistRedoCallback(commandPtr, cb);
     commandPtrRef = commandPtr;
+}
+
+void
+BaseApplicationService::setMorphWeight(float value, Project *project)
+{
+    if (Model *activeModel = project->activeModel()) {
+        if (model::Morph *morph = model::Morph::cast(activeModel->activeMorph())) {
+            morph->setWeight(value);
+            activeModel->resetAllMorphDeformStates();
+            activeModel->deformAllMorphs(true);
+            activeModel->performAllBonesTransform();
+        }
+    }
+}
+
+void
+BaseApplicationService::sendSaveFileMessage(const URI &fileURI, uint32_t type, uint64_t interval, bool succeeded)
+{
+    Nanoem__Application__CompleteSavingFileEvent base = NANOEM__APPLICATION__COMPLETE_SAVING_FILE_EVENT__INIT;
+    Nanoem__Application__URI uri2;
+    MutableString absolutePath, fragment;
+    base.file_uri = internal::ApplicationUtils::assignURI(&uri2, absolutePath, fragment, fileURI);
+    base.type = type;
+    base.ticks = interval;
+    base.has_ticks = 1;
+    Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
+    event.type_case = NANOEM__APPLICATION__EVENT__TYPE_COMPLETE_SAVING_FILE;
+    event.complete_saving_file = &base;
+    sendEventMessage(&event);
+    if (g_sentryAvailable && succeeded) {
+        sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+        sentry_value_t data = sentry_value_new_object();
+        sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
+        sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
+        sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("saved"));
+        sentry_value_set_by_key(breadcrumb, "data", data);
+        sentry_add_breadcrumb(breadcrumb);
+    }
 }
 
 void

@@ -40,8 +40,8 @@ const nanoem_f32_t PerspectiveCamera::kInitialFovRadian = glm::radians(nanoem_f3
 const int PerspectiveCamera::kMaxFov = 135;
 const int PerspectiveCamera::kMinFov = 1;
 const int PerspectiveCamera::kInitialFov = 30;
-const glm::u8vec4 PerspectiveCamera::kDefaultBezierControlPoint = glm::u8vec4(20, 20, 107, 107);
-const glm::u8vec4 PerspectiveCamera::kDefaultAutomaticBezierControlPoint = glm::u8vec4(64, 0, 64, 127);
+const Vector4U8 PerspectiveCamera::kDefaultBezierControlPoint = Vector4U8(20, 20, 107, 107);
+const Vector4U8 PerspectiveCamera::kDefaultAutomaticBezierControlPoint = Vector4U8(64, 0, 64, 127);
 
 PerspectiveCamera::PerspectiveCamera(Project *project)
     : m_project(project)
@@ -120,9 +120,13 @@ PerspectiveCamera::update()
         m_projectionMatrix = glm::infinitePerspective(m_fov.second, aspectRatio(), 0.5f);
     }
     else {
-        const nanoem_f32_t aspect = aspectRatio(), v = m_distance * (0.5f / aspect), x2 = lookAt.x - kInitialLookAt.x,
-                           y2 = lookAt.y - kInitialLookAt.y;
-        m_projectionMatrix = glm::ortho(x2 + (-v * aspect), x2 + (v * aspect), y2 + -v, y2 + v, 0.5f, zfar());
+        const Vector2 viewportImageSize(m_project->viewportImageSize());
+        const nanoem_f32_t inverseDistance = 1.0f / m_distance;
+        Matrix4x4 projectionMatrix(1);
+        projectionMatrix[0][0] = 2.0f * glm::max(viewportImageSize.y / viewportImageSize.x, 1.0f) * inverseDistance;
+        projectionMatrix[1][1] = 2.0f * glm::max(viewportImageSize.x / viewportImageSize.y, 1.0f) * inverseDistance;
+        projectionMatrix[2][2] = 2.0f / (zfar() - 0.5f);
+        m_projectionMatrix = projectionMatrix;
     }
 }
 
@@ -277,60 +281,51 @@ PerspectiveCamera::getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) cons
 }
 
 Vector3
-PerspectiveCamera::unprojected(const Vector3 &value, nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
+PerspectiveCamera::unprojected(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector4 viewport(m_project->logicalScaleUniformedViewportImageRect());
-    const Vector3 coordinate(glm::unProject(value, m_viewMatrix, internalPerspective(zfar), viewport));
+    const Vector4 viewport(0, 0, m_project->logicalScaleUniformedViewportImageSize());
+    const Vector3 coordinate(glm::unProject(value, m_viewMatrix, m_projectionMatrix, viewport));
     return coordinate;
 }
 
-Vector2
-PerspectiveCamera::toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
-{
-    const Vector4UI16 viewport(m_project->logicalScaleUniformedViewportImageRect());
-    const Vector3 coordinate(
-        glm::project(value, m_viewMatrix, internalPerspective(FLT_MAX), Vector4(0, 0, viewport.z, viewport.w)));
-    return Vector2(viewport.x + coordinate.x, viewport.y + viewport.w - coordinate.y);
-}
-
-Vector2
+Vector2SI32
 PerspectiveCamera::toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_f32_t scaleFactor = m_project->deviceScaleViewportScaleFactor();
     const Vector4UI16 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
-    const Vector2 imageSize(Vector2(m_project->deviceScaleUniformedViewportImageSize()) * scaleFactor);
-    nanoem_f32_t x = (layoutRect.z - imageSize.x) * 0.5f, y = (layoutRect.w - imageSize.y) * 0.5f;
-    const Vector2 coordinate(
-        glm::project(value, m_viewMatrix, m_projectionMatrix, Vector4(0, 0, imageSize.x, imageSize.y)));
-    return Vector2(x + coordinate.x, layoutRect.w - coordinate.y - y);
+    const Vector2 imageSize(m_project->deviceScaleUniformedViewportImageSize());
+    const Vector4 viewportRect(0, 0, imageSize.x, imageSize.y);
+    const nanoem_f32_t x = (layoutRect.z - imageSize.x) * 0.5f, y = (layoutRect.w - imageSize.y) * 0.5f;
+    const Vector2 coordinate(glm::project(value, m_viewMatrix, m_projectionMatrix, viewportRect));
+    return Vector2SI32(x + coordinate.x, layoutRect.w - coordinate.y - y);
 }
 
-Vector2
+Vector2SI32
 PerspectiveCamera::toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector4UI16 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
-    return Vector2(layoutRect) + toDeviceScreenCoordinateInViewport(value);
+    const Vector2SI32 layoutRect(m_project->deviceScaleUniformedViewportLayoutRect());
+    return layoutRect + toDeviceScreenCoordinateInViewport(value);
 }
 
 Ray
-PerspectiveCamera::createRay(const Vector2 &cursor, nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
+PerspectiveCamera::createRay(const Vector2SI32 &value) const NANOEM_DECL_NOEXCEPT
 {
-    Vector2 coord;
-    coord.x = cursor.x;
-    coord.y = m_project->logicalScaleUniformedViewportImageSize().y - cursor.y;
+    const Vector2SI32 coord(m_project->resolveLogicalCursorPositionInViewport(value));
     Ray ray;
-    ray.from = unprojected(Vector3(coord, -1), zfar);
-    ray.to = unprojected(Vector3(coord, 1), zfar);
+    ray.from = unprojected(Vector3(coord, 0));
+    ray.to = unprojected(Vector3(coord, 1 - Constants::kEpsilon));
     ray.direction =
         glm::abs(glm::distance(ray.to, ray.from)) > 0 ? glm::normalize(ray.to - ray.from) : Constants::kUnitZ;
     return ray;
 }
 
 bool
-PerspectiveCamera::intersectsRay(const Ray &ray, nanoem_f32_t intersectDistance) const NANOEM_DECL_NOEXCEPT
+PerspectiveCamera::castRay(const Vector2SI32 &position, Vector3 &intersection) const NANOEM_DECL_NOEXCEPT
 {
-    const Vector3 normal(glm::normalize(-Constants::kUnitZ * glm::max(m_distance, 1.0f)));
-    return glm::intersectRayPlane(ray.from, ray.direction, Constants::kZeroV3, normal, intersectDistance);
+    const Ray ray(createRay(position));
+    float distance;
+    bool intersected = glm::intersectRayPlane(ray.from, ray.direction, Constants::kZeroV3, -direction(), distance);
+    intersection = ray.from + ray.direction * distance;
+    return intersected;
 }
 
 nanoem_f32_t
@@ -395,17 +390,13 @@ PerspectiveCamera::lookAt() const NANOEM_DECL_NOEXCEPT
         break;
     }
     case kFollowingTypeModel: {
-        static const nanoem_u8_t kCenterOfViewport[] = { 0xe6, 0x93, 0x8d, 0xe4, 0xbd, 0x9c, 0xe4, 0xb8, 0xad, 0xe5,
-            0xbf, 0x83, 0 };
-        static const nanoem_u8_t kCenterOffset[] = { 0xe3, 0x82, 0xbb, 0xe3, 0x83, 0xb3, 0xe3, 0x82, 0xbf, 0xe3, 0x83,
-            0xbc, 0xe5, 0x85, 0x88, 0 };
         if (const Model *model = m_project->activeModel()) {
             if (const nanoem_model_bone_t *bonePtr =
-                    model->findBone(reinterpret_cast<const char *>(kCenterOfViewport))) {
+                    model->findBone(reinterpret_cast<const char *>(model::Bone::kNameCenterOfViewportInJapanese))) {
                 at = m_lookAt + bonePosition(bonePtr);
             }
             else if (const nanoem_model_bone_t *bonePtr =
-                         model->findBone(reinterpret_cast<const char *>(kCenterOffset))) {
+                         model->findBone(reinterpret_cast<const char *>(model::Bone::kNameCenterOffsetInJapanese))) {
                 at = m_lookAt + bonePosition(nanoemModelBoneGetParentBoneObject(bonePtr));
             }
             else {
@@ -505,13 +496,13 @@ PerspectiveCamera::setFovRadians(nanoem_f32_t value)
     }
 }
 
-glm::u8vec4
+Vector4U8
 PerspectiveCamera::automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT
 {
     return m_automaticBezierControlPoint;
 }
 
-glm::u8vec4
+Vector4U8
 PerspectiveCamera::bezierControlPoints(
     nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {
@@ -520,7 +511,7 @@ PerspectiveCamera::bezierControlPoints(
 
 void
 PerspectiveCamera::setBezierControlPoints(
-    nanoem_motion_camera_keyframe_interpolation_type_t index, const glm::u8vec4 &value)
+    nanoem_motion_camera_keyframe_interpolation_type_t index, const Vector4U8 &value)
 {
     m_bezierControlPoints[index] = value;
 }
@@ -608,22 +599,6 @@ void
 PerspectiveCamera::setDirty(bool value)
 {
     m_dirty = value;
-}
-
-Matrix4x4
-PerspectiveCamera::internalPerspective(nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
-{
-    const Vector2 size(m_project->logicalScaleUniformedViewportImageSize());
-    return size.x > 0 && size.y > 0 ? glm::perspectiveFov(m_fov.second, size.x, size.y, 0.5f, zfar)
-                                    : Constants::kIdentity;
-}
-
-Matrix4x4
-PerspectiveCamera::internalDevicePerspective(nanoem_f32_t zfar) const NANOEM_DECL_NOEXCEPT
-{
-    const Vector2 size(m_project->deviceScaleUniformedViewportImageSize());
-    return size.x > 0 && size.y > 0 ? glm::perspectiveFov(m_fov.second, size.x, size.y, 0.5f, zfar)
-                                    : Constants::kIdentity;
 }
 
 nanoem_f32_t

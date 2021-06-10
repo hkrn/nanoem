@@ -15,9 +15,9 @@
 
 #include "bx/thread.h"
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
-typedef struct _Nanoem__Application__Event Nanoem__Application__Event;
-typedef struct _Nanoem__Application__Plugin Nanoem__Application__Plugin;
+struct Nanoem__Application__Command;
+struct Nanoem__Application__Event;
+struct Nanoem__Application__Plugin;
 
 namespace nanoem {
 

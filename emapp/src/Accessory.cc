@@ -380,7 +380,7 @@ Accessory::uploadArchive(const String &entryPoint, const Archiver &archiver, Pro
                     sg_image_desc desc;
                     const nanoem_u32_t pixel = item->m_usingWhiteFallback ? 0xffffffff : 0x0;
                     ImageLoader::fill1x1PixelImage(&pixel, desc);
-                    uploadImage(item->m_filename, desc);
+                    internalUploadImage(item->m_filename, desc, false);
                 }
             }
             SG_POP_GROUP();
@@ -467,7 +467,7 @@ Accessory::pushUndo(undo_command_t *command)
     nanoem_assert(!m_project->isPlaying(), "must not be called while playing");
     if (!m_project->isPlaying()) {
         undoStackPushCommand(m_project->undoStack(), command);
-        m_project->eventPublisher()->publishUndoChangeEvent();
+        m_project->eventPublisher()->publishPushUndoCommandEvent(command);
     }
     else {
         undoCommandDestroy(command);
@@ -489,9 +489,10 @@ Accessory::destroy()
         }
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
-        SG_INSERT_MARKERF("Accessory::destroy(image=%d, name=%s)", it->second->m_handle.id, it->first.c_str());
-        sg::destroy_image(it->second->m_handle);
-        nanoem_delete(it->second);
+        Image *image = it->second;
+        SG_INSERT_MARKERF("Accessory::destroy(image=%d, name=%s)", image->handle().id, it->first.c_str());
+        image->destroy();
+        nanoem_delete(image);
     }
     SG_INSERT_MARKERF("Accessory::destroy(vertex=%d, index=%d)", m_vertexBuffer.id, m_indexBuffer.id);
     sg::destroy_buffer(m_vertexBuffer);
@@ -570,35 +571,10 @@ Accessory::synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *ke
     }
 }
 
-sg_image *
+IImageView *
 Accessory::uploadImage(const String &filename, const sg_image_desc &desc)
 {
-    SG_PUSH_GROUPF(
-        "Accessory::uploadImage(filename=%s, width=%d, height=%d)", filename.c_str(), desc.width, desc.height);
-    sg_image *handlePtr = nullptr;
-    ImageMap::iterator it = m_imageHandles.find(filename);
-    if (it != m_imageHandles.end()) {
-        char label[Inline::kMarkerStringLength];
-        Image *image = it->second;
-        sg_image &handleRef = image->m_handle;
-        sg::destroy_image(handleRef);
-        handlePtr = &handleRef;
-        if (Inline::isDebugLabelEnabled()) {
-            StringUtils::format(
-                label, sizeof(label), "Accessories/%s/%s", canonicalNameConstString(), filename.c_str());
-            sg_image_desc labeledDesc(desc);
-            labeledDesc.label = label;
-            handleRef = sg::make_image(&labeledDesc);
-            ImageLoader::copyImageDescrption(labeledDesc, image);
-        }
-        else {
-            handleRef = sg::make_image(&desc);
-            ImageLoader::copyImageDescrption(desc, image);
-        }
-        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), handleRef.id);
-    }
-    SG_POP_GROUP();
-    return handlePtr;
+    return internalUploadImage(filename, desc, true);
 }
 
 const Accessory::Material *
@@ -696,6 +672,9 @@ Accessory::setOffscreenPassiveRenderTargetEffect(const String &ownerName, IEffec
             else {
                 const OffscreenPassiveRenderTargetEffect effect = { value, true };
                 m_offscreenPassiveRenderTargetEffects.insert(tinystl::make_pair(ownerName, effect));
+                if (Effect *innerEffect = m_project->upcastEffect(value)) {
+                    innerEffect->createAllDrawableRenderTargetColorImages(this);
+                }
             }
         }
     }
@@ -1180,15 +1159,37 @@ Accessory::createImage(const nanodxm_uint8_t *path)
     else {
         const URI &imageURI = Project::resolveArchiveURI(resolvedFileURI(), filename);
         Image *image = nanoem_new(Image);
-        image->m_handle = { SG_INVALID_ID };
-        image->m_filename = filename;
-        Inline::clearZeroMemory(image->m_description);
+        image->setFilename(filename);
         m_imageHandles.insert(tinystl::make_pair(filename, image));
         m_imageURIMap.insert(tinystl::make_pair(filename, imageURI));
         m_loadingImageItems.push_back(nanoem_new(LoadingImageItem(imageURI, filename)));
         imagePtr = image;
     }
     return imagePtr;
+}
+
+Image *
+Accessory::internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist)
+{
+    SG_PUSH_GROUPF("Accessory::internalUploadImage(filename=%s, width=%d, height=%d, fileExist=%d)", filename.c_str(),
+        desc.width, desc.height, fileExist);
+    Image *image = nullptr;
+    ImageMap::iterator it = m_imageHandles.find(filename);
+    if (it != m_imageHandles.end()) {
+        image = it->second;
+        ImageLoader::copyImageDescrption(desc, image);
+        if (Inline::isDebugLabelEnabled()) {
+            char label[Inline::kMarkerStringLength];
+            StringUtils::format(
+                label, sizeof(label), "Accessories/%s/%s", canonicalNameConstString(), filename.c_str());
+            image->setLabel(label);
+        }
+        image->setFileExist(fileExist);
+        image->create();
+        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
+    }
+    SG_POP_GROUP();
+    return image;
 }
 
 void
@@ -1221,9 +1222,8 @@ Accessory::createAllImages()
             }
             if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(path))) {
                 m_screenImage = nanoem_new(Image);
-                m_screenImage->m_filename = Project::kViewportSecondaryName;
-                m_screenImage->m_handle = m_project->viewportSecondaryImage();
-                Inline::clearZeroMemory(m_screenImage->m_description);
+                m_screenImage->setFilename(Project::kViewportSecondaryName);
+                m_screenImage->setHandle(m_project->viewportSecondaryImage());
                 material->setDiffuseImage(m_screenImage);
             }
             else {
@@ -1390,8 +1390,8 @@ Accessory::createIndexBuffer(tinystl::vector<TIndex, TinySTLAllocator> &allIndic
 void
 Accessory::createIndexBuffer(Vector3List &normalSum)
 {
-    Indices32 allIndices;
-    tinystl::vector<Indices32, TinySTLAllocator> indicesPerMaterial;
+    VertexIndexList allIndices;
+    tinystl::vector<VertexIndexList, TinySTLAllocator> indicesPerMaterial;
     createIndexBuffer(allIndices, indicesPerMaterial);
     size_t size = allIndices.size() * sizeof(allIndices[0]);
     if (size > 0) {
@@ -1564,7 +1564,7 @@ Accessory::drawColor(bool scriptExternalColor)
     nanodxm_rsize_t numMaterials, indexOffset = 0;
     nanodxm_material_t *const *materials = nanodxmDocumentGetMaterials(m_opaque, &numMaterials);
     if (m_screenImage) {
-        m_screenImage->m_handle = m_project->viewportSecondaryImage();
+        m_screenImage->setHandle(m_project->viewportSecondaryImage());
     }
     sg_image diffuseTexture = { SG_INVALID_ID };
     for (nanodxm_rsize_t i = 0; i < numMaterials; i++) {
@@ -1573,7 +1573,7 @@ Accessory::drawColor(bool scriptExternalColor)
         if (numIndices > 0) {
             nanoem_model_material_sphere_map_texture_type_t sphereTextureType =
                 NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBufferAndTexture(material, buffer, diffuseTexture, sphereTextureType)) {
                 IEffect *effect = internalEffect();
                 if (ITechnique *technique = effect->findTechnique(passType, material, i, numMaterials, this)) {
@@ -1615,7 +1615,7 @@ Accessory::drawGroundShadow()
         if (numIndices > 0) {
             nanoem_model_material_sphere_map_texture_type_t sphereTextureType =
                 NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBufferAndTexture(material, buffer, diffuseTexture, sphereTextureType)) {
                 IEffect *effect = internalEffect();
                 if (ITechnique *technique =
@@ -1660,7 +1660,7 @@ Accessory::drawShadowMap()
         if (numIndices > 0 && enableCastingShadowMap) {
             nanoem_model_material_sphere_map_texture_type_t sphereTextureType =
                 NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
-            IPass::Buffer buffer(numIndices, indexOffset);
+            IPass::Buffer buffer(numIndices, indexOffset, true);
             if (getVertexIndexBufferAndTexture(material, buffer, diffuseTexture, sphereTextureType)) {
                 IEffect *effect = internalEffect();
                 if (ITechnique *technique =

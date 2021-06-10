@@ -24,7 +24,7 @@ ActiveModelSelector::callback(void *userData, int index, const char **out) NANOE
 
 ActiveModelSelector::ActiveModelSelector(const Project *project)
     : m_translator(project->translator())
-    , m_models(project->isPlaying() ? Project::ModelList() : project->allModels())
+    , m_models(project->isPlaying() ? Project::ModelList() : *project->allModels())
 {
 }
 

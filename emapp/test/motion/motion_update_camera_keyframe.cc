@@ -26,17 +26,17 @@ TEST_CASE("motion_update_camera_keyframe", "[emapp][motion]")
             camera->setFovRadians(glm::radians(35.0f));
             camera->setDistance(511);
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X, glm::u8vec4(2, 4, 6, 8));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X, Vector4U8(2, 4, 6, 8));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y, glm::u8vec4(3, 5, 7, 9));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y, Vector4U8(3, 5, 7, 9));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z, glm::u8vec4(11, 13, 15, 17));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z, Vector4U8(11, 13, 15, 17));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE, glm::u8vec4(12, 14, 16, 18));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE, Vector4U8(12, 14, 16, 18));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV, glm::u8vec4(24, 26, 28, 30));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV, Vector4U8(24, 26, 28, 30));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE, glm::u8vec4(25, 27, 29, 31));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE, Vector4U8(25, 27, 29, 31));
         }
         CommandRegistrator registrator(project);
         registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
@@ -46,17 +46,17 @@ TEST_CASE("motion_update_camera_keyframe", "[emapp][motion]")
             camera->setFovRadians(glm::radians(36.0f));
             camera->setDistance(512);
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X, glm::u8vec4(8, 6, 4, 2));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X, Vector4U8(8, 6, 4, 2));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y, glm::u8vec4(9, 7, 5, 3));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y, Vector4U8(9, 7, 5, 3));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z, glm::u8vec4(17, 15, 13, 11));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z, Vector4U8(17, 15, 13, 11));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE, glm::u8vec4(18, 16, 14, 12));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE, Vector4U8(18, 16, 14, 12));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV, glm::u8vec4(30, 28, 26, 24));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV, Vector4U8(30, 28, 26, 24));
             camera->setBezierControlPoints(
-                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE, glm::u8vec4(31, 29, 27, 25));
+                NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE, Vector4U8(31, 29, 27, 25));
         }
         registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         SECTION("updating current camera keyframe")
@@ -72,17 +72,17 @@ TEST_CASE("motion_update_camera_keyframe", "[emapp][motion]")
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(-512));
             CHECK(project->duration() == 1337);
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == glm::u8vec4(8, 6, 4, 2));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == Vector4U8(8, 6, 4, 2));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == glm::u8vec4(9, 7, 5, 3));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == Vector4U8(9, 7, 5, 3));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == glm::u8vec4(17, 15, 13, 11));
-            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == glm::u8vec4(18, 16, 14, 12));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == Vector4U8(17, 15, 13, 11));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == glm::u8vec4(30, 28, 26, 24));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == Vector4U8(18, 16, 14, 12));
+            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == Vector4U8(30, 28, 26, 24));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == glm::u8vec4(31, 29, 27, 25));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == Vector4U8(31, 29, 27, 25));
             CHECK(project->cameraMotion()->isDirty());
             CHECK_FALSE(scope.hasAnyError());
         }
@@ -100,17 +100,17 @@ TEST_CASE("motion_update_camera_keyframe", "[emapp][motion]")
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(511));
             CHECK(project->duration() == 1337);
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == glm::u8vec4(2, 4, 6, 8));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == Vector4U8(2, 4, 6, 8));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == glm::u8vec4(3, 5, 7, 9));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == Vector4U8(3, 5, 7, 9));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == glm::u8vec4(11, 13, 15, 17));
-            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == glm::u8vec4(12, 14, 16, 18));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == Vector4U8(11, 13, 15, 17));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == glm::u8vec4(24, 26, 28, 30));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == Vector4U8(12, 14, 16, 18));
+            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == Vector4U8(24, 26, 28, 30));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == glm::u8vec4(25, 27, 29, 31));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == Vector4U8(25, 27, 29, 31));
             CHECK_FALSE(scope.hasAnyError());
         }
         project->handleRedoAction();
@@ -127,17 +127,17 @@ TEST_CASE("motion_update_camera_keyframe", "[emapp][motion]")
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(-512));
             CHECK(project->duration() == 1337);
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == glm::u8vec4(8, 6, 4, 2));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == Vector4U8(8, 6, 4, 2));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == glm::u8vec4(9, 7, 5, 3));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == Vector4U8(9, 7, 5, 3));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == glm::u8vec4(17, 15, 13, 11));
-            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == glm::u8vec4(18, 16, 14, 12));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == Vector4U8(17, 15, 13, 11));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == glm::u8vec4(30, 28, 26, 24));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == Vector4U8(18, 16, 14, 12));
+            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == Vector4U8(30, 28, 26, 24));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == glm::u8vec4(31, 29, 27, 25));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == Vector4U8(31, 29, 27, 25));
             CHECK_FALSE(scope.hasAnyError());
         }
         SECTION("recover")
@@ -156,17 +156,17 @@ TEST_CASE("motion_update_camera_keyframe", "[emapp][motion]")
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(-512));
             CHECK(project2->duration() == 1337);
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == glm::u8vec4(8, 6, 4, 2));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_X)) == Vector4U8(8, 6, 4, 2));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == glm::u8vec4(9, 7, 5, 3));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Y)) == Vector4U8(9, 7, 5, 3));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == glm::u8vec4(17, 15, 13, 11));
-            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == glm::u8vec4(18, 16, 14, 12));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_LOOKAT_Z)) == Vector4U8(17, 15, 13, 11));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == glm::u8vec4(30, 28, 26, 24));
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE)) == Vector4U8(18, 16, 14, 12));
+            CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
+                      keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == Vector4U8(30, 28, 26, 24));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
-                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == glm::u8vec4(31, 29, 27, 25));
+                      NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == Vector4U8(31, 29, 27, 25));
             CHECK_FALSE(scope.hasAnyError());
         }
     }

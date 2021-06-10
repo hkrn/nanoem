@@ -126,6 +126,7 @@ public:
 
         void setBackupEnabled(bool value);
         void setupSelection(const Model *model, Error &error);
+        void setupEditingMask(const Model *model, Error &error);
         void setAllSelectedVertexObjectIndices(const IntList &value, Error &error);
         void setAllSelectedMaterialObjectIndices(const IntList &value, Error &error);
         void setAllSelectedBoneObjectIndices(const IntList &value, Error &error);

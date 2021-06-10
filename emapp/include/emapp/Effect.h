@@ -352,7 +352,7 @@ private:
         const effect::AnnotationMap &annotations, sg_pixel_format defaultFormat) const NANOEM_DECL_NOEXCEPT;
     sg_pixel_format determineDepthStencilPixelFormat(
         const effect::AnnotationMap &annotations, sg_pixel_format defaultFormat) const NANOEM_DECL_NOEXCEPT;
-    Vector4 viewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT;
+    Vector4 scaledViewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT;
     Vector4 determineImageSize(const effect::AnnotationMap &annotations, const Vector4 &defaultValue,
         Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT;
     void setImageUniform(const String &name, const effect::Pass *pass, sg_image handle);

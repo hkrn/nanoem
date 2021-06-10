@@ -6,17 +6,33 @@
 
 #include "emapp/model/Bone.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Motion.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 
+#include "glm/gtc/type_ptr.hpp"
+#include "glm/gtx/vector_angle.hpp"
 #include "glm/gtx/vector_query.hpp"
 
 namespace nanoem {
 namespace model {
 namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateLinearInterpolationTranslationX = 1 << 1,
+    kPrivateStateLinearInterpolationTranslationY = 1 << 2,
+    kPrivateStateLinearInterpolationTranslationZ = 1 << 3,
+    kPrivateStateLinearInterpolationOrientation = 1 << 4,
+    kPrivateStateDirty = 1 << 5,
+    kPrivateStateEditingMasked = 1 << 6,
+    kPrivateStateReserved = 1 << 31,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = kPrivateStateLinearInterpolationTranslationX |
+    kPrivateStateLinearInterpolationTranslationY | kPrivateStateLinearInterpolationTranslationZ |
+    kPrivateStateLinearInterpolationOrientation;
 
 static inline void
 identify(bx::float4x4_t *o) NANOEM_DECL_NOEXCEPT
@@ -42,10 +58,23 @@ shrink3x3(const bx::float4x4_t *m, bx::float4x4_t *o) NANOEM_DECL_NOEXCEPT
     o->col[3] = bx::simd_ld(0, 0, 0, 1);
 }
 
-} /* anonymous */
+} /* namespade anonymous */
 
-const glm::u8vec4 Bone::kDefaultBezierControlPoint = glm::u8vec4(20, 20, 107, 107);
-const glm::u8vec4 Bone::kDefaultAutomaticBezierControlPoint = glm::u8vec4(64, 0, 64, 127);
+const Vector4U8 Bone::kDefaultBezierControlPoint = Vector4U8(20, 20, 107, 107);
+const Vector4U8 Bone::kDefaultAutomaticBezierControlPoint = Vector4U8(64, 0, 64, 127);
+const nanoem_u8_t Bone::kNameRootParentInJapanese[] = { 0xe5, 0x85, 0xa8, 0xe3, 0x81, 0xa6, 0xe3, 0x81, 0xae, 0xe8,
+    0xa6, 0xaa, 0x0 };
+const nanoem_u8_t Bone::kNameCenterInJapanese[] = { 0xe3, 0x82, 0xbb, 0xe3, 0x83, 0xb3, 0xe3, 0x82, 0xbf, 0xe3, 0x83,
+    0xbc, 0 };
+const nanoem_u8_t Bone::kNameCenterOfViewportInJapanese[] = { 0xe6, 0x93, 0x8d, 0xe4, 0xbd, 0x9c, 0xe4, 0xb8, 0xad,
+    0xe5, 0xbf, 0x83, 0 };
+const nanoem_u8_t Bone::kNameCenterOffsetInJapanese[] = { 0xe3, 0x82, 0xbb, 0xe3, 0x83, 0xb3, 0xe3, 0x82, 0xbf, 0xe3,
+    0x83, 0xbc, 0xe5, 0x85, 0x88, 0 };
+const nanoem_u8_t Bone::kNameLeftInJapanese[] = { 0xe5, 0xb7, 0xa6, 0x0 };
+const nanoem_u8_t Bone::kNameRightInJapanese[] = { 0xe5, 0x8f, 0xb3, 0x0 };
+const nanoem_u8_t Bone::kNameDestinationInJapanese[] = { 0xe5, 0x85, 0x88, 0x0 };
+const nanoem_u8_t Bone::kLeftKneeInJapanese[] = { 0xe5, 0xb7, 0xa6, 0xe3, 0x81, 0xb2, 0xe3, 0x81, 0x96, 0x0 };
+const nanoem_u8_t Bone::kRightKneeInJapanese[] = { 0xe5, 0x8f, 0xb3, 0xe3, 0x81, 0xb2, 0xe3, 0x81, 0x96, 0x0 };
 
 const Bone::FrameTransform Bone::FrameTransform::kInitialFrameTransform = FrameTransform();
 
@@ -90,8 +119,7 @@ Bone::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelBoneGetName(bone, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Bone%d", nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bone)));
+            StringUtils::format(m_canonicalName, "Bone%d", index(bone));
         }
     }
     if (m_name.empty()) {
@@ -105,7 +133,10 @@ Bone::resetLocalTransform() NANOEM_DECL_NOEXCEPT
     m_localOrientation = m_localInherentOrientation = Constants::kZeroQ;
     m_localTranslation = m_localInherentTranslation = Constants::kZeroV3;
     for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
+        nanoem_motion_bone_keyframe_interpolation_type_t type =
+            static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
         m_bezierControlPoints[i] = kDefaultBezierControlPoint;
+        setLinearInterpolation(type, true);
     }
 }
 
@@ -114,7 +145,7 @@ Bone::resetUserTransform() NANOEM_DECL_NOEXCEPT
 {
     m_localUserOrientation = Constants::kZeroQ;
     m_localUserTranslation = Constants::kZeroV3;
-    m_dirty = false;
+    setDirty(false);
 }
 
 void
@@ -136,16 +167,20 @@ Bone::synchronizeMotion(const Motion *motion, const nanoem_model_bone_t *bone,
         setLocalUserTranslation(glm::mix(t0.m_translation, t1.m_translation, amount));
         setLocalUserOrientation(glm::slerp(t0.m_orientation, t1.m_orientation, amount));
         for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
+            nanoem_motion_bone_keyframe_interpolation_type_t type =
+                static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
             m_bezierControlPoints[i] = glm::mix(t0.m_bezierControlPoints[i], t1.m_bezierControlPoints[i], amount);
-            m_isLinearInterpolation[i] = t0.m_enableLinearInterpolation[i];
+            setLinearInterpolation(type, t0.m_enableLinearInterpolation[i]);
         }
     }
     else {
         setLocalUserTranslation(t0.m_translation);
         setLocalUserOrientation(t0.m_orientation);
         for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
+            nanoem_motion_bone_keyframe_interpolation_type_t type =
+                static_cast<nanoem_motion_bone_keyframe_interpolation_type_t>(i);
             m_bezierControlPoints[i] = t0.m_bezierControlPoints[i];
-            m_isLinearInterpolation[i] = t0.m_enableLinearInterpolation[i];
+            setLinearInterpolation(type, t0.m_enableLinearInterpolation[i]);
         }
     }
 }
@@ -358,13 +393,25 @@ Bone::canonicalNameConstString() const NANOEM_DECL_NOEXCEPT
 bool
 Bone::isDirty() const NANOEM_DECL_NOEXCEPT
 {
-    return m_dirty;
+    return EnumUtils::isEnabled(kPrivateStateDirty, m_states);
 }
 
 void
 Bone::setDirty(bool value)
 {
-    m_dirty = value;
+    EnumUtils::setEnabled(kPrivateStateDirty, m_states, value);
+}
+
+bool
+Bone::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+Bone::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
 }
 
 void
@@ -399,46 +446,89 @@ Bone::constrainOrientation(
 }
 
 bool
-Bone::isSelectable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::isSelectable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelBoneIsVisible(bone) && nanoemModelBoneIsUserHandleable(bone) &&
-        (nanoemModelBoneIsMovable(bone) || nanoemModelBoneIsRotateable(bone));
+    return nanoemModelBoneIsVisible(bonePtr) && nanoemModelBoneIsUserHandleable(bonePtr) &&
+        (nanoemModelBoneIsMovable(bonePtr) || nanoemModelBoneIsRotateable(bonePtr));
 }
 
 bool
-Bone::isMovable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::isMovable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelBoneIsUserHandleable(bone) && nanoemModelBoneIsMovable(bone);
+    return nanoemModelBoneIsUserHandleable(bonePtr) && nanoemModelBoneIsMovable(bonePtr);
 }
 
 bool
-Bone::isRotateable(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::isRotateable(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return nanoemModelBoneIsUserHandleable(bone) && nanoemModelBoneIsRotateable(bone);
+    return nanoemModelBoneIsUserHandleable(bonePtr) && nanoemModelBoneIsRotateable(bonePtr);
+}
+
+int
+Bone::index(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(bonePtr));
+}
+
+const char *
+Bone::nameConstString(const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Bone *bone = cast(bonePtr);
+    return bone ? bone->nameConstString() : placeHolder;
+}
+
+const char *
+Bone::canonicalNameConstString(const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Bone *bone = cast(bonePtr);
+    return bone ? bone->canonicalNameConstString() : placeHolder;
 }
 
 Matrix3x3
-Bone::localAxes(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    nanoem_parameter_assert(bone, "must not be nullptr");
-    if (nanoemModelBoneHasLocalAxes(bone)) {
-        const Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bone)));
-        const Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bone)));
+    nanoem_parameter_assert(bonePtr, "must not be nullptr");
+    Matrix3x3 matrix;
+    if (nanoemModelBoneHasLocalAxes(bonePtr)) {
+        const Vector3 axisX(glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr)));
+        const Vector3 axisZ(glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr)));
         const Vector3 axisY(glm::cross(axisZ, axisX));
         const Vector3 newAxisZ(glm::cross(axisX, axisY));
-        const Matrix3x3 matrix(axisX, axisY, newAxisZ);
-        return matrix;
+        matrix = Matrix3x3(axisX, axisY, newAxisZ);
     }
     else {
-        static const Matrix3x3 kIdentityMatrix(Constants::kUnitX, Constants::kUnitY, Constants::kUnitZ);
-        return kIdentityMatrix;
+        static const nanoem_u8_t kLeftArmNameInJapanese[] = { 0xe5, 0xb7, 0xa6, 0xe8, 0x85, 0x95, 0x0 },
+                                 kRightArmNameInJapanese[] = { 0xe5, 0x8f, 0xb3, 0xe8, 0x85, 0x95, 0x0 };
+        static const nanoem_u8_t kMaxDiggingDepth = 128;
+        const nanoem_model_bone_t *diggingBonePtr = bonePtr;
+        Quaternion orientation(Constants::kZeroQ);
+        nanoem_u8_t depth = 0;
+        while (diggingBonePtr && depth < kMaxDiggingDepth) {
+            const model::Bone *diggingBone = model::Bone::cast(diggingBonePtr);
+            const char *boneName = diggingBone->canonicalNameConstString();
+            if (StringUtils::equals(boneName, reinterpret_cast<const char *>(kRightArmNameInJapanese)) ||
+                StringUtils::equals(boneName, reinterpret_cast<const char *>(kLeftArmNameInJapanese))) {
+                const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
+                const Vector3 parentOrigin(model::Bone::origin(bonePtr)),
+                    baseOrigin(targetBonePtr ? model::Bone::origin(targetBonePtr)
+                                             : glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr))),
+                    directionAxis(glm::normalize(baseOrigin - parentOrigin));
+                float angle = glm::angle(Constants::kUnitX, directionAxis);
+                orientation = glm::angleAxis(-angle, Constants::kUnitZ);
+                break;
+            }
+            diggingBonePtr = nanoemModelBoneGetParentBoneObject(diggingBonePtr);
+            depth++;
+        }
+        matrix = glm::mat3_cast(orientation);
     }
+    return matrix;
 }
 
 Vector3
-Bone::origin(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::origin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    return glm::make_vec3(nanoemModelBoneGetOrigin(bone)) * Constants::kTranslateDirection;
+    return glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr)) * Constants::kTranslateDirection;
 }
 
 Vector3
@@ -456,9 +546,9 @@ Bone::toQuaternion(const nanoem_motion_bone_keyframe_t *keyframe) NANOEM_DECL_NO
 }
 
 Bone *
-Bone::cast(const nanoem_model_bone_t *bone) NANOEM_DECL_NOEXCEPT
+Bone::cast(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelBoneGetModelObject(bone);
+    const nanoem_model_object_t *object = nanoemModelBoneGetModelObject(bonePtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Bone *>(nanoemUserDataGetOpaqueData(userData));
 }
@@ -608,14 +698,14 @@ Bone::setLocalMorphTranslation(const Vector3 &value)
     m_localMorphTranslation = value;
 }
 
-glm::u8vec4
+Vector4U8
 Bone::bezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {
     return m_bezierControlPoints[index];
 }
 
 void
-Bone::setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index, const glm::u8vec4 &value)
+Bone::setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t index, const Vector4U8 &value)
 {
     m_bezierControlPoints[index] = value;
 }
@@ -623,13 +713,53 @@ Bone::setBezierControlPoints(nanoem_motion_bone_keyframe_interpolation_type_t in
 bool
 Bone::isLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {
-    return m_isLinearInterpolation[index];
+    bool result = false;
+    switch (index) {
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationTranslationX, m_states);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationTranslationY, m_states);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationTranslationZ, m_states);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION: {
+        result = EnumUtils::isEnabled(kPrivateStateLinearInterpolationOrientation, m_states);
+        break;
+    }
+    default:
+        break;
+    }
+    return result;
 }
 
 void
 Bone::setLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index, bool value)
 {
-    m_isLinearInterpolation[index] = value;
+    switch (index) {
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_X: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationTranslationX, m_states, value);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Y: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationTranslationY, m_states, value);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationTranslationZ, m_states, value);
+        break;
+    }
+    case NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION: {
+        EnumUtils::setEnabled(kPrivateStateLinearInterpolationOrientation, m_states, value);
+        break;
+    }
+    default:
+        break;
+    }
 }
 
 void
@@ -865,17 +995,15 @@ Bone::Bone(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_localOrien
                                                                     m_localInherentTranslation(Constants::kZeroV3),
                                                                     m_localMorphTranslation(Constants::kZeroV3),
                                                                     m_localUserTranslation(Constants::kZeroV3),
-                                                                    m_dirty(false)
+                                                                    m_states(kPrivateStateInitialValue)
 {
     Inline::clearZeroMemory(m_bezierControlPoints);
-    Inline::clearZeroMemory(m_isLinearInterpolation);
     identify(&m_matrices.m_localTransform);
     identify(&m_matrices.m_normalTransform);
     identify(&m_matrices.m_skinningTransform);
     identify(&m_matrices.m_worldTransform);
-    for (size_t i = 0; i < BX_COUNTOF(m_isLinearInterpolation); i++) {
-        m_bezierControlPoints[i] = glm::u8vec4(0);
-        m_isLinearInterpolation[i] = true;
+    for (size_t i = 0; i < BX_COUNTOF(m_bezierControlPoints); i++) {
+        m_bezierControlPoints[i] = Vector4U8(0);
     }
 }
 

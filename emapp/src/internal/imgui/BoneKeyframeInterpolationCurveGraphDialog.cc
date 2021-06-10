@@ -107,14 +107,14 @@ BoneKeyframeInterpolationCurveGraphDialog::draw(Project *project)
 #endif
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeCancel: {
-            if (activeBone) {
+            if (!project->isPlaying() && activeBone) {
                 activeBone->setBezierControlPoints(m_type, m_controlPoint);
             }
             break;
         }
         case kResponseTypeOK:
         default:
-            if (activeBone) {
+            if (!project->isPlaying() && activeBone) {
                 activeBone->setBezierControlPoints(m_type, controlPoint);
             }
             break;

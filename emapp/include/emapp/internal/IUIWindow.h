@@ -9,14 +9,13 @@
 
 #include "emapp/BaseApplicationService.h"
 
-struct nk_context;
-
 namespace nanoem {
 
 class Accessory;
 class Model;
 class IModalDialog;
 class IPrimitive2D;
+class IState;
 class Project;
 
 namespace plugin {
@@ -32,9 +31,10 @@ public:
     {
     }
 
-    virtual void initialize(nanoem_f32_t devicePixelRatio) = 0;
-    virtual void reset() = 0;
+    virtual void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio) = 0;
+    virtual void reset(Project *project) = 0;
     virtual void destroy() NANOEM_DECL_NOEXCEPT = 0;
+
     virtual void setFontPointSize(nanoem_f32_t pointSize) = 0;
     virtual void setKeyPressed(BaseApplicationService::KeyType key) = 0;
     virtual void setKeyReleased(BaseApplicationService::KeyType key) = 0;
@@ -60,17 +60,18 @@ public:
     virtual void openModelEdgeDialog(Project *project) = 0;
     virtual void openScaleAllSelectedKeyframesDialog() = 0;
     virtual void openEffectParameterDialog(Project *project) = 0;
-    virtual void openModelParameterDialog(Project *project) = 0;
+    virtual void openModelParameterDialog(Project *project, Error &error) = 0;
     virtual void openPreferenceDialog() = 0;
     virtual bool openModelIOPluginDialog(Project *project, plugin::ModelIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) = 0;
     virtual bool openMotionIOPluginDialog(Project *project, plugin::MotionIOPlugin *plugin, const ByteArray &input,
         const ByteArray &layout, int functionIndex) = 0;
+    virtual void openSaveProjectDialog(Project *project) = 0;
 
     virtual void resizeDevicePixelWindowSize(const Vector2UI16 &value) = 0;
     virtual void setDevicePixelRatio(float value) = 0;
-    virtual void drawAll2DPrimitives(Project *project, Project::IViewportOverlay *overlay, nanoem_u32_t flags) = 0;
-    virtual void drawAllWindows(Project *project, nanoem_u32_t flags) = 0;
+    virtual void setAntiAliasEnabled(bool value) = 0;
+    virtual void drawAllWindows(Project *project, IState *state, nanoem_u32_t flags) = 0;
 
     virtual const IModalDialog *currentModalDialog() const NANOEM_DECL_NOEXCEPT = 0;
     virtual IModalDialog *currentModalDialog() NANOEM_DECL_NOEXCEPT = 0;

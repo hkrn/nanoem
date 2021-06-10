@@ -16,7 +16,9 @@ namespace imgui {
 
 struct LazyReloadEffectCommand : ImGuiWindow::ILazyExecutionCommand {
     LazyReloadEffectCommand(IDrawable *value);
+
     void execute(Project *project) NANOEM_DECL_OVERRIDE;
+    void destroy(Project *project) NANOEM_DECL_OVERRIDE;
 
     IDrawable *m_value;
 };

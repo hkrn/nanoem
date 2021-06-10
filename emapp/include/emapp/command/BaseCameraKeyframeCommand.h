@@ -19,10 +19,10 @@ public:
 
 protected:
     struct BezierControlPointParameter {
-        glm::u8vec4 m_value[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
+        Vector4U8 m_value[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM];
     };
     struct BezierControlPointParameterLookAtOnly {
-        glm::u8vec4 m_value[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE];
+        Vector4U8 m_value[NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_ANGLE];
     };
     typedef tinystl::pair<BezierControlPointParameterLookAtOnly, BezierControlPointParameterLookAtOnly>
         BezierControlPointParameterLookAtOnlyPair;

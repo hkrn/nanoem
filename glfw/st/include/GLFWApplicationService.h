@@ -22,8 +22,8 @@ namespace glfw {
 
 class GLFWApplicationService final : public BaseApplicationService {
 public:
-    static Vector2SI32 devicePixelScreenPosition(GLFWwindow *window, const Vector2SI32 &value) noexcept;
-    static Vector2 scaleCursorCoordinate(double x, double y, GLFWwindow *window) noexcept;
+    static Vector2SI32 deviceScaleCursorPosition(double x, double y, GLFWwindow *window) noexcept;
+    static Vector2 logicalScaleCursorPosition(double x, double y, GLFWwindow *window) noexcept;
     static Vector2 invertedDevicePixelRatio(GLFWwindow *window) noexcept;
     static int convertCursorModifier(int value);
     static int convertCursorType(int value);
@@ -31,8 +31,8 @@ public:
     GLFWApplicationService(const JSON_Value *config, GLFWApplicationClient::Bridge *bridge);
     ~GLFWApplicationService() override;
 
-    void setNativeView(GLFWwindow *window);
     void draw();
+    void setNativeView(GLFWwindow *window);
     void consumeDispatchAllCommandMessages();
     void dispatchAllEventMessages();
 
@@ -43,6 +43,7 @@ private:
     bool isRendererAvailable(const char *value) const noexcept override;
     void handleInitializeApplication() override;
     void sendEventMessage(const Nanoem__Application__Event *event) override;
+    void presentDefaultPass(const Project *project);
 
     void updateAllMonitors();
 

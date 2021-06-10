@@ -14,8 +14,8 @@
 struct nk_context;
 struct undo_command_t;
 
-typedef struct _Nanoem__Application__Command Nanoem__Application__Command;
-typedef struct _Nanoem__Application__Event Nanoem__Application__Event;
+struct Nanoem__Application__Command;
+struct Nanoem__Application__Event;
 
 namespace bx {
 class CommandLine;
@@ -237,14 +237,13 @@ public:
     BaseApplicationService(const JSON_Value *root);
     virtual ~BaseApplicationService() NANOEM_DECL_NOEXCEPT;
 
-    void initialize(nanoem_f32_t devicePixelRatio);
-    void setDevicePixelRatio(nanoem_f32_t devicePixelRatio);
+    void initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio);
     void destroy();
 
     Project *createProject(const Vector2UI16 &logicalPixelWindowSize, sg_pixel_format pixelFormat,
         nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewportDevicePixelRatio, const char *dllPath);
     void destroyProject(Project *project);
-    void draw(Project *project, Project::IViewportOverlay *overlay);
+    void draw(Project *project);
 
     const char *translateMenuItem(nanoem_u32_t type) const NANOEM_DECL_NOEXCEPT;
     bool dispatchMenuItemAction(Project *project, nanoem_u32_t type, Error &error);
@@ -416,6 +415,8 @@ private:
     static void writeRedoMessage(Nanoem__Application__Command *command, Project *project, Error &error);
     static void performRedo(undo_command_t *commandPtr, undo_stack_t *stack, undo_command_t *&commandPtrRef);
 
+    void setMorphWeight(float value, Project *project);
+    void sendSaveFileMessage(const URI &fileURI, uint32_t type, uint64_t interval, bool succeeded);
     void sendQueryEventMessage(Nanoem__Application__Event *event, const Nanoem__Application__Command *command);
     void sendSaveAfterConfirmEventMessage();
     void sendDiscardAfterConfirmEventMessage();

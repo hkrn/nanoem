@@ -30,8 +30,8 @@ ModelKeyframeSelector::ModelKeyframeSelector(Project *project)
     : m_rootTrack(nullptr)
     , m_project(project)
 {
-    const TrackList tracks(project->allTracks());
-    for (Project::TrackList::const_iterator it = tracks.begin(), end = tracks.end(); it != end; ++it) {
+    const TrackList *tracks = project->allTracks();
+    for (Project::TrackList::const_iterator it = tracks->begin(), end = tracks->end(); it != end; ++it) {
         const ITrack *track = *it;
         if (track->isExpandable()) {
             const Project::TrackList children(track->children());
@@ -87,8 +87,8 @@ ModelKeyframeSelector::handleAction(const TimelineSegment &segment, int index)
         break;
     }
     case kSelectTypeBones: {
-        model::Bone::Set bones(activeModel->selection()->allBoneSet());
-        for (model::Bone::Set::const_iterator it = bones.begin(), end = bones.end(); it != end; ++it) {
+        const model::Bone::Set *boneSet = activeModel->selection()->allBoneSet();
+        for (model::Bone::Set::const_iterator it = boneSet->begin(), end = boneSet->end(); it != end; ++it) {
             const nanoem_model_bone_t *bonePtr = *it;
             selection->addBoneKeyframes(bonePtr, segment.m_from, segment.m_to);
         }
@@ -123,29 +123,30 @@ ModelKeyframeSelector::handleAction(const TimelineSegment &segment, int index)
 bool
 ModelKeyframeSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
 {
+    const ITranslator *translator = m_project->translator();
     switch (static_cast<SelectType>(index)) {
     case kSelectTypeAll: {
-        *out = m_project->translator()->translate("All Keyframes");
+        *out = translator->translate("nanoem.project.track.select-all");
         break;
     }
     case kSelectTypeLabelRoot: {
-        *out = m_rootTrack ? m_rootTrack->nameConstString() : "(none)";
+        *out = m_rootTrack ? m_rootTrack->nameConstString() : translator->translate("nanoem.project.track.none");
         break;
     }
     case kSelectTypeModel: {
-        *out = m_project->translator()->translate("nanoem.project.track.model");
+        *out = translator->translate("nanoem.project.track.model");
         break;
     }
     case kSelectTypeBones: {
-        *out = m_project->translator()->translate("Selected Bones");
+        *out = translator->translate("nanoem.project.track.selected-bones");
         break;
     }
     case kSelectTypeMorphs: {
-        *out = m_project->translator()->translate("Selected Morphs");
+        *out = translator->translate("nanoem.project.track.selected-morphs");
         break;
     }
     case kSelectTypeAllMorphs: {
-        *out = m_project->translator()->translate("All Morphs");
+        *out = translator->translate("nanoem.project.track.all-morphs");
         break;
     }
     default:

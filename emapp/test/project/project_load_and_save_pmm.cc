@@ -17,7 +17,7 @@ TEST_CASE("project_load_empty_pmm_should_error", "[emapp][project]")
     Error error;
     ProjectPtr first = scope.createProject();
     internal::project::PMM pmm(first->m_project);
-    CHECK_FALSE(pmm.load(0, 0, error));
+    CHECK_FALSE(pmm.load(0, 0, error, nullptr));
     CHECK(error.hasReason());
     CHECK_THAT(error.reasonConstString(), Catch::Equals("Loading PMM error: Invalid signature"));
 }
@@ -37,5 +37,5 @@ TEST_CASE("project_load_pmm", "[emapp][project][test]")
         FileUtils::read(scope, bytes, error);
     }
     internal::project::PMM pmm(project);
-    pmm.load(bytes.data(), bytes.size(), error);
+    pmm.load(bytes.data(), bytes.size(), error, nullptr);
 }

@@ -41,11 +41,10 @@ public:
     virtual void update() = 0;
     virtual void synchronizeParameters(const Motion *motion, const nanoem_frame_index_t frameIndex) = 0;
     virtual void getViewTransform(Matrix4x4 &view, Matrix4x4 &projection) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2 toScreenCoordinate(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Vector2 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual Ray createRay(const Vector2 &cursor, nanoem_f32_t zfar = FLT_MAX) const NANOEM_DECL_NOEXCEPT = 0;
-    virtual bool intersectsRay(const Ray &ray, nanoem_f32_t intersectDistance) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector2SI32 toDeviceScreenCoordinateInViewport(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector2SI32 toDeviceScreenCoordinateInWindow(const Vector3 &value) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Ray createRay(const Vector2SI32 &cursor) const NANOEM_DECL_NOEXCEPT = 0;
+    virtual bool castRay(const Vector2SI32 &position, Vector3 &intersection) const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_f32_t aspectRatio() const NANOEM_DECL_NOEXCEPT = 0;
     virtual nanoem_f32_t zfar() const NANOEM_DECL_NOEXCEPT = 0;
 
@@ -66,11 +65,11 @@ public:
     virtual void setFov(int value) = 0;
     virtual nanoem_f32_t fovRadians() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setFovRadians(nanoem_f32_t value) = 0;
-    virtual glm::u8vec4 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual glm::u8vec4 bezierControlPoints(
+    virtual Vector4U8 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual Vector4U8 bezierControlPoints(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBezierControlPoints(
-        nanoem_motion_camera_keyframe_interpolation_type_t index, const glm::u8vec4 &value) = 0;
+        nanoem_motion_camera_keyframe_interpolation_type_t index, const Vector4U8 &value) = 0;
     virtual bool isLinearInterpolation(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual bool isPerspective() const NANOEM_DECL_NOEXCEPT = 0;

@@ -61,7 +61,7 @@ ITechnique *
 AccessoryProgramBundle::findTechnique(const String &passType, const nanodxm_material_t *material,
     nanoem_rsize_t materialIndex, nanoem_rsize_t numMaterials, Accessory *accessory)
 {
-    BX_UNUSED_3(material, materialIndex, numMaterials);
+    BX_UNUSED_2(materialIndex, numMaterials);
     const Project *project = accessory->project();
     BaseTechnique *foundTechnique = nullptr;
     if (passType == Effect::kPassTypeObject || passType == Effect::kPassTypeObjectSelfShadow) {
@@ -305,7 +305,7 @@ AccessoryProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, co
 {
     Accessory *accessory = m_parentTechnique->accessory();
     Project *project = accessory->project();
-    const bool isAddBlend = accessory->isAddBlendEnabled(),
+    const bool isAddBlend = accessory->isAddBlendEnabled(), isDepthEnabled = buffer.m_depthEnabled,
                isOffscreenRenderPassActive = project->isOffscreenRenderPassActive();
     const sg_pass pass =
         isOffscreenRenderPassActive ? project->currentOffscreenRenderPass() : project->currentRenderPass();
@@ -316,6 +316,7 @@ AccessoryProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, co
     hash.add(m_cullMode);
     hash.add(techniqueType);
     hash.add(isAddBlend);
+    hash.add(isDepthEnabled);
     hash.add(isOffscreenRenderPassActive);
     format.addHash(hash);
     nanoem_u32_t key = hash.end();
@@ -329,10 +330,13 @@ AccessoryProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, co
         Inline::clearZeroMemory(desc);
         Accessory::setStandardPipelineDescription(desc);
         desc.shader = m_parentTechnique->shader();
+        desc.color_count = format.m_numColorAttachments;
         sg_color_state &cs = desc.colors[0];
         cs.pixel_format = format.m_colorPixelFormats[0];
-        desc.depth.pixel_format = format.m_depthPixelFormat;
-        desc.color_count = format.m_numColorAttachments;
+        sg_depth_state &ds = desc.depth;
+        ds.compare = isDepthEnabled ? SG_COMPAREFUNC_LESS_EQUAL : SG_COMPAREFUNC_ALWAYS;
+        ds.pixel_format = format.m_depthPixelFormat;
+        ds.write_enabled = isDepthEnabled;
         if (isAddBlend) {
             Project::setAddBlendMode(cs);
         }
@@ -340,9 +344,9 @@ AccessoryProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, co
             Project::setAlphaBlendMode(cs);
         }
         if (!project->isRenderPassViewport()) {
-            desc.colors[0].write_mask = SG_COLORMASK_RGBA;
+            cs.write_mask = SG_COLORMASK_RGBA;
         }
-        if (techniqueType == kTechniqueTypeGroundShadow) {
+        if (techniqueType == kTechniqueTypeGroundShadow && isDepthEnabled) {
             Project::setShadowDepthStencilState(desc.depth, desc.stencil);
         }
         desc.cull_mode = m_cullMode;

@@ -146,8 +146,7 @@ TransformBoneCommand::write(void *messagePtr)
     nanoem_rsize_t numDirtyBones = 0;
     for (DirtyStateList::const_iterator it = m_dirtyStates.begin(), end = m_dirtyStates.end(); it != end; ++it) {
         if (it->second) {
-            command->dirty_bone_indices[numDirtyBones++] =
-                nanoemModelObjectGetIndex(nanoemModelBoneGetModelObject(it->first));
+            command->dirty_bone_indices[numDirtyBones++] = model::Bone::index(it->first);
         }
     }
     command->n_dirty_bone_indices = numDirtyBones;

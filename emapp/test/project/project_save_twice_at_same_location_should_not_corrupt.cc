@@ -64,10 +64,10 @@ TEST_CASE("project_save_twice_at_same_location_should_not_corrupt", "[emapp][pro
         CHECK(
             application->fileManager()->loadFromFile(fileURI, IFileManager::kDialogTypeOpenProject, newProject, error));
         CHECK_FALSE(error.hasReason());
-        CHECK(newProject->allAccessories().size() == 4);
-        CHECK(newProject->allModels().size() == 4);
-        CHECK(newProject->drawableOrderList().size() == 8);
-        CHECK(newProject->transformOrderList().size() == 4);
+        CHECK(newProject->allAccessories()->size() == 4);
+        CHECK(newProject->allModels()->size() == 4);
+        CHECK(newProject->drawableOrderList()->size() == 8);
+        CHECK(newProject->transformOrderList()->size() == 4);
         const Project::AccessoryList &allAccessories = second->allAccessories();
         const Project::ModelList &allModels = second->allModels();
         REQUIRE(allAccessories.size() == 4);

@@ -24,6 +24,12 @@ LazySetActiveAccessoryCommand::execute(Project *project)
     m_parent->resetSelectionIndex();
 }
 
+void
+LazySetActiveAccessoryCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

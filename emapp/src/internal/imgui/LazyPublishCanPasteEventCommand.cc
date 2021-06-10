@@ -23,6 +23,12 @@ LazyPublishCanPasteEventCommand::execute(Project *project)
     project->eventPublisher()->publishCanPasteEvent(m_value);
 }
 
+void
+LazyPublishCanPasteEventCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

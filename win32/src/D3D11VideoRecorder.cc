@@ -21,6 +21,7 @@
 #include <mfapi.h>
 #include <mfidl.h>
 #include <mfreadwrite.h>
+#include <stdio.h>
 
 namespace nanoem {
 namespace win32 {

@@ -73,7 +73,7 @@ TEST_CASE("project_save_and_load_json_should_success", "[emapp][project]")
             project->addModel(model);
             if (i == 3) {
                 project->setActiveModel(model);
-                model->setTransformAxisType(Model::kAxisY);
+                model->setTransformAxisType(Model::kAxisTypeY);
             }
         }
         project->activeCamera()->setAngle(Vector3(0.2, 0.4, 0.6));
@@ -136,7 +136,7 @@ TEST_CASE("project_save_and_load_json_should_success", "[emapp][project]")
         // CHECK(newProject->shadowMapSize() == Vector2UI16(512 == 512));
         // CHECK(newProject->isShadowMapEnabled());
         CHECK(newProject->shadowCamera()->coverageMode() == 2);
-        CHECK(newProject->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+        CHECK(newProject->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
         CHECK(newProject->physicsEngine()->debugGeometryFlags() == (1 | 2 | 4 | 16 | 64));
         CHECK_THAT(newProject->viewportBackgroundColor(), Equals(Vector4(1)));
         CHECK(newProject->sampleLevel() == 2);
@@ -145,9 +145,9 @@ TEST_CASE("project_save_and_load_json_should_success", "[emapp][project]")
         // CHECK(newProject->currentLocalFrameIndex() == 864);
         CHECK(newProject->preferredMotionFPS() == 60);
         CHECK(newProject->isLoopEnabled());
-        CHECK(newProject->drawableOrderList().size() == 25);
-        CHECK(newProject->transformOrderList().size() == 8);
-        // CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisY);
+        CHECK(newProject->drawableOrderList()->size() == 25);
+        CHECK(newProject->transformOrderList()->size() == 8);
+        // CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisTypeY);
         CHECK(newProject->coordinationSystem() == GLM_LEFT_HANDED);
     }
     json_value_free(root);

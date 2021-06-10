@@ -39,7 +39,6 @@ namespace {
 
 static const char kUserFileNeedleType1[] = "/UserFile/";
 static const char kUserFileNeedleType2[] = "UserFile/";
-static const Vector3 kCameraDirection = Vector3(-1, 1, 1);
 
 static URI
 concatFileURI(const URI &fileURI, const char *appendPath)
@@ -92,7 +91,6 @@ struct PMM::Context {
 
         typedef tinystl::unordered_map<String, Effect *, TinySTLAllocator> CacheMap;
         Project *m_project;
-        CacheMap m_cachedEffects;
         StringMap m_effectPropertyKey2FilePaths;
         StringMap m_filePath2EffectPropertyKeys;
         TreeMap m_offscreenEffectProperties;
@@ -108,7 +106,7 @@ struct PMM::Context {
     Context(Project *project);
     ~Context() NANOEM_DECL_NOEXCEPT;
 
-    bool load(const nanoem_u8_t *data, size_t size, Error &error);
+    bool load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics);
     bool save(ByteArray &bytes, Error &error);
     URI fileURI() const;
     void setFileURI(const URI &value);
@@ -119,12 +117,12 @@ struct PMM::Context {
     void loadDefaultEffect(Progress &progress, Error &error, EffectMap &effectMap);
     void loadAllAccessories(const nanoem_document_t *document, OrderedDrawableList &drawables,
         PMMAccessoryHandleMap &accessoryHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet,
-        Error &error);
+        Error &error, Project::IDiagnostics *diagnostics);
     void loadAccessory(const nanoem_document_accessory_t *ao, Accessory *accessory, StringSet &reservedNameSet,
         nanoem_status_t *mutableStatus);
     void loadAllModels(const nanoem_document_t *document, OrderedDrawableList &drawables,
         PMMModelHandleMap &modelHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet,
-        Error &error);
+        Error &error, Project::IDiagnostics *diagnostics);
     void loadModel(
         const nanoem_document_model_t *mo, Model *model, StringSet &reservedNameSet, nanoem_status_t *mutableStatus);
     void loadCamera(
@@ -143,9 +141,12 @@ struct PMM::Context {
     void configureModelOutsideParentKeyframes(const nanoem_document_model_t *mo, Motion *subjectModelMotion,
         const nanoem_unicode_string_t *subjectBoneName, const StringPair &outsideParentStringPair,
         nanoem_status_t *mutableStatus);
-    void loadAudio(const nanoem_document_t *document, Progress &progress, Error &error);
-    void loadBackgroundImage(const nanoem_document_t *document, Progress &progress, Error &error);
-    void loadBackgroundVideo(const nanoem_document_t *document, Progress &progress, Error &error);
+    void loadAudio(
+        const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics);
+    void loadBackgroundImage(
+        const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics);
+    void loadBackgroundVideo(
+        const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics);
 
     void saveAudioSource(nanoem_mutable_document_t *document, nanoem_status_t *status);
     void saveBackgroundVideo(nanoem_mutable_document_t *document, nanoem_status_t *status);
@@ -345,31 +346,27 @@ Effect *
 PMM::Context::EffectMap::compileEffect(
     const String &filePath, effect::AttachmentType type, Progress &progress, Error &error)
 {
-    CacheMap::const_iterator it = m_cachedEffects.find(filePath);
+    IFileManager *fileManager = m_project->fileManager();
+    const URI effectFileURI(URI::createFromFilePath(filePath)),
+        effectResolvedURI(Effect::resolveSourceURI(fileManager, effectFileURI));
     Effect *effect = nullptr;
-    if (it != m_cachedEffects.end()) {
-        effect = it->second;
-    }
-    else {
-        IFileManager *fileManager = m_project->fileManager();
-        const URI &effectFileURI = URI::createFromFilePath(filePath),
-                  &effectResolvedURI = Effect::resolveSourceURI(fileManager, effectFileURI);
-        if (!effectResolvedURI.isEmpty()) {
+    if (!effectResolvedURI.isEmpty()) {
+        effect = m_project->findEffect(effectResolvedURI);
+        if (!effect) {
             ByteArray bytes;
             if (Effect::compileFromSource(
                     effectResolvedURI, fileManager, m_project->isMipmapEnabled(), bytes, progress, error)) {
                 Effect *innerEffect = m_project->createEffect();
                 innerEffect->setName(effectResolvedURI.lastPathComponent());
-                bool cached = false;
+                bool succeeded = false;
                 if (innerEffect->load(bytes, progress, error)) {
                     innerEffect->setFileURI(effectResolvedURI);
                     if (innerEffect->upload(type, progress, error)) {
                         effect = innerEffect;
-                        m_cachedEffects.insert(tinystl::make_pair(filePath, innerEffect));
-                        cached = !error.hasReason();
+                        succeeded = !error.hasReason();
                     }
                 }
-                if (!cached) {
+                if (!succeeded) {
                     m_project->destroyEffect(innerEffect);
                 }
             }
@@ -463,7 +460,7 @@ PMM::Context::EffectMap::attachOffscreenRenderTargetEffect(Effect *effect, const
     }
     if (drawable) {
         Effect *innerEffect = compileEffect(filePath, effect::kAttachmentTypeOffscreenPassive, progress, innerError);
-        m_project->setOffscreenPassiveRenderTargetEffect(drawable, offscreenOwnerName, innerEffect);
+        m_project->setOffscreenPassiveRenderTargetEffect(offscreenOwnerName, drawable, innerEffect);
     }
     if (effect && innerError.hasReason()) {
         effect->setEnabled(false);
@@ -580,7 +577,7 @@ PMM::Context::~Context() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error)
+PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics)
 {
     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
     nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
@@ -604,8 +601,9 @@ PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error)
             m_project, Inline::saturateInt32U(numAccessories + numModels + kAdditionalProgressLoadingItems));
         Context::EffectMap effectMap(m_project);
         isEffectPluginEnabled |= loadEffectMetadata(error, effectMap);
-        loadAllAccessories(document, drawables, accessoryHandles, effectMap, progress, reservedNameSet, error);
-        loadAllModels(document, drawables, modelHandles, effectMap, progress, reservedNameSet, error);
+        loadAllAccessories(
+            document, drawables, accessoryHandles, effectMap, progress, reservedNameSet, error, diagnostics);
+        loadAllModels(document, drawables, modelHandles, effectMap, progress, reservedNameSet, error, diagnostics);
         loadDefaultEffect(progress, error, effectMap);
         loadCamera(document, modelHandles, &status);
         loadLight(document, &status);
@@ -629,9 +627,9 @@ PMM::Context::load(const nanoem_u8_t *data, size_t size, Error &error)
                 transformOrderList.push_back(static_cast<Model *>(drawable));
             }
         }
-        loadAudio(document, progress, error);
-        loadBackgroundImage(document, progress, error);
-        loadBackgroundVideo(document, progress, error);
+        loadAudio(document, progress, error, diagnostics);
+        loadBackgroundImage(document, progress, error, diagnostics);
+        loadBackgroundVideo(document, progress, error, diagnostics);
         if (nanoemDocumentIsBlackBackgroundEnabled(document)) {
             m_project->setViewportBackgroundColor(Vector4(0, 0, 0, 1));
         }
@@ -757,7 +755,7 @@ PMM::Context::save(ByteArray &bytes, Error &error)
     nanoemMutableDocumentSetViewportWidth(document, viewportImageSize.x);
     nanoemMutableDocumentSetViewportHeight(document, viewportImageSize.y);
     const PhysicsEngine *engine = m_project->physicsEngine();
-    switch (engine->mode()) {
+    switch (engine->simulationMode()) {
     case PhysicsEngine::kSimulationModeDisable:
     default: {
         nanoemMutableDocumentSetPhysicsSimulationMode(document, NANOEM_DOCUMENT_PHYSICS_SIMULATION_MODE_DISABLE);
@@ -930,8 +928,9 @@ PMM::Context::loadDefaultEffect(Progress &progress, Error &error, EffectMap &eff
                             m_project->sharedResourceRepository();
                         IEffect *defaultModelEffect = sharedResourceRepository->modelProgramBundle(),
                                 *defaultAccessoryEffect = sharedResourceRepository->accessoryProgramBundle();
-                        const Project::DrawableList allDrawables(m_project->drawableOrderList());
-                        for (Project::DrawableList::const_iterator it = allDrawables.begin(), end = allDrawables.end();
+                        const Project::DrawableList *allDrawables = m_project->drawableOrderList();
+                        for (Project::DrawableList::const_iterator it = allDrawables->begin(),
+                                                                   end = allDrawables->end();
                              it != end; ++it) {
                             IDrawable *drawable = *it;
                             IEffect *activeEffect = drawable->activeEffect();
@@ -953,7 +952,7 @@ PMM::Context::loadDefaultEffect(Progress &progress, Error &error, EffectMap &eff
 void
 PMM::Context::loadAllAccessories(const nanoem_document_t *document, OrderedDrawableList &drawables,
     PMMAccessoryHandleMap &accessoryHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet,
-    Error &error)
+    Error &error, Project::IDiagnostics *diagnostics)
 {
     nanoem_rsize_t numAccessories, numModels;
     nanoem_document_accessory_t *const *accessories = nanoemDocumentGetAllAccessoryObjects(document, &numAccessories);
@@ -968,14 +967,20 @@ PMM::Context::loadAllAccessories(const nanoem_document_t *document, OrderedDrawa
         const URI &fileURI = resolveFileURI(nanoemDocumentAccessoryGetPath(ao));
         Error innerError;
         if (fileURI.isEmpty()) {
+            /* do nothing */
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
         }
+        else if (!FileUtils::exists(fileURI)) {
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
+        }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
-            const Project::AccessoryList &allAccessories = m_project->allAccessories();
-            if (!allAccessories.empty()) {
-                Accessory *accessory = allAccessories.back();
+            const Project::AccessoryList *allAccessories = m_project->allAccessories();
+            if (!allAccessories->empty()) {
+                Accessory *accessory = allAccessories->back();
                 accessoryHandles.insert(tinystl::make_pair(nanoemDocumentAccessoryGetIndex(ao), accessory));
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 loadAccessory(ao, accessory, reservedNameSet, &status);
@@ -1050,7 +1055,8 @@ PMM::Context::loadAccessory(
 
 void
 PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableList &drawables,
-    PMMModelHandleMap &modelHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet, Error &error)
+    PMMModelHandleMap &modelHandles, EffectMap &effectMap, Progress &progress, StringSet &reservedNameSet, Error &error,
+    Project::IDiagnostics *diagnostics)
 {
     nanoem_rsize_t numModels;
     nanoem_document_model_t *const *modelItems = nanoemDocumentGetAllModelObjects(document, &numModels);
@@ -1069,10 +1075,15 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
         }
+        else if (!FileUtils::exists(fileURI)) {
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
+        }
         else if (fileManager->loadFromFile(fileURI, IFileManager::kDialogTypeLoadModelFile, m_project, innerError)) {
-            const Project::ModelList &allModels = m_project->allModels();
-            if (!allModels.empty()) {
-                Model *model = allModels.back();
+            const Project::ModelList *allModels = m_project->allModels();
+            if (!allModels->empty()) {
+                Model *model = allModels->back();
                 modelHandles.insert(tinystl::make_pair(nanoemDocumentModelGetIndex(mo), model));
                 nanoem_status_t status = NANOEM_STATUS_SUCCESS;
                 loadModel(mo, model, reservedNameSet, &status);
@@ -1086,6 +1097,9 @@ PMM::Context::loadAllModels(const nanoem_document_t *document, OrderedDrawableLi
                     if (selectedModelIndex == i) {
                         activeModel = model;
                     }
+                    /* reset dirty morph state at initializing model to apply morph motion correctly */
+                    model->updateStagingVertexBuffer();
+                    model->setDirty(false);
                 }
                 else {
                     const char *message = Error::convertStatusToMessage(status, m_project->translator());
@@ -1187,7 +1201,7 @@ PMM::Context::loadCamera(
     const nanoem_document_camera_t *camera = nanoemDocumentGetCameraObject(document);
     ICamera *globalCamera = m_project->globalCamera();
     globalCamera->setLookAt(glm::make_vec3(nanoemDocumentCameraGetLookAt(camera)));
-    globalCamera->setAngle(glm::make_vec3(nanoemDocumentCameraGetAngle(camera)) * kCameraDirection);
+    globalCamera->setAngle(glm::make_vec3(nanoemDocumentCameraGetAngle(camera)));
     globalCamera->setDistance(nanoemDocumentCameraGetDistance(camera));
     globalCamera->setFov(int(nanoemDocumentCameraGetFov(camera)));
     globalCamera->setPerspective(nanoemDocumentCameraIsPerspectiveEnabled(camera) != 0);
@@ -1204,8 +1218,8 @@ PMM::Context::loadCamera(
             nanoemMutableMotionAddCameraKeyframe(mutableCameraMotion, keyframe, frameIndex, status);
         }
         nanoemMutableMotionCameraKeyframeSetLookAt(keyframe, nanoemDocumentCameraKeyframeGetLookAt(ko));
-        nanoemMutableMotionCameraKeyframeSetAngle(keyframe,
-            glm::value_ptr(glm::make_vec4(nanoemDocumentCameraKeyframeGetAngle(ko)) * Vector4(kCameraDirection, 0)));
+        nanoemMutableMotionCameraKeyframeSetAngle(
+            keyframe, glm::value_ptr(glm::make_vec4(nanoemDocumentCameraKeyframeGetAngle(ko))));
         nanoemMutableMotionCameraKeyframeSetFov(keyframe, nanoemDocumentCameraKeyframeGetFov(ko));
         nanoemMutableMotionCameraKeyframeSetDistance(keyframe, nanoemDocumentCameraKeyframeGetDistance(ko));
         nanoemMutableMotionCameraKeyframeSetPerspectiveView(
@@ -1497,7 +1511,8 @@ PMM::Context::configureModelOutsideParentKeyframes(const nanoem_document_model_t
 }
 
 void
-PMM::Context::loadAudio(const nanoem_document_t *document, Progress &progress, Error &error)
+PMM::Context::loadAudio(
+    const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics)
 {
     if (nanoemDocumentIsAudioEnabled(document)) {
         FileReaderScope scope(m_project->translator());
@@ -1508,6 +1523,11 @@ PMM::Context::loadAudio(const nanoem_document_t *document, Progress &progress, E
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
         }
+        else if (!FileUtils::exists(fileURI)) {
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
+        }
         else if (fileManager->loadAudioFile(fileURI, m_project, error)) {
         }
     }
@@ -1515,7 +1535,8 @@ PMM::Context::loadAudio(const nanoem_document_t *document, Progress &progress, E
 }
 
 void
-PMM::Context::loadBackgroundImage(const nanoem_document_t *document, Progress &progress, Error &error)
+PMM::Context::loadBackgroundImage(
+    const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics)
 {
     if (nanoemDocumentIsBackgroundImageEnabled(document)) {
         const URI &fileURI = resolveFileURI(nanoemDocumentGetBackgroundImagePath(document));
@@ -1524,6 +1545,11 @@ PMM::Context::loadBackgroundImage(const nanoem_document_t *document, Progress &p
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
+        }
+        else if (!FileUtils::exists(fileURI)) {
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadVideoFile(fileURI, m_project, error)) {
             const Vector4SI32 rect(nanoemDocumentGetBackgroundVideoOffsetX(document),
@@ -1535,7 +1561,8 @@ PMM::Context::loadBackgroundImage(const nanoem_document_t *document, Progress &p
 }
 
 void
-PMM::Context::loadBackgroundVideo(const nanoem_document_t *document, Progress &progress, Error &error)
+PMM::Context::loadBackgroundVideo(
+    const nanoem_document_t *document, Progress &progress, Error &error, Project::IDiagnostics *diagnostics)
 {
     if (nanoemDocumentIsBackgroundVideoEnabled(document)) {
         const URI &fileURI = resolveFileURI(nanoemDocumentGetBackgroundVideoPath(document));
@@ -1544,6 +1571,11 @@ PMM::Context::loadBackgroundVideo(const nanoem_document_t *document, Progress &p
         }
         else if (!progress.tryLoadingItem(fileURI)) {
             error = Error::cancelled();
+        }
+        else if (!FileUtils::exists(fileURI)) {
+            if (diagnostics) {
+                diagnostics->addNotFoundFileURI(fileURI);
+            }
         }
         else if (fileManager->loadVideoFile(fileURI, m_project, error)) {
             int x = nanoemDocumentGetBackgroundVideoOffsetX(document),
@@ -1593,7 +1625,7 @@ PMM::Context::saveCamera(
     nanoem_mutable_document_camera_t *co = nanoemMutableDocumentCameraCreate(document, status);
     const ICamera *globalCamera = m_project->globalCamera();
     nanoemMutableDocumentCameraSetLookAt(co, glm::value_ptr(glm::vec4(globalCamera->lookAt(), 0)));
-    nanoemMutableDocumentCameraSetAngle(co, glm::value_ptr(glm::vec4(globalCamera->angle() * kCameraDirection, 0)));
+    nanoemMutableDocumentCameraSetAngle(co, glm::value_ptr(glm::vec4(globalCamera->angle(), 0)));
     nanoemMutableDocumentCameraSetPosition(co, glm::value_ptr(glm::vec4(0, 0, -globalCamera->distance(), 0)));
     nanoemMutableDocumentCameraSetFov(co, globalCamera->fov());
     nanoemMutableDocumentCameraSetPerspectiveEnabled(co, globalCamera->isPerspective());
@@ -1606,9 +1638,8 @@ PMM::Context::saveCamera(
             nanoemMotionKeyframeObjectGetFrameIndex(nanoemMotionCameraKeyframeGetKeyframeObject(keyframe));
         nanoem_mutable_document_camera_keyframe_t *ko = nanoemMutableDocumentCameraKeyframeCreate(co, status);
         nanoemMutableDocumentCameraKeyframeSetLookAt(ko, nanoemMotionCameraKeyframeGetLookAt(keyframe));
-        nanoemMutableDocumentCameraKeyframeSetAngle(ko,
-            glm::value_ptr(
-                glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) * Vector4(kCameraDirection, 0)));
+        nanoemMutableDocumentCameraKeyframeSetAngle(
+            ko, glm::value_ptr(glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe))));
         nanoemMutableDocumentCameraKeyframeSetFov(ko, nanoemMotionCameraKeyframeGetFov(keyframe));
         nanoemMutableDocumentCameraKeyframeSetDistance(ko, nanoemMotionCameraKeyframeGetDistance(keyframe));
         if (const nanoem_motion_outside_parent_t *outsideParent =
@@ -1707,11 +1738,11 @@ void
 PMM::Context::saveAllAccessories(
     nanoem_mutable_document_t *document, const ModelResolveMap &resolveMap, nanoem_status_t *status)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
     tinystl::unordered_set<Accessory *, TinySTLAllocator> allAccessories(
-        ListUtils::toSetFromList(m_project->allAccessories()));
+        ListUtils::toSetFromList(*m_project->allAccessories()));
     Project::AccessoryList accessories;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         Accessory *accessory = static_cast<Accessory *>(*it);
         if (allAccessories.find(accessory) != allAccessories.end()) {
             accessories.push_back(accessory);
@@ -1733,12 +1764,12 @@ PMM::Context::saveAllAccessories(
 void
 PMM::Context::saveAllModels(nanoem_mutable_document_t *document, ModelResolveMap &resolveMap, nanoem_status_t *status)
 {
-    const Project::DrawableList drawables(m_project->drawableOrderList());
-    const Project::ModelList transforms(m_project->transformOrderList());
-    tinystl::unordered_set<Model *, TinySTLAllocator> allModels(ListUtils::toSetFromList(m_project->allModels()));
+    const Project::DrawableList *drawables = m_project->drawableOrderList();
+    const Project::ModelList *transforms = m_project->transformOrderList();
+    tinystl::unordered_set<Model *, TinySTLAllocator> allModels(ListUtils::toSetFromList(*m_project->allModels()));
     Project::ModelList models;
     int drawOrderIndex = 0, selectedModelIndex = 0;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         Model *model = static_cast<Model *>(*it);
         if (allModels.find(model) != allModels.end()) {
             models.push_back(model);
@@ -1746,11 +1777,13 @@ PMM::Context::saveAllModels(nanoem_mutable_document_t *document, ModelResolveMap
     }
     const Model *activeModel = m_project->activeModel();
     for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; ++it) {
-        int transformOrder = ListUtils::indexOf(*it, transforms);
-        if (activeModel == *it) {
+        Model *model = *it;
+        int transformOrder = ListUtils::indexOf(model, *transforms);
+        if (activeModel == model) {
             selectedModelIndex = it - models.begin();
         }
-        saveModel(*it, drawOrderIndex++, transformOrder, document, resolveMap, status);
+        saveModel(model, drawOrderIndex++, transformOrder, document, resolveMap, status);
+        model->setDirty(false);
     }
     nanoemMutableDocumentSetAccessoryIndexAfterModel(document, drawOrderIndex);
     if (!models.empty()) {
@@ -2105,9 +2138,9 @@ PMM::~PMM() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-PMM::load(const nanoem_u8_t *data, size_t size, Error &error)
+PMM::load(const nanoem_u8_t *data, size_t size, Error &error, Project::IDiagnostics *diagnostics)
 {
-    return m_context->load(data, size, error);
+    return m_context->load(data, size, error, diagnostics);
 }
 
 bool

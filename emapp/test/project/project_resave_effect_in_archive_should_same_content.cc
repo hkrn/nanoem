@@ -87,10 +87,10 @@ TEST_CASE("project_resave_effect_in_archive_should_same_content", "[emapp][proje
             REQUIRE(newProject->isEffectPluginEnabled());
             CHECK_FALSE(newProject->isDirty());
             CHECK(newProject->coordinationSystem() == GLM_LEFT_HANDED);
-            CHECK(newProject->allAccessories().size() == 2);
-            CHECK(newProject->allModels().size() == 2);
-            CHECK(newProject->drawableOrderList().size() == 4);
-            CHECK(newProject->transformOrderList().size() == 2);
+            CHECK(newProject->allAccessories()->size() == 2);
+            CHECK(newProject->allModels()->size() == 2);
+            CHECK(newProject->drawableOrderList()->size() == 4);
+            CHECK(newProject->transformOrderList()->size() == 2);
             const Project::AccessoryList &allAccessories = first->allAccessories();
             const Project::ModelList &allModels = first->allModels();
             REQUIRE(allAccessories.size() == 2);

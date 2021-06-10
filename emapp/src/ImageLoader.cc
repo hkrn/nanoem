@@ -86,11 +86,61 @@ struct CRC {
 } /* namespace anonymous */
 
 Image::Image()
+    : m_fileExist(false)
 {
+    Inline::clearZeroMemory(m_description);
+    m_handle = { SG_INVALID_ID };
 }
 
 Image::~Image()
 {
+}
+
+void
+Image::create()
+{
+    m_handle = sg::make_image(&m_description);
+    if (!m_label.empty()) {
+        SG_LABEL_IMAGE(m_handle, m_label.c_str());
+    }
+}
+
+void
+Image::destroy()
+{
+    sg::destroy_image(m_handle);
+    m_handle = { SG_INVALID_ID };
+}
+
+void
+Image::setOriginData(const nanoem_u8_t *data, nanoem_rsize_t size)
+{
+    m_originData.assign(data, data + size);
+    sg_range &dst = m_description.data.subimage[0][0];
+    dst.ptr = m_originData.data();
+    dst.size = size;
+}
+
+void
+Image::setMipmapData(nanoem_rsize_t index, const nanoem_u8_t *data, nanoem_rsize_t size)
+{
+    m_mipmapData[index].assign(data, data + size);
+    sg_range &innerDst = m_description.data.subimage[0][index + 1];
+    innerDst.ptr = m_mipmapData[index].data();
+    innerDst.size = size;
+}
+
+void
+Image::resizeMipmapData(nanoem_rsize_t value)
+{
+    m_mipmapData.resize(value);
+}
+
+void
+Image::setLabel(const String &value)
+{
+    m_label = value;
+    m_description.label = m_label.c_str();
 }
 
 sg_image
@@ -99,10 +149,22 @@ Image::handle() const NANOEM_DECL_NOEXCEPT
     return m_handle;
 }
 
+void
+Image::setHandle(sg_image value)
+{
+    m_handle = value;
+}
+
 sg_image_desc
 Image::description() const NANOEM_DECL_NOEXCEPT
 {
     return m_description;
+}
+
+void
+Image::setDescription(const sg_image_desc &value)
+{
+    m_description = value;
 }
 
 const ByteArray *
@@ -127,6 +189,24 @@ String
 Image::filename() const
 {
     return m_filename;
+}
+
+void
+Image::setFilename(const String &value)
+{
+    m_filename = value;
+}
+
+bool
+Image::isFileExist() const NANOEM_DECL_NOEXCEPT
+{
+    return m_fileExist;
+}
+
+void
+Image::setFileExist(bool value)
+{
+    m_fileExist = value;
 }
 
 sg_pixel_format
@@ -522,24 +602,17 @@ ImageLoader::decodeAnimatedPNG(IFileReader *reader, Error &error)
 void
 ImageLoader::copyImageDescrption(const sg_image_desc &desc, Image *image)
 {
-    image->m_description = desc;
+    image->setDescription(desc);
     const sg_range &src = desc.data.subimage[0][0];
     const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(src.ptr);
-    image->m_originData.assign(dataPtr, dataPtr + src.size);
-    sg_range &dst = image->m_description.data.subimage[0][0];
-    dst.ptr = image->m_originData.data();
-    dst.size = src.size;
+    image->setOriginData(dataPtr, src.size);
     if (desc.num_mipmaps > 1) {
         const int numMipmaps = desc.num_mipmaps - 1;
-        image->m_mipmapData.resize(numMipmaps);
+        image->resizeMipmapData(numMipmaps);
         for (int i = 0; i < numMipmaps; i++) {
-            const int offset = i + 1;
-            const sg_range &innerSrc = desc.data.subimage[0][offset];
+            const sg_range &innerSrc = desc.data.subimage[0][i + 1];
             const nanoem_u8_t *innerDataPtr = static_cast<const nanoem_u8_t *>(innerSrc.ptr);
-            image->m_mipmapData[i].assign(innerDataPtr, innerDataPtr + innerSrc.size);
-            sg_range &innerDst = image->m_description.data.subimage[0][offset];
-            innerDst.ptr = image->m_mipmapData[i].data();
-            innerDst.size = innerSrc.size;
+            image->setMipmapData(i, innerDataPtr, innerSrc.size);
         }
     }
 }
@@ -734,13 +807,13 @@ ImageLoader::~ImageLoader()
 {
 }
 
-sg_image *
+IImageView *
 ImageLoader::load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_u32_t flags, Error &error)
 {
     nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
-    sg_image *textureHandle = nullptr;
-    const String base(drawable->fileURI().absolutePathByDeletingLastPathComponent()), path(fileURI.absolutePath()),
-        filename(path.size() > base.size() ? path.c_str() + base.size() : fileURI.lastPathComponent());
+    IImageView *imageView = nullptr;
+    const String filename(
+        FileUtils::relativePath(fileURI.absolutePath(), drawable->fileURI().absolutePathByDeletingLastPathComponent()));
     const char lastChr = filename.empty() ? 0 : *(filename.c_str() + filename.size() - 1);
     if (lastChr != '/' && FileUtils::exists(fileURI)) {
         FileReaderScope scope(nullptr);
@@ -752,15 +825,15 @@ ImageLoader::load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_
                     flags &= ~ImageLoader::kFlagsEnableMipmap;
                 }
                 const ImmutableImageContainer container(
-                    filename.c_str() + 1, bytes, Vector2UI16(), wrap, m_project->maxAnisotropyValue(), flags);
-                textureHandle = decodeImageContainer(container, drawable, error);
+                    filename, bytes, Vector2UI16(), wrap, m_project->maxAnisotropyValue(), flags);
+                imageView = decodeImageContainer(container, drawable, error);
             }
         }
     }
-    return textureHandle;
+    return imageView;
 }
 
-sg_image *
+IImageView *
 ImageLoader::decode(
     const ByteArray &bytes, const String &filename, IDrawable *drawable, sg_wrap wrap, nanoem_u32_t flags, Error &error)
 {
@@ -769,12 +842,12 @@ ImageLoader::decode(
     return decodeImageContainer(container, drawable, error);
 }
 
-sg_image *
+IImageView *
 ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDrawable *drawable, Error &error)
 {
     bx::Error err;
     sg_image_desc desc;
-    sg_image *textureHandle = nullptr;
+    IImageView *imageView = nullptr;
     int width, height, components;
     Inline::clearZeroMemory(desc);
     if (stbi_uc *data = stbi_load_from_memory(
@@ -789,7 +862,7 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         sg_range &content = desc.data.subimage[0][0];
         content.ptr = data;
         content.size = nanoem_rsize_t(4) * width * height;
-        textureHandle = drawable->uploadImage(container.m_name, desc);
+        imageView = drawable->uploadImage(container.m_name, desc);
         stbi_image_free(data);
     }
     else if (bimg::ImageContainer *decodedImageContainer = bimg::imageParse(g_bimg_allocator, container.m_dataPtr,
@@ -828,13 +901,13 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
             desc.mag_filter = SG_FILTER_LINEAR;
             desc.max_anisotropy = container.m_anisotropy;
             desc.wrap_u = desc.wrap_v = container.m_wrap;
-            textureHandle = drawable->uploadImage(container.m_name, desc);
+            imageView = drawable->uploadImage(container.m_name, desc);
         }
     }
     else {
         error = Error(err.getMessage().getPtr(), err.get().code, Error::kDomainTypeOS);
     }
-    return textureHandle;
+    return imageView;
 }
 
 void

@@ -83,10 +83,10 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             }
         });
         LoadBlock(scope, bytes, [](Project *newProject) {
-            const Project::AccessoryList &accessories = newProject->allAccessories();
-            CHECK(accessories.size() == kNumAccessories);
+            const Project::AccessoryList *accessories = newProject->allAccessories();
+            CHECK(accessories->size() == kNumAccessories);
             nanoem_rsize_t offset = 0;
-            for (Project::AccessoryList::const_iterator it = accessories.begin(), end = accessories.end(); it != end;
+            for (Project::AccessoryList::const_iterator it = accessories->begin(), end = accessories->end(); it != end;
                  it++) {
                 const Accessory *accessory = *it;
                 const Motion *motion = newProject->resolveMotion(accessory);
@@ -97,7 +97,7 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
                 offset++;
             }
             CHECK(newProject->activeAccessory());
-            CHECK(newProject->allMotions().size() == kNumAccessories + 3);
+            CHECK(newProject->allMotions()->size() == kNumAccessories + 3);
         });
     }
     SECTION("model")
@@ -119,16 +119,16 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
                 registrator.registerAddModelKeyframesCommand(indices, model, project->resolveMotion(model));
                 if (i == kActiveModel) {
                     project->setActiveModel(model);
-                    model->setTransformAxisType(Model::kAxisY);
+                    model->setTransformAxisType(Model::kAxisTypeY);
                     model->setTransformCoordinateType(Model::kTransformCoordinateTypeGlobal);
                 }
             }
         });
         LoadBlock(scope, bytes, [](Project *newProject) {
-            const Project::ModelList &models = newProject->allModels();
-            CHECK(models.size() == kNumModels);
+            const Project::ModelList *models = newProject->allModels();
+            CHECK(models->size() == kNumModels);
             nanoem_frame_index_t offset = 0;
-            for (Project::ModelList::const_iterator it = models.begin(), end = models.end(); it != end; it++) {
+            for (Project::ModelList::const_iterator it = models->begin(), end = models->end(); it != end; it++) {
                 const Model *model = *it;
                 const Motion *motion = newProject->resolveMotion(model);
                 const StringMap &annotations = model->annotations();
@@ -138,9 +138,9 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
                 offset++;
             }
             CHECK(newProject->activeModel());
-            CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisY);
+            CHECK(newProject->activeModel()->transformAxisType() == Model::kAxisTypeY);
             CHECK(newProject->activeModel()->transformCoordinateType() == Model::kTransformCoordinateTypeGlobal);
-            CHECK(newProject->allMotions().size() == kNumModels + 3);
+            CHECK(newProject->allMotions()->size() == kNumModels + 3);
         });
     }
     SECTION("camera")
@@ -222,7 +222,7 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             project->physicsEngine()->setGroundEnabled(false);
         });
         LoadBlock(scope, bytes, [](Project *newProject) {
-            CHECK(newProject->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+            CHECK(newProject->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
             CHECK(newProject->physicsEngine()->debugGeometryFlags() == (1 | 2 | 4 | 16 | 64));
             CHECK(newProject->physicsEngine()->acceleration() == 0.42f);
             CHECK_THAT(newProject->physicsEngine()->direction(), Equals(glm::normalize(Vector3(0.1, 0.2, 0.3))));
@@ -340,11 +340,11 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             accessory->setFileURI(URI::createFromFilePath(NANOEM_TEST_FIXTURE_PATH "/test.x"));
             project->addAccessory(accessory);
         }
-        Accessory *removingTarget = project->allAccessories()[1];
+        Accessory *removingTarget = project->allAccessories()->data()[1];
         Motion *removingMotion = project->resolveMotion(removingTarget);
         project->removeAccessory(removingTarget);
         project->destroyAccessory(removingTarget);
-        Project::MotionList motions(project->allMotions());
+        Project::MotionList motions(*project->allMotions());
         CHECK(motions.size() == 5); /* models (2) + camera + light + SS */
         CHECK(ListUtils::indexOf(removingMotion, motions) == -1);
         CHECK(project->saveAsBinary(bytes, Project::kBinaryFormatNative, error));
@@ -363,11 +363,11 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             model->setFileURI(URI::createFromFilePath(NANOEM_TEST_FIXTURE_PATH "/test.pmx"));
             project->addModel(model);
         }
-        Model *removingTarget = project->allModels()[1];
+        Model *removingTarget = project->allModels()->data()[1];
         Motion *removingMotion = project->resolveMotion(removingTarget);
         project->removeModel(removingTarget);
         project->destroyModel(removingTarget);
-        Project::MotionList motions(project->allMotions());
+        Project::MotionList motions(*project->allMotions());
         CHECK(motions.size() == 5); /* models (2) + camera + light + SS */
         CHECK(ListUtils::indexOf(removingMotion, motions) == -1);
         CHECK(project->saveAsBinary(bytes, Project::kBinaryFormatNative, error));

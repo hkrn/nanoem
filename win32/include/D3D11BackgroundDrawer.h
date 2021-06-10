@@ -34,7 +34,7 @@ public:
     ~D3D11BackgroundVideoDrawer();
 
     bool load(const URI &fileURI, Error &error) override;
-    void draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
+    void draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
     void seek(nanoem_f64_t value) override;
     void flush() override;
     void destroy() override;
@@ -66,9 +66,9 @@ public:
         return false;
     }
     void
-    draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
+    draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
     {
-        BX_UNUSED_3(rect, scaleFactor, project);
+        BX_UNUSED_4(pass, rect, scaleFactor, project);
     }
     void
     seek(nanoem_f64_t seconds)

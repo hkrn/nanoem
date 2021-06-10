@@ -363,10 +363,9 @@ Error::Error(const char *reason, const char *recoverySuggestion, DomainType doma
     StringUtils::copyString(m_recoverySuggestion, recoverySuggestion, sizeof(m_recoverySuggestion));
 }
 
-Error::Error(const Error &value) NANOEM_DECL_NOEXCEPT : m_domain(value.m_domain), m_code(value.m_code)
+Error::Error(const Error &value) NANOEM_DECL_NOEXCEPT
 {
-    StringUtils::copyString(m_reason, value.m_reason, sizeof(m_reason));
-    StringUtils::copyString(m_recoverySuggestion, value.m_recoverySuggestion, sizeof(m_recoverySuggestion));
+    this->operator=(value);
 }
 
 Error::~Error() NANOEM_DECL_NOEXCEPT
@@ -378,9 +377,12 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
 {
     IModalDialog *dialog = nullptr;
     if (hasReason() && !isCancelled()) {
+        static const nanoem_u8_t kFAExclamationTriangle[] = { 0xef, 0x81, 0xb1, 0 };
         const ITranslator *translator = applicationPtr->translator();
         const String title(translator->translate("nanoem.window.dialog.error.title"));
         String buffer;
+        buffer.append(reinterpret_cast<const char *>(kFAExclamationTriangle));
+        buffer.append(" ");
         buffer.append(translator->translate("nanoem.window.dialog.error.message.reason"));
         buffer.append("\n");
         int c = code();
@@ -391,7 +393,10 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
         }
         buffer.append(reasonConstString());
         if (hasRecoverySuggestion()) {
+            static const nanoem_u8_t kFAInfoCircle[] = { 0xef, 0x81, 0x9a, 0 };
             buffer.append("\n\n");
+            buffer.append(reinterpret_cast<const char *>(kFAInfoCircle));
+            buffer.append(" ");
             buffer.append(translator->translate("nanoem.window.dialog.error.message.recovery-suggestion"));
             buffer.append("\n");
             buffer.append(recoverySuggestionConstString());
@@ -404,8 +409,7 @@ Error::createModalDialog(BaseApplicationService *applicationPtr) const
 void
 Error::addModalDialog(BaseApplicationService *applicationPtr) const
 {
-    IModalDialog *dialog = createModalDialog(applicationPtr);
-    if (dialog) {
+    if (IModalDialog *dialog = createModalDialog(applicationPtr)) {
         applicationPtr->addModalDialog(dialog);
         applicationPtr->eventPublisher()->publishErrorEvent(*this);
     }
@@ -459,6 +463,15 @@ bool
 Error::isCancelled() const NANOEM_DECL_NOEXCEPT
 {
     return m_domain == kDomainTypeCancel;
+}
+
+void
+Error::operator=(const Error &value) NANOEM_DECL_NOEXCEPT
+{
+    m_domain = value.m_domain;
+    m_code = value.m_code;
+    StringUtils::copyString(m_reason, value.m_reason, sizeof(m_reason));
+    StringUtils::copyString(m_recoverySuggestion, value.m_recoverySuggestion, sizeof(m_recoverySuggestion));
 }
 
 } /* namespace nanoem */

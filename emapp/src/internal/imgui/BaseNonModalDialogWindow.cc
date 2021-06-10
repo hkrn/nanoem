@@ -14,24 +14,26 @@ namespace internal {
 namespace imgui {
 
 ImVec2
-BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height) NANOEM_DECL_NOEXCEPT
+BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT
 {
     const ImGuiStyle &style = ImGui::GetStyle();
     const nanoem_f32_t avail = ImGui::GetContentRegionAvail().x - (style.IndentSpacing + style.FramePadding.x);
     ImVec2 size;
     if (width > avail) {
-        size = height > avail ? ImVec2(avail, avail) : ImVec2(avail, height * 1.0f);
+        size = height > avail ? ImVec2(avail * scaleFactor, avail * scaleFactor)
+                              : ImVec2(avail * scaleFactor, height * scaleFactor);
     }
     else {
-        size = ImVec2(width * 1.0f, height * 1.0f);
+        size = ImVec2(width * scaleFactor, height * scaleFactor);
     }
     return size;
 }
 
 ImVec2
-BaseNonModalDialogWindow::calcExpandedImageSize(const sg_image_desc &desc) NANOEM_DECL_NOEXCEPT
+BaseNonModalDialogWindow::calcExpandedImageSize(
+    const sg_image_desc &desc, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT
 {
-    return calcExpandedImageSize(desc.width, desc.height);
+    return calcExpandedImageSize(desc.width, desc.height, scaleFactor);
 }
 
 void
@@ -83,30 +85,42 @@ BaseNonModalDialogWindow::BaseNonModalDialogWindow(BaseApplicationService *appli
 {
 }
 
-BaseNonModalDialogWindow::~BaseNonModalDialogWindow()
+BaseNonModalDialogWindow::~BaseNonModalDialogWindow() NANOEM_DECL_NOEXCEPT
 {
 }
 
+void
+BaseNonModalDialogWindow::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 bool
-BaseNonModalDialogWindow::open(
-    const char *title, const char *id, bool *visible, const ImVec2 size, ImGuiWindowFlags flags)
+BaseNonModalDialogWindow::open(const char *title, const char *id, bool *visible, const ImVec2 size,
+    ImGuiWindowFlags flags, ImGuiSizeCallback sizeCB, void *sizeCBOpaque)
 {
     char buffer[Inline::kNameStackBufferSize];
+    const float scaleFactor = ImGui::GetIO().DisplayFramebufferScale.x;
     StringUtils::format(buffer, sizeof(buffer), "%s##%s", title, id);
-    ImGui::SetNextWindowSizeConstraints(size, ImVec2(FLT_MAX, FLT_MAX));
+    ImGui::SetNextWindowSizeConstraints(size, ImVec2(FLT_MAX, FLT_MAX), sizeCB, sizeCBOpaque);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, ImGuiWindow::kWindowRounding * scaleFactor);
     return ImGui::Begin(buffer, visible, flags) && *visible;
 }
 
 bool
-BaseNonModalDialogWindow::open(
-    const char *title, const char *id, bool *visible, nanoem_f32_t height, ImGuiWindowFlags flags)
+BaseNonModalDialogWindow::open(const char *title, const char *id, bool *visible, nanoem_f32_t height,
+    ImGuiWindowFlags flags, ImGuiSizeCallback sizeCB, void *sizeCBOpaque)
 {
     char buffer[Inline::kNameStackBufferSize];
     StringUtils::format(buffer, sizeof(buffer), "%s##%s", title, id);
     const ImGuiStyle &style = ImGui::GetStyle();
-    const nanoem_f32_t textWidth = ImGui::CalcTextSize(title).x + (style.WindowPadding.x + style.WindowRounding) * 2;
-    const nanoem_f32_t width = glm::max(textWidth, 250.0f * ImGui::GetIO().DisplayFramebufferScale.x);
-    ImGui::SetNextWindowSizeConstraints(ImVec2(width, height), ImVec2(FLT_MAX, FLT_MAX));
+    const nanoem_f32_t scaleFactor = ImGui::GetIO().DisplayFramebufferScale.x,
+                       windowRounding = ImGuiWindow::kWindowRounding * scaleFactor,
+                       textWidth = ImGui::CalcTextSize(title).x + (style.WindowPadding.x + windowRounding) * 2,
+                       width = glm::max(textWidth, 250.0f * scaleFactor),
+                       minHeight = height + style.WindowPadding.y * 2;
+    ImGui::SetNextWindowSizeConstraints(ImVec2(width, minHeight), ImVec2(FLT_MAX, FLT_MAX), sizeCB, sizeCBOpaque);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, windowRounding);
     return ImGui::Begin(buffer, visible, flags) && *visible;
 }
 
@@ -114,6 +128,7 @@ void
 BaseNonModalDialogWindow::close()
 {
     ImGui::End();
+    ImGui::PopStyleVar();
 }
 
 BaseNonModalDialogWindow::ResponseType
@@ -133,6 +148,18 @@ BaseNonModalDialogWindow::layoutCommonButtons(bool *visible)
     }
     ImGui::Unindent();
     return type;
+}
+
+const BaseApplicationService *
+BaseNonModalDialogWindow::application() const NANOEM_DECL_NOEXCEPT
+{
+    return m_applicationPtr;
+}
+
+BaseApplicationService *
+BaseNonModalDialogWindow::application() NANOEM_DECL_NOEXCEPT
+{
+    return m_applicationPtr;
 }
 
 const char *

@@ -538,6 +538,8 @@ message ConfirmBeforeExportingImageCommand {
 };
 message ConfirmBeforeExportingVideoCommand {
 };
+message SaveProjectCommand {
+};
 
 message UndoCommand {
   optional uint32 model_handle = 1;
@@ -1120,6 +1122,7 @@ message Command {
     ScreenCursorReleaseCommand screen_cursor_release = 125;
     ConfirmBeforeExportingImageCommand confirm_before_exporting_image = 126;
     ConfirmBeforeExportingVideoCommand confirm_before_exporting_video = 127;
+    SaveProjectCommand save_project = 128;
     /* request-repsonse */
     PingPongCommand ping_pong = 1000;
     IsProjectDirtyRequestCommand is_project_dirty = 1001;
@@ -1474,6 +1477,11 @@ message SetWindowDevicePixelRatioEvent {
 message SetViewportDevicePixelRatioEvent {
   required float value = 1;
 };
+message ToggleModelEditingEnabledEvent {
+  required bool value = 1;
+}
+message QuitApplicationEvent {
+};
 
 message PingPongEvent {
 };
@@ -1615,6 +1623,8 @@ message Event {
     CanPasteEvent can_paste_event = 88;
     SetWindowDevicePixelRatioEvent set_window_device_pixel_ratio_event = 89;
     SetViewportDevicePixelRatioEvent set_viewport_device_pixel_ratio_event = 90;
+    ToggleModelEditingEnabledEvent toggle_model_editing_enabled = 91;
+    QuitApplicationEvent quit_application = 92;
     PingPongEvent ping_pong = 1000;
     IsProjectDirtyResponseEvent is_project_dirty = 1001;
     GetAllModelBonesResponseEvent get_all_model_bones = 1002;

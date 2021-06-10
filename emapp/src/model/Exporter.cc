@@ -19,9 +19,9 @@ Exporter::~Exporter() NANOEM_DECL_NOEXCEPT
 }
 
 bool
-Exporter::execute(IWriter *writer, const Model::ExportSetting &setting, Error &error)
+Exporter::execute(IWriter *writer, const Model::ExportDescription &desc, Error &error)
 {
-    BX_UNUSED_4(m_model, writer, setting, error);
+    BX_UNUSED_4(m_model, writer, desc, error);
     return false;
 }
 

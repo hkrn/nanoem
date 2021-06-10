@@ -131,7 +131,7 @@ TEST_CASE("project_resave_archive_should_same_content", "[emapp][project]")
         // CHECK(newProject->shadowMapSize() == Vector2UI16(512, 512));
         // CHECK(newProject->isShadowMapEnabled());
         CHECK(newProject->shadowCamera()->coverageMode() == 2);
-        CHECK(newProject->physicsEngine()->mode() == PhysicsEngine::kSimulationModeEnableTracing);
+        CHECK(newProject->physicsEngine()->simulationMode() == PhysicsEngine::kSimulationModeEnableTracing);
         CHECK(newProject->physicsEngine()->debugGeometryFlags() == (1 | 2 | 4 | 16 | 64));
         CHECK_THAT(newProject->viewportBackgroundColor(), Equals(Vector4(0)));
         CHECK(newProject->sampleLevel() == 2);
@@ -140,10 +140,10 @@ TEST_CASE("project_resave_archive_should_same_content", "[emapp][project]")
         CHECK(newProject->currentLocalFrameIndex() == 864);
         CHECK(newProject->preferredMotionFPS() == 60);
         CHECK(newProject->isLoopEnabled());
-        CHECK(newProject->allAccessories().size() == 3);
-        CHECK(newProject->allAccessories().size() == 3);
-        CHECK(newProject->drawableOrderList().size() == 6);
-        CHECK(newProject->transformOrderList().size() == 3);
+        CHECK(newProject->allAccessories()->size() == 3);
+        CHECK(newProject->allAccessories()->size() == 3);
+        CHECK(newProject->drawableOrderList()->size() == 6);
+        CHECK(newProject->transformOrderList()->size() == 3);
         CHECK_THAT(newProject->activeCamera()->angle(), Equals(Vector3(0.2, 0.4, 0.6)));
         CHECK_THAT(newProject->activeCamera()->lookAt(), Equals(Vector3(42, 84, 126)));
         CHECK(newProject->activeCamera()->distance() == 576);

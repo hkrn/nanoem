@@ -7,20 +7,52 @@
 #include "emapp/model/Joint.h"
 
 #include "emapp/Constants.h"
+#include "emapp/EnumUtils.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/StringUtils.h"
 #include "emapp/model/Bone.h"
 #include "emapp/private/CommonInclude.h"
 
+#define PAR_SHAPES_T uint32_t
 #include "par/par_shapes.h"
 
 namespace nanoem {
 namespace model {
+namespace {
+
+enum PrivateStateFlags {
+    kPrivateStateEnabled = 1 << 1,
+    kPrivateStateEditingMasked = 1 << 2,
+    kPrivateStateReserved = 1 << 31,
+};
+static const nanoem_u32_t kPrivateStateInitialValue = 0;
+
+} /* namespade anonymous */
+
+int
+Joint::index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
+{
+    return nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(jointPtr));
+}
+
+const char *
+Joint::nameConstString(const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Joint *joint = cast(jointPtr);
+    return joint ? joint->nameConstString() : placeHolder;
+}
+
+const char *
+Joint::canonicalNameConstString(const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT
+{
+    const Joint *joint = cast(jointPtr);
+    return joint ? joint->canonicalNameConstString() : placeHolder;
+}
 
 Joint *
-Joint::cast(const nanoem_model_joint_t *joint) NANOEM_DECL_NOEXCEPT
+Joint::cast(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_model_object_t *object = nanoemModelJointGetModelObject(joint);
+    const nanoem_model_object_t *object = nanoemModelJointGetModelObject(jointPtr);
     const nanoem_user_data_t *userData = nanoemModelObjectGetUserData(object);
     return static_cast<Joint *>(nanoemUserDataGetOpaqueData(userData));
 }
@@ -81,7 +113,7 @@ Joint::bind(nanoem_model_joint_t *joint, PhysicsEngine *engine, const RigidBody:
     opaque.world = engine->worldOpaque();
     m_physicsJoint = engine->createJoint(joint, &opaque, status);
     m_physicsEngine = engine;
-    engine->addJoint(m_physicsJoint);
+    enable();
 }
 
 void
@@ -93,8 +125,7 @@ Joint::resetLanguage(
         StringUtils::getUtf8String(
             nanoemModelJointGetName(joint, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
         if (m_canonicalName.empty()) {
-            StringUtils::format(
-                m_canonicalName, "Joint%d", nanoemModelObjectGetIndex(nanoemModelJointGetModelObject(joint)));
+            StringUtils::format(m_canonicalName, "Joint%d", index(joint));
         }
     }
     if (m_name.empty()) {
@@ -164,8 +195,20 @@ Joint::getWorldTransformB(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT
     m_physicsEngine->getCalculatedTransformB(m_physicsJoint, value);
 }
 
+bool
+Joint::isEditingMasked() const NANOEM_DECL_NOEXCEPT
+{
+    return EnumUtils::isEnabled(kPrivateStateEditingMasked, m_states);
+}
+
+void
+Joint::setEditingMasked(bool value)
+{
+    EnumUtils::setEnabled(kPrivateStateEditingMasked, m_states, value);
+}
+
 const par_shapes_mesh_s *
-Joint::generateShapeMesh(const nanoem_model_joint_t * /* joint */)
+Joint::sharedShapeMesh(const nanoem_model_joint_t * /* joint */)
 {
     if (!m_shape) {
         m_shape = par_shapes_create_cube();
@@ -178,13 +221,19 @@ Joint::generateShapeMesh(const nanoem_model_joint_t * /* joint */)
 void
 Joint::enable()
 {
-    m_physicsEngine->addJoint(m_physicsJoint);
+    if (!EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->addJoint(m_physicsJoint);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, true);
+    }
 }
 
 void
 Joint::disable()
 {
-    m_physicsEngine->removeJoint(m_physicsJoint);
+    if (EnumUtils::isEnabled(kPrivateStateEnabled, m_states)) {
+        m_physicsEngine->removeJoint(m_physicsJoint);
+        EnumUtils::setEnabled(kPrivateStateEnabled, m_states, false);
+    }
 }
 
 void
@@ -198,7 +247,8 @@ Joint::destroy(void *opaque, nanoem_model_object_t * /* joint */) NANOEM_DECL_NO
 
 Joint::Joint(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_physicsEngine(nullptr),
                                                                       m_physicsJoint(nullptr),
-                                                                      m_shape(nullptr)
+                                                                      m_shape(nullptr),
+                                                                      m_states(kPrivateStateInitialValue)
 {
 }
 

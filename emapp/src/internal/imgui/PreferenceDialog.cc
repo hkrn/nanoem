@@ -34,7 +34,7 @@ PreferenceDialog::draw(Project *project)
         if (ImGui::BeginTabItem(tr("nanoem.gui.window.preference.tab.global"))) {
             ImGui::PushItemWidth(-1);
             ImGui::TextUnformatted(tr("nanoem.gui.window.preference.global.renderer"));
-            ApplicationPreference preference(m_applicationPtr);
+            ApplicationPreference preference(application());
             const StringList renderers(preference.allAvailableRenderers());
             if (ImGui::BeginCombo("##renderer", preference.rendererBackend())) {
                 for (StringList::const_iterator it = renderers.begin(), end = renderers.end(); it != end; ++it) {
@@ -119,12 +119,14 @@ PreferenceDialog::draw(Project *project)
         if (ImGui::BeginTabItem(tr("nanoem.gui.window.preference.tab.project"))) {
             ImGui::PushItemWidth(-1);
             ImGui::TextUnformatted(tr("nanoem.gui.window.preference.project.language.title"));
-            ITranslator *translator = m_applicationPtr->translator();
-            ITranslator::LanguageType language = translator->language();
+            ITranslator *translator = application()->translator();
+            const ITranslator::LanguageType language = translator->language();
             if (ImGui::BeginCombo("##language", selectedLanguageString(language))) {
+                const nanoem_u32_t flags = project->isModelEditingEnabled() ? ImGuiSelectableFlags_Disabled : 0;
                 for (int i = ITranslator::kLanguageTypeFirstEnum; i < ITranslator::kLanguageTypeMaxEnum; i++) {
                     ITranslator::LanguageType type = static_cast<ITranslator::LanguageType>(i);
-                    if (translator->isSupportedLanguage(type) && ImGui::Selectable(selectedLanguageString(type))) {
+                    if (translator->isSupportedLanguage(type) &&
+                        ImGui::Selectable(selectedLanguageString(type), type == language, flags)) {
                         project->setLanguage(type);
                         translator->setLanguage(type);
                     }
@@ -137,15 +139,18 @@ PreferenceDialog::draw(Project *project)
                 ApplicationMenuBuilder::kMenuItemTypeProjectEnableGroundShadow,
                 ApplicationMenuBuilder::kMenuItemTypeProjectEnableEffect,
             };
+            char buffer[Inline::kNameStackBufferSize];
+            BaseApplicationService *app = application();
             for (nanoem_rsize_t i = 0; i < BX_COUNTOF(itemTypes); i++) {
                 ApplicationMenuBuilder::MenuItemType itemType = itemTypes[i];
                 ApplicationMenuBuilder::MenuItemCheckedState state;
                 ApplicationMenuBuilder::validateMenuItem(project, itemType, state);
                 bool checked = state == ApplicationMenuBuilder::kMenuItemCheckedStateTrue;
-                if (ImGui::Checkbox(m_applicationPtr->translateMenuItem(itemType), &checked)) {
+                ApplicationMenuBuilder::stripMnemonic(buffer, sizeof(buffer), app->translateMenuItem(itemType));
+                if (ImGui::Checkbox(buffer, &checked)) {
                     Error error;
-                    m_applicationPtr->dispatchMenuItemAction(project, itemType, error);
-                    error.notify(m_applicationPtr->eventPublisher());
+                    app->dispatchMenuItemAction(project, itemType, error);
+                    error.notify(app->eventPublisher());
                 }
             }
             addSeparator();
@@ -162,8 +167,7 @@ PreferenceDialog::draw(Project *project)
                 grid->setCell(numCells);
             }
             addSeparator();
-            ImGui::TextUnformatted(
-                m_applicationPtr->translateMenuItem(ApplicationMenuBuilder::kMenuItemTypeProjectMSAATitle));
+            ImGui::TextUnformatted(app->translateMenuItem(ApplicationMenuBuilder::kMenuItemTypeProjectMSAATitle));
             static const ApplicationMenuBuilder::MenuItemType msaaItemTypes[] = {
                 ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx16,
                 ApplicationMenuBuilder::kMenuItemTypeProjectEnableMSAAx8,
@@ -176,8 +180,8 @@ PreferenceDialog::draw(Project *project)
                 layoutPreferenceMenuItemCombo(project, msaaItemTypes, BX_COUNTOF(msaaItemTypes));
                 ImGui::EndCombo();
             }
-            ImGui::TextUnformatted(m_applicationPtr->translateMenuItem(
-                ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationTitle));
+            ImGui::TextUnformatted(
+                app->translateMenuItem(ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationTitle));
             static const ApplicationMenuBuilder::MenuItemType physicsSimulationModeTypes[] = {
                 ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime,
                 ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnablePlaying,
@@ -197,7 +201,7 @@ PreferenceDialog::draw(Project *project)
                 ApplicationMenuBuilder::kMenuItemTypeProjectPreferredMotionFPS30
             };
             ImGui::TextUnformatted(
-                m_applicationPtr->translateMenuItem(ApplicationMenuBuilder::kMenuItemTypeProjectPreferredFPSTitle));
+                app->translateMenuItem(ApplicationMenuBuilder::kMenuItemTypeProjectPreferredFPSTitle));
             if (ImGui::BeginCombo(
                     "##framerate", selectedMenuItemString(project, preferredFPS, BX_COUNTOF(preferredFPS)))) {
                 layoutPreferenceMenuItemCombo(project, preferredFPS, BX_COUNTOF(preferredFPS));
@@ -218,7 +222,7 @@ PreferenceDialog::draw(Project *project)
         }
         if (ImGui::BeginTabItem("Special")) {
             ImGui::PushItemWidth(-1);
-            ApplicationPreference preference(m_applicationPtr);
+            ApplicationPreference preference(application());
             ImGui::TextUnformatted("Application Preference");
             if (ImGui::Button("Initialize##preferences.reset", ImVec2(-1, 0))) {
                 preference.setUndoSoftLimit(ApplicationPreference::kUndoSoftLimitDefaultValue);
@@ -298,7 +302,7 @@ PreferenceDialog::selectedMenuItemString(Project *project, const ApplicationMenu
         ApplicationMenuBuilder::MenuItemCheckedState state;
         ApplicationMenuBuilder::validateMenuItem(project, itemType, state);
         if (state == ApplicationMenuBuilder::kMenuItemCheckedStateTrue) {
-            return m_applicationPtr->translateMenuItem(itemType);
+            return application()->translateMenuItem(itemType);
         }
     }
     return "(Unknown)";
@@ -308,13 +312,14 @@ void
 PreferenceDialog::layoutPreferenceMenuItemCombo(
     Project *project, const ApplicationMenuBuilder::MenuItemType *items, nanoem_rsize_t numItems)
 {
+    BaseApplicationService *app = application();
     for (nanoem_rsize_t i = 0; i < numItems; i++) {
         ApplicationMenuBuilder::MenuItemType itemType = items[i];
         ApplicationMenuBuilder::MenuItemCheckedState state;
         ApplicationMenuBuilder::validateMenuItem(project, itemType, state);
-        if (ImGui::Selectable(m_applicationPtr->translateMenuItem(itemType))) {
+        if (ImGui::Selectable(app->translateMenuItem(itemType))) {
             Error error;
-            m_applicationPtr->dispatchMenuItemAction(project, itemType, error);
+            app->dispatchMenuItemAction(project, itemType, error);
             error.notify(project->eventPublisher());
         }
     }
@@ -323,7 +328,7 @@ PreferenceDialog::layoutPreferenceMenuItemCombo(
 const char *
 PreferenceDialog::selectedPixelFormatString(sg_pixel_format value) const NANOEM_DECL_NOEXCEPT
 {
-    const ITranslator *translator = m_applicationPtr->translator();
+    const ITranslator *translator = application()->translator();
     switch (value) {
     case SG_PIXELFORMAT_RGBA8:
     case _SG_PIXELFORMAT_DEFAULT:
@@ -340,7 +345,7 @@ PreferenceDialog::selectedPixelFormatString(sg_pixel_format value) const NANOEM_
 const char *
 PreferenceDialog::selectedLanguageString(ITranslator::LanguageType value) const NANOEM_DECL_NOEXCEPT
 {
-    const ITranslator *translator = m_applicationPtr->translator();
+    const ITranslator *translator = application()->translator();
     switch (value) {
     case ITranslator::kLanguageTypeEnglish:
         return translator->translate("nanoem.gui.window.preference.project.language.english");
@@ -354,7 +359,7 @@ PreferenceDialog::selectedLanguageString(ITranslator::LanguageType value) const 
 const char *
 PreferenceDialog::selectedFPSMenuItemString(nanoem_u32_t value) const NANOEM_DECL_NOEXCEPT
 {
-    const ITranslator *translator = m_applicationPtr->translator();
+    const ITranslator *translator = application()->translator();
     switch (value) {
     case UINT32_MAX:
         return translator->translate("nanoem.gui.window.preference.global.fps.unlimited");
@@ -373,7 +378,7 @@ const char *
 PreferenceDialog::selectedHighDPIViewportModeString(
     ApplicationPreference::HighDPIViewportModeType value) const NANOEM_DECL_NOEXCEPT
 {
-    const ITranslator *translator = m_applicationPtr->translator();
+    const ITranslator *translator = application()->translator();
     switch (value) {
     case ApplicationPreference::kHighDPIViewportModeAuto:
         return translator->translate("nanoem.gui.window.preference.viewport.high-dpi.mode.auto");
@@ -389,7 +394,7 @@ PreferenceDialog::selectedHighDPIViewportModeString(
 const char *
 PreferenceDialog::selectedFilePathModeMenuItemString(Project::FilePathMode value) const NANOEM_DECL_NOEXCEPT
 {
-    const ITranslator *translator = m_applicationPtr->translator();
+    const ITranslator *translator = application()->translator();
     switch (value) {
     case Project::kFilePathModeAbsolute:
         return translator->translate("nanoem.gui.window.preference.file-path-mode.absolute");

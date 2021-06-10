@@ -27,9 +27,9 @@ const char *const EffectParameterDialog::kIdentifier = "dialog.project.effect";
 const nanoem_f32_t EffectParameterDialog::kMinimumWindowWidth = 600;
 
 void
-EffectParameterDialog::handleLoadingModelEffectSetting(const URI &fileURI, Project *project, void *userData)
+EffectParameterDialog::handleLoadingModelEffectSetting(
+    const URI &fileURI, Project *project, Error &error, void *userData)
 {
-    Error error;
     FileReaderScope scope(project->translator());
     if (scope.open(fileURI, error)) {
         ByteArray bytes;
@@ -43,11 +43,11 @@ EffectParameterDialog::handleLoadingModelEffectSetting(const URI &fileURI, Proje
 }
 
 void
-EffectParameterDialog::handleSaveingModelEffectSetting(const URI &fileURI, Project *project, void *userData)
+EffectParameterDialog::handleSaveingModelEffectSetting(
+    const URI &fileURI, Project *project, Error &error, void *userData)
 {
     const Model *activeModel = static_cast<const Model *>(userData);
     internal::ModelEffectSetting settings(project);
-    Error error;
     MutableString content;
     settings.save(activeModel, content);
     FileWriterScope scope;
@@ -90,7 +90,8 @@ EffectParameterDialog::draw(Project *project)
     else {
         StringUtils::copyString(title, tr("nanoem.gui.window.project.effect.title"), sizeof(title));
     }
-    if (open(title, kIdentifier, &visible, ImVec2(width, ImGui::GetFrameHeightWithSpacing() * 16), 0)) {
+    if (open(title, kIdentifier, &visible, ImVec2(width, ImGui::GetFrameHeightWithSpacing() * 16),
+            ImGuiWindowFlags_None)) {
         ImGui::BeginTabBar("tabbar");
         if (ImGui::BeginTabItem(tr("nanoem.gui.window.project.effect.tab.offscreen"))) {
             layoutAllOffscreenRenderTargets(project);
@@ -120,12 +121,12 @@ EffectParameterDialog::draw(Project *project)
 void
 EffectParameterDialog::layoutAllOffscreenRenderTargets(Project *project)
 {
-    const Project::DrawableList &drawables = project->drawableOrderList();
+    const Project::DrawableList *drawables = project->drawableOrderList();
     typedef tinystl::pair<effect::OffscreenRenderTargetOption, const Effect *> OffscreenRenderTargetPair;
     typedef tinystl::vector<OffscreenRenderTargetPair, TinySTLAllocator> OffscreenRenderTargetPairList;
     OffscreenRenderTargetPairList allOptions;
     nanoem_f32_t maxTextWidth = 0;
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         const IDrawable *drawable = *it;
         if (const Effect *effect = project->resolveEffect(drawable)) {
             effect::OffscreenRenderTargetOptionList options;
@@ -184,8 +185,8 @@ EffectParameterDialog::layoutOffscreenMainRenderTargetAttachments(Project *proje
     ImGui::InputTextMultiline("##desc", desc.data(), desc.size(), ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 3),
         ImGuiInputTextFlags_ReadOnly);
     layoutDefaultOffscreenRenderTargetAttachment(project, Effect::kOffscreenOwnerNameMain);
-    const Project::DrawableList &drawables = project->drawableOrderList();
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    const Project::DrawableList *drawables = project->drawableOrderList();
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         char buffer[Inline::kLongNameStackBufferSize];
         StringUtils::format(
@@ -208,8 +209,8 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     ImGui::InputTextMultiline("##desc", desc.data(), desc.size(), ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 3),
         ImGuiInputTextFlags_ReadOnly);
     layoutDefaultOffscreenRenderTargetAttachment(project, option.m_name);
-    const Project::DrawableList &drawables = project->drawableOrderList();
-    for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+    const Project::DrawableList *drawables = project->drawableOrderList();
+    for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         const IEffect *activeEffect = drawable->activeEffect();
         bool show = true;
@@ -245,9 +246,10 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
             layoutOffscreenRenderTargetAttachment(project, drawable, name, maxTextWidth);
         }
     }
+    addSeparator();
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
-    if (ImGui::TreeNode(textureID, "Color Texture")) {
-        ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription), ImVec2(0, 0), ImVec2(1, 1),
+    if (ImGui::TreeNode(textureID, tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
+        ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
         ImGui::TreePop();
     }
@@ -283,9 +285,13 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
     nanoem_f32_t devicePixelRatio = project->windowDevicePixelRatio();
     ImGui::SameLine();
     const char *drawableName = drawable->nameConstString();
-    const bool selectable =
-        drawable->activeEffect() != effect || (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard);
-    bool selected = project->containsDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
+    const bool selectable = drawable->activeEffect() != effect ||
+        (effect && effect->scriptOrder() == IEffect::kScriptOrderTypeStandard),
+               wasSelected = project->containsDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
+    if (wasSelected) {
+        ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+    }
+    bool selected = wasSelected;
     if (ImGui::Selectable(drawableName, &selected,
             selectable ? ImGuiSelectableFlags_None : ImGuiSelectableFlags_Disabled, ImVec2(maxTextWidth, 0))) {
         if (selected) {
@@ -297,6 +303,9 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
         else {
             project->removeDrawableToAttachOffscreenRenderTargetEffect(offscreenOwnerName, drawable);
         }
+    }
+    if (wasSelected) {
+        ImGui::PopStyleColor();
     }
     ImGui::SameLine();
     const ImGuiStyle &style = ImGui::GetStyle();
@@ -342,8 +351,8 @@ EffectParameterDialog::layoutOffscreenRenderTargetAttachment(
 void
 EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
 {
-    Project::ModelList models(project->allModels());
-    const nanoem_rsize_t numModels = models.size();
+    const Project::ModelList *models = project->allModels();
+    const nanoem_rsize_t numModels = models->size();
     const float width = ImGuiWindow::kLeftPaneWidth * project->windowDevicePixelRatio();
     ImGui::BeginChild("left-pane", ImVec2(width, 0), false);
     float height = ImGui::GetContentRegionAvail().y;
@@ -352,12 +361,12 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     ImGuiListClipper clipper;
     bool up, down;
     detectUpDown(up, down);
-    selectIndex(up, down, models.size(), m_activeModelTargetIndex);
+    selectIndex(up, down, models->size(), m_activeModelTargetIndex);
     clipper.Begin(Inline::saturateInt32(numModels));
     while (clipper.Step()) {
         for (int i = clipper.DisplayStart, end = clipper.DisplayEnd; i < end; i++) {
             const bool selected = m_activeModelTargetIndex == i;
-            if (ImGui::Selectable(models[i]->nameConstString(), selected) || ((up || down) && selected)) {
+            if (ImGui::Selectable(models->data()[i]->nameConstString(), selected) || ((up || down) && selected)) {
                 ImGui::SetScrollHereY();
                 m_activeModelTargetIndex = i;
             }
@@ -367,8 +376,9 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     bool isModelSelected = m_activeModelTargetIndex >= 0 && m_activeModelTargetIndex < Inline::saturateInt32(numModels);
     if (ImGuiWindow::handleButton(tr("nanoem.gui.window.project.effect.emd.load"),
             ImGui::GetContentRegionAvail().x * 0.5f, isModelSelected)) {
-        Model *model = models[m_activeModelTargetIndex];
-        project->fileManager()->setTransientQueryFileDialogCallback(handleLoadingModelEffectSetting, model);
+        Model *model = models->data()[m_activeModelTargetIndex];
+        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleLoadingModelEffectSetting, nullptr };
+        project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
         extensions.push_back("emd");
         IEventPublisher *eventPublisher = project->eventPublisher();
@@ -377,8 +387,9 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     ImGui::SameLine();
     if (ImGuiWindow::handleButton(
             tr("nanoem.gui.window.project.effect.emd.save"), ImGui::GetContentRegionAvail().x, isModelSelected)) {
-        Model *model = models[m_activeModelTargetIndex];
-        project->fileManager()->setTransientQueryFileDialogCallback(handleSaveingModelEffectSetting, model);
+        Model *model = models->data()[m_activeModelTargetIndex];
+        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleSaveingModelEffectSetting, nullptr };
+        project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
         extensions.push_back("emd");
         IEventPublisher *eventPublisher = project->eventPublisher();
@@ -391,7 +402,7 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     if (isModelSelected) {
         static const nanoem_u8_t kClearIcon[] = { 0xEF, 0x84, 0xAD, 0x0 };
         const ImGuiStyle &style = ImGui::GetStyle();
-        Model *model = models[m_activeModelTargetIndex];
+        Model *model = models->data()[m_activeModelTargetIndex];
         nanoem_rsize_t numMaterials;
         nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(model->data(), &numMaterials);
         nanoem_f32_t maxTextWidth = 0;
@@ -407,7 +418,11 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
             const nanoem_rsize_t materialIndex = static_cast<nanoem_rsize_t>(i);
             model::Material *material = model::Material::cast(materialPtr);
             const char *materialName = material->nameConstString();
-            bool selected = project->containsIndexOfMaterialToAttachEffect(modelHandle, materialIndex);
+            const bool wasSelected = project->containsIndexOfMaterialToAttachEffect(modelHandle, materialIndex);
+            if (wasSelected) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGuiWindow::kColorSelectedModelObject);
+            }
+            bool selected = wasSelected;
             if (ImGui::Selectable(materialName, &selected, ImGuiSelectableFlags_None, ImVec2(maxTextWidth, 0))) {
                 if (selected) {
                     if (!ImGui::GetIO().KeyShift) {
@@ -418,6 +433,9 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
                 else {
                     project->removeIndexOfMaterialToAttachEffect(modelHandle, materialIndex);
                 }
+            }
+            if (wasSelected) {
+                ImGui::PopStyleColor();
             }
             ImGui::SameLine();
             const Effect *effect = material->effect();

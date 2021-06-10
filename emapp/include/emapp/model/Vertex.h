@@ -29,8 +29,10 @@ public:
     ~Vertex() NANOEM_DECL_NOEXCEPT;
 
     void bind(nanoem_model_vertex_t *vertexPtr);
+    void initialize(const nanoem_model_vertex_t *vertexPtr);
     void setupBoneBinding(nanoem_model_vertex_t *vertexPtr, Model *model);
 
+    static int index(const nanoem_model_vertex_t *vertexPtr);
     static Vertex *cast(const nanoem_model_vertex_t *vertexPtr);
     static Vertex *create();
 
@@ -44,6 +46,8 @@ public:
     bool hasSoftBody() const NANOEM_DECL_NOEXCEPT;
     bool isSkinningEnabled() const NANOEM_DECL_NOEXCEPT;
     void setSkinningEnabled(bool value);
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
     void deform(const nanoem_model_morph_vertex_t *morph, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT;
     void deform(const nanoem_model_morph_uv_t *morph, int index, nanoem_f32_t weight) NANOEM_DECL_NOEXCEPT;
@@ -74,7 +78,7 @@ private:
     const nanoem_model_soft_body_t *m_softBodyPtr;
     model::Bone *m_bones[4];
     nanoem_model_vertex_t *m_opaque;
-    bool m_skinningEnabled;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

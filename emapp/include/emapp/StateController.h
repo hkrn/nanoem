@@ -17,31 +17,28 @@ namespace nanoem {
 
 class BaseApplicationService;
 class IFileManager;
+class IModelObjectSelection;
+class IState;
 
-class StateController NANOEM_DECL_SEALED : public IProjectHolder,
-                                           public Project::IViewportOverlay,
-                                           private NonCopyable {
+class StateController NANOEM_DECL_SEALED : public IProjectHolder, private NonCopyable {
 public:
-    class IState;
-
     StateController(BaseApplicationService *application, IFileManager *delegate);
     ~StateController() NANOEM_DECL_NOEXCEPT;
 
-    void drawPrimitive2D(IPrimitive2D *primitive, nanoem_u32_t flags) NANOEM_DECL_OVERRIDE;
     const Project *currentProject() const NANOEM_DECL_OVERRIDE;
     Project *currentProject() NANOEM_DECL_OVERRIDE;
 
     BaseApplicationService *application() NANOEM_DECL_NOEXCEPT;
     IFileManager *fileManager() NANOEM_DECL_NOEXCEPT;
-    const IState *state() const NANOEM_DECL_NOEXCEPT;
-    IState *state() NANOEM_DECL_NOEXCEPT;
-    void setState(IState *state);
+    const IState *currentState() const NANOEM_DECL_NOEXCEPT;
+    IState *currentState() NANOEM_DECL_NOEXCEPT;
+    void setCurrentState(IState *state);
     void consumeDefaultPass();
 
-    void handlePointerScroll(const Vector3SI32 &logicalPosition, const Vector2SI32 &delta);
-    void handlePointerPress(const Vector3SI32 &logicalPosition, Project::CursorType type);
-    void handlePointerMove(const Vector3SI32 &logicalPosition, const Vector2SI32 &delta);
-    void handlePointerRelease(const Vector3SI32 &logicalPosition, Project::CursorType type);
+    void handlePointerScroll(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta);
+    void handlePointerPress(const Vector3SI32 &logicalCursorPosition, Project::CursorType type);
+    void handlePointerMove(const Vector3SI32 &logicalCursorPosition, const Vector2SI32 &delta);
+    void handlePointerRelease(const Vector3SI32 &logicalCursorPosition, Project::CursorType type);
 
     Project *createProject();
     void newProject();
@@ -56,9 +53,11 @@ public:
 
 private:
     bool intersectsViewportLayoutRect(
-        const Project *project, const Vector2SI32 &logicalPosition) const NANOEM_DECL_NOEXCEPT;
-    void setPrimaryDraggingState(Project *project, const Vector2SI32 &logicalPosition);
-    void setSecondaryDraggingState(Project *project, const Vector2SI32 &logicalPosition);
+        const Project *project, const Vector2SI32 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT;
+    void setPrimaryDraggingState(Project *project, const Vector2SI32 &logicalCursorPosition);
+    void setSecondaryDraggingState(Project *project, const Vector2SI32 &logicalCursorPosition);
+    IState *draggingBoneSelectionState(const IModelObjectSelection *selection);
+    IState *draggingModelObjectState(const IModelObjectSelection *selection);
 
     typedef tinystl::vector<Project *, TinySTLAllocator> QueuedProjectList;
     BaseApplicationService *m_applicationPtr;

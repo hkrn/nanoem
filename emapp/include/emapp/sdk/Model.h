@@ -8,7 +8,7 @@
 #define EMAPP_PLUGIN_SDK_MODEL_H_
 
 #define NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION_MAJOR 2
-#define NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION_MINOR 0
+#define NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION_MINOR 1
 #define NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION                                                                    \
     NANOEM_APPLICATION_PLUGIN_MAKE_ABI_VERSION(                                                                        \
         NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION_MAJOR, NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION_MINOR)
@@ -52,6 +52,28 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllSelectedRigidB
     nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices(
     nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedVertexObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedMaterialObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedBoneObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedConstraintObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedMorphObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedLabelObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedRigidBodyObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedJointObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAllMaskedSoftBodyObjectIndices(
+    nanoem_application_plugin_model_io_t *plugin, const int *data, nanoem_u32_t length, nanoem_i32_t *status);
+NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetEditingModeEnabled(
+    nanoem_application_plugin_model_io_t *plugin, int value);
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetAudioDescription(
     nanoem_application_plugin_model_io_t *plugin, const nanoem_u8_t *data, nanoem_u32_t length, nanoem_i32_t *status);
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetCameraDescription(

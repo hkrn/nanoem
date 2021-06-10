@@ -47,7 +47,7 @@ public:
     ~Win32BackgroundVideoRendererProxy() noexcept override;
 
     bool load(const URI &fileURI, Error &error) override;
-    void draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
+    void draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project) override;
     void seek(nanoem_f64_t value) override;
     void flush() override;
     void destroy() override;
@@ -57,7 +57,6 @@ private:
     Win32ThreadedApplicationService *m_service;
     D3D11BackgroundVideoDrawer *m_d3d11BackgroundVideoDrawer = nullptr;
     internal::DecoderPluginBasedBackgroundVideoRenderer *m_decoderPluginBasedBackgroundVideoRenderer = nullptr;
-    URI m_fileURI;
     bool m_durationUpdated = false;
 };
 
@@ -84,30 +83,26 @@ Win32BackgroundVideoRendererProxy::load(const URI &fileURI, Error &error)
             nanoem_delete_safe(m_d3d11BackgroundVideoDrawer);
         }
     }
-#endif /* WINVER >= _WIN32_WINNT_WIN7 */
-    Error error2;
+#else
     m_decoderPluginBasedBackgroundVideoRenderer =
         nanoem_new(internal::DecoderPluginBasedBackgroundVideoRenderer(m_service->defaultFileManager()));
-    playable = m_decoderPluginBasedBackgroundVideoRenderer->load(fileURI, error2);
-    if (playable) {
-        error = Error();
-    }
-    else {
+    playable = m_decoderPluginBasedBackgroundVideoRenderer->load(fileURI, error);
+    if (!playable) {
         m_decoderPluginBasedBackgroundVideoRenderer->destroy();
         nanoem_delete_safe(m_decoderPluginBasedBackgroundVideoRenderer);
-        error = error2;
     }
+#endif /* WINVER >= _WIN32_WINNT_WIN7 */
     return playable;
 }
 
 void
-Win32BackgroundVideoRendererProxy::draw(const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
+Win32BackgroundVideoRendererProxy::draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t scaleFactor, Project *project)
 {
     if (m_d3d11BackgroundVideoDrawer) {
-        m_d3d11BackgroundVideoDrawer->draw(rect, scaleFactor, project);
+        m_d3d11BackgroundVideoDrawer->draw(pass, rect, scaleFactor, project);
     }
     else if (m_decoderPluginBasedBackgroundVideoRenderer) {
-        m_decoderPluginBasedBackgroundVideoRenderer->draw(rect, scaleFactor, project);
+        m_decoderPluginBasedBackgroundVideoRenderer->draw(pass, rect, scaleFactor, project);
     }
 }
 
@@ -150,8 +145,54 @@ Win32BackgroundVideoRendererProxy::destroy()
 URI
 Win32BackgroundVideoRendererProxy::fileURI() const noexcept
 {
-    return m_decoderPluginBasedBackgroundVideoRenderer ? m_decoderPluginBasedBackgroundVideoRenderer->fileURI()
-                                                       : m_fileURI;
+    URI fileURI;
+    if (m_d3d11BackgroundVideoDrawer) {
+        fileURI = m_d3d11BackgroundVideoDrawer->fileURI();
+    }
+    else if (m_decoderPluginBasedBackgroundVideoRenderer) {
+        fileURI = m_decoderPluginBasedBackgroundVideoRenderer->fileURI();
+    }
+    return fileURI;
+}
+
+struct D3D11RendererCapability : Project::IRendererCapability {
+    D3D11RendererCapability(ID3D11Device *device);
+    ~D3D11RendererCapability();
+    nanoem_u32_t suggestedSampleLevel(nanoem_u32_t value) const noexcept override;
+    bool supportsSampleLevel(nanoem_u32_t value) const noexcept override;
+
+    ID3D11Device *m_device;
+};
+
+D3D11RendererCapability::D3D11RendererCapability(ID3D11Device *device)
+    : m_device(device)
+{
+}
+
+D3D11RendererCapability::~D3D11RendererCapability()
+{
+}
+
+nanoem_u32_t
+D3D11RendererCapability::suggestedSampleLevel(nanoem_u32_t value) const noexcept
+{
+    uint32_t sampleCount = 1 << value, numQualityLevels;
+    while (
+        FAILED(m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, sampleCount, &numQualityLevels)) ||
+        numQualityLevels == 0) {
+        value--;
+        sampleCount = 1 << value;
+    }
+    return value;
+}
+
+bool
+D3D11RendererCapability::supportsSampleLevel(nanoem_u32_t value) const noexcept
+{
+    uint32_t sampleCount = 1 << value, numQualityLevels;
+    HRESULT result =
+        m_device->CheckMultisampleQualityLevels(DXGI_FORMAT_B8G8R8A8_UNORM, sampleCount, &numQualityLevels);
+    return !FAILED(result) && numQualityLevels > 0;
 }
 
 #if defined(NANOEM_ENABLE_RENDERDOC)
@@ -200,7 +241,7 @@ RenderDocDebugCapture::stop()
 const nanoem_f32_t Win32ThreadedApplicationService::kStandardDPIValue = 96.0f;
 const wchar_t Win32ThreadedApplicationService::kRegisterClassName[] = L"nanoem";
 
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
 
 Win32ThreadedApplicationService::ViewportData::ViewportData()
 {
@@ -526,6 +567,14 @@ Win32ThreadedApplicationService::createDebugCapture()
 #endif /* NANOEM_ENABLE_RENDERDOC */
 }
 
+Project::IRendererCapability *
+Win32ThreadedApplicationService::createRendererCapability()
+{
+    const sg_backend backend = sg::query_backend();
+    return backend == SG_BACKEND_D3D11 ? nanoem_new(D3D11RendererCapability((ID3D11Device *) m_nativeDevice))
+                                       : ThreadedApplicationService::createRendererCapability();
+}
+
 Project::ISkinDeformerFactory *
 Win32ThreadedApplicationService::createSkinDeformerFactory()
 {
@@ -625,7 +674,7 @@ Win32ThreadedApplicationService::handleInitializeApplication()
     setupNewProject();
     HWND window = (HWND) m_nativeView;
     ImGuiIO &io = ImGui::GetIO();
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
     ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
     platformIO.Platform_CreateWindow = [](ImGuiViewport *viewport) {
@@ -935,7 +984,7 @@ Win32ThreadedApplicationService::presentDefaultPass(const Project * /* project *
         updateAllMonitors();
         m_requestUpdatingAllMonitors = false;
     }
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     if (HWND window = m_requestWindowClose.exchange(nullptr)) {
         if (ImGuiViewport *viewport = ImGui::FindViewportByPlatformHandle(window)) {
             viewport->PlatformRequestClose = true;
@@ -1060,7 +1109,7 @@ Win32ThreadedApplicationService::setupNewProject()
 void
 Win32ThreadedApplicationService::updateAllMonitors()
 {
-#if defined(IMGUI_HAS_VIEWPORT) && IMGUI_HAS_VIEWPORT
+#if defined(IMGUI_HAS_VIEWPORT)
     ImGui::GetPlatformIO().Monitors.resize(0);
     EnumDisplayMonitors(
         nullptr, nullptr,

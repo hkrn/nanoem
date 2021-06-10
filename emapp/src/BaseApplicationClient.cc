@@ -375,6 +375,17 @@ BaseApplicationClient::sendNewProjectMessage()
 }
 
 void
+BaseApplicationClient::sendSaveProjectMessage()
+{
+    Nanoem__Application__SaveProjectCommand action = NANOEM__APPLICATION__SAVE_PROJECT_COMMAND__INIT;
+    Nanoem__Application__Command command = NANOEM__APPLICATION__COMMAND__INIT;
+    command.timestamp = internal::ApplicationUtils::timestamp();
+    command.type_case = NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT;
+    command.save_project = &action;
+    sendCommandMessage(&command);
+}
+
+void
 BaseApplicationClient::sendConfirmBeforeNewProjectMessage()
 {
     Nanoem__Application__ConfirmBeforeNewProjectCommand action =
@@ -1049,7 +1060,7 @@ BaseApplicationClient::sendRemoveSelfShadowKeyframeMessage()
 
 void
 BaseApplicationClient::sendBoneBezierControlPointMessage(
-    nanoem_u16_t handle, const String &name, const glm::u8vec4 &value, nanoem_u32_t type)
+    nanoem_u16_t handle, const String &name, const Vector4U8 &value, nanoem_u32_t type)
 {
     Nanoem__Application__SetBoneBezierControlPointCommand action =
         NANOEM__APPLICATION__SET_BONE_BEZIER_CONTROL_POINT_COMMAND__INIT;
@@ -1073,7 +1084,7 @@ BaseApplicationClient::sendBoneBezierControlPointMessage(
 }
 
 void
-BaseApplicationClient::sendCameraBezierControlPointMessage(const glm::u8vec4 &value, nanoem_u32_t type)
+BaseApplicationClient::sendCameraBezierControlPointMessage(const Vector4U8 &value, nanoem_u32_t type)
 {
     Nanoem__Application__SetCameraBezierControlPointCommand action =
         NANOEM__APPLICATION__SET_CAMERA_BEZIER_CONTROL_POINT_COMMAND__INIT;
@@ -1514,7 +1525,7 @@ BaseApplicationClient::sendSetModelTransformOrderIndexMessage(nanoem_u16_t handl
 }
 
 void
-BaseApplicationClient::sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const glm::u8vec4 *values)
+BaseApplicationClient::sendSetModelBoneKeyframeInterpolationMessage(nanoem_u16_t handle, const Vector4U8 *values)
 {
     Nanoem__Application__SetModelBoneKeyframeInterpolationCommand action =
         NANOEM__APPLICATION__SET_MODEL_BONE_KEYFRAME_INTERPOLATION_COMMAND__INIT;
@@ -1717,7 +1728,7 @@ BaseApplicationClient::sendScreenCursorReleaseMessage(const Vector2SI32 &coord, 
 }
 
 void
-BaseApplicationClient::sendSetCameraKeyframeInterpolationMessage(const glm::u8vec4 *values)
+BaseApplicationClient::sendSetCameraKeyframeInterpolationMessage(const Vector4U8 *values)
 {
     Nanoem__Application__SetCameraKeyframeInterpolationCommand action =
         NANOEM__APPLICATION__SET_CAMERA_KEYFRAME_INTERPOLATION_COMMAND__INIT;
@@ -2500,6 +2511,15 @@ BaseApplicationClient::addToggleActiveAccessoryVisibleEventListener(
 }
 
 void
+BaseApplicationClient::addToggleModelEditingEnabledEventListener(
+    pfn_handleToggleModelEditingEnabledEvent listener, void *userData, bool once)
+{
+    EventListener l = { userData, once, { nullptr } };
+    l.u.handleToggleModelEditingEnabledEvent = listener;
+    m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED].push_back(l);
+}
+
+void
 BaseApplicationClient::addUpdateProgressEventListener(pfn_handleUpdateProgressEvent listener, void *userData, bool once)
 {
     EventListener l = { userData, once, { nullptr } };
@@ -2661,6 +2681,15 @@ BaseApplicationClient::addSetViewportDevicePixelRatioEventListener(
     EventListener l = { userData, once, { nullptr } };
     l.u.handleSetViewportDevicePixelRatioEvent = listener;
     m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_SET_VIEWPORT_DEVICE_PIXEL_RATIO_EVENT].push_back(l);
+}
+
+void
+BaseApplicationClient::addQuitApplicationEventListener(
+    pfn_handleQuitApplicationEvent listener, void *userData, bool once)
+{
+    EventListener l = { userData, once, { nullptr } };
+    l.u.handleQuitApplicationEvent = listener;
+    m_eventListeners[NANOEM__APPLICATION__EVENT__TYPE_QUIT_APPLICATION].push_back(l);
 }
 
 void
@@ -3996,6 +4025,32 @@ BaseApplicationClient::dispatchEventMessage(const nanoem_u8_t *data, size_t size
                     c.u.getHandleFileURI(c.userData, event->get_handle_file_uri->handle, fileURI);
                 }
                 m_requestCallbacks.erase(it);
+            }
+            break;
+        }
+        case NANOEM__APPLICATION__EVENT__TYPE_TOGGLE_MODEL_EDITING_ENABLED: {
+            EventListenerListMap::iterator it = m_eventListeners.find(event->type_case);
+            if (it != m_eventListeners.end()) {
+                EventListenerList &listeners = it->second;
+                const Nanoem__Application__ToggleModelEditingEnabledEvent *e = event->toggle_model_editing_enabled;
+                bool enabled = e->value != 0;
+                for (EventListenerList::iterator it2 = listeners.begin(); it2 != listeners.end();) {
+                    const EventListener &listener = *it2;
+                    listener.u.handleToggleModelEditingEnabledEvent(listener.userData, enabled);
+                    it2 = listener.once ? listeners.erase(it2) : it2 + 1;
+                }
+            }
+            break;
+        }
+        case NANOEM__APPLICATION__EVENT__TYPE_QUIT_APPLICATION: {
+            EventListenerListMap::iterator it = m_eventListeners.find(event->type_case);
+            if (it != m_eventListeners.end()) {
+                EventListenerList &listeners = it->second;
+                for (EventListenerList::iterator it2 = listeners.begin(); it2 != listeners.end();) {
+                    const EventListener &listener = *it2;
+                    listener.u.handleQuitApplicationEvent(listener.userData);
+                    it2 = listener.once ? listeners.erase(it2) : it2 + 1;
+                }
             }
             break;
         }

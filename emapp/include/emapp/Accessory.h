@@ -92,7 +92,7 @@ public:
     void destroy();
     void synchronizeMotion(const Motion *motion, nanoem_frame_index_t frameIndex);
     void synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *keyframe);
-    sg_image *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
+    IImageView *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
     const Material *findMaterial(const nanodxm_material_t *material) const NANOEM_DECL_NOEXCEPT;
     void addAttachment(const String &name, const URI &fullPath);
     void removeAttachment(const String &name);
@@ -177,7 +177,6 @@ private:
     };
     typedef tinystl::unordered_map<String, Image *, TinySTLAllocator> ImageMap;
     typedef tinystl::vector<LoadingImageItem *, TinySTLAllocator> LoadingImageItemList;
-    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> Indices32;
     typedef tinystl::vector<nanoem_u16_t, TinySTLAllocator> Indices16;
     typedef tinystl::vector<Vector3, TinySTLAllocator> Vector3List;
     typedef tinystl::unordered_map<const nanodxm_material_t *, UInt32HashMap, TinySTLAllocator> MaterialIndexHashMap;
@@ -186,6 +185,7 @@ private:
 
     static void trianguleNormal(const nanodxm_vector3_t *vertices, const glm::uvec3 &index, Vector3List &normalSum);
     const Image *createImage(const nanodxm_uint8_t *path);
+    Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
     void clearAllLoadingImageItems();
     void createAllImages();
     void fillNormalBuffer(const Vector3List &normalSum, nanodxm_rsize_t numVertices, VertexUnit *ptr) const;

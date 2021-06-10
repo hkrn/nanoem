@@ -107,6 +107,7 @@ message Light {
 message Motion {
   message Camera {
     optional bytes payload = 1;
+    optional bool angle_x_axis_correction = 2;
   };
   message Light {
     optional bytes payload = 1;
@@ -177,6 +178,7 @@ message OffscreenRenderTargetEffect {
     repeated string include_paths = 3;
     optional URI file_uri = 4;
     optional bytes file_checksum = 5;
+    optional bool enabled = 6;
   };
   required string name = 1;
   optional uint32 owner_handle = 2;

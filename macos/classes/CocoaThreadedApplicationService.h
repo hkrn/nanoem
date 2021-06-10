@@ -43,6 +43,8 @@ class IBackgroundRenderer;
 
 class CocoaThreadedApplicationService final : public ThreadedApplicationService {
 public:
+    static NSString *kDefaultWindowTitle;
+
     static NSApplication *createApplication();
     static NSWindow *createMainWindow();
     static NSString *maskUserString(const char *value);
@@ -50,8 +52,7 @@ public:
     static nanoem_f32_t currentCPUPercentage(mach_port_t port);
     static nanoem_u64_t currentMemorySize(mach_port_t port);
     static Vector2 scrollWheelDelta(const NSEvent *event);
-    static Vector2SI32 devicePixelScreenPosition(
-        const NSEvent *event, NSWindow *window, nanoem_f32_t screenHeight) noexcept;
+    static Vector2SI32 deviceScaleScreenPosition(const NSEvent *event, NSWindow *window) noexcept;
     static const char *sharedRedoFilePath() noexcept;
     static int convertToCursorModifiers(const NSEvent *event) noexcept;
     static void sendDummyEvent(NSApplication *app, bool atStart);

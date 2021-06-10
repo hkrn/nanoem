@@ -20,7 +20,7 @@ class DraggingCameraState : public IDraggingState, private NonCopyable {
 public:
     DraggingCameraState(Project *project, ICamera *camera, const Vector2SI32 &pressedCursorPosition);
 
-    void commit(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void commit(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
 
     nanoem_f32_t scaleFactor() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setScaleFactor(nanoem_f32_t value) NANOEM_DECL_OVERRIDE;
@@ -31,9 +31,10 @@ protected:
     Vector3 angle() const NANOEM_DECL_NOEXCEPT;
     Vector3 lookAt() const NANOEM_DECL_NOEXCEPT;
     Vector3 accumulatedPositionDelta() const NANOEM_DECL_NOEXCEPT;
-    Vector2 cursorDelta(const Vector2 &logicalPosition) const NANOEM_DECL_NOEXCEPT;
+    Vector2 cursorDelta(const Vector2 &logicalCursorPosition) const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t distance() const NANOEM_DECL_NOEXCEPT;
-    void updateLastCursorPosition(const Vector2 &logicalPosition, const Vector3 &delta);
+    void updateLastCursorPosition(const Vector2 &logicalCursorPosition, const Vector3 &delta);
+    void resetAllModelEdges();
 
 private:
     Project *m_project;
@@ -42,6 +43,7 @@ private:
     const Vector3 m_angle;
     const nanoem_f32_t m_distance;
     const nanoem_f32_t m_fov;
+    const bool m_perspective;
     Vector3 m_accumulatedPositionDelta;
     Vector2 m_lastPressedCursorPosition;
     nanoem_f32_t m_scaleFactor;
@@ -54,7 +56,7 @@ public:
     AxisAlignedTranslateCameraState(
         Project *project, ICamera *camera, const Vector2SI32 &pressedCursorPosition, int axisIndex);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     const int m_axisIndex;
@@ -67,7 +69,7 @@ public:
     AxisAlignedOrientateCameraState(
         Project *project, ICamera *camera, const Vector2SI32 &pressedCursorPosition, int axisIndex);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     const int m_axisIndex;
@@ -79,7 +81,7 @@ public:
 
     CameraZoomState(Project *project, ICamera *camera, const Vector2SI32 &pressedCursorPosition);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 
@@ -89,7 +91,7 @@ public:
 
     CameraLookAtState(Project *project, ICamera *camera, const Vector2 &pressedCursorPosition);
 
-    void transform(const Vector2SI32 &logicalPosition) NANOEM_DECL_OVERRIDE;
+    void transform(const Vector2SI32 &logicalCursorPosition) NANOEM_DECL_OVERRIDE;
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 };
 

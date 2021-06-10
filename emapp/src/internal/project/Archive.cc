@@ -391,17 +391,17 @@ Archive::loadAllEffects(Native &native, Error &error)
 {
     const bool isPluginEnabled = m_project->isEffectPluginEnabled();
     plugin::EffectPlugin *plugin = m_project->fileManager()->sharedEffectPlugin();
-    Project::DrawableList drawableOrderList(m_project->drawableOrderList());
+    const Project::DrawableList *drawableOrderList = m_project->drawableOrderList();
     bool continuable = true;
     if (isPluginEnabled && plugin) {
-        for (Project::DrawableList::const_iterator it = drawableOrderList.begin(), end = drawableOrderList.end();
+        for (Project::DrawableList::const_iterator it = drawableOrderList->begin(), end = drawableOrderList->end();
              it != end && continuable; ++it) {
             IDrawable *drawable = *it;
             continuable &= loadEffectFromSource(drawable->fileURI(), drawable, plugin, native, error);
         }
     }
     if (continuable) {
-        for (Project::DrawableList::const_iterator it = drawableOrderList.begin(), end = drawableOrderList.end();
+        for (Project::DrawableList::const_iterator it = drawableOrderList->begin(), end = drawableOrderList->end();
              it != end && continuable; ++it) {
             IDrawable *drawable = *it;
             continuable &= loadEffectFromBinary(drawable->fileURI(), drawable, error);
@@ -468,7 +468,7 @@ Archive::loadOffscreenEffectAttachment(
                 IDrawable *drawable = attachment.m_target;
                 effect->setFileURI(URI::createFromFilePath(drawable->fileURI().absolutePath(), entryPath));
                 if (effect->upload(effect::kAttachmentTypeOffscreenPassive, m_archiver, *m_progress, error)) {
-                    m_project->setOffscreenPassiveRenderTargetEffect(drawable, attachment.m_name, effect);
+                    m_project->setOffscreenPassiveRenderTargetEffect(attachment.m_name, drawable, effect);
                     continuable = !error.hasReason();
                 }
             }
@@ -622,9 +622,9 @@ Archive::addIncludeEffectSource(const IDrawable *drawable, const String &basePat
 bool
 Archive::saveAllAccessories(Native &native, StringSet &reservedNameSet, Error &error)
 {
-    Project::AccessoryList allAccessories(m_project->allAccessories());
+    const Project::AccessoryList *allAccessories = m_project->allAccessories();
     bool continuable = true;
-    for (Project::AccessoryList::const_iterator it = allAccessories.begin(), end = allAccessories.end();
+    for (Project::AccessoryList::const_iterator it = allAccessories->begin(), end = allAccessories->end();
          continuable && it != end && continuable; ++it) {
         Accessory *accessory = *it;
         const String &name = accessory->name();
@@ -651,9 +651,9 @@ Archive::saveAllModels(Native &native, StringSet &reservedNameSet, Error &error)
 {
     nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
     StringUtils::UnicodeStringScope scope(factory);
-    Project::ModelList allModels(m_project->allModels());
+    const Project::ModelList *allModels = m_project->allModels();
     bool continuable = true;
-    for (Project::ModelList::const_iterator it = allModels.begin(), end = allModels.end();
+    for (Project::ModelList::const_iterator it = allModels->begin(), end = allModels->end();
          continuable && it != end && continuable; ++it) {
         Model *model = *it;
         const String &canonicalName = model->canonicalName();
@@ -683,11 +683,11 @@ bool
 Archive::saveAllMotions(Error &error)
 {
     String modelName;
-    Project::MotionList allMotions(m_project->allMotions());
+    const Project::MotionList *allMotions = m_project->allMotions();
     ByteArray bytes;
     bool continuable = true;
-    for (Project::MotionList::const_iterator it = allMotions.begin(), end = allMotions.end(); it != end && continuable;
-         ++it) {
+    for (Project::MotionList::const_iterator it = allMotions->begin(), end = allMotions->end();
+         it != end && continuable; ++it) {
         Motion *motion = *it;
         String path("Motion/");
         bool saved = false;

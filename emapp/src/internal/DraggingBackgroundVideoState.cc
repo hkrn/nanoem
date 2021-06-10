@@ -32,9 +32,9 @@ DraggingBackgroundVideoState::DraggingBackgroundVideoState(Project *project, con
 }
 
 void
-DraggingBackgroundVideoState::commit(const Vector2SI32 &logicalScalePosition)
+DraggingBackgroundVideoState::commit(const Vector2SI32 & /* logicalScalePosition */)
 {
-    m_project->eventPublisher()->publishEnableCursorEvent(logicalScalePosition);
+    m_project->eventPublisher()->publishEnableCursorEvent(Vector2SI32(0));
 }
 
 const char *

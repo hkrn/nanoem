@@ -23,7 +23,12 @@ public:
     typedef tinystl::vector<nanoem_model_joint_t *, TinySTLAllocator> MutableList;
     typedef tinystl::unordered_set<nanoem_model_joint_t *, TinySTLAllocator> MutableSet;
 
-    static Joint *cast(const nanoem_model_joint_t *joint) NANOEM_DECL_NOEXCEPT;
+    static int index(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT;
+    static const char *nameConstString(
+        const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static const char *canonicalNameConstString(
+        const nanoem_model_joint_t *jointPtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
+    static Joint *cast(const nanoem_model_joint_t *jointPtr) NANOEM_DECL_NOEXCEPT;
     static Joint *create();
     ~Joint() NANOEM_DECL_NOEXCEPT;
 
@@ -40,8 +45,10 @@ public:
     nanoem_physics_joint_t *physicsJoint() const NANOEM_DECL_NOEXCEPT;
     void getWorldTransformA(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
     void getWorldTransformB(nanoem_f32_t *value) const NANOEM_DECL_NOEXCEPT;
+    bool isEditingMasked() const NANOEM_DECL_NOEXCEPT;
+    void setEditingMasked(bool value);
 
-    const par_shapes_mesh_s *generateShapeMesh(const nanoem_model_joint_t *joint);
+    const par_shapes_mesh_s *sharedShapeMesh(const nanoem_model_joint_t *joint);
     void enable();
     void disable();
 
@@ -56,6 +63,7 @@ private:
     par_shapes_mesh_s *m_shape;
     String m_name;
     String m_canonicalName;
+    nanoem_u32_t m_states;
 };
 
 } /* namespace model */

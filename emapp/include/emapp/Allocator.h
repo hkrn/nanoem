@@ -57,6 +57,7 @@ private:
     static Allocator g_instance_for_protobuf;
     static Allocator g_instance_for_sokol;
     static Allocator g_instance_for_stb;
+    static Allocator g_instance_for_tinyobj;
     static Allocator g_instance_for_tinystl;
     static Allocator g_instance_for_undo;
     static ProtobufCAllocator g_pb_allocator;
@@ -111,7 +112,7 @@ private:
     std::atomic<nanoem_u64_t> m_countAloocationHuge;
     nanoem_u64_t m_peakAllocateCount;
     nanoem_u64_t m_peakAllocatedBytes;
-#endif
+#endif /* NANOEM_ENABLE_DEBUG_ALLOCATOR */
 };
 
 } /* namespace nanoem */

@@ -25,6 +25,12 @@ LazySetActiveModelBoneCommand::execute(Project *project)
     }
 }
 
+void
+LazySetActiveModelBoneCommand::destroy(Project *project)
+{
+    BX_UNUSED_1(project);
+}
+
 } /* namespace imgui */
 } /* namespace internal */
 } /* namespace nanoem */

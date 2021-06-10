@@ -185,8 +185,10 @@ Technique::ScriptExternal::save(const IDrawable *drawable, const char *name)
     Project *project = effect->project();
     sg_pass pass = effect->resetRenderPass(drawable);
     m_destinationPass = pass;
+    SG_PUSH_GROUPF("Technique::ScriptExternal::save(pass=%s)", project->findRenderPassName(pass));
     project->setRenderPassName(pass, name);
     project->setScriptExternalRenderPass(pass, effect->clearColor(), effect->clearDepth());
+    SG_POP_GROUP();
 }
 
 void
@@ -255,6 +257,11 @@ Technique::Technique(Effect *effect, const String &name, const AnnotationMap &an
 
 Technique::~Technique() NANOEM_DECL_NOEXCEPT
 {
+    for (PassList::iterator it = m_passes.begin(), end = m_passes.end(); it != end; ++it) {
+        Pass *pass = *it;
+        nanoem_delete(pass);
+    }
+    m_passes.clear();
 }
 
 void

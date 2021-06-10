@@ -14,8 +14,8 @@ const char *const ModelDrawOrderDialog::kIdentifier = "dialog.model.order.draw";
 
 ModelDrawOrderDialog::ModelDrawOrderDialog(Project *project, BaseApplicationService *applicationPtr)
     : BaseNonModalDialogWindow(applicationPtr)
-    , m_lastDrawableOrderList(project->drawableOrderList())
-    , m_orderState(project->drawableOrderList())
+    , m_lastDrawableOrderList(*project->drawableOrderList())
+    , m_orderState(*project->drawableOrderList())
 {
 }
 
@@ -36,8 +36,8 @@ ModelDrawOrderDialog::draw(Project *project)
             changed = true;
         }
         ImGui::BeginChild("##drawables", ImVec2(0, height - ImGui::GetFrameHeightWithSpacing() * 3.5f), true);
-        Project::DrawableList drawables(project->drawableOrderList());
-        for (Project::DrawableList::const_iterator it = drawables.begin(), end = drawables.end(); it != end; ++it) {
+        const Project::DrawableList *drawables = project->drawableOrderList();
+        for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
             IDrawable *drawable = *it;
             if (ImGui::Selectable(drawable->nameConstString(), drawable == m_orderState.m_checkedDrawable)) {
                 m_orderState.m_checkedDrawable = drawable;

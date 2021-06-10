@@ -18,7 +18,7 @@ transform(Model *model, Motion *motion)
     // factory.normalizeAllVertices();
     internal::EditingModelTrait::Bone bone(model);
     bone.createRootParentBone();
-    bone.createStagingProxyBone(model->activeBone());
+    // bone.createStagingProxyBone(model->activeBone());
     BX_UNUSED(motion);
 }
 
@@ -37,7 +37,6 @@ output(const bx::CommandLine &command, Model *model, Error &error)
                 fprintf(stderr, "[ERROR] Failed saving model(%llu): %s\n", error.code(), error.reasonConstString());
             }
             modelWriter->commit(error);
-            FileUtils::destroyFileWriter(modelWriter);
         }
         else {
             fprintf(stderr, "[ERROR] Failed saving model(%llu): %s\n", error.code(), error.reasonConstString());
@@ -52,8 +51,10 @@ run(const bx::CommandLine &command)
     ThreadedApplicationService service(0);
     internal::StubEventPublisher publisher;
     Error error;
+    sg_desc desc = {};
+    sg::setup(&desc);
     service.setEventPublisher(&publisher);
-    service.initialize(1.0f);
+    service.initialize(1.0f, 1.0f);
     Project *project = service.createProject(glm::vec2(1), SG_PIXELFORMAT_RGBA8, 1.0f, 1.0f, 0);
     project->setLanguage(ITranslator::kLanguageTypeJapanese);
     if (command.hasArg("model")) {
@@ -68,7 +69,7 @@ run(const bx::CommandLine &command)
                 FileUtils::read(modelScope, bytes, error);
                 Model *model = project->createModel();
                 if (model->load(bytes, error)) {
-                    fprintf(stderr, "Loaded Mdoel %s\n", inputPath);
+                    fprintf(stderr, "Loaded Model %s\n", inputPath);
                     model->upload();
                     project->addModel(model);
                     Motion *motion = 0;
@@ -103,8 +104,8 @@ run(const bx::CommandLine &command)
                 Model *model = project->createModel();
                 project->addModel(model);
                 model::Importer importer(model);
-                Model::ImportSetting setting(fileURI);
-                importer.execute(bytes.data(), bytes.size(), setting, error);
+                Model::ImportDescription desc(fileURI);
+                importer.execute(bytes.data(), bytes.size(), desc, error);
                 if (error.hasReason()) {
                     fprintf(stderr, "[ERROR] Failed executing conversion: %s\n", error.reasonConstString());
                 }
@@ -123,7 +124,7 @@ main(int argc, char *argv[])
 {
     Allocator::initialize();
     ThreadedApplicationService::setup();
-    void *dllHandle = sg::openSharedLibrary("../emapp/sokol_noop." BX_DL_EXT);
+    void *dllHandle = sg::openSharedLibrary("../emapp/bundle/sokol/sokol_noop." BX_DL_EXT);
     bx::CommandLine command(argc, argv);
     run(command);
     sg::closeSharedLibrary(dllHandle);

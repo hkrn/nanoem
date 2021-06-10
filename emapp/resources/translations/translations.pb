@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -13,8 +13,8 @@
 !nanoem.gui.keyframe.select-column	列選択$
 nanoem.gui.keyframe.start#開始$
 nanoem.gui.effectエフェクト7
-nanoem.gui.effect.reloadエフェクトの再読込-
-nanoem.gui.panel.accessoryアクセサリ/
+nanoem.gui.effect.reloadエフェクトの再読込3
+ nanoem.gui.panel.accessory.titleアクセサリ/
 nanoem.gui.panel.accessory.none（なし）0
 $nanoem.gui.panel.accessory.bone.none(なし)+
 !nanoem.gui.panel.accessory.delete削除+
@@ -27,8 +27,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
  nanoem.gui.panel.accessory.scale	拡大率0
 &nanoem.gui.panel.accessory.translation移動,
 "nanoem.gui.panel.accessory.visible表示*
-nanoem.gui.panel.accessory.op	外部親"
-nanoem.gui.panel.bone	ボーン'
+nanoem.gui.panel.accessory.op	外部親(
+nanoem.gui.panel.bone.title	ボーン'
 nanoem.gui.panel.bone.copy	コピー=
 *nanoem.gui.panel.bone.label.selection-mode選択モード$
 nanoem.gui.panel.bone.move移動+
@@ -40,8 +40,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 nanoem.gui.panel.bone.select選択-
  nanoem.gui.panel.bone.select.all	全選択-
  nanoem.gui.panel.bone.select.box	箱選択/
-"nanoem.gui.panel.bone.select.dirty	未登録$
-nanoem.gui.panel.camera	カメラ<
+"nanoem.gui.panel.bone.select.dirty	未登録*
+nanoem.gui.panel.camera.title	カメラ<
 )nanoem.gui.panel.camera.following-to-boneボーン追従-
 !nanoem.gui.panel.camera.bone.none(なし)(
 nanoem.gui.panel.camera.fov	視野角3
@@ -50,8 +50,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 nanoem.gui.panel.camera.label	カメラ.
 "nanoem.gui.panel.camera.model.none(なし)?
 #nanoem.gui.panel.camera.perspectiveパースペクティブ*
- nanoem.gui.panel.camera.register登録.
-nanoem.gui.panel.interpolation補完曲線8
+ nanoem.gui.panel.camera.register登録4
+$nanoem.gui.panel.interpolation.title補完曲線8
 (nanoem.gui.panel.interpolation.automatic自動補完9
 /nanoem.gui.panel.interpolation.bone.orientation回転A
 1nanoem.gui.panel.interpolation.bone.translation.x移動(X軸)A
@@ -65,14 +65,14 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 3nanoem.gui.panel.interpolation.camera.translation.z移動(Z軸)0
 #nanoem.gui.panel.interpolation.copy	コピー5
 %nanoem.gui.panel.interpolation.linear線形補間4
-$nanoem.gui.panel.interpolation.pasteペースト 
-nanoem.gui.panel.light照明#
+$nanoem.gui.panel.interpolation.pasteペースト&
+nanoem.gui.panel.light.title照明#
 nanoem.gui.panel.light.color色*
  nanoem.gui.panel.light.direction方向)
 nanoem.gui.panel.light.reset	初期化;
 "nanoem.gui.panel.light.self-shadowセルフシャドウ)
-nanoem.gui.panel.light.register登録#
-nanoem.gui.panel.model	モデル*
+nanoem.gui.panel.light.register登録)
+nanoem.gui.panel.model.title	モデル*
  nanoem.gui.panel.model.blend-add加算-
 &nanoem.gui.panel.model.blend-add.short加B
 nanoem.gui.panel.model.default カメラ/照明/アクセサリ'
@@ -84,8 +84,8 @@ $nanoem.gui.panel.interpolation.pasteペースト
 #nanoem.gui.panel.model.shadow.short影(
 nanoem.gui.panel.model.visible表示+
 $nanoem.gui.panel.model.visible.short表2
-&nanoem.gui.panel.model.constraint.none(なし)#
-nanoem.gui.panel.morph	モーフ'
+&nanoem.gui.panel.model.constraint.none(なし))
+nanoem.gui.panel.morph.title	モーフ'
 nanoem.gui.panel.morph.none(なし)!
 nanoem.gui.panel.morph.eye目-
 #nanoem.gui.panel.morph.eye.register登録(
@@ -96,8 +96,8 @@ $nanoem.gui.panel.model.visible.short表2
 nanoem.gui.panel.morph.other	その他/
 %nanoem.gui.panel.morph.other.register登録.
 nanoem.gui.panel.morph.weight#ウェイト:
-$nanoem.gui.panel.morph.weight.formatウェイト: %.2f
-nanoem.gui.panel.play再生$
+$nanoem.gui.panel.morph.weight.formatウェイト: %.2f%
+nanoem.gui.panel.play.title再生$
 nanoem.gui.panel.play.end#終了'
 nanoem.gui.panel.play.loop	ループ+
 nanoem.gui.panel.play.pause一時停止$
@@ -105,14 +105,14 @@ $nanoem.gui.panel.morph.weight.formatウェイト: %.2f
 nanoem.gui.panel.play.resume再開&
 nanoem.gui.panel.play.start#開始'
 nanoem.gui.panel.play.volume#音量3
-#nanoem.gui.panel.play.volume.format音量: %d%%0
-nanoem.gui.panel.shadowセルフシャドウ+
+#nanoem.gui.panel.play.volume.format音量: %d%%6
+nanoem.gui.panel.shadow.titleセルフシャドウ+
  nanoem.gui.panel.shadow.distance#距離.
 nanoem.gui.panel.shadow.mode-1モード１.
 nanoem.gui.panel.shadow.mode-2モード２&
 nanoem.gui.panel.shadow.noneなし*
- nanoem.gui.panel.shadow.register登録"
-nanoem.gui.panel.view	ビュー$
+ nanoem.gui.panel.shadow.register登録(
+nanoem.gui.panel.view.title	ビュー$
 nanoem.gui.panel.view.back背面&
 nanoem.gui.panel.view.bottom底面,
 nanoem.gui.panel.view.followフォロー.
@@ -121,12 +121,52 @@ $nanoem.gui.panel.morph.weight.formatウェイト: %.2f
 nanoem.gui.panel.view.front前面$
 nanoem.gui.panel.view.left左面%
 nanoem.gui.panel.view.right右面"
-nanoem.gui.panel.view.up上面
+nanoem.gui.panel.view.up上面5
++nanoem.gui.panel.model.edit.operation.title操作E
+2nanoem.gui.panel.model.edit.operation.action.titleアクションF
+9nanoem.gui.panel.model.edit.operation.action.camera.title	カメラF
+<nanoem.gui.panel.model.edit.operation.action.selection.title選択^
+Enanoem.gui.panel.model.edit.operation.action.create-parent-bone.title親ボーンの作成d
+Enanoem.gui.panel.model.edit.operation.action.create-target-bone.title表示先ボーンの作成e
+Fnanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.title頂点ウェイトを塗るq
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.title!材質プリミティブの作成U
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.cone円錐X
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.cube	立方体Y
+Onanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinder円筒W
+Mnanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphere球体\
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.torusトーラスj
+]nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translation	移動量g
+Znanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotation	回転量g
+Wnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scaleスケールo
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices円周分割数: %do
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks高さ分割数: %dh
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radius内径: %.1fH
+5nanoem.gui.panel.model.edit.operation.selection.title選択モード@
+6nanoem.gui.panel.model.edit.operation.selection.circle円形C
+9nanoem.gui.panel.model.edit.operation.selection.rectangle矩形<
+5nanoem.gui.panel.model.edit.operation.selection.point点4
+'nanoem.gui.panel.model.edit.gizmo.title	ギズモA
+1nanoem.gui.panel.model.edit.gizmo.operation.title操作種別?
+5nanoem.gui.panel.model.edit.gizmo.operation.translate移動<
+2nanoem.gui.panel.model.edit.gizmo.operation.rotate回転A
+1nanoem.gui.panel.model.edit.gizmo.operation.scaleスケールB
+2nanoem.gui.panel.model.edit.gizmo.coordinate.title座標種別F
+3nanoem.gui.panel.model.edit.gizmo.coordinate.globalグローバルE
+2nanoem.gui.panel.model.edit.gizmo.coordinate.localグローバルP
+.nanoem.gui.panel.model.edit.weight-paint.title頂点ウェイトペイントK
+5nanoem.gui.panel.model.edit.weight-paint.painter-typeペイント種別V
+@nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brushベースブラシR
+?nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brushエアブラシD
+4nanoem.gui.panel.model.edit.weight-paint.vertex-type頂点種別:
+-nanoem.gui.panel.model.edit.weight-paint.bone	ボーン?
+/nanoem.gui.panel.model.edit.weight-paint.radius半径: %.3f>
+.nanoem.gui.panel.model.edit.weight-paint.delta差分: %.3f?
+2nanoem.gui.panel.model.edit.weight-paint.normalize	正規化S
+@nanoem.gui.panel.model.edit.weight-paint.automatic-normalization自動正規化
 nanoem.gui.redoやり直し)
 nanoem.gui.timelineタイムライン
-nanoem.gui.undo元に戻すf
-nanoem.gui.viewport.globalHビューポート - カメラ、照明、アクセサリ / ステージ4
-nanoem.gui.viewport.modelビューポート - %sB
+nanoem.gui.undo元に戻す/
+nanoem.gui.viewport.titleビューポートB
 #nanoem.gui.viewport.model-with-boneビューポート - %s: %s1
 $nanoem.gui.viewport.parameter.camera	カメラ4
 *nanoem.gui.viewport.parameter.camera.angle角度=
@@ -204,23 +244,42 @@ $nanoem.gui.viewport.parameter.camera	カメラ4
 *nanoem.gui.window.project.effect.tab.model	モデルA
 .nanoem.gui.window.project.effect.tab.parameterパラメータK
 2nanoem.gui.window.project.effect.offscreen.default（デフォルト）?
-/nanoem.gui.window.project.effect.offscreen.none（なし）>
+/nanoem.gui.window.project.effect.offscreen.none（なし）w
+:nanoem.gui.window.project.effect.offscreen.display-texture9レンダーターゲットテクスチャを表示する>
 .nanoem.gui.window.project.effect.material.none（なし）Y
 1nanoem.gui.window.project.effect.parameter.reload$エフェクトをリロードするf
 2nanoem.gui.window.project.effect.parameter.inspect0パラメータのデバッグを有効にする3
 )nanoem.gui.window.project.effect.emd.load読込3
 )nanoem.gui.window.project.effect.emd.save保存*
-nanoem.gui.window.model.title	モデル*
- nanoem.gui.window.model.tab.info情報,
+nanoem.gui.window.model.title	モデル-
+#nanoem.gui.window.model.tab.measure測定2
+"nanoem.gui.window.model.tab.systemシステム,
 "nanoem.gui.window.model.tab.vertex頂点'
  nanoem.gui.window.model.tab.face面C
 $nanoem.gui.window.model.tab.material材質（マテリアル）-
  nanoem.gui.window.model.tab.bone	ボーン:
-!nanoem.gui.window.model.tab.morph表情（モーフ）=
+!nanoem.gui.window.model.tab.morphモーフ（表情）=
 !nanoem.gui.window.model.tab.label表示枠（ラベル）0
 &nanoem.gui.window.model.tab.rigid-body剛体4
-!nanoem.gui.window.model.tab.jointジョイント/
-%nanoem.gui.window.model.tab.soft-body柔体D
+!nanoem.gui.window.model.tab.jointジョイント;
+%nanoem.gui.window.model.tab.soft-bodyソフトボディ-
+#nanoem.gui.window.model.menu.vertex頂点(
+!nanoem.gui.window.model.menu.face面/
+%nanoem.gui.window.model.menu.material材質.
+!nanoem.gui.window.model.menu.bone	ボーン/
+"nanoem.gui.window.model.menu.morph	モーフ<
+&nanoem.gui.window.model.menu.type.boneボーンモーフ@
+'nanoem.gui.window.model.menu.type.groupグループモーフ=
+*nanoem.gui.window.model.menu.type.material材質モーフE
+)nanoem.gui.window.model.menu.type.textureテクスチャモーフ;
+$nanoem.gui.window.model.menu.type.uv拡張 UV モーフ;
+(nanoem.gui.window.model.menu.type.vertex頂点モーフ?
+&nanoem.gui.window.model.menu.type.flipフリップモーフE
+)nanoem.gui.window.model.menu.type.impulseインパルスモーフ/
+"nanoem.gui.window.model.menu.label	表示枠1
+'nanoem.gui.window.model.menu.rigid-body剛体5
+"nanoem.gui.window.model.menu.jointジョイント<
+&nanoem.gui.window.model.menu.soft-bodyソフトボディD
 "nanoem.gui.window.preference.titleアプリケーション設定n
 ,nanoem.gui.window.preference.global.renderer>レンダラ ※ 変更後要アプリケーション再起動O
 0nanoem.gui.window.preference.global.color-formatカラーフォーマットE
@@ -252,15 +311,41 @@ $nanoem.gui.window.model.tab.material材質（マテリアル）-
 +nanoem.gui.window.preference.grid.size.grid地面軸セルの表示数Y
 1nanoem.gui.window.preference.file-path-mode.title$保存時のファイルパス設定D
 4nanoem.gui.window.preference.file-path-mode.absolute絶対パスD
-4nanoem.gui.window.preference.file-path-mode.relative相対パス3
+4nanoem.gui.window.preference.file-path-mode.relative相対パス1
+$nanoem.gui.model.edit.measure.vertex	頂点数,
+"nanoem.gui.model.edit.measure.face面数3
+&nanoem.gui.model.edit.measure.material	材質数;
+%nanoem.gui.model.edit.measure.textureテクスチャ数2
+"nanoem.gui.model.edit.measure.boneボーン数:
+(nanoem.gui.model.edit.measure.constraintIKボーン数3
+#nanoem.gui.model.edit.measure.morphモーフ数3
+#nanoem.gui.model.edit.measure.label表情枠数5
+(nanoem.gui.model.edit.measure.rigid-body	剛体数9
+#nanoem.gui.model.edit.measure.jointジョイント数@
+'nanoem.gui.model.edit.measure.soft-bodyソフトボディ数F
+-nanoem.gui.model.edit.measure.transform.title一括モデル変形7
+-nanoem.gui.model.edit.measure.transform.apply適用=
+-nanoem.gui.model.edit.measure.transform.resetリセットM
+:nanoem.gui.model.edit.measure.transform.height-based.title身長ベースa
+6nanoem.gui.model.edit.measure.transform.height-based.a'(A): MMD におけるモデルの身長m
+6nanoem.gui.model.edit.measure.transform.height-based.b3(B): MMD におけるセンチメートルの単位c
+6nanoem.gui.model.edit.measure.transform.height-based.c)(C): 補正用途のセンチメートル}
+;nanoem.gui.model.edit.measure.transform.height-based.result>センチメートル単位のモデルの身長 = (A / B) + CN
+Ananoem.gui.model.edit.measure.transform.height-based.scale-factor	拡大率K
+;nanoem.gui.model.edit.measure.transform.numeric-input.title数値入力+
+!nanoem.gui.model.edit.system.name名前4
+$nanoem.gui.model.edit.system.commentコメント>
+%nanoem.gui.model.edit.system.encoding文字エンコード1
+ nanoem.gui.model.edit.system.uva追加 UV 数3
 #nanoem.gui.model.edit.vertex.origin頂点座標3
 #nanoem.gui.model.edit.vertex.normal法線座標1
-%nanoem.gui.model.edit.vertex.texcoordUV座標1
-!nanoem.gui.model.edit.vertex.type頂点種別3
+%nanoem.gui.model.edit.vertex.texcoordUV座標C
+!nanoem.gui.model.edit.vertex.type頂点種別と影響ボーン3
 #nanoem.gui.model.edit.vertex.weightウェイト/
 #nanoem.gui.model.edit.vertex.sdef.cSDEF (C)1
 $nanoem.gui.model.edit.vertex.sdef.r0	SDEF (R0)1
-$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
+$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
+%nanoem.gui.model.edit.vertex.material所属材質1
 !nanoem.gui.model.edit.vertex.edgeエッジ幅2
  nanoem.gui.model.edit.vertex.uva拡張UV座標E
 ,nanoem.gui.model.edit.material.name.japanese名称（日本語）A
@@ -269,56 +354,66 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
 ,nanoem.gui.model.edit.material.diffuse.color$拡散光色（ディフューズ）G
 .nanoem.gui.model.edit.material.diffuse.opacity拡散光の透明度U
 -nanoem.gui.model.edit.material.specular.color$鏡面光色（スペキュラー）F
--nanoem.gui.model.edit.material.specular.power鏡面光色の強度9
+-nanoem.gui.model.edit.material.specular.power鏡面光色の強度6
+)nanoem.gui.model.edit.material.edge.title	エッジ9
 )nanoem.gui.model.edit.material.edge.colorエッジ色G
 +nanoem.gui.model.edit.material.edge.opacityエッジ色の透明度8
-(nanoem.gui.model.edit.material.edge.sizeエッジ幅J
+(nanoem.gui.model.edit.material.edge.sizeエッジ幅I
+-nanoem.gui.model.edit.material.primitive.typeプリミティブ種別L
+-nanoem.gui.model.edit.material.spheremap.typeスフィアマップ種別?
+,nanoem.gui.model.edit.material.texture.titleテクスチャF
+-nanoem.gui.model.edit.material.arbitrary-area任意ユーザ領域J
 .nanoem.gui.model.edit.material.texture.diffuse拡散光テクスチャU
 -nanoem.gui.model.edit.material.texture.sphere$スフィアマップテクスチャJ
 +nanoem.gui.model.edit.material.texture.toonトゥーンテクスチャX
+6nanoem.gui.model.edit.material.texture.display-uv-meshUV メッシュを表示する<
+)nanoem.gui.model.edit.material.propertiesプロパティX
 3nanoem.gui.model.edit.material.property.shared-toon!共有トゥーンテクスチャ_
 7nanoem.gui.model.edit.material.property.disable-culling$カリング無効（両面描画）R
 6nanoem.gui.model.edit.material.property.casting-shadow地面影の投影対象c
 ;nanoem.gui.model.edit.material.property.casting-self-shadow$セルフシャドウの投影対象L
 3nanoem.gui.model.edit.material.property.self-shadowセルフシャドウ9
 ,nanoem.gui.model.edit.material.property.edge	エッジG
-4nanoem.gui.model.edit.material.property.vertex-color頂点カラー;
-1nanoem.gui.model.edit.material.sphere-texture.add加算@
-6nanoem.gui.model.edit.material.sphere-texture.multiply乗算<
-2nanoem.gui.model.edit.material.sphere-texture.noneなしR
-9nanoem.gui.model.edit.material.sphere-texture.sub-textureサブテクスチャ?
-5nanoem.gui.model.edit.material.sphere-texture.unknown不明G
+4nanoem.gui.model.edit.material.property.vertex-color頂点カラーG
 .nanoem.gui.model.edit.material.primitive.point点（ポイント）C
 -nanoem.gui.model.edit.material.primitive.line線（ライン）V
-1nanoem.gui.model.edit.material.primitive.triangle!三角（トライアングル）9
-/nanoem.gui.model.edit.material.sphere.type.noneなし8
-.nanoem.gui.model.edit.material.sphere.type.add加算=
-3nanoem.gui.model.edit.material.sphere.type.multiply乗算O
-6nanoem.gui.model.edit.material.sphere.type.sub-textureサブテクスチャA
+1nanoem.gui.model.edit.material.primitive.triangle!三角（トライアングル）<
+2nanoem.gui.model.edit.material.spheremap.type.noneなし;
+1nanoem.gui.model.edit.material.spheremap.type.add加算@
+6nanoem.gui.model.edit.material.spheremap.type.multiply乗算R
+9nanoem.gui.model.edit.material.spheremap.type.sub-textureサブテクスチャA
 (nanoem.gui.model.edit.bone.name.japanese名称（日本語）=
 'nanoem.gui.model.edit.bone.name.english名称（英語）1
 !nanoem.gui.model.edit.bone.origin原点座標1
-!nanoem.gui.model.edit.bone.parent親ボーン7
-!nanoem.gui.model.edit.bone.target接続先ボーンF
--nanoem.gui.model.edit.bone.destination-origin接続先原点座標8
+!nanoem.gui.model.edit.bone.parent親ボーンA
++nanoem.gui.model.edit.bone.destination.bone接続先ボーンF
+-nanoem.gui.model.edit.bone.destination.origin接続先原点座標0
+ nanoem.gui.model.edit.bone.stage変形階層8
 %nanoem.gui.model.edit.bone.propertiesプロパティ2
 "nanoem.gui.model.edit.bone.movable移動可能5
 %nanoem.gui.model.edit.bone.rotateable回転可能,
 "nanoem.gui.model.edit.bone.visible可視:
 *nanoem.gui.model.edit.bone.user-handleable操作可能:
--nanoem.gui.model.edit.bone.inverse-kinematics	IK 制約Y
-.nanoem.gui.model.edit.bone.constraint.effector'エフェクター（作用）ボーンT
-,nanoem.gui.model.edit.bone.constraint.target$ターゲット（終点）ボーン5
+-nanoem.gui.model.edit.bone.inverse-kinematics	IK 制約M
+.nanoem.gui.model.edit.bone.constraint.effectorIK ターゲットボーン?
+,nanoem.gui.model.edit.bone.constraint.targetIK 元ボーン5
 +nanoem.gui.model.edit.bone.constraint.angle角度E
-,nanoem.gui.model.edit.bone.constraint.jointsIK リンクボーン?
-/nanoem.gui.model.edit.bone.constraint.iteration試行回数?
+,nanoem.gui.model.edit.bone.constraint.jointsIK リンクボーン:
+0nanoem.gui.model.edit.bone.constraint.joints.add追加=
+3nanoem.gui.model.edit.bone.constraint.joints.remove削除Y
+7nanoem.gui.model.edit.bone.constraint.joint.angle-limit角度制限を有効にするM
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lower角度下限M
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upper角度上限?
+/nanoem.gui.model.edit.bone.constraint.iteration試行回数<
+)nanoem.gui.model.edit.bone.inherent.title付与ボーン?
 /nanoem.gui.model.edit.bone.inherent.translation移動付与?
 /nanoem.gui.model.edit.bone.inherent.orientation回転付与E
 /nanoem.gui.model.edit.bone.inherent.parent-bone付与親ボーン<
 /nanoem.gui.model.edit.bone.inherent.coefficient	付与率6
-)nanoem.gui.model.edit.bone.has-fixed-axis	固定軸2
-%nanoem.gui.model.edit.bone.fixed-axis	固定軸<
+)nanoem.gui.model.edit.bone.has-fixed-axis	固定軸8
++nanoem.gui.model.edit.bone.fixed-axis.title	固定軸<
 )nanoem.gui.model.edit.bone.has-local-axesローカル軸>
++nanoem.gui.model.edit.bone.local-axes.titleローカル軸>
 'nanoem.gui.model.edit.bone.local-axis.xローカル軸 (X)>
 'nanoem.gui.model.edit.bone.local-axis.zローカル軸 (Z)?
 )nanoem.gui.model.edit.bone.inherent.localローカル付与R
@@ -326,7 +421,8 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)1
 )nanoem.gui.model.edit.morph.name.japanese名称（日本語）>
 (nanoem.gui.model.edit.morph.name.english名称（英語）4
 $nanoem.gui.model.edit.morph.categoryカテゴリ*
- nanoem.gui.model.edit.morph.type種別/
+ nanoem.gui.model.edit.morph.type種別?
+)nanoem.gui.model.edit.morph.category.baseシステム予約/
 (nanoem.gui.model.edit.morph.category.eye目6
 ,nanoem.gui.model.edit.morph.category.eyebrowまゆ5
 (nanoem.gui.model.edit.morph.category.lip	リップ7
@@ -347,7 +443,36 @@ $nanoem.gui.model.edit.morph.categoryカテゴリ*
 %nanoem.gui.model.edit.morph.type.uva4
 拡張 UV41
 'nanoem.gui.model.edit.morph.type.vertex頂点2
-(nanoem.gui.model.edit.morph.type.unknown不明B
+(nanoem.gui.model.edit.morph.type.unknown不明9
+,nanoem.gui.model.edit.morph.bone.translation	移動量9
+,nanoem.gui.model.edit.morph.bone.orientation	回転量.
+$nanoem.gui.model.edit.morph.bone.add追加1
+'nanoem.gui.model.edit.morph.bone.remove削除7
+'nanoem.gui.model.edit.morph.flip.weightウェイト.
+$nanoem.gui.model.edit.morph.flip.add追加1
+'nanoem.gui.model.edit.morph.flip.remove削除8
+(nanoem.gui.model.edit.morph.group.weightウェイト/
+%nanoem.gui.model.edit.morph.group.add追加2
+(nanoem.gui.model.edit.morph.group.remove削除@
+*nanoem.gui.model.edit.morph.impulse.torqueトルク（力）K
+,nanoem.gui.model.edit.morph.impulse.velocityベロシティ（速度）N
+)nanoem.gui.model.edit.morph.impulse.local!ローカル軸を有効にする1
+'nanoem.gui.model.edit.morph.impulse.add追加4
+*nanoem.gui.model.edit.morph.impulse.remove削除>
+.nanoem.gui.model.edit.morph.material.operation動作種別B
+2nanoem.gui.model.edit.morph.material.ambient.color環境光色B
+2nanoem.gui.model.edit.morph.material.diffuse.color拡散光色C
+3nanoem.gui.model.edit.morph.material.specular.color鏡面光色C
+3nanoem.gui.model.edit.morph.material.specular.power鏡面強度?
+/nanoem.gui.model.edit.morph.material.edge.colorエッジ色>
+.nanoem.gui.model.edit.morph.material.edge.sizeエッジ幅Z
+2nanoem.gui.model.edit.morph.material.blend.diffuse$拡散光テクスチャブレンドi
+5nanoem.gui.model.edit.morph.material.blend.sphere-map0スフィアマップテクスチャブレンドZ
+/nanoem.gui.model.edit.morph.material.blend.toon'トゥーンテクスチャブレンド2
+(nanoem.gui.model.edit.morph.material.add追加5
++nanoem.gui.model.edit.morph.material.remove削除4
+'nanoem.gui.model.edit.morph.uv.position	UV 座標5
++nanoem.gui.model.edit.morph.vertex.position位置B
 )nanoem.gui.model.edit.label.name.japanese名称（日本語）>
 (nanoem.gui.model.edit.label.name.english名称（英語）0
 #nanoem.gui.model.edit.label.special	特殊枠G
@@ -360,10 +485,12 @@ $nanoem.gui.model.edit.morph.categoryカテゴリ*
 ,nanoem.gui.model.edit.rigid-body.orientation回転A
 +nanoem.gui.model.edit.rigid-body.shape.size形状の大きさ/
 %nanoem.gui.model.edit.rigid-body.mass質量?
-/nanoem.gui.model.edit.rigid-body.linear-damping線形減衰@
-0nanoem.gui.model.edit.rigid-body.angular-damping傾斜減衰9
+/nanoem.gui.model.edit.rigid-body.linear-damping移動減衰@
+0nanoem.gui.model.edit.rigid-body.angular-damping回転減衰9
 )nanoem.gui.model.edit.rigid-body.friction摩擦係数<
-,nanoem.gui.model.edit.rigid-body.restitution反発係数S
+,nanoem.gui.model.edit.rigid-body.restitution反発係数F
+0nanoem.gui.model.edit.rigid-body.collision.group衝突グループB
+/nanoem.gui.model.edit.rigid-body.collision.mask衝突マスクS
 4nanoem.gui.model.edit.rigid-body.object-type.dynamic演算結果を全て反映L
 6nanoem.gui.model.edit.rigid-body.object-type.kinematic回転のみ反映F
 3nanoem.gui.model.edit.rigid-body.object-type.staticボーン連動>
@@ -433,14 +560,129 @@ $nanoem.gui.model.edit.morph.categoryカテゴリ*
 "nanoem.gui.model.edit.vertex.title頂点C
 $nanoem.gui.model.edit.material.title材質（マテリアル）-
  nanoem.gui.model.edit.bone.title	ボーン:
-!nanoem.gui.model.edit.morph.title表情（モーフ）=
+!nanoem.gui.model.edit.morph.titleモーフ（表情）=
 !nanoem.gui.model.edit.label.title表示枠（ラベル）0
 &nanoem.gui.model.edit.rigid-body.title剛体4
 !nanoem.gui.model.edit.joint.titleジョイント,
 "nanoem.gui.model.edit.window.apply適用6
-#nanoem.gui.model.edit.window.cancelキャンセルO
-nanoem.macos.expiration.title.nanoem PR 版の試用期限が切れました�
-#nanoem.macos.expiration.description�使用期限が切れたため終了します（もし使用を継続する場合は最新版を取得して上書きインストールしてください）+
+#nanoem.gui.model.edit.window.cancelキャンセル=
+-nanoem.gui.model.edit.action.insert.new.title新規追加8
++nanoem.gui.model.edit.action.insert.at-last	最後尾a
+6nanoem.gui.model.edit.action.insert.new.after-selected'選択したオブジェクトの後ろD
+.nanoem.gui.model.edit.action.insert.copy.titleコピーを追加@
+0nanoem.gui.model.edit.action.insert.copy.at-next対象の次6
+,nanoem.gui.model.edit.action.selection.title選択=
+*nanoem.gui.model.edit.action.masking.titleマスキングT
+8nanoem.gui.model.edit.action.selection.vertex.enable-all全ての頂点を選択d
+9nanoem.gui.model.edit.action.selection.vertex.disable-all'選択された全ての頂点を解除n
+@nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type*次の種類に該当する頂点を選択r
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-faces0選択された頂点が含まれる面を選択y
+Bnanoem.gui.model.edit.action.selection.vertex.enable-all-materials3選択された頂点が含まれる材質を選択�
+Fnanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs<選択された頂点が含まれる頂点モーフを選択�
+Gnanoem.gui.model.edit.action.selection.vertex.enable-all-texture-morphsE選択された頂点が含まれるテクスチャモーフを選択j
+6nanoem.gui.model.edit.action.masking.vertex.enable-all0選択された全ての頂点をマスキングt
+7nanoem.gui.model.edit.action.masking.vertex.disable-all9選択された全ての頂点のマスキングを解除j
+6nanoem.gui.model.edit.action.masking.vertex.invert-all0全ての頂点のマスキング状態を反転O
+6nanoem.gui.model.edit.action.selection.face.enable-all全ての面を選択t
+@nanoem.gui.model.edit.action.selection.face.enable-all-materials0選択された面が含まれる材質を選択_
+7nanoem.gui.model.edit.action.selection.face.disable-all$選択された全ての面を解除e
+4nanoem.gui.model.edit.action.masking.face.enable-all-選択された全ての面をマスキングo
+5nanoem.gui.model.edit.action.masking.face.disable-all6選択された全ての面のマスキングを解除e
+4nanoem.gui.model.edit.action.masking.face.invert-all-全ての面のマスキング状態を反転V
+:nanoem.gui.model.edit.action.selection.material.enable-all全ての材質を選択f
+;nanoem.gui.model.edit.action.selection.material.disable-all'選択された全ての材質を解除�
+@nanoem.gui.model.edit.action.selection.material.enable-all-bonesE選択された材質に含まれる全てのボーンを選択する�
+@nanoem.gui.model.edit.action.selection.material.enable-all-faces?選択された材質に含まれる全ての面を選択する�
+Cnanoem.gui.model.edit.action.selection.material.enable-all-verticesB選択された材質に含まれる全ての頂点を選択するl
+8nanoem.gui.model.edit.action.masking.material.enable-all0選択された全ての材質をマスキングv
+9nanoem.gui.model.edit.action.masking.material.disable-all9選択された全ての材質のマスキングを解除l
+8nanoem.gui.model.edit.action.masking.material.invert-all0全ての材質のマスキング状態を反転U
+6nanoem.gui.model.edit.action.selection.bone.enable-all全てのボーンを選択y
+?nanoem.gui.model.edit.action.selection.bone.enable-all-vertices6選択されたボーンが含まれる頂点を選択�
+=nanoem.gui.model.edit.action.selection.bone.enable-all-morphsB選択されたボーンが含まれるボーンモーフを選択}
+Cnanoem.gui.model.edit.action.selection.bone.enable-all-rigid-bodies6選択されたボーンが含まれる剛体を選択c
+>nanoem.gui.model.edit.action.selection.bone.enable-all-visible!全ての表示ボーンを選択l
+Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateable'全ての回転可能ボーンを選択i
+>nanoem.gui.model.edit.action.selection.bone.enable-all-movable'全ての移動可能ボーンを選択a
+<nanoem.gui.model.edit.action.selection.bone.enable-symmetric!左右対称のボーンを選択e
+7nanoem.gui.model.edit.action.selection.bone.disable-all*選択された全てのボーンを解除k
+4nanoem.gui.model.edit.action.masking.bone.enable-all3選択された全てのボーンをマスキングr
+>nanoem.gui.model.edit.action.masking.bone.enable-all-invisible0非表示の全てのボーンをマスキングu
+5nanoem.gui.model.edit.action.masking.bone.disable-all<選択された全てのボーンのマスキングを解除k
+4nanoem.gui.model.edit.action.masking.bone.invert-all3全てのボーンのマスキング状態を反転V
+7nanoem.gui.model.edit.action.selection.morph.enable-all全てのモーフを選択f
+8nanoem.gui.model.edit.action.selection.morph.disable-all*選択された全てのモーフを解除�
+9nanoem.gui.model.edit.action.selection.morph.children-allW選択されたモーフから該当する全てのモデルオブジェクトを選択V
+7nanoem.gui.model.edit.action.selection.label.enable-all全ての表示枠を選択f
+8nanoem.gui.model.edit.action.selection.label.disable-all*選択された全ての表示枠を解除�
+9nanoem.gui.model.edit.action.selection.label.children-allW選択された表示枠から該当する全てのボーンまたはモーフを選択X
+<nanoem.gui.model.edit.action.selection.rigid-body.enable-all全ての剛体を選択�
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bonesB選択された剛体から該当する全てのボーンを選択d
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-symmetric左右対称の剛体を選択h
+=nanoem.gui.model.edit.action.selection.rigid-body.disable-all'選択された全ての剛体を解除n
+:nanoem.gui.model.edit.action.masking.rigid-body.enable-all0選択された全ての剛体をマスキングx
+;nanoem.gui.model.edit.action.masking.rigid-body.disable-all9選択された全ての剛体のマスキングを解除n
+:nanoem.gui.model.edit.action.masking.rigid-body.invert-all0全ての剛体のマスキング状態を反転\
+7nanoem.gui.model.edit.action.selection.joint.enable-all!全てのジョイントを選択�
+=nanoem.gui.model.edit.action.selection.joint.enable-all-bonesK選択されたジョイントから該当する全てのボーンを選択�
+Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodiesH選択されたジョイントから該当する全ての剛体を選択h
+=nanoem.gui.model.edit.action.selection.joint.enable-symmetric'左右対称のジョイントを選択l
+8nanoem.gui.model.edit.action.selection.joint.disable-all0選択された全てのジョイントを解除r
+5nanoem.gui.model.edit.action.masking.joint.enable-all9選択された全てのジョイントをマスキング|
+6nanoem.gui.model.edit.action.masking.joint.disable-allB選択された全てのジョイントのマスキングを解除r
+5nanoem.gui.model.edit.action.masking.joint.invert-all9全てのジョイントのマスキング状態を反転c
+;nanoem.gui.model.edit.action.selection.soft-body.enable-all$全てのソフトボディを選択s
+<nanoem.gui.model.edit.action.selection.soft-body.disable-all3選択された全てのソフトボディを解除f
+/nanoem.gui.model.edit.action.vertex.create-bone3選択された頂点の中心にボーンを追加h
+4nanoem.gui.model.edit.action.vertex.add-vertex-morph0選択された頂点を頂点モーフに追加r
+5nanoem.gui.model.edit.action.vertex.add-texture-morph9選択された頂点をテクスチャモーフに追加F
+0nanoem.gui.model.edit.action.vertex.weight.titleウェイト転送Q
+/nanoem.gui.model.edit.action.vertex.weight.loadファイルから読み込みH
+/nanoem.gui.model.edit.action.vertex.weight.saveファイルに保存S
+7nanoem.gui.model.edit.action.vertex.weight.dialog.titleウェイト転送結果y
+9nanoem.gui.model.edit.action.vertex.weight.dialog.message<%u (対象頂点数 %u) の頂点が適用されました。l
+5nanoem.gui.model.edit.action.material.copy-from-model3次のモデルにある材質からコピーするh
+5nanoem.gui.model.edit.action.material.create-from-obj/ファイル (.obj) から材質を作成するl
+8nanoem.gui.model.edit.action.material.add-material-morph0選択された材質を材質モーフに追加G
++nanoem.gui.model.edit.action.material.merge材質をマージする^
+9nanoem.gui.model.edit.action.material.texture.diffuse.set!拡散光テクスチャを設定c
+;nanoem.gui.model.edit.action.material.texture.diffuse.clear$拡散光テクスチャをクリアl
+;nanoem.gui.model.edit.action.material.texture.spheremap.set-スフィアマップテクスチャを設定q
+=nanoem.gui.model.edit.action.material.texture.spheremap.clear0スフィアマップテクスチャをクリア^
+6nanoem.gui.model.edit.action.material.texture.toon.set$トゥーンテクスチャを設定c
+8nanoem.gui.model.edit.action.material.texture.toon.clear'トゥーンテクスチャをクリア^
+4nanoem.gui.model.edit.action.bone.create.destination&「%s」の接続先ボーンを作成L
+0nanoem.gui.model.edit.action.bone.create.staging多段ボーンを作成a
+7nanoem.gui.model.edit.action.bone.create.staging.parent&「%s」の親ボーンとして作成`
+6nanoem.gui.model.edit.action.bone.create.staging.child&「%s」の子ボーンとして作成l
+7nanoem.gui.model.edit.action.bone.add-constraint-joints1選択されたボーンを IK ボーンに追加\
++nanoem.gui.model.edit.action.bone.add-label-選択されたボーンを表示枠に追加j
+0nanoem.gui.model.edit.action.bone.add-bone-morph6選択されたボーンをボーンモーフに追加I
+-nanoem.gui.model.edit.action.bone.axis.parent親ボーンから設定F
+-nanoem.gui.model.edit.action.bone.axis.target接続先から設定L
+-nanoem.gui.model.edit.action.bone.axis.select次のボーンから設定^
+-nanoem.gui.model.edit.action.bone.axis.global-次の方向のグローバル軸から設定x
+>nanoem.gui.model.edit.action.morph.create-bone-morph-from-file6ポーズファイルからボーンモーフを作成w
+@nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file3モデルファイルから頂点モーフを作成]
+,nanoem.gui.model.edit.action.morph.add-label-選択されたモーフを表示枠に追加o
+2nanoem.gui.model.edit.action.morph.add-group-morph9選択されたモーフをグループモーフに追加n
+1nanoem.gui.model.edit.action.morph.add-flip-morph9選択されたモーフをフリップモーフに追加{
+Ananoem.gui.model.edit.action.rigid-body.create-intermediate-joint6ふたつの剛体から中間ジョイントを作成v
+9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph9選択された剛体をインパルスモーフに追加D
+(nanoem.gui.model.edit.batch.apply.vertex%u 頂点を一括適用F
+*nanoem.gui.model.edit.batch.apply.material%u 材質を一括適用E
+&nanoem.gui.model.edit.batch.apply.bone%u ボーンを一括適用F
+'nanoem.gui.model.edit.batch.apply.morph%u モーフを一括適用H
+,nanoem.gui.model.edit.batch.apply.rigid-body%u 剛体を一括適用L
+'nanoem.gui.model.edit.batch.apply.joint!%u ジョイントを一括適用S
++nanoem.gui.model.edit.batch.apply.soft-body$%u ソフトボディを一括適用X
+'nanoem.gui.model.edit.batch.copy.vertex-次の頂点からパラメータをコピーZ
+)nanoem.gui.model.edit.batch.copy.material-次の材質からパラメータをコピーY
+%nanoem.gui.model.edit.batch.copy.bone0次のボーンからパラメータをコピーZ
+&nanoem.gui.model.edit.batch.copy.morph0次のモーフからパラメータをコピー\
++nanoem.gui.model.edit.batch.copy.rigid-body-次の剛体からパラメータをコピー`
+&nanoem.gui.model.edit.batch.copy.joint6次のジョイントからパラメータをコピーg
+*nanoem.gui.model.edit.batch.copy.soft-body9次のソフトボディからパラメータをコピー+
 nanoem.versionnanoem のバージョン+
 !nanoem.window.dialog.buttons.save保存.
 $nanoem.window.dialog.buttons.discard破棄6
@@ -465,7 +707,9 @@ $nanoem.window.dialog.buttons.discard破棄6
 8nanoem.window.dialog.capture-video.caution.uncancellable�* 出力中はキャンセル出来ません（アプリケーション終了させた場合は終了直前までが出力されます）�
 5nanoem.window.dialog.capture-video.caution.resolutionn* 画面解像度を超える出力は出来ません（超える場合は縮小されて出力されます）�
 /nanoem.window.dialog.deleting-accessory.messageN一度削除すると戻せません。アクセサリを削除しますか？O
--nanoem.window.dialog.deleting-accessory.titleアクセサリ削除の確認w
+-nanoem.window.dialog.deleting-accessory.titleアクセサリ削除の確認�
+1nanoem.window.dialog.converting-accessory.message�変換するとアクセサリが削除されてモデルとして追加されます。アクセサリをモデルに変換しますか？]
+/nanoem.window.dialog.converting-accessory.title*アクセサリのモデル変換の確認w
 +nanoem.window.dialog.deleting-model.messageH一度削除すると戻せません。モデルを削除しますか？E
 )nanoem.window.dialog.deleting-model.titleモデル削除の確認�
 3nanoem.window.dialog.enabling-effect-plugin.message�エフェクトプラグイン無効状態のまま fx 形式のファイル読み込もうとしました。エフェクトプラグインを有効にしますか？e
@@ -513,121 +757,64 @@ $nanoem.window.dialog.buttons.discard破棄6
 %nanoem.window.effect.render-target.%dレンダーターゲットC
 $nanoem.window.progress.capture-image%s に画像を出力中...L
 $nanoem.window.progress.capture-video$%s に動画を出力中... (%u FPS)/
-nanoem.window.scheme.finderFinder で開く0
-nanoem.window.title.accessoryアクセサリ#
-nanoem.window.title.audio音源8
-nanoem.window.title.audio-video音源と背景動画"
-nanoem.window.title.back戻る%
-nanoem.window.title.bone	ボーン'
-nanoem.window.title.camera	カメラ-
-nanoem.window.title.cancelキャンセル
-nanoem.window.title.cd-up..0
- nanoem.window.title.change-order描画順序?
-!nanoem.window.title.confirm.modelモデル「%s」の確認$
-nanoem.window.title.delete削除Q
-#nanoem.window.title.remove-keyframe*選択されたキーフレームを削除%
-nanoem.window.title.execute実行&
-nanoem.window.title.reset	初期化,
-nanoem.window.title.jointジョイント&
-nanoem.window.title.label	表示枠&
-nanoem.window.title.light	照明光&
-nanoem.window.title.material材質&
-nanoem.window.title.model	モデル&
-nanoem.window.title.morph	モーフ$
-nanoem.window.title.null(なし)"
-nanoem.window.title.open開く7
-nanoem.window.title.open-audio音源の読み込みQ
-&nanoem.window.title.open-camera-motion'カメラモーションの読み込みA
-nanoem.window.title.open-effectエフェクトの読み込みP
-%nanoem.window.title.open-light-motion'照明光モーションの読み込みT
-(nanoem.window.title.open-model-accessory(モデル/アクセサリの読み込みP
-%nanoem.window.title.open-model-motion'モデルモーションの読み込みA
-nanoem.window.title.open-motionモーションの読み込みE
- nanoem.window.title.open-project!プロジェクトの読み込みA
-nanoem.window.title.open-scriptスクリプトの読み込みB
- nanoem.window.title.open-textureテクスチャの読み込み7
-nanoem.window.title.open-video動画の読み込み(
-nanoem.window.title.preference設定1
-nanoem.window.title.projectプロジェクト%
-nanoem.window.title.redo	リドゥD
-%nanoem.window.title.register-keyframeキーフレームを登録(
-nanoem.window.title.rigid-body剛体"
-nanoem.window.title.save保存%
-nanoem.window.title.save-as保存K
-&nanoem.window.title.save-camera-motion!カメラモーションの保存J
-%nanoem.window.title.save-light-motion!照明光モーションの保存J
-%nanoem.window.title.save-model-motion!モデルモーションの保存?
- nanoem.window.title.save-projectプロジェクトの保存(
-nanoem.window.title.undoアンドゥ+
-nanoem.window.title.unknown（不明）$
-nanoem.window.title.vertex頂点#
-nanoem.window.title.video動画&
-nanoem.menu.file.titleファイル0
-nanoem.menu.file.title.win32ファイル(&F)0
-nanoem.menu.file.new新規プロジェクト:
-nanoem.menu.file.new.win32新規プロジェクト(&N)4
-nanoem.menu.file.openプロジェクトを開く>
-nanoem.menu.file.open.win32プロジェクトを開く(&O)*
-nanoem.menu.file.import.model	モデル4
-!nanoem.menu.file.import.accessoryアクセサリ2
-nanoem.menu.file.import.poseモデルポーズ@
-$nanoem.menu.file.import.motion.modelモデルモーションA
-%nanoem.menu.file.import.motion.cameraカメラモーション=
-$nanoem.menu.file.import.motion.light照明モーション7
-$nanoem.menu.file.import.motion.titleモーション'
-nanoem.menu.file.import.audio音源-
-nanoem.menu.file.import.video背景動画'
-nanoem.menu.file.import.title開く4
-nanoem.menu.file.saveプロジェクトを保存>
-nanoem.menu.file.save.win32プロジェクトを保存(&S)4
-nanoem.menu.file.save-as名前をつけて保存2
-nanoem.menu.file.export.poseモデルポーズ@
-$nanoem.menu.file.export.motion.modelモデルモーションA
-%nanoem.menu.file.export.motion.cameraカメラモーション=
-$nanoem.menu.file.export.motion.light照明モーション*
-nanoem.menu.file.export.model	モデル'
-nanoem.menu.file.export.image画像'
-nanoem.menu.file.export.video動画-
-nanoem.menu.file.export.title書き出し
-nanoem.menu.file.exit終了)
-nanoem.menu.file.exit.win32
-終了(&X)%
-nanoem.menu.edit.undo元に戻す/
-nanoem.menu.edit.undo.win32元に戻す(&U)%
-nanoem.menu.edit.redoやり直し/
-nanoem.menu.edit.redo.win32やり直し(&R)$
-nanoem.menu.edit.cut切り取り"
-nanoem.menu.edit.copy	コピー,
-nanoem.menu.edit.copy.win32コピー(&C)&
-nanoem.menu.edit.paste貼り付け0
-nanoem.menu.edit.paste.win32貼り付け(&P)9
+nanoem.window.scheme.finderFinder で開く?
+!nanoem.window.title.confirm.modelモデル「%s」の確認*
+nanoem.menu.file.titleファイル(&F)<
+nanoem.menu.file.new.project新規プロジェクト(&N)-
+nanoem.menu.file.new.model新規モデル8
+nanoem.menu.file.openプロジェクトを開く(&O).
+nanoem.menu.file.import.modelモデル(&M)8
+!nanoem.menu.file.import.accessoryアクセサリ(&A)6
+nanoem.menu.file.import.poseモデルポーズ(&P)D
+$nanoem.menu.file.import.motion.modelモデルモーション(&O)E
+%nanoem.menu.file.import.motion.cameraカメラモーション(&C)A
+$nanoem.menu.file.import.motion.light照明モーション(&L);
+$nanoem.menu.file.import.motion.titleモーション(&M)+
+nanoem.menu.file.import.audio
+音源(&U)1
+nanoem.menu.file.import.video背景動画(&V)+
+nanoem.menu.file.import.title
+開く(&I)8
+nanoem.menu.file.saveプロジェクトを保存(&S)4
+nanoem.menu.file.save-as名前をつけて保存6
+nanoem.menu.file.export.poseモデルポーズ(&P)D
+$nanoem.menu.file.export.motion.modelモデルモーション(&O)E
+%nanoem.menu.file.export.motion.cameraカメラモーション(&C)A
+$nanoem.menu.file.export.motion.light照明モーション(&L)*
+nanoem.menu.file.export.model	モデル+
+nanoem.menu.file.export.image
+画像(&I)+
+nanoem.menu.file.export.video
+動画(&V)1
+nanoem.menu.file.export.title書き出し(&E)#
+nanoem.menu.file.exit
+終了(&X))
+nanoem.menu.edit.undo元に戻す(&U))
+nanoem.menu.edit.redoやり直し(&R)$
+nanoem.menu.edit.cut切り取り&
+nanoem.menu.edit.copyコピー(&C)*
+nanoem.menu.edit.paste貼り付け(&P)9
 nanoem.menu.edit.plugin.modelモデルプラグイン@
 nanoem.menu.edit.plugin.motionモーションプラグインO
 nanoem.menu.edit.window.effect-エフェクト設定ウィンドウを開くH
-nanoem.menu.edit.window.model'モデル編集ウィンドウを開くM
-%nanoem.menu.edit.select-all-keyframes$全てのキーフレームを選択W
-+nanoem.menu.edit.select-all-keyframes.win32(全てのキーフレームを選択(&A)%
-nanoem.menu.edit.preference設定/
-!nanoem.menu.edit.preference.win32
-設定(&P) 
-nanoem.menu.edit.title編集*
-nanoem.menu.edit.title.win32
-編集(&E)"
-nanoem.menu.project.play再生,
-nanoem.menu.project.play.win32
-再生(&P)"
-nanoem.menu.project.stop停止,
-nanoem.menu.project.stop.win32
+nanoem.menu.edit.window.model'モデル編集ウィンドウを開くQ
+%nanoem.menu.edit.select-all-keyframes(全てのキーフレームを選択(&A)%
+nanoem.menu.edit.preference設定$
+nanoem.menu.edit.title
+編集(&E)&
+nanoem.menu.project.play
+再生(&P)&
+nanoem.menu.project.stop
 停止(&S)P
 nanoem.menu.project.viewport0ビューポート設定ダイアログを開くC
 nanoem.menu.project.order.draw!描画順ダイアログを開くH
-#nanoem.menu.project.order.transform!変形順ダイアログを開くD
-nanoem.menu.project.enable.loop!ループ再生を有効にする>
-nanoem.menu.project.enable.grid地面軸を有効にするG
-(nanoem.menu.project.enable.ground-shadow地面影を有効にするF
-!nanoem.menu.project.enable.effect!エフェクトを有効にするP
-'nanoem.menu.project.enable.effect.win32%エフェクトを有効にする(&E)g
-3nanoem.menu.project.enable.high-resolution-viewport0高解像度ビューポートを有効にする~
+#nanoem.menu.project.order.transform!変形順ダイアログを開くU
+#nanoem.menu.project.viewport.detach.ビューポートウィンドウを分離(&D)H
+nanoem.menu.project.enable.loop%ループ再生を有効にする(&L)B
+nanoem.menu.project.enable.grid地面軸を有効にする(&G)G
+(nanoem.menu.project.enable.ground-shadow地面影を有効にするJ
+!nanoem.menu.project.enable.effect%エフェクトを有効にする(&E)k
+3nanoem.menu.project.enable.high-resolution-viewport4高解像度ビューポートを有効にする(&H)~
 2nanoem.menu.project.enable.compute-shader-skinningHコンピュートシェーダによるスキニングを有効にするq
 1nanoem.menu.project.enable.vertex-shader-skinning<頂点シェーダによるスキニングを有効にする0
 nanoem.menu.project.msaa.x16最高 (MSAAx16)+
@@ -665,34 +852,27 @@ Fnanoem.menu.project.physics-simulation.enable.drawing.constraint-limit制約�
  nanoem.menu.camera.preset.bottom底面)
 nanoem.menu.camera.preset.front前面(
 nanoem.menu.camera.preset.back背面>
-nanoem.menu.camera.preset.titleプリセットから選択C
-$nanoem.menu.camera.register-keyframeキーフレームを登録M
-*nanoem.menu.camera.register-keyframe.win32キーフレームを登録(&R)A
-"nanoem.menu.camera.remove-keyframeキーフレームを削除%
-nanoem.menu.camera.reset	初期化/
-nanoem.menu.camera.reset.win32初期化(&I)%
-nanoem.menu.camera.title	カメラ/
-nanoem.menu.camera.title.win32カメラ(&C).
-nanoem.menu.light.toggleモードを切替B
-#nanoem.menu.light.register-keyframeキーフレームを登録L
-)nanoem.menu.light.register-keyframe.win32キーフレームを登録(&R)@
-!nanoem.menu.light.remove-keyframeキーフレームを削除$
-nanoem.menu.light.reset	初期化.
-nanoem.menu.light.reset.win32初期化(&I)!
-nanoem.menu.light.title照明+
-nanoem.menu.light.title.win32
-照明(&L)<
-#nanoem.menu.light.self-shadow.titleセルフシャドウ/
+nanoem.menu.camera.preset.titleプリセットから選択G
+$nanoem.menu.camera.register-keyframeキーフレームを登録(&R)A
+"nanoem.menu.camera.remove-keyframeキーフレームを削除)
+nanoem.menu.camera.reset初期化(&I))
+nanoem.menu.camera.titleカメラ(&C).
+nanoem.menu.light.toggleモードを切替F
+#nanoem.menu.light.register-keyframeキーフレームを登録(&R)@
+!nanoem.menu.light.remove-keyframeキーフレームを削除(
+nanoem.menu.light.reset初期化(&I)%
+nanoem.menu.light.title
+照明(&L)@
+#nanoem.menu.light.self-shadow.titleセルフシャドウ(&S)/
 %nanoem.menu.light.self-shadow.disable無効O
 *nanoem.menu.light.self-shadow.enable.mode1!モード１（バランス型）O
-*nanoem.menu.light.self-shadow.enable.mode2!モード２（近接重視型）K
-/nanoem.menu.light.self-shadow.register-keyframeキーフレーム登録I
--nanoem.menu.light.self-shadow.remove-keyframeキーフレーム削除0
-#nanoem.menu.light.self-shadow.reset	初期化:
-)nanoem.menu.light.self-shadow.reset.win32初期化(&I)4
-nanoem.menu.model.select.titleモデルを選択9
-#nanoem.menu.model.select.bone.titleボーンを選択:
-$nanoem.menu.model.select.morph.titleモーフを選択m
+*nanoem.menu.light.self-shadow.enable.mode2!モード２（近接重視型）O
+/nanoem.menu.light.self-shadow.register-keyframeキーフレーム登録(&R)I
+-nanoem.menu.light.self-shadow.remove-keyframeキーフレーム削除4
+#nanoem.menu.light.self-shadow.reset初期化(&I)8
+nanoem.menu.model.select.titleモデルを選択(&M)=
+#nanoem.menu.model.select.bone.titleボーンを選択(&B)>
+$nanoem.menu.model.select.morph.titleモーフを選択(&O)m
 'nanoem.menu.model.select.bone.keyframesB選択ボーンから該当ボーンのキーフレームを選択/
 (nanoem.menu.model.select.morph.eye.title目9
 ,nanoem.menu.model.select.morph.eyebrow.title	まゆ毛5
@@ -700,7 +880,8 @@ $nanoem.menu.model.select.morph.titleモーフを選択m
 *nanoem.menu.model.select.morph.other.title	その他1
 $nanoem.menu.model.select.morph.title	モーフL
 *nanoem.menu.model.select.expand-all-tracks全てのトラックを展開W
-,nanoem.menu.model.select.collapse-all-tracks'全てのトラックを折りたたみ5
+,nanoem.menu.model.select.collapse-all-tracks'全てのトラックを折りたたみD
+nanoem.menu.model.validation$モデルデータの検証を実行5
 "nanoem.menu.model.edit-mode.select選択モード5
 "nanoem.menu.model.edit-mode.rotate回転モード3
  nanoem.menu.model.edit-mode.move移動モードB
@@ -710,12 +891,11 @@ $nanoem.menu.model.select.morph.title	モーフL
 (nanoem.menu.model.reset.bone.orientation回転量をリセットJ
  nanoem.menu.model.set-morph.zero&モーフウェイトを 0.0 にするJ
  nanoem.menu.model.set-morph.half&モーフウェイトを 0.5 にするI
-nanoem.menu.model.set-morph.one&モーフウェイトを 1.0 にするJ
-"nanoem.menu.model.enable.add-blend$加算ブレンドを有効にするN
-#nanoem.menu.model.enable.shadow-map'シャドウマップを有効にする<
- nanoem.menu.model.enable.visible表示を有効にするB
-#nanoem.menu.model.register-keyframeキーフレームを登録L
-)nanoem.menu.model.register-keyframe.win32キーフレームを登録(&R)O
+nanoem.menu.model.set-morph.one&モーフウェイトを 1.0 にするN
+"nanoem.menu.model.enable.add-blend(加算ブレンドを有効にする(&A)R
+#nanoem.menu.model.enable.shadow-map+シャドウマップを有効にする(&S)@
+ nanoem.menu.model.enable.visible表示を有効にする(&V)F
+#nanoem.menu.model.register-keyframeキーフレームを登録(&R)O
 !nanoem.menu.model.remove-keyframe*選択されたキーフレームを削除5
 "nanoem.menu.model.preference.titleモデル設定�
 ;nanoem.menu.model.preference.enable.compute-shader-skinningHコンピュートシェーダによるスキニングを有効にするW
@@ -726,46 +906,36 @@ $nanoem.menu.model.select.morph.title	モーフL
 6nanoem.menu.model.preference.enable.show-vertex-points頂点の点を表示するz
 :nanoem.menu.model.preference.enable.vertex-shader-skinning<頂点シェーダによるスキニングを有効にする)
 nanoem.menu.model.edgeエッジ設定'
-nanoem.menu.model.resetリセットJ
-nanoem.menu.model.delete-active'選択されているモデルを削除T
-%nanoem.menu.model.delete-active.win32+選択されているモデルを削除(&D)$
-nanoem.menu.model.title	モデル.
-nanoem.menu.model.title.win32モデル(&M)L
+nanoem.menu.model.resetリセットK
+nanoem.menu.model.delete-active(現在選択中のモデルを削除(&D)(
+nanoem.menu.model.titleモデル(&M)L
 'nanoem.menu.accessory.draw-order-dialog!描画順ダイアログを開く>
-"nanoem.menu.accessory.select.titleアクセサリを選択F
-'nanoem.menu.accessory.register-keyframeキーフレームを登録P
--nanoem.menu.accessory.register-keyframe.win32キーフレームを登録(&R)S
-%nanoem.menu.accessory.remove-keyframe*選択されたキーフレームを削除N
-&nanoem.menu.accessory.enable.add-blend$加算ブレンドを有効にするB
-#nanoem.menu.accessory.enable.shadow地面影を有効にする@
-$nanoem.menu.accessory.enable.visible表示を有効にする+
-nanoem.menu.accessory.resetリセットT
-#nanoem.menu.accessory.delete-active-選択されているアクセサリを削除^
-)nanoem.menu.accessory.delete-active.win321選択されているアクセサリを削除(&D).
-nanoem.menu.accessory.titleアクセサリ8
-!nanoem.menu.accessory.title.win32アクセサリ(&A)T
+"nanoem.menu.accessory.select.titleアクセサリを選択J
+'nanoem.menu.accessory.register-keyframeキーフレームを登録(&R)S
+%nanoem.menu.accessory.remove-keyframe*選択されたキーフレームを削除R
+&nanoem.menu.accessory.enable.add-blend(加算ブレンドを有効にする(&A)F
+#nanoem.menu.accessory.enable.shadow地面影を有効にする(&S)D
+$nanoem.menu.accessory.enable.visible表示を有効にする(&V)+
+nanoem.menu.accessory.resetリセット`
+&nanoem.menu.accessory.convert-to-model6現在選択中のアクセサリをモデルに変換U
+#nanoem.menu.accessory.delete-active.現在選択中のアクセサリを削除(&D)2
+nanoem.menu.accessory.titleアクセサリ(&A)T
 2nanoem.menu.project.motion.shift-keyframes-forward現在のフレームを削除O
-3nanoem.menu.project.motion.shift-keyframes-backward空フレームを挿入-
- nanoem.menu.project.motion.reset	初期化7
-&nanoem.menu.project.motion.reset.win32初期化(&I)3
- nanoem.menu.project.motion.titleモーション/
-nanoem.menu.project.titleプロジェクト9
-nanoem.menu.project.title.win32プロジェクト(&P)(
+3nanoem.menu.project.motion.shift-keyframes-backward空フレームを挿入1
+ nanoem.menu.project.motion.reset初期化(&I)3
+ nanoem.menu.project.motion.titleモーション3
+nanoem.menu.project.titleプロジェクト(&P)(
 nanoem.menu.window.maximize	最大化(
 nanoem.menu.window.minimize	最小化$
 nanoem.menu.window.restore復元?
-nanoem.menu.window.fullscreenフルスクリーンにする+
-nanoem.menu.window.titleウィンドウ5
-nanoem.menu.window.title.win32ウィンドウ(&W)3
-nanoem.menu.help.onlineオンラインヘルプ=
-nanoem.menu.help.online.win32オンラインヘルプ(&O)-
-nanoem.menu.help.aboutnanoem について7
-nanoem.menu.help.about.win32nanoem について(&A)#
-nanoem.menu.help.title	ヘルプ-
-nanoem.menu.help.title.win32ヘルプ(&H)(
-nanoem.menu.edit.bone.title	ボーン*
-nanoem.menu.edit.camera.title	カメラ)
-nanoem.menu.edit.morph.title	モーフG
+nanoem.menu.window.fullscreenフルスクリーンにする/
+nanoem.menu.window.titleウィンドウ(&W)7
+nanoem.menu.help.onlineオンラインヘルプ(&O)1
+nanoem.menu.help.aboutnanoem について(&A)'
+nanoem.menu.help.titleヘルプ(&H),
+nanoem.menu.edit.bone.titleボーン(&B)*
+nanoem.menu.edit.camera.title	カメラ-
+nanoem.menu.edit.morph.titleモーフ(&O)G
 nanoem.menu.edit.bone.parameter$数値入力ダイアログを開く@
 'nanoem.menu.edit.bone.reset-orientation角度をリセットB
  nanoem.menu.edit.bone.correction補正ダイアログを開くH
@@ -791,7 +961,12 @@ $nanoem.menu.accessory.enable.visible表示を有効にする+
 nanoem.project.track.camera	カメラ$
 nanoem.project.track.light照明'
 nanoem.project.track.model	モデル9
- nanoem.project.track.self-shadowセルフシャドウW
+ nanoem.project.track.self-shadowセルフシャドウ>
+nanoem.project.track.select-all全てのキーフレーム6
+#nanoem.project.track.selected-bones選択ボーン7
+$nanoem.project.track.selected-morphs選択モーフ5
+nanoem.project.track.all-morphs全てのモーフ)
+nanoem.project.track.none（なし）W
 "nanoem.error.convert-to-nmm.reason1nmm 形式への変換は対応していません�
 /nanoem.error.convert-to-nmm.recovery-suggestion�メニューの「ヘルプ」にある「nanoem Online Manual」から「アプリケーションのメニュー」の「保存」の項目を参照してください�
  nanoem.error.project.load.reason]データが破損しているため、プロジェクトの読み込みに失敗しました{
@@ -801,13 +976,80 @@ $nanoem.menu.accessory.enable.visible表示を有効にする+
 =nanoem.error.plugin.model.no-active-model.recovery-suggestion$モデルを選択してくださいk
 nanoem.error.model.dirty.reasonHキーフレーム未登録のボーンまたはモーフがあります�
 ,nanoem.error.model.dirty.recovery-suggestion�未登録のボーンまたはモーフをキーフレーム登録するかフレーム移動してリセットしてくださいj
--nanoem.error.effect.material-not-found.reason9エフェクトに割り当てる材質がありませんq
-1nanoem.error.effect.model-effect-not-found.reason<エフェクトに割り当てるモデルがありません�
-.nanoem.error.effect.offscreen-not-found.reasonQオフスクリーンエフェクトに割り当てるモデルがありません`
+-nanoem.error.effect.material-not-found.reason9エフェクトに割り当てる材質がありませんt
+1nanoem.error.effect.model-effect-not-found.reason?エフェクトに割り当てるモデルが存在しません�
+.nanoem.error.effect.offscreen-not-found.reasonQオフスクリーンエフェクトに割り当てる対象が存在しません�
+-nanoem.error.effect.invalid-attachment.reasonoエフェクトに割り当てるモデルまたはオフスクリーンの対象が設定されていません�
+:nanoem.error.effect.invalid-attachment.recovery-suggestion�メニューの「編集」＞「エフェクト設定ウィンドウを開く」からモデルの材質あるいはオフスクリーンの対象を設定してからエフェクトを読み込ませてくださいm
+$nanoem.error.motion.not-model.reasonE読み込まれたモーションはモデル用ではありません�
+/nanoem.error.motion.not-camera-and-light.reasonQ読み込まれたモーションはカメラ及び照明用ではありません�
+*nanoem.error.motion.no-active-model.reasonWモデルモーションを読み込むためのモデルが選択されていません_
+7nanoem.error.motion.no-active-model.recovery-suggestion$モデルを選択してくださいw
+%nanoem.error.project.new-model.reasonN新規モデルを作成するにはプロジェクトの保存が必要です�
+&nanoem.error.project.open-model.reasonWモデル編集ダイアログを開くにはプロジェクトの保存が必要です`
  nanoem.project.diagnostics.title<プロジェクトの一部ファイルの読み込み失敗�
 'nanoem.project.diagnostics.message.mainrプロジェクトの読み込みは成功しましたが、一部のファイルが読み込めませんでした�
 ,nanoem.project.diagnostics.message.not-foundQ次のファイルが見つかりません。移動した可能性があります�
-2nanoem.project.diagnostics.message.digest-mismatchQ次のファイルは保存時から変更があったため読み込めません
+2nanoem.project.diagnostics.message.digest-mismatchQ次のファイルは保存時から変更があったため読み込めません\
+%nanoem.motion.model.diagnostics.title3読み込まれたモデルモーションの警告�
+'nanoem.motion.model.diagnostics.message�モデルモーションの読み込みに成功しましたが、「%s」のために作られており以下のボーンあるいはモーフが不足しているため正常に動作しない可能性がありますV
+1nanoem.motion.model.diagnostics.all-missing-bones!不足しているボーン一覧W
+2nanoem.motion.model.diagnostics.all-missing-morphs!不足しているモーフ一覧>
+#nanoem.model.validator.result.title「%s」の検証結果\
+%nanoem.model.validator.result.success3検証した結果問題はありませんでしたd
+%nanoem.model.validator.result.failure;検証した結果 %zu 件の問題が見つかりましたJ
+.nanoem.model.validator.vertex.model.name.emptyモデル名が空ですY
+1nanoem.model.validator.vertex.model.comment.empty$モデルのコメントが空ですN
+,nanoem.model.validator.vertex.normal.invalid頂点の法線が不正です^
+*nanoem.model.validator.vertex.texcoord.oob0頂点のテクスチャ座標が範囲外ですg
+'nanoem.model.validator.vertex.bone.null<頂点に対応するボーンが設定されていませんv
+3nanoem.model.validator.vertex.weight.not-normalized?頂点のボーンウェイトが正規化されていませんL
+*nanoem.model.validator.vertex.type.invalid頂点の種別が不正ですW
+,nanoem.model.validator.face.not-triangulated'面が三角形になっていませんU
+'nanoem.model.validator.face.vertex.null*面の頂点が設定されていませんQ
+&nanoem.model.validator.face.vertex.oob'面が頂点の範囲外にあります\
++nanoem.model.validator.face.vertex.not-used-頂点が面から参照されていませんU
+*nanoem.model.validator.material.name.empty'材質名が設定されていませんT
+/nanoem.model.validator.material.name.duplicated!材質名が重複していますe
+1nanoem.model.validator.material.ambient.color.oob0材質の環境光色が範囲外にありますe
+1nanoem.model.validator.material.diffuse.color.oob0材質の拡散光色が範囲外にありますv
+3nanoem.model.validator.material.diffuse.opacity.oob?材質の拡散光色の不透明度が範囲外にありますc
+2nanoem.model.validator.material.specular.color.oob-材質の鏡面色が範囲外にありますb
+.nanoem.model.validator.material.edge.color.oob0材質のエッジ色が範囲外にありますs
+0nanoem.model.validator.material.edge.opacity.oob?材質のエッジ色の不透明度が範囲外にあります�
+9nanoem.model.validator.material.texture.diffuse.not-foundH材質の拡散光のテクスチャファイルが見つかりません�
+<nanoem.model.validator.material.texture.sphere-map.not-foundQ材質のスフィアマップテクスチャファイルが見つかりません�
+6nanoem.model.validator.material.texture.toon.not-foundH材質のトゥーンテクスチャファイルが見つかりません�
+-nanoem.model.validator.material.face.not-fill`全材質が参照するインデックスが対応する面の数よりも少ない状態です�
+-nanoem.model.validator.material.face.overflow]全材質が参照するインデックスが対応する面の数よりも多い状態ですY
+)nanoem.model.validator.bone.name.too-long,ボーン名が15バイトを超えてますT
+&nanoem.model.validator.bone.name.empty*ボーン名が設定されていませんS
++nanoem.model.validator.bone.name.duplicated$ボーン名が重複しています|
+3nanoem.model.validator.bone.transform-before-parentE親子関係の問題から親ボーンより先に変形されますZ
+)nanoem.model.validator.bone.inherent.null-付与ボーンが設定されていません�
+<nanoem.model.validator.bone.inherent.transform-before-parentK親子関係の問題から付与親ボーンより先に変形されます�
+>nanoem.model.validator.bone.constraint.transform-before-parentS親子関係の問題からIKターゲットボーンより先に変形されますc
+5nanoem.model.validator.bone.fixed-axis.not-normalized*固定軸が正規化されていませんZ
+*nanoem.model.validator.morph.name.too-long,モーフ名が15バイトを超えてますU
+'nanoem.model.validator.morph.name.empty*モーフ名が設定されていませんT
+,nanoem.model.validator.morph.name.duplicated$モーフ名が重複していますU
+'nanoem.model.validator.label.name.empty*表示枠名が設定されていませんT
+,nanoem.model.validator.label.name.duplicated$表示枠名が重複しています;
+"nanoem.model.validator.label.empty表示枠が空ですk
+.nanoem.model.validator.label.not-assigned-bone9ボーンが表示枠に割り当てられていませんl
+/nanoem.model.validator.label.not-assigned-morph9モーフが表示枠に割り当てられていませんe
++nanoem.model.validator.label.item.bone.null6表示枠内のボーンが設定されていませんf
+,nanoem.model.validator.label.item.morph.null6表示枠内のモーフが設定されていませんW
+,nanoem.model.validator.rigid-body.name.empty'剛体名が設定されていませんV
+1nanoem.model.validator.rigid-body.name.duplicated!剛体名が重複していますk
++nanoem.model.validator.rigid-body.bone.null<剛体に対応するボーンが設定されていません[
+'nanoem.model.validator.joint.name.empty0ジョイント名が設定されていませんZ
+,nanoem.model.validator.joint.name.duplicated*ジョイント名が重複していますy
+.nanoem.model.validator.joint.rigid-body-a.nullGジョイントに対応する剛体 (A) が設定されていませんy
+.nanoem.model.validator.joint.rigid-body-b.nullGジョイントに対応する剛体 (B) が設定されていませんb
++nanoem.model.validator.soft-body.name.empty3ソフトボディ名が設定されていませんa
+0nanoem.model.validator.soft-body.name.duplicated-ソフトボディ名が重複していますw
+.nanoem.model.validator.soft-body.material.nullEソフトボディに対応する材質が設定されていません
 nanoem.status.SUCCESS成功I
 !nanoem.status.ERROR_MALLOC_FAILED$メモリ確保に失敗しましたJ
 "nanoem.status.ERROR_REALLOC_FAILED$メモリ確保に失敗しました@
@@ -932,7 +1174,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -946,8 +1188,8 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 !nanoem.gui.keyframe.select-columnColumn#
 nanoem.gui.keyframe.start#Start
 nanoem.gui.effectEffect)
-nanoem.gui.effect.reloadReload Effect'
-nanoem.gui.panel.accessory	Accessory)
+nanoem.gui.effect.reloadReload Effect-
+ nanoem.gui.panel.accessory.title	Accessory)
 nanoem.gui.panel.accessory.none(none).
 $nanoem.gui.panel.accessory.bone.none(none)+
 !nanoem.gui.panel.accessory.deleteDelete+
@@ -960,8 +1202,8 @@ $nanoem.gui.panel.accessory.bone.none(none)+
  nanoem.gui.panel.accessory.scaleScale5
 &nanoem.gui.panel.accessory.translationTranslation-
 "nanoem.gui.panel.accessory.visibleVisible#
-nanoem.gui.panel.accessory.opOP
-nanoem.gui.panel.boneBone"
+nanoem.gui.panel.accessory.opOP#
+nanoem.gui.panel.bone.titleBone"
 nanoem.gui.panel.bone.copyCopy<
 *nanoem.gui.panel.bone.label.selection-modeSelection Mode"
 nanoem.gui.panel.bone.moveMove$
@@ -973,8 +1215,8 @@ $nanoem.gui.panel.accessory.bone.none(none)+
 nanoem.gui.panel.bone.selectSelect'
  nanoem.gui.panel.bone.select.allAll'
  nanoem.gui.panel.bone.select.boxBox+
-"nanoem.gui.panel.bone.select.dirtyUnreg!
-nanoem.gui.panel.cameraCamera>
+"nanoem.gui.panel.bone.select.dirtyUnreg'
+nanoem.gui.panel.camera.titleCamera>
 )nanoem.gui.panel.camera.following-to-boneFollowing to Bone+
 !nanoem.gui.panel.camera.bone.none(none)"
 nanoem.gui.panel.camera.fovFov-
@@ -984,8 +1226,8 @@ Initialize'
 nanoem.gui.panel.camera.labelCamera,
 "nanoem.gui.panel.camera.model.none(none)2
 #nanoem.gui.panel.camera.perspectivePerspective,
- nanoem.gui.panel.camera.registerRegister/
-nanoem.gui.panel.interpolationInterpolation5
+ nanoem.gui.panel.camera.registerRegister5
+$nanoem.gui.panel.interpolation.titleInterpolation5
 (nanoem.gui.panel.interpolation.automatic	Automatic>
 /nanoem.gui.panel.interpolation.bone.orientationOrientationI
 1nanoem.gui.panel.interpolation.bone.translation.xTranslation (X-Axis)I
@@ -999,15 +1241,15 @@ Initialize'
 3nanoem.gui.panel.interpolation.camera.translation.zTranslation (Z-Axis)+
 #nanoem.gui.panel.interpolation.copyCopy/
 %nanoem.gui.panel.interpolation.linearLinear-
-$nanoem.gui.panel.interpolation.pastePaste
-nanoem.gui.panel.lightLight%
+$nanoem.gui.panel.interpolation.pastePaste%
+nanoem.gui.panel.light.titleLight%
 nanoem.gui.panel.light.colorColor-
  nanoem.gui.panel.light.direction	Direction*
 nanoem.gui.panel.light.reset
 Initialize1
 "nanoem.gui.panel.light.self-shadowSelf Shadow+
-nanoem.gui.panel.light.registerRegister
-nanoem.gui.panel.modelModel'
+nanoem.gui.panel.light.registerRegister%
+nanoem.gui.panel.model.titleModel'
  nanoem.gui.panel.model.blend-addAdd+
 &nanoem.gui.panel.model.blend-add.shortA8
 nanoem.gui.panel.model.defaultCamera/Light/Accessory'
@@ -1019,8 +1261,8 @@ Initialize1
 #nanoem.gui.panel.model.shadow.shortS)
 nanoem.gui.panel.model.visibleVisible)
 $nanoem.gui.panel.model.visible.shortV0
-&nanoem.gui.panel.model.constraint.none(none)
-nanoem.gui.panel.morphMorph%
+&nanoem.gui.panel.model.constraint.none(none)%
+nanoem.gui.panel.morph.titleMorph%
 nanoem.gui.panel.morph.none(none)!
 nanoem.gui.panel.morph.eyeEye/
 #nanoem.gui.panel.morph.eye.registerRegister)
@@ -1031,8 +1273,8 @@ $nanoem.gui.panel.model.visible.shortV0
 nanoem.gui.panel.morph.otherOther1
 %nanoem.gui.panel.morph.other.registerRegister(
 nanoem.gui.panel.morph.weight#Weight4
-$nanoem.gui.panel.morph.weight.formatWeight: %.2f
-nanoem.gui.panel.playPlay!
+$nanoem.gui.panel.morph.weight.formatWeight: %.2f#
+nanoem.gui.panel.play.titlePlay!
 nanoem.gui.panel.play.end#End"
 nanoem.gui.panel.play.loopLoop$
 nanoem.gui.panel.play.pausePause"
@@ -1040,14 +1282,14 @@ $nanoem.gui.panel.morph.weight.formatWeight: %.2f
 nanoem.gui.panel.play.resumeResume%
 nanoem.gui.panel.play.start#Start'
 nanoem.gui.panel.play.volume#Volume3
-#nanoem.gui.panel.play.volume.formatVolume: %d%%&
-nanoem.gui.panel.shadowSelf Shadow-
+#nanoem.gui.panel.play.volume.formatVolume: %d%%,
+nanoem.gui.panel.shadow.titleSelf Shadow-
  nanoem.gui.panel.shadow.distance	#Distance(
 nanoem.gui.panel.shadow.mode-1Mode 1(
 nanoem.gui.panel.shadow.mode-2Mode 2$
 nanoem.gui.panel.shadow.noneNone,
- nanoem.gui.panel.shadow.registerRegister
-nanoem.gui.panel.viewView"
+ nanoem.gui.panel.shadow.registerRegister#
+nanoem.gui.panel.view.titleView"
 nanoem.gui.panel.view.backBack&
 nanoem.gui.panel.view.bottomBottom&
 nanoem.gui.panel.view.followFollow)
@@ -1056,12 +1298,55 @@ $nanoem.gui.panel.morph.weight.formatWeight: %.2f
 nanoem.gui.panel.view.frontFront"
 nanoem.gui.panel.view.leftLeft$
 nanoem.gui.panel.view.rightRight
-nanoem.gui.panel.view.upUp
+nanoem.gui.panel.view.upUp8
++nanoem.gui.panel.model.edit.operation.title	Operation<
+2nanoem.gui.panel.model.edit.operation.action.titleActionC
+9nanoem.gui.panel.model.edit.operation.action.camera.titleCameraI
+<nanoem.gui.panel.model.edit.operation.action.selection.title	Selection[
+Enanoem.gui.panel.model.edit.operation.action.create-parent-bone.titleCreate Parent Bone[
+Enanoem.gui.panel.model.edit.operation.action.create-target-bone.titleCreate Target Bone]
+Fnanoem.gui.panel.model.edit.operation.action.paint-vertex-weight.titlePaint Vertex Weighti
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.titleCreate Material PrimitiveS
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.coneConeS
+Knanoem.gui.panel.model.edit.operation.action.create-material-primitive.cubeCube[
+Onanoem.gui.panel.model.edit.operation.action.create-material-primitive.cylinderCylinderW
+Mnanoem.gui.panel.model.edit.operation.action.create-material-primitive.sphereSphereU
+Lnanoem.gui.panel.model.edit.operation.action.create-material-primitive.torusTorusl
+]nanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.translationTranslationf
+Znanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.rotationRotation`
+Wnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.scaleScalef
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.slices
+Slices: %df
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.stacks
+Stacks: %dn
+Xnanoem.gui.panel.model.edit.operation.action.create-material-primitive.parameters.radiusInner Radius: %.1fG
+5nanoem.gui.panel.model.edit.operation.selection.titleSelection Mode@
+6nanoem.gui.panel.model.edit.operation.selection.circleCircleF
+9nanoem.gui.panel.model.edit.operation.selection.rectangle	Rectangle>
+5nanoem.gui.panel.model.edit.operation.selection.pointPoint0
+'nanoem.gui.panel.model.edit.gizmo.titleGizmoC
+1nanoem.gui.panel.model.edit.gizmo.operation.titleOperation TypeB
+5nanoem.gui.panel.model.edit.gizmo.operation.translate	Translate<
+2nanoem.gui.panel.model.edit.gizmo.operation.rotateRotate:
+1nanoem.gui.panel.model.edit.gizmo.operation.scaleScaleE
+2nanoem.gui.panel.model.edit.gizmo.coordinate.titleCoordinate Type=
+3nanoem.gui.panel.model.edit.gizmo.coordinate.globalGlobal<
+2nanoem.gui.panel.model.edit.gizmo.coordinate.localGlobalE
+.nanoem.gui.panel.model.edit.weight-paint.titleVertex Weight PaintE
+5nanoem.gui.panel.model.edit.weight-paint.painter-typePainter TypeN
+@nanoem.gui.panel.model.edit.weight-paint.painter-type.base-brush
+Base BrushL
+?nanoem.gui.panel.model.edit.weight-paint.painter-type.air-brush	Air BrushC
+4nanoem.gui.panel.model.edit.weight-paint.vertex-typeVertex Type5
+-nanoem.gui.panel.model.edit.weight-paint.boneBone?
+/nanoem.gui.panel.model.edit.weight-paint.radiusRadius: %.3f=
+.nanoem.gui.panel.model.edit.weight-paint.deltaDelta: %.3f?
+2nanoem.gui.panel.model.edit.weight-paint.normalize	Normalize[
+@nanoem.gui.panel.model.edit.weight-paint.automatic-normalizationAutomatic Normalization
 nanoem.gui.redoRedo
 nanoem.gui.timelineTimeline
-nanoem.gui.undoUndoI
-nanoem.gui.viewport.global+Viewport - Camera, Light, Accessory / Stage*
-nanoem.gui.viewport.modelViewport - %s8
+nanoem.gui.undoUndo%
+nanoem.gui.viewport.titleViewport8
 #nanoem.gui.viewport.model-with-boneViewport - %s: %s.
 $nanoem.gui.viewport.parameter.cameraCamera3
 *nanoem.gui.viewport.parameter.camera.angleAngle9
@@ -1140,14 +1425,16 @@ Initialize5
 *nanoem.gui.window.project.effect.tab.modelModel;
 .nanoem.gui.window.project.effect.tab.parameter	Parameter?
 2nanoem.gui.window.project.effect.offscreen.default	(Default)9
-/nanoem.gui.window.project.effect.offscreen.none(None)8
+/nanoem.gui.window.project.effect.offscreen.none(None)[
+:nanoem.gui.window.project.effect.offscreen.display-textureDisplay Render Target Texture8
 .nanoem.gui.window.project.effect.material.none(None)J
 1nanoem.gui.window.project.effect.parameter.reloadReload Current EffectQ
 2nanoem.gui.window.project.effect.parameter.inspectEnable Parameter Inspection1
 )nanoem.gui.window.project.effect.emd.loadLoad1
 )nanoem.gui.window.project.effect.emd.saveSave&
-nanoem.gui.window.model.titleModel/
- nanoem.gui.window.model.tab.infoInformation,
+nanoem.gui.window.model.titleModel.
+#nanoem.gui.window.model.tab.measureMeasure,
+"nanoem.gui.window.model.tab.systemSystem,
 "nanoem.gui.window.model.tab.vertexVertex(
  nanoem.gui.window.model.tab.faceFace0
 $nanoem.gui.window.model.tab.materialMaterial(
@@ -1157,7 +1444,27 @@ $nanoem.gui.window.model.tab.materialMaterial(
 &nanoem.gui.window.model.tab.rigid-body
 Rigid Body*
 !nanoem.gui.window.model.tab.jointJoint2
-%nanoem.gui.window.model.tab.soft-body	Soft Body<
+%nanoem.gui.window.model.tab.soft-body	Soft Body-
+#nanoem.gui.window.model.menu.vertexVertex)
+!nanoem.gui.window.model.menu.faceFace1
+%nanoem.gui.window.model.menu.materialMaterial)
+!nanoem.gui.window.model.menu.boneBone+
+"nanoem.gui.window.model.menu.morphMorph4
+&nanoem.gui.window.model.menu.type.bone
+Bone Morph6
+'nanoem.gui.window.model.menu.type.groupGroup Morph<
+*nanoem.gui.window.model.menu.type.materialMaterial Morph:
+)nanoem.gui.window.model.menu.type.textureTexture Morph;
+$nanoem.gui.window.model.menu.type.uvAdditional UV Morph8
+(nanoem.gui.window.model.menu.type.vertexVertex Morph4
+&nanoem.gui.window.model.menu.type.flip
+Flip Morph:
+)nanoem.gui.window.model.menu.type.impulseImpulse Morph+
+"nanoem.gui.window.model.menu.labelLabel5
+'nanoem.gui.window.model.menu.rigid-body
+Rigid Body+
+"nanoem.gui.window.model.menu.jointJoint3
+&nanoem.gui.window.model.menu.soft-body	Soft Body<
 "nanoem.gui.window.preference.titleApplication Preferencel
 ,nanoem.gui.window.preference.global.renderer<Renderer * Restarting the application required after changed@
 0nanoem.gui.window.preference.global.color-formatColor FormatE
@@ -1189,15 +1496,41 @@ Rigid Body*
 +nanoem.gui.window.preference.grid.size.gridNumber of CellI
 1nanoem.gui.window.preference.file-path-mode.titleFile Path in ProjectE
 4nanoem.gui.window.preference.file-path-mode.absoluteAbsolute PathE
-4nanoem.gui.window.preference.file-path-mode.relativeRelative Path-
+4nanoem.gui.window.preference.file-path-mode.relativeRelative Path0
+$nanoem.gui.model.edit.measure.vertexVertices+
+"nanoem.gui.model.edit.measure.faceFaces3
+&nanoem.gui.model.edit.measure.material	Materials1
+%nanoem.gui.model.edit.measure.textureTextures+
+"nanoem.gui.model.edit.measure.boneBones4
+(nanoem.gui.model.edit.measure.constraintIK Bones-
+#nanoem.gui.model.edit.measure.morphMorphs-
+#nanoem.gui.model.edit.measure.labelLabels8
+(nanoem.gui.model.edit.measure.rigid-bodyRigid Bodies-
+#nanoem.gui.model.edit.measure.jointJoints6
+'nanoem.gui.model.edit.measure.soft-bodySoft BodiesF
+-nanoem.gui.model.edit.measure.transform.titleBatch Model Transform6
+-nanoem.gui.model.edit.measure.transform.applyApply6
+-nanoem.gui.model.edit.measure.transform.resetResetJ
+:nanoem.gui.model.edit.measure.transform.height-based.titleHeight BasedR
+6nanoem.gui.model.edit.measure.transform.height-based.a(A): Model Height on MMDU
+6nanoem.gui.model.edit.measure.transform.height-based.b(B): Centimeter unit on MMDX
+6nanoem.gui.model.edit.measure.transform.height-based.c(C): Centimeter for Correctionn
+;nanoem.gui.model.edit.measure.transform.height-based.result/Model Height with Centimeter Unit = (A / B) + C\
+Ananoem.gui.model.edit.measure.transform.height-based.scale-factorCalculated Scale FactorL
+;nanoem.gui.model.edit.measure.transform.numeric-input.titleNumeric Input)
+!nanoem.gui.model.edit.system.nameName/
+$nanoem.gui.model.edit.system.commentComment;
+%nanoem.gui.model.edit.system.encodingCharacter Encoding7
+ nanoem.gui.model.edit.system.uvaAdditional UV Count-
 #nanoem.gui.model.edit.vertex.originOrigin-
 #nanoem.gui.model.edit.vertex.normalNormal+
-%nanoem.gui.model.edit.vertex.texcoordUV)
-!nanoem.gui.model.edit.vertex.typeType-
+%nanoem.gui.model.edit.vertex.texcoordUVE
+!nanoem.gui.model.edit.vertex.type Vertex Type and Influenced Bones-
 #nanoem.gui.model.edit.vertex.weightWeight/
 #nanoem.gui.model.edit.vertex.sdef.cSDEF (C)1
 $nanoem.gui.model.edit.vertex.sdef.r0	SDEF (R0)1
-$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)/
+$nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1):
+%nanoem.gui.model.edit.vertex.materialAttached Material/
 !nanoem.gui.model.edit.vertex.edge
 Edge Width1
  nanoem.gui.model.edit.vertex.uvaAdditional UV?
@@ -1207,40 +1540,44 @@ Edge Width1
 ,nanoem.gui.model.edit.material.diffuse.colorDiffuse ColorA
 .nanoem.gui.model.edit.material.diffuse.opacityDiffuse Opacity?
 -nanoem.gui.model.edit.material.specular.colorSpecular Color?
--nanoem.gui.model.edit.material.specular.powerSpecular Power7
+-nanoem.gui.model.edit.material.specular.powerSpecular Power1
+)nanoem.gui.model.edit.material.edge.titleEdge7
 )nanoem.gui.model.edit.material.edge.color
 Edge Color;
 +nanoem.gui.model.edit.material.edge.opacityEdge Opacity6
 (nanoem.gui.model.edit.material.edge.size
-Edge WidthA
+Edge Width?
+-nanoem.gui.model.edit.material.primitive.typePrimitive Type?
+-nanoem.gui.model.edit.material.spheremap.typeSpheremap Type8
+,nanoem.gui.model.edit.material.texture.titleTexturesD
+-nanoem.gui.model.edit.material.arbitrary-areaArbitrary User AreaA
 .nanoem.gui.model.edit.material.texture.diffuseDiffuse TextureC
 -nanoem.gui.model.edit.material.texture.sphereSphere Map Texture;
-+nanoem.gui.model.edit.material.texture.toonToon TextureQ
++nanoem.gui.model.edit.material.texture.toonToon TextureI
+6nanoem.gui.model.edit.material.texture.display-uv-meshDisplay UV Mesh7
+)nanoem.gui.model.edit.material.properties
+PropertiesQ
 3nanoem.gui.model.edit.material.property.shared-toonEnable Shared Toon TextureJ
 7nanoem.gui.model.edit.material.property.disable-cullingDisable CullingV
 6nanoem.gui.model.edit.material.property.casting-shadowEnable Casting Ground ShadowY
 ;nanoem.gui.model.edit.material.property.casting-self-shadowEnable Casting Self ShadowI
 3nanoem.gui.model.edit.material.property.self-shadowEnable Self Shadow;
 ,nanoem.gui.model.edit.material.property.edgeEnable EdgeK
-4nanoem.gui.model.edit.material.property.vertex-colorEnable Vertex Color8
-1nanoem.gui.model.edit.material.sphere-texture.addAddB
-6nanoem.gui.model.edit.material.sphere-texture.multiplyMultiply:
-2nanoem.gui.model.edit.material.sphere-texture.noneNoneH
-9nanoem.gui.model.edit.material.sphere-texture.sub-textureSub Texture@
-5nanoem.gui.model.edit.material.sphere-texture.unknownUnknown7
+4nanoem.gui.model.edit.material.property.vertex-colorEnable Vertex Color7
 .nanoem.gui.model.edit.material.primitive.pointPoint5
 -nanoem.gui.model.edit.material.primitive.lineLine=
-1nanoem.gui.model.edit.material.primitive.triangleTriangle7
-/nanoem.gui.model.edit.material.sphere.type.noneNone:
-.nanoem.gui.model.edit.material.sphere.type.addAdditive?
-3nanoem.gui.model.edit.material.sphere.type.multiplyMultiplyE
-6nanoem.gui.model.edit.material.sphere.type.sub-textureSub-Texture;
+1nanoem.gui.model.edit.material.primitive.triangleTriangle:
+2nanoem.gui.model.edit.material.spheremap.type.noneNone=
+1nanoem.gui.model.edit.material.spheremap.type.addAdditiveB
+6nanoem.gui.model.edit.material.spheremap.type.multiplyMultiplyH
+9nanoem.gui.model.edit.material.spheremap.type.sub-textureSub-Texture;
 (nanoem.gui.model.edit.bone.name.japaneseName (Japanese)9
 'nanoem.gui.model.edit.bone.name.englishName (English)+
 !nanoem.gui.model.edit.bone.originOrigin0
-!nanoem.gui.model.edit.bone.parentParent Bone0
-!nanoem.gui.model.edit.bone.targetTarget BoneC
--nanoem.gui.model.edit.bone.destination-originDestination Origin3
+!nanoem.gui.model.edit.bone.parentParent Bone?
++nanoem.gui.model.edit.bone.destination.boneDestination BoneC
+-nanoem.gui.model.edit.bone.destination.originDestination Origin3
+ nanoem.gui.model.edit.bone.stageTransform Stage3
 %nanoem.gui.model.edit.bone.properties
 Properties-
 "nanoem.gui.model.edit.bone.movableMovable3
@@ -1248,21 +1585,29 @@ Properties-
 Rotateable-
 "nanoem.gui.model.edit.bone.visibleVisible=
 *nanoem.gui.model.edit.bone.user-handleableUser Handleable>
--nanoem.gui.model.edit.bone.inverse-kinematicsIK Constraint?
-.nanoem.gui.model.edit.bone.constraint.effectorEffector Bone;
-,nanoem.gui.model.edit.bone.constraint.targetTarget Bone4
+-nanoem.gui.model.edit.bone.inverse-kinematicsIK Constraint@
+.nanoem.gui.model.edit.bone.constraint.effectorIK Target Bone<
+,nanoem.gui.model.edit.bone.constraint.targetIK Base Bone4
 +nanoem.gui.model.edit.bone.constraint.angleAngle=
-,nanoem.gui.model.edit.bone.constraint.jointsIK Link Bones<
-/nanoem.gui.model.edit.bone.constraint.iteration	IterationG
+,nanoem.gui.model.edit.bone.constraint.jointsIK Link Bones7
+0nanoem.gui.model.edit.bone.constraint.joints.addAdd=
+3nanoem.gui.model.edit.bone.constraint.joints.removeRemoveM
+7nanoem.gui.model.edit.bone.constraint.joint.angle-limitEnable Angle LimitL
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.lowerLower LimitL
+=nanoem.gui.model.edit.bone.constraint.joint.angle-limit.upperUpper Limit<
+/nanoem.gui.model.edit.bone.constraint.iteration	Iteration:
+)nanoem.gui.model.edit.bone.inherent.titleInherent BoneG
 /nanoem.gui.model.edit.bone.inherent.translationInherent TranslationG
 /nanoem.gui.model.edit.bone.inherent.orientationInherent OrientationG
 /nanoem.gui.model.edit.bone.inherent.parent-boneInherent Parent BoneG
 /nanoem.gui.model.edit.bone.inherent.coefficientInherent Coefficient7
 )nanoem.gui.model.edit.bone.has-fixed-axis
-Fixed Axis3
-%nanoem.gui.model.edit.bone.fixed-axis
+Fixed Axis9
++nanoem.gui.model.edit.bone.fixed-axis.title
 Fixed Axis7
 )nanoem.gui.model.edit.bone.has-local-axes
+Local Axes9
++nanoem.gui.model.edit.bone.local-axes.title
 Local Axes9
 'nanoem.gui.model.edit.bone.local-axis.xLocal Axis (X)9
 'nanoem.gui.model.edit.bone.local-axis.zLocal Axis (Z);
@@ -1271,7 +1616,8 @@ Local Axes9
 )nanoem.gui.model.edit.morph.name.japaneseName (Japanese):
 (nanoem.gui.model.edit.morph.name.englishName (English)0
 $nanoem.gui.model.edit.morph.categoryCategory(
- nanoem.gui.model.edit.morph.typeType/
+ nanoem.gui.model.edit.morph.typeType<
+)nanoem.gui.model.edit.morph.category.baseSystem Reserved/
 (nanoem.gui.model.edit.morph.category.eyeEye7
 ,nanoem.gui.model.edit.morph.category.eyebrowEyebrow/
 (nanoem.gui.model.edit.morph.category.lipLip3
@@ -1288,7 +1634,37 @@ $nanoem.gui.model.edit.morph.categoryCategory(
 %nanoem.gui.model.edit.morph.type.uva3Additional UV37
 %nanoem.gui.model.edit.morph.type.uva4Additional UV41
 'nanoem.gui.model.edit.morph.type.vertexVertex3
-(nanoem.gui.model.edit.morph.type.unknownUnknown<
+(nanoem.gui.model.edit.morph.type.unknownUnknown;
+,nanoem.gui.model.edit.morph.bone.translationTranslation;
+,nanoem.gui.model.edit.morph.bone.orientationOrientation+
+$nanoem.gui.model.edit.morph.bone.addAdd1
+'nanoem.gui.model.edit.morph.bone.removeRemove1
+'nanoem.gui.model.edit.morph.flip.weightWeight+
+$nanoem.gui.model.edit.morph.flip.addAdd1
+'nanoem.gui.model.edit.morph.flip.removeRemove2
+(nanoem.gui.model.edit.morph.group.weightWeight,
+%nanoem.gui.model.edit.morph.group.addAdd2
+(nanoem.gui.model.edit.morph.group.removeRemove4
+*nanoem.gui.model.edit.morph.impulse.torqueTorque8
+,nanoem.gui.model.edit.morph.impulse.velocityVelocity>
+)nanoem.gui.model.edit.morph.impulse.localEnable Local Axis.
+'nanoem.gui.model.edit.morph.impulse.addAdd4
+*nanoem.gui.model.edit.morph.impulse.removeRemove;
+.nanoem.gui.model.edit.morph.material.operation	OperationC
+2nanoem.gui.model.edit.morph.material.ambient.colorAmbient ColorC
+2nanoem.gui.model.edit.morph.material.diffuse.colorDiffuse ColorE
+3nanoem.gui.model.edit.morph.material.specular.colorSpecular ColorE
+3nanoem.gui.model.edit.morph.material.specular.powerSpecular Power=
+/nanoem.gui.model.edit.morph.material.edge.color
+Edge Color;
+.nanoem.gui.model.edit.morph.material.edge.size	Edge SizeK
+2nanoem.gui.model.edit.morph.material.blend.diffuseDiffuse Texture BlendQ
+5nanoem.gui.model.edit.morph.material.blend.sphere-mapSphere Map Texture BlendE
+/nanoem.gui.model.edit.morph.material.blend.toonToon Texture Blend/
+(nanoem.gui.model.edit.morph.material.addAdd5
++nanoem.gui.model.edit.morph.material.removeRemove8
+'nanoem.gui.model.edit.morph.uv.positionUV Coordinate7
++nanoem.gui.model.edit.morph.vertex.positionPosition<
 )nanoem.gui.model.edit.label.name.japaneseName (Japanese):
 (nanoem.gui.model.edit.label.name.englishName (English).
 #nanoem.gui.model.edit.label.specialSpecialA
@@ -1306,7 +1682,9 @@ Shape Size-
 /nanoem.gui.model.edit.rigid-body.linear-dampingLinear DampingC
 0nanoem.gui.model.edit.rigid-body.angular-dampingAngular Damping5
 )nanoem.gui.model.edit.rigid-body.frictionFriction;
-,nanoem.gui.model.edit.rigid-body.restitutionRestitutionP
+,nanoem.gui.model.edit.rigid-body.restitutionRestitutionC
+0nanoem.gui.model.edit.rigid-body.collision.groupCollision GroupA
+/nanoem.gui.model.edit.rigid-body.collision.maskCollision MaskP
 4nanoem.gui.model.edit.rigid-body.object-type.dynamicFeedback from Simulation_
 6nanoem.gui.model.edit.rigid-body.object-type.kinematic%Feedback from Simulation without moveI
 3nanoem.gui.model.edit.rigid-body.object-type.staticFeedback from Bone?
@@ -1385,9 +1763,125 @@ $nanoem.gui.model.edit.material.titleMateiral(
 Rigid Body*
 !nanoem.gui.model.edit.joint.titleJoint+
 "nanoem.gui.model.edit.window.applyApply-
-#nanoem.gui.model.edit.window.cancelCancelL
-nanoem.macos.expiration.title+Trial of nanoem PR edition has been expired�
-#nanoem.macos.expiration.description�The application has been expired due to specified expiration date and will be terminated. (If you continue using the application, You should grab the latest version and overwrite install this)
+#nanoem.gui.model.edit.window.cancelCancel;
+-nanoem.gui.model.edit.action.insert.new.title
+Insert New6
++nanoem.gui.model.edit.action.insert.at-lastat LastH
+6nanoem.gui.model.edit.action.insert.new.after-selectedafter Selected=
+.nanoem.gui.model.edit.action.insert.copy.titleInsert Copy;
+0nanoem.gui.model.edit.action.insert.copy.at-nextat Next9
+,nanoem.gui.model.edit.action.selection.title	Selection5
+*nanoem.gui.model.edit.action.masking.titleMaskingO
+8nanoem.gui.model.edit.action.selection.vertex.enable-allSelect All VerticesR
+9nanoem.gui.model.edit.action.selection.vertex.disable-allDeselect All Verticesf
+@nanoem.gui.model.edit.action.selection.vertex.enable-all-by-type"Select All Vertices by Type of ...m
+>nanoem.gui.model.edit.action.selection.vertex.enable-all-faces+Select All Faces from All Selected Verticesu
+Bnanoem.gui.model.edit.action.selection.vertex.enable-all-materials/Select All Materials from All Selected Vertices}
+Fnanoem.gui.model.edit.action.selection.vertex.enable-all-vertex-morphs3Select All Vertex Morphs from All Selected Vertices
+Gnanoem.gui.model.edit.action.selection.vertex.enable-all-texture-morphs4Select All Texture Morphs from All Selected VerticesT
+6nanoem.gui.model.edit.action.masking.vertex.enable-allMask All Selected VerticesW
+7nanoem.gui.model.edit.action.masking.vertex.disable-allUnmask All Selected VerticesY
+6nanoem.gui.model.edit.action.masking.vertex.invert-allInvert All Mask/Unmask VerticesJ
+6nanoem.gui.model.edit.action.selection.face.enable-allSelect All Facesp
+@nanoem.gui.model.edit.action.selection.face.enable-all-materials,Select All Materials from All Selected FacesM
+7nanoem.gui.model.edit.action.selection.face.disable-allDeselect All FacesN
+4nanoem.gui.model.edit.action.masking.face.enable-allMask All Selected FaceQ
+5nanoem.gui.model.edit.action.masking.face.disable-allUnmask All Selected FaceS
+4nanoem.gui.model.edit.action.masking.face.invert-allInvert All Mask/Unmask FaceR
+:nanoem.gui.model.edit.action.selection.material.enable-allSelect All MaterialsU
+;nanoem.gui.model.edit.action.selection.material.disable-allDeselect All Materialsp
+@nanoem.gui.model.edit.action.selection.material.enable-all-bones,Select All Bones from All Selected Materialsp
+@nanoem.gui.model.edit.action.selection.material.enable-all-faces,Select All Faces from All Selected Materialsv
+Cnanoem.gui.model.edit.action.selection.material.enable-all-vertices/Select All Vertices from All Selected MaterialsW
+8nanoem.gui.model.edit.action.masking.material.enable-allMask All Selected MaterialsZ
+9nanoem.gui.model.edit.action.masking.material.disable-allUnmask All Selected Materials\
+8nanoem.gui.model.edit.action.masking.material.invert-all Invert All Mask/Unmask MaterialsJ
+6nanoem.gui.model.edit.action.selection.bone.enable-allSelect All Bonesn
+?nanoem.gui.model.edit.action.selection.bone.enable-all-vertices+Select All Vertices from All Selected Boneso
+=nanoem.gui.model.edit.action.selection.bone.enable-all-morphs.Select All Bone Morphs from All Selected Bonesv
+Cnanoem.gui.model.edit.action.selection.bone.enable-all-rigid-bodies/Select All Rigid Bodies from All Selected BonesZ
+>nanoem.gui.model.edit.action.selection.bone.enable-all-visibleSelect All Visible Bones`
+Ananoem.gui.model.edit.action.selection.bone.enable-all-rotateableSelect All Rotateable BonesZ
+>nanoem.gui.model.edit.action.selection.bone.enable-all-movableSelect All Movable BonesX
+<nanoem.gui.model.edit.action.selection.bone.enable-symmetricSelect Symmetric Bone(s)M
+7nanoem.gui.model.edit.action.selection.bone.disable-allDeselect All BonesO
+4nanoem.gui.model.edit.action.masking.bone.enable-allMask All Selected BonesZ
+>nanoem.gui.model.edit.action.masking.bone.enable-all-invisibleMask All Invisible BonesR
+5nanoem.gui.model.edit.action.masking.bone.disable-allUnmask All Selected BonesT
+4nanoem.gui.model.edit.action.masking.bone.invert-allInvert All Mask/Unmask BonesL
+7nanoem.gui.model.edit.action.selection.morph.enable-allSelect All MorphsO
+8nanoem.gui.model.edit.action.selection.morph.disable-allDeselect All Morphsn
+9nanoem.gui.model.edit.action.selection.morph.children-all1Select All Model Objects from All Selected MorphsL
+7nanoem.gui.model.edit.action.selection.label.enable-allSelect All LabelsO
+8nanoem.gui.model.edit.action.selection.label.disable-allDeselect All Labelsm
+9nanoem.gui.model.edit.action.selection.label.children-all0Select All Bones/Morphs from All Selected LabelsW
+<nanoem.gui.model.edit.action.selection.rigid-body.enable-allSelect All Rigid Bodiesu
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-all-bones/Select All Bones from All Selected Rigid Bodiesa
+Bnanoem.gui.model.edit.action.selection.rigid-body.enable-symmetricSelect Symmetric Rigid BodyZ
+=nanoem.gui.model.edit.action.selection.rigid-body.disable-allDeselect All Rigid Bodies\
+:nanoem.gui.model.edit.action.masking.rigid-body.enable-allMask All Selected Rigid Bodies_
+;nanoem.gui.model.edit.action.masking.rigid-body.disable-all Unmask All Selected Rigid Bodiesa
+:nanoem.gui.model.edit.action.masking.rigid-body.invert-all#Invert All Mask/Unmask Rigid BodiesL
+7nanoem.gui.model.edit.action.selection.joint.enable-allSelect All Jointsj
+=nanoem.gui.model.edit.action.selection.joint.enable-all-bones)Select All Bones from All Selected Jointsx
+Dnanoem.gui.model.edit.action.selection.joint.enable-all-rigid-bodies0Select All Rigid Bodies from All Selected JointsZ
+=nanoem.gui.model.edit.action.selection.joint.enable-symmetricSelect Symmetric Joint(s)O
+8nanoem.gui.model.edit.action.selection.joint.disable-allDeselect All JointsQ
+5nanoem.gui.model.edit.action.masking.joint.enable-allMask All Selected JointsT
+6nanoem.gui.model.edit.action.masking.joint.disable-allUnmask All Selected JointsV
+5nanoem.gui.model.edit.action.masking.joint.invert-allInvert All Mask/Unmask JointsU
+;nanoem.gui.model.edit.action.selection.soft-body.enable-allSelect All Soft BodiesX
+<nanoem.gui.model.edit.action.selection.soft-body.disable-allDeselect All Soft BodiesV
+/nanoem.gui.model.edit.action.vertex.create-bone#Create a Bone in Center of SelectedX
+4nanoem.gui.model.edit.action.vertex.add-vertex-morph Add Selected to the Vertex MorphZ
+5nanoem.gui.model.edit.action.vertex.add-texture-morph!Add Selected to the Texture MorphC
+0nanoem.gui.model.edit.action.vertex.weight.titleWeight TransferA
+/nanoem.gui.model.edit.action.vertex.weight.loadLoad from File?
+/nanoem.gui.model.edit.action.vertex.weight.saveSave as FileQ
+7nanoem.gui.model.edit.action.vertex.weight.dialog.titleWeight Transfer Result\
+9nanoem.gui.model.edit.action.vertex.weight.dialog.message%u (of %u) vertices are appliedQ
+5nanoem.gui.model.edit.action.material.copy-from-modelCopy from Model with ...Y
+5nanoem.gui.model.edit.action.material.create-from-obj Create Material from File (.obj)^
+8nanoem.gui.model.edit.action.material.add-material-morph"Add Selected to the Material MorphA
++nanoem.gui.model.edit.action.material.mergeMerge the MaterialP
+9nanoem.gui.model.edit.action.material.texture.diffuse.setSet Diffuse TextureT
+;nanoem.gui.model.edit.action.material.texture.diffuse.clearClear Diffuse TextureT
+;nanoem.gui.model.edit.action.material.texture.spheremap.setSet SphereMap TextureX
+=nanoem.gui.model.edit.action.material.texture.spheremap.clearClear SphereMap TextureJ
+6nanoem.gui.model.edit.action.material.texture.toon.setSet Toon TextureN
+8nanoem.gui.model.edit.action.material.texture.toon.clearClear Toon TextureW
+4nanoem.gui.model.edit.action.bone.create.destinationCreating Destination Bone of %sI
+0nanoem.gui.model.edit.action.bone.create.stagingCreating Staging BoneJ
+7nanoem.gui.model.edit.action.bone.create.staging.parentas Parent of %sH
+6nanoem.gui.model.edit.action.bone.create.staging.childas Child of %sV
+7nanoem.gui.model.edit.action.bone.add-constraint-jointsAdd Selected to the IK BoneH
++nanoem.gui.model.edit.action.bone.add-labelAdd Selected to the LabelR
+0nanoem.gui.model.edit.action.bone.add-bone-morphAdd Selected to the Bone Morph@
+-nanoem.gui.model.edit.action.bone.axis.parentSet from Parent@
+-nanoem.gui.model.edit.action.bone.axis.targetSet from TargetG
+-nanoem.gui.model.edit.action.bone.axis.selectSet from Bone with ...N
+-nanoem.gui.model.edit.action.bone.axis.globalSet from Global Axis with ...b
+>nanoem.gui.model.edit.action.morph.create-bone-morph-from-file Create Bone Morph from Pose Fileg
+@nanoem.gui.model.edit.action.morph.create-vertex-morph-from-file#Create Vertex Morph from Model FileI
+,nanoem.gui.model.edit.action.morph.add-labelAdd Selected to the LabelU
+2nanoem.gui.model.edit.action.morph.add-group-morphAdd Selected to the Group MorphS
+1nanoem.gui.model.edit.action.morph.add-flip-morphAdd Selected to the Flip Morpht
+Ananoem.gui.model.edit.action.rigid-body.create-intermediate-joint/Create Intermediate Joint from Two Rigid Bodies^
+9nanoem.gui.model.edit.action.rigid-body.add-impulse-morph!Add Selected to the Impulse MorphC
+(nanoem.gui.model.edit.batch.apply.vertexApply Batch %u VerticesF
+*nanoem.gui.model.edit.batch.apply.materialApply Batch %u Materials>
+&nanoem.gui.model.edit.batch.apply.boneApply Batch %u Bones@
+'nanoem.gui.model.edit.batch.apply.morphApply Batch %u MorphsK
+,nanoem.gui.model.edit.batch.apply.rigid-bodyApply Batch %u Rigid Bodies@
+'nanoem.gui.model.edit.batch.apply.jointApply Batch %u JointsI
++nanoem.gui.model.edit.batch.apply.soft-bodyApply Batch %u Soft BodiesE
+'nanoem.gui.model.edit.batch.copy.vertexCopy Vertex Parameter fromI
+)nanoem.gui.model.edit.batch.copy.materialCopy Material Parameter fromA
+%nanoem.gui.model.edit.batch.copy.boneCopy Bone Parameter fromC
+&nanoem.gui.model.edit.batch.copy.morphCopy Morph Parameter fromM
++nanoem.gui.model.edit.batch.copy.rigid-bodyCopy Rigid Body Parameter fromC
+&nanoem.gui.model.edit.batch.copy.jointCopy Joint Parameter fromK
+*nanoem.gui.model.edit.batch.copy.soft-bodyCopy Soft Body Parameter from
 nanoem.versionVersion)
 !nanoem.window.dialog.buttons.saveSave/
 $nanoem.window.dialog.buttons.discardDiscard-
@@ -1412,7 +1906,9 @@ $nanoem.window.dialog.buttons.discardDiscard-
 8nanoem.window.dialog.capture-video.caution.uncancellable5* Exporting a video cannot cancel while it's running.}
 5nanoem.window.dialog.capture-video.caution.resolutionD* Exporting a video exceed of screen resolution cannot be performed.u
 /nanoem.window.dialog.deleting-accessory.messageBThis action cannot be undone. Do you want to delete the accessory?K
--nanoem.window.dialog.deleting-accessory.titleConfirm Deleting Accessorym
+-nanoem.window.dialog.deleting-accessory.titleConfirm Deleting Accessory�
+1nanoem.window.dialog.converting-accessory.messagekThis action will delete the accessory and add it as a model. Do you want to convert the accessory to model?X
+/nanoem.window.dialog.converting-accessory.title%Confirm Converting Accessory to Modelm
 +nanoem.window.dialog.deleting-model.message>This action cannot be undone. Do you want to delete the model?C
 )nanoem.window.dialog.deleting-model.titleConfirm Deleting Model�
 3nanoem.window.dialog.enabling-effect-plugin.message}Tried loading the effect file with .fx extension even the effect plugin is disabled. Do you want to enable the effect plugin?S
@@ -1460,121 +1956,59 @@ $nanoem.window.dialog.buttons.discardDiscard-
 %nanoem.window.effect.render-target.%dRender Target@
 $nanoem.window.progress.capture-imageCapturing Image as %s...I
 $nanoem.window.progress.capture-video!Capturing Video as %s... (%u FPS)
-nanoem.window.scheme.finder *
-nanoem.window.title.accessory	Accessory)
-nanoem.window.title.audioAudio SourceD
-nanoem.window.title.audio-video!Audio Source and Background Video 
-nanoem.window.title.backBack 
-nanoem.window.title.boneBone$
-nanoem.window.title.cameraCamera$
-nanoem.window.title.cancelCancel
-nanoem.window.title.cd-up..1
- nanoem.window.title.change-orderDrawing Order:
-!nanoem.window.title.confirm.modelConfirm Loading of %s$
-nanoem.window.title.deleteDeleteB
-#nanoem.window.title.remove-keyframeRemove Selected Keyframe(s)&
-nanoem.window.title.executeExecute'
-nanoem.window.title.reset
-Initialize"
-nanoem.window.title.jointJoint"
-nanoem.window.title.labelLabel"
-nanoem.window.title.lightLight(
-nanoem.window.title.materialMaterial"
-nanoem.window.title.modelModel"
-nanoem.window.title.morphMorph"
-nanoem.window.title.null(none) 
-nanoem.window.title.openOpen3
-nanoem.window.title.open-audioOpen Audio Source<
-&nanoem.window.title.open-camera-motionOpen Camera Motion.
-nanoem.window.title.open-effectOpen Effect:
-%nanoem.window.title.open-light-motionOpen Light Motion@
-(nanoem.window.title.open-model-accessoryOpen Model/Accessory:
-%nanoem.window.title.open-model-motionOpen Model Motion.
-nanoem.window.title.open-motionOpen Motion0
- nanoem.window.title.open-projectOpen Project.
-nanoem.window.title.open-scriptOpen Script0
- nanoem.window.title.open-textureOpen Texture,
-nanoem.window.title.open-video
-Open Video-
-nanoem.window.title.preferencePreferences&
-nanoem.window.title.projectProject 
-nanoem.window.title.redoRedoK
-%nanoem.window.title.register-keyframe"Register Keyframe at Current Frame,
-nanoem.window.title.rigid-body
-Rigid Body 
-nanoem.window.title.saveSave&
-nanoem.window.title.save-asSave as<
-&nanoem.window.title.save-camera-motionSave Camera Motion:
-%nanoem.window.title.save-light-motionSave Light Motion:
-%nanoem.window.title.save-model-motionSave Model Motion0
- nanoem.window.title.save-projectSave Project 
-nanoem.window.title.undoUndo(
-nanoem.window.title.unknown	(Unknown)$
-nanoem.window.title.vertexVertex"
-nanoem.window.title.videoVideo
-nanoem.menu.file.titleFile%
-nanoem.menu.file.title.win32&File#
-nanoem.menu.file.newNew Project*
-nanoem.menu.file.new.win32&New Project%
-nanoem.menu.file.openOpen Project,
-nanoem.menu.file.open.win32&Open Project&
-nanoem.menu.file.import.modelModel.
-!nanoem.menu.file.import.accessory	Accessory*
-nanoem.menu.file.import.pose
-Model Pose4
-$nanoem.menu.file.import.motion.modelModel Motion6
-%nanoem.menu.file.import.motion.cameraCamera Motion4
-$nanoem.menu.file.import.motion.lightLight Motion.
-$nanoem.menu.file.import.motion.titleMotion-
-nanoem.menu.file.import.audioAudio Source1
-nanoem.menu.file.import.videoBackground Video*
-nanoem.menu.file.import.title	Import...%
-nanoem.menu.file.saveSave Project,
-nanoem.menu.file.save.win32&Save Project+
-nanoem.menu.file.save-asSave Project As*
-nanoem.menu.file.export.pose
-Model Pose4
-$nanoem.menu.file.export.motion.modelModel Motion6
-%nanoem.menu.file.export.motion.cameraCamera Motion4
-$nanoem.menu.file.export.motion.lightLight Motion&
-nanoem.menu.file.export.modelModel&
-nanoem.menu.file.export.imageImage&
-nanoem.menu.file.export.videoVideo*
-nanoem.menu.file.export.title	Export...
-nanoem.menu.file.exitExit$
-nanoem.menu.file.exit.win32E&xit
-nanoem.menu.edit.undoUndo$
-nanoem.menu.edit.undo.win32&Undo
-nanoem.menu.edit.redoRedo$
-nanoem.menu.edit.redo.win32&Redo
-nanoem.menu.edit.cutCut
-nanoem.menu.edit.copyCopy$
-nanoem.menu.edit.copy.win32&Copy
-nanoem.menu.edit.pastePaste&
-nanoem.menu.edit.paste.win32&Paste-
+nanoem.window.scheme.finder :
+!nanoem.window.title.confirm.modelConfirm Loading of %s
+nanoem.menu.file.title&File,
+nanoem.menu.file.new.project&New Project'
+nanoem.menu.file.new.model	New Model&
+nanoem.menu.file.open&Open Project'
+nanoem.menu.file.import.model&Model/
+!nanoem.menu.file.import.accessory
+&Accessory+
+nanoem.menu.file.import.poseModel &Pose5
+$nanoem.menu.file.import.motion.modelM&odel Motion7
+%nanoem.menu.file.import.motion.camera&Camera Motion5
+$nanoem.menu.file.import.motion.light&Light Motion/
+$nanoem.menu.file.import.motion.title&Motion.
+nanoem.menu.file.import.audioA&udio Source2
+nanoem.menu.file.import.videoBackground &Video+
+nanoem.menu.file.import.title
+&Import...&
+nanoem.menu.file.save&Save Project+
+nanoem.menu.file.save-asSave Project As+
+nanoem.menu.file.export.poseModel &Pose5
+$nanoem.menu.file.export.motion.modelM&odel Motion7
+%nanoem.menu.file.export.motion.camera&Camera Motion5
+$nanoem.menu.file.export.motion.light&Light Motion&
+nanoem.menu.file.export.modelModel'
+nanoem.menu.file.export.image&Image'
+nanoem.menu.file.export.video&Video+
+nanoem.menu.file.export.title
+&Export...
+nanoem.menu.file.exitE&xit
+nanoem.menu.edit.undo&Undo
+nanoem.menu.edit.redo&Redo
+nanoem.menu.edit.cutCut
+nanoem.menu.edit.copy&Copy 
+nanoem.menu.edit.paste&Paste-
 nanoem.menu.edit.plugin.modelModel Plugin/
 nanoem.menu.edit.plugin.motionMotion Plugin4
 nanoem.menu.edit.window.effectOpen Effect Window2
-nanoem.menu.edit.window.modelOpen Model Window=
-%nanoem.menu.edit.select-all-keyframesSelect All KeyframesD
-+nanoem.menu.edit.select-all-keyframes.win32Select &All Keyframes*
-nanoem.menu.edit.preferencePreferences1
-!nanoem.menu.edit.preference.win32&Preferences
-nanoem.menu.edit.titleEdit%
-nanoem.menu.edit.title.win32&Edit 
-nanoem.menu.project.playPlay'
-nanoem.menu.project.play.win32&Play 
-nanoem.menu.project.stopStop'
-nanoem.menu.project.stop.win32&Stop<
+nanoem.menu.edit.window.modelOpen Model Window>
+%nanoem.menu.edit.select-all-keyframesSelect &All Keyframes*
+nanoem.menu.edit.preferencePreferences
+nanoem.menu.edit.title&Edit!
+nanoem.menu.project.play&Play!
+nanoem.menu.project.stop&Stop<
 nanoem.menu.project.viewportOpen Viewport Setting Dialog8
 nanoem.menu.project.order.drawOpen Draw Order DialogB
-#nanoem.menu.project.order.transformOpen Transform Order Dialog;
-nanoem.menu.project.enable.loopEnable Playing with Loop.
-nanoem.menu.project.enable.gridEnable Grid@
-(nanoem.menu.project.enable.ground-shadowEnable Ground Shadow2
-!nanoem.menu.project.enable.effectEnable Effect9
-'nanoem.menu.project.enable.effect.win32Enable &EffectV
-3nanoem.menu.project.enable.high-resolution-viewportEnable High Resolution ViewportT
+#nanoem.menu.project.order.transformOpen Transform Order Dialog>
+#nanoem.menu.project.viewport.detach&Detach Viewport Window<
+nanoem.menu.project.enable.loopEnable Playing with &Loop/
+nanoem.menu.project.enable.gridEnable &Grid@
+(nanoem.menu.project.enable.ground-shadowEnable Ground Shadow3
+!nanoem.menu.project.enable.effectEnable &EffectW
+3nanoem.menu.project.enable.high-resolution-viewport Enable &High Resolution ViewportT
 2nanoem.menu.project.enable.compute-shader-skinningEnable Compute Shader SkinningR
 1nanoem.menu.project.enable.vertex-shader-skinningEnable Vertex Shader Skinning.
 nanoem.menu.project.msaa.x16Best (MSAAx16),
@@ -1612,36 +2046,26 @@ Fnanoem.menu.project.physics-simulation.enable.drawing.constraint-limitConstra
  nanoem.menu.camera.preset.bottomBottom(
 nanoem.menu.camera.preset.frontFront&
 nanoem.menu.camera.preset.backBack1
-nanoem.menu.camera.preset.titlePreset From...J
-$nanoem.menu.camera.register-keyframe"Register Keyframe at Current FrameQ
-*nanoem.menu.camera.register-keyframe.win32#&Register Keyframe at Current FrameA
-"nanoem.menu.camera.remove-keyframeRemove Selected Keyframe(s)&
-nanoem.menu.camera.reset
-Initialize-
-nanoem.menu.camera.reset.win32&Initialize"
-nanoem.menu.camera.titleCamera)
-nanoem.menu.camera.title.win32&Camera-
-nanoem.menu.light.toggleToggle Light ModeI
-#nanoem.menu.light.register-keyframe"Register Keyframe at Current FrameP
-)nanoem.menu.light.register-keyframe.win32#&Register Keyframe at Current Frame@
-!nanoem.menu.light.remove-keyframeRemove Selected Keyframe(s)%
-nanoem.menu.light.reset
-Initialize,
-nanoem.menu.light.reset.win32&Initialize 
-nanoem.menu.light.titleLight'
-nanoem.menu.light.title.win32&Light2
-#nanoem.menu.light.self-shadow.titleSelf Shadow0
+nanoem.menu.camera.preset.titlePreset From...K
+$nanoem.menu.camera.register-keyframe#&Register Keyframe at Current FrameA
+"nanoem.menu.camera.remove-keyframeRemove Selected Keyframe(s)'
+nanoem.menu.camera.reset&Initialize#
+nanoem.menu.camera.title&Camera-
+nanoem.menu.light.toggleToggle Light ModeJ
+#nanoem.menu.light.register-keyframe#&Register Keyframe at Current Frame@
+!nanoem.menu.light.remove-keyframeRemove Selected Keyframe(s)&
+nanoem.menu.light.reset&Initialize!
+nanoem.menu.light.title&Light3
+#nanoem.menu.light.self-shadow.title&Self Shadow0
 %nanoem.menu.light.self-shadow.disableDisable?
 *nanoem.menu.light.self-shadow.enable.mode1Mode 1 (Balanced)N
-*nanoem.menu.light.self-shadow.enable.mode2 Mode 2 (Better for Near Objects)U
-/nanoem.menu.light.self-shadow.register-keyframe"Register Keyframe at Current FrameL
--nanoem.menu.light.self-shadow.remove-keyframeRemove Selected Keyframe(s)1
-#nanoem.menu.light.self-shadow.reset
-Initialize8
-)nanoem.menu.light.self-shadow.reset.win32&Initialize6
-nanoem.menu.model.select.titleSelect Model from...:
-#nanoem.menu.model.select.bone.titleSelect Bone from...<
-$nanoem.menu.model.select.morph.titleSelect Morph from...X
+*nanoem.menu.light.self-shadow.enable.mode2 Mode 2 (Better for Near Objects)V
+/nanoem.menu.light.self-shadow.register-keyframe#&Register Keyframe at Current FrameL
+-nanoem.menu.light.self-shadow.remove-keyframeRemove Selected Keyframe(s)2
+#nanoem.menu.light.self-shadow.reset&Initialize7
+nanoem.menu.model.select.titleSelect &Model from...;
+#nanoem.menu.model.select.bone.titleSelect &Bone from...=
+$nanoem.menu.model.select.morph.titleSelect M&orph from...X
 'nanoem.menu.model.select.bone.keyframes-Select All Bone Keyframes from Selected Bones/
 (nanoem.menu.model.select.morph.eye.titleEye7
 ,nanoem.menu.model.select.morph.eyebrow.titleEyebrow/
@@ -1649,7 +2073,8 @@ $nanoem.menu.model.select.morph.titleSelect Morph from...X
 *nanoem.menu.model.select.morph.other.titleOther-
 $nanoem.menu.model.select.morph.titleMorph?
 *nanoem.menu.model.select.expand-all-tracksExpand All TracksC
-,nanoem.menu.model.select.collapse-all-tracksCollapse All Tracks4
+,nanoem.menu.model.select.collapse-all-tracksCollapse All Tracks=
+nanoem.menu.model.validationPerform Model Data Validation4
 "nanoem.menu.model.edit-mode.selectSelection Mode1
 "nanoem.menu.model.edit-mode.rotateRotate Mode-
  nanoem.menu.model.edit-mode.move	Move Mode=
@@ -1659,12 +2084,11 @@ $nanoem.menu.model.select.morph.titleMorph?
 (nanoem.menu.model.reset.bone.orientationReset Orientation8
  nanoem.menu.model.set-morph.zeroSet Morph Weight 0.08
  nanoem.menu.model.set-morph.halfSet Morph Weight 0.57
-nanoem.menu.model.set-morph.oneSet Morph Weight 1.06
-"nanoem.menu.model.enable.add-blendEnable Add Blend8
-#nanoem.menu.model.enable.shadow-mapEnable Shadow Map2
- nanoem.menu.model.enable.visibleEnable VisibleI
-#nanoem.menu.model.register-keyframe"Register Keyframe at Current FrameP
-)nanoem.menu.model.register-keyframe.win32#&Register Keyframe at Current Frame@
+nanoem.menu.model.set-morph.oneSet Morph Weight 1.07
+"nanoem.menu.model.enable.add-blendEnable &Add Blend9
+#nanoem.menu.model.enable.shadow-mapEnable &Shadow Map3
+ nanoem.menu.model.enable.visibleEnable &VisibleJ
+#nanoem.menu.model.register-keyframe#&Register Keyframe at Current Frame@
 !nanoem.menu.model.remove-keyframeRemove Selected Keyframe(s)4
 "nanoem.menu.model.preference.titleModel Settings]
 ;nanoem.menu.model.preference.enable.compute-shader-skinningEnable Compute Shader SkinningD
@@ -1675,49 +2099,38 @@ $nanoem.menu.model.select.morph.titleMorph?
 6nanoem.menu.model.preference.enable.show-vertex-pointsShow Vertex Points[
 :nanoem.menu.model.preference.enable.vertex-shader-skinningEnable Vertex Shader Skinning,
 nanoem.menu.model.edgeEdge Configuration 
-nanoem.menu.model.resetReset6
-nanoem.menu.model.delete-activeDelete Active Model=
-%nanoem.menu.model.delete-active.win32&Delete Active Model 
-nanoem.menu.model.titleModel'
-nanoem.menu.model.title.win32&ModelA
+nanoem.menu.model.resetReset7
+nanoem.menu.model.delete-active&Delete Active Model!
+nanoem.menu.model.title&ModelA
 'nanoem.menu.accessory.draw-order-dialogOpen Draw Order Dialog>
-"nanoem.menu.accessory.select.titleSelect Accessory from...M
-'nanoem.menu.accessory.register-keyframe"Register Keyframe at Current FrameT
--nanoem.menu.accessory.register-keyframe.win32#&Register Keyframe at Current FrameD
-%nanoem.menu.accessory.remove-keyframeRemove Selected Keyframe(s):
-&nanoem.menu.accessory.enable.add-blendEnable Add Blend;
-#nanoem.menu.accessory.enable.shadowEnable Ground Shadow6
-$nanoem.menu.accessory.enable.visibleEnable Visible$
-nanoem.menu.accessory.resetReset>
-#nanoem.menu.accessory.delete-activeDelete Active AccesosryE
-)nanoem.menu.accessory.delete-active.win32&Delete Active Accessory(
-nanoem.menu.accessory.title	Accessory/
-!nanoem.menu.accessory.title.win32
+"nanoem.menu.accessory.select.titleSelect Accessory from...N
+'nanoem.menu.accessory.register-keyframe#&Register Keyframe at Current FrameD
+%nanoem.menu.accessory.remove-keyframeRemove Selected Keyframe(s);
+&nanoem.menu.accessory.enable.add-blendEnable &Add Blend<
+#nanoem.menu.accessory.enable.shadowEnable Ground &Shadow7
+$nanoem.menu.accessory.enable.visibleEnable &Visible$
+nanoem.menu.accessory.resetResetK
+&nanoem.menu.accessory.convert-to-model!Convert Active Accessory to Model?
+#nanoem.menu.accessory.delete-active&Delete Active Accessory)
+nanoem.menu.accessory.title
 &AccessoryJ
 2nanoem.menu.project.motion.shift-keyframes-forwardRemove Current FrameI
-3nanoem.menu.project.motion.shift-keyframes-backwardInsert Empty Frame.
- nanoem.menu.project.motion.reset
-Initialize5
-&nanoem.menu.project.motion.reset.win32&Initialize*
- nanoem.menu.project.motion.titleMotion$
-nanoem.menu.project.titleProject+
-nanoem.menu.project.title.win32&Project'
+3nanoem.menu.project.motion.shift-keyframes-backwardInsert Empty Frame/
+ nanoem.menu.project.motion.reset&Initialize*
+ nanoem.menu.project.motion.titleMotion%
+nanoem.menu.project.title&Project'
 nanoem.menu.window.maximizeMaximize'
 nanoem.menu.window.minimizeMinimize%
 nanoem.menu.window.restoreRestore+
 nanoem.menu.window.fullscreen
-Fullscreen"
-nanoem.menu.window.titleWindow)
-nanoem.menu.window.title.win32&Window&
-nanoem.menu.help.onlineOnline Help-
-nanoem.menu.help.online.win32&Online Help
-nanoem.menu.help.aboutAbout&
-nanoem.menu.help.about.win32&About
-nanoem.menu.help.titleHelp%
-nanoem.menu.help.title.win32&Help#
-nanoem.menu.edit.bone.titleBone'
-nanoem.menu.edit.camera.titleCamera%
-nanoem.menu.edit.morph.titleMorph<
+Fullscreen#
+nanoem.menu.window.title&Window'
+nanoem.menu.help.online&Online Help 
+nanoem.menu.help.about&About
+nanoem.menu.help.title&Help$
+nanoem.menu.edit.bone.title&Bone'
+nanoem.menu.edit.camera.titleCamera&
+nanoem.menu.edit.morph.titleM&orph<
 nanoem.menu.edit.bone.parameterOpen Numeric Input Dialog<
 'nanoem.menu.edit.bone.reset-orientationReset Orientation:
  nanoem.menu.edit.bone.correctionOpen Correction Dialog.
@@ -1743,7 +2156,13 @@ Fullscreen"
 nanoem.project.track.cameraCamera#
 nanoem.project.track.lightLight#
 nanoem.project.track.modelModel/
- nanoem.project.track.self-shadowSelf ShadowZ
+ nanoem.project.track.self-shadowSelf Shadow0
+nanoem.project.track.select-allAll Keyframes5
+#nanoem.project.track.selected-bonesSelected Bones7
+$nanoem.project.track.selected-morphsSelected Morphs-
+nanoem.project.track.all-morphs
+All Morphs#
+nanoem.project.track.none(none)Z
 "nanoem.error.convert-to-nmm.reason4Converting the file to "nmm" format is not supported{
 /nanoem.error.convert-to-nmm.recovery-suggestionHSee "Application Menu" > "Save" in "nanoem Online Manual" from Help MenuU
  nanoem.error.project.load.reason1Failed to load the project due to data corruption`
@@ -1754,12 +2173,79 @@ Fullscreen"
 nanoem.error.model.dirty.reason2The model has any unregistered bone(s) or morph(s)�
 ,nanoem.error.model.dirty.recovery-suggestionVTry registering all unregistered bone(s) or morph(s), or seek any frame point to reset\
 -nanoem.error.effect.material-not-found.reason+The material to attach the effect not found]
-1nanoem.error.effect.model-effect-not-found.reason(The model to attach the effect not foundd
-.nanoem.error.effect.offscreen-not-found.reason2The model to attach the offscreen effect not foundH
+1nanoem.error.effect.model-effect-not-found.reason(The model to attach the effect not founde
+.nanoem.error.effect.offscreen-not-found.reason3The object to attach the offscreen effect not foundu
+-nanoem.error.effect.invalid-attachment.reasonDThe model or offscreen target to attach the effect is not configured�
+:nanoem.error.effect.invalid-attachment.recovery-suggestionnSet the model or offscreen target to attach the effect from "Edit" > "Open Effect Window" and load effect fileT
+$nanoem.error.motion.not-model.reason,The loading motion is not intended for modelf
+/nanoem.error.motion.not-camera-and-light.reason3The loading motion is not intended for camera/light`
+*nanoem.error.motion.no-active-model.reason2The model is not selected to load the model motionR
+7nanoem.error.motion.no-active-model.recovery-suggestionTry selecting the model]
+%nanoem.error.project.new-model.reason4Saving the project is required to create a new modelg
+&nanoem.error.project.open-model.reason=Saving the project is required to open model parameter dialogH
  nanoem.project.diagnostics.title$Loading Project with Partial Failurel
 'nanoem.project.diagnostics.message.mainALoading the project is succeeded but some files cannot be loaded.^
 ,nanoem.project.diagnostics.message.not-found.Below files cannot be loaded due to not found.l
-2nanoem.project.diagnostics.message.digest-mismatch6Below files cannot be loaded due to file modification. 
+2nanoem.project.diagnostics.message.digest-mismatch6Below files cannot be loaded due to file modification.D
+%nanoem.motion.model.diagnostics.titleLoaded Model Motion Warning�
+'nanoem.motion.model.diagnostics.messageLoading the model motion is succeeded, however below bones/morphs are missing due to made for "%s" so may not work as properly.F
+1nanoem.motion.model.diagnostics.all-missing-bonesAll Missing BonesH
+2nanoem.motion.model.diagnostics.all-missing-morphsAll Missing Morphs>
+#nanoem.model.validator.result.titleValidation result of %sD
+%nanoem.model.validator.result.successNo validation problem foundH
+%nanoem.model.validator.result.failure%zu validation problem(s) foundI
+.nanoem.model.validator.vertex.model.name.emptyThe model name is emptyR
+1nanoem.model.validator.vertex.model.comment.emptyComment of the model is emptyO
+,nanoem.model.validator.vertex.normal.invalidNormal of the vertex is invalid^
+*nanoem.model.validator.vertex.texcoord.oob0Texture coordinate of the vertex is out of boundL
+'nanoem.model.validator.vertex.bone.null!The bone of the vertex is not setf
+3nanoem.model.validator.vertex.weight.not-normalized/The bone weight of the vertex is not normalizedH
+*nanoem.model.validator.vertex.type.invalidThe vertex type is invalidL
+,nanoem.model.validator.face.not-triangulatedThe face is not triangulatedL
+'nanoem.model.validator.face.vertex.null!The vertex of the face is not setR
+&nanoem.model.validator.face.vertex.oob(The face is out of bound of the verticesY
++nanoem.model.validator.face.vertex.not-used*The vertex is not referenced from the faceV
+*nanoem.model.validator.material.name.empty(The material name (of Japanese) is empty`
+/nanoem.model.validator.material.name.duplicated-The material name (of Japanese) is duplicated_
+1nanoem.model.validator.material.ambient.color.oob*The material ambient color is out of bound_
+1nanoem.model.validator.material.diffuse.color.oob*The material diffuse color is out of boundc
+3nanoem.model.validator.material.diffuse.opacity.oob,The material diffuse opacity is out of bounda
+2nanoem.model.validator.material.specular.color.oob+The material specular color is out of boundY
+.nanoem.model.validator.material.edge.color.oob'The material edge color is out of bound]
+0nanoem.model.validator.material.edge.opacity.oob)The material edge opacity is out of boundk
+9nanoem.model.validator.material.texture.diffuse.not-found.The material diffuse texture file is not foundq
+<nanoem.model.validator.material.texture.sphere-map.not-found1The material sphere map texture file is not founde
+6nanoem.model.validator.material.texture.toon.not-found+The material toon texture file is not foundv
+-nanoem.model.validator.material.face.not-fillEAll material vertex index count are less than corresponding all facesy
+-nanoem.model.validator.material.face.overflowHAll material vertex index count are greater than corresponding all facesh
+)nanoem.model.validator.bone.name.too-long;The bone name length (of Japanese) is greater than 15 bytesN
+&nanoem.model.validator.bone.name.empty$The bone name (of Japanese) is emptyX
++nanoem.model.validator.bone.name.duplicated)The bone name (of Japanese) is duplicated�
+3nanoem.model.validator.bone.transform-before-parentKThe bone will be transformed before its parent bone due to relation problemI
+)nanoem.model.validator.bone.inherent.nullThe inherent bone is not set�
+<nanoem.model.validator.bone.inherent.transform-before-parent]The inherent bone will be transformed before its parent inherent bone due to relation problem�
+>nanoem.model.validator.bone.constraint.transform-before-parentNThe IK bone will be transformed before its target bone due to relation problem]
+5nanoem.model.validator.bone.fixed-axis.not-normalized$Fixed axis of the bone is normalizedc
+*nanoem.model.validator.morph.name.too-long5The morph name (of Japanese) is greater than 15 bytesP
+'nanoem.model.validator.morph.name.empty%The morph name (of Japanese) is emptyZ
+,nanoem.model.validator.morph.name.duplicated*The morph name (of Japanese) is duplicatedP
+'nanoem.model.validator.label.name.empty%The label name (of Japanese) is emptyZ
+,nanoem.model.validator.label.name.duplicated*The label name (of Japanese) is duplicated=
+"nanoem.model.validator.label.emptyThe label item is emptyW
+.nanoem.model.validator.label.not-assigned-bone%The bone is not assigned to the labelY
+/nanoem.model.validator.label.not-assigned-morph&The morph is not assigned to the labelO
++nanoem.model.validator.label.item.bone.null The bone in the label is not setQ
+,nanoem.model.validator.label.item.morph.null!The morph in the label is not setZ
+,nanoem.model.validator.rigid-body.name.empty*The rigid body name (of Japanese) is emptyd
+1nanoem.model.validator.rigid-body.name.duplicated/The rigid body name (of Japanese) is duplicated[
++nanoem.model.validator.rigid-body.bone.null,The bone corresponding rigid body is not setP
+'nanoem.model.validator.joint.name.empty%The joint name (of Japanese) is emptyZ
+,nanoem.model.validator.joint.name.duplicated*The joint name (of Japanese) is duplicatedc
+.nanoem.model.validator.joint.rigid-body-a.null1The rigid body (A) corresponding joint is not setc
+.nanoem.model.validator.joint.rigid-body-b.null1The rigid body (B) corresponding joint is not setX
++nanoem.model.validator.soft-body.name.empty)The soft body name (of Japanese) is emptyb
+0nanoem.model.validator.soft-body.name.duplicated.The soft body name (of Japanese) is duplicateda
+.nanoem.model.validator.soft-body.material.null/The material corresponding soft body is not set 
 nanoem.status.SUCCESSSuccess>
 !nanoem.status.ERROR_MALLOC_FAILEDFailed to allocate memory?
 "nanoem.status.ERROR_REALLOC_FAILEDFailed to allocate memory:

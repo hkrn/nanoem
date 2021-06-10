@@ -15,13 +15,14 @@ fd --glob "*.{cc,h,m,mm}" \
   -E "emapp/src/sha1.h" \
   -E "emapp/src/wildcardcmp.h" \
   -E "win32/ffmpeg" \
-  -E "glfw/include/GL" \
+  -E "glfw/common/include/GL" \
   -E "nanoem" \
   -E "scripts" \
   -E "khash.h" \
   -E "*.pb-c.*" \
+  -E "out" \
   $PWD \
-  -x ${CLANG_FORMAT_PATH} -i
+  -X clang-format -i
 
 # fx9
 fd --glob "*.{cc,h}" \
