@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -991,8 +991,8 @@ $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモ�
 'nanoem.project.diagnostics.message.mainrプロジェクトの読み込みは成功しましたが、一部のファイルが読み込めませんでした�
 ,nanoem.project.diagnostics.message.not-foundQ次のファイルが見つかりません。移動した可能性があります�
 2nanoem.project.diagnostics.message.digest-mismatchQ次のファイルは保存時から変更があったため読み込めません\
-%nanoem.motion.model.diagnostics.title3読み込まれたモデルモーションの警告�
-'nanoem.motion.model.diagnostics.message�モデルモーションの読み込みに成功しましたが、「%s」のために作られている関係で以下のボーンあるいはモーフが不足しているため正常に動作しない可能性がありますV
+%nanoem.motion.model.diagnostics.title3読み込まれたモデルモーションの警告�
+'nanoem.motion.model.diagnostics.message�モデルモーションの読み込みに成功しましたが、「%s」のために作られており以下のボーンあるいはモーフが不足しているため正常に動作しない可能性がありますV
 1nanoem.motion.model.diagnostics.all-missing-bones!不足しているボーン一覧W
 2nanoem.motion.model.diagnostics.all-missing-morphs!不足しているモーフ一覧>
 #nanoem.model.validator.result.title「%s」の検証結果\
