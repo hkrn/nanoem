@@ -399,7 +399,7 @@ private:
         const Model *activeModel, const Project *project, IState *state);
     void drawFPSCounter(const Project *project, const ImVec2 &offset);
     void drawPerformanceMonitor(const Project *project, const ImVec2 &offset);
-    void drawBoneTooltip(Project *project);
+    void drawBoneTooltip(Project *project, nanoem_u32_t flags);
     void drawTextCentered(
         const ImVec2 &offset, const Vector4 &rect, const char *text, size_t length, ImU32 color = IM_COL32_WHITE);
     void setupDeviceInput(Project *project);
@@ -450,7 +450,6 @@ private:
     uint64_t m_elapsedTime;
     nanoem_u64_t m_currentMemoryBytes;
     nanoem_u64_t m_maxMemoryBytes;
-    nanoem_u32_t m_viewportOverlayFlags;
     nanoem_f32_t m_currentCPUPercentage;
     nanoem_f32_t m_scrollTimelineY;
     nanoem_f32_t m_timelineWidth;

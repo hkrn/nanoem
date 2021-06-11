@@ -1125,7 +1125,6 @@ ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
     , m_elapsedTime(0)
     , m_currentMemoryBytes(0)
     , m_maxMemoryBytes(0)
-    , m_viewportOverlayFlags(0)
     , m_currentCPUPercentage(0)
     , m_scrollTimelineY(0)
     , m_timelineWidth(0)
@@ -3565,7 +3564,7 @@ ImGuiWindow::drawViewport(Project *project, IState *state, nanoem_u32_t flags)
         if (project->isPerformanceMonitorEnabled()) {
             drawPerformanceMonitor(project, offset);
         }
-        drawBoneTooltip(project);
+        drawBoneTooltip(project, flags);
     }
     drawList->PopClipRect();
     if (!isModelEditingEnabled) {
@@ -5116,11 +5115,11 @@ ImGuiWindow::drawTextCentered(const ImVec2 &offset, const Vector4 &rect, const c
 }
 
 void
-ImGuiWindow::drawBoneTooltip(Project *project)
+ImGuiWindow::drawBoneTooltip(Project *project, nanoem_u32_t flags)
 {
     if (Model *activeModel = project->activeModel()) {
         const nanoem_model_bone_t *bonePtr = activeModel->hoveredBone();
-        bool enabled = EnumUtils::isEnabled(IState::kDrawTypeBoneTooltip, m_viewportOverlayFlags);
+        bool enabled = EnumUtils::isEnabled(IState::kDrawTypeBoneTooltip, flags);
         if (activeModel && bonePtr && enabled) {
             activeModel->drawBoneTooltip(primitiveContext(), bonePtr);
         }
