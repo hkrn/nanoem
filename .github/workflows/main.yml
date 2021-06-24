@@ -74,6 +74,7 @@ jobs:
           cd $GITHUB_WORKSPACE/out/core
           cmake --build . --target test
   codeql:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     env:
       FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
