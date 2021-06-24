@@ -466,7 +466,6 @@ MetalSkinDeformerFactory::Deformer::initializeUberBuffer(
     if (!m_mutableUberBuffer) {
         const nanoem_rsize_t length = sizeof(constantData) + matrixBufferLength + morphWeightBufferLength;
         m_mutableUberBuffer = [m_parent->m_device newBufferWithLength:length options:MTLResourceStorageModeManaged];
-        nanoem_rsize_t bufferOffset = matrixBufferLength + morphWeightBufferLength;
         setLabel(m_mutableUberBuffer, "MutableUberBuffer");
 #if defined(NANOEM_ENABLE_DEBUG_LABEL)
         NSString *name = [[NSString alloc] initWithUTF8String:m_model->canonicalNameConstString()],
@@ -474,7 +473,7 @@ MetalSkinDeformerFactory::Deformer::initializeUberBuffer(
                  *constantBufferName = [[NSString alloc] initWithFormat:@"%@/Constant", prefix],
                  *morphWeightBufferName = [[NSString alloc] initWithFormat:@"%@/MorphWeights", prefix],
                  *matrixBufferName = [[NSString alloc] initWithFormat:@"%@/Matrices", prefix];
-        bufferOffset = 0;
+        nanoem_rsize_t bufferOffset = 0;
         [m_mutableUberBuffer addDebugMarker:constantBufferName range:NSMakeRange(bufferOffset, sizeof(constantData))];
         bufferOffset += sizeof(constantData);
         [m_mutableUberBuffer addDebugMarker:matrixBufferName range:NSMakeRange(bufferOffset, matrixBufferLength)];

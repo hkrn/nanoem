@@ -646,10 +646,11 @@ ViewportWindow::windowPos() const noexcept
 void
 ViewportWindow::setWindowPos(const ImVec2 &value)
 {
-    const CGPoint point = [m_window convertPointFromBacking:CGPointMake(value.x, value.y)];
-    const CGFloat y = m_window.contentView.frame.size.height + point.y;
+    const NSRect rect = [m_window convertRectFromBacking:NSMakeRect(value.x, value.y, 0, 0)];
+    const CGPoint origin = rect.origin;
+    const CGFloat y = m_window.contentView.frame.size.height + origin.y;
     const NSRect frameRect =
-        [m_window frameRectForContentRect:NSMakeRect(point.x, m_window.screen.frame.size.height - y, 0, 0)];
+        [m_window frameRectForContentRect:NSMakeRect(origin.x, m_window.screen.frame.size.height - y, 0, 0)];
     [m_window setFrameOrigin:frameRect.origin];
 }
 
@@ -836,10 +837,12 @@ CocoaThreadedApplicationService::scrollWheelDelta(const NSEvent *event)
 Vector2SI32
 CocoaThreadedApplicationService::deviceScaleScreenPosition(const NSEvent *event, NSWindow *window) noexcept
 {
-    const NSPoint screenCursorPoint([window convertPointToScreen:event.locationInWindow]),
-        deviceCursorPoint([window convertPointToBacking:screenCursorPoint]);
-    const NSRect deviceScaleFrameRect = [window convertRectToBacking:window.screen.frame];
-    return Vector2SI32(deviceCursorPoint.x, deviceScaleFrameRect.size.height - deviceCursorPoint.y);
+    const NSPoint locationInWindow(event.locationInWindow);
+    const NSRect rectInWindow(NSMakeRect(locationInWindow.x, locationInWindow.y, 0, 0)),
+        screenCursorRect([window convertRectToScreen:rectInWindow]),
+        deviceCursorRect([window convertRectToBacking:screenCursorRect]),
+        deviceScaleFrameRect = [window convertRectToBacking:window.screen.frame];
+    return Vector2SI32(deviceCursorRect.origin.x, deviceScaleFrameRect.size.height - deviceCursorRect.origin.y);
 }
 
 const char *
