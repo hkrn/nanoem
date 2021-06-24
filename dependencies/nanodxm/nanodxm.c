@@ -441,7 +441,7 @@ nanodxmDocumentParseTextureFilename(nanodxm_buffer_t *buffer, nanodxm_uint8_t **
     nanodxmBufferSkipLine(buffer);
     nanodxmBufferSkipSpaces(buffer);
     str_begin = (const char *) nanodxmBufferGetDataPtr(buffer);
-    if (*str_begin == '"') {
+    if (str_begin && *str_begin == '"') {
         str_begin++;
         if ((str_end = strchr(str_begin, '"')) != NULL) {
             length = str_end - str_begin;
@@ -452,11 +452,11 @@ nanodxmDocumentParseTextureFilename(nanodxm_buffer_t *buffer, nanodxm_uint8_t **
             nanodxmBufferSkipSpaces(buffer);
             *output = ptr;
         }
-        else {
+        else if (output) {
             *output = NULL;
         }
     }
-    else {
+    else if (output) {
         *output = NULL;
     }
 }
