@@ -19,20 +19,12 @@
 #include <unordered_set>
 #include <vector>
 
-#define NANOEM_WASM_API extern "C"
-
 #ifndef NANOEM_DECL_API
 #define NANOEM_DECL_API extern "C"
 #endif /* NANOEM_DECL_API */
 #ifndef APIENTRY
 #define APIENTRY
 #endif /* APIENTRY */
-
-#ifdef EMSCRIPTEN
-#include <emscripten/emscripten.h>
-#undef APIENTRY
-#define APIENTRY EMSCRIPTEN_KEEPALIVE
-#endif
 
 namespace {
 
@@ -1834,98 +1826,6 @@ struct nanoem_application_plugin_model_io_t : SemiStandardBonePlugin {
 
 } /* namespace anonymous */
 
-NANOEM_WASM_API nanoem_wasm_plugin_model_io_t *APIENTRY
-nanoemWASMPluginModelIOCreate()
-{
-    return new nanoem_wasm_plugin_model_io_t;
-}
-
-NANOEM_WASM_API void APIENTRY
-nanoemWASMPluginModelIOSetLanguage(nanoem_wasm_plugin_model_io_t *instance, nanoem_u32_t value)
-{
-    if (instance) {
-        instance->setLanguage(value);
-    }
-}
-
-NANOEM_WASM_API const char *APIENTRY
-nanoemWASMPluginModelIOGetName(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->name() : nullptr;
-}
-
-NANOEM_WASM_API void APIENTRY
-nanoemWASMPluginModelIOSetInputModelData(nanoem_wasm_plugin_model_io_t *instance, nanoem_u8_t *data, nanoem_u32_t size)
-{
-    if (instance && data && size > 0) {
-        nanoem_status_t status = NANOEM_STATUS_SUCCESS;
-        instance->setInputData(data, size, &status);
-    }
-}
-
-NANOEM_WASM_API bool APIENTRY
-nanoemWASMPluginModelIOExecute(nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->execute() : false;
-}
-
-NANOEM_WASM_API nanoem_u32_t APIENTRY
-nanoemWASMPluginModelIOGetOutputModelDataSize(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->outputModelDataSize() : 0;
-}
-
-NANOEM_WASM_API const nanoem_u8_t *APIENTRY
-nanoemWASMPluginModelIOGetOutputModelData(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->outputModelData() : nullptr;
-}
-
-NANOEM_WASM_API bool APIENTRY
-nanoemWASMPluginModelIOLoadUIWindowLayout(nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->loadWindowLayout() : false;
-}
-
-NANOEM_WASM_API void APIENTRY
-nanoemWASMPluginModelIOSetUIComponentLayoutData(
-    nanoem_wasm_plugin_model_io_t *instance, const char *name, nanoem_u8_t *data, nanoem_u32_t size)
-{
-    if (instance) {
-        instance->setComponentLayoutData(name, data, size);
-    }
-}
-
-NANOEM_WASM_API nanoem_u32_t APIENTRY
-nanoemWASMPluginModelIOGetUIWindowLayoutDataSize(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->windowLayoutDataSize() : 0;
-}
-
-NANOEM_WASM_API const nanoem_u8_t *APIENTRY
-nanoemWASMPluginModelIOGetUIWindowLayoutData(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->windowLayoutData() : nullptr;
-}
-
-NANOEM_WASM_API const char *APIENTRY
-nanoemWASMPluginModelIOGetFailureReason(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->failureReason() : nullptr;
-}
-
-NANOEM_WASM_API const char *APIENTRY
-nanoemWASMPluginModelIOGetRecoverySuggestion(const nanoem_wasm_plugin_model_io_t *instance)
-{
-    return instance ? instance->recoverySuggestion() : nullptr;
-}
-
-NANOEM_WASM_API void APIENTRY
-nanoemWASMPluginModelIODestroy(nanoem_wasm_plugin_model_io_t *instance)
-{
-    delete instance;
-}
-
 NANOEM_DECL_API nanoem_u32_t APIENTRY
 nanoemApplicationPluginModelIOGetABIVersion(void)
 {
@@ -2120,3 +2020,10 @@ NANOEM_DECL_API void APIENTRY
 nanoemApplicationPluginModelIOTerminate(void)
 {
 }
+
+#ifdef WASM_WASI_SDK
+int main(int /* argc */, char ** /* argv */)
+{
+    return 0;
+}
+#endif
