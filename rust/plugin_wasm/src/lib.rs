@@ -13,9 +13,9 @@ use wasmer::{Array, Function, Instance, Memory, WasmPtr};
 pub(crate) const PLUGIN_MODEL_IO_ABI_VERSION: u32 = 2 << 16;
 pub(crate) const PLUGIN_MOTION_IO_ABI_VERSION: u32 = 2 << 16;
 
-pub(crate) const PLUGIN_NAME: &str = "plugin_wasm";
-pub(crate) const PLUGIN_DESCRIPTION: &str = "nanoem WASM Plugin Loader";
-pub(crate) const PLUGIN_VERSION: &str = "1.0.0";
+pub(crate) const PLUGIN_NAME: &[u8] = b"plugin_wasm\0";
+pub(crate) const PLUGIN_DESCRIPTION: &[u8] = b"nanoem WASM Plugin Loader\0";
+pub(crate) const PLUGIN_VERSION: &[u8] = b"1.0.0\0";
 
 #[allow(dead_code, non_camel_case_types)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, PartialOrd)]

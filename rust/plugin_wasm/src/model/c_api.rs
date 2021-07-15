@@ -44,16 +44,10 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLanguage(
     plugin: *mut nanoem_application_plugin_model_io_t,
     value: i32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
-    let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
-        Some(instance) => match instance.set_language(value) {
-            Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
-            Err(value) => instance.assign_failure_reason(value),
-        },
-        None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
-    };
-    status.assign(status_ptr)
+    if let Some(instance) = nanoem_application_plugin_model_io_t::get(plugin) {
+        instance.set_language(value).unwrap_or_default();
+    }
 }
 
 #[no_mangle]

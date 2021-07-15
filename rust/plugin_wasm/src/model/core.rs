@@ -73,7 +73,7 @@ impl nanoem_application_plugin_model_io_t {
     }
     pub fn function_name(&self, value: i32) -> *const i8 {
         if let Ok(name) = self.controller.function_name(value) {
-            name.as_ptr() as *const i8
+            name.as_ptr()
         } else {
             null()
         }

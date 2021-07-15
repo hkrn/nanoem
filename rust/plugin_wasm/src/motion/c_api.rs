@@ -43,17 +43,11 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreateWithLocation(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetLanguage(
     plugin: *mut nanoem_application_plugin_motion_io_t,
-    language: i32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
+    value: i32,
 ) {
-    let status = match nanoem_application_plugin_motion_io_t::get_mut(plugin) {
-        Some(instance) => match instance.set_language(language) {
-            Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
-            Err(value) => instance.assign_failure_reason(value),
-        },
-        None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
-    };
-    status.assign(status_ptr)
+    if let Some(instance) = nanoem_application_plugin_motion_io_t::get(plugin) {
+        instance.set_language(value).unwrap_or_default();
+    }
 }
 
 #[no_mangle]

@@ -4,7 +4,7 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use std::{mem::size_of_val, path::Path, slice};
+use std::{ffi::CString, mem::size_of_val, path::Path, slice};
 
 use anyhow::Result;
 use walkdir::WalkDir;
@@ -86,6 +86,7 @@ impl MotionIOPlugin {
             "nanoemApplicationPluginMotionIOGetName",
         )
     }
+    #[allow(unused)]
     pub fn description(&self) -> Result<String> {
         inner_get_string(
             &self.instance,
@@ -93,6 +94,7 @@ impl MotionIOPlugin {
             "nanoemApplicationPluginMotionIOGetDescription",
         )
     }
+    #[allow(unused)]
     pub fn version(&self) -> Result<String> {
         inner_get_string(
             &self.instance,
@@ -296,7 +298,7 @@ impl MotionIOPlugin {
 
 pub struct MotionIOPluginController {
     plugins: Vec<MotionIOPlugin>,
-    function_indices: Vec<(usize, i32)>,
+    function_indices: Vec<(usize, i32, CString)>,
     plugin_index: Option<usize>,
 }
 
@@ -334,7 +336,15 @@ impl MotionIOPluginController {
             .try_for_each(|plugin| plugin.create())?;
         for (offset, plugin) in self.plugins.iter().enumerate() {
             for index in 0..plugin.count_all_functions()? {
-                self.function_indices.push((offset, index));
+                let name = CString::new(
+                    &format!(
+                        "{}: {} ({})",
+                        plugin.name()?,
+                        plugin.function_name(index)?,
+                        plugin.version()?
+                    )[..],
+                )?;
+                self.function_indices.push((offset, index, name));
             }
         }
         Ok(())
@@ -344,33 +354,24 @@ impl MotionIOPluginController {
             .iter()
             .try_for_each(|plugin| plugin.set_language(value))
     }
-    #[allow(unused)]
-    pub fn name(&self) -> Result<String> {
-        self.current_plugin()?.name()
-    }
-    #[allow(unused)]
-    pub fn description(&self) -> Result<String> {
-        self.current_plugin()?.description()
-    }
-    #[allow(unused)]
-    pub fn version(&self) -> Result<String> {
-        self.current_plugin()?.version()
-    }
     pub fn count_all_functions(&self) -> i32 {
         self.function_indices.len() as i32
     }
-    pub fn function_name(&self, index: i32) -> Result<String> {
-        let (plugin_index, function_index) = self.function_indices[index as usize];
-        let plugin = &self.plugins[plugin_index];
-        let name = plugin.name()?;
-        let function_name = plugin.function_name(function_index)?;
-        Ok(format!("{}: {}", name, function_name))
+    pub fn function_name(&self, index: i32) -> Result<&CString> {
+        if let Some((_, _, name)) = self.function_indices.get(index as usize) {
+            Ok(name)
+        } else {
+            Err(anyhow::anyhow!("out of bound function index: {}", index))
+        }
     }
     pub fn set_function(&mut self, index: i32) -> Result<()> {
-        let (plugin_index, function_index) = self.function_indices[index as usize];
-        let result = self.plugins[plugin_index].set_function(function_index);
-        self.plugin_index = Some(plugin_index);
-        result
+        if let Some((plugin_index, function_index, _)) = self.function_indices.get(index as usize) {
+            let result = self.plugins[*plugin_index].set_function(*function_index);
+            self.plugin_index = Some(*plugin_index);
+            result
+        } else {
+            Err(anyhow::anyhow!("out of bound function index: {}", index))
+        }
     }
     pub fn set_all_selected_accessory_keyframes(&mut self, value: &[u32]) -> Result<()> {
         self.current_plugin()?
