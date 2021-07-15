@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015-2020 hkrn All rights reserved
+  Copyright (c) 2015-2021 hkrn All rights reserved
 
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
@@ -30,12 +30,11 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreateWithLocation(
     path: *const i8,
 ) -> *mut nanoem_application_plugin_motion_io_t {
     let path = CStr::from_ptr(path);
-    if let Ok(mut instance) = nanoem_application_plugin_motion_io_t::new() {
-        if let Ok(path) = path.to_str() {
-            if instance.load_all_assemblies(path).is_ok() {
-                let plugin = Box::new(instance);
-                return std::mem::transmute(plugin);
-            }
+    if let Ok(mut instance) = nanoem_application_plugin_motion_io_t::new(path) {
+        let result = instance.create();
+        if result.is_ok() {
+            let plugin = Box::new(instance);
+            return std::mem::transmute(plugin);
         }
     }
     null_mut()
@@ -586,7 +585,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
 ) -> *const i8 {
     match nanoem_application_plugin_motion_io_t::get(plugin) {
         Some(instance) => match instance.failure_reason() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
@@ -599,7 +598,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetRecoverySuggestion(
 ) -> *const i8 {
     match nanoem_application_plugin_motion_io_t::get(plugin) {
         Some(instance) => match instance.recovery_suggestion() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),

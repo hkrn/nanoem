@@ -1,8 +1,0 @@
-[package]
-name = "plugin_debugger"
-version = "0.1.0"
-authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
-edition = "2018"
-
-[dependencies]
-libloading = "0.5"

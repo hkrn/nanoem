@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015-2020 hkrn All rights reserved
+  Copyright (c) 2015-2021 hkrn All rights reserved
 
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
@@ -30,15 +30,11 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
     path: *const i8,
 ) -> *mut nanoem_application_plugin_model_io_t {
     let path = CStr::from_ptr(path);
-    if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new() {
-        if let Ok(path) = path.to_str() {
-            let result = instance.load_all_assemblies(path);
-            if result.is_ok() {
-                let plugin = Box::new(instance);
-                return std::mem::transmute(plugin);
-            } else {
-                println!("{:?}", result.err().unwrap().to_string(0));
-            }
+    if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new(path) {
+        let result = instance.create();
+        if result.is_ok() {
+            let plugin = Box::new(instance);
+            return std::mem::transmute(plugin);
         }
     }
     null_mut()
@@ -320,6 +316,30 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedJointObject
 }
 
 #[no_mangle]
+pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices(
+    plugin: *mut nanoem_application_plugin_model_io_t,
+    data: *const i32,
+    length: u32,
+    status_ptr: *mut nanoem_application_plugin_status_t,
+) {
+    let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
+        Some(instance) => {
+            let slice = if !data.is_null() && length > 0 {
+                std::slice::from_raw_parts(data, length as usize)
+            } else {
+                &[]
+            };
+            match instance.set_all_selected_soft_body_indices(slice) {
+                Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
+                Err(value) => instance.assign_failure_reason(value),
+            }
+        }
+        None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
+    };
+    status.assign(status_ptr)
+}
+
+#[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAudioDescription(
     plugin: *mut nanoem_application_plugin_model_io_t,
     data: *const u8,
@@ -587,7 +607,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFailureReason(
 ) -> *const i8 {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => match instance.failure_reason() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
@@ -600,7 +620,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetRecoverySuggestion(
 ) -> *const i8 {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => match instance.recovery_suggestion() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
