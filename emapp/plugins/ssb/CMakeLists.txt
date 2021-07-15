@@ -1,29 +1,38 @@
 set(_plugin_name plugin_ssb)
+if(NOT PROJECT_SOURCE_DIR)
+  project(plugin_ssb)
+  cmake_minimum_required(VERSION 3.5)
+  set(_project_source_dir "${CMAKE_CURRENT_SOURCE_DIR}/../../..")
+  set(WASM_PLUGIN ON)
+else()
+  set(_project_source_dir ${PROJECT_SOURCE_DIR})
+endif()
 set(_plugin_sources
   ${CMAKE_CURRENT_SOURCE_DIR}/ssb.cc
-  ${PROJECT_SOURCE_DIR}/nanoem/nanoem.c
-  ${PROJECT_SOURCE_DIR}/nanoem/ext/mutable.c
-  ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c/protobuf-c/protobuf-c.c
-  ${PROJECT_SOURCE_DIR}/emapp/src/protoc/common.pb-c.c
-  ${PROJECT_SOURCE_DIR}/emapp/src/protoc/plugin.pb-c.c)
+  ${_project_source_dir}/nanoem/nanoem.c
+  ${_project_source_dir}/nanoem/ext/mutable.c
+  ${_project_source_dir}/dependencies/protobuf-c/protobuf-c/protobuf-c.c
+  ${_project_source_dir}/emapp/src/protoc/common.pb-c.c
+  ${_project_source_dir}/emapp/src/protoc/plugin.pb-c.c)
 
-if(EMSCRIPTEN)
-  add_executable(${_plugin_name} ${_plugin_sources})
-  set_target_properties(${_plugin_name} PROPERTIES LINK_FLAGS "-s WASM=1 -s STANDALONE_WASM -s ALLOW_MEMORY_GROWTH")
-else()
-  add_library(${_plugin_name} SHARED ${_plugin_sources})
-  set_target_properties(${_plugin_name} PROPERTIES OUTPUT_NAME ${_plugin_name} PREFIX "" DEFINE_SYMBOL "")
-  if(MSVC)
-    set_property(TARGET ${_plugin_name} PROPERTY COMPILE_DEFINITIONS NANOEM_BUILDING_DLL NANOEM_DLL_EXPORTS)
-    set_property(TARGET ${_plugin_name} PROPERTY COMPILE_OPTIONS "-utf-8")
-  endif()
+add_library(${_plugin_name} SHARED ${_plugin_sources})
+if(WASM_PLUGIN)
+  set_target_properties(${_plugin_name} PROPERTIES SUFFIX ".wasm" NO_SONAME TRUE)
+  target_compile_definitions(${_plugin_name} PRIVATE WASM_WASI_SDK)
+  target_compile_options(${_plugin_name} PRIVATE -fno-exceptions)
+  target_link_options(${_plugin_name} PRIVATE -Wl,--no-entry -Wl,--export-all)
+endif()
+set_target_properties(${_plugin_name} PROPERTIES OUTPUT_NAME ${_plugin_name} PREFIX "" DEFINE_SYMBOL "")
+if(MSVC)
+  set_property(TARGET ${_plugin_name} PROPERTY COMPILE_DEFINITIONS NANOEM_BUILDING_DLL NANOEM_DLL_EXPORTS)
+  set_property(TARGET ${_plugin_name} PROPERTY COMPILE_OPTIONS "-utf-8")
 endif()
 set_property(TARGET ${_plugin_name} PROPERTY FOLDER plugins)
 set_property(TARGET ${_plugin_name} PROPERTY INCLUDE_DIRECTORIES
-  ${PROJECT_SOURCE_DIR}
-  ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c
-  ${PROJECT_SOURCE_DIR}/dependencies/glm
-  ${PROJECT_SOURCE_DIR}/emapp/src/protoc)
+  ${_project_source_dir}
+  ${_project_source_dir}/dependencies/protobuf-c
+  ${_project_source_dir}/dependencies/glm
+  ${_project_source_dir}/emapp/src/protoc)
 
 # install(TARGETS ${_plugin_name} DESTINATION .)
 #set(CPACK_GENERATOR "ZIP")
