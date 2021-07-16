@@ -15,9 +15,9 @@ use crate::{
     allocate_byte_array_with_data, allocate_status_ptr, inner_count_all_functions,
     inner_create_opaque, inner_destroy_opaque, inner_execute, inner_get_data,
     inner_get_function_name, inner_get_string, inner_initialize_function, inner_load_ui_window,
-    inner_set_data, inner_set_function, inner_set_language, inner_set_ui_component_layout,
-    inner_terminate_function, release_byte_array, release_status_ptr, resolve_func, ByteArray,
-    OpaquePtr, StatusPtr,
+    inner_set_data, inner_set_function, inner_set_language, inner_set_optional_data,
+    inner_set_ui_component_layout, inner_terminate_function, release_byte_array,
+    release_status_ptr, resolve_func, ByteArray, OpaquePtr, StatusPtr,
 };
 
 pub struct MotionIOPlugin {
@@ -25,7 +25,7 @@ pub struct MotionIOPlugin {
     opaque: Option<OpaquePtr>,
 }
 
-fn inner_set_named_data(
+fn inner_set_optional_named_data(
     instance: &Instance,
     opaque: &Option<OpaquePtr>,
     name: &str,
@@ -33,20 +33,27 @@ fn inner_set_named_data(
     func: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, func);
-        let set_input_model_data =
-            func.native::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>()?;
-        let len = data.len() * size_of_val(&data[0]);
-        let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
-        let mut name = name.as_bytes().to_vec();
-        name.push(0);
-        let name_ptr = allocate_byte_array_with_data(instance, name.as_slice())?;
-        let data_ptr = allocate_byte_array_with_data(instance, data)?;
-        let status_ptr = allocate_status_ptr(instance)?;
-        set_input_model_data.call(*opaque, name_ptr, data_ptr, data.len() as u32, status_ptr)?;
-        release_byte_array(instance, name_ptr)?;
-        release_byte_array(instance, data_ptr)?;
-        release_status_ptr(instance, status_ptr)?;
+        if let Ok(func) = resolve_func(instance, func) {
+            let set_input_model_data =
+                func.native::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>()?;
+            let len = data.len() * size_of_val(&data[0]);
+            let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
+            let mut name = name.as_bytes().to_vec();
+            name.push(0);
+            let name_ptr = allocate_byte_array_with_data(instance, name.as_slice())?;
+            let data_ptr = allocate_byte_array_with_data(instance, data)?;
+            let status_ptr = allocate_status_ptr(instance)?;
+            set_input_model_data.call(
+                *opaque,
+                name_ptr,
+                data_ptr,
+                data.len() as u32,
+                status_ptr,
+            )?;
+            release_byte_array(instance, name_ptr)?;
+            release_byte_array(instance, data_ptr)?;
+            release_status_ptr(instance, status_ptr)?;
+        }
     }
     Ok(())
 }
@@ -126,7 +133,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_accessory_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             value,
@@ -134,7 +141,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_named_selected_bone_keyframes(&self, name: &str, value: &[u32]) -> Result<()> {
-        inner_set_named_data(
+        inner_set_optional_named_data(
             &self.instance,
             &self.opaque,
             name,
@@ -143,7 +150,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_camera_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             value,
@@ -151,7 +158,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_light_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             value,
@@ -159,7 +166,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_model_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             value,
@@ -167,7 +174,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_named_selected_morph_keyframes(&self, name: &str, value: &[u32]) -> Result<()> {
-        inner_set_named_data(
+        inner_set_optional_named_data(
             &self.instance,
             &self.opaque,
             name,
@@ -176,7 +183,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_self_shadow_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             value,
@@ -184,7 +191,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_audio_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             data,
@@ -192,7 +199,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_camera_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             data,
@@ -200,7 +207,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_light_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             data,
@@ -208,7 +215,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_audio_data(&self, data: &[u8]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             data,
@@ -216,7 +223,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_input_model_data(&self, data: &[u8]) -> Result<()> {
-        inner_set_data(
+        inner_set_optional_data(
             &self.instance,
             &self.opaque,
             data,
@@ -305,7 +312,7 @@ pub struct MotionIOPluginController {
 impl MotionIOPluginController {
     pub fn new(path: &Path, store: &Store, env: &mut WasiEnv) -> Result<Self> {
         let mut plugins = vec![];
-        for entry in WalkDir::new(path) {
+        for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
             if entry
                 .file_name()
