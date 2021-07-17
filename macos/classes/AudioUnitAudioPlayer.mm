@@ -169,14 +169,16 @@ AudioUnitAudioPlayer::renderAudioBuffer(
     const ByteArray &samples = self->m_samples;
     const AudioBuffer &buffer = ioData->mBuffers[0];
     const nanoem_u8_t *samplesPtr = samples.data();
-    const nanoem_rsize_t offset = self->m_offset, length = samples.size(), size = buffer.mDataByteSize;
-    void *dataPtr = buffer.mData;
-    memset(dataPtr, 0, size);
-    if (nanoem_likely(offset + size <= length)) {
-        memcpy(dataPtr, samplesPtr + offset, size);
-    }
-    else if (length > offset && length - offset > 0) {
-        memcpy(dataPtr, samplesPtr + offset, length - offset);
+    const nanoem_rsize_t offset = self->m_offset, size = buffer.mDataByteSize;
+    auto destDataPtr = reinterpret_cast<nanoem_f32_t *>(buffer.mData);
+    auto sourceBasePtr = reinterpret_cast<const nanoem_f32_t *>(samplesPtr + offset);
+    memset(destDataPtr, 0, size);
+    for (nanoem_rsize_t i = 0, length = size / sizeof(nanoem_f32_t); i < length; i++) {
+        nanoem_f32_t value = *(sourceBasePtr + i);
+        if (glm::isnan(value) || glm::isinf(value)) {
+            value = 0.0f;
+        }
+        destDataPtr[i] = glm::clamp(value, -1.0f, 1.0f);
     }
     self->m_offset += size;
     return noErr;
