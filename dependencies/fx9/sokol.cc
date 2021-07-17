@@ -129,8 +129,18 @@ struct Main {
     {
         Compiler::EffectProduct effect;
         bool performCompile = false;
-        std::string newPath(path);
+        std::string newPath(path), translator, optimizer;
         std::replace(newPath.begin(), newPath.end(), '\\', '/');
+        auto takeAllErrorMessageLogs = [&translator, &optimizer, &effect]() {
+            for (const auto &item : effect.sink.translator) {
+                translator.append(item);
+                translator.append("\n");
+            }
+            for (const auto &item : effect.sink.optimizer) {
+                optimizer.append(item);
+                optimizer.append("\n");
+            }
+        };
         if (m_compiler->compile(newPath.c_str(), effect)) {
             performCompile = effect.hasAllPassCompiled();
             const char *icon = 0;
@@ -148,21 +158,24 @@ struct Main {
             }
             log("%s\t%s (%zu:%zu)\n", icon, path, effect.numPasses, effect.numCompiledPasses);
             if (!performCompile && !effect.isEmpty()) {
+                takeAllErrorMessageLogs();
                 log("[INFO]\n%s\n[TRANSLATOR]\n%s\n[OPTIMIZER]\n%s\n[VALIDATOR]\n%s\n", effect.sink.info.c_str(),
-                    effect.sink.translator.c_str(), effect.sink.optimizer.c_str(), effect.sink.validator.c_str());
+                    translator.c_str(), optimizer.c_str(), effect.sink.validator.c_str());
             }
         }
         else if (effect.hasAnyCompiledPass()) {
             static const uint8_t kExclamationIcon[] = { 0xE2, 0x9D, 0x97, 0x0 }; // \u2757
+            takeAllErrorMessageLogs();
             log("%s\t%s (%zu:%zu)\n[INFO]\n%s\n[TRANSLATOR]\n%s\n[OPTIMIZER]\n%s\n[VALIDATOR]\n%s\n", kExclamationIcon,
                 path, effect.numPasses, effect.numCompiledPasses, effect.sink.info.c_str(),
-                effect.sink.translator.c_str(), effect.sink.optimizer.c_str(), effect.sink.validator.c_str());
+                translator.c_str(), optimizer.c_str(), effect.sink.validator.c_str());
         }
         else if (!effect.sink.isEmpty()) {
             static const uint8_t kCrossMarkIcon[] = { 0xE2, 0x9D, 0x8C, 0x0 }; // \u274c
+            takeAllErrorMessageLogs();
             log("%s\t%s (%zu:%zu)\n[INFO]\n%s\n[TRANSLATOR]\n%s\n[OPTIMIZER]\n%s\n[VALIDATOR]\n%s\n", kCrossMarkIcon,
                 path, effect.numPasses, effect.numCompiledPasses, effect.sink.info.c_str(),
-                effect.sink.translator.c_str(), effect.sink.optimizer.c_str(), effect.sink.validator.c_str());
+                translator.c_str(), optimizer.c_str(), effect.sink.validator.c_str());
         }
         fflush(m_out);
         if (performCompile) {

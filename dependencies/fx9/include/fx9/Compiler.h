@@ -40,12 +40,13 @@ public:
     };
     struct EffectProduct {
         struct LogSink {
+            using StringSet = std::unordered_set<std::string>;
             std::string info;
             std::string debug;
             std::string builder;
-            std::string translator;
-            std::string optimizer;
             std::string validator;
+            StringSet translator;
+            StringSet optimizer;
             bool
             isEmpty() const
             {

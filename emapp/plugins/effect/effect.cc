@@ -209,7 +209,12 @@ struct EffectCompiler {
             m_reason = sink.validator;
         }
         else if (!sink.translator.empty()) {
-            m_reason = sink.translator;
+            std::string reason;
+            for (const auto &message : sink.translator) {
+                reason.append(message);
+                reason.append("\n");
+            }
+            m_reason = reason;
         }
         else {
             m_reason = sink.info;
