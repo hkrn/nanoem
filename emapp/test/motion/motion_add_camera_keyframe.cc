@@ -48,7 +48,7 @@ TEST_CASE("motion_add_camera_keyframe", "[emapp][motion]")
             CHECK(keyframe);
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(keyframe)), Equals(Vector3(42, 84, 126)));
             CHECK_THAT(
-                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(15, 30, 45)));
+                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(-15, 30, 45)));
             CHECK(nanoemMotionCameraKeyframeGetFov(keyframe) == 35);
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(-511));
             CHECK(project->duration() == 1337);
@@ -84,7 +84,7 @@ TEST_CASE("motion_add_camera_keyframe", "[emapp][motion]")
             CHECK(keyframe);
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(keyframe)), Equals(Vector3(42, 84, 126)));
             CHECK_THAT(
-                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(15, 30, 45)));
+                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(-15, 30, 45)));
             CHECK(nanoemMotionCameraKeyframeGetFov(keyframe) == 35);
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(-511));
             CHECK(project->duration() == 1337);
@@ -113,7 +113,7 @@ TEST_CASE("motion_add_camera_keyframe", "[emapp][motion]")
             CHECK(keyframe);
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(keyframe)), Equals(Vector3(42, 84, 126)));
             CHECK_THAT(
-                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(15, 30, 45)));
+                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(-15, 30, 45)));
             CHECK(nanoemMotionCameraKeyframeGetFov(keyframe) == 35);
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(-511));
             CHECK(project2->duration() == 1337);

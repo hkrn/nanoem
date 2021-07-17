@@ -11,10 +11,10 @@
 #include "emapp/Grid.h"
 #include "emapp/IAudioPlayer.h"
 #include "emapp/IBackgroundVideoRenderer.h"
-#include "emapp/ICamera.h"
 #include "emapp/IFileManager.h"
 #include "emapp/ILight.h"
 #include "emapp/Model.h"
+#include "emapp/PerspectiveCamera.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/PluginFactory.h"
 #include "emapp/Progress.h"
@@ -1151,8 +1151,8 @@ Native::Context::loadMotion(
                     nanoemMotionGetAllCameraKeyframeObjects(motion->data(), &numKeyframes);
                 for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
                     nanoem_motion_camera_keyframe_t *keyframe = keyframes[i];
-                    const Vector4 angle(
-                        glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) * Vector4(-1, 1, 1, 1));
+                    const Vector4 angle(glm::make_vec4(nanoemMotionCameraKeyframeGetAngle(keyframe)) *
+                        Vector4(PerspectiveCamera::kAngleScaleFactor, 1));
                     nanoem_mutable_motion_camera_keyframe_t *mutableKeyframe =
                         nanoemMutableMotionCameraKeyframeCreateAsReference(keyframe, &status);
                     nanoemMutableMotionCameraKeyframeSetAngle(mutableKeyframe, glm::value_ptr(angle));

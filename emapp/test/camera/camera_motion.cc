@@ -44,12 +44,12 @@ TEST_CASE("camera_motion", "[emapp][camera]")
         /* to prevent assertion */
         project->setPhysicsSimulationMode(PhysicsEngine::kSimulationModeDisable);
         project->seek(42, 0, true);
-        CHECK_THAT(camera->angle(), EqualsRadians(Vector3(-71, 135, 42)));
+        CHECK_THAT(camera->angle(), EqualsRadians(Vector3(71, 135, 42)));
         CHECK(camera->distance() == Approx(528));
         CHECK(camera->fovRadians() == Approx(glm::radians(31.0f)));
         CHECK_THAT(camera->lookAt(), Equals(Vector3(132, 75, 93)));
         project->seek(42, 0.5f, true);
-        CHECK_THAT(camera->angle(), EqualsRadians(Vector3(-71, 135, 42)));
+        CHECK_THAT(camera->angle(), EqualsRadians(Vector3(71, 135, 42)));
         CHECK(camera->distance() == Approx(528));
         CHECK(camera->fovRadians() == Approx(glm::radians(31.0f)));
         CHECK_THAT(camera->lookAt(), Equals(Vector3(132, 75, 93)));

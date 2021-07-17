@@ -1470,8 +1470,8 @@ Motion::correctAllSelectedCameraKeyframes(
             const Vector3 &actualLookAt =
                 glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(origin)) * lookAt.m_mul + lookAt.m_add;
             nanoemMutableMotionCameraKeyframeSetLookAt(keyframe, glm::value_ptr(Vector4(actualLookAt, 1)));
-            const Vector3 &actualAngle =
-                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(origin)) * angle.m_mul + angle.m_add;
+            const Vector3 &actualAngle = glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(origin)) *
+                angle.m_mul + angle.m_add * PerspectiveCamera::kAngleScaleFactor;
             nanoemMutableMotionCameraKeyframeSetAngle(keyframe, glm::value_ptr(Vector4(actualAngle, 0)));
             nanoemMutableMotionCameraKeyframeSetDistance(
                 keyframe, nanoemMotionCameraKeyframeGetDistance(origin) * distance.m_mul + distance.m_add);

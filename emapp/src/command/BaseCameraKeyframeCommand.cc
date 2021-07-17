@@ -40,7 +40,7 @@ BaseCameraKeyframeCommand::CameraKeyframe::State::~State() NANOEM_DECL_NOEXCEPT
 void
 BaseCameraKeyframeCommand::CameraKeyframe::State::assign(const ICamera *camera)
 {
-    m_angle = Vector4(camera->angle(), 0);
+    m_angle = Vector4(camera->angle() * PerspectiveCamera::kAngleScaleFactor, 0);
     m_lookAt = Vector4(camera->lookAt(), 1);
     m_fov = camera->fovRadians();
     m_distance = camera->distance();
