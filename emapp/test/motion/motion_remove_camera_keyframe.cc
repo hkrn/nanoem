@@ -59,7 +59,7 @@ TEST_CASE("motion_remove_camera_keyframe", "[emapp][motion]")
             CHECK(keyframe);
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(keyframe)), Equals(Vector3(84, 126, 42)));
             CHECK_THAT(
-                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(30, 45, 15)));
+                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(-30, 45, 15)));
             CHECK(nanoemMotionCameraKeyframeGetFov(keyframe) == 32);
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(767));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
@@ -160,7 +160,7 @@ TEST_CASE("motion_remove_camera_keyframe_at_zero", "[emapp][motion]")
             CHECK(keyframe);
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(keyframe)), Equals(Vector3(84, 126, 42)));
             CHECK_THAT(
-                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(30, 45, 15)));
+                glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(keyframe)), EqualsRadians(Vector3(-30, 45, 15)));
             CHECK(nanoemMotionCameraKeyframeGetFov(keyframe) == 32);
             CHECK(nanoemMotionCameraKeyframeGetDistance(keyframe) == Approx(767));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(

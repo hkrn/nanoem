@@ -131,14 +131,14 @@ TEST_CASE("project_register_correct_all_motion_keyframes_command", "[emapp][proj
         CHECK(project->canUndo());
         for (auto it : kKeyframeIndexShouldChanged) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.67f, 0.64f, 0.61f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.67f, 0.64f, 0.61f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(0.4f, 1.1f, 1.8f));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-33.4f));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
         }
         for (auto it : kKeyframeIndexShouldNotChanged) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -261,14 +261,14 @@ TEST_CASE("project_register_correct_all_motion_keyframes_redo_command", "[emapp]
             CHECK(project->canUndo());
             for (auto it : kKeyframeIndexShouldChanged) {
                 const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-                CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.67f, 0.64f, 0.61f));
+                CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.67f, 0.64f, 0.61f));
                 CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(0.4f, 1.1f, 1.8f));
                 CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-33.4f));
                 CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
             }
             for (auto it : kKeyframeIndexShouldNotChanged) {
                 const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-                CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+                CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
                 CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
                 CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
                 CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);

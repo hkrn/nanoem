@@ -169,7 +169,7 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
         CHECK(project->canUndo());
         for (auto it : kKeyframeIndexShouldChanged) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it + kFrameIndexDeltaPlus);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -177,7 +177,7 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
         }
         for (auto it : kKeyframeIndexShouldNotChanged) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -417,7 +417,7 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
         CHECK(project->canUndo());
         for (auto it : kKeyframeIndexShouldChanged) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it + kFrameIndexDeltaMinus);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -425,7 +425,7 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
         }
         for (auto it : kKeyframeIndexShouldNotChanged) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -651,7 +651,7 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
         CHECK(project->canUndo());
         for (auto it : kKeyframeIndexShouldNotChangedForZero) {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(it);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -857,7 +857,7 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
         CHECK(project->canUndo());
         {
             const nanoem_motion_camera_keyframe_t *k = motion->findCameraKeyframe(0);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);
@@ -1077,7 +1077,7 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
         {
             const nanoem_motion_camera_keyframe_t *k =
                 motion->findCameraKeyframe(kFrameIndexDeltaPlus + kFrameIndexDeltaPlus);
-            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(0.1f, 0.2f, 0.3f));
+            CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(k)), EqualsVector3(-0.1f, 0.2f, 0.3f));
             CHECK_THAT(glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(k)), EqualsVector3(1, 2, 3));
             CHECK(nanoemMotionCameraKeyframeGetDistance(k) == Approx(-42));
             CHECK(nanoemMotionCameraKeyframeGetFov(k) == 21);

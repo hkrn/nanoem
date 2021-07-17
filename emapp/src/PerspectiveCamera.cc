@@ -34,6 +34,7 @@ bonePosition(const nanoem_model_bone_t *bonePtr)
 
 } /* namespace anonymous */
 
+const Vector3 PerspectiveCamera::kAngleScaleFactor = Vector3(-1, 1, 1);
 const Vector3 PerspectiveCamera::kInitialLookAt = Vector3(0, 10, 0);
 const nanoem_f32_t PerspectiveCamera::kInitialDistance = 45.0f;
 const nanoem_f32_t PerspectiveCamera::kInitialFovRadian = glm::radians(nanoem_f32_t(PerspectiveCamera::kInitialFov));
@@ -101,9 +102,10 @@ void
 PerspectiveCamera::update()
 {
     const Vector3 lookAt(boundLookAt());
-    const Quaternion x(glm::angleAxis(-m_angle.x, Constants::kUnitX));
-    const Quaternion y(glm::angleAxis(m_angle.y, Constants::kUnitY));
-    const Quaternion z(glm::angleAxis(m_angle.z, Constants::kUnitZ));
+    const Vector3 angle(m_angle * kAngleScaleFactor);
+    const Quaternion x(glm::angleAxis(angle.x, Constants::kUnitX));
+    const Quaternion y(glm::angleAxis(angle.y, Constants::kUnitY));
+    const Quaternion z(glm::angleAxis(angle.z, Constants::kUnitZ));
     const Matrix3x3 viewOrientation(glm::mat3_cast(z * x * y));
     m_viewMatrix = Matrix4x4(viewOrientation) * glm::translate(Constants::kIdentity, -lookAt);
     m_viewMatrix[3] += Vector4(0, 0, m_distance, 0);

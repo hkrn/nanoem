@@ -20,6 +20,7 @@ class Project;
 
 class PerspectiveCamera NANOEM_DECL_SEALED : public ICamera, private NonCopyable {
 public:
+    static const Vector3 kAngleScaleFactor;
     static const Vector3 kInitialLookAt;
     static const nanoem_f32_t kInitialDistance;
     static const nanoem_f32_t kInitialFovRadian;
