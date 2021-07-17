@@ -1309,8 +1309,10 @@ Compiler::DX9MSPassShader::translate(const InstructionList &vertexShaderInstruct
             m_parent->copyString(translatedVertexShaderSource.c_str(), &message->vertex_shader->glsl);
             m_parent->copyString(translatedFragmentShaderSource.c_str(), &message->pixel_shader->glsl);
             succeeded = true;
+        } catch (const spirv_cross::CompilerError &e) {
+            sink.translator.insert(e.what());
         } catch (const std::exception &e) {
-            sink.translator += e.what();
+            sink.translator.insert(e.what());
         }
     }
     return succeeded;
@@ -1395,8 +1397,10 @@ Compiler::HLSLPassShader::translate(const InstructionList &vertexShaderInstructi
             m_parent->copyString(translatedVertexShaderSource.c_str(), &message->vertex_shader->hlsl);
             m_parent->copyString(translatedFragmentShaderSource.c_str(), &message->pixel_shader->hlsl);
             succeeded = true;
+        } catch (const spirv_cross::CompilerError &e) {
+            sink.translator.insert(e.what());
         } catch (const std::exception &e) {
-            sink.translator += e.what();
+            sink.translator.insert(e.what());
         }
     }
     return succeeded;
@@ -1515,8 +1519,10 @@ Compiler::MSLPassShader::translate(const InstructionList &vertexShaderInstructio
             m_parent->copyString(translatedVertexShaderSource.c_str(), &message->vertex_shader->msl);
             m_parent->copyString(translatedFragmentShaderSource.c_str(), &message->pixel_shader->msl);
             succeeded = true;
+        } catch (const spirv_cross::CompilerError &e) {
+            sink.translator.insert(e.what());
         } catch (const std::exception &e) {
-            sink.translator += e.what();
+            sink.translator.insert(e.what());
         }
     }
     return succeeded;
@@ -2582,15 +2588,15 @@ Compiler::optimizeShaderInstructions(
                                          const spv_position_t & /* position */, const char *message) {
             switch (level) {
             case SPV_MSG_FATAL: {
-                sink.optimizer = sink.optimizer + "[FATAL] " + message;
+                sink.optimizer.insert(std::string("[FATAL] ") + message);
                 break;
             }
             case SPV_MSG_INTERNAL_ERROR: {
-                sink.optimizer = sink.optimizer + "[INTERNAL] " + message;
+                sink.optimizer.insert(std::string("[INTERNAL] ") + message);
                 break;
             }
             case SPV_MSG_ERROR: {
-                sink.optimizer = sink.optimizer + "[ERROR] " + message;
+                sink.optimizer.insert(std::string("[ERROR] ") + message);
                 break;
             }
             default:
