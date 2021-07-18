@@ -72,9 +72,14 @@ fn create() -> Result<()> {
     let result = create_controller(&mut env);
     assert!(result.is_ok());
     let mut controller = result?;
+    assert!(controller.initialize().is_ok());
     assert!(controller.create().is_ok());
     assert_eq!(
         vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOInitialize".to_owned(),
+                ..Default::default()
+            },
             PluginOutput {
                 function: "nanoemApplicationPluginModelIOCreate".to_owned(),
                 ..Default::default()
@@ -96,7 +101,7 @@ fn create() -> Result<()> {
             PluginOutput {
                 function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
                 ..Default::default()
-            }
+            },
         ],
         read_plugin_output(&mut env)?
     );
@@ -124,10 +129,34 @@ fn create() -> Result<()> {
 }
 
 #[test]
+fn set_language() -> Result<()> {
+    let mut env = create_wasi_env()?;
+    let mut controller = create_controller(&mut env)?;
+    controller.initialize()?;
+    controller.create()?;
+    controller.set_function(0)?;
+    flush_plugin_output(&mut env)?;
+    assert!(controller.set_language(0).is_ok());
+    assert_eq!(
+        vec![PluginOutput {
+            function: "nanoemApplicationPluginModelIOSetLanguage".to_owned(),
+            arguments: Some(hashmap! {
+                "value".to_owned() => json!(0),
+            })
+        },],
+        read_plugin_output(&mut env)?
+    );
+    controller.destroy();
+    controller.terminate();
+    Ok(())
+}
+
+#[test]
 fn execute() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = create_random_data(4096);
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -179,6 +208,7 @@ fn set_all_selected_vertex_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -204,6 +234,7 @@ fn set_all_selected_material_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -230,6 +261,7 @@ fn set_all_selected_bone_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -255,6 +287,7 @@ fn set_all_selected_morph_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -280,6 +313,7 @@ fn set_all_selected_label_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -305,6 +339,7 @@ fn set_all_selected_rigid_body_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -331,6 +366,7 @@ fn set_all_selected_joint_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -356,6 +392,7 @@ fn set_all_selected_soft_body_indices() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -382,6 +419,7 @@ fn set_audio_description() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = create_random_data(4096);
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -407,6 +445,7 @@ fn set_audio_data() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = create_random_data(4096);
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -432,6 +471,7 @@ fn set_camera_description() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = create_random_data(4096);
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -457,6 +497,7 @@ fn set_light_description() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = create_random_data(4096);
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -482,6 +523,7 @@ fn ui_window() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
     let data = create_random_data(4096);
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -536,6 +578,7 @@ fn ui_window() -> Result<()> {
 fn get_failure_reason() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
@@ -558,6 +601,7 @@ fn get_failure_reason() -> Result<()> {
 fn get_recovery_suggestion() -> Result<()> {
     let mut env = create_wasi_env()?;
     let mut controller = create_controller(&mut env)?;
+    controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut env)?;
