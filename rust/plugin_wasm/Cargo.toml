@@ -3,6 +3,7 @@ name = "plugin_wasm"
 version = "0.1.0"
 authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
 edition = "2018"
+license = "MPL-2.0"
 
 [dependencies]
 anyhow = "~1.0"
@@ -10,6 +11,13 @@ hotwatch = "0.4"
 wasmer = "~2.0"
 wasmer-wasi = "~2.0"
 walkdir = "~2.0"
+
+[dev-dependencies]
+serde = "~1.0"
+serde_derive = "~1.0"
+serde_json = "~1.0"
+maplit = "~1.0"
+rand = "~0.8"
 
 [lib]
 path = "src/lib.rs"

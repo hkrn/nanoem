@@ -17,6 +17,9 @@ pub(crate) const PLUGIN_NAME: &[u8] = b"plugin_wasm\0";
 pub(crate) const PLUGIN_DESCRIPTION: &[u8] = b"nanoem WASM Plugin Loader\0";
 pub(crate) const PLUGIN_VERSION: &[u8] = b"1.0.0\0";
 
+const MALLOC_FN: &str = "nanoemApplicationPluginAllocateMemoryWASM";
+const FREE_FN: &str = "nanoemApplicationPluginReleaseMemoryWASM";
+
 #[allow(dead_code, non_camel_case_types)]
 #[derive(Copy, Clone, Debug, Hash, PartialEq, PartialOrd)]
 #[repr(i32)]
@@ -61,14 +64,23 @@ fn inner_set_optional_data_internal(
     instance: &Instance,
     opaque: &OpaquePtr,
     data: &[u8],
+    component_size: usize,
     name: &str,
 ) -> Result<()> {
     if let Ok(func) = resolve_func(instance, name) {
         let set_input_model_data = func.native::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>()?;
-        let data_size = data.len() as u32;
         let data_ptr = allocate_byte_array_with_data(instance, data)?;
         let status_ptr = allocate_status_ptr(instance)?;
-        set_input_model_data.call(*opaque, data_ptr, data_size as u32, status_ptr)?;
+        set_input_model_data.call(
+            *opaque,
+            data_ptr,
+            if component_size > 1 {
+                (data.len() / component_size) as u32
+            } else {
+                data.len() as u32
+            },
+            status_ptr,
+        )?;
         release_byte_array(instance, data_ptr)?;
         release_status_ptr(instance, status_ptr)?;
     }
@@ -84,7 +96,7 @@ pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
 }
 
 pub(crate) fn allocate_byte_array(instance: &Instance, data_size: u32) -> Result<ByteArray> {
-    let malloc_func = instance.exports.get_function("malloc")?;
+    let malloc_func = instance.exports.get_function(MALLOC_FN)?;
     let malloc_func = malloc_func.native::<u32, ByteArray>()?;
     let data_ptr = malloc_func.call(data_size)?;
     Ok(data_ptr)
@@ -104,7 +116,7 @@ pub(crate) fn allocate_byte_array_with_data(instance: &Instance, data: &[u8]) ->
 
 pub(crate) fn allocate_status_ptr(instance: &Instance) -> Result<StatusPtr> {
     let memory = inner_memory(instance);
-    let malloc_func = instance.exports.get_function("malloc")?;
+    let malloc_func = instance.exports.get_function(MALLOC_FN)?;
     let malloc_func = malloc_func.native::<u32, StatusPtr>()?;
     let data_ptr = malloc_func.call(size_of::<u32>() as u32)?;
     data_ptr.deref(memory).unwrap().set(0);
@@ -113,7 +125,7 @@ pub(crate) fn allocate_status_ptr(instance: &Instance) -> Result<StatusPtr> {
 
 pub(crate) fn allocate_size_ptr(instance: &Instance) -> Result<SizePtr> {
     let memory = inner_memory(instance);
-    let malloc_func = instance.exports.get_function("malloc")?;
+    let malloc_func = instance.exports.get_function(MALLOC_FN)?;
     let malloc_func = malloc_func.native::<u32, SizePtr>()?;
     let size_ptr = malloc_func.call(size_of::<u32>() as u32)?;
     size_ptr.deref(memory).unwrap().set(0);
@@ -121,21 +133,21 @@ pub(crate) fn allocate_size_ptr(instance: &Instance) -> Result<SizePtr> {
 }
 
 pub(crate) fn release_byte_array(instance: &Instance, ptr: ByteArray) -> Result<()> {
-    let free_func = instance.exports.get_function("free").unwrap();
+    let free_func = instance.exports.get_function(FREE_FN).unwrap();
     let free_func = free_func.native::<ByteArray, ()>()?;
     free_func.call(ptr)?;
     Ok(())
 }
 
 pub(crate) fn release_size_ptr(instance: &Instance, ptr: SizePtr) -> Result<()> {
-    let free_func = instance.exports.get_function("free").unwrap();
+    let free_func = instance.exports.get_function(FREE_FN).unwrap();
     let free_func = free_func.native::<SizePtr, ()>()?;
     free_func.call(ptr)?;
     Ok(())
 }
 
 pub(crate) fn release_status_ptr(instance: &Instance, ptr: StatusPtr) -> Result<()> {
-    let free_func = instance.exports.get_function("free").unwrap();
+    let free_func = instance.exports.get_function(FREE_FN).unwrap();
     let free_func = free_func.native::<StatusPtr, ()>()?;
     let status = ptr.deref(inner_memory(instance)).unwrap().get();
     free_func.call(ptr)?;
@@ -246,9 +258,10 @@ pub(crate) fn inner_set_optional_data<T>(
     name: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let len = data.len() * size_of::<T>();
+        let component_size = size_of::<T>();
+        let len = data.len() * component_size;
         let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
-        inner_set_optional_data_internal(instance, opaque, data, name)?;
+        inner_set_optional_data_internal(instance, opaque, data, component_size, name)?;
     }
     Ok(())
 }

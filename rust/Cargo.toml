@@ -3,3 +3,6 @@ members = [
     "plugin_wasm",
     "protobuf"
 ]
+exclude = [
+    "plugin_wasm_test_model_full"
+]
