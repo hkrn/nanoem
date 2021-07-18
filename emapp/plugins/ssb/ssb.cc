@@ -2022,6 +2022,19 @@ nanoemApplicationPluginModelIOTerminate(void)
 }
 
 #ifdef WASM_WASI_SDK
+NANOEM_DECL_API void *APIENTRY
+nanoemApplicationPluginAllocateMemoryWASM(nanoem_rsize_t size)
+{
+    return malloc(size);
+}
+
+NANOEM_DECL_API void *APIENTRY
+nanoemApplicationPluginReleaseMemoryWASM(void *ptr)
+{
+    free(ptr);
+}
+
+/* dummy function for WASI SDK */
 int main(int /* argc */, char ** /* argv */)
 {
     return 0;

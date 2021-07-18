@@ -66,6 +66,13 @@ runApplication(HINSTANCE hInstance, int argc, const char *const *argv, const wch
 static int
 runMain(HINSTANCE hInstance, int argc, const char *const *argv)
 {
+#if defined(NANOEM_WIN32_ATTACH_CONSOLE)
+    // https://stackoverflow.com/questions/54536/win32-gui-app-that-writes-usage-text-to-stdout-when-invoked-as-app-exe-help
+    if (AttachConsole(ATTACH_PARENT_PROCESS) || AllocConsole()) {
+        freopen("CONOUT$", "w", stdout);
+        freopen("CONOUT$", "w", stderr);
+    }
+#endif /* NANOEM_WIN32_ALLOCATE_CONSOLE */
     wchar_t executablePath[MAX_PATH];
     _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
     SetDllDirectoryW(L"");

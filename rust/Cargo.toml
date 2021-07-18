@@ -1,14 +1,9 @@
 [workspace]
 members = [
-    "core",
-    "main",
-    "plugin_debugger",
-    "plugin_model_sandbox",
-    "plugin_motion_sandbox",
     "plugin_wasm",
     "protobuf"
 ]
 exclude = [
-    "wasm",
-    "viewer",
+    "plugin_wasm_test_model_full",
+    "plugin_wasm_test_motion_full"
 ]

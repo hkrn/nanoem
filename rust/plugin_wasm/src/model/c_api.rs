@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015-2020 hkrn All rights reserved
+  Copyright (c) 2015-2021 hkrn All rights reserved
 
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
@@ -11,55 +11,63 @@ use super::core::nanoem_application_plugin_model_io_t;
 use std::ffi::CStr;
 use std::ptr::{null, null_mut};
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetABIVersion() -> u32 {
     PLUGIN_MODEL_IO_ABI_VERSION
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOInitialize() {}
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreate(
 ) -> *mut nanoem_application_plugin_model_io_t {
     nanoemApplicationPluginModelIOCreateWithLocation(null())
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
     path: *const i8,
 ) -> *mut nanoem_application_plugin_model_io_t {
     let path = CStr::from_ptr(path);
-    if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new() {
-        if let Ok(path) = path.to_str() {
-            let result = instance.load_all_assemblies(path);
-            if result.is_ok() {
-                let plugin = Box::new(instance);
-                return std::mem::transmute(plugin);
-            } else {
-                println!("{:?}", result.err().unwrap().to_string(0));
-            }
+    if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new(path) {
+        let result = instance.create();
+        if result.is_ok() {
+            let plugin = Box::new(instance);
+            return std::mem::transmute(plugin);
         }
     }
     null_mut()
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLanguage(
     plugin: *mut nanoem_application_plugin_model_io_t,
     value: i32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
-    let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
-        Some(instance) => match instance.set_language(value) {
-            Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
-            Err(value) => instance.assign_failure_reason(value),
-        },
-        None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
-    };
-    status.assign(status_ptr)
+    if let Some(instance) = nanoem_application_plugin_model_io_t::get(plugin) {
+        instance.set_language(value).unwrap_or_default();
+    }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
     plugin: *const nanoem_application_plugin_model_io_t,
@@ -70,6 +78,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetDescription(
     plugin: *const nanoem_application_plugin_model_io_t,
@@ -80,6 +91,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetDescription(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetVersion(
     plugin: *const nanoem_application_plugin_model_io_t,
@@ -90,6 +104,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetVersion(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCountAllFunctions(
     plugin: *const nanoem_application_plugin_model_io_t,
@@ -100,6 +117,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCountAllFunctions(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFunctionName(
     plugin: *const nanoem_application_plugin_model_io_t,
@@ -111,6 +131,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFunctionName(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetFunction(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -127,6 +150,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetFunction(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedVertexObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -151,6 +177,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedVertexObjec
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedMaterialObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -175,6 +204,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedMaterialObj
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedBoneObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -199,6 +231,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedBoneObjectI
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedConstraintObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -223,6 +258,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedConstraintO
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedMorphObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -247,6 +285,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedMorphObject
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedLabelObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -271,6 +312,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedLabelObject
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedRigidBodyObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -295,6 +339,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedRigidBodyOb
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -319,6 +366,36 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedJointObject
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
+#[no_mangle]
+pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices(
+    plugin: *mut nanoem_application_plugin_model_io_t,
+    data: *const i32,
+    length: u32,
+    status_ptr: *mut nanoem_application_plugin_status_t,
+) {
+    let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
+        Some(instance) => {
+            let slice = if !data.is_null() && length > 0 {
+                std::slice::from_raw_parts(data, length as usize)
+            } else {
+                &[]
+            };
+            match instance.set_all_selected_soft_body_indices(slice) {
+                Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
+                Err(value) => instance.assign_failure_reason(value),
+            }
+        }
+        None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
+    };
+    status.assign(status_ptr)
+}
+
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAudioDescription(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -343,6 +420,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAudioDescription(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetCameraDescription(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -367,6 +447,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetCameraDescription(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLightDescription(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -391,6 +474,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLightDescription(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputAudioData(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -415,6 +501,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputAudioData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputModelData(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -439,6 +528,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputModelData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOExecute(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -454,6 +546,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOExecute(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelDataSize(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -466,6 +561,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelDataSize(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelData(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -492,6 +590,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOLoadUIWindowLayout(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -507,6 +608,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOLoadUIWindowLayout(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutDataSize(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -519,6 +623,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutDataSize
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutData(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -545,34 +652,30 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutData(
     status.assign(status_ptr)
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIWindowLayoutData(
-    plugin: *mut nanoem_application_plugin_model_io_t,
-    data: *const u8,
-    length: u32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
-) {
-    if plugin.is_null() || data.is_null() || length == 0 {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.assign(status_ptr);
-        return;
-    }
-    nanoem_application_plugin_status_t::SUCCESS.assign(status_ptr)
-}
-
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
     plugin: *mut nanoem_application_plugin_model_io_t,
     id: *const i8,
     data: *const u8,
     length: u32,
+    reload_layout: *mut i32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let id = CStr::from_ptr(id);
-            let slice = std::slice::from_raw_parts(data, length as usize);
-            match instance.set_component_layout(id, slice) {
-                Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
+            let data = std::slice::from_raw_parts(data, length as usize);
+            let mut reload = false;
+            match instance.set_component_layout(id, data, &mut reload) {
+                Ok(_) => {
+                    if !reload_layout.is_null() {
+                        *reload_layout = reload as i32;
+                    }
+                    nanoem_application_plugin_status_t::SUCCESS
+                }
                 Err(value) => instance.assign_failure_reason(value),
             }
         }
@@ -581,32 +684,41 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFailureReason(
     plugin: *const nanoem_application_plugin_model_io_t,
 ) -> *const i8 {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => match instance.failure_reason() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetRecoverySuggestion(
     plugin: *const nanoem_application_plugin_model_io_t,
 ) -> *const i8 {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => match instance.recovery_suggestion() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIODestroy(
     plugin: *mut nanoem_application_plugin_model_io_t,
@@ -616,5 +728,8 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIODestroy(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOTerminate() {}

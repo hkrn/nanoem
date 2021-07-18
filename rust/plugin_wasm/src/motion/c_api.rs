@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2015-2020 hkrn All rights reserved
+  Copyright (c) 2015-2021 hkrn All rights reserved
 
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
@@ -11,52 +11,63 @@ use super::core::nanoem_application_plugin_motion_io_t;
 use std::ffi::CStr;
 use std::ptr::{null, null_mut};
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetABIVersion() -> u32 {
     PLUGIN_MOTION_IO_ABI_VERSION
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOInitialize() {}
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreate(
 ) -> *mut nanoem_application_plugin_motion_io_t {
     nanoemApplicationPluginMotionIOCreateWithLocation(null())
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreateWithLocation(
     path: *const i8,
 ) -> *mut nanoem_application_plugin_motion_io_t {
     let path = CStr::from_ptr(path);
-    if let Ok(mut instance) = nanoem_application_plugin_motion_io_t::new() {
-        if let Ok(path) = path.to_str() {
-            if instance.load_all_assemblies(path).is_ok() {
-                let plugin = Box::new(instance);
-                return std::mem::transmute(plugin);
-            }
+    if let Ok(mut instance) = nanoem_application_plugin_motion_io_t::new(path) {
+        let result = instance.create();
+        if result.is_ok() {
+            let plugin = Box::new(instance);
+            return std::mem::transmute(plugin);
         }
     }
     null_mut()
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetLanguage(
     plugin: *mut nanoem_application_plugin_motion_io_t,
-    language: i32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
+    value: i32,
 ) {
-    let status = match nanoem_application_plugin_motion_io_t::get_mut(plugin) {
-        Some(instance) => match instance.set_language(language) {
-            Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
-            Err(value) => instance.assign_failure_reason(value),
-        },
-        None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
-    };
-    status.assign(status_ptr)
+    if let Some(instance) = nanoem_application_plugin_motion_io_t::get(plugin) {
+        instance.set_language(value).unwrap_or_default();
+    }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
     plugin: *const nanoem_application_plugin_motion_io_t,
@@ -67,6 +78,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
     plugin: *const nanoem_application_plugin_motion_io_t,
@@ -77,6 +91,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetVersion(
     plugin: *const nanoem_application_plugin_motion_io_t,
@@ -87,6 +104,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetVersion(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCountAllFunctions(
     plugin: *const nanoem_application_plugin_motion_io_t,
@@ -97,6 +117,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCountAllFunctions(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
     plugin: *const nanoem_application_plugin_motion_io_t,
@@ -108,6 +131,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetFunction(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -124,6 +150,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetFunction(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedBoneKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -149,6 +178,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedBoneK
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedMorphKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -174,6 +206,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedMorph
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedAccessoryKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -198,6 +233,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedAccessoryK
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedCameraKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -222,6 +260,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedCameraKeyf
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedLightKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -246,6 +287,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedLightKeyfr
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedModelKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -270,6 +314,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedModelKeyfr
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedSelfShadowKeyframes(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -294,6 +341,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllSelectedSelfShadow
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAudioDescription(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -318,6 +368,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAudioDescription(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetCameraDescription(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -342,6 +395,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetCameraDescription(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetLightDescription(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -366,6 +422,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetLightDescription(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputAudioData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -390,6 +449,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputAudioData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputMotionData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -414,6 +476,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputMotionData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputActiveModelData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -438,6 +503,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputActiveModelData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOExecute(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -453,6 +521,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOExecute(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetOutputMotionDataSize(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -465,6 +536,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetOutputMotionDataSize(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetOutputMotionData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -491,6 +565,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetOutputMotionData(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOLoadUIWindowLayout(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -506,6 +583,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOLoadUIWindowLayout(
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetUIWindowLayoutDataSize(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -518,6 +598,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetUIWindowLayoutDataSiz
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetUIWindowLayoutData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -544,34 +627,30 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetUIWindowLayoutData(
     status.assign(status_ptr)
 }
 
-#[no_mangle]
-pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIWindowLayoutData(
-    plugin: *mut nanoem_application_plugin_motion_io_t,
-    data: *const u8,
-    length: u32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
-) {
-    if plugin.is_null() || data.is_null() || length == 0 {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.assign(status_ptr);
-        return;
-    }
-    nanoem_application_plugin_status_t::SUCCESS.assign(status_ptr)
-}
-
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIComponentLayoutData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
     id: *const i8,
     data: *const u8,
     length: u32,
+    reload_layout: *mut i32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let status = match nanoem_application_plugin_motion_io_t::get_mut(plugin) {
         Some(instance) => {
             let id = CStr::from_ptr(id);
             let slice = std::slice::from_raw_parts(data, length as usize);
-            match instance.set_component_layout(id, slice) {
-                Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
+            let mut reload = false;
+            match instance.set_component_layout(id, slice, &mut reload) {
+                Ok(_) => {
+                    if !reload_layout.is_null() {
+                        *reload_layout = reload as i32;
+                    }
+                    nanoem_application_plugin_status_t::SUCCESS
+                }
                 Err(value) => instance.assign_failure_reason(value),
             }
         }
@@ -580,32 +659,41 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIComponentLayoutData
     status.assign(status_ptr)
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
     plugin: *const nanoem_application_plugin_motion_io_t,
 ) -> *const i8 {
     match nanoem_application_plugin_motion_io_t::get(plugin) {
         Some(instance) => match instance.failure_reason() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetRecoverySuggestion(
     plugin: *const nanoem_application_plugin_motion_io_t,
 ) -> *const i8 {
     match nanoem_application_plugin_motion_io_t::get(plugin) {
         Some(instance) => match instance.recovery_suggestion() {
-            Some(reason) => reason.as_ptr(),
+            Some(reason) => reason.as_ptr() as *const i8,
             None => null(),
         },
         None => null(),
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIODestroy(
     plugin: *mut nanoem_application_plugin_motion_io_t,
@@ -615,5 +703,8 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIODestroy(
     }
 }
 
+/// # Safety
+///
+/// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOTerminate() {}

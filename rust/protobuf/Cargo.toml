@@ -8,7 +8,6 @@ build = "build.rs"
 [dependencies]
 bytes = { version = "0.4" }
 prost = { version = "0.5" }
-nanoem-core = { path = "../core" }
 
 [build-dependencies]
 prost-build = { version = "0.5" }
