@@ -366,6 +366,7 @@ pub(crate) fn inner_set_ui_component_layout(
     id: &str,
     data: &[u8],
     name: &str,
+    reload: &mut bool,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
         let func = resolve_func(instance, name)?;
@@ -383,6 +384,7 @@ pub(crate) fn inner_set_ui_component_layout(
             reload_layout_ptr,
             status_ptr,
         )?;
+        *reload = false;
         release_byte_array(instance, id_ptr)?;
         release_byte_array(instance, data_ptr)?;
         release_size_ptr(instance, reload_layout_ptr)?;

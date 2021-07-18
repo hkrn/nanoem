@@ -631,36 +631,26 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetUIWindowLayoutData(
 ///
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
-pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIWindowLayoutData(
-    plugin: *mut nanoem_application_plugin_motion_io_t,
-    data: *const u8,
-    length: u32,
-    status_ptr: *mut nanoem_application_plugin_status_t,
-) {
-    if plugin.is_null() || data.is_null() || length == 0 {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.assign(status_ptr);
-        return;
-    }
-    nanoem_application_plugin_status_t::SUCCESS.assign(status_ptr)
-}
-
-/// # Safety
-///
-/// This function should be called from nanoem via plugin loader
-#[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIComponentLayoutData(
     plugin: *mut nanoem_application_plugin_motion_io_t,
     id: *const i8,
     data: *const u8,
     length: u32,
+    reload_layout: *mut i32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let status = match nanoem_application_plugin_motion_io_t::get_mut(plugin) {
         Some(instance) => {
             let id = CStr::from_ptr(id);
             let slice = std::slice::from_raw_parts(data, length as usize);
-            match instance.set_component_layout(id, slice) {
-                Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
+            let mut reload = false;
+            match instance.set_component_layout(id, slice, &mut reload) {
+                Ok(_) => {
+                    if !reload_layout.is_null() {
+                        *reload_layout = reload as i32;
+                    }
+                    nanoem_application_plugin_status_t::SUCCESS
+                }
                 Err(value) => instance.assign_failure_reason(value),
             }
         }

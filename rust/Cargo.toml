@@ -4,5 +4,6 @@ members = [
     "protobuf"
 ]
 exclude = [
-    "plugin_wasm_test_model_full"
+    "plugin_wasm_test_model_full",
+    "plugin_wasm_test_motion_full"
 ]

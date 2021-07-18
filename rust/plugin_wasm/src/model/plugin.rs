@@ -230,13 +230,14 @@ impl ModelIOPlugin {
             "nanoemApplicationPluginModelIOGetUIWindowLayoutDataSize",
         )
     }
-    pub fn set_ui_component_layout(&self, id: &str, data: &[u8]) -> Result<()> {
+    pub fn set_ui_component_layout(&self, id: &str, data: &[u8], reload: &mut bool) -> Result<()> {
         inner_set_ui_component_layout(
             &self.instance,
             &self.opaque,
             id,
             data,
             "nanoemApplicationPluginModelIOSetUIComponentLayoutData",
+            reload,
         )
     }
     pub fn failure_reason(&self) -> Result<String> {
@@ -396,8 +397,9 @@ impl ModelIOPluginController {
     pub fn get_ui_window_layout(&self) -> Result<Vec<u8>> {
         self.current_plugin()?.get_ui_window_layout()
     }
-    pub fn set_ui_component_layout(&self, id: &str, data: &[u8]) -> Result<()> {
-        self.current_plugin()?.set_ui_component_layout(id, data)
+    pub fn set_ui_component_layout(&self, id: &str, data: &[u8], reload: &mut bool) -> Result<()> {
+        self.current_plugin()?
+            .set_ui_component_layout(id, data, reload)
     }
     pub fn failure_reason(&self) -> Result<String> {
         self.current_plugin()?.failure_reason()

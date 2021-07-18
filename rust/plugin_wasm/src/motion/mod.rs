@@ -7,3 +7,6 @@
 mod c_api;
 mod core;
 mod plugin;
+
+#[cfg(test)]
+mod test;

@@ -4,7 +4,7 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use std::{ffi::CString, mem::size_of_val, path::Path, slice};
+use std::{ffi::CString, mem::size_of, path::Path, slice};
 
 use anyhow::Result;
 use walkdir::WalkDir;
@@ -36,20 +36,16 @@ fn inner_set_optional_named_data(
         if let Ok(func) = resolve_func(instance, func) {
             let set_input_model_data =
                 func.native::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>()?;
-            let len = data.len() * size_of_val(&data[0]);
+            let component_size = size_of::<u32>();
+            let data_size = data.len();
+            let len = data_size * component_size;
             let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
             let mut name = name.as_bytes().to_vec();
             name.push(0);
             let name_ptr = allocate_byte_array_with_data(instance, name.as_slice())?;
             let data_ptr = allocate_byte_array_with_data(instance, data)?;
             let status_ptr = allocate_status_ptr(instance)?;
-            set_input_model_data.call(
-                *opaque,
-                name_ptr,
-                data_ptr,
-                data.len() as u32,
-                status_ptr,
-            )?;
+            set_input_model_data.call(*opaque, name_ptr, data_ptr, data_size as u32, status_ptr)?;
             release_byte_array(instance, name_ptr)?;
             release_byte_array(instance, data_ptr)?;
             release_status_ptr(instance, status_ptr)?;
@@ -195,7 +191,7 @@ impl MotionIOPlugin {
             &self.instance,
             &self.opaque,
             data,
-            "nanoemApplicationPluginModelIOSetAudioDescription",
+            "nanoemApplicationPluginMotionIOSetAudioDescription",
         )
     }
     pub fn set_camera_description(&self, data: &[u8]) -> Result<()> {
@@ -227,7 +223,7 @@ impl MotionIOPlugin {
             &self.instance,
             &self.opaque,
             data,
-            "nanoemApplicationPluginMotionIOSetInputModelData",
+            "nanoemApplicationPluginMotionIOSetInputActiveModelData",
         )
     }
     pub fn set_input_motion_data(&self, bytes: &[u8]) -> Result<()> {
@@ -268,13 +264,14 @@ impl MotionIOPlugin {
             "nanoemApplicationPluginMotionIOGetUIWindowLayoutDataSize",
         )
     }
-    pub fn set_ui_component_layout(&self, id: &str, data: &[u8]) -> Result<()> {
+    pub fn set_ui_component_layout(&self, id: &str, data: &[u8], reload: &mut bool) -> Result<()> {
         inner_set_ui_component_layout(
             &self.instance,
             &self.opaque,
             id,
             data,
             "nanoemApplicationPluginMotionIOSetUIComponentLayoutData",
+            reload,
         )
     }
     pub fn failure_reason(&self) -> Result<String> {
@@ -446,8 +443,9 @@ impl MotionIOPluginController {
     pub fn get_ui_window_layout(&self) -> Result<Vec<u8>> {
         self.current_plugin()?.get_ui_window_layout()
     }
-    pub fn set_ui_component_layout(&self, id: &str, data: &[u8]) -> Result<()> {
-        self.current_plugin()?.set_ui_component_layout(id, data)
+    pub fn set_ui_component_layout(&self, id: &str, data: &[u8], reload: &mut bool) -> Result<()> {
+        self.current_plugin()?
+            .set_ui_component_layout(id, data, reload)
     }
     pub fn failure_reason(&self) -> Result<String> {
         self.current_plugin()?.failure_reason()

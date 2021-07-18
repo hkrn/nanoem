@@ -143,8 +143,9 @@ impl nanoem_application_plugin_motion_io_t {
     pub fn load_window_layout(&self) -> Result<()> {
         self.controller.load_ui_window_layout()
     }
-    pub fn set_component_layout(&self, id: &CStr, data: &[u8]) -> Result<()> {
-        self.controller.set_ui_component_layout(id.to_str()?, data)
+    pub fn set_component_layout(&self, id: &CStr, data: &[u8], reload: &mut bool) -> Result<()> {
+        self.controller
+            .set_ui_component_layout(id.to_str()?, data, reload)
     }
     pub fn window_layout_data_slice(&self) -> Vec<u8> {
         self.controller.get_ui_window_layout().unwrap_or_default()
