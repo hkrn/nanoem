@@ -732,7 +732,7 @@ Archive::saveAudio(Error &error)
 {
     IAudioPlayer *audioPlayer = m_project->audioPlayer();
     if (audioPlayer->isLoaded()) {
-        IAudioPlayer::Description desc;
+        IAudioPlayer::WAVDescription desc;
         const ByteArray *samplesPtr = audioPlayer->linearPCMSamples();
         BaseAudioPlayer::initializeDescription(audioPlayer, samplesPtr->size(), desc);
         Archiver::Entry entry;

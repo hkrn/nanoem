@@ -53,16 +53,16 @@ BaseAudioPlayer::containsRIFFTag(const nanoem_u8_t *ptr, size_t size) NANOEM_DEC
 
 void
 BaseAudioPlayer::initializeDescription(nanoem_u8_t bits, nanoem_u16_t channels, nanoem_u32_t sampleRate,
-    nanoem_rsize_t size, Description &output) NANOEM_DECL_NOEXCEPT
+    nanoem_rsize_t size, WAVDescription &output) NANOEM_DECL_NOEXCEPT
 {
     Inline::clearZeroMemory(output);
     bits = glm::max(bits, nanoem_u8_t(8)) & ~0x7;
     channels = glm::max(channels, nanoem_u16_t(1));
     sampleRate = glm::max(sampleRate, nanoem_u32_t(1));
     const nanoem_u16_t bytesPerPakcet = nanoem_u16_t((bits / 8) * channels);
-    output.m_riffChunk.m_id = nanoem_fourcc('R', 'I', 'F', 'F');
-    output.m_riffChunk.m_size = Inline::saturateInt32U(size + sizeof(output) - sizeof(output.m_riffChunk.m_id));
-    output.m_wave = nanoem_fourcc('W', 'A', 'V', 'E');
+    output.m_header.m_riffChunk.m_id = nanoem_fourcc('R', 'I', 'F', 'F');
+    output.m_header.m_riffChunk.m_size = Inline::saturateInt32U(size + sizeof(output) - sizeof(output.m_header.m_riffChunk.m_id));
+    output.m_header.m_wave = nanoem_fourcc('W', 'A', 'V', 'E');
     output.m_formatChunk.m_id = nanoem_fourcc('f', 'm', 't', ' ');
     output.m_formatChunk.m_size = sizeof(output.m_formatData);
     output.m_formatData.m_audioFormat = 1;
@@ -75,7 +75,7 @@ BaseAudioPlayer::initializeDescription(nanoem_u8_t bits, nanoem_u16_t channels, 
 
 void
 BaseAudioPlayer::initializeDescription(
-    const IAudioPlayer *player, nanoem_rsize_t size, Description &output) NANOEM_DECL_NOEXCEPT
+    const IAudioPlayer *player, nanoem_rsize_t size, WAVDescription &output) NANOEM_DECL_NOEXCEPT
 {
     return initializeDescription(player->bitsPerSample(), player->numChannels(), player->sampleRate(), size, output);
 }
@@ -122,12 +122,12 @@ BaseAudioPlayer::BaseAudioPlayer()
 bool
 BaseAudioPlayer::load(const ByteArray &bytes, Error &error)
 {
-    const Description *descPtr;
+    const WAVDescription *descPtr;
     bool succeeded = false;
     if (bytes.size() >= sizeof(*descPtr)) {
-        descPtr = reinterpret_cast<const Description *>(bytes.data());
-        const nanoem_u8_t *bytesPtr = bytes.data() + sizeof(m_description);
-        const size_t bytesSize = bytes.size() - sizeof(m_description);
+        descPtr = reinterpret_cast<const WAVDescription *>(bytes.data());
+        const nanoem_u8_t *bytesPtr = bytes.data() + sizeof(WAVHeader);
+        const size_t bytesSize = bytes.size() - sizeof(WAVHeader);
         nanoem_rsize_t samplesSize;
         if (const nanoem_u8_t *samplesPtr = findLinearPCMSamplesPayload(bytesPtr, bytesSize, samplesSize)) {
             const Format &format = descPtr->m_formatData;
@@ -140,7 +140,7 @@ BaseAudioPlayer::load(const ByteArray &bytes, Error &error)
 }
 
 bool
-BaseAudioPlayer::load(const ByteArray &bytes, const Description &desc, Error &error)
+BaseAudioPlayer::load(const ByteArray &bytes, const WAVDescription &desc, Error &error)
 {
     m_description = desc;
     return loadAllLinearPCMSamples(bytes.data(), bytes.size(), error);

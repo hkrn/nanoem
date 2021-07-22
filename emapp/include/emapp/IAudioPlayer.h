@@ -29,9 +29,12 @@ public:
         nanoem_u16_t m_bytesPerPacket;
         nanoem_u16_t m_bitsPerSample;
     };
-    struct Description {
+    struct WAVHeader {
         Chunk m_riffChunk;
         nanoem_u32_t m_wave;
+    };
+    struct WAVDescription {
+        WAVHeader m_header;
         Chunk m_formatChunk;
         Format m_formatData;
     };
@@ -53,7 +56,7 @@ public:
     virtual void destroy() = 0;
 
     virtual bool load(const ByteArray &bytes, Error &error) = 0;
-    virtual bool load(const ByteArray &bytes, const Description &desc, Error &error) = 0;
+    virtual bool load(const ByteArray &bytes, const WAVDescription &desc, Error &error) = 0;
     virtual bool loadAllLinearPCMSamples(const nanoem_u8_t *data, size_t size, Error &error) = 0;
     virtual void play() = 0;
     virtual void playPart(nanoem_f64_t start, nanoem_f64_t length) = 0;

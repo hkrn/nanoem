@@ -32,7 +32,7 @@ public:
     void seek(const Rational &value) override;
 
 private:
-    static void copyDescription(const Description &source, AudioStreamBasicDescription &dest);
+    static void copyDescription(const WAVDescription &source, AudioStreamBasicDescription &dest);
     static void wrapCall(OSStatus err, Error &error);
     static OSStatus renderAudioBuffer(
         void *inRefCon, AudioUnitRenderActionFlags *, const AudioTimeStamp *, UInt32, UInt32, AudioBufferList *ioData);
