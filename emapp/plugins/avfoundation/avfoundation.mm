@@ -562,30 +562,34 @@ struct AVFoundationDecoder {
     open(const char *filePath, nanoem_application_plugin_status_t *status)
     {
         NSError *error = nil;
-        if (!m_audioFileRef) {
-            NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:[[NSString alloc] initWithUTF8String:filePath]];
-            OSStatus oss = ExtAudioFileOpenURL((__bridge CFURLRef) fileURL, &m_audioFileRef);
-            if (oss == kAudioServicesNoError) {
-                oss = ExtAudioFileSetProperty(
-                    m_audioFileRef, kExtAudioFileProperty_ClientDataFormat, sizeof(m_description), &m_description);
-                if (oss != kAudioServicesNoError) {
-                    error = [[NSError alloc] initWithDomain:NSOSStatusErrorDomain code:oss userInfo:nil];
-                }
-            }
-            else {
+        if (m_audioFileRef) {
+            ExtAudioFileDispose(m_audioFileRef);
+            m_audioFileRef = nullptr;
+        }
+        NSURL *audioFileURL = [[NSURL alloc] initFileURLWithPath:[[NSString alloc] initWithUTF8String:filePath]];
+        OSStatus oss = ExtAudioFileOpenURL((__bridge CFURLRef) audioFileURL, &m_audioFileRef);
+        if (oss == kAudioServicesNoError) {
+            oss = ExtAudioFileSetProperty(
+                m_audioFileRef, kExtAudioFileProperty_ClientDataFormat, sizeof(m_description), &m_description);
+            if (oss != kAudioServicesNoError) {
                 error = [[NSError alloc] initWithDomain:NSOSStatusErrorDomain code:oss userInfo:nil];
             }
         }
-        if (!m_videoTrack) {
-            NSURL *fileURL = [[NSURL alloc] initFileURLWithPath:[[NSString alloc] initWithUTF8String:filePath]];
-            AVAsset *asset = [AVAsset assetWithURL:fileURL];
-            NSArray *tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
-            if (tracks.count > 0) {
-                m_videoTrack = tracks.firstObject;
-                m_assetImageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
-                m_assetImageGenerator.requestedTimeToleranceAfter = kCMTimeZero;
-                m_assetImageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
-            }
+        else {
+            error = [[NSError alloc] initWithDomain:NSOSStatusErrorDomain code:oss userInfo:nil];
+        }
+        if (m_videoTrack) {
+            m_assetImageGenerator = nil;
+            m_videoTrack = nil;
+        }
+        NSURL *videoFileURL = [[NSURL alloc] initFileURLWithPath:[[NSString alloc] initWithUTF8String:filePath]];
+        AVAsset *asset = [AVAsset assetWithURL:videoFileURL];
+        NSArray *tracks = [asset tracksWithMediaType:AVMediaTypeVideo];
+        if (tracks.count > 0) {
+            m_videoTrack = tracks.firstObject;
+            m_assetImageGenerator = [[AVAssetImageGenerator alloc] initWithAsset:asset];
+            m_assetImageGenerator.requestedTimeToleranceAfter = kCMTimeZero;
+            m_assetImageGenerator.requestedTimeToleranceBefore = kCMTimeZero;
         }
         if (!m_audioFileRef && !m_videoTrack && error) {
             nanoem_application_plugin_status_assign_error(status, NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON);
@@ -801,6 +805,8 @@ struct AVFoundationDecoder {
                     status, NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON);
             }
         }
+        m_videoTrack = nil;
+        m_assetImageGenerator = nil;
         return 1;
     }
 
