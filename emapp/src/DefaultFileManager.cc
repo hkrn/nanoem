@@ -421,7 +421,7 @@ DefaultFileManager::loadAudioFile(const URI &fileURI, Project *project, Error &e
             ByteArray bytes;
             IAudioPlayer *audio = project->audioPlayer();
             if (decodeAudioWave(project, proxy, bytes, error)) {
-                IAudioPlayer::Description desc;
+                IAudioPlayer::WAVDescription desc;
                 BaseAudioPlayer::initializeDescription(
                     proxy.numBits(), proxy.numChannels(), proxy.frequency(), bytes.size(), desc);
                 if (audio->load(bytes, desc, error)) {

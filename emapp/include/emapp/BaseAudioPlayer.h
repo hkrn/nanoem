@@ -70,9 +70,9 @@ public:
     static const size_t kRIFFTagSize;
     static bool containsRIFFTag(const nanoem_u8_t *ptr, size_t size) NANOEM_DECL_NOEXCEPT;
     static void initializeDescription(nanoem_u8_t bits, nanoem_u16_t channels, nanoem_u32_t frequency,
-        nanoem_rsize_t size, Description &output) NANOEM_DECL_NOEXCEPT;
+        nanoem_rsize_t size, WAVDescription &output) NANOEM_DECL_NOEXCEPT;
     static void initializeDescription(
-        const IAudioPlayer *player, nanoem_rsize_t size, Description &output) NANOEM_DECL_NOEXCEPT;
+        const IAudioPlayer *player, nanoem_rsize_t size, WAVDescription &output) NANOEM_DECL_NOEXCEPT;
     static StringList loadableExtensions();
     static StringSet loadableExtensionsSet();
     static bool isLoadableExtension(const String &extension);
@@ -81,7 +81,7 @@ public:
     BaseAudioPlayer();
 
     bool load(const ByteArray &bytes, Error &error) NANOEM_DECL_OVERRIDE;
-    bool load(const ByteArray &bytes, const Description &desc, Error &error) NANOEM_DECL_OVERRIDE;
+    bool load(const ByteArray &bytes, const WAVDescription &desc, Error &error) NANOEM_DECL_OVERRIDE;
     void play() NANOEM_DECL_OVERRIDE;
     void pause() NANOEM_DECL_OVERRIDE;
     void resume() NANOEM_DECL_OVERRIDE;
@@ -125,7 +125,7 @@ protected:
     Rational m_currentRational;
     Rational m_lastRational;
     Rational m_durationRational;
-    Description m_description;
+    WAVDescription m_description;
     bool m_finished;
     bool m_loaded;
 };

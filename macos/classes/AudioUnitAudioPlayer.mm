@@ -138,7 +138,7 @@ AudioUnitAudioPlayer::seek(const IAudioPlayer::Rational &value)
 }
 
 void
-AudioUnitAudioPlayer::copyDescription(const Description &source, AudioStreamBasicDescription &dest)
+AudioUnitAudioPlayer::copyDescription(const WAVDescription &source, AudioStreamBasicDescription &dest)
 {
     Inline::clearZeroMemory(dest);
     const Format &format = source.m_formatData;
@@ -297,7 +297,7 @@ void
 AudioUnitAudioPlayer::convertAllLinearPCMSamplesComplex(const nanoem_u8_t *data, size_t size, Error &error)
 {
     struct Input {
-        Input(const nanoem_u8_t *data, size_t size, const Description &desc)
+        Input(const nanoem_u8_t *data, size_t size, const WAVDescription &desc)
         {
             copyDescription(desc, m_desc);
             m_mutaleBytes.assign(data, data + size);
