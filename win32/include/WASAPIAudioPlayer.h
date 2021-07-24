@@ -79,7 +79,7 @@ private:
     void internalTransitStatePaused(Error &error) override;
     void internalTransitStateResumed(Error &error) override;
     void internalTransitStateStopped(Error &error) override;
-    bool initializeClient(IMMDevice *device, const Description &desc, Error &error);
+    bool initializeClient(IMMDevice *device, const WAVDescription &desc, Error &error);
     void destroyClient();
     void createAudioRenderThread();
     void createNullRenderThread();
