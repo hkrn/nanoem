@@ -7,7 +7,9 @@ license = "MPL-2.0"
 
 [dependencies]
 anyhow = "~1.0"
-hotwatch = "0.4"
+env_logger = "~0.9"
+hotwatch = "~0.4"
+log = "~0.4"
 wasmer = "~2.0"
 wasmer-wasi = "~2.0"
 walkdir = "~2.0"

@@ -8,7 +8,8 @@ use core::slice;
 use std::mem::size_of;
 
 use anyhow::Result;
-use wasmer::{Array, Function, Instance, Memory, WasmPtr};
+use log::{debug, warn};
+use wasmer::{Array, Instance, Memory, NativeFunc, WasmPtr};
 
 pub(crate) const PLUGIN_MODEL_IO_ABI_VERSION: u32 = 2 << 16;
 pub(crate) const PLUGIN_MOTION_IO_ABI_VERSION: u32 = 2 << 16;
@@ -43,14 +44,46 @@ pub(crate) type OpaquePtr = WasmPtr<()>;
 pub(crate) type SizePtr = WasmPtr<u32>;
 pub(crate) type StatusPtr = WasmPtr<i32>;
 
+fn notify_export_function_error(name: &str) {
+    debug!(
+        "{} cannot be called due to not found or signature unmatched",
+        name
+    );
+}
+
+fn inner_get_data_internal(
+    instance: &Instance,
+    opaque: &OpaquePtr,
+    get_data_size: NativeFunc<(OpaquePtr, SizePtr), ()>,
+    get_data_body: NativeFunc<(OpaquePtr, ByteArray, u32, StatusPtr), ()>,
+    output_data: &mut Vec<u8>,
+) -> Result<()> {
+    let data_size_ptr = allocate_size_ptr(instance)?;
+    get_data_size.call(*opaque, data_size_ptr)?;
+    let data_size = data_size_ptr.deref(inner_memory(instance)).unwrap().get();
+    let bytes = allocate_byte_array(instance, data_size)?;
+    let status_ptr = allocate_status_ptr(instance)?;
+    get_data_body.call(*opaque, bytes, data_size, status_ptr)?;
+    let cell = bytes.deref(inner_memory(instance), 0, data_size).unwrap();
+    output_data.resize(data_size as usize, 0);
+    for byte in cell {
+        output_data.push(byte.get());
+    }
+    release_byte_array(instance, bytes)?;
+    release_size_ptr(instance, data_size_ptr)?;
+    release_status_ptr(instance, status_ptr)?;
+    Ok(())
+}
+
 fn inner_set_data_internal(
     instance: &Instance,
     opaque: &OpaquePtr,
     data: &[u8],
     name: &str,
 ) -> Result<()> {
-    let func = resolve_func(instance, name)?;
-    let set_input_model_data = func.native::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>()?;
+    let set_input_model_data = instance
+        .exports
+        .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(name)?;
     let data_size = data.len() as u32;
     let data_ptr = allocate_byte_array_with_data(instance, data)?;
     let status_ptr = allocate_status_ptr(instance)?;
@@ -67,8 +100,10 @@ fn inner_set_optional_data_internal(
     component_size: usize,
     name: &str,
 ) -> Result<()> {
-    if let Ok(func) = resolve_func(instance, name) {
-        let set_input_model_data = func.native::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>()?;
+    if let Ok(set_input_model_data) = instance
+        .exports
+        .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(name)
+    {
         let data_ptr = allocate_byte_array_with_data(instance, data)?;
         let status_ptr = allocate_status_ptr(instance)?;
         set_input_model_data.call(
@@ -83,12 +118,10 @@ fn inner_set_optional_data_internal(
         )?;
         release_byte_array(instance, data_ptr)?;
         release_status_ptr(instance, status_ptr)?;
+    } else {
+        notify_export_function_error(name);
     }
     Ok(())
-}
-
-pub(crate) fn resolve_func<'a>(instance: &'a Instance, name: &'a str) -> Result<&'a Function> {
-    Ok(instance.exports.get_function(name)?)
 }
 
 pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
@@ -96,8 +129,9 @@ pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
 }
 
 pub(crate) fn allocate_byte_array(instance: &Instance, data_size: u32) -> Result<ByteArray> {
-    let malloc_func = instance.exports.get_function(MALLOC_FN)?;
-    let malloc_func = malloc_func.native::<u32, ByteArray>()?;
+    let malloc_func = instance
+        .exports
+        .get_native_function::<u32, ByteArray>(MALLOC_FN)?;
     let data_ptr = malloc_func.call(data_size)?;
     Ok(data_ptr)
 }
@@ -116,8 +150,9 @@ pub(crate) fn allocate_byte_array_with_data(instance: &Instance, data: &[u8]) ->
 
 pub(crate) fn allocate_status_ptr(instance: &Instance) -> Result<StatusPtr> {
     let memory = inner_memory(instance);
-    let malloc_func = instance.exports.get_function(MALLOC_FN)?;
-    let malloc_func = malloc_func.native::<u32, StatusPtr>()?;
+    let malloc_func = instance
+        .exports
+        .get_native_function::<u32, StatusPtr>(MALLOC_FN)?;
     let data_ptr = malloc_func.call(size_of::<u32>() as u32)?;
     data_ptr.deref(memory).unwrap().set(0);
     Ok(data_ptr)
@@ -125,30 +160,37 @@ pub(crate) fn allocate_status_ptr(instance: &Instance) -> Result<StatusPtr> {
 
 pub(crate) fn allocate_size_ptr(instance: &Instance) -> Result<SizePtr> {
     let memory = inner_memory(instance);
-    let malloc_func = instance.exports.get_function(MALLOC_FN)?;
-    let malloc_func = malloc_func.native::<u32, SizePtr>()?;
+    let malloc_func = instance
+        .exports
+        .get_native_function::<u32, SizePtr>(MALLOC_FN)?;
     let size_ptr = malloc_func.call(size_of::<u32>() as u32)?;
     size_ptr.deref(memory).unwrap().set(0);
     Ok(size_ptr)
 }
 
 pub(crate) fn release_byte_array(instance: &Instance, ptr: ByteArray) -> Result<()> {
-    let free_func = instance.exports.get_function(FREE_FN).unwrap();
-    let free_func = free_func.native::<ByteArray, ()>()?;
+    let free_func = instance
+        .exports
+        .get_native_function::<ByteArray, ()>(FREE_FN)
+        .unwrap();
     free_func.call(ptr)?;
     Ok(())
 }
 
 pub(crate) fn release_size_ptr(instance: &Instance, ptr: SizePtr) -> Result<()> {
-    let free_func = instance.exports.get_function(FREE_FN).unwrap();
-    let free_func = free_func.native::<SizePtr, ()>()?;
+    let free_func = instance
+        .exports
+        .get_native_function::<SizePtr, ()>(FREE_FN)
+        .unwrap();
     free_func.call(ptr)?;
     Ok(())
 }
 
 pub(crate) fn release_status_ptr(instance: &Instance, ptr: StatusPtr) -> Result<()> {
-    let free_func = instance.exports.get_function(FREE_FN).unwrap();
-    let free_func = free_func.native::<StatusPtr, ()>()?;
+    let free_func = instance
+        .exports
+        .get_native_function::<StatusPtr, ()>(FREE_FN)
+        .unwrap();
     let status = ptr.deref(inner_memory(instance)).unwrap().get();
     free_func.call(ptr)?;
     if status != 0 {
@@ -158,33 +200,36 @@ pub(crate) fn release_status_ptr(instance: &Instance, ptr: StatusPtr) -> Result<
 }
 
 pub(crate) fn inner_initialize_function(instance: &Instance, name: &str) -> Result<()> {
-    let func = resolve_func(instance, name)?;
-    let initialize = func.native::<(), ()>()?;
-    initialize.call()?;
+    if let Ok(initialize) = instance.exports.get_native_function::<(), ()>(name) {
+        initialize.call()?;
+    } else {
+        notify_export_function_error(name);
+    }
     Ok(())
 }
 
 pub(crate) fn inner_create_opaque(instance: &Instance, name: &str) -> Result<OpaquePtr> {
-    let func = resolve_func(instance, name)?;
-    let create = func.native::<(), OpaquePtr>()?;
+    let create = instance
+        .exports
+        .get_native_function::<(), OpaquePtr>(name)?;
     Ok(create.call()?)
 }
 
 pub(crate) fn inner_destroy_opaque(instance: &Instance, opaque: &Option<OpaquePtr>, name: &str) {
     if let Some(opaque) = opaque {
-        if let Ok(func) = resolve_func(instance, name) {
-            if let Ok(destroy) = func.native::<OpaquePtr, ()>() {
-                destroy.call(*opaque).unwrap();
+        if let Ok(destroy) = instance.exports.get_native_function::<OpaquePtr, ()>(name) {
+            if let Err(err) = destroy.call(*opaque) {
+                warn!("runtime error at calling {}: {}", name, err);
             }
         }
     }
 }
 
 pub(crate) fn inner_terminate_function(instance: &Instance, name: &str) {
-    if let Ok(func) = resolve_func(instance, name) {
-        if let Ok(terminate) = func.native::<(), ()>() {
-            terminate.call().unwrap();
-        }
+    if let Ok(terminate) = instance.exports.get_native_function::<(), ()>(name) {
+        terminate.call().unwrap();
+    } else {
+        notify_export_function_error(name);
     }
 }
 
@@ -194,8 +239,9 @@ pub(crate) fn inner_get_string(
     name: &str,
 ) -> Result<String> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
-        let get_string = func.native::<OpaquePtr, ByteArray>()?;
+        let get_string = instance
+            .exports
+            .get_native_function::<OpaquePtr, ByteArray>(name)?;
         let memory = inner_memory(instance);
         Ok(get_string
             .call(*opaque)?
@@ -213,24 +259,51 @@ pub(crate) fn inner_get_data(
     size_func_name: &str,
 ) -> Result<Vec<u8>> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, size_func_name)?;
-        let get_data_size = func.native::<(OpaquePtr, SizePtr), ()>()?;
-        let func = resolve_func(instance, body_func_name)?;
-        let get_data_body = func.native::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>()?;
-        let data_size_ptr = allocate_size_ptr(instance)?;
-        get_data_size.call(*opaque, data_size_ptr)?;
-        let data_size = data_size_ptr.deref(inner_memory(instance)).unwrap().get();
-        let bytes = allocate_byte_array(instance, data_size)?;
-        let status_ptr = allocate_status_ptr(instance)?;
-        get_data_body.call(*opaque, bytes, data_size, status_ptr)?;
-        let cell = bytes.deref(inner_memory(instance), 0, data_size).unwrap();
-        let mut output_data = Vec::with_capacity(data_size as usize);
-        for byte in cell {
-            output_data.push(byte.get());
+        let get_data_size = instance
+            .exports
+            .get_native_function::<(OpaquePtr, SizePtr), ()>(size_func_name)?;
+        let get_data_body = instance
+            .exports
+            .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(body_func_name)?;
+        let mut output_data = Vec::new();
+        inner_get_data_internal(
+            instance,
+            opaque,
+            get_data_size,
+            get_data_body,
+            &mut output_data,
+        )?;
+        Ok(output_data)
+    } else {
+        Ok(vec![])
+    }
+}
+
+pub(crate) fn inner_get_optional_data(
+    instance: &Instance,
+    opaque: &Option<OpaquePtr>,
+    body_func_name: &str,
+    size_func_name: &str,
+) -> Result<Vec<u8>> {
+    if let Some(opaque) = opaque {
+        let get_data_size = instance
+            .exports
+            .get_native_function::<(OpaquePtr, SizePtr), ()>(size_func_name);
+        let get_data_body = instance
+            .exports
+            .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(body_func_name);
+        let mut output_data = Vec::new();
+        if get_data_size.is_ok() && get_data_body.is_ok() {
+            let get_data_size = get_data_size?;
+            let get_data_body = get_data_body?;
+            inner_get_data_internal(
+                instance,
+                opaque,
+                get_data_size,
+                get_data_body,
+                &mut output_data,
+            )?;
         }
-        release_byte_array(instance, bytes)?;
-        release_size_ptr(instance, data_size_ptr)?;
-        release_status_ptr(instance, status_ptr)?;
         Ok(output_data)
     } else {
         Ok(vec![])
@@ -273,8 +346,9 @@ pub(crate) fn inner_set_language(
     name: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
-        let set_language = func.native::<(OpaquePtr, i32), ()>()?;
+        let set_language = instance
+            .exports
+            .get_native_function::<(OpaquePtr, i32), ()>(name)?;
         set_language.call(*opaque, value)?;
     }
     Ok(())
@@ -286,8 +360,9 @@ pub(crate) fn inner_count_all_functions(
     name: &str,
 ) -> Result<i32> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
-        let count_all_functions = func.native::<OpaquePtr, i32>()?;
+        let count_all_functions = instance
+            .exports
+            .get_native_function::<OpaquePtr, i32>(name)?;
         Ok(count_all_functions.call(*opaque)?)
     } else {
         Ok(0)
@@ -301,8 +376,9 @@ pub(crate) fn inner_get_function_name(
     name: &str,
 ) -> Result<String> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
-        let get_function_name = func.native::<(OpaquePtr, i32), ByteArray>()?;
+        let get_function_name = instance
+            .exports
+            .get_native_function::<(OpaquePtr, i32), ByteArray>(name)?;
         let memory = inner_memory(instance);
         let name = get_function_name
             .call(*opaque, index)?
@@ -321,9 +397,10 @@ pub(crate) fn inner_set_function(
     name: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
         let status_ptr = allocate_status_ptr(instance)?;
-        let set_function = func.native::<(OpaquePtr, i32, StatusPtr), ()>()?;
+        let set_function = instance
+            .exports
+            .get_native_function::<(OpaquePtr, i32, StatusPtr), ()>(name)?;
         set_function.call(*opaque, index, status_ptr)?;
         release_status_ptr(instance, status_ptr)?;
     }
@@ -337,8 +414,9 @@ pub(crate) fn inner_execute(
 ) -> Result<()> {
     if let Some(opaque) = opaque {
         let status_ptr = allocate_status_ptr(instance)?;
-        let func = resolve_func(instance, name)?;
-        let execute = func.native::<(OpaquePtr, StatusPtr), ()>()?;
+        let execute = instance
+            .exports
+            .get_native_function::<(OpaquePtr, StatusPtr), ()>(name)?;
         execute.call(*opaque, status_ptr)?;
         release_status_ptr(instance, status_ptr)?;
     }
@@ -351,11 +429,14 @@ pub(crate) fn inner_load_ui_window(
     name: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
-        let load_ui_window_layout = func.native::<(OpaquePtr, StatusPtr), ()>()?;
-        let status_ptr = allocate_status_ptr(instance)?;
-        load_ui_window_layout.call(*opaque, status_ptr)?;
-        release_status_ptr(instance, status_ptr)?;
+        if let Ok(load_ui_window_layout) = instance
+            .exports
+            .get_native_function::<(OpaquePtr, StatusPtr), ()>(name)
+        {
+            let status_ptr = allocate_status_ptr(instance)?;
+            load_ui_window_layout.call(*opaque, status_ptr)?;
+            release_status_ptr(instance, status_ptr)?;
+        }
     }
     Ok(())
 }
@@ -369,9 +450,14 @@ pub(crate) fn inner_set_ui_component_layout(
     reload: &mut bool,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let func = resolve_func(instance, name)?;
-        let set_ui_component_layout =
-            func.native::<(OpaquePtr, ByteArray, ByteArray, u32, SizePtr, StatusPtr), ()>()?;
+        let set_ui_component_layout = instance.exports.get_native_function::<(
+            OpaquePtr,
+            ByteArray,
+            ByteArray,
+            u32,
+            SizePtr,
+            StatusPtr,
+        ), ()>(name)?;
         let id_ptr = allocate_byte_array_with_data(instance, id.as_bytes())?;
         let data_ptr = allocate_byte_array_with_data(instance, data)?;
         let reload_layout_ptr = allocate_size_ptr(instance)?;

@@ -7,6 +7,7 @@
 use std::{ffi::CString, mem::size_of, path::Path, slice};
 
 use anyhow::Result;
+use log::warn;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
 use wasmer_wasi::WasiEnv;
@@ -14,10 +15,11 @@ use wasmer_wasi::WasiEnv;
 use crate::{
     allocate_byte_array_with_data, allocate_status_ptr, inner_count_all_functions,
     inner_create_opaque, inner_destroy_opaque, inner_execute, inner_get_data,
-    inner_get_function_name, inner_get_string, inner_initialize_function, inner_load_ui_window,
-    inner_set_data, inner_set_function, inner_set_language, inner_set_optional_data,
-    inner_set_ui_component_layout, inner_terminate_function, release_byte_array,
-    release_status_ptr, resolve_func, ByteArray, OpaquePtr, StatusPtr,
+    inner_get_function_name, inner_get_optional_data, inner_get_string, inner_initialize_function,
+    inner_load_ui_window, inner_set_data, inner_set_function, inner_set_language,
+    inner_set_optional_data, inner_set_ui_component_layout, inner_terminate_function,
+    release_byte_array, release_status_ptr, ByteArray, OpaquePtr, SizePtr, StatusPtr, FREE_FN,
+    MALLOC_FN,
 };
 
 pub struct MotionIOPlugin {
@@ -33,9 +35,11 @@ fn inner_set_optional_named_data(
     func: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        if let Ok(func) = resolve_func(instance, func) {
-            let set_input_model_data =
-                func.native::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>()?;
+        if let Ok(set_input_model_data) =
+            instance
+                .exports
+                .get_native_function::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>(func)
+        {
             let component_size = size_of::<u32>();
             let data_size = data.len();
             let len = data_size * component_size;
@@ -54,11 +58,48 @@ fn inner_set_optional_named_data(
     Ok(())
 }
 
+fn validate_plugin(instance: &Instance) -> Result<()> {
+    let e = &instance.exports;
+    e.get_memory("memory")?;
+    e.get_native_function::<u32, OpaquePtr>(MALLOC_FN)?;
+    e.get_native_function::<OpaquePtr, ()>(FREE_FN)?;
+    e.get_native_function::<(), OpaquePtr>("nanoemApplicationPluginMotionIOCreate")?;
+    e.get_native_function::<OpaquePtr, ByteArray>("nanoemApplicationPluginMotionIOGetName")?;
+    e.get_native_function::<OpaquePtr, ByteArray>("nanoemApplicationPluginMotionIOGetVersion")?;
+    e.get_native_function::<(OpaquePtr, i32), ()>("nanoemApplicationPluginMotionIOSetLanguage")?;
+    e.get_native_function::<OpaquePtr, i32>("nanoemApplicationPluginMotionIOCountAllFunctions")?;
+    e.get_native_function::<(OpaquePtr, i32), ByteArray>(
+        "nanoemApplicationPluginMotionIOGetFunctionName",
+    )?;
+    e.get_native_function::<(OpaquePtr, i32, StatusPtr), ()>(
+        "nanoemApplicationPluginMotionIOSetFunction",
+    )?;
+    e.get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        "nanoemApplicationPluginMotionIOSetInputMotionData",
+    )?;
+    e.get_native_function::<(OpaquePtr, StatusPtr), ()>("nanoemApplicationPluginMotionIOExecute")?;
+    e.get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        "nanoemApplicationPluginMotionIOGetOutputMotionData",
+    )?;
+    e.get_native_function::<(OpaquePtr, SizePtr), ()>(
+        "nanoemApplicationPluginMotionIOGetOutputMotionDataSize",
+    )?;
+    e.get_native_function::<OpaquePtr, ByteArray>(
+        "nanoemApplicationPluginMotionIOGetFailureReason",
+    )?;
+    e.get_native_function::<OpaquePtr, ByteArray>(
+        "nanoemApplicationPluginMotionIOGetRecoverySuggestion",
+    )?;
+    e.get_native_function::<OpaquePtr, ()>("nanoemApplicationPluginMotionIODestroy")?;
+    Ok(())
+}
+
 impl MotionIOPlugin {
     pub fn new(bytes: &[u8], store: &Store, env: &mut WasiEnv) -> Result<Self> {
         let module = Module::new(&store, bytes)?;
         let imports = env.import_object(&module)?;
         let instance = Instance::new(&module, &imports)?;
+        validate_plugin(&instance)?;
         Ok(Self {
             instance,
             opaque: None,
@@ -257,7 +298,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn get_ui_window_layout(&self) -> Result<Vec<u8>> {
-        inner_get_data(
+        inner_get_optional_data(
             &self.instance,
             &self.opaque,
             "nanoemApplicationPluginMotionIOGetUIWindowLayoutData",
@@ -311,15 +352,19 @@ impl MotionIOPluginController {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
-            if entry
-                .file_name()
-                .to_str()
-                .map(|s| s.ends_with(".wasm"))
-                .unwrap_or(false)
-            {
+            let filename = entry.file_name().to_str();
+            if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
-                let plugin = MotionIOPlugin::new(&bytes, store, env)?;
-                plugins.push(plugin);
+                match MotionIOPlugin::new(&bytes, store, env) {
+                    Ok(plugin) => plugins.push(plugin),
+                    Err(err) => {
+                        warn!(
+                            "Cannot load motion WASM plugin {}: {}",
+                            filename.unwrap(),
+                            err
+                        )
+                    }
+                }
             }
         }
         let function_indices = vec![];

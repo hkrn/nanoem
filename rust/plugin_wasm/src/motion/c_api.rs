@@ -23,7 +23,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetABIVersion() -> u32 {
 ///
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
-pub unsafe extern "C" fn nanoemApplicationPluginMotionIOInitialize() {}
+pub unsafe extern "C" fn nanoemApplicationPluginMotionIOInitialize() {
+    env_logger::try_init().unwrap_or_default();
+}
 
 /// # Safety
 ///
