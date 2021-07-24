@@ -296,7 +296,8 @@ typedef struct sg_limits {
     int max_image_size_3d; // max width/height/depth of SG_IMAGETYPE_3D images
     int max_image_size_array; // max width/height of SG_IMAGETYPE_ARRAY images
     int max_image_array_layers; // max number of layers in SG_IMAGETYPE_ARRAY images
-    int max_vertex_attrs; // <= SG_MAX_VERTEX_ATTRIBUTES (only on some GLES2 impls)
+    int max_vertex_attrs; // <= SG_MAX_VERTEX_ATTRIBUTES or less (on some GLES2 impls)
+    int gl_max_vertex_uniform_vectors; // <= GL_MAX_VERTEX_UNIFORM_VECTORS (only on GL backends)
 } sg_limits;
 
 typedef enum sg_resource_state {
