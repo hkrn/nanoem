@@ -184,7 +184,7 @@ WASAPIAudioPlayer::seek(const IAudioPlayer::Rational &value)
 }
 
 bool
-WASAPIAudioPlayer::initializeClient(IMMDevice *device, const Description &desc, Error &error)
+WASAPIAudioPlayer::initializeClient(IMMDevice *device, const WAVDescription &desc, Error &error)
 {
     const Format &format = desc.m_formatData;
     WAVEFORMATEX requestFormat = {};
