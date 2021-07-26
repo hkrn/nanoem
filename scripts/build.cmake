@@ -600,7 +600,7 @@ function(cleanup_all_repositories)
   foreach(item ${all_repositories})
     string(STRIP "${CMAKE_CURRENT_SOURCE_DIR}/dependencies/${item}" _path)
     execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- . WORKING_DIRECTORY ${_path})
-    execute_process(COMMAND ${GIT_EXECUTABLE} clean -df -e build WORKING_DIRECTORY ${_path})
+    execute_process(COMMAND ${GIT_EXECUTABLE} clean -df -e out WORKING_DIRECTORY ${_path})
   endforeach()
 endfunction()
 
@@ -623,23 +623,19 @@ if(NOT OSX_TARGET)
 endif()
 set(CMAKE_FIND_LIBRARY_PREFIXES "lib;")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.a;.lib")
-find_program(PATCH_EXECUTABLE_PATH NAME patch PATHS "${CMAKE_CURRENT_SOURCE_DIR}" "C:/Program Files (x86)/GnuWin32/bin")
 find_package(Git REQUIRED)
-if(PATCH_EXECUTABLE_PATH AND GIT_FOUND)
-  execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
-                  RESULT_VARIABLE result)
-  execute_process(COMMAND ${PATCH_EXECUTABLE_PATH} -p1
-                  INPUT_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/bullet-2.76.diff
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
-                  RESULT_VARIABLE result)
-  execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang)
-  file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang/glslang/Include/InfoSink.h input_info_sink_h NEWLINE_CONSUME)
-  # due to error detection of LLVM for windows, replace "UNKNOWN ERROR :" to "UNKNOWN :"
-  string(REPLACE "UNKNOWN ERROR:" "UNKNOWN:" output_info_sink_h "${input_info_sink_h}")
-  file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang/glslang/Include/InfoSink.h ${output_info_sink_h})
-endif()
+execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
+                RESULT_VARIABLE result)
+execute_process(COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/bullet-2.76.diff
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
+                RESULT_VARIABLE result)
+execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang)
+file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang/glslang/Include/InfoSink.h input_info_sink_h NEWLINE_CONSUME)
+# due to error detection of LLVM for windows, replaccde "UNKNOWN ERROR :" to "UNKNOWN :"
+string(REPLACE "UNKNOWN ERROR:" "UNKNOWN:" output_info_sink_h "${input_info_sink_h}")
+file(WRITE ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang/glslang/Include/InfoSink.h ${output_info_sink_h})
 
 foreach(arch_item ${ARCH_LIST})
   set(target_generator $ENV{NANOEM_TARGET_GENERATOR})
