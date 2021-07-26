@@ -15,11 +15,10 @@ use wasmer_wasi::WasiEnv;
 use crate::{
     allocate_byte_array_with_data, allocate_status_ptr, inner_count_all_functions,
     inner_create_opaque, inner_destroy_opaque, inner_execute, inner_get_data,
-    inner_get_function_name, inner_get_optional_data, inner_get_string, inner_initialize_function,
-    inner_load_ui_window, inner_set_data, inner_set_function, inner_set_language,
-    inner_set_optional_data, inner_set_ui_component_layout, inner_terminate_function,
-    release_byte_array, release_status_ptr, ByteArray, OpaquePtr, SizePtr, StatusPtr, FREE_FN,
-    MALLOC_FN,
+    inner_get_function_name, inner_get_string, inner_initialize_function, inner_load_ui_window,
+    inner_set_data, inner_set_function, inner_set_language, inner_set_ui_component_layout,
+    inner_terminate_function, release_byte_array, release_status_ptr, ByteArray, OpaquePtr,
+    SizePtr, StatusPtr, FREE_FN, MALLOC_FN,
 };
 
 pub struct MotionIOPlugin {
@@ -27,7 +26,7 @@ pub struct MotionIOPlugin {
     opaque: Option<OpaquePtr>,
 }
 
-fn inner_set_optional_named_data(
+fn inner_set_named_data(
     instance: &Instance,
     opaque: &Option<OpaquePtr>,
     name: &str,
@@ -86,9 +85,6 @@ fn validate_plugin(instance: &Instance) -> Result<()> {
     )?;
     e.get_native_function::<OpaquePtr, ByteArray>(
         "nanoemApplicationPluginMotionIOGetFailureReason",
-    )?;
-    e.get_native_function::<OpaquePtr, ByteArray>(
-        "nanoemApplicationPluginMotionIOGetRecoverySuggestion",
     )?;
     e.get_native_function::<OpaquePtr, ()>("nanoemApplicationPluginMotionIODestroy")?;
     Ok(())
@@ -170,7 +166,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_accessory_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             value,
@@ -178,7 +174,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_named_selected_bone_keyframes(&self, name: &str, value: &[u32]) -> Result<()> {
-        inner_set_optional_named_data(
+        inner_set_named_data(
             &self.instance,
             &self.opaque,
             name,
@@ -187,7 +183,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_camera_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             value,
@@ -195,7 +191,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_light_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             value,
@@ -203,7 +199,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_model_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             value,
@@ -211,7 +207,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_named_selected_morph_keyframes(&self, name: &str, value: &[u32]) -> Result<()> {
-        inner_set_optional_named_data(
+        inner_set_named_data(
             &self.instance,
             &self.opaque,
             name,
@@ -220,7 +216,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_all_selected_self_shadow_keyframes(&self, value: &[u32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             value,
@@ -228,7 +224,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_audio_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -236,7 +232,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_camera_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -244,7 +240,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_light_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -252,7 +248,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_audio_data(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -260,7 +256,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn set_input_model_data(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -298,7 +294,7 @@ impl MotionIOPlugin {
         )
     }
     pub fn get_ui_window_layout(&self) -> Result<Vec<u8>> {
-        inner_get_optional_data(
+        inner_get_data(
             &self.instance,
             &self.opaque,
             "nanoemApplicationPluginMotionIOGetUIWindowLayoutData",

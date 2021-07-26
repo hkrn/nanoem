@@ -79,24 +79,6 @@ fn inner_set_data_internal(
     instance: &Instance,
     opaque: &OpaquePtr,
     data: &[u8],
-    name: &str,
-) -> Result<()> {
-    let set_input_model_data = instance
-        .exports
-        .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(name)?;
-    let data_size = data.len() as u32;
-    let data_ptr = allocate_byte_array_with_data(instance, data)?;
-    let status_ptr = allocate_status_ptr(instance)?;
-    set_input_model_data.call(*opaque, data_ptr, data_size as u32, status_ptr)?;
-    release_byte_array(instance, data_ptr)?;
-    release_status_ptr(instance, status_ptr)?;
-    Ok(())
-}
-
-fn inner_set_optional_data_internal(
-    instance: &Instance,
-    opaque: &OpaquePtr,
-    data: &[u8],
     component_size: usize,
     name: &str,
 ) -> Result<()> {
@@ -239,14 +221,18 @@ pub(crate) fn inner_get_string(
     name: &str,
 ) -> Result<String> {
     if let Some(opaque) = opaque {
-        let get_string = instance
+        if let Ok(get_string) = instance
             .exports
-            .get_native_function::<OpaquePtr, ByteArray>(name)?;
-        let memory = inner_memory(instance);
-        Ok(get_string
-            .call(*opaque)?
-            .get_utf8_string_with_nul(memory)
-            .unwrap_or_default())
+            .get_native_function::<OpaquePtr, ByteArray>(name)
+        {
+            let memory = inner_memory(instance);
+            Ok(get_string
+                .call(*opaque)?
+                .get_utf8_string_with_nul(memory)
+                .unwrap_or_default())
+        } else {
+            Ok(Default::default())
+        }
     } else {
         Ok(Default::default())
     }
@@ -259,39 +245,8 @@ pub(crate) fn inner_get_data(
     size_func_name: &str,
 ) -> Result<Vec<u8>> {
     if let Some(opaque) = opaque {
-        let get_data_size = instance
-            .exports
-            .get_native_function::<(OpaquePtr, SizePtr), ()>(size_func_name)?;
-        let get_data_body = instance
-            .exports
-            .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(body_func_name)?;
-        let mut output_data = Vec::new();
-        inner_get_data_internal(
-            instance,
-            opaque,
-            get_data_size,
-            get_data_body,
-            &mut output_data,
-        )?;
-        Ok(output_data)
-    } else {
-        Ok(vec![])
-    }
-}
-
-pub(crate) fn inner_get_optional_data(
-    instance: &Instance,
-    opaque: &Option<OpaquePtr>,
-    body_func_name: &str,
-    size_func_name: &str,
-) -> Result<Vec<u8>> {
-    if let Some(opaque) = opaque {
-        let get_data_size = instance
-            .exports
-            .get_native_function::<(OpaquePtr, SizePtr), ()>(size_func_name);
-        let get_data_body = instance
-            .exports
-            .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(body_func_name);
+        let get_data_size = instance.exports.get_native_function(size_func_name);
+        let get_data_body = instance.exports.get_native_function(body_func_name);
         let mut output_data = Vec::new();
         if get_data_size.is_ok() && get_data_body.is_ok() {
             let get_data_size = get_data_size?;
@@ -317,24 +272,10 @@ pub(crate) fn inner_set_data<T>(
     name: &str,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let len = data.len() * size_of::<T>();
-        let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
-        inner_set_data_internal(instance, opaque, data, name)?;
-    }
-    Ok(())
-}
-
-pub(crate) fn inner_set_optional_data<T>(
-    instance: &Instance,
-    opaque: &Option<OpaquePtr>,
-    data: &[T],
-    name: &str,
-) -> Result<()> {
-    if let Some(opaque) = opaque {
         let component_size = size_of::<T>();
         let len = data.len() * component_size;
         let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
-        inner_set_optional_data_internal(instance, opaque, data, component_size, name)?;
+        inner_set_data_internal(instance, opaque, data, component_size, name)?;
     }
     Ok(())
 }
@@ -450,31 +391,35 @@ pub(crate) fn inner_set_ui_component_layout(
     reload: &mut bool,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        let set_ui_component_layout = instance.exports.get_native_function::<(
+        if let Ok(set_ui_component_layout) = instance.exports.get_native_function::<(
             OpaquePtr,
             ByteArray,
             ByteArray,
             u32,
             SizePtr,
             StatusPtr,
-        ), ()>(name)?;
-        let id_ptr = allocate_byte_array_with_data(instance, id.as_bytes())?;
-        let data_ptr = allocate_byte_array_with_data(instance, data)?;
-        let reload_layout_ptr = allocate_size_ptr(instance)?;
-        let status_ptr = allocate_status_ptr(instance)?;
-        set_ui_component_layout.call(
-            *opaque,
-            id_ptr,
-            data_ptr,
-            data.len() as u32,
-            reload_layout_ptr,
-            status_ptr,
-        )?;
-        *reload = false;
-        release_byte_array(instance, id_ptr)?;
-        release_byte_array(instance, data_ptr)?;
-        release_size_ptr(instance, reload_layout_ptr)?;
-        release_status_ptr(instance, status_ptr)?;
+        ), ()>(name)
+        {
+            let id_ptr = allocate_byte_array_with_data(instance, id.as_bytes())?;
+            let data_ptr = allocate_byte_array_with_data(instance, data)?;
+            let reload_layout_ptr = allocate_size_ptr(instance)?;
+            let status_ptr = allocate_status_ptr(instance)?;
+            set_ui_component_layout.call(
+                *opaque,
+                id_ptr,
+                data_ptr,
+                data.len() as u32,
+                reload_layout_ptr,
+                status_ptr,
+            )?;
+            *reload = false;
+            release_byte_array(instance, id_ptr)?;
+            release_byte_array(instance, data_ptr)?;
+            release_size_ptr(instance, reload_layout_ptr)?;
+            release_status_ptr(instance, status_ptr)?;
+        } else {
+            notify_export_function_error(name);
+        }
     }
     Ok(())
 }
