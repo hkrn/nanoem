@@ -627,7 +627,7 @@ find_package(Git REQUIRED)
 execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
                 RESULT_VARIABLE result)
-execute_process(COMMAND ${GIT_EXECUTABLE} apply ${CMAKE_CURRENT_SOURCE_DIR}/cmake/bullet-2.76.diff
+execute_process(COMMAND ${GIT_EXECUTABLE} apply --ignore-space-change ${CMAKE_CURRENT_SOURCE_DIR}/cmake/bullet-2.76.diff
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
                 RESULT_VARIABLE result)
 execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
