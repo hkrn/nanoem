@@ -25,31 +25,136 @@ NANOEM_DECL_ENUM(int, nanoem_application_plugin_effect_option_t) { NANOEM_APPLIC
 
 typedef struct nanoem_application_plugin_effect_compiler_t nanoem_application_plugin_effect_compiler_t;
 
+/**
+ * \brief
+ *
+ * \return NANOEM_DECL_API nanoem_u32_t APIENTRY
+ */
 NANOEM_DECL_API nanoem_u32_t APIENTRY nanoemApplicationPluginEffectCompilerGetABIVersion(void);
+
+/**
+ * \brief
+ *
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerInitialize(void);
+
+/**
+ * \brief
+ *
+ * \return NANOEM_DECL_API nanoem_application_plugin_effect_compiler_t* APIENTRY
+ */
 NANOEM_DECL_API nanoem_application_plugin_effect_compiler_t *APIENTRY nanoemApplicationPluginEffectCompilerCreate();
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param key
+ * \param value
+ * \param size
+ * \param status
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerGetOption(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u32_t key, void *value, nanoem_u32_t *size,
     nanoem_i32_t *status);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param key
+ * \param value
+ * \param size
+ * \param status
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerSetOption(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u32_t key, const void *value, nanoem_u32_t size,
     nanoem_i32_t *status);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param size
+ * \return NANOEM_DECL_API const char* const* APIENTRY
+ */
 NANOEM_DECL_API const char *const *APIENTRY nanoemApplicationPluginEffectCompilerGetAvailableExtensions(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u32_t *size);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param path
+ * \param size
+ * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
+ */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY nanoemApplicationPluginEffectCompilerCreateBinaryFromFile(
     nanoem_application_plugin_effect_compiler_t *plugin, const char *path, nanoem_u32_t *size);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param source
+ * \param length
+ * \param size
+ * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
+ */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY nanoemApplicationPluginEffectCompilerCreateBinaryFromMemory(
     nanoem_application_plugin_effect_compiler_t *plugin, const char *source, nanoem_u32_t length, nanoem_u32_t *size);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param path
+ * \param data
+ * \param size
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerAddIncludeSource(
     nanoem_application_plugin_effect_compiler_t *plugin, const char *path, const nanoem_u8_t *data, nanoem_u32_t size);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \return NANOEM_DECL_API const char* APIENTRY
+ */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetFailureReason(
     const nanoem_application_plugin_effect_compiler_t *plugin);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \return NANOEM_DECL_API const char* APIENTRY
+ */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetRecoverySuggestion(
     const nanoem_application_plugin_effect_compiler_t *plugin);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ * \param data
+ * \param size
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroyBinary(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u8_t *data, nanoem_u32_t size);
+
+/**
+ * \brief
+ *
+ * \param plugin
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroy(
     nanoem_application_plugin_effect_compiler_t *plugin);
+
+/**
+ * \brief
+ *
+ */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerTerminate(void);
 
 #endif /* EMAPP_PLUGIN_SDK_EFFECT_H_ */

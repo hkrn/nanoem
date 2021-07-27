@@ -11,8 +11,26 @@
 #include "../nanoem.h"
 #include "./mutable.h"
 
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param buffer 
+ * \param offset 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBufferNMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMutableMotionSaveToBufferNMD(nanoem_mutable_motion_t *motion, nanoem_mutable_buffer_t *buffer, nanoem_status_t *status);
 

@@ -416,56 +416,261 @@ typedef void (*nanoem_unicode_string_factory_destroy_string_t)(void *, nanoem_un
 typedef void (*nanoem_unicode_string_factory_destroy_byte_array_t)(void *, nanoem_u8_t *);
 /** @} */
 
+/**
+ * \brief 
+ * 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_unicode_string_factory_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_unicode_string_factory_t *APIENTRY
 nanoemUnicodeStringFactoryCreate(nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertFromCp932Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_from_codec_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertFromUtf8Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_from_codec_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertFromUtf16Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_from_codec_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertToCp932Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_to_codec_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertToUtf8Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_to_codec_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertToUtf16Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_to_codec_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetHashCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_hash_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetCompareCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_compare_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetGetCacheCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_get_cache_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetSetCacheCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_set_cache_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetDestroyStringCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_destroy_string_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetDestroyByteArrayCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_destroy_byte_array_t value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \return NANOEM_DECL_API void* APIENTRY 
+ */
 NANOEM_DECL_API void *APIENTRY
 nanoemUnicodeStringFactoryGetOpaqueData(const nanoem_unicode_string_factory_t *factory);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetOpaqueData(nanoem_unicode_string_factory_t *factory, void *value);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ * \param length 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_unicode_string_t *APIENTRY
 nanoemUnicodeStringFactoryCreateString(nanoem_unicode_string_factory_t *factory, const nanoem_u8_t *string, nanoem_rsize_t length, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ * \param length 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY
 nanoemUnicodeStringFactoryGetByteArray(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ * \param length 
+ * \param codec 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_unicode_string_t *APIENTRY
 nanoemUnicodeStringFactoryCreateStringWithEncoding(nanoem_unicode_string_factory_t *factory, const nanoem_u8_t *string, nanoem_rsize_t length, nanoem_codec_type_t codec, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ * \param length 
+ * \param codec 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY
 nanoemUnicodeStringFactoryGetByteArrayEncoding(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param source 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_unicode_string_t *APIENTRY
 nanoemUnicodeStringFactoryCloneString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *source, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param lvalue 
+ * \param rvalue 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemUnicodeStringFactoryCompareString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *lvalue, const nanoem_unicode_string_t *rvalue);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ * \param length 
+ * \param codec 
+ * \param status 
+ * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_u8_t * APIENTRY
 nanoemUnicodeStringFactoryGetCacheString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ * \param length 
+ * \param codec 
+ * \param status 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetCacheString(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param bytes 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyByteArray(nanoem_unicode_string_factory_t *factory, nanoem_u8_t *bytes);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param string 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyString(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_t *string);
+
+/**
+ * \brief 
+ * 
+ * \param factory 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroy(nanoem_unicode_string_factory_t *factory);
 /** @} */
@@ -476,32 +681,140 @@ nanoemUnicodeStringFactoryDestroy(nanoem_unicode_string_factory_t *factory);
  */
 NANOEM_DECL_OPAQUE(nanoem_buffer_t);
 
+/**
+ * \brief 
+ * 
+ * \param data 
+ * \param length 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_buffer_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_buffer_t *APIENTRY
 nanoemBufferCreate(const nanoem_u8_t *data, nanoem_rsize_t length, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemBufferGetLength(const nanoem_buffer_t *buffer);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemBufferGetOffset(const nanoem_buffer_t *buffer);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_u8_t *APIENTRY
 nanoemBufferGetDataPtr(const nanoem_buffer_t *buffer);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param size 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemBufferCanReadLength(const nanoem_buffer_t *buffer, nanoem_rsize_t size);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param skip 
+ * \param status 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemBufferSkip(nanoem_buffer_t *buffer, nanoem_rsize_t skip, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param position 
+ * \param status 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemBufferSeek(nanoem_buffer_t *buffer, nanoem_rsize_t position, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_u8_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_u8_t APIENTRY
 nanoemBufferReadByte(nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_i16_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_i16_t APIENTRY
 nanoemBufferReadInt16LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_u16_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_u16_t APIENTRY
 nanoemBufferReadInt16LittleEndianUnsigned(nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_i32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_i32_t APIENTRY
 nanoemBufferReadInt32LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemBufferReadFloat32LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ * \param len 
+ * \param status 
+ * \return NANOEM_DECL_API char* APIENTRY 
+ */
 NANOEM_DECL_API char *APIENTRY
 nanoemBufferReadBuffer(nanoem_buffer_t *buffer, nanoem_rsize_t len, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param buffer 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemBufferDestroy(nanoem_buffer_t *buffer);
 /** @} */
@@ -546,12 +859,40 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_format_type_t){
  * \defgroup nanoem_model_object Model Object
  * @{
  */
+
+ /**
+  * \brief 
+  * 
+  * \param object 
+  * \return NANOEM_DECL_API const nanoem_model_t* APIENTRY 
+  */
 NANOEM_DECL_API const nanoem_model_t *APIENTRY
 nanoemModelObjectGetParentModel(const nanoem_model_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelObjectGetIndex(const nanoem_model_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \return NANOEM_DECL_API const nanoem_user_data_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_user_data_t *APIENTRY
 nanoemModelObjectGetUserData(const nanoem_model_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \param user_data 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemModelObjectSetUserData(nanoem_model_object_t *object, nanoem_user_data_t *user_data);
 /** @} */
@@ -571,30 +912,123 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_vertex_type_t){
     NANOEM_MODEL_VERTEX_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetOrigin(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetNormal(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetTexCoord(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetAdditionalUV(const nanoem_model_vertex_t *vertex, nanoem_rsize_t index);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetSdefC(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetSdefR0(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetSdefR1(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelVertexGetBoneObject(const nanoem_model_vertex_t *vertex, nanoem_rsize_t index);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \param index 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelVertexGetBoneWeight(const nanoem_model_vertex_t *vertex, nanoem_rsize_t index);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelVertexGetEdgeSize(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API nanoem_model_vertex_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_vertex_type_t APIENTRY
 nanoemModelVertexGetType(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelVertexGetModelObject(const nanoem_model_vertex_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelVertexGetModelObjectMutable(nanoem_model_vertex_t *vertex);
 /** @} */
@@ -613,58 +1047,247 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_material_sphere_map_texture_type_t){
     NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMaterialGetName(const nanoem_model_material_t *material, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_model_texture_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_texture_t *APIENTRY
 nanoemModelMaterialGetDiffuseTextureObject(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_model_texture_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_texture_t *APIENTRY
 nanoemModelMaterialGetSphereMapTextureObject(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_model_texture_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_texture_t *APIENTRY
 nanoemModelMaterialGetToonTextureObject(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMaterialGetClob(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetAmbientColor(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetDiffuseColor(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetSpecularColor(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetEdgeColor(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetDiffuseOpacity(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetEdgeOpacity(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetEdgeSize(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetSpecularPower(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_model_material_sphere_map_texture_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_material_sphere_map_texture_type_t APIENTRY
 nanoemModelMaterialGetSphereMapTextureType(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemModelMaterialGetNumVertexIndices(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelMaterialGetToonTextureIndex(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsToonShared(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsCullingDisabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsCastingShadowEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsCastingShadowMapEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsShadowMapEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsEdgeEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsVertexColorEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsPointDrawEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsLineDrawEnabled(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelMaterialGetModelObject(const nanoem_model_material_t *material);
+
+/**
+ * \brief 
+ * 
+ * \param material 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelMaterialGetModelObjectMutable(nanoem_model_material_t *material);
 /** @} */
@@ -673,62 +1296,266 @@ nanoemModelMaterialGetModelObjectMutable(nanoem_model_material_t *material);
  * \defgroup nanoem_model_bone Bone
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelBoneGetName(const nanoem_model_bone_t *bone, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetParentBoneObject(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetInherentParentBoneObject(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetEffectorBoneObject(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetTargetBoneObject(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_model_constraint_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_constraint_t *APIENTRY
 nanoemModelBoneGetConstraintObject(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_model_constraint_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_constraint_t *APIENTRY
 nanoemModelBoneGetConstraintObjectMutable(nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetOrigin(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetDestinationOrigin(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetFixedAxis(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetLocalXAxis(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetLocalZAxis(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelBoneGetInherentCoefficient(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelBoneGetStageIndex(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasDestinationBone(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsRotateable(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsMovable(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsVisible(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsUserHandleable(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasConstraint(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasLocalInherent(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasInherentTranslation(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasInherentOrientation(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasFixedAxis(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasLocalAxes(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsAffectedByPhysicsSimulation(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasExternalParentBone(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelBoneGetModelObject(const nanoem_model_bone_t *bone);
+
+/**
+ * \brief 
+ * 
+ * \param bone 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelBoneGetModelObjectMutable(nanoem_model_bone_t *bone);
 /** @} */
@@ -737,18 +1564,68 @@ nanoemModelBoneGetModelObjectMutable(nanoem_model_bone_t *bone);
  * \defgroup nanoem_model_constraint Constraint
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param constraint 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelConstraintGetEffectorBoneObject(const nanoem_model_constraint_t *constraint);
+
+/**
+ * \brief 
+ * 
+ * \param constraint 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelConstraintGetTargetBoneObject(const nanoem_model_constraint_t *constraint);
+
+/**
+ * \brief 
+ * 
+ * \param constraint 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelConstraintGetAngleLimit(const nanoem_model_constraint_t *constraint);
+
+/**
+ * \brief 
+ * 
+ * \param constraint 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelConstraintGetNumIterations(const nanoem_model_constraint_t *constraint);
+
+/**
+ * \brief 
+ * 
+ * \param constraints 
+ * \param num_joints 
+ * \return NANOEM_DECL_API nanoem_model_constraint_joint_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_constraint_joint_t *const *APIENTRY
 nanoemModelConstraintGetAllJointObjects(const nanoem_model_constraint_t *constraints, nanoem_rsize_t *num_joints);
+
+/**
+ * \brief 
+ * 
+ * \param constraint 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelConstraintGetModelObject(const nanoem_model_constraint_t *constraint);
+
+/**
+ * \brief 
+ * 
+ * \param constraint 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelConstraintGetModelObjectMutable(nanoem_model_constraint_t *constraint);
 
@@ -756,12 +1633,40 @@ nanoemModelConstraintGetModelObjectMutable(nanoem_model_constraint_t *constraint
  * \defgroup nanoem_model_constraint_joint Constraint Joint
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelConstraintJointGetBoneObject(const nanoem_model_constraint_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelConstraintJointGetUpperLimit(const nanoem_model_constraint_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelConstraintJointGetLowerLimit(const nanoem_model_constraint_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelConstraintJointHasAngleLimit(const nanoem_model_constraint_joint_t *joint);
 /** @} */
@@ -772,10 +1677,31 @@ nanoemModelConstraintJointHasAngleLimit(const nanoem_model_constraint_joint_t *j
  * \defgroup nanoem_model_texture Texture
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param texture 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelTextureGetPath(const nanoem_model_texture_t *texture);
+
+/**
+ * \brief 
+ * 
+ * \param texture 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelTextureGetModelObject(const nanoem_model_texture_t *texture);
+
+/**
+ * \brief 
+ * 
+ * \param texture 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelTextureGetModelObjectMutable(nanoem_model_texture_t *texture);
 /** @} */
@@ -816,10 +1742,31 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_type_t){
  * \defgroup nanoem_model_morph_bone Bone Morph
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelMorphBoneGetBoneObject(const nanoem_model_morph_bone_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphBoneGetTranslation(const nanoem_model_morph_bone_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphBoneGetOrientation(const nanoem_model_morph_bone_t *morph);
 /** @} */
@@ -828,8 +1775,22 @@ nanoemModelMorphBoneGetOrientation(const nanoem_model_morph_bone_t *morph);
  * \defgroup nanoem_model_morph_flip Flip Morph
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_morph_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelMorphFlipGetMorphObject(const nanoem_model_morph_flip_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphFlipGetWeight(const nanoem_model_morph_flip_t *morph);
 /** @} */
@@ -838,8 +1799,22 @@ nanoemModelMorphFlipGetWeight(const nanoem_model_morph_flip_t *morph);
  * \defgroup nanoem_model_morph_group Group Morph
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_morph_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelMorphGroupGetMorphObject(const nanoem_model_morph_group_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphGroupGetWeight(const nanoem_model_morph_group_t *morph);
 /** @} */
@@ -848,12 +1823,40 @@ nanoemModelMorphGroupGetWeight(const nanoem_model_morph_group_t *morph);
  * \defgroup nanoem_model_morph_impulse Impulse Morph
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_rigid_body_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelMorphImpulseGetRigidBodyObject(const nanoem_model_morph_impulse_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphImpulseGetTorque(const nanoem_model_morph_impulse_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphImpulseGetVelocity(const nanoem_model_morph_impulse_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMorphImpulseIsLocal(const nanoem_model_morph_impulse_t *morph);
 /** @} */
@@ -870,30 +1873,120 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_material_operation_type_t){
     NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_material_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_material_t *APIENTRY
 nanoemModelMorphMaterialGetMaterialObject(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetAmbientColor(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetDiffuseColor(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetSpecularColor(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetEdgeColor(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetDiffuseTextureBlend(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetSphereMapTextureBlend(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetToonTextureBlend(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetDiffuseOpacity(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetEdgeOpacity(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetSpecularPower(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetEdgeSize(const nanoem_model_morph_material_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_model_morph_material_operation_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_material_operation_type_t APIENTRY
 nanoemModelMorphMaterialGetOperationType(const nanoem_model_morph_material_t *morph);
 /** @} */
@@ -902,8 +1995,22 @@ nanoemModelMorphMaterialGetOperationType(const nanoem_model_morph_material_t *mo
  * \defgroup nanoem_model_morph_uv UV Morph
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_vertex_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_vertex_t *APIENTRY
 nanoemModelMorphUVGetVertexObject(const nanoem_model_morph_uv_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphUVGetPosition(const nanoem_model_morph_uv_t *morph);
 /** @} */
@@ -912,34 +2019,139 @@ nanoemModelMorphUVGetPosition(const nanoem_model_morph_uv_t *morph);
  * \defgroup nanoem_model_morph_vertex Vertex Morph
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_vertex_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_vertex_t *APIENTRY
 nanoemModelMorphVertexGetVertexObject(const nanoem_model_morph_vertex_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphVertexGetPosition(const nanoem_model_morph_vertex_t *morph);
 /** @} */
 
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMorphGetName(const nanoem_model_morph_t *morph, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_model_morph_category_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_category_t APIENTRY
 nanoemModelMorphGetCategory(const nanoem_model_morph_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_model_morph_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_type_t APIENTRY
 nanoemModelMorphGetType(const nanoem_model_morph_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_bone_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_bone_t *const *APIENTRY
 nanoemModelMorphGetAllBoneMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_flip_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_flip_t *const *APIENTRY
 nanoemModelMorphGetAllFlipMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_group_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_group_t *const *APIENTRY
 nanoemModelMorphGetAllGroupMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_impulse_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_impulse_t *const *APIENTRY
 nanoemModelMorphGetAllImpulseMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_material_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_material_t *const *APIENTRY
 nanoemModelMorphGetAllMaterialMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_uv_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_uv_t *const *APIENTRY
 nanoemModelMorphGetAllUVMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_morph_vertex_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_vertex_t *const *APIENTRY
 nanoemModelMorphGetAllVertexMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelMorphGetModelObject(const nanoem_model_morph_t *morph);
+
+/**
+ * \brief 
+ * 
+ * \param morph 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelMorphGetModelObjectMutable(nanoem_model_morph_t *morph);
 /** @} */
@@ -956,20 +2168,77 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_label_item_type_t){
     NANOEM_MODEL_LABEL_ITEM_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param label 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelLabelGetName(const nanoem_model_label_t *label, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param label 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLabelIsSpecial(const nanoem_model_label_t *label);
+
+/**
+ * \brief 
+ * 
+ * \param label 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_label_item_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_label_item_t *const *APIENTRY
 nanoemModelLabelGetAllItemObjects(const nanoem_model_label_t *label, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param label_item 
+ * \return NANOEM_DECL_API nanoem_model_label_item_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_label_item_type_t APIENTRY
 nanoemModelLabelItemGetType(const nanoem_model_label_item_t *label_item);
+
+/**
+ * \brief 
+ * 
+ * \param label_item 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelLabelItemGetBoneObject(const nanoem_model_label_item_t *label_item);
+
+/**
+ * \brief 
+ * 
+ * \param label_item 
+ * \return NANOEM_DECL_API const nanoem_model_morph_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelLabelItemGetMorphObject(const nanoem_model_label_item_t *label_item);
+
+/**
+ * \brief 
+ * 
+ * \param label 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelLabelGetModelObject(const nanoem_model_label_t *label);
+
+/**
+ * \brief 
+ * 
+ * \param label 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelLabelGetModelObjectMutable(nanoem_model_label_t *label);
 /** @} */
@@ -996,38 +2265,157 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_transform_type_t){
     NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelRigidBodyGetName(const nanoem_model_rigid_body_t *rigid_body, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelRigidBodyGetBoneObject(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelRigidBodyGetOrigin(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelRigidBodyGetOrientation(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelRigidBodyGetShapeSize(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetMass(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetLinearDamping(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetAngularDamping(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetFriction(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetRestitution(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_model_rigid_body_shape_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_rigid_body_shape_type_t APIENTRY
 nanoemModelRigidBodyGetShapeType(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_model_rigid_body_transform_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_rigid_body_transform_type_t APIENTRY
 nanoemModelRigidBodyGetTransformType(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelRigidBodyGetCollisionGroupId(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelRigidBodyGetCollisionMask(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelRigidBodyIsBoneRelativePosition(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelRigidBodyGetModelObject(const nanoem_model_rigid_body_t *rigid_body);
+
+/**
+ * \brief 
+ * 
+ * \param rigid_body 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelRigidBodyGetModelObjectMutable(nanoem_model_rigid_body_t *rigid_body);
 /** @} */
@@ -1048,32 +2436,130 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_joint_type_t){
     NANOEM_MODEL_JOINT_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param joints 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelJointGetName(const nanoem_model_joint_t *joints, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_model_rigid_body_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelJointGetRigidBodyAObject(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_model_rigid_body_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelJointGetRigidBodyBObject(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetOrigin(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetOrientation(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API nanoem_model_joint_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_joint_type_t APIENTRY
 nanoemModelJointGetType(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetLinearUpperLimit(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetLinearLowerLimit(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetLinearStiffness(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetAngularUpperLimit(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetAngularLowerLimit(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param joint 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetAngularStiffness(const nanoem_model_joint_t *joint);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelJointGetModelObject(const nanoem_model_joint_t *vertex);
+
+/**
+ * \brief 
+ * 
+ * \param vertex 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelJointGetModelObjectMutable(nanoem_model_joint_t *vertex);
 /** @} */
@@ -1100,84 +2586,366 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_aero_model_type_t){
     NANOEM_MODEL_SOFT_BODY_AERO_MODEL_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *body, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_model_soft_body_anchor_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_soft_body_anchor_t *const * APIENTRY
 nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \param num_objects 
+ * \return NANOEM_DECL_API const nanoem_u32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_u32_t * APIENTRY
 nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API const nanoem_model_material_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_material_t *APIENTRY
 nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_model_soft_body_shape_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_soft_body_shape_type_t APIENTRY
 nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_model_soft_body_aero_model_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_soft_body_aero_model_type_t APIENTRY
 nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *body);
 
@@ -1187,60 +2955,261 @@ nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *
  */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelSoftBodyAnchorGetRigidBodyObject(const nanoem_model_soft_body_anchor_t *anchor);
+
+/**
+ * \brief 
+ * 
+ * \param anchor 
+ * \return NANOEM_DECL_API const nanoem_model_vertex_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_vertex_t *APIENTRY
 nanoemModelSoftBodyAnchorGetVertexObject(const nanoem_model_soft_body_anchor_t *anchor);
+
+/**
+ * \brief 
+ * 
+ * \param anchor 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyAnchorIsNearEnabled(const nanoem_model_soft_body_anchor_t *anchor);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelSoftBodyGetModelObject(const nanoem_model_soft_body_t *body);
+
+/**
+ * \brief 
+ * 
+ * \param body 
+ * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelSoftBodyGetModelObjectMutable(nanoem_model_soft_body_t *body);
 /** @} */
 
 /** @} */
 
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_model_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_t *APIENTRY
 nanoemModelCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMD(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param buffer 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBuffer(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \return NANOEM_DECL_API nanoem_model_format_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_format_type_t APIENTRY
 nanoemModelGetFormatType(const nanoem_model_t *model);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \return NANOEM_DECL_API nanoem_codec_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_codec_type_t APIENTRY
 nanoemModelGetCodecType(const nanoem_model_t *model);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemModelGetAdditionalUVSize(const nanoem_model_t *model);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetName(const nanoem_model_t *model, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param language 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetComment(const nanoem_model_t *model, nanoem_language_type_t language);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_vertices 
+ * \return NANOEM_DECL_API nanoem_model_vertex_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_vertex_t *const *APIENTRY
 nanoemModelGetAllVertexObjects(const nanoem_model_t *model, nanoem_rsize_t *num_vertices);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_indices 
+ * \return NANOEM_DECL_API const nanoem_u32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_u32_t *APIENTRY
 nanoemModelGetAllVertexIndices(const nanoem_model_t *model, nanoem_rsize_t *num_indices);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_materials 
+ * \return NANOEM_DECL_API nanoem_model_material_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_material_t *const *APIENTRY
 nanoemModelGetAllMaterialObjects(const nanoem_model_t *model, nanoem_rsize_t *num_materials);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_bones 
+ * \return NANOEM_DECL_API nanoem_model_bone_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_bone_t *const *APIENTRY
 nanoemModelGetAllBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bones);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_bones 
+ * \return NANOEM_DECL_API nanoem_model_bone_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_bone_t *const *APIENTRY
 nanoemModelGetAllOrderedBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bones);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_constraints 
+ * \return NANOEM_DECL_API nanoem_model_constraint_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_constraint_t *const *APIENTRY
 nanoemModelGetAllConstraintObjects(const nanoem_model_t *model, nanoem_rsize_t *num_constraints);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_textures 
+ * \return NANOEM_DECL_API nanoem_model_texture_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_texture_t *const *APIENTRY
 nanoemModelGetAllTextureObjects(const nanoem_model_t *model, nanoem_rsize_t *num_textures);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_morphs 
+ * \return NANOEM_DECL_API nanoem_model_morph_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_morph_t *const *APIENTRY
 nanoemModelGetAllMorphObjects(const nanoem_model_t *model, nanoem_rsize_t *num_morphs);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_labels 
+ * \return NANOEM_DECL_API nanoem_model_label_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_label_t *const *APIENTRY
 nanoemModelGetAllLabelObjects(const nanoem_model_t *model, nanoem_rsize_t *num_labels);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_rigid_bodies 
+ * \return NANOEM_DECL_API nanoem_model_rigid_body_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_rigid_body_t *const *APIENTRY
 nanoemModelGetAllRigidBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *num_rigid_bodies);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_joints 
+ * \return NANOEM_DECL_API nanoem_model_joint_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_joint_t *const *APIENTRY
 nanoemModelGetAllJointObjects(const nanoem_model_t *model, nanoem_rsize_t *num_joints);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param num_soft_bodies 
+ * \return NANOEM_DECL_API nanoem_model_soft_body_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_soft_body_t *const *APIENTRY
 nanoemModelGetAllSoftBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *num_soft_bodies);
+
+/**
+ * \brief 
+ * 
+ * \param model 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemModelDestroy(nanoem_model_t *model);
 /** @} */
@@ -1276,20 +3245,80 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_format_type_t){
  * \defgroup nanoem_keyframe_object Keyframe Object
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \return NANOEM_DECL_API const nanoem_motion_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_t *APIENTRY
 nanoemMotionKeyframeObjectGetParentMotion(const nanoem_motion_keyframe_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionKeyframeObjectGetIndex(const nanoem_motion_keyframe_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \return NANOEM_DECL_API nanoem_frame_index_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionKeyframeObjectGetFrameIndex(const nanoem_motion_keyframe_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \param offset 
+ * \return NANOEM_DECL_API nanoem_frame_index_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionKeyframeObjectGetFrameIndexWithOffset(const nanoem_motion_keyframe_object_t *object, int offset);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \return NANOEM_DECL_API nanoem_user_data_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_user_data_t *APIENTRY
 nanoemMotionKeyframeObjectGetUserDataObject(const nanoem_motion_keyframe_object_t *object);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \param user_data 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionKeyframeObjectSetUserDataObject(nanoem_motion_keyframe_object_t *object, nanoem_user_data_t *user_data);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \param key 
+ * \return NANOEM_DECL_API const char* APIENTRY 
+ */
 NANOEM_DECL_API const char *APIENTRY
 nanoemMotionKeyframeObjectGetAnnotation(const nanoem_motion_keyframe_object_t *object, const char *key);
+
+/**
+ * \brief 
+ * 
+ * \param object 
+ * \param key 
+ * \param value 
+ * \param status 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionKeyframeObjectSetAnnotation(nanoem_motion_keyframe_object_t *object, const char *key, const char *value, nanoem_status_t *status);
 /** @} */
@@ -1308,12 +3337,39 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_effect_parameter_type_t) {
     NANOEM_MOTION_EFFECT_PARAMETER_TYPE_MAX_ENUM_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param parameter 
+ * \return NANOEM_DECL_API const nanoem_motion_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_t *APIENTRY
 nanoemMotionEffectParameterGetParentMotion(const nanoem_motion_effect_parameter_t *parameter);
+
+/**
+ * \brief 
+ * 
+ * \param parameter 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionEffectParameterGetName(const nanoem_motion_effect_parameter_t *parameter);
+
+/**
+ * \brief 
+ * 
+ * \param parameter 
+ * \return NANOEM_DECL_API nanoem_motion_effect_parameter_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_effect_parameter_type_t APIENTRY
 nanoemMotionEffectParameterGetType(const nanoem_motion_effect_parameter_t *parameter);
+
+/**
+ * \brief 
+ * 
+ * \param parameter 
+ * \return NANOEM_DECL_API const void* APIENTRY 
+ */
 NANOEM_DECL_API const void *APIENTRY
 nanoemMotionEffectParameterGetValue(const nanoem_motion_effect_parameter_t *parameter);
 /** @} */
@@ -1322,12 +3378,40 @@ nanoemMotionEffectParameterGetValue(const nanoem_motion_effect_parameter_t *para
  * \defgroup nanoem_motion_outside_parent Outside Parent
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param op 
+ * \return NANOEM_DECL_API const nanoem_motion_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_t *APIENTRY
 nanoemMotionOutsideParentGetParentMotion(const nanoem_motion_outside_parent_t *op);
+
+/**
+ * \brief 
+ * 
+ * \param op 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionOutsideParentGetTargetBoneName(const nanoem_motion_outside_parent_t *op);
+
+/**
+ * \brief 
+ * 
+ * \param op 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionOutsideParentGetTargetObjectName(const nanoem_motion_outside_parent_t *op);
+
+/**
+ * \brief 
+ * 
+ * \param op 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionOutsideParentGetSubjectBoneName(const nanoem_motion_outside_parent_t *op);
 /** @} */
@@ -1336,28 +3420,113 @@ nanoemMotionOutsideParentGetSubjectBoneName(const nanoem_motion_outside_parent_t
  * \defgroup nanoem_motion_accessory_keyframe Accessory Keyframe
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetTranslation(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetOrientation(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionAccessoryKeyframeGetScaleFactor(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionAccessoryKeyframeGetOpacity(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionAccessoryKeyframeIsVisible(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionAccessoryKeyframeIsAddBlendEnabled(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionAccessoryKeyframeIsShadowEnabled(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_outside_parent_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetOutsideParent(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_outside_parent_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetOutsideParentMutable(nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param num_object 
+ * \return NANOEM_DECL_API nanoem_motion_effect_parameter_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_effect_parameter_t *const *APIENTRY
 nanoemMotionAccessoryKeyframeGetAllEffectParameterObjects(const nanoem_motion_accessory_keyframe_t *keyframe, nanoem_rsize_t *num_object);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetKeyframeObject(const nanoem_motion_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetKeyframeObjectMutable(nanoem_motion_accessory_keyframe_t *keyframe);
 /** @} */
@@ -1376,24 +3545,95 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_bone_keyframe_interpolation_type_t)
     NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionBoneKeyframeGetName(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionBoneKeyframeGetTranslation(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionBoneKeyframeGetOrientation(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionBoneKeyframeGetId(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_u8_t *APIENTRY
 nanoemMotionBoneKeyframeGetInterpolation(const nanoem_motion_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t index);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param index 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionBoneKeyframeIsLinearInterpolation(const nanoem_motion_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t index);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_u32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_u32_t APIENTRY
 nanoemMotionBoneKeyframeGetStageIndex(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionBoneKeyframeIsPhysicsSimulationEnabled(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionBoneKeyframeGetKeyframeObject(const nanoem_motion_bone_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionBoneKeyframeGetKeyframeObjectMutable(nanoem_motion_bone_keyframe_t *keyframe);
 /** @} */
@@ -1414,28 +3654,113 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_camera_keyframe_interpolation_type_
     NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionCameraKeyframeGetLookAt(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionCameraKeyframeGetAngle(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionCameraKeyframeGetDistance(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionCameraKeyframeGetFov(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionCameraKeyframeIsPerspectiveView(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_u8_t *APIENTRY
 nanoemMotionCameraKeyframeGetInterpolation(const nanoem_motion_camera_keyframe_t *keyframe, nanoem_motion_camera_keyframe_interpolation_type_t index);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param index 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionCameraKeyframeIsLinearInterpolation(const nanoem_motion_camera_keyframe_t *keyframe, nanoem_motion_camera_keyframe_interpolation_type_t index);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_u32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_u32_t APIENTRY
 nanoemMotionCameraKeyframeGetStageIndex(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_outside_parent_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionCameraKeyframeGetOutsideParent(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_outside_parent_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionCameraKeyframeGetOutsideParentMutable(nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionCameraKeyframeGetKeyframeObject(const nanoem_motion_camera_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionCameraKeyframeGetKeyframeObjectMutable(nanoem_motion_camera_keyframe_t *keyframe);
 /** @} */
@@ -1444,12 +3769,40 @@ nanoemMotionCameraKeyframeGetKeyframeObjectMutable(nanoem_motion_camera_keyframe
  * \defgroup nanoem_motion_light_keyframe Light Keyframe
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionLightKeyframeGetColor(const nanoem_motion_light_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionLightKeyframeGetDirection(const nanoem_motion_light_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionLightKeyframeGetKeyframeObject(const nanoem_motion_light_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionLightKeyframeGetKeyframeObjectMutable(nanoem_motion_light_keyframe_t *keyframe);
 /** @} */
@@ -1458,30 +3811,124 @@ nanoemMotionLightKeyframeGetKeyframeObjectMutable(nanoem_motion_light_keyframe_t
  * \defgroup nanoem_motion_model_keyframe Model Keyframe
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeIsVisible(const nanoem_motion_model_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionModelKeyframeGetEdgeScaleFactor(const nanoem_motion_model_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionModelKeyframeGetEdgeColor(const nanoem_motion_model_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeIsAddBlendEnabled(const nanoem_motion_model_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeIsPhysicsSimulationEnabled(const nanoem_motion_model_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_motion_model_keyframe_constraint_state_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_model_keyframe_constraint_state_t *const *APIENTRY
 nanoemMotionModelKeyframeGetAllConstraintStateObjects(const nanoem_motion_model_keyframe_t *keyframe, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_motion_effect_parameter_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_effect_parameter_t *const *APIENTRY
 nanoemMotionModelKeyframeGetAllEffectParameterObjects(const nanoem_motion_model_keyframe_t *keyframe, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \param num_objects 
+ * \return NANOEM_DECL_API nanoem_motion_outside_parent_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *const *APIENTRY
 nanoemMotionModelKeyframeGetAllOutsideParentObjects(const nanoem_motion_model_keyframe_t *keyframe, nanoem_rsize_t *num_objects);
+
+/**
+ * \brief 
+ * 
+ * \param state 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionModelKeyframeConstraintStateGetBoneName(const nanoem_motion_model_keyframe_constraint_state_t *state);
+
+/**
+ * \brief 
+ * 
+ * \param state 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionModelKeyframeConstraintStateGetBoneId(const nanoem_motion_model_keyframe_constraint_state_t *state);
+
+/**
+ * \brief 
+ * 
+ * \param state 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeConstraintStateIsEnabled(const nanoem_motion_model_keyframe_constraint_state_t *state);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionModelKeyframeGetKeyframeObject(const nanoem_motion_model_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionModelKeyframeGetKeyframeObjectMutable(nanoem_motion_model_keyframe_t *keyframe);
 /** @} */
@@ -1490,14 +3937,49 @@ nanoemMotionModelKeyframeGetKeyframeObjectMutable(nanoem_motion_model_keyframe_t
  * \defgroup nanoem_motion_morph_keyframe Morph Keyframe
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionMorphKeyframeGetName(const nanoem_motion_morph_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionMorphKeyframeGetWeight(const nanoem_motion_morph_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionMorphKeyframeGetId(const nanoem_motion_morph_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionMorphKeyframeGetKeyframeObject(const nanoem_motion_morph_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionMorphKeyframeGetKeyframeObjectMutable(nanoem_motion_morph_keyframe_t *keyframe);
 /** @} */
@@ -1506,78 +3988,374 @@ nanoemMotionMorphKeyframeGetKeyframeObjectMutable(nanoem_motion_morph_keyframe_t
  * \defgroup nanoem_motion_morph_keyframe Morph Keyframe
  * @{
  */
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionSelfShadowKeyframeGetDistance(const nanoem_motion_self_shadow_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API int APIENTRY 
+ */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionSelfShadowKeyframeGetMode(const nanoem_motion_self_shadow_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionSelfShadowKeyframeGetKeyframeObject(const nanoem_motion_self_shadow_keyframe_t *keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param keyframe 
+ * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionSelfShadowKeyframeGetKeyframeObjectMutable(nanoem_motion_self_shadow_keyframe_t *keyframe);
 /** @} */
 
+/**
+ * \brief 
+ * 
+ * \param factory 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_motion_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_t *APIENTRY
 nanoemMotionCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param buffer 
+ * \param offset 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBufferVMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param buffer 
+ * \param offset 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_bool_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBuffer(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \return NANOEM_DECL_API nanoem_motion_format_type_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_format_type_t APIENTRY
 nanoemMotionGetFormatType(const nanoem_motion_t *motion);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionGetTargetModelName(const nanoem_motion_t *motion);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \return NANOEM_DECL_API nanoem_frame_index_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionGetMaxFrameIndex(const nanoem_motion_t *motion);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \return NANOEM_DECL_API nanoem_f32_t APIENTRY 
+ */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionGetPreferredFPS(const nanoem_motion_t *motion);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param key 
+ * \return NANOEM_DECL_API const char* APIENTRY 
+ */
 NANOEM_DECL_API const char *APIENTRY
 nanoemMotionGetAnnotation(const nanoem_motion_t *motion, const char *key);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_accessory_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_accessory_keyframe_t *const *APIENTRY
 nanoemMotionGetAllAccessoryKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_bone_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_bone_keyframe_t *const *APIENTRY
 nanoemMotionGetAllBoneKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_camera_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_camera_keyframe_t *const *APIENTRY
 nanoemMotionGetAllCameraKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_light_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_light_keyframe_t *const *APIENTRY
 nanoemMotionGetAllLightKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_model_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_model_keyframe_t *const *APIENTRY
 nanoemMotionGetAllModelKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_morph_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_morph_keyframe_t *const *APIENTRY
 nanoemMotionGetAllMorphKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param num_keyframes 
+ * \return NANOEM_DECL_API nanoem_motion_self_shadow_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_self_shadow_keyframe_t *const *APIENTRY
 nanoemMotionGetAllSelfShadowKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param name 
+ * \param num_keyframes 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_motion_bone_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_bone_keyframe_t *const *APIENTRY
 nanoemMotionExtractBoneTrackKeyframes(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_rsize_t *num_keyframes, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param name 
+ * \param num_keyframes 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_motion_morph_keyframe_t* const* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_motion_morph_keyframe_t *const *APIENTRY
 nanoemMotionExtractMorphTrackKeyframes(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_rsize_t *num_keyframes, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_accessory_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_accessory_keyframe_t *APIENTRY
 nanoemMotionFindAccessoryKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param name 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_bone_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_bone_keyframe_t *APIENTRY
 nanoemMotionFindBoneKeyframeObject(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_camera_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_camera_keyframe_t *APIENTRY
 nanoemMotionFindCameraKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_light_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_light_keyframe_t *APIENTRY
 nanoemMotionFindLightKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_model_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_model_keyframe_t *APIENTRY
 nanoemMotionFindModelKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param name 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_morph_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_morph_keyframe_t *APIENTRY
 nanoemMotionFindMorphKeyframeObject(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param index 
+ * \return NANOEM_DECL_API const nanoem_motion_self_shadow_keyframe_t* APIENTRY 
+ */
 NANOEM_DECL_API const nanoem_motion_self_shadow_keyframe_t *APIENTRY
 nanoemMotionFindSelfShadowKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestAccessoryKeyframes(const nanoem_motion_t *motion, nanoem_frame_index_t base_index, nanoem_motion_accessory_keyframe_t **prev_keyframe, nanoem_motion_accessory_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param name 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestBoneKeyframes(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t base_index, nanoem_motion_bone_keyframe_t **prev_keyframe, nanoem_motion_bone_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestCameraKeyframes(const nanoem_motion_t *motion, nanoem_frame_index_t base_index, nanoem_motion_camera_keyframe_t **prev_keyframe, nanoem_motion_camera_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestLightKeyframes(const nanoem_motion_t *motion, nanoem_frame_index_t base_index, nanoem_motion_light_keyframe_t **prev_keyframe, nanoem_motion_light_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestModelKeyframes(const nanoem_motion_t *motion, nanoem_frame_index_t base_index, nanoem_motion_model_keyframe_t **prev_keyframe, nanoem_motion_model_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param name 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestMorphKeyframes(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t base_index, nanoem_motion_morph_keyframe_t **prev_keyframe, nanoem_motion_morph_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ * \param base_index 
+ * \param prev_keyframe 
+ * \param next_keyframe 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestSelfShadowKeyframes(const nanoem_motion_t *motion, nanoem_frame_index_t base_index, nanoem_motion_self_shadow_keyframe_t **prev_keyframe, nanoem_motion_self_shadow_keyframe_t **next_keyframe);
+
+/**
+ * \brief 
+ * 
+ * \param motion 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemMotionDestroy(nanoem_motion_t *motion);
 /** @} */
@@ -1597,20 +4375,74 @@ typedef void (*nanoem_user_data_on_destroy_model_object_t)(void *, nanoem_model_
 typedef void (*nanoem_user_data_on_destroy_keyframe_object_t)(void *, nanoem_motion_keyframe_object_t *);
 /** @} */
 
+/**
+ * \brief 
+ * 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_user_data_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_user_data_t *APIENTRY
 nanoemUserDataCreate(nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ * \return NANOEM_DECL_API void* APIENTRY 
+ */
 NANOEM_DECL_API void *APIENTRY
 nanoemUserDataGetOpaqueData(const nanoem_user_data_t *user_data);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ * \param opaque 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOpaqueData(nanoem_user_data_t *user_data, void *opaque);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOnDestroyModelCallback(nanoem_user_data_t *user_data, nanoem_user_data_on_destroy_model_t value);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOnDestroyMotionCallback(nanoem_user_data_t *user_data, nanoem_user_data_on_destroy_motion_t value);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOnDestroyModelObjectCallback(nanoem_user_data_t *user_data, nanoem_user_data_on_destroy_model_object_t value);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ * \param value 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOnDestroyKeyframeObjectCallback(nanoem_user_data_t *user_data, nanoem_user_data_on_destroy_keyframe_object_t value);
+
+/**
+ * \brief 
+ * 
+ * \param user_data 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataDestroy(nanoem_user_data_t *user_data);
 /** @} */

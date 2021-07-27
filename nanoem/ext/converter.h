@@ -21,10 +21,32 @@
  */
 NANOEM_DECL_OPAQUE(nanoem_model_converter_t);
 
+/**
+ * \brief 
+ * 
+ * \param model 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_model_converter_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_model_converter_t *APIENTRY
 nanoemModelConverterCreate(nanoem_model_t *model, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param converter 
+ * \param target 
+ * \param status 
+ * \return NANOEM_DECL_API nanoem_mutable_model_t* APIENTRY 
+ */
 NANOEM_DECL_API nanoem_mutable_model_t *APIENTRY
 nanoemModelConverterExecute(nanoem_model_converter_t *converter, nanoem_model_format_type_t target, nanoem_status_t *status);
+
+/**
+ * \brief 
+ * 
+ * \param converter 
+ */
 NANOEM_DECL_API void APIENTRY
 nanoemModelConverterDestroy(nanoem_model_converter_t *converter);
 /** @} */
