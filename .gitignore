@@ -1,9 +1,5 @@
-.python
-.envrc
-build
-deps
-
-nanoem/nanoem.cc
+# build artifact
+/**/out
 
 # document
 docs/_build
@@ -12,33 +8,21 @@ docs/_templates
 docs/.venv
 docs/conf.py
 
+# nanoem
+nanoem/nanoem.cc
+
 # emapp
 emapp/plugins/PEPlugin/bin
 emapp/plugins/PEPlugin/obj
 emapp/resources/translations/*/all.txt
 emapp/resources/translations/*/merge.pl
 
-# IDEA, QtCreator, Visual Studio Code
-browse.VC.db
-.idea
-*.user
-
-scripts/docker/data
-
 # manual checkout
-dependencies/dawn
-dependencies/depot_tools
 dependencies/ffmpeg
 dependencies/icu
 dependencies/optick
-dependencies/sdl
 dependencies/yaml-cpp
 
-# ansible
-*.retry
-ansible/roles/nanoem/files/id_rsa*
-
 # rust
-/target
-rust/viewer
+/rust/**/target
 **/*.rs.bk
