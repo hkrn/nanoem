@@ -5,5 +5,7 @@ members = [
 ]
 exclude = [
     "plugin_wasm_test_model_full",
-    "plugin_wasm_test_motion_full"
+    "plugin_wasm_test_motion_full",
+    "plugin_wasm_test_model_minimum",
+    "plugin_wasm_test_motion_minimum"
 ]

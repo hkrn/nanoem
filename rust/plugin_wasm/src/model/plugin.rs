@@ -7,6 +7,7 @@
 use std::{ffi::CString, path::Path};
 
 use anyhow::Result;
+use log::warn;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
 use wasmer_wasi::WasiEnv;
@@ -15,8 +16,42 @@ use crate::{
     inner_count_all_functions, inner_create_opaque, inner_destroy_opaque, inner_execute,
     inner_get_data, inner_get_function_name, inner_get_string, inner_initialize_function,
     inner_load_ui_window, inner_set_data, inner_set_function, inner_set_language,
-    inner_set_optional_data, inner_set_ui_component_layout, inner_terminate_function, OpaquePtr,
+    inner_set_ui_component_layout, inner_terminate_function, ByteArray, OpaquePtr, SizePtr,
+    StatusPtr, FREE_FN, MALLOC_FN,
 };
+
+fn validate_plugin(instance: &Instance) -> Result<()> {
+    let e = &instance.exports;
+    e.get_memory("memory")?;
+    e.get_native_function::<u32, OpaquePtr>(MALLOC_FN)?;
+    e.get_native_function::<OpaquePtr, ()>(FREE_FN)?;
+    e.get_native_function::<(), OpaquePtr>("nanoemApplicationPluginModelIOCreate")?;
+    e.get_native_function::<OpaquePtr, ByteArray>("nanoemApplicationPluginModelIOGetName")?;
+    e.get_native_function::<OpaquePtr, ByteArray>("nanoemApplicationPluginModelIOGetVersion")?;
+    e.get_native_function::<(OpaquePtr, i32), ()>("nanoemApplicationPluginModelIOSetLanguage")?;
+    e.get_native_function::<OpaquePtr, i32>("nanoemApplicationPluginModelIOCountAllFunctions")?;
+    e.get_native_function::<(OpaquePtr, i32), ByteArray>(
+        "nanoemApplicationPluginModelIOGetFunctionName",
+    )?;
+    e.get_native_function::<(OpaquePtr, i32, StatusPtr), ()>(
+        "nanoemApplicationPluginModelIOSetFunction",
+    )?;
+    e.get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        "nanoemApplicationPluginModelIOSetInputModelData",
+    )?;
+    e.get_native_function::<(OpaquePtr, StatusPtr), ()>("nanoemApplicationPluginModelIOExecute")?;
+    e.get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        "nanoemApplicationPluginModelIOGetOutputModelData",
+    )?;
+    e.get_native_function::<(OpaquePtr, SizePtr), ()>(
+        "nanoemApplicationPluginModelIOGetOutputModelDataSize",
+    )?;
+    e.get_native_function::<OpaquePtr, ByteArray>(
+        "nanoemApplicationPluginModelIOGetFailureReason",
+    )?;
+    e.get_native_function::<OpaquePtr, ()>("nanoemApplicationPluginModelIODestroy")?;
+    Ok(())
+}
 
 pub struct ModelIOPlugin {
     instance: Instance,
@@ -28,6 +63,7 @@ impl ModelIOPlugin {
         let module = Module::new(store, bytes)?;
         let imports = env.import_object(&module)?;
         let instance = Instance::new(&module, &imports)?;
+        validate_plugin(&instance)?;
         Ok(Self {
             instance,
             opaque: None,
@@ -97,7 +133,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_vertex_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -105,7 +141,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_material_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -113,7 +149,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_bone_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -121,7 +157,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_morph_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -129,7 +165,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_label_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -137,7 +173,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_rigid_body_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -145,7 +181,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_joint_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -153,7 +189,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_all_selected_soft_body_indices(&self, data: &[i32]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -161,7 +197,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_audio_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -169,7 +205,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_camera_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -177,7 +213,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_light_description(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -185,7 +221,7 @@ impl ModelIOPlugin {
         )
     }
     pub fn set_audio_data(&self, data: &[u8]) -> Result<()> {
-        inner_set_optional_data(
+        inner_set_data(
             &self.instance,
             &self.opaque,
             data,
@@ -277,15 +313,19 @@ impl ModelIOPluginController {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
-            if entry
-                .file_name()
-                .to_str()
-                .map(|s| s.ends_with(".wasm"))
-                .unwrap_or(false)
-            {
+            let filename = entry.file_name().to_str();
+            if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
-                let plugin = ModelIOPlugin::new(&bytes, store, env)?;
-                plugins.push(plugin);
+                match ModelIOPlugin::new(&bytes, store, env) {
+                    Ok(plugin) => plugins.push(plugin),
+                    Err(err) => {
+                        warn!(
+                            "Cannot load model WASM plugin {}: {}",
+                            filename.unwrap(),
+                            err
+                        )
+                    }
+                }
             }
         }
         let function_indices = vec![];

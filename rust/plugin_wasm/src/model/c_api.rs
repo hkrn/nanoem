@@ -23,7 +23,9 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetABIVersion() -> u32 {
 ///
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
-pub unsafe extern "C" fn nanoemApplicationPluginModelIOInitialize() {}
+pub unsafe extern "C" fn nanoemApplicationPluginModelIOInitialize() {
+    env_logger::try_init().unwrap_or_default();
+}
 
 /// # Safety
 ///
