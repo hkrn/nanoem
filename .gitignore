@@ -2,29 +2,30 @@
 /**/out
 
 # document
-docs/_build
-docs/_static
-docs/_templates
-docs/.venv
-docs/conf.py
+/docs/_build
+/docs/_static
+/docs/_templates
+/docs/.venv
+/docs/conf.py
+/html/
 
 # nanoem
-nanoem/nanoem.cc
+/nanoem/nanoem.cc
 
 # emapp
-emapp/plugins/PEPlugin/bin
-emapp/plugins/PEPlugin/obj
-emapp/resources/translations/*/all.txt
-emapp/resources/translations/*/merge.pl
+/emapp/plugins/PEPlugin/bin
+/emapp/plugins/PEPlugin/obj
+/emapp/resources/translations/*/all.txt
+/emapp/resources/translations/*/merge.pl
 
 # manual checkout
-dependencies/ffmpeg
-dependencies/glfw
-dependencies/icu
-dependencies/libsoundio
-dependencies/optick
-dependencies/yaml-cpp
+/dependencies/ffmpeg
+/dependencies/glfw
+/dependencies/icu
+/dependencies/libsoundio
+/dependencies/optick
+/dependencies/yaml-cpp
 
 # rust
 /rust/**/target
-**/*.rs.bk
+/**/*.rs.bk
