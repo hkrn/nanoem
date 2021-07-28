@@ -44,6 +44,9 @@ typedef size_t nanoem_rsize_t;
 typedef size_t nanoem_rsize_t;
 #endif /* __STDC_VERSION__ >= 201112L */
 
+/**
+ * \brief Declare a typed (C++11 only) enum
+ */
 #ifndef NANOEM_DECL_ENUM
 #if defined(__cplusplus) && __cplusplus >= 201103L
 #define NANOEM_DECL_ENUM(type, name) enum name : type
@@ -54,6 +57,10 @@ typedef size_t nanoem_rsize_t;
 #endif /*__STDC_VERSION__ >= 201112L */
 #endif /* NANOEM_DECL_ENUM */
 
+/**
+ * \brief Declare an opaque object
+ *
+ */
 #ifndef NANOEM_DECL_OPAQUE
 #define NANOEM_DECL_OPAQUE(type) typedef struct type type;
 #endif /* NANOEM_DECL_OPAQUE */
@@ -186,6 +193,9 @@ NANOEM_STATIC_ASSERT(sizeof(nanoem_f64_t) == 8, "size of nanoem_f64_t must be 8"
 
 NANOEM_DECL_OPAQUE(nanoem_user_data_t);
 
+/**
+ * \brief The status enum
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_status_t){
     NANOEM_STATUS_UNKNOWN = -1,
     NANOEM_STATUS_FIRST_ENUM,
@@ -342,6 +352,9 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_status_t){
     NANOEM_STATUS_MAX_ENUM
 };
 
+/**
+ * \brief The language type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_language_type_t){
     NANOEM_LANGUAGE_TYPE_UNKNOWN = -1,
     NANOEM_LANGUAGE_TYPE_FIRST_ENUM,
@@ -350,6 +363,11 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_language_type_t){
     NANOEM_LANGUAGE_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief Get nanoem's version string
+ *
+ * \return nanoem's version string
+ */
 NANOEM_DECL_API const char *APIENTRY
 nanoemGetVersionString(void);
 
@@ -378,17 +396,17 @@ struct nanoem_global_allocator_t {
 };
 
 /**
- * \brief
+ * \brief Get a custom or global default allocator object
  *
- * \return NANOEM_DECL_API const nanoem_global_allocator_t* APIENTRY
+ * \return custom allocator object or default allocator object
  */
 NANOEM_DECL_API const nanoem_global_allocator_t *APIENTRY
 nanoemGlobalGetCustomAllocator(void);
 
 /**
- * \brief
+ * \brief Set a custom allocator object
  *
- * \param allocator
+ * \param allocator The custom allocator object, set \b NULL will reset to global default
  */
 NANOEM_DECL_API void APIENTRY
 nanoemGlobalSetCustomAllocator(const nanoem_global_allocator_t *allocator);
@@ -403,6 +421,9 @@ struct nanoem_unicode_string_t {
     const void *opaque;
 };
 
+/**
+ * \brief The codec type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_codec_type_t){
     NANOEM_CODEC_TYPE_UNKNOWN = -1,
     NANOEM_CODEC_TYPE_FIRST_ENUM,
@@ -428,7 +449,7 @@ typedef void (*nanoem_unicode_string_factory_destroy_byte_array_t)(void *, nanoe
 /** @} */
 
 /**
- * \brief
+ * \brief Create an opaque unicode string factory object
  *
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  * \return NANOEM_DECL_API nanoem_unicode_string_factory_t* APIENTRY
@@ -563,7 +584,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetOpaqueData(nanoem_unicode_string_factory_t *factory, void *value);
 
 /**
- * \brief
+ * \brief Create an opaque unicode string object with UTF-8 encoding
  *
  * \param factory The opaque factory object
  * \param string
@@ -587,7 +608,7 @@ NANOEM_DECL_API nanoem_u8_t *APIENTRY
 nanoemUnicodeStringFactoryGetByteArray(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Create an opaque unicode string object with specified encoding
  *
  * \param factory The opaque factory object
  * \param string
@@ -613,7 +634,7 @@ NANOEM_DECL_API nanoem_u8_t *APIENTRY
 nanoemUnicodeStringFactoryGetByteArrayEncoding(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Clone an opaque unicode string object
  *
  * \param factory The opaque factory object
  * \param source
@@ -669,7 +690,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyByteArray(nanoem_unicode_string_factory_t *factory, nanoem_u8_t *bytes);
 
 /**
- * \brief
+ * \brief Destroy an opaque unicode string object
  *
  * \param factory The opaque factory object
  * \param string
@@ -678,7 +699,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyString(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_t *string);
 
 /**
- * \brief
+ * \brief Destroy an opaque unicode string factory object
  *
  * \param factory The opaque factory object
  */
@@ -693,7 +714,7 @@ nanoemUnicodeStringFactoryDestroy(nanoem_unicode_string_factory_t *factory);
 NANOEM_DECL_OPAQUE(nanoem_buffer_t);
 
 /**
- * \brief
+ * \brief Create an opaque immutable buffer object
  *
  * \param data
  * \param length
@@ -822,7 +843,7 @@ NANOEM_DECL_API char *APIENTRY
 nanoemBufferReadBuffer(nanoem_buffer_t *buffer, nanoem_rsize_t len, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Destroy an opaque immutable buffer object
  *
  * \param buffer The opaque buffer object
  */
@@ -857,6 +878,9 @@ NANOEM_DECL_OPAQUE(nanoem_model_soft_body_t);
 NANOEM_DECL_OPAQUE(nanoem_model_soft_body_anchor_t);
 NANOEM_DECL_OPAQUE(nanoem_model_texture_t);
 
+/**
+ * \brief The model format type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_format_type_t){
     NANOEM_MODEL_FORMAT_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_FORMAT_TYPE_FIRST_ENUM,
@@ -911,6 +935,10 @@ nanoemModelObjectSetUserData(nanoem_model_object_t *object, nanoem_user_data_t *
 /**
  * \defgroup nanoem_model_vertex Vertex
  * @{
+ */
+
+/**
+ * \brief The model vertex type
  */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_vertex_type_t){
     NANOEM_MODEL_VERTEX_TYPE_UNKNOWN = -1,
@@ -1048,6 +1076,10 @@ nanoemModelVertexGetModelObjectMutable(nanoem_model_vertex_t *vertex);
  * \defgroup nanoem_model_material Material
  * @{
  */
+
+/**
+ * \brief The model material sphere map texture type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_material_sphere_map_texture_type_t){
     NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_UNKNOWN = -1,
     NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_FIRST_ENUM,
@@ -1059,7 +1091,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_material_sphere_map_texture_type_t){
 };
 
 /**
- * \brief
+ * \brief Get model material name corresponding language type
  *
  * \param material The opaque model material object
  * \param language
@@ -1309,7 +1341,7 @@ nanoemModelMaterialGetModelObjectMutable(nanoem_model_material_t *material);
  */
 
 /**
- * \brief
+ * \brief Get model bone name corresponding language type
  *
  * \param bone The opaque model bone object
  * \param language
@@ -1721,6 +1753,10 @@ nanoemModelTextureGetModelObjectMutable(nanoem_model_texture_t *texture);
  * \defgroup nanoem_model_morph Morph
  * @{
  */
+
+/**
+ * \brief The model morph category type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_category_t){
     NANOEM_MODEL_MORPH_CATEGORY_UNKNOWN = -1,
     NANOEM_MODEL_MORPH_CATEGORY_FIRST_ENUM,
@@ -1732,6 +1768,9 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_category_t){
     NANOEM_MODEL_MORPH_CATEGORY_MAX_ENUM
 };
 
+/**
+ * \brief The model morph type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_type_t){
     NANOEM_MODEL_MORPH_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_MORPH_TYPE_FIRST_ENUM,
@@ -1875,6 +1914,10 @@ nanoemModelMorphImpulseIsLocal(const nanoem_model_morph_impulse_t *morph);
 /**
  * \defgroup nanoem_model_morph_material Material Morph
  * @{
+ */
+
+/**
+ * \brief The model morph material operation type
  */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_material_operation_type_t){
     NANOEM_MODEL_MORPH_MATERIAL_OPERATION_TYPE_UNKNOWN = -1,
@@ -2051,7 +2094,7 @@ nanoemModelMorphVertexGetPosition(const nanoem_model_morph_vertex_t *morph);
 /** @} */
 
 /**
- * \brief
+ * \brief Get model morph name corresponding language type
  *
  * \param morph The opaque model morph object
  * \param language
@@ -2171,6 +2214,10 @@ nanoemModelMorphGetModelObjectMutable(nanoem_model_morph_t *morph);
  * \defgroup nanoem_model_label Label
  * @{
  */
+
+/**
+ * \brief The model label item type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_label_item_type_t){
     NANOEM_MODEL_LABEL_ITEM_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_LABEL_ITEM_TYPE_FIRST_ENUM,
@@ -2180,7 +2227,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_label_item_type_t){
 };
 
 /**
- * \brief
+ * \brief Get model label name corresponding language type
  *
  * \param label The opaque model label object
  * \param language
@@ -2258,6 +2305,10 @@ nanoemModelLabelGetModelObjectMutable(nanoem_model_label_t *label);
  * \defgroup nanoem_model_rigid_body Rigid Body
  * @{
  */
+
+/**
+ * \brief The model rigid body shape type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_shape_type_t){
     NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_FIRST_ENUM,
@@ -2267,6 +2318,9 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_shape_type_t){
     NANOEM_MODEL_RIGID_BODY_SHAPE_TYPE_MAX_ENUM
 };
 
+/**
+ * \brief The model rigid body transform type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_transform_type_t){
     NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_FIRST_ENUM,
@@ -2277,7 +2331,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_transform_type_t){
 };
 
 /**
- * \brief
+ * \brief Get model rigid body name corresponding language type
  *
  * \param rigid_body The opaque model rigid body object
  * \param language
@@ -2435,6 +2489,10 @@ nanoemModelRigidBodyGetModelObjectMutable(nanoem_model_rigid_body_t *rigid_body)
  * \defgroup nanoem_model_joint Joint
  * @{
  */
+
+/**
+ * \brief The model joint type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_joint_type_t){
     NANOEM_MODEL_JOINT_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_JOINT_TYPE_FIRST_ENUM,
@@ -2448,7 +2506,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_joint_type_t){
 };
 
 /**
- * \brief
+ * \brief Get model joint name corresponding language type
  *
  * \param joint The opaque model joint objects
  * \param language
@@ -2579,6 +2637,10 @@ nanoemModelJointGetModelObjectMutable(nanoem_model_joint_t *vertex);
  * \defgroup nanoem_model_softbody Soft Body
  * @{
  */
+
+/**
+ * \brief The model soft body shape type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_shape_type_t){
     NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_FIRST_ENUM,
@@ -2586,6 +2648,10 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_shape_type_t){
     NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_ROPE,
     NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_MAX_ENUM
 };
+
+/**
+ * \brief The model soft body aero model type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_aero_model_type_t){
     NANOEM_MODEL_SOFT_BODY_AERO_MODEL_TYPE_UNKNOWN = -1,
     NANOEM_MODEL_SOFT_BODY_AERO_MODEL_TYPE_FIRST_ENUM,
@@ -2598,7 +2664,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_aero_model_type_t){
 };
 
 /**
- * \brief
+ * \brief Get model soft body name corresponding language type
  *
  * \param body The opaque model soft body object
  * \param language
@@ -3007,7 +3073,7 @@ nanoemModelSoftBodyGetModelObjectMutable(nanoem_model_soft_body_t *body);
 /** @} */
 
 /**
- * \brief
+ * \brief Create an opaque model object
  *
  * \param factory The opaque factory object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -3017,7 +3083,7 @@ NANOEM_DECL_API nanoem_model_t *APIENTRY
 nanoemModelCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Load data as PMD from the opaque buffer object
  *
  * \param model The opaque model object
  * \param buffer The opaque buffer object
@@ -3028,7 +3094,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMD(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Load data as PMX from the opaque buffer object
  *
  * \param model The opaque model object
  * \param buffer The opaque buffer object
@@ -3039,7 +3105,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Load data with PMD/PMX auto detection from the opaque buffer object
  *
  * \param model The opaque model object
  * \param buffer The opaque buffer object
@@ -3050,7 +3116,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBuffer(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Get a model format type
  *
  * \param model The opaque model object
  * \return NANOEM_DECL_API nanoem_model_format_type_t APIENTRY
@@ -3059,7 +3125,7 @@ NANOEM_DECL_API nanoem_model_format_type_t APIENTRY
 nanoemModelGetFormatType(const nanoem_model_t *model);
 
 /**
- * \brief
+ * \brief Get a model codec type
  *
  * \param model The opaque model object
  * \return NANOEM_DECL_API nanoem_codec_type_t APIENTRY
@@ -3068,7 +3134,7 @@ NANOEM_DECL_API nanoem_codec_type_t APIENTRY
 nanoemModelGetCodecType(const nanoem_model_t *model);
 
 /**
- * \brief
+ * \brief Get an additional UV size
  *
  * \param model The opaque model object
  * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY
@@ -3077,7 +3143,7 @@ NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemModelGetAdditionalUVSize(const nanoem_model_t *model);
 
 /**
- * \brief
+ * \brief Get model name corresponding language type
  *
  * \param model The opaque model object
  * \param language
@@ -3087,7 +3153,7 @@ NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetName(const nanoem_model_t *model, nanoem_language_type_t language);
 
 /**
- * \brief
+ * \brief Get model comment corresponding language type
  *
  * \param model The opaque model object
  * \param language
@@ -3097,7 +3163,7 @@ NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetComment(const nanoem_model_t *model, nanoem_language_type_t language);
 
 /**
- * \brief
+ * \brief Get all model vertex objects
  *
  * \param model The opaque model object
  * \param[out] num_vertices Number of all vertices in the object
@@ -3107,7 +3173,7 @@ NANOEM_DECL_API nanoem_model_vertex_t *const *APIENTRY
 nanoemModelGetAllVertexObjects(const nanoem_model_t *model, nanoem_rsize_t *num_vertices);
 
 /**
- * \brief
+ * \brief Get all model vertex indices
  *
  * \param model The opaque model object
  * \param[out] num_indices Number of all indices in the object
@@ -3117,7 +3183,7 @@ NANOEM_DECL_API const nanoem_u32_t *APIENTRY
 nanoemModelGetAllVertexIndices(const nanoem_model_t *model, nanoem_rsize_t *num_indices);
 
 /**
- * \brief
+ * \brief Get all model material objects
  *
  * \param model The opaque model object
  * \param[out] num_materials Number of all materials in the object
@@ -3127,7 +3193,7 @@ NANOEM_DECL_API nanoem_model_material_t *const *APIENTRY
 nanoemModelGetAllMaterialObjects(const nanoem_model_t *model, nanoem_rsize_t *num_materials);
 
 /**
- * \brief
+ * \brief Get all model bone objects
  *
  * \param model The opaque model object
  * \param[out] num_bones Number of all bones in the object
@@ -3137,7 +3203,7 @@ NANOEM_DECL_API nanoem_model_bone_t *const *APIENTRY
 nanoemModelGetAllBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bones);
 
 /**
- * \brief
+ * \brief Get all model bone objects with specified sort order
  *
  * \param model The opaque model object
  * \param[out] num_bones Number of all bones in the object
@@ -3147,7 +3213,7 @@ NANOEM_DECL_API nanoem_model_bone_t *const *APIENTRY
 nanoemModelGetAllOrderedBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bones);
 
 /**
- * \brief
+ * \brief Get all model constraint (IK) objects
  *
  * \param model The opaque model object
  * \param[out] num_constraints Number of all constraints in the object
@@ -3157,7 +3223,7 @@ NANOEM_DECL_API nanoem_model_constraint_t *const *APIENTRY
 nanoemModelGetAllConstraintObjects(const nanoem_model_t *model, nanoem_rsize_t *num_constraints);
 
 /**
- * \brief
+ * \brief Get all model texture objects
  *
  * \param model The opaque model object
  * \param[out] num_textures Number of all textures in the object
@@ -3167,7 +3233,7 @@ NANOEM_DECL_API nanoem_model_texture_t *const *APIENTRY
 nanoemModelGetAllTextureObjects(const nanoem_model_t *model, nanoem_rsize_t *num_textures);
 
 /**
- * \brief
+ * \brief Get all model morph objects
  *
  * \param model The opaque model object
  * \param[out] num_morphs Number of all morphs in the object
@@ -3177,7 +3243,7 @@ NANOEM_DECL_API nanoem_model_morph_t *const *APIENTRY
 nanoemModelGetAllMorphObjects(const nanoem_model_t *model, nanoem_rsize_t *num_morphs);
 
 /**
- * \brief
+ * \brief Get all model label objects
  *
  * \param model The opaque model object
  * \param[out] num_labels Number of all labels in the object
@@ -3187,7 +3253,7 @@ NANOEM_DECL_API nanoem_model_label_t *const *APIENTRY
 nanoemModelGetAllLabelObjects(const nanoem_model_t *model, nanoem_rsize_t *num_labels);
 
 /**
- * \brief
+ * \brief Get all model rigid body objects
  *
  * \param model The opaque model object
  * \param[out] num_rigid_bodies Number of all rigid_bodies in the object
@@ -3197,7 +3263,7 @@ NANOEM_DECL_API nanoem_model_rigid_body_t *const *APIENTRY
 nanoemModelGetAllRigidBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *num_rigid_bodies);
 
 /**
- * \brief
+ * \brief Get all model joint objects
  *
  * \param model The opaque model object
  * \param[out] num_joints Number of all joints in the object
@@ -3207,7 +3273,7 @@ NANOEM_DECL_API nanoem_model_joint_t *const *APIENTRY
 nanoemModelGetAllJointObjects(const nanoem_model_t *model, nanoem_rsize_t *num_joints);
 
 /**
- * \brief
+ * \brief Get all model soft body objects
  *
  * \param model The opaque model object
  * \param[out] num_soft_bodies Number of all soft_bodies in the object
@@ -3217,7 +3283,7 @@ NANOEM_DECL_API nanoem_model_soft_body_t *const *APIENTRY
 nanoemModelGetAllSoftBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *num_soft_bodies);
 
 /**
- * \brief
+ * \brief Destroy an opaque model object
  *
  * \param model The opaque model object
  */
@@ -3244,6 +3310,9 @@ NANOEM_DECL_OPAQUE(nanoem_motion_self_shadow_keyframe_t);
 NANOEM_DECL_OPAQUE(nanoem_motion_t);
 typedef nanoem_u32_t nanoem_frame_index_t;
 
+/**
+ * \brief The motion format type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_format_type_t){
     NANOEM_MOTION_FORMAT_TYPE_UNKNOWN = -1,
     NANOEM_MOTION_FORMAT_TYPE_FIRST_ENUM,
@@ -3337,6 +3406,10 @@ nanoemMotionKeyframeObjectSetAnnotation(nanoem_motion_keyframe_object_t *object,
 /**
  * \defgroup nanoem_motion_effect_parameter Effect Parameter
  * @{
+ */
+
+/**
+ * \brief The motion effect parameter type
  */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_effect_parameter_type_t) {
     NANOEM_MOTION_EFFECT_PARAMETER_TYPE_UNKNOWN = -1,
@@ -3546,6 +3619,10 @@ nanoemMotionAccessoryKeyframeGetKeyframeObjectMutable(nanoem_motion_accessory_ke
  * \defgroup nanoem_motion_bone_keyframe Bone Keyframe
  * @{
  */
+
+/**
+ * \brief The motion bone keyframe interpolation type
+ */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_bone_keyframe_interpolation_type_t) {
     NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_UNKNOWN = -1,
     NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_FIRST_ENUM,
@@ -3652,6 +3729,10 @@ nanoemMotionBoneKeyframeGetKeyframeObjectMutable(nanoem_motion_bone_keyframe_t *
 /**
  * \defgroup nanoem_motion_camera_keyframe Camera Keyframe
  * @{
+ */
+
+/**
+ * \brief The motion camera keyframe interpolation type
  */
 NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_camera_keyframe_interpolation_type_t) {
     NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_UNKNOWN = -1,
@@ -4038,7 +4119,7 @@ nanoemMotionSelfShadowKeyframeGetKeyframeObjectMutable(nanoem_motion_self_shadow
 /** @} */
 
 /**
- * \brief
+ * \brief Create an opaque motion object
  *
  * \param factory The opaque factory object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -4363,7 +4444,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMotionSearchClosestSelfShadowKeyframes(const nanoem_motion_t *motion, nanoem_frame_index_t base_index, nanoem_motion_self_shadow_keyframe_t **prev_keyframe, nanoem_motion_self_shadow_keyframe_t **next_keyframe);
 
 /**
- * \brief
+ * \brief Destroy an opaque motion object
  *
  * \param motion The opaque motion object
  */
@@ -4387,7 +4468,7 @@ typedef void (*nanoem_user_data_on_destroy_keyframe_object_t)(void *, nanoem_mot
 /** @} */
 
 /**
- * \brief
+ * \brief Create an opaque user data object
  *
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  * \return NANOEM_DECL_API nanoem_user_data_t* APIENTRY
@@ -4450,7 +4531,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOnDestroyKeyframeObjectCallback(nanoem_user_data_t *user_data, nanoem_user_data_on_destroy_keyframe_object_t value);
 
 /**
- * \brief
+ * \brief Destroy an opaque user data object
  *
  * \param user_data The opaque user data object
  */

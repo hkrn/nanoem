@@ -21,3 +21,4 @@ INPUT                  = nanoem/nanoem.h \
 FILE_PATTERNS          = *.h
 RECURSIVE              = YES
 GENERATE_LATEX         = NO
+MACRO_EXPANSION        = YES
