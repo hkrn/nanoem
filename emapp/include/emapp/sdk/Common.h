@@ -166,6 +166,16 @@ typedef double nanoem_f64_t;
 #define APIENTRY
 #endif /* APIENTRY */
 
+/**
+ * \defgroup emapp
+ * @{
+ */
+
+/**
+ * \defgroup emapp_plugin_common nanoem Plugin Common Definition
+ * @{
+ */
+
 NANOEM_DECL_ENUM(int, nanoem_application_plugin_status_t) { NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON = -3,
     NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_UNKNOWN_OPTION = -2, NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT = -1,
     NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS = 0 };
@@ -380,5 +390,9 @@ private:
 #endif /* __cplusplus */
 
 typedef nanoem_u32_t nanoem_frame_index_t;
+
+/** @} */
+
+/** @} */
 
 #endif /* EMAPP_PLUGIN_SDK_COMMON_H_ */

@@ -9,12 +9,25 @@
 
 #include "Common.h"
 
+/**
+ * \defgroup emapp
+ * @{
+ */
+
+/**
+ * \defgroup emapp_plugin_encoder nanoem Encoder Plugin
+ * @{
+ */
+
 #define NANOEM_APPLICATION_PLUGIN_ENCODER_ABI_VERSION_MAJOR 2
 #define NANOEM_APPLICATION_PLUGIN_ENCODER_ABI_VERSION_MINOR 0
 #define NANOEM_APPLICATION_PLUGIN_ENCODER_ABI_VERSION                                                                  \
     NANOEM_APPLICATION_PLUGIN_MAKE_ABI_VERSION(                                                                        \
         NANOEM_APPLICATION_PLUGIN_ENCODER_ABI_VERSION_MAJOR, NANOEM_APPLICATION_PLUGIN_ENCODER_ABI_VERSION_MINOR)
 
+/**
+ * \brief The opaque encoder plugin object
+ */
 typedef struct nanoem_application_plugin_encoder_t nanoem_application_plugin_encoder_t;
 
 NANOEM_DECL_ENUM(int, nanoem_application_plugin_encoder_option_t) {
@@ -42,7 +55,7 @@ NANOEM_DECL_API nanoem_u32_t APIENTRY nanoemApplicationPluginEncoderGetABIVersio
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderInitialize(void);
 
 /**
- * \brief
+ * \brief Create an opaque encoder plugin object
  *
  * \return NANOEM_DECL_API nanoem_application_plugin_encoder_t* APIENTRY
  */
@@ -51,7 +64,7 @@ NANOEM_DECL_API nanoem_application_plugin_encoder_t *APIENTRY nanoemApplicationP
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param filePath
  * \param status
  * \return NANOEM_DECL_API int APIENTRY
@@ -62,7 +75,7 @@ NANOEM_DECL_API int APIENTRY nanoemApplicationPluginEncoderOpen(
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param key
  * \param value
  * \param size
@@ -74,7 +87,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderSetOption(nanoem_app
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param currentFrameIndex
  * \param data
  * \param size
@@ -87,7 +100,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderEncodeAudioFrame(
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param currentFrameIndex
  * \param data
  * \param size
@@ -100,7 +113,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderEncodeVideoFrame(
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param status
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderInterrupt(
@@ -109,7 +122,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderInterrupt(
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param length
  * \return NANOEM_DECL_API const char* const* APIENTRY
  */
@@ -162,7 +175,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderSetUIComponentLayout
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEncoderGetFailureReason(
@@ -171,7 +184,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEncoderGetFailureRea
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEncoderGetRecoverySuggestion(
@@ -180,7 +193,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEncoderGetRecoverySu
 /**
  * \brief
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  * \param status
  * \return NANOEM_DECL_API int APIENTRY
  */
@@ -188,9 +201,9 @@ NANOEM_DECL_API int APIENTRY nanoemApplicationPluginEncoderClose(
     nanoem_application_plugin_encoder_t *encoder, nanoem_i32_t *status);
 
 /**
- * \brief
+ * \brief Destroy an opaque encoder plugin object
  *
- * \param encoder
+ * \param encoder The opaque encoder plugin object
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderDestroy(nanoem_application_plugin_encoder_t *encoder);
 
@@ -199,5 +212,9 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderDestroy(nanoem_appli
  *
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEncoderTerminate(void);
+
+/** @} */
+
+/** @} */
 
 #endif /* EMAPP_PLUGIN_SDK_ENCODER_H_ */

@@ -9,6 +9,16 @@
 
 #include "Common.h"
 
+/**
+ * \defgroup emapp
+ * @{
+ */
+
+/**
+ * \defgroup emapp_plugin_effect nanoem Effect Plugin
+ * @{
+ */
+
 #define NANOEM_APPLICATION_PLUGIN_EFFECT_COMPILER_ABI_VERSION_MAJOR 2
 #define NANOEM_APPLICATION_PLUGIN_EFFECT_COMPILER_ABI_VERSION_MINOR 0
 #define NANOEM_APPLICATION_PLUGIN_EFFECT_COMPILER_ABI_VERSION                                                          \
@@ -23,6 +33,9 @@ NANOEM_DECL_ENUM(int, nanoem_application_plugin_effect_option_t) { NANOEM_APPLIC
     NANOEM_APPLICATION_PLUGIN_EFFECT_OPTION_OUTPUT_MSL, NANOEM_APPLICATION_PLUGIN_EFFECT_OPTION_OUTPUT_SPIRV,
     NANOEM_APPLICATION_PLUGIN_EFFECT_OPTION_ENABLE_MME_MIPMAP, NANOEM_APPLICATION_PLUGIN_EFFECT_OPTION_MAX_ENUM };
 
+/**
+ * \brief The opaque effect compiler plugin object
+ */
 typedef struct nanoem_application_plugin_effect_compiler_t nanoem_application_plugin_effect_compiler_t;
 
 /**
@@ -39,7 +52,7 @@ NANOEM_DECL_API nanoem_u32_t APIENTRY nanoemApplicationPluginEffectCompilerGetAB
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerInitialize(void);
 
 /**
- * \brief
+ * \brief Create an opaque effect compiler plugin object
  *
  * \return NANOEM_DECL_API nanoem_application_plugin_effect_compiler_t* APIENTRY
  */
@@ -48,7 +61,7 @@ NANOEM_DECL_API nanoem_application_plugin_effect_compiler_t *APIENTRY nanoemAppl
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param key
  * \param value
  * \param size
@@ -61,7 +74,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerGetOption(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param key
  * \param value
  * \param size
@@ -74,7 +87,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerSetOption(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param size
  * \return NANOEM_DECL_API const char* const* APIENTRY
  */
@@ -84,7 +97,7 @@ NANOEM_DECL_API const char *const *APIENTRY nanoemApplicationPluginEffectCompile
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param path
  * \param size
  * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
@@ -95,7 +108,7 @@ NANOEM_DECL_API nanoem_u8_t *APIENTRY nanoemApplicationPluginEffectCompilerCreat
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param source
  * \param length
  * \param size
@@ -107,7 +120,7 @@ NANOEM_DECL_API nanoem_u8_t *APIENTRY nanoemApplicationPluginEffectCompilerCreat
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param path
  * \param data
  * \param size
@@ -118,7 +131,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerAddIncludeSou
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetFailureReason(
@@ -127,7 +140,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetFai
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetRecoverySuggestion(
@@ -136,7 +149,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetRec
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  * \param data
  * \param size
  */
@@ -144,9 +157,9 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroyBinary
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u8_t *data, nanoem_u32_t size);
 
 /**
- * \brief
+ * \brief Destroy an opaque effect compiler plugin object
  *
- * \param plugin
+ * \param plugin The opaque effect compiler plugin object
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroy(
     nanoem_application_plugin_effect_compiler_t *plugin);
@@ -156,5 +169,9 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroy(
  *
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerTerminate(void);
+
+/** @} */
+
+/** @} */
 
 #endif /* EMAPP_PLUGIN_SDK_EFFECT_H_ */

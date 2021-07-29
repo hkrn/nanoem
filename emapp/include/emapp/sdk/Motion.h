@@ -9,12 +9,25 @@
 
 #include "Common.h"
 
+/**
+ * \defgroup emapp
+ * @{
+ */
+
+/**
+ * \defgroup emapp_plugin_motion_io nanoem Motion I/O Plugin
+ * @{
+ */
+
 #define NANOEM_APPLICATION_PLUGIN_MOTION_ABI_VERSION_MAJOR 2
 #define NANOEM_APPLICATION_PLUGIN_MOTION_ABI_VERSION_MINOR 0
 #define NANOEM_APPLICATION_PLUGIN_MOTION_ABI_VERSION                                                                   \
     NANOEM_APPLICATION_PLUGIN_MAKE_ABI_VERSION(                                                                        \
         NANOEM_APPLICATION_PLUGIN_MOTION_ABI_VERSION_MAJOR, NANOEM_APPLICATION_PLUGIN_MOTION_ABI_VERSION_MINOR)
 
+/**
+ * \brief The opaque motion plugin object
+ */
 typedef struct nanoem_application_plugin_motion_io_t nanoem_application_plugin_motion_io_t;
 
 /**
@@ -31,14 +44,14 @@ NANOEM_DECL_API nanoem_u32_t APIENTRY nanoemApplicationPluginMotionIOGetABIVersi
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOInitialize(void);
 
 /**
- * \brief
+ * \brief Create an opaque motion plugin object
  *
  * \return NANOEM_DECL_API nanoem_application_plugin_motion_io_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_application_plugin_motion_io_t *APIENTRY nanoemApplicationPluginMotionIOCreate(void);
 
 /**
- * \brief
+ * \brief Create an opaque model plugin object with the plugin path
  *
  * \param location
  * \return NANOEM_DECL_API nanoem_application_plugin_motion_io_t* APIENTRY
@@ -49,7 +62,7 @@ NANOEM_DECL_API nanoem_application_plugin_motion_io_t *APIENTRY nanoemApplicatio
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param language
  * \param status
  */
@@ -59,7 +72,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetLanguage(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetName(
@@ -68,7 +81,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetName(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetDescription(
@@ -77,7 +90,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetDescripti
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetVersion(
@@ -86,7 +99,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetVersion(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY nanoemApplicationPluginMotionIOCountAllFunctions(
@@ -95,7 +108,7 @@ NANOEM_DECL_API int APIENTRY nanoemApplicationPluginMotionIOCountAllFunctions(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param index
  * \return NANOEM_DECL_API const char* APIENTRY
  */
@@ -105,7 +118,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetFunctionN
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param index
  * \param status
  */
@@ -115,7 +128,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetFunction(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param name
  * \param frameIndices
  * \param length
@@ -128,7 +141,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllNamedSelected
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param name
  * \param frameIndices
  * \param length
@@ -141,7 +154,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllNamedSelected
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param frameIndices
  * \param length
  * \param status
@@ -153,7 +166,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllSelectedAcces
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param frameIndices
  * \param length
  * \param status
@@ -165,7 +178,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllSelectedCamer
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param frameIndices
  * \param length
  * \param status
@@ -177,7 +190,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllSelectedLight
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param frameIndices
  * \param length
  * \param status
@@ -189,7 +202,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllSelectedModel
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param frameIndices
  * \param length
  * \param status
@@ -201,7 +214,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAllSelectedSelfS
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -212,7 +225,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetAudioDescription
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -223,7 +236,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetCameraDescriptio
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -234,7 +247,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetLightDescription
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -245,7 +258,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetInputMotionData(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -256,7 +269,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetInputActiveModel
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -267,7 +280,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetInputAudioData(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param status
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOExecute(
@@ -276,7 +289,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOExecute(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param length
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOGetOutputMotionDataSize(
@@ -285,7 +298,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOGetOutputMotionData
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -296,7 +309,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOGetOutputMotionData
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param status
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOLoadUIWindowLayout(
@@ -305,7 +318,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOLoadUIWindowLayout(
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param length
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOGetUIWindowLayoutDataSize(
@@ -314,7 +327,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOGetUIWindowLayoutDa
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param data
  * \param length
  * \param status
@@ -325,7 +338,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOGetUIWindowLayoutDa
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \param id
  * \param data
  * \param length
@@ -339,7 +352,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIOSetUIComponentLayou
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetFailureReason(
@@ -348,16 +361,16 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetFailureRe
 /**
  * \brief
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginMotionIOGetRecoverySuggestion(
     const nanoem_application_plugin_motion_io_t *plugin);
 
 /**
- * \brief
+ * \brief Destroy an opaque motion plugin object
  *
- * \param plugin
+ * \param plugin The opaque motion plugin object
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginMotionIODestroy(nanoem_application_plugin_motion_io_t *plugin);
 
