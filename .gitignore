@@ -19,7 +19,9 @@ emapp/resources/translations/*/merge.pl
 
 # manual checkout
 dependencies/ffmpeg
+dependencies/glfw
 dependencies/icu
+dependencies/libsoundio
 dependencies/optick
 dependencies/yaml-cpp
 

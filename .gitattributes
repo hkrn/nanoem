@@ -8,6 +8,7 @@
 *.md eol=lf
 *.rb eol=lf
 *.fx eol=lf
+*.fxsub eol=lf
 *.rst  eol=lf
 *.yml  eol=lf
 *.diff eol=lf
