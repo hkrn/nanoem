@@ -452,7 +452,6 @@ typedef void (*nanoem_unicode_string_factory_destroy_byte_array_t)(void *, nanoe
  * \brief Create an opaque unicode string factory object
  *
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_unicode_string_factory_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_unicode_string_factory_t *APIENTRY
 nanoemUnicodeStringFactoryCreate(nanoem_status_t *status);
@@ -569,7 +568,6 @@ nanoemUnicodeStringFactorySetDestroyByteArrayCallback(nanoem_unicode_string_fact
  * \brief
  *
  * \param factory The opaque factory object
- * \return NANOEM_DECL_API void* APIENTRY
  */
 NANOEM_DECL_API void *APIENTRY
 nanoemUnicodeStringFactoryGetOpaqueData(const nanoem_unicode_string_factory_t *factory);
@@ -586,23 +584,25 @@ nanoemUnicodeStringFactorySetOpaqueData(nanoem_unicode_string_factory_t *factory
 /**
  * \brief Create an opaque unicode string object with UTF-8 encoding
  *
+ * Returned value must be freed with ::nanoemUnicodeStringFactoryDestroyString
+ *
  * \param factory The opaque factory object
- * \param string
- * \param length
+ * \param string UTF-8 encoded byte array
+ * \param length size of \b string
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_unicode_string_t *APIENTRY
 nanoemUnicodeStringFactoryCreateString(nanoem_unicode_string_factory_t *factory, const nanoem_u8_t *string, nanoem_rsize_t length, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Get byte array encoded with UTF-8 from the given opaque unicode string object
+ *
+ * Returned value must be freed with ::nanoemUnicodeStringFactoryDestroyByteArray
  *
  * \param factory The opaque factory object
- * \param string
- * \param length
+ * \param string The opaque unicode string object
+ * \param[out] length size of \b string encoded with UTF-8 in byte unit
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY
 nanoemUnicodeStringFactoryGetByteArray(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_status_t *status);
@@ -610,25 +610,27 @@ nanoemUnicodeStringFactoryGetByteArray(nanoem_unicode_string_factory_t *factory,
 /**
  * \brief Create an opaque unicode string object with specified encoding
  *
+ * Returned value must be freed with ::nanoemUnicodeStringFactoryDestroyString
+ *
  * \param factory The opaque factory object
- * \param string
- * \param length
- * \param codec
+ * \param string \b coded specified encoded byte array
+ * \param length size of \b string
+ * \param codec codec type
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_unicode_string_t *APIENTRY
 nanoemUnicodeStringFactoryCreateStringWithEncoding(nanoem_unicode_string_factory_t *factory, const nanoem_u8_t *string, nanoem_rsize_t length, nanoem_codec_type_t codec, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Get byte array encoded with specified encoding from the given opaque unicode string object
+ *
+ * Returned value must be freed with ::nanoemUnicodeStringFactoryDestroyByteArray
  *
  * \param factory The opaque factory object
- * \param string
- * \param length
- * \param codec
+ * \param string The opaque unicode string object
+ * \param[out] length size of \b string encoded with \b codec specified in byte unit
+ * \param codec codec type
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY
 nanoemUnicodeStringFactoryGetByteArrayEncoding(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
@@ -636,21 +638,22 @@ nanoemUnicodeStringFactoryGetByteArrayEncoding(nanoem_unicode_string_factory_t *
 /**
  * \brief Clone an opaque unicode string object
  *
+ * Returned value must be freed with ::nanoemUnicodeStringFactoryDestroyString
+ *
  * \param factory The opaque factory object
- * \param source
+ * \param source The opaque unicode string object to clone
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_unicode_string_t *APIENTRY
 nanoemUnicodeStringFactoryCloneString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *source, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Compare given two opaque unicode string objects
  *
  * \param factory The opaque factory object
  * \param lvalue
  * \param rvalue
- * \return NANOEM_DECL_API int APIENTRY
+ * \return same as strcmp returns
  */
 NANOEM_DECL_API int APIENTRY
 nanoemUnicodeStringFactoryCompareString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *lvalue, const nanoem_unicode_string_t *rvalue);
@@ -663,7 +666,6 @@ nanoemUnicodeStringFactoryCompareString(nanoem_unicode_string_factory_t *factory
  * \param length
  * \param codec
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_u8_t * APIENTRY
 nanoemUnicodeStringFactoryGetCacheString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
@@ -681,7 +683,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetCacheString(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Destroy given byte array
  *
  * \param factory The opaque factory object
  * \param bytes
@@ -719,125 +721,114 @@ NANOEM_DECL_OPAQUE(nanoem_buffer_t);
  * \param data
  * \param length
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_buffer_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_buffer_t *APIENTRY
 nanoemBufferCreate(const nanoem_u8_t *data, nanoem_rsize_t length, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Get length from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
- * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY
  */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemBufferGetLength(const nanoem_buffer_t *buffer);
 
 /**
- * \brief
+ * \brief Get offset from the given opaque buffer object
  *
- * \param buffer The opaque buffer object
- * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY
+ * \param buffer The opaque buffer object¥
  */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemBufferGetOffset(const nanoem_buffer_t *buffer);
 
 /**
- * \brief
+ * \brief Get data pointer with current offset from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
- * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_u8_t *APIENTRY
 nanoemBufferGetDataPtr(const nanoem_buffer_t *buffer);
 
 /**
- * \brief
+ * \brief Get whether buffer can read specified size
  *
  * \param buffer The opaque buffer object
- * \param size
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
+ * \param size size to read
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemBufferCanReadLength(const nanoem_buffer_t *buffer, nanoem_rsize_t size);
 
 /**
- * \brief
+ * \brief Skip size to the given opaque buffer object
  *
  * \param buffer The opaque buffer object
- * \param skip
+ * \param skip size to skip
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemBufferSkip(nanoem_buffer_t *buffer, nanoem_rsize_t skip, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Seek the given opaque buffer object to the specified position
  *
  * \param buffer The opaque buffer object
- * \param position
+ * \param position position to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemBufferSeek(nanoem_buffer_t *buffer, nanoem_rsize_t position, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Read an unsigned 8bits integer from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_u8_t APIENTRY
  */
 NANOEM_DECL_API nanoem_u8_t APIENTRY
 nanoemBufferReadByte(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Read a 16bits integer with little endian from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_i16_t APIENTRY
  */
 NANOEM_DECL_API nanoem_i16_t APIENTRY
 nanoemBufferReadInt16LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Read an unsigned 16bits integer with little endian from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_u16_t APIENTRY
  */
 NANOEM_DECL_API nanoem_u16_t APIENTRY
 nanoemBufferReadInt16LittleEndianUnsigned(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Read a 32bits integer with little endian from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_i32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_i32_t APIENTRY
 nanoemBufferReadInt32LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Read an unsigned 32bits integer with little endian from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemBufferReadFloat32LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Read byte array from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
- * \param len
+ * \param len size to read
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API char* APIENTRY
  */
 NANOEM_DECL_API char *APIENTRY
 nanoemBufferReadBuffer(nanoem_buffer_t *buffer, nanoem_rsize_t len, nanoem_status_t *status);
@@ -896,34 +887,31 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_format_type_t){
  */
 
  /**
-  * \brief
+  * \brief Get an opaque model object from the given opaque base model object
   *
   * \param object The opaque base model object
-  * \return NANOEM_DECL_API const nanoem_model_t* APIENTRY
   */
 NANOEM_DECL_API const nanoem_model_t *APIENTRY
 nanoemModelObjectGetParentModel(const nanoem_model_object_t *object);
 
 /**
- * \brief
+ * \brief Get a model object index from the given opaque base model object
  *
  * \param object The opaque base model object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelObjectGetIndex(const nanoem_model_object_t *object);
 
 /**
- * \brief
+ * \brief Get a user defined opaque object from the given opaque base model object
  *
  * \param object The opaque base model object
- * \return NANOEM_DECL_API const nanoem_user_data_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_user_data_t *APIENTRY
 nanoemModelObjectGetUserData(const nanoem_model_object_t *object);
 
 /**
- * \brief
+ * \brief Set a user defined opaque object to the given opaque base model object
  *
  * \param object The opaque base model object
  * \param user_data The opaque user data object
@@ -952,121 +940,108 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_vertex_type_t){
 };
 
 /**
- * \brief
+ * \brief Get origin from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetOrigin(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get normal from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetNormal(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get texture coordinate from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetTexCoord(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get additional UV from the given opaque model vertex object and UV index
  *
  * \param vertex The opaque model vertex object
- * \param index
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
+ * \param index UV index between 0 and 3
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetAdditionalUV(const nanoem_model_vertex_t *vertex, nanoem_rsize_t index);
 
 /**
- * \brief
+ * \brief Get C value of SDEF from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetSdefC(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get R0 value of SDEF from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetSdefR0(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get R1 value of SDEF from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelVertexGetSdefR1(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get the opaque model bone object from the given opaque model vertex object and bone index
  *
  * \param vertex The opaque model vertex object
- * \param index
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
+ * \param index bone index between 0 and 3
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelVertexGetBoneObject(const nanoem_model_vertex_t *vertex, nanoem_rsize_t index);
 
 /**
- * \brief
+ * \brief Get bone weight from the given opaque model vertex object and bone index
  *
  * \param vertex The opaque model vertex object
- * \param index
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
+ * \param index bone index between 0 and 3
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelVertexGetBoneWeight(const nanoem_model_vertex_t *vertex, nanoem_rsize_t index);
 
 /**
- * \brief
+ * \brief Get edge size from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelVertexGetEdgeSize(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get vertex type from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API nanoem_model_vertex_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_vertex_type_t APIENTRY
 nanoemModelVertexGetType(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get the base model object from the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelVertexGetModelObject(const nanoem_model_vertex_t *vertex);
 
 /**
- * \brief
+ * \brief Get the mutable base model object from the given opaque mutable model vertex object
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelVertexGetModelObjectMutable(nanoem_model_vertex_t *vertex);
@@ -1095,241 +1070,214 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_material_sphere_map_texture_type_t){
  *
  * \param material The opaque model material object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMaterialGetName(const nanoem_model_material_t *material, nanoem_language_type_t language);
 
 /**
- * \brief
+ * \brief Get the opaque model diffuse texture object from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_model_texture_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_texture_t *APIENTRY
 nanoemModelMaterialGetDiffuseTextureObject(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get the opaque model sphere map texture object from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_model_texture_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_texture_t *APIENTRY
 nanoemModelMaterialGetSphereMapTextureObject(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get the opaque model toon texture object from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_model_texture_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_texture_t *APIENTRY
 nanoemModelMaterialGetToonTextureObject(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get arbitrary text object from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMaterialGetClob(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get ambient color from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetAmbientColor(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get diffuse color (except opacity) from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetDiffuseColor(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get specular color from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetSpecularColor(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get edge color (except opacity) from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMaterialGetEdgeColor(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get diffuse opacity from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetDiffuseOpacity(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get edge opacity from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetEdgeOpacity(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get edge size from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetEdgeSize(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get specular power from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMaterialGetSpecularPower(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get sphere map texture type from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_model_material_sphere_map_texture_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_material_sphere_map_texture_type_t APIENTRY
 nanoemModelMaterialGetSphereMapTextureType(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get number of vertex indices to draw the material from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY
  */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemModelMaterialGetNumVertexIndices(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get shared toon index from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelMaterialGetToonTextureIndex(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether toon is shared from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsToonShared(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether culling is disabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsCullingDisabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether casting projection shadow is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsCastingShadowEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether casting shadow map is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsCastingShadowMapEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether shadow map is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsShadowMapEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether edge is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsEdgeEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether vertex color is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsVertexColorEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether point drawing is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsPointDrawEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get whether line drawing is enabled from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMaterialIsLineDrawEnabled(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get the opaque base model object from the given opaque model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelMaterialGetModelObject(const nanoem_model_material_t *material);
 
 /**
- * \brief
+ * \brief Get the opaque mutable base model object from the given opaque mutable model material object
  *
  * \param material The opaque model material object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelMaterialGetModelObjectMutable(nanoem_model_material_t *material);
@@ -1345,259 +1293,250 @@ nanoemModelMaterialGetModelObjectMutable(nanoem_model_material_t *material);
  *
  * \param bone The opaque model bone object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelBoneGetName(const nanoem_model_bone_t *bone, nanoem_language_type_t language);
 
 /**
- * \brief
+ * \brief Get parent bone object from the given opaque model bone object
+ *
+ * If the bone object doesn't have parent bone, the function will return \b NULL
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetParentBoneObject(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get parent inherent bone object from the given opaque model bone object
+ *
+ * If the bone object doesn't have inherent parent bone, the function will return \b NULL
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetInherentParentBoneObject(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get effector bone object from the given opaque model bone object
+ *
+ * If the bone object doesn't have effector bone, the function will return \b NULL
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetEffectorBoneObject(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get target bone object from the given opaque model bone object
+ *
+ * If the bone object doesn't have target bone, the function will return \b NULL
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelBoneGetTargetBoneObject(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get the opaque constraint object from the given opaque model bone object
+ *
+ * If the bone object doesn't have constraint, the function will return \b NULL
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_model_constraint_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_constraint_t *APIENTRY
 nanoemModelBoneGetConstraintObject(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get the opaque mutable constraint object from the given opaque mutable model bone object
+ *
+ * If the bone object doesn't have constraint, the function will return \b NULL
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_model_constraint_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_constraint_t *APIENTRY
 nanoemModelBoneGetConstraintObjectMutable(nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get origin from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetOrigin(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get destination origin from the given opaque model bone object
+ *
+ * The function returns valid value only the value of ::nanoemModelBoneHasDestinationBone is \b false
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetDestinationOrigin(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get fixed axis from the given opaque model bone object
+ *
+ * The function returns valid value only the value of ::nanoemModelBoneHasFixedAxis is \b true
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetFixedAxis(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get X local axis from the given opaque model bone object
+ *
+ * The function returns valid value only the value of ::nanoemModelBoneHasLocalAxes is \b true
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetLocalXAxis(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get Z local axis from the given opaque model bone object
+ *
+ * The function returns valid value only the value of ::nanoemModelBoneHasLocalAxes is \b true
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelBoneGetLocalZAxis(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get inherent coefficient from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelBoneGetInherentCoefficient(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get stage index from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelBoneGetStageIndex(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has destination bone from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasDestinationBone(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone can rotate from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsRotateable(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone can move from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsMovable(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone is visible from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsVisible(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone can handle from user from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsUserHandleable(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has constraint from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasConstraint(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has local inherent from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasLocalInherent(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone hes inherent translation from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasInherentTranslation(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has inherent orientation from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasInherentOrientation(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has fixed axis from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasFixedAxis(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has local axes from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasLocalAxes(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone is affected by physics simulation from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneIsAffectedByPhysicsSimulation(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get whether the bone has external parent bone from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasExternalParentBone(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get the opaque base model object from the given opaque model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelBoneGetModelObject(const nanoem_model_bone_t *bone);
 
 /**
- * \brief
+ * \brief Get the opaque mutable base model object from the given opaque mutable model bone object
  *
  * \param bone The opaque model bone object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelBoneGetModelObjectMutable(nanoem_model_bone_t *bone);
@@ -1612,7 +1551,6 @@ nanoemModelBoneGetModelObjectMutable(nanoem_model_bone_t *bone);
  * \brief
  *
  * \param constraint The opaque model constraint object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelConstraintGetEffectorBoneObject(const nanoem_model_constraint_t *constraint);
@@ -1621,7 +1559,6 @@ nanoemModelConstraintGetEffectorBoneObject(const nanoem_model_constraint_t *cons
  * \brief
  *
  * \param constraint The opaque model constraint object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelConstraintGetTargetBoneObject(const nanoem_model_constraint_t *constraint);
@@ -1630,7 +1567,6 @@ nanoemModelConstraintGetTargetBoneObject(const nanoem_model_constraint_t *constr
  * \brief
  *
  * \param constraint The opaque model constraint object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelConstraintGetAngleLimit(const nanoem_model_constraint_t *constraint);
@@ -1639,7 +1575,6 @@ nanoemModelConstraintGetAngleLimit(const nanoem_model_constraint_t *constraint);
  * \brief
  *
  * \param constraint The opaque model constraint object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelConstraintGetNumIterations(const nanoem_model_constraint_t *constraint);
@@ -1649,7 +1584,6 @@ nanoemModelConstraintGetNumIterations(const nanoem_model_constraint_t *constrain
  *
  * \param constraint The opaque model constraint objects
  * \param[out] num_joints Number of all joints in the object
- * \return NANOEM_DECL_API nanoem_model_constraint_joint_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_constraint_joint_t *const *APIENTRY
 nanoemModelConstraintGetAllJointObjects(const nanoem_model_constraint_t *constraints, nanoem_rsize_t *num_joints);
@@ -1658,7 +1592,6 @@ nanoemModelConstraintGetAllJointObjects(const nanoem_model_constraint_t *constra
  * \brief
  *
  * \param constraint The opaque model constraint object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelConstraintGetModelObject(const nanoem_model_constraint_t *constraint);
@@ -1667,7 +1600,6 @@ nanoemModelConstraintGetModelObject(const nanoem_model_constraint_t *constraint)
  * \brief
  *
  * \param constraint The opaque model constraint object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelConstraintGetModelObjectMutable(nanoem_model_constraint_t *constraint);
@@ -1681,7 +1613,6 @@ nanoemModelConstraintGetModelObjectMutable(nanoem_model_constraint_t *constraint
  * \brief
  *
  * \param joint The opaque model constraint joint object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelConstraintJointGetBoneObject(const nanoem_model_constraint_joint_t *joint);
@@ -1690,7 +1621,6 @@ nanoemModelConstraintJointGetBoneObject(const nanoem_model_constraint_joint_t *j
  * \brief
  *
  * \param joint The opaque model constraint joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelConstraintJointGetUpperLimit(const nanoem_model_constraint_joint_t *joint);
@@ -1699,7 +1629,6 @@ nanoemModelConstraintJointGetUpperLimit(const nanoem_model_constraint_joint_t *j
  * \brief
  *
  * \param joint The opaque model constraint joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelConstraintJointGetLowerLimit(const nanoem_model_constraint_joint_t *joint);
@@ -1708,7 +1637,6 @@ nanoemModelConstraintJointGetLowerLimit(const nanoem_model_constraint_joint_t *j
  * \brief
  *
  * \param joint The opaque model constraint joint object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelConstraintJointHasAngleLimit(const nanoem_model_constraint_joint_t *joint);
@@ -1725,7 +1653,6 @@ nanoemModelConstraintJointHasAngleLimit(const nanoem_model_constraint_joint_t *j
  * \brief
  *
  * \param texture The opaque model texture object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelTextureGetPath(const nanoem_model_texture_t *texture);
@@ -1734,7 +1661,6 @@ nanoemModelTextureGetPath(const nanoem_model_texture_t *texture);
  * \brief
  *
  * \param texture The opaque model texture object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelTextureGetModelObject(const nanoem_model_texture_t *texture);
@@ -1743,7 +1669,6 @@ nanoemModelTextureGetModelObject(const nanoem_model_texture_t *texture);
  * \brief
  *
  * \param texture The opaque model texture object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelTextureGetModelObjectMutable(nanoem_model_texture_t *texture);
@@ -1797,7 +1722,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_type_t){
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelMorphBoneGetBoneObject(const nanoem_model_morph_bone_t *morph);
@@ -1806,7 +1730,6 @@ nanoemModelMorphBoneGetBoneObject(const nanoem_model_morph_bone_t *morph);
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphBoneGetTranslation(const nanoem_model_morph_bone_t *morph);
@@ -1815,7 +1738,6 @@ nanoemModelMorphBoneGetTranslation(const nanoem_model_morph_bone_t *morph);
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphBoneGetOrientation(const nanoem_model_morph_bone_t *morph);
@@ -1830,7 +1752,6 @@ nanoemModelMorphBoneGetOrientation(const nanoem_model_morph_bone_t *morph);
  * \brief
  *
  * \param morph The opaque model flip morph object
- * \return NANOEM_DECL_API const nanoem_model_morph_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelMorphFlipGetMorphObject(const nanoem_model_morph_flip_t *morph);
@@ -1839,7 +1760,6 @@ nanoemModelMorphFlipGetMorphObject(const nanoem_model_morph_flip_t *morph);
  * \brief
  *
  * \param morph The opaque model flip morph object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphFlipGetWeight(const nanoem_model_morph_flip_t *morph);
@@ -1854,7 +1774,6 @@ nanoemModelMorphFlipGetWeight(const nanoem_model_morph_flip_t *morph);
  * \brief
  *
  * \param morph The opaque model group morph object
- * \return NANOEM_DECL_API const nanoem_model_morph_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelMorphGroupGetMorphObject(const nanoem_model_morph_group_t *morph);
@@ -1863,7 +1782,6 @@ nanoemModelMorphGroupGetMorphObject(const nanoem_model_morph_group_t *morph);
  * \brief
  *
  * \param morph The opaque model group morph object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphGroupGetWeight(const nanoem_model_morph_group_t *morph);
@@ -1878,7 +1796,6 @@ nanoemModelMorphGroupGetWeight(const nanoem_model_morph_group_t *morph);
  * \brief
  *
  * \param morph The opaque model impulse morph object
- * \return NANOEM_DECL_API const nanoem_model_rigid_body_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelMorphImpulseGetRigidBodyObject(const nanoem_model_morph_impulse_t *morph);
@@ -1887,7 +1804,6 @@ nanoemModelMorphImpulseGetRigidBodyObject(const nanoem_model_morph_impulse_t *mo
  * \brief
  *
  * \param morph The opaque model impulse morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphImpulseGetTorque(const nanoem_model_morph_impulse_t *morph);
@@ -1896,7 +1812,6 @@ nanoemModelMorphImpulseGetTorque(const nanoem_model_morph_impulse_t *morph);
  * \brief
  *
  * \param morph The opaque model impulse morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphImpulseGetVelocity(const nanoem_model_morph_impulse_t *morph);
@@ -1905,7 +1820,6 @@ nanoemModelMorphImpulseGetVelocity(const nanoem_model_morph_impulse_t *morph);
  * \brief
  *
  * \param morph The opaque model impulse morph object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelMorphImpulseIsLocal(const nanoem_model_morph_impulse_t *morph);
@@ -1931,7 +1845,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_morph_material_operation_type_t){
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_model_material_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_material_t *APIENTRY
 nanoemModelMorphMaterialGetMaterialObject(const nanoem_model_morph_material_t *morph);
@@ -1940,7 +1853,6 @@ nanoemModelMorphMaterialGetMaterialObject(const nanoem_model_morph_material_t *m
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetAmbientColor(const nanoem_model_morph_material_t *morph);
@@ -1949,7 +1861,6 @@ nanoemModelMorphMaterialGetAmbientColor(const nanoem_model_morph_material_t *mor
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetDiffuseColor(const nanoem_model_morph_material_t *morph);
@@ -1958,7 +1869,6 @@ nanoemModelMorphMaterialGetDiffuseColor(const nanoem_model_morph_material_t *mor
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetSpecularColor(const nanoem_model_morph_material_t *morph);
@@ -1967,7 +1877,6 @@ nanoemModelMorphMaterialGetSpecularColor(const nanoem_model_morph_material_t *mo
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetEdgeColor(const nanoem_model_morph_material_t *morph);
@@ -1976,7 +1885,6 @@ nanoemModelMorphMaterialGetEdgeColor(const nanoem_model_morph_material_t *morph)
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetDiffuseTextureBlend(const nanoem_model_morph_material_t *morph);
@@ -1985,7 +1893,6 @@ nanoemModelMorphMaterialGetDiffuseTextureBlend(const nanoem_model_morph_material
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetSphereMapTextureBlend(const nanoem_model_morph_material_t *morph);
@@ -1994,7 +1901,6 @@ nanoemModelMorphMaterialGetSphereMapTextureBlend(const nanoem_model_morph_materi
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphMaterialGetToonTextureBlend(const nanoem_model_morph_material_t *morph);
@@ -2003,7 +1909,6 @@ nanoemModelMorphMaterialGetToonTextureBlend(const nanoem_model_morph_material_t 
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetDiffuseOpacity(const nanoem_model_morph_material_t *morph);
@@ -2012,7 +1917,6 @@ nanoemModelMorphMaterialGetDiffuseOpacity(const nanoem_model_morph_material_t *m
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetEdgeOpacity(const nanoem_model_morph_material_t *morph);
@@ -2021,7 +1925,6 @@ nanoemModelMorphMaterialGetEdgeOpacity(const nanoem_model_morph_material_t *morp
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetSpecularPower(const nanoem_model_morph_material_t *morph);
@@ -2030,7 +1933,6 @@ nanoemModelMorphMaterialGetSpecularPower(const nanoem_model_morph_material_t *mo
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelMorphMaterialGetEdgeSize(const nanoem_model_morph_material_t *morph);
@@ -2039,7 +1941,6 @@ nanoemModelMorphMaterialGetEdgeSize(const nanoem_model_morph_material_t *morph);
  * \brief
  *
  * \param morph The opaque model material morph object
- * \return NANOEM_DECL_API nanoem_model_morph_material_operation_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_material_operation_type_t APIENTRY
 nanoemModelMorphMaterialGetOperationType(const nanoem_model_morph_material_t *morph);
@@ -2054,7 +1955,6 @@ nanoemModelMorphMaterialGetOperationType(const nanoem_model_morph_material_t *mo
  * \brief
  *
  * \param morph The opaque model UV morph object
- * \return NANOEM_DECL_API const nanoem_model_vertex_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_vertex_t *APIENTRY
 nanoemModelMorphUVGetVertexObject(const nanoem_model_morph_uv_t *morph);
@@ -2063,7 +1963,6 @@ nanoemModelMorphUVGetVertexObject(const nanoem_model_morph_uv_t *morph);
  * \brief
  *
  * \param morph The opaque model UV morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphUVGetPosition(const nanoem_model_morph_uv_t *morph);
@@ -2078,7 +1977,6 @@ nanoemModelMorphUVGetPosition(const nanoem_model_morph_uv_t *morph);
  * \brief
  *
  * \param morph The opaque model vertex morph object
- * \return NANOEM_DECL_API const nanoem_model_vertex_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_vertex_t *APIENTRY
 nanoemModelMorphVertexGetVertexObject(const nanoem_model_morph_vertex_t *morph);
@@ -2087,7 +1985,6 @@ nanoemModelMorphVertexGetVertexObject(const nanoem_model_morph_vertex_t *morph);
  * \brief
  *
  * \param morph The opaque model vertex morph object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphVertexGetPosition(const nanoem_model_morph_vertex_t *morph);
@@ -2098,7 +1995,6 @@ nanoemModelMorphVertexGetPosition(const nanoem_model_morph_vertex_t *morph);
  *
  * \param morph The opaque model morph object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMorphGetName(const nanoem_model_morph_t *morph, nanoem_language_type_t language);
@@ -2107,7 +2003,6 @@ nanoemModelMorphGetName(const nanoem_model_morph_t *morph, nanoem_language_type_
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API nanoem_model_morph_category_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_category_t APIENTRY
 nanoemModelMorphGetCategory(const nanoem_model_morph_t *morph);
@@ -2116,7 +2011,6 @@ nanoemModelMorphGetCategory(const nanoem_model_morph_t *morph);
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API nanoem_model_morph_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_type_t APIENTRY
 nanoemModelMorphGetType(const nanoem_model_morph_t *morph);
@@ -2126,7 +2020,6 @@ nanoemModelMorphGetType(const nanoem_model_morph_t *morph);
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_bone_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_bone_t *const *APIENTRY
 nanoemModelMorphGetAllBoneMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2136,7 +2029,6 @@ nanoemModelMorphGetAllBoneMorphObjects(const nanoem_model_morph_t *morph, nanoem
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_flip_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_flip_t *const *APIENTRY
 nanoemModelMorphGetAllFlipMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2146,7 +2038,6 @@ nanoemModelMorphGetAllFlipMorphObjects(const nanoem_model_morph_t *morph, nanoem
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_group_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_group_t *const *APIENTRY
 nanoemModelMorphGetAllGroupMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2156,7 +2047,6 @@ nanoemModelMorphGetAllGroupMorphObjects(const nanoem_model_morph_t *morph, nanoe
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_impulse_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_impulse_t *const *APIENTRY
 nanoemModelMorphGetAllImpulseMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2166,7 +2056,6 @@ nanoemModelMorphGetAllImpulseMorphObjects(const nanoem_model_morph_t *morph, nan
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_material_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_material_t *const *APIENTRY
 nanoemModelMorphGetAllMaterialMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2176,7 +2065,6 @@ nanoemModelMorphGetAllMaterialMorphObjects(const nanoem_model_morph_t *morph, na
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_uv_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_uv_t *const *APIENTRY
 nanoemModelMorphGetAllUVMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2186,7 +2074,6 @@ nanoemModelMorphGetAllUVMorphObjects(const nanoem_model_morph_t *morph, nanoem_r
  *
  * \param morph The opaque model morph object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_morph_vertex_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_vertex_t *const *APIENTRY
 nanoemModelMorphGetAllVertexMorphObjects(const nanoem_model_morph_t *morph, nanoem_rsize_t *num_objects);
@@ -2195,7 +2082,6 @@ nanoemModelMorphGetAllVertexMorphObjects(const nanoem_model_morph_t *morph, nano
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelMorphGetModelObject(const nanoem_model_morph_t *morph);
@@ -2204,7 +2090,6 @@ nanoemModelMorphGetModelObject(const nanoem_model_morph_t *morph);
  * \brief
  *
  * \param morph The opaque model morph object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelMorphGetModelObjectMutable(nanoem_model_morph_t *morph);
@@ -2231,7 +2116,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_label_item_type_t){
  *
  * \param label The opaque model label object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelLabelGetName(const nanoem_model_label_t *label, nanoem_language_type_t language);
@@ -2240,7 +2124,6 @@ nanoemModelLabelGetName(const nanoem_model_label_t *label, nanoem_language_type_
  * \brief
  *
  * \param label The opaque model label object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLabelIsSpecial(const nanoem_model_label_t *label);
@@ -2250,7 +2133,6 @@ nanoemModelLabelIsSpecial(const nanoem_model_label_t *label);
  *
  * \param label The opaque model label object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_label_item_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_label_item_t *const *APIENTRY
 nanoemModelLabelGetAllItemObjects(const nanoem_model_label_t *label, nanoem_rsize_t *num_objects);
@@ -2259,7 +2141,6 @@ nanoemModelLabelGetAllItemObjects(const nanoem_model_label_t *label, nanoem_rsiz
  * \brief
  *
  * \param label The opaque model label object_item
- * \return NANOEM_DECL_API nanoem_model_label_item_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_label_item_type_t APIENTRY
 nanoemModelLabelItemGetType(const nanoem_model_label_item_t *label_item);
@@ -2268,7 +2149,6 @@ nanoemModelLabelItemGetType(const nanoem_model_label_item_t *label_item);
  * \brief
  *
  * \param label The opaque model label object_item
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelLabelItemGetBoneObject(const nanoem_model_label_item_t *label_item);
@@ -2277,7 +2157,6 @@ nanoemModelLabelItemGetBoneObject(const nanoem_model_label_item_t *label_item);
  * \brief
  *
  * \param label The opaque model label object_item
- * \return NANOEM_DECL_API const nanoem_model_morph_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelLabelItemGetMorphObject(const nanoem_model_label_item_t *label_item);
@@ -2286,7 +2165,6 @@ nanoemModelLabelItemGetMorphObject(const nanoem_model_label_item_t *label_item);
  * \brief
  *
  * \param label The opaque model label object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelLabelGetModelObject(const nanoem_model_label_t *label);
@@ -2295,7 +2173,6 @@ nanoemModelLabelGetModelObject(const nanoem_model_label_t *label);
  * \brief
  *
  * \param label The opaque model label object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelLabelGetModelObjectMutable(nanoem_model_label_t *label);
@@ -2335,7 +2212,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_transform_type_t){
  *
  * \param rigid_body The opaque model rigid body object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelRigidBodyGetName(const nanoem_model_rigid_body_t *rigid_body, nanoem_language_type_t language);
@@ -2344,7 +2220,6 @@ nanoemModelRigidBodyGetName(const nanoem_model_rigid_body_t *rigid_body, nanoem_
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API const nanoem_model_bone_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelRigidBodyGetBoneObject(const nanoem_model_rigid_body_t *rigid_body);
@@ -2353,7 +2228,6 @@ nanoemModelRigidBodyGetBoneObject(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelRigidBodyGetOrigin(const nanoem_model_rigid_body_t *rigid_body);
@@ -2362,7 +2236,6 @@ nanoemModelRigidBodyGetOrigin(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelRigidBodyGetOrientation(const nanoem_model_rigid_body_t *rigid_body);
@@ -2371,7 +2244,6 @@ nanoemModelRigidBodyGetOrientation(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelRigidBodyGetShapeSize(const nanoem_model_rigid_body_t *rigid_body);
@@ -2380,7 +2252,6 @@ nanoemModelRigidBodyGetShapeSize(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetMass(const nanoem_model_rigid_body_t *rigid_body);
@@ -2389,7 +2260,6 @@ nanoemModelRigidBodyGetMass(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetLinearDamping(const nanoem_model_rigid_body_t *rigid_body);
@@ -2398,7 +2268,6 @@ nanoemModelRigidBodyGetLinearDamping(const nanoem_model_rigid_body_t *rigid_body
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetAngularDamping(const nanoem_model_rigid_body_t *rigid_body);
@@ -2407,7 +2276,6 @@ nanoemModelRigidBodyGetAngularDamping(const nanoem_model_rigid_body_t *rigid_bod
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetFriction(const nanoem_model_rigid_body_t *rigid_body);
@@ -2416,7 +2284,6 @@ nanoemModelRigidBodyGetFriction(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelRigidBodyGetRestitution(const nanoem_model_rigid_body_t *rigid_body);
@@ -2425,7 +2292,6 @@ nanoemModelRigidBodyGetRestitution(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_model_rigid_body_shape_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_rigid_body_shape_type_t APIENTRY
 nanoemModelRigidBodyGetShapeType(const nanoem_model_rigid_body_t *rigid_body);
@@ -2434,7 +2300,6 @@ nanoemModelRigidBodyGetShapeType(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_model_rigid_body_transform_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_rigid_body_transform_type_t APIENTRY
 nanoemModelRigidBodyGetTransformType(const nanoem_model_rigid_body_t *rigid_body);
@@ -2443,7 +2308,6 @@ nanoemModelRigidBodyGetTransformType(const nanoem_model_rigid_body_t *rigid_body
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelRigidBodyGetCollisionGroupId(const nanoem_model_rigid_body_t *rigid_body);
@@ -2452,7 +2316,6 @@ nanoemModelRigidBodyGetCollisionGroupId(const nanoem_model_rigid_body_t *rigid_b
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelRigidBodyGetCollisionMask(const nanoem_model_rigid_body_t *rigid_body);
@@ -2461,7 +2324,6 @@ nanoemModelRigidBodyGetCollisionMask(const nanoem_model_rigid_body_t *rigid_body
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelRigidBodyIsBoneRelativePosition(const nanoem_model_rigid_body_t *rigid_body);
@@ -2470,7 +2332,6 @@ nanoemModelRigidBodyIsBoneRelativePosition(const nanoem_model_rigid_body_t *rigi
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelRigidBodyGetModelObject(const nanoem_model_rigid_body_t *rigid_body);
@@ -2479,7 +2340,6 @@ nanoemModelRigidBodyGetModelObject(const nanoem_model_rigid_body_t *rigid_body);
  * \brief
  *
  * \param rigid_body The opaque model rigid body object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelRigidBodyGetModelObjectMutable(nanoem_model_rigid_body_t *rigid_body);
@@ -2510,7 +2370,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_joint_type_t){
  *
  * \param joint The opaque model joint objects
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelJointGetName(const nanoem_model_joint_t *joints, nanoem_language_type_t language);
@@ -2519,7 +2378,6 @@ nanoemModelJointGetName(const nanoem_model_joint_t *joints, nanoem_language_type
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_model_rigid_body_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelJointGetRigidBodyAObject(const nanoem_model_joint_t *joint);
@@ -2528,7 +2386,6 @@ nanoemModelJointGetRigidBodyAObject(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_model_rigid_body_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelJointGetRigidBodyBObject(const nanoem_model_joint_t *joint);
@@ -2537,7 +2394,6 @@ nanoemModelJointGetRigidBodyBObject(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetOrigin(const nanoem_model_joint_t *joint);
@@ -2546,7 +2402,6 @@ nanoemModelJointGetOrigin(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetOrientation(const nanoem_model_joint_t *joint);
@@ -2555,7 +2410,6 @@ nanoemModelJointGetOrientation(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API nanoem_model_joint_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_joint_type_t APIENTRY
 nanoemModelJointGetType(const nanoem_model_joint_t *joint);
@@ -2564,7 +2418,6 @@ nanoemModelJointGetType(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetLinearUpperLimit(const nanoem_model_joint_t *joint);
@@ -2573,7 +2426,6 @@ nanoemModelJointGetLinearUpperLimit(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetLinearLowerLimit(const nanoem_model_joint_t *joint);
@@ -2582,7 +2434,6 @@ nanoemModelJointGetLinearLowerLimit(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetLinearStiffness(const nanoem_model_joint_t *joint);
@@ -2591,7 +2442,6 @@ nanoemModelJointGetLinearStiffness(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetAngularUpperLimit(const nanoem_model_joint_t *joint);
@@ -2600,7 +2450,6 @@ nanoemModelJointGetAngularUpperLimit(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetAngularLowerLimit(const nanoem_model_joint_t *joint);
@@ -2609,7 +2458,6 @@ nanoemModelJointGetAngularLowerLimit(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param joint The opaque model joint object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelJointGetAngularStiffness(const nanoem_model_joint_t *joint);
@@ -2618,7 +2466,6 @@ nanoemModelJointGetAngularStiffness(const nanoem_model_joint_t *joint);
  * \brief
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelJointGetModelObject(const nanoem_model_joint_t *vertex);
@@ -2627,7 +2474,6 @@ nanoemModelJointGetModelObject(const nanoem_model_joint_t *vertex);
  * \brief
  *
  * \param vertex The opaque model vertex object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelJointGetModelObjectMutable(nanoem_model_joint_t *vertex);
@@ -2668,7 +2514,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_aero_model_type_t){
  *
  * \param body The opaque model soft body object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *body, nanoem_language_type_t language);
@@ -2678,7 +2523,6 @@ nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *body, nanoem_language
  *
  * \param body The opaque model soft body object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_model_soft_body_anchor_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_soft_body_anchor_t *const * APIENTRY
 nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects);
@@ -2688,7 +2532,6 @@ nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *body, nan
  *
  * \param body The opaque model soft body object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API const nanoem_u32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_u32_t * APIENTRY
 nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects);
@@ -2697,7 +2540,6 @@ nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *bod
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API const nanoem_model_material_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_material_t *APIENTRY
 nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *body);
@@ -2706,7 +2548,6 @@ nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_model_soft_body_shape_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_soft_body_shape_type_t APIENTRY
 nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *body);
@@ -2715,7 +2556,6 @@ nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_model_soft_body_aero_model_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_soft_body_aero_model_type_t APIENTRY
 nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *body);
@@ -2724,7 +2564,6 @@ nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *body);
@@ -2733,7 +2572,6 @@ nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *body);
@@ -2742,7 +2580,6 @@ nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *body);
@@ -2751,7 +2588,6 @@ nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *b
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *body);
@@ -2760,7 +2596,6 @@ nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *body);
@@ -2769,7 +2604,6 @@ nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *body);
@@ -2778,7 +2612,6 @@ nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *body);
@@ -2787,7 +2620,6 @@ nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body_t *body);
@@ -2796,7 +2628,6 @@ nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t *body);
@@ -2805,7 +2636,6 @@ nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t 
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *body);
@@ -2814,7 +2644,6 @@ nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *bo
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *body);
@@ -2823,7 +2652,6 @@ nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *body)
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *body);
@@ -2832,7 +2660,6 @@ nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *bod
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *body);
@@ -2841,7 +2668,6 @@ nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *body);
@@ -2850,7 +2676,6 @@ nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *body);
@@ -2859,7 +2684,6 @@ nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *body);
@@ -2868,7 +2692,6 @@ nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *body
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *body);
@@ -2877,7 +2700,6 @@ nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *body);
@@ -2886,7 +2708,6 @@ nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *bo
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *body);
@@ -2895,7 +2716,6 @@ nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *body);
@@ -2904,7 +2724,6 @@ nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *bod
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t *body);
@@ -2913,7 +2732,6 @@ nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t 
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t *body);
@@ -2922,7 +2740,6 @@ nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t *body);
@@ -2931,7 +2748,6 @@ nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t 
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *body);
@@ -2940,7 +2756,6 @@ nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *body);
@@ -2949,7 +2764,6 @@ nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t *body);
@@ -2958,7 +2772,6 @@ nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t 
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *body);
@@ -2967,7 +2780,6 @@ nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *body);
@@ -2976,7 +2788,6 @@ nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *b
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *body);
@@ -2985,7 +2796,6 @@ nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *body);
@@ -2994,7 +2804,6 @@ nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *body
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *body);
@@ -3003,7 +2812,6 @@ nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *bo
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *body);
@@ -3012,7 +2820,6 @@ nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *b
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *body);
@@ -3021,7 +2828,6 @@ nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *body);
@@ -3037,7 +2843,6 @@ nanoemModelSoftBodyAnchorGetRigidBodyObject(const nanoem_model_soft_body_anchor_
  * \brief
  *
  * \param anchor The opaque model soft body anchor object
- * \return NANOEM_DECL_API const nanoem_model_vertex_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_vertex_t *APIENTRY
 nanoemModelSoftBodyAnchorGetVertexObject(const nanoem_model_soft_body_anchor_t *anchor);
@@ -3046,7 +2851,6 @@ nanoemModelSoftBodyAnchorGetVertexObject(const nanoem_model_soft_body_anchor_t *
  * \brief
  *
  * \param anchor The opaque model soft body anchor object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelSoftBodyAnchorIsNearEnabled(const nanoem_model_soft_body_anchor_t *anchor);
@@ -3055,7 +2859,6 @@ nanoemModelSoftBodyAnchorIsNearEnabled(const nanoem_model_soft_body_anchor_t *an
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API const nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
 nanoemModelSoftBodyGetModelObject(const nanoem_model_soft_body_t *body);
@@ -3064,7 +2867,6 @@ nanoemModelSoftBodyGetModelObject(const nanoem_model_soft_body_t *body);
  * \brief
  *
  * \param body The opaque model soft body object
- * \return NANOEM_DECL_API nanoem_model_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
 nanoemModelSoftBodyGetModelObjectMutable(nanoem_model_soft_body_t *body);
@@ -3077,7 +2879,6 @@ nanoemModelSoftBodyGetModelObjectMutable(nanoem_model_soft_body_t *body);
  *
  * \param factory The opaque factory object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_model_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_t *APIENTRY
 nanoemModelCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
@@ -3088,7 +2889,6 @@ nanoemModelCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *sta
  * \param model The opaque model object
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMD(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
@@ -3099,7 +2899,6 @@ nanoemModelLoadFromBufferPMD(nanoem_model_t *model, nanoem_buffer_t *buffer, nan
  * \param model The opaque model object
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
@@ -3110,7 +2909,6 @@ nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nan
  * \param model The opaque model object
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBuffer(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
@@ -3119,7 +2917,6 @@ nanoemModelLoadFromBuffer(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem
  * \brief Get a model format type
  *
  * \param model The opaque model object
- * \return NANOEM_DECL_API nanoem_model_format_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_model_format_type_t APIENTRY
 nanoemModelGetFormatType(const nanoem_model_t *model);
@@ -3128,7 +2925,6 @@ nanoemModelGetFormatType(const nanoem_model_t *model);
  * \brief Get a model codec type
  *
  * \param model The opaque model object
- * \return NANOEM_DECL_API nanoem_codec_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_codec_type_t APIENTRY
 nanoemModelGetCodecType(const nanoem_model_t *model);
@@ -3137,7 +2933,6 @@ nanoemModelGetCodecType(const nanoem_model_t *model);
  * \brief Get an additional UV size
  *
  * \param model The opaque model object
- * \return NANOEM_DECL_API nanoem_rsize_t APIENTRY
  */
 NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemModelGetAdditionalUVSize(const nanoem_model_t *model);
@@ -3147,7 +2942,6 @@ nanoemModelGetAdditionalUVSize(const nanoem_model_t *model);
  *
  * \param model The opaque model object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetName(const nanoem_model_t *model, nanoem_language_type_t language);
@@ -3157,7 +2951,6 @@ nanoemModelGetName(const nanoem_model_t *model, nanoem_language_type_t language)
  *
  * \param model The opaque model object
  * \param language
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetComment(const nanoem_model_t *model, nanoem_language_type_t language);
@@ -3167,7 +2960,6 @@ nanoemModelGetComment(const nanoem_model_t *model, nanoem_language_type_t langua
  *
  * \param model The opaque model object
  * \param[out] num_vertices Number of all vertices in the object
- * \return NANOEM_DECL_API nanoem_model_vertex_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_vertex_t *const *APIENTRY
 nanoemModelGetAllVertexObjects(const nanoem_model_t *model, nanoem_rsize_t *num_vertices);
@@ -3177,7 +2969,6 @@ nanoemModelGetAllVertexObjects(const nanoem_model_t *model, nanoem_rsize_t *num_
  *
  * \param model The opaque model object
  * \param[out] num_indices Number of all indices in the object
- * \return NANOEM_DECL_API const nanoem_u32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_u32_t *APIENTRY
 nanoemModelGetAllVertexIndices(const nanoem_model_t *model, nanoem_rsize_t *num_indices);
@@ -3187,7 +2978,6 @@ nanoemModelGetAllVertexIndices(const nanoem_model_t *model, nanoem_rsize_t *num_
  *
  * \param model The opaque model object
  * \param[out] num_materials Number of all materials in the object
- * \return NANOEM_DECL_API nanoem_model_material_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_material_t *const *APIENTRY
 nanoemModelGetAllMaterialObjects(const nanoem_model_t *model, nanoem_rsize_t *num_materials);
@@ -3197,7 +2987,6 @@ nanoemModelGetAllMaterialObjects(const nanoem_model_t *model, nanoem_rsize_t *nu
  *
  * \param model The opaque model object
  * \param[out] num_bones Number of all bones in the object
- * \return NANOEM_DECL_API nanoem_model_bone_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_bone_t *const *APIENTRY
 nanoemModelGetAllBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bones);
@@ -3207,7 +2996,6 @@ nanoemModelGetAllBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bo
  *
  * \param model The opaque model object
  * \param[out] num_bones Number of all bones in the object
- * \return NANOEM_DECL_API nanoem_model_bone_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_bone_t *const *APIENTRY
 nanoemModelGetAllOrderedBoneObjects(const nanoem_model_t *model, nanoem_rsize_t *num_bones);
@@ -3217,7 +3005,6 @@ nanoemModelGetAllOrderedBoneObjects(const nanoem_model_t *model, nanoem_rsize_t 
  *
  * \param model The opaque model object
  * \param[out] num_constraints Number of all constraints in the object
- * \return NANOEM_DECL_API nanoem_model_constraint_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_constraint_t *const *APIENTRY
 nanoemModelGetAllConstraintObjects(const nanoem_model_t *model, nanoem_rsize_t *num_constraints);
@@ -3227,7 +3014,6 @@ nanoemModelGetAllConstraintObjects(const nanoem_model_t *model, nanoem_rsize_t *
  *
  * \param model The opaque model object
  * \param[out] num_textures Number of all textures in the object
- * \return NANOEM_DECL_API nanoem_model_texture_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_texture_t *const *APIENTRY
 nanoemModelGetAllTextureObjects(const nanoem_model_t *model, nanoem_rsize_t *num_textures);
@@ -3237,7 +3023,6 @@ nanoemModelGetAllTextureObjects(const nanoem_model_t *model, nanoem_rsize_t *num
  *
  * \param model The opaque model object
  * \param[out] num_morphs Number of all morphs in the object
- * \return NANOEM_DECL_API nanoem_model_morph_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_morph_t *const *APIENTRY
 nanoemModelGetAllMorphObjects(const nanoem_model_t *model, nanoem_rsize_t *num_morphs);
@@ -3247,7 +3032,6 @@ nanoemModelGetAllMorphObjects(const nanoem_model_t *model, nanoem_rsize_t *num_m
  *
  * \param model The opaque model object
  * \param[out] num_labels Number of all labels in the object
- * \return NANOEM_DECL_API nanoem_model_label_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_label_t *const *APIENTRY
 nanoemModelGetAllLabelObjects(const nanoem_model_t *model, nanoem_rsize_t *num_labels);
@@ -3257,7 +3041,6 @@ nanoemModelGetAllLabelObjects(const nanoem_model_t *model, nanoem_rsize_t *num_l
  *
  * \param model The opaque model object
  * \param[out] num_rigid_bodies Number of all rigid_bodies in the object
- * \return NANOEM_DECL_API nanoem_model_rigid_body_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_rigid_body_t *const *APIENTRY
 nanoemModelGetAllRigidBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *num_rigid_bodies);
@@ -3267,7 +3050,6 @@ nanoemModelGetAllRigidBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *n
  *
  * \param model The opaque model object
  * \param[out] num_joints Number of all joints in the object
- * \return NANOEM_DECL_API nanoem_model_joint_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_joint_t *const *APIENTRY
 nanoemModelGetAllJointObjects(const nanoem_model_t *model, nanoem_rsize_t *num_joints);
@@ -3277,7 +3059,6 @@ nanoemModelGetAllJointObjects(const nanoem_model_t *model, nanoem_rsize_t *num_j
  *
  * \param model The opaque model object
  * \param[out] num_soft_bodies Number of all soft_bodies in the object
- * \return NANOEM_DECL_API nanoem_model_soft_body_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_model_soft_body_t *const *APIENTRY
 nanoemModelGetAllSoftBodyObjects(const nanoem_model_t *model, nanoem_rsize_t *num_soft_bodies);
@@ -3330,7 +3111,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_format_type_t){
  * \brief
  *
  * \param object The opaque motion keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_t *APIENTRY
 nanoemMotionKeyframeObjectGetParentMotion(const nanoem_motion_keyframe_object_t *object);
@@ -3339,7 +3119,6 @@ nanoemMotionKeyframeObjectGetParentMotion(const nanoem_motion_keyframe_object_t 
  * \brief
  *
  * \param object The opaque motion keyframe object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionKeyframeObjectGetIndex(const nanoem_motion_keyframe_object_t *object);
@@ -3348,7 +3127,6 @@ nanoemMotionKeyframeObjectGetIndex(const nanoem_motion_keyframe_object_t *object
  * \brief
  *
  * \param object The opaque motion keyframe object
- * \return NANOEM_DECL_API nanoem_frame_index_t APIENTRY
  */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionKeyframeObjectGetFrameIndex(const nanoem_motion_keyframe_object_t *object);
@@ -3358,7 +3136,6 @@ nanoemMotionKeyframeObjectGetFrameIndex(const nanoem_motion_keyframe_object_t *o
  *
  * \param object The opaque motion keyframe object
  * \param offset
- * \return NANOEM_DECL_API nanoem_frame_index_t APIENTRY
  */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionKeyframeObjectGetFrameIndexWithOffset(const nanoem_motion_keyframe_object_t *object, int offset);
@@ -3367,7 +3144,6 @@ nanoemMotionKeyframeObjectGetFrameIndexWithOffset(const nanoem_motion_keyframe_o
  * \brief
  *
  * \param object The opaque motion keyframe object
- * \return NANOEM_DECL_API nanoem_user_data_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_user_data_t *APIENTRY
 nanoemMotionKeyframeObjectGetUserDataObject(const nanoem_motion_keyframe_object_t *object);
@@ -3386,7 +3162,6 @@ nanoemMotionKeyframeObjectSetUserDataObject(nanoem_motion_keyframe_object_t *obj
  *
  * \param object The opaque motion keyframe object
  * \param key
- * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY
 nanoemMotionKeyframeObjectGetAnnotation(const nanoem_motion_keyframe_object_t *object, const char *key);
@@ -3425,7 +3200,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_effect_parameter_type_t) {
  * \brief
  *
  * \param parameter The opaque motion parameter object
- * \return NANOEM_DECL_API const nanoem_motion_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_t *APIENTRY
 nanoemMotionEffectParameterGetParentMotion(const nanoem_motion_effect_parameter_t *parameter);
@@ -3434,7 +3208,6 @@ nanoemMotionEffectParameterGetParentMotion(const nanoem_motion_effect_parameter_
  * \brief
  *
  * \param parameter The opaque motion parameter object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionEffectParameterGetName(const nanoem_motion_effect_parameter_t *parameter);
@@ -3443,7 +3216,6 @@ nanoemMotionEffectParameterGetName(const nanoem_motion_effect_parameter_t *param
  * \brief
  *
  * \param parameter The opaque motion parameter object
- * \return NANOEM_DECL_API nanoem_motion_effect_parameter_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_effect_parameter_type_t APIENTRY
 nanoemMotionEffectParameterGetType(const nanoem_motion_effect_parameter_t *parameter);
@@ -3452,7 +3224,6 @@ nanoemMotionEffectParameterGetType(const nanoem_motion_effect_parameter_t *param
  * \brief
  *
  * \param parameter The opaque motion parameter object
- * \return NANOEM_DECL_API const void* APIENTRY
  */
 NANOEM_DECL_API const void *APIENTRY
 nanoemMotionEffectParameterGetValue(const nanoem_motion_effect_parameter_t *parameter);
@@ -3467,7 +3238,6 @@ nanoemMotionEffectParameterGetValue(const nanoem_motion_effect_parameter_t *para
  * \brief
  *
  * \param op The opaque motion outside parent object
- * \return NANOEM_DECL_API const nanoem_motion_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_t *APIENTRY
 nanoemMotionOutsideParentGetParentMotion(const nanoem_motion_outside_parent_t *op);
@@ -3476,7 +3246,6 @@ nanoemMotionOutsideParentGetParentMotion(const nanoem_motion_outside_parent_t *o
  * \brief
  *
  * \param op The opaque motion outside parent object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionOutsideParentGetTargetBoneName(const nanoem_motion_outside_parent_t *op);
@@ -3485,7 +3254,6 @@ nanoemMotionOutsideParentGetTargetBoneName(const nanoem_motion_outside_parent_t 
  * \brief
  *
  * \param op The opaque motion outside parent object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionOutsideParentGetTargetObjectName(const nanoem_motion_outside_parent_t *op);
@@ -3494,7 +3262,6 @@ nanoemMotionOutsideParentGetTargetObjectName(const nanoem_motion_outside_parent_
  * \brief
  *
  * \param op The opaque motion outside parent object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionOutsideParentGetSubjectBoneName(const nanoem_motion_outside_parent_t *op);
@@ -3509,7 +3276,6 @@ nanoemMotionOutsideParentGetSubjectBoneName(const nanoem_motion_outside_parent_t
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetTranslation(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3518,7 +3284,6 @@ nanoemMotionAccessoryKeyframeGetTranslation(const nanoem_motion_accessory_keyfra
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetOrientation(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3527,7 +3292,6 @@ nanoemMotionAccessoryKeyframeGetOrientation(const nanoem_motion_accessory_keyfra
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionAccessoryKeyframeGetScaleFactor(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3536,7 +3300,6 @@ nanoemMotionAccessoryKeyframeGetScaleFactor(const nanoem_motion_accessory_keyfra
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionAccessoryKeyframeGetOpacity(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3545,7 +3308,6 @@ nanoemMotionAccessoryKeyframeGetOpacity(const nanoem_motion_accessory_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionAccessoryKeyframeIsVisible(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3554,7 +3316,6 @@ nanoemMotionAccessoryKeyframeIsVisible(const nanoem_motion_accessory_keyframe_t 
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionAccessoryKeyframeIsAddBlendEnabled(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3563,7 +3324,6 @@ nanoemMotionAccessoryKeyframeIsAddBlendEnabled(const nanoem_motion_accessory_key
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionAccessoryKeyframeIsShadowEnabled(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3572,7 +3332,6 @@ nanoemMotionAccessoryKeyframeIsShadowEnabled(const nanoem_motion_accessory_keyfr
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_outside_parent_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetOutsideParent(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3581,7 +3340,6 @@ nanoemMotionAccessoryKeyframeGetOutsideParent(const nanoem_motion_accessory_keyf
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_motion_outside_parent_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetOutsideParentMutable(nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3591,7 +3349,6 @@ nanoemMotionAccessoryKeyframeGetOutsideParentMutable(nanoem_motion_accessory_key
  *
  * \param keyframe The opaque motion accessory keyframe object
  * \param[out] num_object Number of all object in the object
- * \return NANOEM_DECL_API nanoem_motion_effect_parameter_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_effect_parameter_t *const *APIENTRY
 nanoemMotionAccessoryKeyframeGetAllEffectParameterObjects(const nanoem_motion_accessory_keyframe_t *keyframe, nanoem_rsize_t *num_object);
@@ -3600,7 +3357,6 @@ nanoemMotionAccessoryKeyframeGetAllEffectParameterObjects(const nanoem_motion_ac
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetKeyframeObject(const nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3609,7 +3365,6 @@ nanoemMotionAccessoryKeyframeGetKeyframeObject(const nanoem_motion_accessory_key
  * \brief
  *
  * \param keyframe The opaque motion accessory keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionAccessoryKeyframeGetKeyframeObjectMutable(nanoem_motion_accessory_keyframe_t *keyframe);
@@ -3637,7 +3392,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_bone_keyframe_interpolation_type_t)
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionBoneKeyframeGetName(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3646,7 +3400,6 @@ nanoemMotionBoneKeyframeGetName(const nanoem_motion_bone_keyframe_t *keyframe);
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionBoneKeyframeGetTranslation(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3655,7 +3408,6 @@ nanoemMotionBoneKeyframeGetTranslation(const nanoem_motion_bone_keyframe_t *keyf
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionBoneKeyframeGetOrientation(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3664,7 +3416,6 @@ nanoemMotionBoneKeyframeGetOrientation(const nanoem_motion_bone_keyframe_t *keyf
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionBoneKeyframeGetId(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3674,7 +3425,6 @@ nanoemMotionBoneKeyframeGetId(const nanoem_motion_bone_keyframe_t *keyframe);
  *
  * \param keyframe The opaque motion bone keyframe object
  * \param index
- * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_u8_t *APIENTRY
 nanoemMotionBoneKeyframeGetInterpolation(const nanoem_motion_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t index);
@@ -3684,7 +3434,6 @@ nanoemMotionBoneKeyframeGetInterpolation(const nanoem_motion_bone_keyframe_t *ke
  *
  * \param keyframe The opaque motion bone keyframe object
  * \param index
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionBoneKeyframeIsLinearInterpolation(const nanoem_motion_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t index);
@@ -3693,7 +3442,6 @@ nanoemMotionBoneKeyframeIsLinearInterpolation(const nanoem_motion_bone_keyframe_
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API nanoem_u32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_u32_t APIENTRY
 nanoemMotionBoneKeyframeGetStageIndex(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3702,7 +3450,6 @@ nanoemMotionBoneKeyframeGetStageIndex(const nanoem_motion_bone_keyframe_t *keyfr
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionBoneKeyframeIsPhysicsSimulationEnabled(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3711,7 +3458,6 @@ nanoemMotionBoneKeyframeIsPhysicsSimulationEnabled(const nanoem_motion_bone_keyf
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionBoneKeyframeGetKeyframeObject(const nanoem_motion_bone_keyframe_t *keyframe);
@@ -3720,7 +3466,6 @@ nanoemMotionBoneKeyframeGetKeyframeObject(const nanoem_motion_bone_keyframe_t *k
  * \brief
  *
  * \param keyframe The opaque motion bone keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionBoneKeyframeGetKeyframeObjectMutable(nanoem_motion_bone_keyframe_t *keyframe);
@@ -3750,7 +3495,6 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_motion_camera_keyframe_interpolation_type_
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionCameraKeyframeGetLookAt(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3759,7 +3503,6 @@ nanoemMotionCameraKeyframeGetLookAt(const nanoem_motion_camera_keyframe_t *keyfr
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionCameraKeyframeGetAngle(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3768,7 +3511,6 @@ nanoemMotionCameraKeyframeGetAngle(const nanoem_motion_camera_keyframe_t *keyfra
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionCameraKeyframeGetDistance(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3777,7 +3519,6 @@ nanoemMotionCameraKeyframeGetDistance(const nanoem_motion_camera_keyframe_t *key
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionCameraKeyframeGetFov(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3786,7 +3527,6 @@ nanoemMotionCameraKeyframeGetFov(const nanoem_motion_camera_keyframe_t *keyframe
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionCameraKeyframeIsPerspectiveView(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3796,7 +3536,6 @@ nanoemMotionCameraKeyframeIsPerspectiveView(const nanoem_motion_camera_keyframe_
  *
  * \param keyframe The opaque motion camera keyframe object
  * \param index
- * \return NANOEM_DECL_API const nanoem_u8_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_u8_t *APIENTRY
 nanoemMotionCameraKeyframeGetInterpolation(const nanoem_motion_camera_keyframe_t *keyframe, nanoem_motion_camera_keyframe_interpolation_type_t index);
@@ -3806,7 +3545,6 @@ nanoemMotionCameraKeyframeGetInterpolation(const nanoem_motion_camera_keyframe_t
  *
  * \param keyframe The opaque motion camera keyframe object
  * \param index
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionCameraKeyframeIsLinearInterpolation(const nanoem_motion_camera_keyframe_t *keyframe, nanoem_motion_camera_keyframe_interpolation_type_t index);
@@ -3815,7 +3553,6 @@ nanoemMotionCameraKeyframeIsLinearInterpolation(const nanoem_motion_camera_keyfr
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API nanoem_u32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_u32_t APIENTRY
 nanoemMotionCameraKeyframeGetStageIndex(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3824,7 +3561,6 @@ nanoemMotionCameraKeyframeGetStageIndex(const nanoem_motion_camera_keyframe_t *k
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_outside_parent_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionCameraKeyframeGetOutsideParent(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3833,7 +3569,6 @@ nanoemMotionCameraKeyframeGetOutsideParent(const nanoem_motion_camera_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API nanoem_motion_outside_parent_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *APIENTRY
 nanoemMotionCameraKeyframeGetOutsideParentMutable(nanoem_motion_camera_keyframe_t *keyframe);
@@ -3842,7 +3577,6 @@ nanoemMotionCameraKeyframeGetOutsideParentMutable(nanoem_motion_camera_keyframe_
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionCameraKeyframeGetKeyframeObject(const nanoem_motion_camera_keyframe_t *keyframe);
@@ -3851,7 +3585,6 @@ nanoemMotionCameraKeyframeGetKeyframeObject(const nanoem_motion_camera_keyframe_
  * \brief
  *
  * \param keyframe The opaque motion camera keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionCameraKeyframeGetKeyframeObjectMutable(nanoem_motion_camera_keyframe_t *keyframe);
@@ -3866,7 +3599,6 @@ nanoemMotionCameraKeyframeGetKeyframeObjectMutable(nanoem_motion_camera_keyframe
  * \brief
  *
  * \param keyframe The opaque motion light keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionLightKeyframeGetColor(const nanoem_motion_light_keyframe_t *keyframe);
@@ -3875,7 +3607,6 @@ nanoemMotionLightKeyframeGetColor(const nanoem_motion_light_keyframe_t *keyframe
  * \brief
  *
  * \param keyframe The opaque motion light keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionLightKeyframeGetDirection(const nanoem_motion_light_keyframe_t *keyframe);
@@ -3884,7 +3615,6 @@ nanoemMotionLightKeyframeGetDirection(const nanoem_motion_light_keyframe_t *keyf
  * \brief
  *
  * \param keyframe The opaque motion light keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionLightKeyframeGetKeyframeObject(const nanoem_motion_light_keyframe_t *keyframe);
@@ -3893,7 +3623,6 @@ nanoemMotionLightKeyframeGetKeyframeObject(const nanoem_motion_light_keyframe_t 
  * \brief
  *
  * \param keyframe The opaque motion light keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionLightKeyframeGetKeyframeObjectMutable(nanoem_motion_light_keyframe_t *keyframe);
@@ -3908,7 +3637,6 @@ nanoemMotionLightKeyframeGetKeyframeObjectMutable(nanoem_motion_light_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion model keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeIsVisible(const nanoem_motion_model_keyframe_t *keyframe);
@@ -3917,7 +3645,6 @@ nanoemMotionModelKeyframeIsVisible(const nanoem_motion_model_keyframe_t *keyfram
  * \brief
  *
  * \param keyframe The opaque motion model keyframe object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionModelKeyframeGetEdgeScaleFactor(const nanoem_motion_model_keyframe_t *keyframe);
@@ -3926,7 +3653,6 @@ nanoemMotionModelKeyframeGetEdgeScaleFactor(const nanoem_motion_model_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion model keyframe object
- * \return NANOEM_DECL_API const nanoem_f32_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemMotionModelKeyframeGetEdgeColor(const nanoem_motion_model_keyframe_t *keyframe);
@@ -3935,7 +3661,6 @@ nanoemMotionModelKeyframeGetEdgeColor(const nanoem_motion_model_keyframe_t *keyf
  * \brief
  *
  * \param keyframe The opaque motion model keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeIsAddBlendEnabled(const nanoem_motion_model_keyframe_t *keyframe);
@@ -3944,7 +3669,6 @@ nanoemMotionModelKeyframeIsAddBlendEnabled(const nanoem_motion_model_keyframe_t 
  * \brief
  *
  * \param keyframe The opaque motion model keyframe object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeIsPhysicsSimulationEnabled(const nanoem_motion_model_keyframe_t *keyframe);
@@ -3954,7 +3678,6 @@ nanoemMotionModelKeyframeIsPhysicsSimulationEnabled(const nanoem_motion_model_ke
  *
  * \param keyframe The opaque motion model keyframe object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_motion_model_keyframe_constraint_state_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_model_keyframe_constraint_state_t *const *APIENTRY
 nanoemMotionModelKeyframeGetAllConstraintStateObjects(const nanoem_motion_model_keyframe_t *keyframe, nanoem_rsize_t *num_objects);
@@ -3964,7 +3687,6 @@ nanoemMotionModelKeyframeGetAllConstraintStateObjects(const nanoem_motion_model_
  *
  * \param keyframe The opaque motion model keyframe object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_motion_effect_parameter_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_effect_parameter_t *const *APIENTRY
 nanoemMotionModelKeyframeGetAllEffectParameterObjects(const nanoem_motion_model_keyframe_t *keyframe, nanoem_rsize_t *num_objects);
@@ -3974,7 +3696,6 @@ nanoemMotionModelKeyframeGetAllEffectParameterObjects(const nanoem_motion_model_
  *
  * \param keyframe The opaque motion model keyframe object
  * \param[out] num_objects Number of all objects in the object
- * \return NANOEM_DECL_API nanoem_motion_outside_parent_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *const *APIENTRY
 nanoemMotionModelKeyframeGetAllOutsideParentObjects(const nanoem_motion_model_keyframe_t *keyframe, nanoem_rsize_t *num_objects);
@@ -3983,7 +3704,6 @@ nanoemMotionModelKeyframeGetAllOutsideParentObjects(const nanoem_motion_model_ke
  * \brief
  *
  * \param state The opaque motion constraint state object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionModelKeyframeConstraintStateGetBoneName(const nanoem_motion_model_keyframe_constraint_state_t *state);
@@ -3992,7 +3712,6 @@ nanoemMotionModelKeyframeConstraintStateGetBoneName(const nanoem_motion_model_ke
  * \brief
  *
  * \param state The opaque motion constraint state object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionModelKeyframeConstraintStateGetBoneId(const nanoem_motion_model_keyframe_constraint_state_t *state);
@@ -4001,7 +3720,6 @@ nanoemMotionModelKeyframeConstraintStateGetBoneId(const nanoem_motion_model_keyf
  * \brief
  *
  * \param state The opaque motion constraint state object
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionModelKeyframeConstraintStateIsEnabled(const nanoem_motion_model_keyframe_constraint_state_t *state);
@@ -4010,7 +3728,6 @@ nanoemMotionModelKeyframeConstraintStateIsEnabled(const nanoem_motion_model_keyf
  * \brief
  *
  * \param keyframe The opaque motionmodel  keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionModelKeyframeGetKeyframeObject(const nanoem_motion_model_keyframe_t *keyframe);
@@ -4019,7 +3736,6 @@ nanoemMotionModelKeyframeGetKeyframeObject(const nanoem_motion_model_keyframe_t 
  * \brief
  *
  * \param keyframe The opaque motion model keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionModelKeyframeGetKeyframeObjectMutable(nanoem_motion_model_keyframe_t *keyframe);
@@ -4034,7 +3750,6 @@ nanoemMotionModelKeyframeGetKeyframeObjectMutable(nanoem_motion_model_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion morph keyframe object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionMorphKeyframeGetName(const nanoem_motion_morph_keyframe_t *keyframe);
@@ -4043,7 +3758,6 @@ nanoemMotionMorphKeyframeGetName(const nanoem_motion_morph_keyframe_t *keyframe)
  * \brief
  *
  * \param keyframe The opaque motion morph keyframe object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionMorphKeyframeGetWeight(const nanoem_motion_morph_keyframe_t *keyframe);
@@ -4052,7 +3766,6 @@ nanoemMotionMorphKeyframeGetWeight(const nanoem_motion_morph_keyframe_t *keyfram
  * \brief
  *
  * \param keyframe The opaque motion morph keyframe object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionMorphKeyframeGetId(const nanoem_motion_morph_keyframe_t *keyframe);
@@ -4061,7 +3774,6 @@ nanoemMotionMorphKeyframeGetId(const nanoem_motion_morph_keyframe_t *keyframe);
  * \brief
  *
  * \param keyframe The opaque motion morph keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionMorphKeyframeGetKeyframeObject(const nanoem_motion_morph_keyframe_t *keyframe);
@@ -4070,7 +3782,6 @@ nanoemMotionMorphKeyframeGetKeyframeObject(const nanoem_motion_morph_keyframe_t 
  * \brief
  *
  * \param keyframe The opaque motion morph keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionMorphKeyframeGetKeyframeObjectMutable(nanoem_motion_morph_keyframe_t *keyframe);
@@ -4085,7 +3796,6 @@ nanoemMotionMorphKeyframeGetKeyframeObjectMutable(nanoem_motion_morph_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion self shadow keyframe object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionSelfShadowKeyframeGetDistance(const nanoem_motion_self_shadow_keyframe_t *keyframe);
@@ -4094,7 +3804,6 @@ nanoemMotionSelfShadowKeyframeGetDistance(const nanoem_motion_self_shadow_keyfra
  * \brief
  *
  * \param keyframe The opaque motion self shadow keyframe object
- * \return NANOEM_DECL_API int APIENTRY
  */
 NANOEM_DECL_API int APIENTRY
 nanoemMotionSelfShadowKeyframeGetMode(const nanoem_motion_self_shadow_keyframe_t *keyframe);
@@ -4103,7 +3812,6 @@ nanoemMotionSelfShadowKeyframeGetMode(const nanoem_motion_self_shadow_keyframe_t
  * \brief
  *
  * \param keyframe The opaque motion self shadow keyframe object
- * \return NANOEM_DECL_API const nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionSelfShadowKeyframeGetKeyframeObject(const nanoem_motion_self_shadow_keyframe_t *keyframe);
@@ -4112,7 +3820,6 @@ nanoemMotionSelfShadowKeyframeGetKeyframeObject(const nanoem_motion_self_shadow_
  * \brief
  *
  * \param keyframe The opaque motion self shadow keyframe object
- * \return NANOEM_DECL_API nanoem_motion_keyframe_object_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionSelfShadowKeyframeGetKeyframeObjectMutable(nanoem_motion_self_shadow_keyframe_t *keyframe);
@@ -4123,7 +3830,6 @@ nanoemMotionSelfShadowKeyframeGetKeyframeObjectMutable(nanoem_motion_self_shadow
  *
  * \param factory The opaque factory object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_motion_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_t *APIENTRY
 nanoemMotionCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
@@ -4135,7 +3841,6 @@ nanoemMotionCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *st
  * \param buffer The opaque buffer object
  * \param offset
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBufferVMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
@@ -4147,7 +3852,6 @@ nanoemMotionLoadFromBufferVMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, 
  * \param buffer The opaque buffer object
  * \param offset
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_bool_t APIENTRY
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBuffer(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
@@ -4156,7 +3860,6 @@ nanoemMotionLoadFromBuffer(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nan
  * \brief
  *
  * \param motion The opaque motion object
- * \return NANOEM_DECL_API nanoem_motion_format_type_t APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_format_type_t APIENTRY
 nanoemMotionGetFormatType(const nanoem_motion_t *motion);
@@ -4165,7 +3868,6 @@ nanoemMotionGetFormatType(const nanoem_motion_t *motion);
  * \brief
  *
  * \param motion The opaque motion object
- * \return NANOEM_DECL_API const nanoem_unicode_string_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemMotionGetTargetModelName(const nanoem_motion_t *motion);
@@ -4174,7 +3876,6 @@ nanoemMotionGetTargetModelName(const nanoem_motion_t *motion);
  * \brief
  *
  * \param motion The opaque motion object
- * \return NANOEM_DECL_API nanoem_frame_index_t APIENTRY
  */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionGetMaxFrameIndex(const nanoem_motion_t *motion);
@@ -4183,7 +3884,6 @@ nanoemMotionGetMaxFrameIndex(const nanoem_motion_t *motion);
  * \brief
  *
  * \param motion The opaque motion object
- * \return NANOEM_DECL_API nanoem_f32_t APIENTRY
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
 nanoemMotionGetPreferredFPS(const nanoem_motion_t *motion);
@@ -4193,7 +3893,6 @@ nanoemMotionGetPreferredFPS(const nanoem_motion_t *motion);
  *
  * \param motion The opaque motion object
  * \param key
- * \return NANOEM_DECL_API const char* APIENTRY
  */
 NANOEM_DECL_API const char *APIENTRY
 nanoemMotionGetAnnotation(const nanoem_motion_t *motion, const char *key);
@@ -4203,7 +3902,6 @@ nanoemMotionGetAnnotation(const nanoem_motion_t *motion, const char *key);
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_accessory_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_accessory_keyframe_t *const *APIENTRY
 nanoemMotionGetAllAccessoryKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4213,7 +3911,6 @@ nanoemMotionGetAllAccessoryKeyframeObjects(const nanoem_motion_t *motion, nanoem
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_bone_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_bone_keyframe_t *const *APIENTRY
 nanoemMotionGetAllBoneKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4223,7 +3920,6 @@ nanoemMotionGetAllBoneKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsiz
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_camera_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_camera_keyframe_t *const *APIENTRY
 nanoemMotionGetAllCameraKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4233,7 +3929,6 @@ nanoemMotionGetAllCameraKeyframeObjects(const nanoem_motion_t *motion, nanoem_rs
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_light_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_light_keyframe_t *const *APIENTRY
 nanoemMotionGetAllLightKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4243,7 +3938,6 @@ nanoemMotionGetAllLightKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsi
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_model_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_model_keyframe_t *const *APIENTRY
 nanoemMotionGetAllModelKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4253,7 +3947,6 @@ nanoemMotionGetAllModelKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsi
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_morph_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_morph_keyframe_t *const *APIENTRY
 nanoemMotionGetAllMorphKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4263,7 +3956,6 @@ nanoemMotionGetAllMorphKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsi
  *
  * \param motion The opaque motion object
  * \param[out] num_keyframes Number of all keyframes in the object
- * \return NANOEM_DECL_API nanoem_motion_self_shadow_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_self_shadow_keyframe_t *const *APIENTRY
 nanoemMotionGetAllSelfShadowKeyframeObjects(const nanoem_motion_t *motion, nanoem_rsize_t *num_keyframes);
@@ -4275,7 +3967,6 @@ nanoemMotionGetAllSelfShadowKeyframeObjects(const nanoem_motion_t *motion, nanoe
  * \param name
  * \param[out] num_keyframes Number of all keyframes in the object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_motion_bone_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_bone_keyframe_t *const *APIENTRY
 nanoemMotionExtractBoneTrackKeyframes(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_rsize_t *num_keyframes, nanoem_status_t *status);
@@ -4287,7 +3978,6 @@ nanoemMotionExtractBoneTrackKeyframes(const nanoem_motion_t *motion, const nanoe
  * \param name
  * \param[out] num_keyframes Number of all keyframes in the object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_motion_morph_keyframe_t* const* APIENTRY
  */
 NANOEM_DECL_API nanoem_motion_morph_keyframe_t *const *APIENTRY
 nanoemMotionExtractMorphTrackKeyframes(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_rsize_t *num_keyframes, nanoem_status_t *status);
@@ -4297,7 +3987,6 @@ nanoemMotionExtractMorphTrackKeyframes(const nanoem_motion_t *motion, const nano
  *
  * \param motion The opaque motion object
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_accessory_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_accessory_keyframe_t *APIENTRY
 nanoemMotionFindAccessoryKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
@@ -4308,7 +3997,6 @@ nanoemMotionFindAccessoryKeyframeObject(const nanoem_motion_t *motion, nanoem_fr
  * \param motion The opaque motion object
  * \param name
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_bone_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_bone_keyframe_t *APIENTRY
 nanoemMotionFindBoneKeyframeObject(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t index);
@@ -4318,7 +4006,6 @@ nanoemMotionFindBoneKeyframeObject(const nanoem_motion_t *motion, const nanoem_u
  *
  * \param motion The opaque motion object
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_camera_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_camera_keyframe_t *APIENTRY
 nanoemMotionFindCameraKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
@@ -4328,7 +4015,6 @@ nanoemMotionFindCameraKeyframeObject(const nanoem_motion_t *motion, nanoem_frame
  *
  * \param motion The opaque motion object
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_light_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_light_keyframe_t *APIENTRY
 nanoemMotionFindLightKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
@@ -4338,7 +4024,6 @@ nanoemMotionFindLightKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_
  *
  * \param motion The opaque motion object
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_model_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_model_keyframe_t *APIENTRY
 nanoemMotionFindModelKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
@@ -4349,7 +4034,6 @@ nanoemMotionFindModelKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_
  * \param motion The opaque motion object
  * \param name
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_morph_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_morph_keyframe_t *APIENTRY
 nanoemMotionFindMorphKeyframeObject(const nanoem_motion_t *motion, const nanoem_unicode_string_t *name, nanoem_frame_index_t index);
@@ -4359,7 +4043,6 @@ nanoemMotionFindMorphKeyframeObject(const nanoem_motion_t *motion, const nanoem_
  *
  * \param motion The opaque motion object
  * \param index
- * \return NANOEM_DECL_API const nanoem_motion_self_shadow_keyframe_t* APIENTRY
  */
 NANOEM_DECL_API const nanoem_motion_self_shadow_keyframe_t *APIENTRY
 nanoemMotionFindSelfShadowKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_index_t index);
@@ -4471,7 +4154,6 @@ typedef void (*nanoem_user_data_on_destroy_keyframe_object_t)(void *, nanoem_mot
  * \brief Create an opaque user data object
  *
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
- * \return NANOEM_DECL_API nanoem_user_data_t* APIENTRY
  */
 NANOEM_DECL_API nanoem_user_data_t *APIENTRY
 nanoemUserDataCreate(nanoem_status_t *status);
@@ -4480,7 +4162,6 @@ nanoemUserDataCreate(nanoem_status_t *status);
  * \brief
  *
  * \param user_data The opaque user data object
- * \return NANOEM_DECL_API void* APIENTRY
  */
 NANOEM_DECL_API void *APIENTRY
 nanoemUserDataGetOpaqueData(const nanoem_user_data_t *user_data);
