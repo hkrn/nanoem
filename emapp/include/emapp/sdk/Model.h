@@ -81,7 +81,8 @@ NANOEM_DECL_API nanoem_application_plugin_model_io_t *APIENTRY nanoemApplication
  * \param plugin The opaque model plugin object
  * \param value 0 for Japanese, 1 for English
  * \param[out] status \b NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS is set if
- * succeeded, otherwise sets the others \since Model I/O Plugin ABI 2.0
+ * succeeded, otherwise sets the others
+ * \since Model I/O Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetLanguage(
     nanoem_application_plugin_model_io_t *plugin, int value, nanoem_i32_t *status);
@@ -567,11 +568,11 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOGetOutputModelDataSi
  * \brief Get the executed output PMX model data
  *
  * The output PMX model data must be valid. If loading its data failed, the plugin exection will be marked as failure
- * and the output model data will not be loaded.
+ * and the output model data will not be loaded and discarded.
  *
  * \param plugin The opaque model plugin object
  * \param data PMX model data
- * \param length \b data size in byte unit
+ * \param length \b data size in byte unit (same as ::nanoemApplicationPluginModelIOGetOutputModelDataSize)
  * \param[out] status \b NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  * \since Model I/O Plugin ABI 2.0
  */
@@ -601,6 +602,9 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOGetUIWindowLayoutDat
 /**
  * \brief Get plugin UI window layout data
  *
+ * UI window layout data must be encoded with \b nanoem.application.plugin.UIWindow defined in
+ * \e emapp/resources/protobuf/plugin.proto
+ *
  * \param plugin The opaque model plugin object
  * \param data Protocol buffer data serialized with \b nanoem.application.plugin.UIWindow
  * \param length \b data in byte unit
@@ -612,6 +616,9 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOGetUIWindowLayoutDat
 
 /**
  * \brief Set plugin UI window component data corresponding plugin UI component ID
+ *
+ * UI component data must be encoded with \b nanoem.application.plugin.UIComponent defined in
+ * \e emapp/resources/protobuf/plugin.proto
  *
  * \param plugin The opaque model plugin object
  * \param id ID to update component
@@ -632,7 +639,7 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginModelIOSetUIComponentLayout
  * in status.
  *
  * \param plugin The opaque model plugin object
- * \return NANOEM_DECL_API const char* APIENTRY
+ * \return The error reason text to show it to the user via error dialog
  * \since Model I/O Plugin ABI 2.0
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginModelIOGetFailureReason(
@@ -645,7 +652,7 @@ NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginModelIOGetFailureRea
  * NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON is set in status.
  *
  * \param plugin The opaque model plugin object
- * \return NANOEM_DECL_API const char* APIENTRY
+ * \return The recovery suggestion text to show it to the user via error dialog
  * \since Model I/O Plugin ABI 2.0
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginModelIOGetRecoverySuggestion(
