@@ -2951,6 +2951,7 @@ nanoemModelCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *sta
  * \param model The opaque model object
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \return 1 if succeeded, 0 if any error occured
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMD(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
@@ -2961,6 +2962,7 @@ nanoemModelLoadFromBufferPMD(nanoem_model_t *model, nanoem_buffer_t *buffer, nan
  * \param model The opaque model object
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \return 1 if succeeded, 0 if any error occured
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
@@ -2973,9 +2975,30 @@ nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nan
  *   * ::nanoemModelLoadFromBufferPMX
  *   * ::nanoemModelLoadFromBufferPMD
  *
+ * \code
+ *     // prepare data
+ *     const nanoem_u8_t *data = ...;
+ *     nanoem_rsize_t size = ...;
+ *
+ *     // create all prerequisite opaque objects and load
+ *     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+ *     nanoem_unicode_string_factory_t *factory = nanoemUnicodeStringFactoryCreateEXT(&status);
+ *     nanoem_buffer_t *buffer = nanoemBufferCreate(data, size, &status);
+ *     nanoem_model_t *model = nanoemModelCreate(factory, &status);
+ *     if (nanoemModelLoadFromBuffer(model, buffer, &status)) { // buffer should not be reused
+ *        // proceed loaded model data
+ *       ...
+ *     }
+ *
+ *     // destroy all used opaque objects
+ *     nanoemBufferDestroy(buffer); // buffer should be destroyed ASAP
+ *     nanoemModelDestroy(model); // model should also be destroyed ASAP
+ * \endcode
+ *
  * \param model The opaque model object
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \return 1 if succeeded, 0 if any error occured
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBuffer(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
@@ -3908,17 +3931,39 @@ nanoemMotionCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *st
  * \param buffer The opaque buffer object
  * \param offset
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \return 1 if succeeded, 0 if any error occured
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBufferVMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
 
 /**
  * \brief
+
+ * \code
+ *     // prepare data
+ *     const nanoem_u8_t *data = ...;
+ *     nanoem_rsize_t size = ...;
+ *
+ *     // create all prerequisite opaque objects and load
+ *     nanoem_status_t status = NANOEM_STATUS_SUCCESS;
+ *     nanoem_unicode_string_factory_t *factory = nanoemUnicodeStringFactoryCreateEXT(&status);
+ *     nanoem_buffer_t *buffer = nanoemBufferCreate(data, size, &status);
+ *     nanoem_motion_t *motion = nanoemMotionCreate(factory, &status);
+ *     if (nanoemMotionLoadFromBuffer(motion, buffer, 0, &status)) { // buffer should not be reused
+ *        // proceed loaded motion data
+ *       ...
+ *     }
+ *
+ *     // destroy all used opaque objects
+ *     nanoemBufferDestroy(buffer); // buffer should be destroyed ASAP
+ *     nanoemMotionDestroy(motion); // motion should also be destroyed ASAP
+ * \endcode
  *
  * \param motion The opaque motion object
  * \param buffer The opaque buffer object
- * \param offset
+ * \param offset start frame index offset to load
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \return 1 if succeeded, 0 if any error occured
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBuffer(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
