@@ -39,119 +39,156 @@ NANOEM_DECL_ENUM(int, nanoem_application_plugin_effect_option_t) { NANOEM_APPLIC
 typedef struct nanoem_application_plugin_effect_compiler_t nanoem_application_plugin_effect_compiler_t;
 
 /**
- * \brief
+ * \brief Get plugin's ABI version
  *
- * \return NANOEM_DECL_API nanoem_u32_t APIENTRY
+ * Plugin ABI version consists major version and minor version.
+ *
+ * If the major version differs from nanoem runtime version, The plugin will not be loaded.
+ * If the minor version is greater than nanoem runtime version, corresponding functions will not be called.
+ *
+ * \return The plugin ABI version made with \b NANOEM_APPLICATION_PLUGIN_MODEL_ABI_VERSION
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API nanoem_u32_t APIENTRY nanoemApplicationPluginEffectCompilerGetABIVersion(void);
 
 /**
- * \brief
+ * \brief Initialize the plugin
  *
+ * The function will call once at the plugin initialization.
+ *
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerInitialize(void);
 
 /**
  * \brief Create an opaque effect compiler plugin object
  *
- * \return NANOEM_DECL_API nanoem_application_plugin_effect_compiler_t* APIENTRY
+ * \return The opaque effect compiler plugin object
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API nanoem_application_plugin_effect_compiler_t *APIENTRY nanoemApplicationPluginEffectCompilerCreate();
 
 /**
- * \brief
+ * \brief Get the effect compiler option value
  *
  * \param plugin The opaque effect compiler plugin object
- * \param key
- * \param value
- * \param size
- * \param status
+ * \param key key of \b nanoem_application_plugin_effect_option_t
+ * \param[out] value value byte array corresponding \b key
+ * \param[out] size size of \b value in byte unit
+ * \param[out] status \b NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerGetOption(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u32_t key, void *value, nanoem_u32_t *size,
     nanoem_i32_t *status);
 
 /**
- * \brief
+ * \brief Set the effect compiler option value
  *
  * \param plugin The opaque effect compiler plugin object
- * \param key
- * \param value
- * \param size
- * \param status
+ * \param key key of \b nanoem_application_plugin_effect_option_t
+ * \param value value byte array corresponding \b key
+ * \param size size of \b value in byte unit
+ * \param[out] status \b NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerSetOption(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u32_t key, const void *value, nanoem_u32_t size,
     nanoem_i32_t *status);
 
 /**
- * \brief
+ * \brief Get string array of all available extensions
  *
  * \param plugin The opaque effect compiler plugin object
- * \param size
- * \return NANOEM_DECL_API const char* const* APIENTRY
+ * \param size number of return value
+ * \return string array of all available extensions
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API const char *const *APIENTRY nanoemApplicationPluginEffectCompilerGetAvailableExtensions(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u32_t *size);
 
 /**
- * \brief
+ * \brief Compile the effect and generate artifact from the file
+ *
+ * Artifact data must be encoded with \b fx9.effect.Effect in \e emapp/resources/protobuf/effect.proto and will be
+ * destroyed with ::nanoemApplicationPluginEffectCompilerDestroyBinary
  *
  * \param plugin The opaque effect compiler plugin object
- * \param path
- * \param size
- * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
+ * \param path The absolute path of input effect data file
+ * \param[out] size size of return value in byte unit
+ * \return Bytes array of artifact encoded with \b fx9.effect.Effect
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY nanoemApplicationPluginEffectCompilerCreateBinaryFromFile(
     nanoem_application_plugin_effect_compiler_t *plugin, const char *path, nanoem_u32_t *size);
 
 /**
- * \brief
+ * \brief Compile the effect and generate artifact from memory
+ *
+ * Artifact data must be encoded with \b fx9.effect.Effect in \e emapp/resources/protobuf/effect.proto and will be
+ * destroyed with ::nanoemApplicationPluginEffectCompilerDestroyBinary
  *
  * \param plugin The opaque effect compiler plugin object
- * \param source
- * \param length
- * \param size
- * \return NANOEM_DECL_API nanoem_u8_t* APIENTRY
+ * \param source Byte array of input effect data
+ * \param length size of \b source in byte unit
+ * \param[out] size size of return value in byte unit
+ * \return Bytes array of artifact encoded with \b fx9.effect.Effect
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API nanoem_u8_t *APIENTRY nanoemApplicationPluginEffectCompilerCreateBinaryFromMemory(
     nanoem_application_plugin_effect_compiler_t *plugin, const char *source, nanoem_u32_t length, nanoem_u32_t *size);
 
 /**
- * \brief
+ * \brief Adds \b #include directive source data corresponding path
+ *
+ * The function is intended to supply ::nanoemApplicationPluginEffectCompilerCreateBinaryFromMemory and realize pseudo
+ * file system.
  *
  * \param plugin The opaque effect compiler plugin object
- * \param path
- * \param data
- * \param size
+ * \param path value of \b #include directive
+ * \param data Byte array of \b path
+ * \param size size of \b data in byte unit
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerAddIncludeSource(
     nanoem_application_plugin_effect_compiler_t *plugin, const char *path, const nanoem_u8_t *data, nanoem_u32_t size);
 
 /**
- * \brief
+ * \brief Get error failure reason text
  *
- * \param plugin The opaque effect compiler plugin object
- * \return NANOEM_DECL_API const char* APIENTRY
+ * The function should be able to get failure reason when \b NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON is set
+ * in status.
+ *
+ * \param plugin The opaque model plugin object
+ * \return The error reason text to show it to the user via error dialog
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetFailureReason(
     const nanoem_application_plugin_effect_compiler_t *plugin);
 
 /**
- * \brief
+ * \brief Get error recovery suggestion text
  *
- * \param plugin The opaque effect compiler plugin object
- * \return NANOEM_DECL_API const char* APIENTRY
+ * The function should be able to get recovery suggestion to resolve the issue by user when \b
+ * NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON is set in status.
+ *
+ * \param plugin The opaque model plugin object
+ * \return The recovery suggestion text to show it to the user via error dialog
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API const char *APIENTRY nanoemApplicationPluginEffectCompilerGetRecoverySuggestion(
     const nanoem_application_plugin_effect_compiler_t *plugin);
 
 /**
- * \brief
+ * \brief Destroy byte array of effect compiler artifact
+ *
+ * The function intends to destroy byte array of artifact returned from
+ * ::nanoemApplicationPluginEffectCompilerCreateBinaryFromFile and
+ * ::nanoemApplicationPluginEffectCompilerCreateBinaryFromMemory .
  *
  * \param plugin The opaque effect compiler plugin object
- * \param data
- * \param size
+ * \param data Bytes array of artifact encoded with \b fx9.effect.Effect
+ * \param size size of \b data in byte unit
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroyBinary(
     nanoem_application_plugin_effect_compiler_t *plugin, nanoem_u8_t *data, nanoem_u32_t size);
@@ -160,13 +197,15 @@ NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroyBinary
  * \brief Destroy an opaque effect compiler plugin object
  *
  * \param plugin The opaque effect compiler plugin object
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerDestroy(
     nanoem_application_plugin_effect_compiler_t *plugin);
 
 /**
- * \brief
+ * \brief Terminate the plugin
  *
+ * \since Effect Compiler Plugin ABI 2.0
  */
 NANOEM_DECL_API void APIENTRY nanoemApplicationPluginEffectCompilerTerminate(void);
 
