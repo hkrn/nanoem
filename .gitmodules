@@ -64,9 +64,6 @@
 [submodule "dependencies/sentry-native"]
 	path = dependencies/sentry-native
 	url = https://github.com/getsentry/sentry-native.git
-[submodule "dependencies/libsoundio"]
-	path = dependencies/libsoundio
-	url = https://github.com/andrewrk/libsoundio
 [submodule "dependencies/tbb"]
 	path = dependencies/tbb
 	url = https://github.com/wjakob/tbb.git

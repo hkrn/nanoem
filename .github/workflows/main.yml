@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
     env:
       CC: clang-6.0
@@ -36,34 +36,30 @@ jobs:
       - name: checkout glfw
         run: git clone https://github.com/glfw/glfw.git dependencies/glfw
       - name: build all dependencies of nanoem
-        run: |
-          NANOEM_TARGET_ARCHITECTURES="x86_64" \
-          NANOEM_TARGET_CONFIGURATIONS="debug;release" \
-          NANOEM_TARGET_COMPILER="clang" \
-          NANOEM_DISABLE_BUILD_SENTRY_NATIVE="1" \
-          NANOEM_DISABLE_BUILD_SPIRV_TOOLS="1" \
-          cmake -DCONFIG=release -P $GITHUB_WORKSPACE/scripts/build.cmake
+        run:
+          cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
+        env:
+          NANOEM_TARGET_ARCHITECTURES: x86_64
+          NANOEM_TARGET_CONFIGURATIONS: "debug;release"
+          NANOEM_TARGET_COMPILER: clang
+          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
+          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
       - name: build nanoem itself
         run: |
-          mkdir -p $GITHUB_WORKSPACE/out/core
-          cd $GITHUB_WORKSPACE/out/core
+          mkdir -p ${{ github.workspace }}/out/core
+          cd ${{ github.workspace }}/out/core
           cmake \
-            -DCMAKE_INSTALL_PREFIX=$PWD/install-root \
-            -DCPACK_PACKAGING_INSTALL_PREFIX=$CIRCLE_ARTIFACTS \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/out/core/install-root \
             -DFX9_ENABLE_OPTIMIZER=OFF \
             -DNANOEM_ENABLE_BULLET=ON \
             -DNANOEM_ENABLE_GLFW=ON \
             -DNANOEM_ENABLE_ICU=ON \
             -DNANOEM_ENABLE_NMD=ON \
             -DNANOEM_ENABLE_TEST=ON \
-            -DNANOEM_ENABLE_UPDATE_CREDITS=ON \
             -DNANOEM_INSTALL_EFFECT_PLUGIN=ON \
             -DNANOEM_INSTALL_FFMPEG_PLUGIN=ON \
             -DNANOEM_INSTALL_GIF_PLUGIN=OFF \
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON \
-            -DNANOEM_INSTALL_MODEL_PLUGIN=ON \
-            -DNANOEM_INSTALL_MOTION_PLUGIN=ON \
-            -DNANOEM_INSTALL_ZIP_PLUGIN=OFF \
             -DNANOEM_TARGET_ARCHITECTURE=x86_64 \
             -DNANOEM_TARGET_COMPILER=clang \
             -GNinja \
@@ -71,8 +67,53 @@ jobs:
           cmake --build . --config release
       - name: test nanoem's unit tests
         run: |
-          cd $GITHUB_WORKSPACE/out/core
-          cmake --build . --target test
+          cd ${{ github.workspace }}/out/core
+          ctest
+  build-windows:
+    runs-on: windows-latest
+    env:
+      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: build all dependencies of nanoem
+        run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
+        env:
+          NANOEM_TARGET_ARCHITECTURES: x86_64
+          NANOEM_TARGET_CONFIGURATIONS: "debug;release"
+          NANOEM_TARGET_COMPILER: vs2017
+          NANOEM_TARGET_GENERATOR: "Visual Studio 16 2019"
+          NANOEM_TARGET_TOOLSET: v141
+          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
+          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
+      - name: build nanoem itself
+        run: |
+          mkdir -p ${{ github.workspace }}/out/core
+          cd ${{ github.workspace }}/out/core
+          cmake `
+            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}\out\core\install-root" `
+            -DFX9_ENABLE_OPTIMIZER=OFF `
+            -DNANOEM_ENABLE_BULLET=ON `
+            -DNANOEM_ENABLE_NMD=ON `
+            -DNANOEM_ENABLE_TEST=ON `
+            -DNANOEM_INSTALL_EFFECT_PLUGIN=ON `
+            -DNANOEM_INSTALL_FFMPEG_PLUGIN=OFF `
+            -DNANOEM_INSTALL_GIF_PLUGIN=OFF `
+            -DNANOEM_INSTALL_LSMASH_PLUGIN=ON `
+            -DNANOEM_TARGET_ARCHITECTURE=x86_64 `
+            -DNANOEM_TARGET_COMPILER=vs2017 `
+            -G"Visual Studio 16 2019" `
+            -Tv141 `
+            ../..
+          cmake --build . --config release
+      - name: test nanoem's unit tests
+        run: |
+          cd ${{ github.workspace }}/out/core
+          ctest
   codeql:
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -104,13 +145,14 @@ jobs:
         run: git clone https://github.com/glfw/glfw.git dependencies/glfw
       - name: build all dependencies of nanoem
         run: |
-          cd $GITHUB_WORKSPACE
-          NANOEM_TARGET_ARCHITECTURES="x86_64" \
-          NANOEM_TARGET_CONFIGURATIONS="debug;release" \
-          NANOEM_TARGET_COMPILER="gcc" \
-          NANOEM_DISABLE_BUILD_SENTRY_NATIVE="1" \
-          NANOEM_DISABLE_BUILD_SPIRV_TOOLS="1" \
+          cd ${{ github.workspace }}
           cmake -DCONFIG=release -P $PWD/scripts/build.cmake
+        env:
+          NANOEM_TARGET_ARCHITECTURES: x86_64
+          NANOEM_TARGET_CONFIGURATIONS: "debug;release"
+          NANOEM_TARGET_COMPILER: gcc
+          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
+          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
       - name: autobuild
         uses: github/codeql-action/autobuild@v1
       - name: perform CodeQL Analysis
