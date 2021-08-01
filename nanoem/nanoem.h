@@ -788,7 +788,7 @@ NANOEM_DECL_API nanoem_u8_t APIENTRY
 nanoemBufferReadByte(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief Read a 16bits integer with little endian from the given opaque buffer object
+ * \brief Read a signed 16bits integer with little endian from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -806,7 +806,7 @@ NANOEM_DECL_API nanoem_u16_t APIENTRY
 nanoemBufferReadInt16LittleEndianUnsigned(nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief Read a 32bits integer with little endian from the given opaque buffer object
+ * \brief Read a signed 32bits integer with little endian from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -827,7 +827,7 @@ nanoemBufferReadFloat32LittleEndian(nanoem_buffer_t *buffer, nanoem_status_t *st
  * \brief Read byte array from the given opaque buffer object
  *
  * \param buffer The opaque buffer object
- * \param len size to read
+ * \param len size to read in byte unit
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API char *APIENTRY
