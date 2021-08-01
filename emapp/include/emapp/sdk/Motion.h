@@ -10,12 +10,12 @@
 #include "Common.h"
 
 /**
- * \defgroup emapp
+ * \defgroup emapp nanoem Application (emapp)
  * @{
  */
 
 /**
- * \defgroup emapp_plugin_motion_io nanoem Motion I/O Plugin
+ * \defgroup emapp_plugin_motion_io nanoem Application Motion I/O Plugin
  * @{
  */
 

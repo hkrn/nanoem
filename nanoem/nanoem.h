@@ -457,73 +457,73 @@ NANOEM_DECL_API nanoem_unicode_string_factory_t *APIENTRY
 nanoemUnicodeStringFactoryCreate(nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Set the conversion from CP932 (Shift-JIS) callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertFromCp932Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_from_codec_t value);
 
 /**
- * \brief
+ * \brief Set the conversion from UTF-8 callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertFromUtf8Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_from_codec_t value);
 
 /**
- * \brief
+ * \brief Set the conversion from UTF-16 callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertFromUtf16Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_from_codec_t value);
 
 /**
- * \brief
+ * \brief Set the conversion to CP932 (Shift-JIS) callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertToCp932Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_to_codec_t value);
 
 /**
- * \brief
+ * \brief Set the conversion to UTF-8 callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertToUtf8Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_to_codec_t value);
 
 /**
- * \brief
+ * \brief Set the conversion to UTF-16 callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetConvertToUtf16Callback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_to_codec_t value);
 
 /**
- * \brief
+ * \brief Set the string hash callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetHashCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_hash_t value);
 
 /**
- * \brief
+ * \brief Set the string compare callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetCompareCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_compare_t value);
@@ -532,7 +532,7 @@ nanoemUnicodeStringFactorySetCompareCallback(nanoem_unicode_string_factory_t *fa
  * \brief
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetGetCacheCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_get_cache_t value);
@@ -541,22 +541,22 @@ nanoemUnicodeStringFactorySetGetCacheCallback(nanoem_unicode_string_factory_t *f
  * \brief
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetSetCacheCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_set_cache_t value);
 
 /**
- * \brief
+ * \brief Set the string destruction callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetDestroyStringCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_destroy_string_t value);
 
 /**
- * \brief
+ * \brief Set the byte array destruction callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
  * \param value
@@ -565,7 +565,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetDestroyByteArrayCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_destroy_byte_array_t value);
 
 /**
- * \brief
+ * \brief Get the user defined opaque from the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
  */
@@ -573,10 +573,10 @@ NANOEM_DECL_API void *APIENTRY
 nanoemUnicodeStringFactoryGetOpaqueData(const nanoem_unicode_string_factory_t *factory);
 
 /**
- * \brief
+ * \brief Set the user defined opaque to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The user defined opaque data
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetOpaqueData(nanoem_unicode_string_factory_t *factory, void *value);
@@ -3163,7 +3163,7 @@ nanoemModelDestroy(nanoem_model_t *model);
 /** @} */
 
 /**
- * \defgroup nanoem_motion_keyframe Motion
+ * \defgroup nanoem_motion Motion
  * @{
  */
 NANOEM_DECL_OPAQUE(nanoem_motion_keyframe_object_t);
@@ -3925,7 +3925,7 @@ NANOEM_DECL_API nanoem_motion_t *APIENTRY
 nanoemMotionCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
 
 /**
- * \brief Load data as VMD from the given opaque model object associated with the opaque buffer object
+ * \brief Load data as VMD from the given opaque motion object associated with the opaque buffer object
  *
  * \param motion The opaque motion object
  * \param buffer The opaque buffer object
@@ -3937,7 +3937,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionLoadFromBufferVMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, nanoem_frame_index_t offset, nanoem_status_t *status);
 
 /**
- * \brief Load data as VMD from the given opaque model object associated with the opaque buffer object
+ * \brief Load data as VMD from the given opaque motion object associated with the opaque buffer object
  *
  * \code
  *     // prepare data

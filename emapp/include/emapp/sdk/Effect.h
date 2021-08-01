@@ -10,12 +10,12 @@
 #include "Common.h"
 
 /**
- * \defgroup emapp
+ * \defgroup emapp nanoem Application (emapp)
  * @{
  */
 
 /**
- * \defgroup emapp_plugin_effect nanoem Effect Plugin
+ * \defgroup emapp_plugin_effect nanoem Application Effect Compiler Plugin
  * @{
  */
 

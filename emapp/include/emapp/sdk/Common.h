@@ -167,12 +167,12 @@ typedef double nanoem_f64_t;
 #endif /* APIENTRY */
 
 /**
- * \defgroup emapp
+ * \defgroup emapp nanoem Application (emapp)
  * @{
  */
 
 /**
- * \defgroup emapp_plugin_common nanoem Plugin Common Definition
+ * \defgroup emapp_plugin_common nanoem Application Plugin Common Definition
  * @{
  */
 
