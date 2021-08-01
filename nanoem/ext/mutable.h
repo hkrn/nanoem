@@ -147,7 +147,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_mutable_motion_keyframe_type_t){
 };
 
 /**
- * \defgroup nanoem_mutable_motion_effect_parameter Mutable Effect Parameter
+ * \defgroup nanoem_mutable_motion_effect_parameter Mutable Motion Effect Parameter
  * @{
  */
 
@@ -181,7 +181,7 @@ nanoemMutableMotionEffectParameterCreateAsReference(nanoem_motion_effect_paramet
 /**
  * \brief
  *
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -191,7 +191,7 @@ nanoemMutableMotionEffectParameterSetName(nanoem_mutable_motion_effect_parameter
 /**
  * \brief
  *
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param value value to set to the opaque object
  */
 NANOEM_DECL_API void APIENTRY
@@ -200,17 +200,17 @@ nanoemMutableMotionEffectParameterSetType(nanoem_mutable_motion_effect_parameter
 /**
  * \brief
  *
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param value value to set to the opaque object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionEffectParameterSetValue(nanoem_mutable_motion_effect_parameter_t *parameter, const void *value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque effect parameter object
  *
  * \param new_parameter
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -219,7 +219,7 @@ nanoemMutableMotionEffectParameterCopy(nanoem_mutable_motion_effect_parameter_t 
 /**
  * \brief
  *
- * \param parameter
+ * \param parameter The opaque effect parameter object
  */
 NANOEM_DECL_API nanoem_motion_effect_parameter_t *APIENTRY
 nanoemMutableMotionEffectParameterGetOriginObject(nanoem_mutable_motion_effect_parameter_t *parameter);
@@ -227,14 +227,14 @@ nanoemMutableMotionEffectParameterGetOriginObject(nanoem_mutable_motion_effect_p
 /**
  * \brief Destroy the given opaque effect parameter object
  *
- * \param parameter
+ * \param parameter The opaque effect parameter object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionEffectParameterDestroy(nanoem_mutable_motion_effect_parameter_t *parameter);
 /** @} */
 
 /**
- * \defgroup nanoem_mutable_motion_effect_parameter Mutable Effect Parameter
+ * \defgroup nanoem_mutable_motion_outside_parent Mutable Motion Outside Parent
  * @{
  */
 
@@ -277,7 +277,7 @@ nanoemMutableMotionOutsideParentCreateAsReference(nanoem_motion_outside_parent_t
 /**
  * \brief
  *
- * \param op
+ * \param op The opaque outside parent object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -287,7 +287,7 @@ nanoemMutableMotionOutsideParentSetTargetBoneName(nanoem_mutable_motion_outside_
 /**
  * \brief
  *
- * \param op
+ * \param op The opaque outside parent object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -297,7 +297,7 @@ nanoemMutableMotionOutsideParentSetTargetObjectName(nanoem_mutable_motion_outsid
 /**
  * \brief
  *
- * \param op
+ * \param op The opaque outside parent object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -305,10 +305,10 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionOutsideParentSetSubjectBoneName(nanoem_mutable_motion_outside_parent_t *op, const nanoem_unicode_string_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion outside parent object
  *
  * \param new_op
- * \param op
+ * \param op The opaque outside parent object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -317,7 +317,7 @@ nanoemMutableMotionOutsideParentCopy(nanoem_mutable_motion_outside_parent_t *new
 /**
  * \brief
  *
- * \param op
+ * \param op The opaque outside parent object
  */
 NANOEM_DECL_API nanoem_motion_outside_parent_t *APIENTRY
 nanoemMutableMotionOutsideParentGetOriginObject(nanoem_mutable_motion_outside_parent_t *op);
@@ -325,7 +325,7 @@ nanoemMutableMotionOutsideParentGetOriginObject(nanoem_mutable_motion_outside_pa
 /**
  * \brief Destroy the given opaque outside parent object
  *
- * \param op
+ * \param op The opaque outside parent object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionOutsideParentDestroy(nanoem_mutable_motion_outside_parent_t *op);
@@ -358,7 +358,7 @@ nanoemMutableMotionAccessoryKeyframeCreateAsReference(nanoem_motion_accessory_ke
  * \brief Find and create an opaque motion accessory keyframe object from the given frame index
  *
  * \param motion The opaque motion object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_accessory_keyframe_t *APIENTRY
@@ -438,7 +438,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionAccessoryKeyframeSetOutsideParent(nanoem_mutable_motion_accessory_keyframe_t *keyframe, nanoem_mutable_motion_outside_parent_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion accessory keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -451,17 +451,17 @@ nanoemMutableMotionAccessoryKeyframeCopy(nanoem_mutable_motion_accessory_keyfram
  * \brief
  *
  * \param keyframe The opaque motion keyframe object
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionAccessoryKeyframeAddEffectParameter(nanoem_mutable_motion_accessory_keyframe_t *keyframe, nanoem_mutable_motion_effect_parameter_t *parameter, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque effect parameter object from the associated opaque motion accessory keyframe object
  *
  * \param keyframe The opaque motion keyframe object
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -512,7 +512,7 @@ nanoemMutableMotionBoneKeyframeCreateAsReference(nanoem_motion_bone_keyframe_t *
  *
  * \param motion The opaque motion object
  * \param name
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_bone_keyframe_t *APIENTRY
@@ -540,7 +540,7 @@ nanoemMutableMotionBoneKeyframeSetOrientation(nanoem_mutable_motion_bone_keyfram
  * \brief
  *
  * \param keyframe The opaque motion keyframe object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param value value to set to the opaque object
  */
 NANOEM_DECL_API void APIENTRY
@@ -565,7 +565,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionBoneKeyframeSetPhysicsSimulationEnabled(nanoem_mutable_motion_bone_keyframe_t *keyframe, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion bone keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -627,7 +627,7 @@ nanoemMutableMotionCameraKeyframeCreateAsReference(nanoem_motion_camera_keyframe
  * \brief Find and create an opaque motion camera keyframe object from the given frame index
  *
  * \param motion The opaque motion object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_camera_keyframe_t *APIENTRY
@@ -692,7 +692,7 @@ nanoemMutableMotionCameraKeyframeSetPerspectiveView(nanoem_mutable_motion_camera
  * \brief
  *
  * \param keyframe The opaque motion keyframe object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param value value to set to the opaque object
  */
 NANOEM_DECL_API void APIENTRY
@@ -708,7 +708,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionCameraKeyframeSetStageIndex(nanoem_mutable_motion_camera_keyframe_t *keyframe, nanoem_u32_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion camera keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -770,7 +770,7 @@ nanoemMutableMotionLightKeyframeCreateAsReference(nanoem_motion_light_keyframe_t
  * \brief Find and create an opaque motion light keyframe object from the given frame index
  *
  * \param motion The opaque motion object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_light_keyframe_t *APIENTRY
@@ -795,7 +795,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionLightKeyframeSetDirection(nanoem_mutable_motion_light_keyframe_t *keyframe, const nanoem_f32_t *value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion light keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -857,7 +857,7 @@ nanoemMutableMotionModelKeyframeCreateAsReference(nanoem_motion_model_keyframe_t
  * \brief Find and create an opaque motion model keyframe object from the given frame index
  *
  * \param motion The opaque motion object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_model_keyframe_t *APIENTRY
@@ -909,7 +909,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionModelKeyframeSetPhysicsSimulationEnabled(nanoem_mutable_motion_model_keyframe_t *keyframe, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion model keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -937,7 +937,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionModelKeyframeAddConstraintState(nanoem_mutable_motion_model_keyframe_t *keyframe, nanoem_mutable_motion_model_keyframe_constraint_state_t *state, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque constraint state object from the associated opaque motion model keyframe object
  *
  * \param keyframe The opaque motion keyframe object
  * \param state
@@ -950,17 +950,17 @@ nanoemMutableMotionModelKeyframeRemoveConstraintState(nanoem_mutable_motion_mode
  * \brief
  *
  * \param keyframe The opaque motion keyframe object
- * \param op
+ * \param op The opaque outside parent object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionModelKeyframeAddOutsideParent(nanoem_mutable_motion_model_keyframe_t *keyframe, nanoem_mutable_motion_outside_parent_t *op, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque outside parent object from the associated opaque motion model keyframe object
  *
  * \param keyframe The opaque motion keyframe object
- * \param op
+ * \param op The opaque outside parent object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -970,17 +970,17 @@ nanoemMutableMotionModelKeyframeRemoveOutsideParent(nanoem_mutable_motion_model_
  * \brief
  *
  * \param keyframe The opaque motion keyframe object
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionModelKeyframeAddEffectParameter(nanoem_mutable_motion_model_keyframe_t *keyframe, nanoem_mutable_motion_effect_parameter_t *parameter, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque effect parameter object from the associated opaque motion model keyframe object
  *
  * \param keyframe The opaque motion keyframe object
- * \param parameter
+ * \param parameter The opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -1111,7 +1111,7 @@ nanoemMutableMotionMorphKeyframeCreateAsReference(nanoem_motion_morph_keyframe_t
  *
  * \param motion The opaque motion object
  * \param name
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_morph_keyframe_t *APIENTRY
@@ -1127,7 +1127,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionMorphKeyframeSetWeight(nanoem_mutable_motion_morph_keyframe_t *keyframe, nanoem_f32_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion morph keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -1189,7 +1189,7 @@ nanoemMutableMotionSelfShadowKeyframeCreateAsReference(nanoem_motion_self_shadow
  * \brief Find and create an opaque motion self shadow keyframe object from the given frame index
  *
  * \param motion The opaque motion object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_motion_self_shadow_keyframe_t *APIENTRY
@@ -1214,7 +1214,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionSelfShadowKeyframeSetMode(nanoem_mutable_motion_self_shadow_keyframe_t *keyframe, int value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque motion self shadow keyframe object
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -1347,7 +1347,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionAddSelfShadowKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_self_shadow_keyframe_t *keyframe, nanoem_frame_index_t frame_index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion accessory keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1357,7 +1357,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionRemoveAccessoryKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_accessory_keyframe_t *keyframe, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion bone keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1367,7 +1367,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionRemoveBoneKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_bone_keyframe_t *keyframe, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion camera keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1377,7 +1377,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionRemoveCameraKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_camera_keyframe_t *keyframe, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion light keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1387,7 +1387,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionRemoveLightKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_light_keyframe_t *keyframe, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion model keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1397,7 +1397,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionRemoveModelKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_model_keyframe_t *keyframe, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion morph keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1407,7 +1407,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionRemoveMorphKeyframe(nanoem_mutable_motion_t *motion, nanoem_mutable_motion_morph_keyframe_t *keyframe, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque motion self shadow keyframe object from the associated opaque motion object
  *
  * \param motion The opaque motion object
  * \param keyframe The opaque motion keyframe object
@@ -1569,7 +1569,7 @@ nanoemMutableModelVertexSetTexCoord(nanoem_mutable_model_vertex_t *vertex, const
  *
  * \param vertex The opaque model vertex object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelVertexSetAdditionalUV(nanoem_mutable_model_vertex_t *vertex, const nanoem_f32_t *value, nanoem_rsize_t index);
@@ -1606,7 +1606,7 @@ nanoemMutableModelVertexSetSdefR1(nanoem_mutable_model_vertex_t *vertex, const n
  *
  * \param vertex The opaque model vertex object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelVertexSetBoneObject(nanoem_mutable_model_vertex_t *vertex, const nanoem_model_bone_t *value, nanoem_rsize_t index);
@@ -1616,7 +1616,7 @@ nanoemMutableModelVertexSetBoneObject(nanoem_mutable_model_vertex_t *vertex, con
  *
  * \param vertex The opaque model vertex object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelVertexSetBoneWeight(nanoem_mutable_model_vertex_t *vertex, nanoem_f32_t value, nanoem_rsize_t index);
@@ -1640,7 +1640,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelVertexSetType(nanoem_mutable_model_vertex_t *vertex, nanoem_model_vertex_type_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model vertex object
  *
  * \param vertex The opaque model vertex object
  * \param value value to set to the opaque object
@@ -1930,7 +1930,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMaterialSetLineDrawEnabled(nanoem_mutable_model_material_t *material, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model material object
  *
  * \param material The opaque model material object
  * \param value value to set to the opaque object
@@ -2046,10 +2046,10 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneSetConstraintObject(nanoem_mutable_model_bone_t *bone, nanoem_mutable_model_constraint_t *value);
 
 /**
- * \brief
+ * \brief Remove the given opaque model constraint object from the associated opaque model bone object
  *
  * \param bone The opaque model bone object
- * \param value value to set to the opaque object
+ * \param value The opaque model constraint object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneRemoveConstraintObject(nanoem_mutable_model_bone_t *bone, nanoem_mutable_model_constraint_t *value);
@@ -2235,7 +2235,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneEnableExternalParentBone(nanoem_mutable_model_bone_t *bone, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model bone object
  *
  * \param bone The opaque model bone object
  * \param value value to set to the opaque object
@@ -2331,28 +2331,28 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelConstraintSetNumIterations(nanoem_mutable_model_constraint_t *constraint, int value);
 
 /**
- * \brief
+ * \brief Insert an opaque constraint joint object into the opaque constraint model joint
  *
  * \param constraint
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelConstraintInsertJointObject(nanoem_mutable_model_constraint_t *constraint, nanoem_mutable_model_constraint_joint_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model constraint joint object from the associated opaque model constraint object
  *
  * \param constraint
- * \param value value to set to the opaque object
+ * \param value The opaque model constraint joint object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelConstraintRemoveJointObject(nanoem_mutable_model_constraint_t *constraint, nanoem_mutable_model_constraint_joint_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model constraint object
  *
  * \param constraint
  * \param value value to set to the opaque object
@@ -2448,7 +2448,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelConstraintJointSetAngleLimitEnabled(nanoem_mutable_model_constraint_joint_t *joint, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model constraint joint object
  *
  * \param joint The opaque model joint object
  * \param value value to set to the opaque object
@@ -2517,7 +2517,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelTextureSetPath(nanoem_mutable_model_texture_t *texture, const nanoem_unicode_string_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model texture object
  *
  * \param texture
  * \param value value to set to the opaque object
@@ -2609,7 +2609,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphBoneSetOrientation(nanoem_mutable_model_morph_bone_t *morph, const nanoem_f32_t *value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph bone object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -2686,7 +2686,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphFlipSetWeight(nanoem_mutable_model_morph_flip_t *morph, nanoem_f32_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph flip object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -2763,7 +2763,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphGroupSetWeight(nanoem_mutable_model_morph_group_t *morph, nanoem_f32_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph group object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -2858,7 +2858,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphImpulseSetLocal(nanoem_mutable_model_morph_impulse_t *morph, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph impulse object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -3034,7 +3034,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphMaterialSetOperationType(nanoem_mutable_model_morph_material_t *morph, nanoem_model_morph_material_operation_type_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model material object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -3111,7 +3111,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphUVSetPosition(nanoem_mutable_model_morph_uv_t *morph, const nanoem_f32_t *value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph UV object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -3188,7 +3188,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphVertexSetPosition(nanoem_mutable_model_morph_vertex_t *morph, const nanoem_f32_t *value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph vertex object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
@@ -3271,157 +3271,157 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphSetType(nanoem_mutable_model_morph_t *morph, nanoem_model_morph_type_t value);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph bone object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertBoneMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_bone_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph flip object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertFlipMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_flip_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph group object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertGroupMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_group_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph impulse object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertImpulseMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_impulse_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph material object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertMaterialMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_material_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph UV object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertUVMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_uv_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph vertex object into the opaque model morph object
  *
  * \param morph The opaque model morph object
  * \param value value to set to the opaque object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphInsertVertexMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_vertex_t *value, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph bone object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph bone object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveBoneMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_bone_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph flip object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph flip object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveFlipMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_flip_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph group object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph group object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveGroupMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_group_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph impulse object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph impulse object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveImpulseMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_impulse_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph material object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph material object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveMaterialMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_material_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph UV object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph UV object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveUVMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_uv_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph vertex object from the associated opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph vertex object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelMorphRemoveVertexMorphObject(nanoem_mutable_model_morph_t *morph, nanoem_mutable_model_morph_vertex_t *value, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model morph object
  *
  * \param morph The opaque model morph object
- * \param value value to set to the opaque object
+ * \param value The opaque model morph object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3498,7 +3498,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelLabelSetSpecial(nanoem_mutable_model_label_t *label, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model label object
  *
  * \param label The opaque model label object
  * \param value value to set to the opaque object
@@ -3541,7 +3541,7 @@ nanoemMutableModelLabelDestroy(nanoem_mutable_model_label_t *label);
 /**
  * \brief Create an opaque model label item object
  *
- * \param item
+ * \param item The opaque model label item object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_model_label_item_t *APIENTRY
@@ -3568,21 +3568,21 @@ NANOEM_DECL_API nanoem_mutable_model_label_item_t *APIENTRY
 nanoemMutableModelLabelItemCreateFromMorphObject(nanoem_mutable_model_label_t *label, nanoem_model_morph_t *morph, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model label item object into the opaque model label object
  *
  * \param label The opaque model label object
- * \param item
- * \param index
+ * \param item The opaque model label item object
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelLabelInsertItemObject(nanoem_mutable_model_label_t *label, nanoem_mutable_model_label_item_t *item, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model label item object from the associated opaque model label object
  *
  * \param label The opaque model label object
- * \param item
+ * \param item The opaque model label item object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3599,7 +3599,7 @@ nanoemMutableModelLabelItemGetOriginObject(nanoem_mutable_model_label_item_t *la
 /**
  * \brief Destroy the given opaque model label item object
  *
- * \param item
+ * \param item The opaque model label item object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelLabelItemDestroy(nanoem_mutable_model_label_item_t *item);
@@ -3759,7 +3759,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRigidBodySetCollisionMask(nanoem_mutable_model_rigid_body_t *rigid_body, int value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model rigid body object
  *
  * \param rigid_body The opaque model rigid body object
  * \param value value to set to the opaque object
@@ -3929,7 +3929,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelJointSetAngularStiffness(nanoem_mutable_model_joint_t *joint, const nanoem_f32_t *value);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model joint object
  *
  * \param joint The opaque model joint object
  * \param value value to set to the opaque object
@@ -4344,18 +4344,18 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelSoftBodySetRandomizeConstraintsNeeded(nanoem_mutable_model_soft_body_t *body, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Insert an opaque model soft body anchor object into the opaque model soft body object
  *
  * \param body The opaque model soft body object
  * \param anchor
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelSoftBodyInsertAnchorObject(nanoem_mutable_model_soft_body_t *body, nanoem_mutable_model_soft_body_anchor_t *anchor, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque soft body anchor object from the associated opaque model soft body object
  *
  * \param body The opaque model soft body object
  * \param anchor
@@ -4365,7 +4365,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelSoftBodyRemoveAnchorObject(nanoem_mutable_model_soft_body_t *body, nanoem_mutable_model_soft_body_anchor_t *anchor, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Copy contents of the given opaque model soft body object
  *
  * \param body The opaque model soft body object
  * \param value value to set to the opaque object
@@ -4548,117 +4548,117 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelSetVertexIndices(nanoem_mutable_model_t *model, const nanoem_u32_t *value, nanoem_rsize_t length, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model vertex object into the opaque model object
  *
  * \param model The opaque model object
  * \param vertex The opaque model vertex object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertVertexObject(nanoem_mutable_model_t *model, nanoem_mutable_model_vertex_t *vertex, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model material object into the opaque model object
  *
  * \param model The opaque model object
  * \param material The opaque model material object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertMaterialObject(nanoem_mutable_model_t *model, nanoem_mutable_model_material_t *material, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model bone object into the opaque model object
  *
  * \param model The opaque model object
  * \param bone The opaque model bone object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertBoneObject(nanoem_mutable_model_t *model, nanoem_mutable_model_bone_t *bone, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model constraint object into the opaque model object
  *
  * \param model The opaque model object
  * \param constraint
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertConstraintObject(nanoem_mutable_model_t *model, nanoem_mutable_model_constraint_t *constraint, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model texture object into the opaque model object
  *
  * \param model The opaque model object
  * \param texture
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertTextureObject(nanoem_mutable_model_t *model, nanoem_mutable_model_texture_t *texture, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model morph object into the opaque model object
  *
  * \param model The opaque model object
  * \param morph The opaque model morph object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertMorphObject(nanoem_mutable_model_t *model, nanoem_mutable_model_morph_t *morph, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model label object into the opaque model object
  *
  * \param model The opaque model object
  * \param label The opaque model label object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertLabelObject(nanoem_mutable_model_t *model, nanoem_mutable_model_label_t *label, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model rigid body object into the opaque model object
  *
  * \param model The opaque model object
  * \param rigid_body The opaque model rigid body object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertRigidBodyObject(nanoem_mutable_model_t *model, nanoem_mutable_model_rigid_body_t *rigid_body, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model joint object into the opaque model object
  *
  * \param model The opaque model object
  * \param joint The opaque model joint object
- * \param index
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertJointObject(nanoem_mutable_model_t *model, nanoem_mutable_model_joint_t *joint, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Insert an opaque model soft body object into the opaque model object
  *
  * \param model The opaque model object
- * \param soft_body
- * \param index
+ * \param soft_body The opaque model soft body object
+ * \param index The index offset to insert, specifing \b -1 will be appended
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelInsertSoftBodyObject(nanoem_mutable_model_t *model, nanoem_mutable_model_soft_body_t *soft_body, int index, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model vertex object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param vertex The opaque model vertex object
@@ -4668,7 +4668,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveVertexObject(nanoem_mutable_model_t *model, nanoem_mutable_model_vertex_t *vertex, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model material object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param material The opaque model material object
@@ -4678,7 +4678,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveMaterialObject(nanoem_mutable_model_t *model, nanoem_mutable_model_material_t *material, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model bone object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param bone The opaque model bone object
@@ -4688,7 +4688,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveBoneObject(nanoem_mutable_model_t *model, nanoem_mutable_model_bone_t *bone, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model constraint object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param constraint
@@ -4698,7 +4698,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveConstraintObject(nanoem_mutable_model_t *model, nanoem_mutable_model_constraint_t *constraint, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model texture object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param texture
@@ -4708,7 +4708,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveTextureObject(nanoem_mutable_model_t *model, nanoem_mutable_model_texture_t *texture, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model morph object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param morph The opaque model morph object
@@ -4718,7 +4718,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveMorphObject(nanoem_mutable_model_t *model, nanoem_mutable_model_morph_t *morph, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model label object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param label The opaque model label object
@@ -4728,7 +4728,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveLabelObject(nanoem_mutable_model_t *model, nanoem_mutable_model_label_t *label, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model rigid body object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param rigid_body The opaque model rigid body object
@@ -4738,7 +4738,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveRigidBodyObject(nanoem_mutable_model_t *model, nanoem_mutable_model_rigid_body_t *rigid_body, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model joint object from the associated opaque model object
  *
  * \param model The opaque model object
  * \param joint The opaque model joint object
@@ -4748,10 +4748,10 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelRemoveJointObject(nanoem_mutable_model_t *model, nanoem_mutable_model_joint_t *joint, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Remove the given opaque model soft body object from the associated opaque model object
  *
  * \param model The opaque model object
- * \param soft_body
+ * \param soft_body The opaque model soft body object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
