@@ -1069,7 +1069,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_material_sphere_map_texture_type_t){
  * \brief Get the model material name corresponding language type
  *
  * \param material The opaque model material object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMaterialGetName(const nanoem_model_material_t *material, nanoem_language_type_t language);
@@ -1187,7 +1187,7 @@ NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemModelMaterialGetNumVertexIndices(const nanoem_model_material_t *material);
 
 /**
- * \brief Get the shared toon index from the given opaque model material object
+ * \brief Get the shared toon index between 0 and 9 from the given opaque model material object
  *
  * \param material The opaque model material object
  */
@@ -1292,7 +1292,7 @@ nanoemModelMaterialGetModelObjectMutable(nanoem_model_material_t *material);
  * \brief Get the model bone name corresponding language type
  *
  * \param bone The opaque model bone object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelBoneGetName(const nanoem_model_bone_t *bone, nanoem_language_type_t language);
@@ -1478,7 +1478,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasLocalInherent(const nanoem_model_bone_t *bone);
 
 /**
- * \brief Get whether the bone hes inherent translation from the given opaque model bone object
+ * \brief Get whether the inherent translation is enabled from the given opaque model bone object
  *
  * \param bone The opaque model bone object
  */
@@ -1486,7 +1486,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelBoneHasInherentTranslation(const nanoem_model_bone_t *bone);
 
 /**
- * \brief Get whether the bone has inherent orientation from the given opaque model bone object
+ * \brief Get whether the inherent orientation is enabled from the given opaque model bone object
  *
  * \param bone The opaque model bone object
  */
@@ -1819,7 +1819,7 @@ NANOEM_DECL_API const nanoem_f32_t *APIENTRY
 nanoemModelMorphImpulseGetTorque(const nanoem_model_morph_impulse_t *morph);
 
 /**
- * \brief Ge the velocity vector from the given opaque model morph impulse object
+ * \brief Get the velocity vector from the given opaque model morph impulse object
  *
  * Returned value of the function is evaluated as morph weight is 1.0
  *
@@ -1862,7 +1862,7 @@ NANOEM_DECL_API const nanoem_model_material_t *APIENTRY
 nanoemModelMorphMaterialGetMaterialObject(const nanoem_model_morph_material_t *morph);
 
 /**
- * \brief Get the ambinet color from the given opaque model morph material object
+ * \brief Get the ambient color from the given opaque model morph material object
  *
  * Returned value of the function is evaluated as morph weight is 1.0
  *
@@ -2032,7 +2032,7 @@ nanoemModelMorphVertexGetPosition(const nanoem_model_morph_vertex_t *morph);
  * \brief Get the model morph name corresponding language type
  *
  * \param morph The opaque model morph object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelMorphGetName(const nanoem_model_morph_t *morph, nanoem_language_type_t language);
@@ -2167,7 +2167,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_label_item_type_t){
  * \brief Get the model label name corresponding language type
  *
  * \param label The opaque model label object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelLabelGetName(const nanoem_model_label_t *label, nanoem_language_type_t language);
@@ -2267,7 +2267,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_rigid_body_transform_type_t){
  * \brief Get the model rigid body name corresponding language type
  *
  * \param rigid_body The opaque model rigid body object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelRigidBodyGetName(const nanoem_model_rigid_body_t *rigid_body, nanoem_language_type_t language);
@@ -2425,7 +2425,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_joint_type_t){
  * \brief Get the model joint name corresponding language type
  *
  * \param joint The opaque model joint objects
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelJointGetName(const nanoem_model_joint_t *joints, nanoem_language_type_t language);
@@ -2568,325 +2568,325 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_soft_body_aero_model_type_t){
 /**
  * \brief Get the model soft body name corresponding language type
  *
- * \param body The opaque model soft body object
- * \param language
+ * \param soft_body The opaque model soft body object
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
-nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *body, nanoem_language_type_t language);
+nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *soft_body, nanoem_language_type_t language);
 
 /**
  * \brief Get all opaque model soft body anchor objects from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  * \param[out] num_objects Number of all objects in the object
  */
 NANOEM_DECL_API nanoem_model_soft_body_anchor_t *const * APIENTRY
-nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects);
+nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *soft_body, nanoem_rsize_t *num_objects);
 
 /**
  * \brief Get all pinned vertex indices from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  * \param[out] num_objects Number of all objects in the object
  */
 NANOEM_DECL_API const nanoem_u32_t * APIENTRY
-nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects);
+nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *soft_body, nanoem_rsize_t *num_objects);
 
 /**
  * \brief Get the opaque model material object from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API const nanoem_model_material_t *APIENTRY
-nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the shape type from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_model_soft_body_shape_type_t APIENTRY
-nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the aero model from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_model_soft_body_aero_model_type_t APIENTRY
-nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the total mass from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the collision margin from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *soft_body);
 
 /**
- * \brief Get the velocity correction factor ( \b kVCF )  from the given opaque model soft body object
+ * \brief Get the velocity correction factor ( \b kVCF ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the damping coefficient ( \b kDP ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the drag coefficient ( \b kDG ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the lift coefficient ( \b kLF ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the pressure coefficient ( \b kPR ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the volume conversation coefficient  ( \b kVC ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the dynamic friction coefficient ( \b kDF ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the pose matching coefficient ( \b kMT ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the rigid contact hardness ( \b kCHR ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the kinetic contact hardness ( \b kKHR ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft contact hardness ( \b kSHR ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the anchor hardness ( \b kAHR ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft vs rigid hardness ( \b kSRHR_CL ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft vs kinetic hardness ( \b kSKHR_CL ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft vs soft hardness ( \b kSSHR_CL ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft vs rigid impulse split ( \b kSR_SPLT_CL ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft vs kinetic impulse split ( \b kSK_SPLT_CL ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the soft vs soft impulse split ( \b kSS_SPLT_CL ) from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the linear stiffness coefficient from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the angular stiffness coefficient from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the volume stiffness coefficient from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the collision group ID between 0 and 15 from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the collision group mask from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the bending constraints distance from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the cluster count from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the velocity solver iterations from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the position solver iterations from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the drift solver iterations from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the cluster solver iterations from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API int APIENTRY
-nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get whether bending constraint is enabled from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
-nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get whether cluster is enabled from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
-nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get whether randomized constraint is needed from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
-nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \defgroup nanoem_model_softbody_anchor Soft Body Anchor
@@ -2896,7 +2896,7 @@ nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *
 /**
  * \brief Get the opaque model soft body object from the given opaque model soft body anchor object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelSoftBodyAnchorGetRigidBodyObject(const nanoem_model_soft_body_anchor_t *anchor);
@@ -2922,18 +2922,18 @@ nanoemModelSoftBodyAnchorIsNearEnabled(const nanoem_model_soft_body_anchor_t *an
 /**
  * \brief Get the opaque base model object from the given opaque model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API const nanoem_model_object_t *APIENTRY
-nanoemModelSoftBodyGetModelObject(const nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetModelObject(const nanoem_model_soft_body_t *soft_body);
 
 /**
  * \brief Get the opaque mutable base model object from the given opaque mutable model soft body object
  *
- * \param body The opaque model soft body object
+ * \param soft_body The opaque model soft body object
  */
 NANOEM_DECL_API nanoem_model_object_t *APIENTRY
-nanoemModelSoftBodyGetModelObjectMutable(nanoem_model_soft_body_t *body);
+nanoemModelSoftBodyGetModelObjectMutable(nanoem_model_soft_body_t *soft_body);
 /** @} */
 
 /**
@@ -2968,7 +2968,7 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief Load data with auto detection from the given opaque model object associated with  the opaque buffer object
+ * \brief Load data with auto detection from the given opaque model object associated with the opaque buffer object
  *
  * The function tries below loading order. If all functions failed loading, the function also mark as failure.
  *
@@ -3031,7 +3031,7 @@ nanoemModelGetAdditionalUVSize(const nanoem_model_t *model);
  * \brief Get the name corresponding language type from the given opaque model object
  *
  * \param model The opaque model object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetName(const nanoem_model_t *model, nanoem_language_type_t language);
@@ -3040,7 +3040,7 @@ nanoemModelGetName(const nanoem_model_t *model, nanoem_language_type_t language)
  * \brief Get the comment corresponding language type from the given opaque model object
  *
  * \param model The opaque model object
- * \param language
+ * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemModelGetComment(const nanoem_model_t *model, nanoem_language_type_t language);
@@ -3055,7 +3055,7 @@ NANOEM_DECL_API nanoem_model_vertex_t *const *APIENTRY
 nanoemModelGetAllVertexObjects(const nanoem_model_t *model, nanoem_rsize_t *num_vertices);
 
 /**
- * \brief Get all model vertex indices  from the given opaque model object
+ * \brief Get all model vertex indices from the given opaque model object
  *
  * \param model The opaque model object
  * \param[out] num_indices Number of all indices in the object
@@ -3523,7 +3523,7 @@ nanoemMotionBoneKeyframeGetInterpolation(const nanoem_motion_bone_keyframe_t *ke
  * \brief Get whether the interpolation is linear from the given opaque motion bone keyframe object and the index
  *
  * \param keyframe The opaque motion bone keyframe object
- * \param index  The index to get
+ * \param index The index to get
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemMotionBoneKeyframeIsLinearInterpolation(const nanoem_motion_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t index);
@@ -3817,7 +3817,7 @@ nanoemMotionModelKeyframeConstraintStateIsEnabled(const nanoem_motion_model_keyf
 /**
  * \brief Get the opaque motion keyframe object from the given opaque motion model keyframe constraint state object
  *
- * \param keyframe The opaque motionmodel  keyframe object
+ * \param keyframe The opaque motionmodel keyframe object
  */
 NANOEM_DECL_API const nanoem_motion_keyframe_object_t *APIENTRY
 nanoemMotionModelKeyframeGetKeyframeObject(const nanoem_motion_model_keyframe_t *keyframe);
@@ -4110,7 +4110,7 @@ nanoemMotionFindAccessoryKeyframeObject(const nanoem_motion_t *motion, nanoem_fr
  *
  * \param motion The opaque motion object
  * \param name The bone name to find
- * \param index  The frame index to find
+ * \param index The frame index to find
  * \return The motion bone keyframe object if it's found, otherwise returns \b NULL
  */
 NANOEM_DECL_API const nanoem_motion_bone_keyframe_t *APIENTRY
@@ -4120,7 +4120,7 @@ nanoemMotionFindBoneKeyframeObject(const nanoem_motion_t *motion, const nanoem_u
  * \brief Get the opaque motion camera keyframe object from the given opaque motion object and the frame index
  *
  * \param motion The opaque motion object
- * \param index  The frame index to find
+ * \param index The frame index to find
  * \return The motion camera keyframe object if it's found, otherwise returns \b NULL
  */
 NANOEM_DECL_API const nanoem_motion_camera_keyframe_t *APIENTRY
@@ -4130,7 +4130,7 @@ nanoemMotionFindCameraKeyframeObject(const nanoem_motion_t *motion, nanoem_frame
  * \brief Get the opaque motion light keyframe object from the given opaque motion object and the frame index
  *
  * \param motion The opaque motion object
- * \param index  The frame index to find
+ * \param index The frame index to find
  * \return The motion light keyframe object if it's found, otherwise returns \b NULL
  */
 NANOEM_DECL_API const nanoem_motion_light_keyframe_t *APIENTRY
@@ -4140,7 +4140,7 @@ nanoemMotionFindLightKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_
  * \brief Get the opaque motion model keyframe object from the given opaque motion object and the frame index
  *
  * \param motion The opaque motion object
- * \param index  The frame index to find
+ * \param index The frame index to find
  * \return The motion model keyframe object if it's found, otherwise returns \b NULL
  */
 NANOEM_DECL_API const nanoem_motion_model_keyframe_t *APIENTRY
@@ -4151,7 +4151,7 @@ nanoemMotionFindModelKeyframeObject(const nanoem_motion_t *motion, nanoem_frame_
  *
  * \param motion The opaque motion object
  * \param name The morph name to find
- * \param index  The frame index to find
+ * \param index The frame index to find
  * \return The motion morph keyframe object if it's found, otherwise returns \b NULL
  */
 NANOEM_DECL_API const nanoem_motion_morph_keyframe_t *APIENTRY
@@ -4161,7 +4161,7 @@ nanoemMotionFindMorphKeyframeObject(const nanoem_motion_t *motion, const nanoem_
  * \brief Get the opaque motion self shadow keyframe object from the given opaque motion object and the frame index
  *
  * \param motion The opaque motion object
- * \param index  The frame index to find
+ * \param index The frame index to find
  * \return The motion self shadow keyframe object if it's found, otherwise returns \b NULL
  */
 NANOEM_DECL_API const nanoem_motion_self_shadow_keyframe_t *APIENTRY
