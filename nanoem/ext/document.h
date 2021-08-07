@@ -256,7 +256,7 @@ nanoemDocumentModelBoneKeyframeGetOrientation(const nanoem_document_model_bone_k
  * \brief Get the interpolation vector from the given opaque document bone keyframe object
  *
  * \param keyframe The opaque document keyframe object
- * \param type
+ * \param type The type
  */
 NANOEM_DECL_API const nanoem_u8_t * APIENTRY
 nanoemDocumentModelBoneKeyframeGetInterpolation(const nanoem_document_model_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t type);
@@ -319,7 +319,7 @@ nanoemDocumentCameraKeyframeGetAngle(const nanoem_document_camera_keyframe_t *ke
  * \brief Get the interpolation vector from the given opaque document camera keyframe object
  *
  * \param keyframe The opaque document keyframe object
- * \param type
+ * \param type The type
  */
 NANOEM_DECL_API const nanoem_u8_t * APIENTRY
 nanoemDocumentCameraKeyframeGetInterpolation(const nanoem_document_camera_keyframe_t *keyframe, nanoem_motion_camera_keyframe_interpolation_type_t type);
@@ -753,7 +753,7 @@ nanoemDocumentModelGetAllOutsideParentStateObjects(const nanoem_document_model_t
  * \brief Get the name from the given opaque document model object
  *
  * \param model The opaque document model object
- * \param language
+ * \param language The language
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemDocumentModelGetName(const nanoem_document_model_t *model, nanoem_language_type_t language);
@@ -778,7 +778,7 @@ nanoemDocumentModelGetSelectedBoneName(const nanoem_document_model_t *model);
  * \brief Get the selected morph name from the given opaque document model object
  *
  * \param model The opaque document model object
- * \param category
+ * \param category The category
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
 nanoemDocumentModelGetSelectedMorphName(const nanoem_document_model_t *model, nanoem_model_morph_category_t category);
@@ -859,7 +859,7 @@ nanoemDocumentModelCountAllOutsideParentSubjectBones(const nanoem_document_model
  * \brief Get count of all constraint bones from the given opaque document model object
  *
  * \param model The opaque document model object
- * \param index
+ * \param index The index
  */
 NANOEM_DECL_API const nanoem_unicode_string_t * APIENTRY
 nanoemDocumentModelGetConstraintBoneName(const nanoem_document_model_t *model, nanoem_rsize_t index);
@@ -868,7 +868,7 @@ nanoemDocumentModelGetConstraintBoneName(const nanoem_document_model_t *model, n
  * \brief Get the outside parent subject bone name from the given opaque document model object
  *
  * \param model The opaque document model object
- * \param index
+ * \param index The index
  */
 NANOEM_DECL_API const nanoem_unicode_string_t * APIENTRY
 nanoemDocumentModelGetOutsideParentSubjectBoneName(const nanoem_document_model_t *model, nanoem_rsize_t index);
@@ -1812,7 +1812,7 @@ nanoemMutableDocumentModelBoneKeyframeSetOrientation(nanoem_mutable_document_mod
  * \brief Set the interpolation vector to the given opaque document bone keyframe object
  *
  * \param keyframe The opaque document keyframe object
- * \param type
+ * \param type The type
  * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
@@ -1891,7 +1891,7 @@ nanoemMutableDocumentCameraKeyframeSetAngle(nanoem_mutable_document_camera_keyfr
  * \brief Set the interpolation vector to the given opaque document camera keyframe object
  *
  * \param keyframe The opaque document keyframe object
- * \param type
+ * \param type The type
  * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
@@ -2048,10 +2048,10 @@ NANOEM_DECL_API nanoem_mutable_document_model_keyframe_t * APIENTRY
 nanoemMutableDocumentModelKeyframeCreate(nanoem_mutable_document_model_t *model, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Create an opaque document model keyframe object from the given existing object
  *
  * \param model The opaque document model object
- * \param reference
+ * \param reference The reference
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_document_model_keyframe_t * APIENTRY
@@ -2061,7 +2061,7 @@ nanoemMutableDocumentModelKeyframeCreateAsReference(nanoem_mutable_document_mode
  * \brief Set whether the model constraint is enabled to the opaque model keyframe object
  *
  * \param keyframe The opaque document keyframe object
- * \param name
+ * \param name The name
  * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -2073,7 +2073,7 @@ nanoemMutableDocumentModelKeyframeSetConstraintEnabled(nanoem_mutable_document_m
  *
  * \param keyframe The opaque document keyframe object
  * \param parent The opaque document outside parent object
- * \param index
+ * \param index The index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2371,7 +2371,7 @@ NANOEM_DECL_API nanoem_mutable_document_model_t * APIENTRY
 nanoemMutableDocumentModelCreate(nanoem_mutable_document_t *document, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Create an opaque document model object from the given existing object
  *
  * \param document The opaque document object
  * \param model The opaque document model object
@@ -2384,7 +2384,7 @@ nanoemMutableDocumentModelCreateAsReference(nanoem_mutable_document_t *document,
  * \brief Register the bone name to the associated opaque document object
  *
  * \param model The opaque document model object
- * \param name
+ * \param name The name
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API int APIENTRY
@@ -2394,7 +2394,7 @@ nanoemMutableDocumentModelRegisterBone(nanoem_mutable_document_model_t *model, c
  * \brief Register the morph name to the associated opaque document object
  *
  * \param model The opaque document model object
- * \param name
+ * \param name The name
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API int APIENTRY
@@ -2405,8 +2405,8 @@ nanoemMutableDocumentModelRegisterMorph(nanoem_mutable_document_model_t *model, 
  *
  * \param model The opaque document model object
  * \param keyframe The opaque document keyframe object
- * \param name
- * \param frame_index
+ * \param name The name
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2417,7 +2417,7 @@ nanoemMutableDocumentModelAddBoneKeyframeObject(nanoem_mutable_document_model_t 
  *
  * \param model The opaque document model object
  * \param state The opaque document state object
- * \param name
+ * \param name The name
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2428,7 +2428,7 @@ nanoemMutableDocumentModelAddModelBoneStateObject(nanoem_mutable_document_model_
  *
  * \param model The opaque document model object
  * \param state The opaque document state object
- * \param name
+ * \param name The name
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2439,7 +2439,7 @@ nanoemMutableDocumentModelAddModelConstraintStateObject(nanoem_mutable_document_
  *
  * \param model The opaque document model object
  * \param state The opaque document state object
- * \param name
+ * \param name The name
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2450,7 +2450,7 @@ nanoemMutableDocumentModelAddModelMorphStateObject(nanoem_mutable_document_model
  *
  * \param model The opaque document model object
  * \param keyframe The opaque document keyframe object
- * \param frame_index
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2461,8 +2461,8 @@ nanoemMutableDocumentModelAddModelKeyframeObject(nanoem_mutable_document_model_t
  *
  * \param model The opaque document model object
  * \param keyframe The opaque document keyframe object
- * \param name
- * \param frame_index
+ * \param name The name
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2472,7 +2472,7 @@ nanoemMutableDocumentModelAddMorphKeyframeObject(nanoem_mutable_document_model_t
  * \brief Add the given opaque document outside parent subject bone name to the associated opaque document object
  *
  * \param model The opaque document model object
- * \param name
+ * \param name The name
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2483,7 +2483,7 @@ nanoemMutableDocumentModelAddOutsideParentSubjectBone(nanoem_mutable_document_mo
  *
  * \param model The opaque document model object
  * \param state The opaque document state object
- * \param index
+ * \param index The index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2563,7 +2563,7 @@ nanoemMutableDocumentModelRemoveModelOutsideParentStateObject(nanoem_mutable_doc
  * \brief Set the name to the given opaque document model object
  *
  * \param model The opaque document model object
- * \param language
+ * \param language The language
  * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -2594,7 +2594,7 @@ nanoemMutableDocumentModelSetSelectedBoneName(nanoem_mutable_document_model_t *m
  * \brief Set the selected morph name to the given opaque document model object
  *
  * \param model The opaque document model object
- * \param category
+ * \param category The category
  * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
@@ -2656,7 +2656,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetSelfShadowEnabled(nanoem_mutable_document_model_t *model, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Get the opaque origin document model object from the given opaque document model object
  *
  * \param model The opaque document model object
  */
@@ -2687,7 +2687,7 @@ NANOEM_DECL_API nanoem_mutable_document_accessory_t * APIENTRY
 nanoemMutableDocumentAccessoryCreate(nanoem_mutable_document_t *document, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Create an opaque document accessory object from the given existing object
  *
  * \param document The opaque document object
  * \param accessory The opaque document accessory object
@@ -2701,7 +2701,7 @@ nanoemMutableDocumentAccessoryCreateAsReference(nanoem_mutable_document_t *docum
  *
  * \param accessory The opaque document accessory object
  * \param keyframe The opaque document keyframe object
- * \param frame_index
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2829,7 +2829,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetAddBlendEnabled(nanoem_mutable_document_accessory_t *accessory, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Get the opaque origin document accessory object from the given opaque document accessory object
  *
  * \param accessory The opaque document accessory object
  */
@@ -2864,7 +2864,7 @@ nanoemMutableDocumentCameraCreate(nanoem_mutable_document_t *document, nanoem_st
  *
  * \param camera The opaque document camera object
  * \param keyframe The opaque document keyframe object
- * \param frame_index
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2935,7 +2935,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetPerspectiveEnabled(nanoem_mutable_document_camera_t *camera, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Get the opaque origin document camera object from the given opaque document camera object
  *
  * \param camera The opaque document camera object
  */
@@ -2970,7 +2970,7 @@ nanoemMutableDocumentGravityCreate(nanoem_mutable_document_t *document, nanoem_s
  *
  * \param gravity The opaque document gravity object
  * \param keyframe The opaque document keyframe object
- * \param frame_index
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3023,7 +3023,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravitySetNoiseEnabled(nanoem_mutable_document_gravity_t *gravity, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Get the opaque origin document gravity object from the given opaque document gravity object
  *
  * \param gravity The opaque document gravity object
  */
@@ -3058,7 +3058,7 @@ nanoemMutableDocumentLightCreate(nanoem_mutable_document_t *document, nanoem_sta
  *
  * \param light The opaque document light object
  * \param keyframe The opaque document keyframe object
- * \param frame_index
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3128,7 +3128,7 @@ nanoemMutableDocumentSelfShadowCreate(nanoem_mutable_document_t *document, nanoe
  *
  * \param self_shadow The opaque document self shadow object
  * \param keyframe The opaque document keyframe object
- * \param frame_index
+ * \param frame_index The frame index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3163,7 +3163,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSelfShadowSetEnabled(nanoem_mutable_document_self_shadow_t *self_shadow, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Get the opaque origin document self shadow object from the given opaque document self shadow object
  *
  * \param self_shadow The opaque document self shadow object
  */
@@ -3194,7 +3194,7 @@ NANOEM_DECL_API nanoem_mutable_document_t *APIENTRY
 nanoemMutableDocumentCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Create an opaque document object from the given existing object
  *
  * \param document The opaque document object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -3207,7 +3207,7 @@ nanoemMutableDocumentCreateAsReference(nanoem_document_t *document, nanoem_statu
  *
  * \param document The opaque document object
  * \param accessory The opaque document accessory object
- * \param index
+ * \param index The index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3218,7 +3218,7 @@ nanoemMutableDocumentInsertAccessoryObject(nanoem_mutable_document_t *document, 
  *
  * \param document The opaque document object
  * \param model The opaque document model object
- * \param index
+ * \param index The index
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3608,7 +3608,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBlackBackgroundEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
 
 /**
- * \brief
+ * \brief Get the opaque origin document object from the given opaque document object
  *
  * \param document The opaque document object
  */
