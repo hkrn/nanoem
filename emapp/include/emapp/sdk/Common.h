@@ -166,6 +166,16 @@ typedef double nanoem_f64_t;
 #define APIENTRY
 #endif /* APIENTRY */
 
+/**
+ * \defgroup emapp nanoem Application (emapp)
+ * @{
+ */
+
+/**
+ * \defgroup emapp_plugin_common nanoem Application Plugin Common Definition
+ * @{
+ */
+
 NANOEM_DECL_ENUM(int, nanoem_application_plugin_status_t) { NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON = -3,
     NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_UNKNOWN_OPTION = -2, NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT = -1,
     NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS = 0 };
@@ -181,6 +191,11 @@ NANOEM_DECL_ENUM(int, nanoem_application_plugin_status_t) { NANOEM_APPLICATION_P
 #include <stdio.h>
 #endif
 
+/**
+ * \brief
+ *
+ * \param status_ptr
+ */
 static inline void
 nanoem_application_plugin_status_assign_success(nanoem_application_plugin_status_t *&status_ptr)
 {
@@ -189,6 +204,12 @@ nanoem_application_plugin_status_assign_success(nanoem_application_plugin_status
     }
 }
 
+/**
+ * \brief
+ *
+ * \param status_ptr
+ * \param value
+ */
 static inline void
 nanoem_application_plugin_status_assign_error(
     nanoem_application_plugin_status_t *&status_ptr, nanoem_application_plugin_status_t value)
@@ -204,6 +225,14 @@ namespace plugin {
 
 class StringUtils {
 public:
+    /**
+     * \brief
+     *
+     * \param left
+     * \param right
+     * \return true
+     * \return false
+     */
     static inline bool
     equals(const char *left, const char *right)
     {
@@ -217,6 +246,15 @@ private:
 
 class Inline {
 public:
+    /**
+     * \brief
+     *
+     * \tparam T
+     * \param result
+     * \param value
+     * \param size
+     * \param status
+     */
     template <typename T>
     static inline void
     assignOption(T result, void *value, nanoem_u32_t *size, nanoem_application_plugin_status_t *status)
@@ -235,6 +273,17 @@ public:
         nanoem_application_plugin_status_assign_error(status,
             succeeded ? NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS : NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_NULL_OBJECT);
     }
+
+    /**
+     * \brief
+     *
+     * \tparam T
+     * \param value
+     * \param size
+     * \param status
+     * \return true
+     * \return false
+     */
     template <typename T>
     static inline bool
     validateArgument(const void *value, nanoem_rsize_t size, nanoem_application_plugin_status_t *status)
@@ -248,21 +297,49 @@ public:
         }
         return succeeded;
     }
+
+    /**
+     * \brief
+     *
+     * \param value
+     * \return int
+     */
     static inline int
     saturateInt32(size_t value)
     {
         return static_cast<int>(nanoem_likely(value < INT32_MAX) ? value : INT32_MAX);
     }
+
+    /**
+     * \brief
+     *
+     * \param value
+     * \return nanoem_u32_t
+     */
     static inline nanoem_u32_t
     saturateInt32U(size_t value)
     {
         return static_cast<nanoem_u32_t>(nanoem_likely(value < UINT32_MAX) ? value : UINT32_MAX);
     }
+
+    /**
+     * \brief
+     *
+     * \param value
+     * \return nanoem_u32_t
+     */
     static inline nanoem_u32_t
     roundInt32(int value)
     {
         return static_cast<nanoem_u32_t>(nanoem_likely(value >= 0) ? value : 0);
     }
+
+    /**
+     * \brief
+     *
+     * \param format
+     * \param ...
+     */
     static inline void
     debugPrintf(const char *format, ...)
     {
@@ -313,5 +390,9 @@ private:
 #endif /* __cplusplus */
 
 typedef nanoem_u32_t nanoem_frame_index_t;
+
+/** @} */
+
+/** @} */
 
 #endif /* EMAPP_PLUGIN_SDK_COMMON_H_ */

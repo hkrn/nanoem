@@ -4483,16 +4483,16 @@ nanoemModelJointGetModelObjectMutable(nanoem_model_joint_t *joint)
 }
 
 const nanoem_unicode_string_t *APIENTRY
-nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *body, nanoem_language_type_t language)
+nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *soft_body, nanoem_language_type_t language)
 {
     const nanoem_unicode_string_t *name = NULL;
-    if (nanoem_is_not_null(body)) {
+    if (nanoem_is_not_null(soft_body)) {
         switch (language) {
         case NANOEM_LANGUAGE_TYPE_JAPANESE:
-            name = body->name_ja;
+            name = soft_body->name_ja;
             break;
         case NANOEM_LANGUAGE_TYPE_ENGLISH:
-            name = body->name_en;
+            name = soft_body->name_en;
             break;
         case NANOEM_LANGUAGE_TYPE_MAX_ENUM:
         case NANOEM_LANGUAGE_TYPE_UNKNOWN:
@@ -4504,12 +4504,12 @@ nanoemModelSoftBodyGetName(const nanoem_model_soft_body_t *body, nanoem_language
 }
 
 nanoem_model_soft_body_anchor_t *const * APIENTRY
-nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects)
+nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *soft_body, nanoem_rsize_t *num_objects)
 {
     nanoem_model_soft_body_anchor_t *const *objects = NULL;
-    if (nanoem_is_not_null(body) && nanoem_is_not_null(num_objects)) {
-        *num_objects = body->num_anchors;
-        objects = body->anchors;
+    if (nanoem_is_not_null(soft_body) && nanoem_is_not_null(num_objects)) {
+        *num_objects = soft_body->num_anchors;
+        objects = soft_body->anchors;
     }
     else if (nanoem_is_not_null(num_objects))  {
         *num_objects = 0;
@@ -4518,12 +4518,12 @@ nanoemModelSoftBodyGetAllAnchorObjects(const nanoem_model_soft_body_t *body, nan
 }
 
 const nanoem_u32_t * APIENTRY
-nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *body, nanoem_rsize_t *num_objects)
+nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *soft_body, nanoem_rsize_t *num_objects)
 {
     const nanoem_u32_t *objects = NULL;
-    if (nanoem_is_not_null(body) && nanoem_is_not_null(num_objects)) {
-        *num_objects = body->num_pinned_vertex_indices;
-        objects = body->pinned_vertex_indices;
+    if (nanoem_is_not_null(soft_body) && nanoem_is_not_null(num_objects)) {
+        *num_objects = soft_body->num_pinned_vertex_indices;
+        objects = soft_body->pinned_vertex_indices;
     }
     else if (nanoem_is_not_null(num_objects))  {
         *num_objects = 0;
@@ -4532,225 +4532,225 @@ nanoemModelSoftBodyGetAllPinnedVertexIndices(const nanoem_model_soft_body_t *bod
 }
 
 const nanoem_model_material_t *APIENTRY
-nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetMaterialObject(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? nanoemModelGetOneMaterialObject(nanoemModelSoftBodyGetParentModel(body), body->material_index) : NULL;
+    return nanoem_is_not_null(soft_body) ? nanoemModelGetOneMaterialObject(nanoemModelSoftBodyGetParentModel(soft_body), soft_body->material_index) : NULL;
 }
 
 nanoem_model_soft_body_shape_type_t APIENTRY
-nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetShapeType(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->shape_type : NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_UNKNOWN;
+    return nanoem_is_not_null(soft_body) ? soft_body->shape_type : NANOEM_MODEL_SOFT_BODY_SHAPE_TYPE_UNKNOWN;
 }
 
 nanoem_model_soft_body_aero_model_type_t APIENTRY
-nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetAeroModel(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->aero_model : NANOEM_MODEL_SOFT_BODY_AERO_MODEL_TYPE_UNKNOWN;
+    return nanoem_is_not_null(soft_body) ? soft_body->aero_model : NANOEM_MODEL_SOFT_BODY_AERO_MODEL_TYPE_UNKNOWN;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetTotalMass(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->total_mass : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->total_mass : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetCollisionMargin(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->collision_margin : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->collision_margin : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetVelocityCorrectionFactor(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->velocity_correction_factor : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->velocity_correction_factor : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetDampingCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->damping_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->damping_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetDragCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->drag_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->drag_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetLiftCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->lift_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->lift_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetPressureCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->pressure_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->pressure_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetVolumeConversationCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->volume_conversation_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->volume_conversation_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetDynamicFrictionCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->dynamic_friction_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->dynamic_friction_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetPoseMatchingCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->pose_matching_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->pose_matching_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetRigidContactHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->rigid_contact_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->rigid_contact_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetKineticContactHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->kinetic_contact_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->kinetic_contact_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftContactHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_contact_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_contact_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetAnchorHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->anchor_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->anchor_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftVSRigidHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_vs_rigid_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_vs_rigid_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftVSKineticHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_vs_kinetic_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_vs_kinetic_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftVSSoftHardness(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_vs_soft_hardness : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_vs_soft_hardness : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_vs_rigid_impulse_split : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_vs_rigid_impulse_split : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_vs_kinetic_impulse_split : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_vs_kinetic_impulse_split : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->soft_vs_soft_impulse_split : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->soft_vs_soft_impulse_split : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetLinearStiffnessCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->linear_stiffness_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->linear_stiffness_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetAngularStiffnessCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->angular_stiffness_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->angular_stiffness_coefficient : 0;
 }
 
 nanoem_f32_t APIENTRY
-nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetVolumeStiffnessCoefficient(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->volume_stiffness_coefficient : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->volume_stiffness_coefficient : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetCollisionGroupId(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->collision_group_id : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->collision_group_id : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetCollisionMask(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->collision_mask : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->collision_mask : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetBendingConstraintsDistance(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->bending_constraints_distance : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->bending_constraints_distance : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetClusterCount(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->cluster_count : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->cluster_count : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetVelocitySolverIterations(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->velocity_solver_iterations : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->velocity_solver_iterations : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetPositionsSolverIterations(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->positions_solver_iterations : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->positions_solver_iterations : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetDriftSolverIterations(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->drift_solver_iterations : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->drift_solver_iterations : 0;
 }
 
 int APIENTRY
-nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyGetClusterSolverIterations(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->cluster_solver_iterations : 0;
+    return nanoem_is_not_null(soft_body) ? soft_body->cluster_solver_iterations : 0;
 }
 
 nanoem_bool_t APIENTRY
-nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyIsBendingConstraintsEnabled(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? (body->flags & 0x1) != 0 : nanoem_false;
+    return nanoem_is_not_null(soft_body) ? (soft_body->flags & 0x1) != 0 : nanoem_false;
 }
 
 nanoem_bool_t APIENTRY
-nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyIsClustersEnabled(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? (body->flags & 0x2) != 0 : nanoem_false;
+    return nanoem_is_not_null(soft_body) ? (soft_body->flags & 0x2) != 0 : nanoem_false;
 }
 
 nanoem_bool_t APIENTRY
-nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *body)
+nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? (body->flags & 0x4) != 0 : nanoem_false;
+    return nanoem_is_not_null(soft_body) ? (soft_body->flags & 0x4) != 0 : nanoem_false;
 }
 
 const nanoem_model_rigid_body_t *APIENTRY

@@ -7149,16 +7149,16 @@ nanoemMutableModelSoftBodyCreate(nanoem_model_t *model, nanoem_status_t *status)
 }
 
 nanoem_mutable_model_soft_body_t *APIENTRY
-nanoemMutableModelSoftBodyCreateAsReference(nanoem_model_soft_body_t *body, nanoem_status_t *status)
+nanoemMutableModelSoftBodyCreateAsReference(nanoem_model_soft_body_t *soft_body, nanoem_status_t *status)
 {
     const nanoem_model_t *origin_model;
     nanoem_mutable_model_soft_body_t *mutable_soft_body = NULL;
     nanoem_bool_t is_in_model;
-    if (nanoem_is_not_null(body)) {
-        origin_model = nanoemModelSoftBodyGetParentModel(body);
+    if (nanoem_is_not_null(soft_body)) {
+        origin_model = nanoemModelSoftBodyGetParentModel(soft_body);
         if (nanoem_is_not_null(origin_model)) {
-            is_in_model = nanoemObjectArrayContainsIndexedObject((const void *const *) origin_model->soft_bodies, body, origin_model->num_soft_bodies, body->base.index);
-            mutable_soft_body = nanoemMutableModelSoftBodyCreateInternal(body, nanoem_true, is_in_model, status);
+            is_in_model = nanoemObjectArrayContainsIndexedObject((const void *const *) origin_model->soft_bodies, soft_body, origin_model->num_soft_bodies, soft_body->base.index);
+            mutable_soft_body = nanoemMutableModelSoftBodyCreateInternal(soft_body, nanoem_true, is_in_model, status);
         }
         else {
             nanoem_status_ptr_assign_null_object(status);
@@ -7168,20 +7168,20 @@ nanoemMutableModelSoftBodyCreateAsReference(nanoem_model_soft_body_t *body, nano
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetName(nanoem_mutable_model_soft_body_t *body, const nanoem_unicode_string_t *value, nanoem_language_type_t language, nanoem_status_t *status)
+nanoemMutableModelSoftBodySetName(nanoem_mutable_model_soft_body_t *soft_body, const nanoem_unicode_string_t *value, nanoem_language_type_t language, nanoem_status_t *status)
 {
     const nanoem_model_t *parent_model;
     nanoem_unicode_string_factory_t *factory;
-    if (nanoem_is_not_null(body)) {
-        parent_model = nanoemModelSoftBodyGetParentModel(body->origin);
+    if (nanoem_is_not_null(soft_body)) {
+        parent_model = nanoemModelSoftBodyGetParentModel(soft_body->origin);
         if (nanoem_is_not_null(parent_model)) {
             factory = parent_model->factory;
             switch (language) {
             case NANOEM_LANGUAGE_TYPE_ENGLISH:
-                nanoemUnicodeStringFactoryAssignString(factory, &body->origin->name_en, value, nanoemModelGetCodecType(parent_model), status);
+                nanoemUnicodeStringFactoryAssignString(factory, &soft_body->origin->name_en, value, nanoemModelGetCodecType(parent_model), status);
                 break;
             case NANOEM_LANGUAGE_TYPE_JAPANESE:
-                nanoemUnicodeStringFactoryAssignString(factory, &body->origin->name_ja, value, nanoemModelGetCodecType(parent_model), status);
+                nanoemUnicodeStringFactoryAssignString(factory, &soft_body->origin->name_ja, value, nanoemModelGetCodecType(parent_model), status);
                 break;
             case NANOEM_LANGUAGE_TYPE_MAX_ENUM:
             case NANOEM_LANGUAGE_TYPE_UNKNOWN:
@@ -7199,33 +7199,33 @@ nanoemMutableModelSoftBodySetName(nanoem_mutable_model_soft_body_t *body, const 
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetMaterialObject(nanoem_mutable_model_soft_body_t *body, const nanoem_model_material_t *value)
+nanoemMutableModelSoftBodySetMaterialObject(nanoem_mutable_model_soft_body_t *soft_body, const nanoem_model_material_t *value)
 {
      const nanoem_model_t *parent_model;
-     if (nanoem_is_not_null(body)) {
-         parent_model = nanoemModelSoftBodyGetParentModel(body->origin);
-         body->origin->material_index = nanoemModelResolveMaterialObject(parent_model, value);
+     if (nanoem_is_not_null(soft_body)) {
+         parent_model = nanoemModelSoftBodyGetParentModel(soft_body->origin);
+         soft_body->origin->material_index = nanoemModelResolveMaterialObject(parent_model, value);
      }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetAllPinnedVertexIndices(nanoem_mutable_model_soft_body_t *body, const nanoem_u32_t *value, nanoem_rsize_t length, nanoem_status_t *status)
+nanoemMutableModelSoftBodySetAllPinnedVertexIndices(nanoem_mutable_model_soft_body_t *soft_body, const nanoem_u32_t *value, nanoem_rsize_t length, nanoem_status_t *status)
 {
     nanoem_model_soft_body_t *origin;
     nanoem_rsize_t allocate_size;
-    if (nanoem_is_not_null(body) && nanoem_is_not_null(value) && length > 0) {
-        origin = body->origin;
+    if (nanoem_is_not_null(soft_body) && nanoem_is_not_null(value) && length > 0) {
+        origin = soft_body->origin;
         allocate_size = length * sizeof(*origin->pinned_vertex_indices);
-        if (length >= body->num_allocated_pin_vertex_indices) {
+        if (length >= soft_body->num_allocated_pin_vertex_indices) {
             origin->pinned_vertex_indices = (nanoem_u32_t *) nanoem_realloc(origin->pinned_vertex_indices, allocate_size, status);
         }
         if (nanoem_is_not_null(origin->pinned_vertex_indices)) {
             nanoem_crt_memcpy(origin->pinned_vertex_indices, value, allocate_size);
-            body->num_allocated_pin_vertex_indices = origin->num_pinned_vertex_indices = length;
+            soft_body->num_allocated_pin_vertex_indices = origin->num_pinned_vertex_indices = length;
             nanoem_status_ptr_assign_succeeded(status);
         }
         else {
-            body->num_allocated_pin_vertex_indices = origin->num_pinned_vertex_indices = 0;
+            soft_body->num_allocated_pin_vertex_indices = origin->num_pinned_vertex_indices = 0;
         }
     }
     else {
@@ -7234,302 +7234,302 @@ nanoemMutableModelSoftBodySetAllPinnedVertexIndices(nanoem_mutable_model_soft_bo
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetShapeType(nanoem_mutable_model_soft_body_t *body, nanoem_model_soft_body_shape_type_t value)
+nanoemMutableModelSoftBodySetShapeType(nanoem_mutable_model_soft_body_t *soft_body, nanoem_model_soft_body_shape_type_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->shape_type = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->shape_type = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetAeroModel(nanoem_mutable_model_soft_body_t *body, nanoem_model_soft_body_aero_model_type_t value)
+nanoemMutableModelSoftBodySetAeroModel(nanoem_mutable_model_soft_body_t *soft_body, nanoem_model_soft_body_aero_model_type_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->aero_model = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->aero_model = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetTotalMass(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetTotalMass(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->total_mass = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->total_mass = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetCollisionMargin(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetCollisionMargin(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->collision_margin = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->collision_margin = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetVelocityCorrectionFactor(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetVelocityCorrectionFactor(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->velocity_correction_factor = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->velocity_correction_factor = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetDampingCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetDampingCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->damping_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->damping_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetDragCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetDragCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->drag_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->drag_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetLiftCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetLiftCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->lift_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->lift_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetPressureCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetPressureCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->pressure_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->pressure_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetVolumeConversationCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetVolumeConversationCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->volume_conversation_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->volume_conversation_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetDynamicFrictionCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetDynamicFrictionCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->dynamic_friction_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->dynamic_friction_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetPoseMatchingCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetPoseMatchingCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->pose_matching_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->pose_matching_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetRigidContactHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetRigidContactHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->rigid_contact_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->rigid_contact_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetKineticContactHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetKineticContactHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->kinetic_contact_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->kinetic_contact_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftContactHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftContactHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_contact_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_contact_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetAnchorHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetAnchorHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->anchor_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->anchor_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftVSRigidHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftVSRigidHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_vs_rigid_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_vs_rigid_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftVSKineticHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftVSKineticHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_vs_kinetic_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_vs_kinetic_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftVSSoftHardness(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftVSSoftHardness(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_vs_soft_hardness = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_vs_soft_hardness = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftVSRigidImpulseSplit(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftVSRigidImpulseSplit(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_vs_rigid_impulse_split = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_vs_rigid_impulse_split = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftVSKineticImpulseSplit(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftVSKineticImpulseSplit(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_vs_kinetic_impulse_split = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_vs_kinetic_impulse_split = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetSoftVSSoftImpulseSplit(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetSoftVSSoftImpulseSplit(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->soft_vs_soft_impulse_split = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->soft_vs_soft_impulse_split = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetLinearStiffnessCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetLinearStiffnessCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->linear_stiffness_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->linear_stiffness_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetAngularStiffnessCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetAngularStiffnessCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->angular_stiffness_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->angular_stiffness_coefficient = value;
      }
 }
 
  void APIENTRY
-nanoemMutableModelSoftBodySetVolumeStiffnessCoefficient(nanoem_mutable_model_soft_body_t *body, nanoem_f32_t value)
+nanoemMutableModelSoftBodySetVolumeStiffnessCoefficient(nanoem_mutable_model_soft_body_t *soft_body, nanoem_f32_t value)
 {
-     if (nanoem_is_not_null(body)) {
-         body->origin->volume_stiffness_coefficient = value;
+     if (nanoem_is_not_null(soft_body)) {
+         soft_body->origin->volume_stiffness_coefficient = value;
      }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetCollisionGroupId(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetCollisionGroupId(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->collision_group_id = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->collision_group_id = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetCollisionMask(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetCollisionMask(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->collision_mask = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->collision_mask = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetBendingConstraintsDistance(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetBendingConstraintsDistance(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->bending_constraints_distance = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->bending_constraints_distance = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetClusterCount(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetClusterCount(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->cluster_count = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->cluster_count = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetVelocitySolverIterations(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetVelocitySolverIterations(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->velocity_solver_iterations = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->velocity_solver_iterations = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetPositionsSolverIterations(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetPositionsSolverIterations(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->positions_solver_iterations = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->positions_solver_iterations = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetDriftSolverIterations(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetDriftSolverIterations(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->drift_solver_iterations = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->drift_solver_iterations = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetClusterSolverIterations(nanoem_mutable_model_soft_body_t *body, int value)
+nanoemMutableModelSoftBodySetClusterSolverIterations(nanoem_mutable_model_soft_body_t *soft_body, int value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->cluster_solver_iterations = value;
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->cluster_solver_iterations = value;
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetBendingConstraintsEnabled(nanoem_mutable_model_soft_body_t *body, nanoem_bool_t value)
+nanoemMutableModelSoftBodySetBendingConstraintsEnabled(nanoem_mutable_model_soft_body_t *soft_body, nanoem_bool_t value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->flags = value ? (body->origin->flags | 0x1) : (body->origin->flags & ~0x1);
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->flags = value ? (soft_body->origin->flags | 0x1) : (soft_body->origin->flags & ~0x1);
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetClustersEnabled(nanoem_mutable_model_soft_body_t *body, nanoem_bool_t value)
+nanoemMutableModelSoftBodySetClustersEnabled(nanoem_mutable_model_soft_body_t *soft_body, nanoem_bool_t value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->flags = value ? (body->origin->flags | 0x2) : (body->origin->flags & ~0x2);
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->flags = value ? (soft_body->origin->flags | 0x2) : (soft_body->origin->flags & ~0x2);
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySetRandomizeConstraintsNeeded(nanoem_mutable_model_soft_body_t *body, nanoem_bool_t value)
+nanoemMutableModelSoftBodySetRandomizeConstraintsNeeded(nanoem_mutable_model_soft_body_t *soft_body, nanoem_bool_t value)
 {
-    if (nanoem_is_not_null(body)) {
-        body->origin->flags = value ? (body->origin->flags | 0x4) : (body->origin->flags & ~0x4);
+    if (nanoem_is_not_null(soft_body)) {
+        soft_body->origin->flags = value ? (soft_body->origin->flags | 0x4) : (soft_body->origin->flags & ~0x4);
     }
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodyInsertAnchorObject(nanoem_mutable_model_soft_body_t *body, nanoem_mutable_model_soft_body_anchor_t *anchor, int index, nanoem_status_t *status)
+nanoemMutableModelSoftBodyInsertAnchorObject(nanoem_mutable_model_soft_body_t *soft_body, nanoem_mutable_model_soft_body_anchor_t *anchor, int index, nanoem_status_t *status)
 {
     nanoem_model_soft_body_t *origin_soft_body;
     nanoem_model_soft_body_anchor_t *origin_soft_body_anchor;
-    if (nanoem_is_not_null(body) && nanoem_is_not_null(anchor)) {
-        origin_soft_body = body->origin;
+    if (nanoem_is_not_null(soft_body) && nanoem_is_not_null(anchor)) {
+        origin_soft_body = soft_body->origin;
         origin_soft_body_anchor = anchor->origin;
-        nanoemModelObjectArrayInsertObject((nanoem_model_object_t ***) &origin_soft_body->anchors, (nanoem_model_object_t *) origin_soft_body_anchor, index, NANOEM_STATUS_ERROR_MODEL_SOFT_BODY_ANCHOR_ALREADY_EXISTS, &origin_soft_body->num_anchors, &body->num_allocated_anchors, status);
+        nanoemModelObjectArrayInsertObject((nanoem_model_object_t ***) &origin_soft_body->anchors, (nanoem_model_object_t *) origin_soft_body_anchor, index, NANOEM_STATUS_ERROR_MODEL_SOFT_BODY_ANCHOR_ALREADY_EXISTS, &origin_soft_body->num_anchors, &soft_body->num_allocated_anchors, status);
         if (!nanoem_status_ptr_has_error(status)) {
             origin_soft_body_anchor->base.parent.soft_body = origin_soft_body;
             anchor->base.is_in_soft_body = nanoem_true;
@@ -7541,12 +7541,12 @@ nanoemMutableModelSoftBodyInsertAnchorObject(nanoem_mutable_model_soft_body_t *b
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodyRemoveAnchorObject(nanoem_mutable_model_soft_body_t *body, nanoem_mutable_model_soft_body_anchor_t *anchor, nanoem_status_t *status)
+nanoemMutableModelSoftBodyRemoveAnchorObject(nanoem_mutable_model_soft_body_t *soft_body, nanoem_mutable_model_soft_body_anchor_t *anchor, nanoem_status_t *status)
 {
     nanoem_model_soft_body_t *origin_soft_body;
     nanoem_model_soft_body_anchor_t *origin_soft_body_anchor;
-    if (nanoem_is_not_null(body) && nanoem_is_not_null(anchor)) {
-        origin_soft_body = body->origin;
+    if (nanoem_is_not_null(soft_body) && nanoem_is_not_null(anchor)) {
+        origin_soft_body = soft_body->origin;
         origin_soft_body_anchor = anchor->origin;
         nanoemModelObjectArrayRemoveObject((nanoem_model_object_t **) origin_soft_body->anchors, (nanoem_model_object_t *) origin_soft_body_anchor, &origin_soft_body->num_anchors, NANOEM_STATUS_ERROR_MODEL_SOFT_BODY_ANCHOR_NOT_FOUND, status);
         if (!nanoem_status_ptr_has_error(status)) {
@@ -7560,73 +7560,73 @@ nanoemMutableModelSoftBodyRemoveAnchorObject(nanoem_mutable_model_soft_body_t *b
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodyCopy(nanoem_mutable_model_soft_body_t *body, const nanoem_model_soft_body_t *value, nanoem_status_t *status)
+nanoemMutableModelSoftBodyCopy(nanoem_mutable_model_soft_body_t *soft_body, const nanoem_model_soft_body_t *value, nanoem_status_t *status)
 {
     nanoem_model_soft_body_anchor_t *const *anchors, *anchor;
     const nanoem_u32_t *vertex_indices;
     nanoem_mutable_model_soft_body_anchor_t *new_anchor;
     nanoem_rsize_t num_objects, i;
     vertex_indices = nanoemModelSoftBodyGetAllPinnedVertexIndices(value, &num_objects);
-    nanoemMutableModelSoftBodySetName(body, nanoemModelSoftBodyGetName(value, NANOEM_LANGUAGE_TYPE_JAPANESE), NANOEM_LANGUAGE_TYPE_JAPANESE, status);
-    nanoemMutableModelSoftBodySetName(body, nanoemModelSoftBodyGetName(value, NANOEM_LANGUAGE_TYPE_ENGLISH), NANOEM_LANGUAGE_TYPE_ENGLISH, status);
-    nanoemMutableModelSoftBodySetMaterialObject(body, nanoemModelSoftBodyGetMaterialObject(value));
-    nanoemMutableModelSoftBodySetAllPinnedVertexIndices(body, vertex_indices, num_objects, status);
-    nanoemMutableModelSoftBodySetShapeType(body, nanoemModelSoftBodyGetShapeType(value));
-    nanoemMutableModelSoftBodySetAeroModel(body, nanoemModelSoftBodyGetAeroModel(value));
-    nanoemMutableModelSoftBodySetTotalMass(body, nanoemModelSoftBodyGetTotalMass(value));
-    nanoemMutableModelSoftBodySetCollisionMargin(body, nanoemModelSoftBodyGetCollisionMargin(value));
-    nanoemMutableModelSoftBodySetVelocityCorrectionFactor(body, nanoemModelSoftBodyGetVelocityCorrectionFactor(value));
-    nanoemMutableModelSoftBodySetDampingCoefficient(body, nanoemModelSoftBodyGetDampingCoefficient(value));
-    nanoemMutableModelSoftBodySetDragCoefficient(body, nanoemModelSoftBodyGetDragCoefficient(value));
-    nanoemMutableModelSoftBodySetLiftCoefficient(body, nanoemModelSoftBodyGetLiftCoefficient(value));
-    nanoemMutableModelSoftBodySetPressureCoefficient(body, nanoemModelSoftBodyGetPressureCoefficient(value));
-    nanoemMutableModelSoftBodySetVolumeConversationCoefficient(body, nanoemModelSoftBodyGetVolumeConversationCoefficient(value));
-    nanoemMutableModelSoftBodySetDynamicFrictionCoefficient(body, nanoemModelSoftBodyGetDynamicFrictionCoefficient(value));
-    nanoemMutableModelSoftBodySetPoseMatchingCoefficient(body, nanoemModelSoftBodyGetPoseMatchingCoefficient(value));
-    nanoemMutableModelSoftBodySetRigidContactHardness(body, nanoemModelSoftBodyGetRigidContactHardness(value));
-    nanoemMutableModelSoftBodySetKineticContactHardness(body, nanoemModelSoftBodyGetKineticContactHardness(value));
-    nanoemMutableModelSoftBodySetSoftContactHardness(body, nanoemModelSoftBodyGetSoftContactHardness(value));
-    nanoemMutableModelSoftBodySetAnchorHardness(body, nanoemModelSoftBodyGetAnchorHardness(value));
-    nanoemMutableModelSoftBodySetSoftVSRigidHardness(body, nanoemModelSoftBodyGetSoftVSRigidHardness(value));
-    nanoemMutableModelSoftBodySetSoftVSKineticHardness(body, nanoemModelSoftBodyGetSoftVSKineticHardness(value));
-    nanoemMutableModelSoftBodySetSoftVSSoftHardness(body, nanoemModelSoftBodyGetSoftVSSoftHardness(value));
-    nanoemMutableModelSoftBodySetSoftVSRigidImpulseSplit(body, nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(value));
-    nanoemMutableModelSoftBodySetSoftVSKineticImpulseSplit(body, nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(value));
-    nanoemMutableModelSoftBodySetSoftVSSoftImpulseSplit(body, nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(value));
-    nanoemMutableModelSoftBodySetLinearStiffnessCoefficient(body, nanoemModelSoftBodyGetLinearStiffnessCoefficient(value));
-    nanoemMutableModelSoftBodySetAngularStiffnessCoefficient(body, nanoemModelSoftBodyGetAngularStiffnessCoefficient(value));
-    nanoemMutableModelSoftBodySetVolumeStiffnessCoefficient(body, nanoemModelSoftBodyGetVolumeStiffnessCoefficient(value));
-    nanoemMutableModelSoftBodySetCollisionGroupId(body, nanoemModelSoftBodyGetCollisionGroupId(value));
-    nanoemMutableModelSoftBodySetCollisionMask(body, nanoemModelSoftBodyGetCollisionMask(value));
-    nanoemMutableModelSoftBodySetBendingConstraintsDistance(body, nanoemModelSoftBodyGetBendingConstraintsDistance(value));
-    nanoemMutableModelSoftBodySetClusterCount(body, nanoemModelSoftBodyGetClusterCount(value));
-    nanoemMutableModelSoftBodySetVelocitySolverIterations(body, nanoemModelSoftBodyGetVelocitySolverIterations(value));
-    nanoemMutableModelSoftBodySetPositionsSolverIterations(body, nanoemModelSoftBodyGetPositionsSolverIterations(value));
-    nanoemMutableModelSoftBodySetDriftSolverIterations(body, nanoemModelSoftBodyGetDriftSolverIterations(value));
-    nanoemMutableModelSoftBodySetClusterSolverIterations(body, nanoemModelSoftBodyGetClusterSolverIterations(value));
-    nanoemMutableModelSoftBodySetBendingConstraintsEnabled(body, nanoemModelSoftBodyIsBendingConstraintsEnabled(value));
-    nanoemMutableModelSoftBodySetClustersEnabled(body, nanoemModelSoftBodyIsClustersEnabled(value));
-    nanoemMutableModelSoftBodySetRandomizeConstraintsNeeded(body, nanoemModelSoftBodyIsRandomizeConstraintsNeeded(value));
+    nanoemMutableModelSoftBodySetName(soft_body, nanoemModelSoftBodyGetName(value, NANOEM_LANGUAGE_TYPE_JAPANESE), NANOEM_LANGUAGE_TYPE_JAPANESE, status);
+    nanoemMutableModelSoftBodySetName(soft_body, nanoemModelSoftBodyGetName(value, NANOEM_LANGUAGE_TYPE_ENGLISH), NANOEM_LANGUAGE_TYPE_ENGLISH, status);
+    nanoemMutableModelSoftBodySetMaterialObject(soft_body, nanoemModelSoftBodyGetMaterialObject(value));
+    nanoemMutableModelSoftBodySetAllPinnedVertexIndices(soft_body, vertex_indices, num_objects, status);
+    nanoemMutableModelSoftBodySetShapeType(soft_body, nanoemModelSoftBodyGetShapeType(value));
+    nanoemMutableModelSoftBodySetAeroModel(soft_body, nanoemModelSoftBodyGetAeroModel(value));
+    nanoemMutableModelSoftBodySetTotalMass(soft_body, nanoemModelSoftBodyGetTotalMass(value));
+    nanoemMutableModelSoftBodySetCollisionMargin(soft_body, nanoemModelSoftBodyGetCollisionMargin(value));
+    nanoemMutableModelSoftBodySetVelocityCorrectionFactor(soft_body, nanoemModelSoftBodyGetVelocityCorrectionFactor(value));
+    nanoemMutableModelSoftBodySetDampingCoefficient(soft_body, nanoemModelSoftBodyGetDampingCoefficient(value));
+    nanoemMutableModelSoftBodySetDragCoefficient(soft_body, nanoemModelSoftBodyGetDragCoefficient(value));
+    nanoemMutableModelSoftBodySetLiftCoefficient(soft_body, nanoemModelSoftBodyGetLiftCoefficient(value));
+    nanoemMutableModelSoftBodySetPressureCoefficient(soft_body, nanoemModelSoftBodyGetPressureCoefficient(value));
+    nanoemMutableModelSoftBodySetVolumeConversationCoefficient(soft_body, nanoemModelSoftBodyGetVolumeConversationCoefficient(value));
+    nanoemMutableModelSoftBodySetDynamicFrictionCoefficient(soft_body, nanoemModelSoftBodyGetDynamicFrictionCoefficient(value));
+    nanoemMutableModelSoftBodySetPoseMatchingCoefficient(soft_body, nanoemModelSoftBodyGetPoseMatchingCoefficient(value));
+    nanoemMutableModelSoftBodySetRigidContactHardness(soft_body, nanoemModelSoftBodyGetRigidContactHardness(value));
+    nanoemMutableModelSoftBodySetKineticContactHardness(soft_body, nanoemModelSoftBodyGetKineticContactHardness(value));
+    nanoemMutableModelSoftBodySetSoftContactHardness(soft_body, nanoemModelSoftBodyGetSoftContactHardness(value));
+    nanoemMutableModelSoftBodySetAnchorHardness(soft_body, nanoemModelSoftBodyGetAnchorHardness(value));
+    nanoemMutableModelSoftBodySetSoftVSRigidHardness(soft_body, nanoemModelSoftBodyGetSoftVSRigidHardness(value));
+    nanoemMutableModelSoftBodySetSoftVSKineticHardness(soft_body, nanoemModelSoftBodyGetSoftVSKineticHardness(value));
+    nanoemMutableModelSoftBodySetSoftVSSoftHardness(soft_body, nanoemModelSoftBodyGetSoftVSSoftHardness(value));
+    nanoemMutableModelSoftBodySetSoftVSRigidImpulseSplit(soft_body, nanoemModelSoftBodyGetSoftVSRigidImpulseSplit(value));
+    nanoemMutableModelSoftBodySetSoftVSKineticImpulseSplit(soft_body, nanoemModelSoftBodyGetSoftVSKineticImpulseSplit(value));
+    nanoemMutableModelSoftBodySetSoftVSSoftImpulseSplit(soft_body, nanoemModelSoftBodyGetSoftVSSoftImpulseSplit(value));
+    nanoemMutableModelSoftBodySetLinearStiffnessCoefficient(soft_body, nanoemModelSoftBodyGetLinearStiffnessCoefficient(value));
+    nanoemMutableModelSoftBodySetAngularStiffnessCoefficient(soft_body, nanoemModelSoftBodyGetAngularStiffnessCoefficient(value));
+    nanoemMutableModelSoftBodySetVolumeStiffnessCoefficient(soft_body, nanoemModelSoftBodyGetVolumeStiffnessCoefficient(value));
+    nanoemMutableModelSoftBodySetCollisionGroupId(soft_body, nanoemModelSoftBodyGetCollisionGroupId(value));
+    nanoemMutableModelSoftBodySetCollisionMask(soft_body, nanoemModelSoftBodyGetCollisionMask(value));
+    nanoemMutableModelSoftBodySetBendingConstraintsDistance(soft_body, nanoemModelSoftBodyGetBendingConstraintsDistance(value));
+    nanoemMutableModelSoftBodySetClusterCount(soft_body, nanoemModelSoftBodyGetClusterCount(value));
+    nanoemMutableModelSoftBodySetVelocitySolverIterations(soft_body, nanoemModelSoftBodyGetVelocitySolverIterations(value));
+    nanoemMutableModelSoftBodySetPositionsSolverIterations(soft_body, nanoemModelSoftBodyGetPositionsSolverIterations(value));
+    nanoemMutableModelSoftBodySetDriftSolverIterations(soft_body, nanoemModelSoftBodyGetDriftSolverIterations(value));
+    nanoemMutableModelSoftBodySetClusterSolverIterations(soft_body, nanoemModelSoftBodyGetClusterSolverIterations(value));
+    nanoemMutableModelSoftBodySetBendingConstraintsEnabled(soft_body, nanoemModelSoftBodyIsBendingConstraintsEnabled(value));
+    nanoemMutableModelSoftBodySetClustersEnabled(soft_body, nanoemModelSoftBodyIsClustersEnabled(value));
+    nanoemMutableModelSoftBodySetRandomizeConstraintsNeeded(soft_body, nanoemModelSoftBodyIsRandomizeConstraintsNeeded(value));
     anchors = nanoemModelSoftBodyGetAllAnchorObjects(value, &num_objects);
     for (i = 0; i < num_objects; i++) {
         anchor = anchors[i];
-        new_anchor = nanoemMutableModelSoftBodyAnchorCreate(body, status);
+        new_anchor = nanoemMutableModelSoftBodyAnchorCreate(soft_body, status);
         nanoemMutableModelSoftBodyAnchorSetRigidBodyObject(new_anchor, nanoemModelSoftBodyAnchorGetRigidBodyObject(anchor));
         nanoemMutableModelSoftBodyAnchorSetVertexObject(new_anchor, nanoemModelSoftBodyAnchorGetVertexObject(anchor));
         nanoemMutableModelSoftBodyAnchorSetNearEnabled(new_anchor, nanoemModelSoftBodyAnchorIsNearEnabled(anchor));
-        nanoemMutableModelSoftBodyInsertAnchorObject(body, new_anchor, -1, status);
+        nanoemMutableModelSoftBodyInsertAnchorObject(soft_body, new_anchor, -1, status);
         nanoemMutableModelSoftBodyAnchorDestroy(new_anchor);
     }
 }
 
 nanoem_model_soft_body_t *APIENTRY
-nanoemMutableModelSoftBodyGetOriginObject(nanoem_mutable_model_soft_body_t *body)
+nanoemMutableModelSoftBodyGetOriginObject(nanoem_mutable_model_soft_body_t *soft_body)
 {
-    return nanoem_is_not_null(body) ? body->origin : NULL;
+    return nanoem_is_not_null(soft_body) ? soft_body->origin : NULL;
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodySaveToBuffer(nanoem_mutable_model_soft_body_t *body, nanoem_mutable_buffer_t *buffer, nanoem_status_t *status)
+nanoemMutableModelSoftBodySaveToBuffer(nanoem_mutable_model_soft_body_t *soft_body, nanoem_mutable_buffer_t *buffer, nanoem_status_t *status)
 {
     const nanoem_model_t *parent_model;
     nanoem_unicode_string_factory_t *factory;
@@ -7634,8 +7634,8 @@ nanoemMutableModelSoftBodySaveToBuffer(nanoem_mutable_model_soft_body_t *body, n
     nanoem_model_soft_body_anchor_t *anchor;
     nanoem_codec_type_t codec;
     nanoem_rsize_t material_index_size, rigid_body_index_size, vertex_index_size, num_anchors, num_pin_vertex_indices, i;
-    if (nanoem_is_not_null(body) && nanoem_is_not_null(buffer)) {
-        origin = body->origin;
+    if (nanoem_is_not_null(soft_body) && nanoem_is_not_null(buffer)) {
+        origin = soft_body->origin;
         parent_model = nanoemModelSoftBodyGetParentModel(origin);
         if (nanoem_is_null(parent_model)) {
             nanoem_status_ptr_assign_null_object(status);
@@ -7707,23 +7707,23 @@ nanoemMutableModelSoftBodySaveToBuffer(nanoem_mutable_model_soft_body_t *body, n
 }
 
 void APIENTRY
-nanoemMutableModelSoftBodyDestroy(nanoem_mutable_model_soft_body_t *body)
+nanoemMutableModelSoftBodyDestroy(nanoem_mutable_model_soft_body_t *soft_body)
 {
-    if (nanoem_is_not_null(body)) {
-        if (nanoemMutableBaseModelObjectCanDelete(&body->base)) {
-            nanoemModelSoftBodyDestroy(body->origin);
+    if (nanoem_is_not_null(soft_body)) {
+        if (nanoemMutableBaseModelObjectCanDelete(&soft_body->base)) {
+            nanoemModelSoftBodyDestroy(soft_body->origin);
         }
-        nanoem_free(body);
+        nanoem_free(soft_body);
     }
 }
 
 nanoem_mutable_model_soft_body_anchor_t *APIENTRY
-nanoemMutableModelSoftBodyAnchorCreate(nanoem_mutable_model_soft_body_t *body, nanoem_status_t *status)
+nanoemMutableModelSoftBodyAnchorCreate(nanoem_mutable_model_soft_body_t *soft_body, nanoem_status_t *status)
 {
     nanoem_model_soft_body_anchor_t *origin = NULL;
     nanoem_mutable_model_soft_body_anchor_t *anchor = NULL;
-    if (nanoem_is_not_null(body)) {
-        origin = nanoemModelSoftBodyAnchorCreate(body->origin ,status);
+    if (nanoem_is_not_null(soft_body)) {
+        origin = nanoemModelSoftBodyAnchorCreate(soft_body->origin ,status);
         anchor = nanoemMutableModelSoftBodyAnchorCreateInternal(origin, nanoem_false, nanoem_false, status);
     }
     return anchor;
