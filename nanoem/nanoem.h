@@ -553,7 +553,7 @@ nanoemUnicodeStringFactorySetDestroyStringCallback(nanoem_unicode_string_factory
  * \brief Set the byte array destruction callback to the given opaque unicode string factory object
  *
  * \param factory The opaque factory object
- * \param value
+ * \param value The callback to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetDestroyByteArrayCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_destroy_byte_array_t value);
@@ -645,8 +645,8 @@ nanoemUnicodeStringFactoryCloneString(nanoem_unicode_string_factory_t *factory, 
  * \brief Compare given two opaque unicode string objects
  *
  * \param factory The opaque factory object
- * \param lvalue
- * \param rvalue
+ * \param lvalue The left value of the opaque unicode string object
+ * \param rvalue The right value of the opaque unicode string object
  * \return same as strcmp returns
  */
 NANOEM_DECL_API int APIENTRY
@@ -668,7 +668,7 @@ nanoemUnicodeStringFactorySetCacheString(nanoem_unicode_string_factory_t *factor
  * \brief Destroy given byte array
  *
  * \param factory The opaque factory object
- * \param bytes
+ * \param bytes The byte array to be freed
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyByteArray(nanoem_unicode_string_factory_t *factory, nanoem_u8_t *bytes);
@@ -677,7 +677,7 @@ nanoemUnicodeStringFactoryDestroyByteArray(nanoem_unicode_string_factory_t *fact
  * \brief Destroy the given opaque unicode string object
  *
  * \param factory The opaque factory object
- * \param string
+ * \param string The opaque unicode string object to be freed
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyString(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_t *string);
@@ -700,8 +700,10 @@ NANOEM_DECL_OPAQUE(nanoem_buffer_t);
 /**
  * \brief Create an opaque immutable buffer object
  *
- * \param data
- * \param length
+ * \b data must not be freed until ::nanoemBufferDestroy is called
+ *
+ * \param data The byte array data pointer
+ * \param length The size of \b data
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_buffer_t *APIENTRY
@@ -3207,7 +3209,7 @@ nanoemMotionKeyframeObjectGetFrameIndex(const nanoem_motion_keyframe_object_t *o
  * \brief Get the frame index with offset from the given opaque motion keyframe obejct
  *
  * \param object The opaque motion keyframe object
- * \param offset
+ * \param offset The frame index offset
  */
 NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionKeyframeObjectGetFrameIndexWithOffset(const nanoem_motion_keyframe_object_t *object, int offset);
@@ -4193,7 +4195,7 @@ nanoemMotionSearchClosestAccessoryKeyframes(const nanoem_motion_t *motion, nanoe
  * \endcode
  *
  * \param motion The opaque motion object
- * \param name
+ * \param name The name to search
  * \param base_index The frame index to search
  * \param[out] prev_keyframe The closest prev opaque motion keyfram object of \b base_index , \b NULL is set if not
  * found \param[out] next_keyframe The closest next opaque motion keyfram object of \b base_index , \b NULL is set if
@@ -4298,7 +4300,7 @@ nanoemMotionSearchClosestModelKeyframes(const nanoem_motion_t *motion, nanoem_fr
  * \endcode
  *
  * \param motion The opaque motion object
- * \param name
+ * \param name The name to search
  * \param base_index The frame index to search
  * \param[out] prev_keyframe The closest prev opaque motion keyfram object of \b base_index , \b NULL is set if not
  * found \param[out] next_keyframe The closest next opaque motion keyfram object of \b base_index , \b NULL is set if
