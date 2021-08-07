@@ -529,19 +529,13 @@ NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetCompareCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_compare_t value);
 
 /**
- * \brief
- *
- * \param factory The opaque factory object
- * \param value The callback to set
+ * \private
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetGetCacheCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_get_cache_t value);
 
 /**
- * \brief
- *
- * \param factory The opaque factory object
- * \param value The callback to set
+ * \private
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetSetCacheCallback(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_factory_set_cache_t value);
@@ -659,25 +653,13 @@ NANOEM_DECL_API int APIENTRY
 nanoemUnicodeStringFactoryCompareString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *lvalue, const nanoem_unicode_string_t *rvalue);
 
 /**
- * \brief
- *
- * \param factory The opaque factory object
- * \param string
- * \param length
- * \param codec
- * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \private
  */
 NANOEM_DECL_API const nanoem_u8_t * APIENTRY
 nanoemUnicodeStringFactoryGetCacheString(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
 
 /**
- * \brief
- *
- * \param factory The opaque factory object
- * \param string
- * \param length
- * \param codec
- * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \private
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactorySetCacheString(nanoem_unicode_string_factory_t *factory, nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_codec_type_t codec, nanoem_status_t *status);
@@ -2986,8 +2968,8 @@ nanoemModelLoadFromBufferPMX(nanoem_model_t *model, nanoem_buffer_t *buffer, nan
  *     nanoem_buffer_t *buffer = nanoemBufferCreate(data, size, &status);
  *     nanoem_model_t *model = nanoemModelCreate(factory, &status);
  *     if (nanoemModelLoadFromBuffer(model, buffer, &status)) { // buffer should not be reused
- *        // proceed loaded model data
- *       ...
+ *         // proceed loaded model data
+ *        ...
  *     }
  *
  *     // destroy all used opaque objects
@@ -3950,8 +3932,8 @@ nanoemMotionLoadFromBufferVMD(nanoem_motion_t *motion, nanoem_buffer_t *buffer, 
  *     nanoem_buffer_t *buffer = nanoemBufferCreate(data, size, &status);
  *     nanoem_motion_t *motion = nanoemMotionCreate(factory, &status);
  *     if (nanoemMotionLoadFromBuffer(motion, buffer, 0, &status)) { // buffer should not be reused
- *        // proceed loaded motion data
- *       ...
+ *         // proceed loaded motion data
+ *        ...
  *     }
  *
  *     // destroy all used opaque objects

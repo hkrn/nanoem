@@ -1193,8 +1193,8 @@ nanoemDocumentCreate(nanoem_unicode_string_factory_t *factory, nanoem_status_t *
  *     nanoem_buffer_t *buffer = nanoemBufferCreate(data, size, &status);
  *     nanoem_document_t *document = nanoemDocumentCreate(factory, &status);
  *     if (nanoemDocumentLoadFromBuffer(document, buffer, &status)) { // buffer should not be reused
- *        // proceed loaded document data
- *       ...
+ *         // proceed loaded document data
+ *        ...
  *     }
  *
  *     // destroy all used opaque objects
@@ -1210,19 +1210,41 @@ NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemDocumentLoadFromBuffer(nanoem_document_t *document, nanoem_buffer_t *buffer, nanoem_status_t *status);
 
 /**
- * \brief
+ * \brief Set the callback for getting the opaque model object to the given opaque document object
+ *
+ * \code
+ * nanoem_model_t *handle_loading_model(void *user_data, const nanoem_unicode_string_t *path, nanoem_unicode_string_factory_t *factory, nanoem_status_t *status) {
+ *     // loads model data from the given file path
+ *     const nanoem_u8_t *data = ...;
+ *     nanoem_rsize_t size = ...;
+ *
+ *     // loads a model from the buffer
+ *     *status = NANOEM_STATUS_SUCCESS;
+ *     nanoem_buffer_t *buffer = nanoemBufferCreate(data, size, status);
+ *     nanoem_model_t *model = nanoemModelCreate(factory, status);
+ *     nanoemModelLoadFromBuffer(model, buffer, status);
+ *     nanoemBufferDestroy(buffer);
+ *
+ *     // transfers ownership of the opaque model object to the caller
+ *     return model;
+ * }
+ *
+ * nanoemDocumentSetParseModelCallback(document, handle_loading_model);
+ *
+ * \endcode
  *
  * \param document The opaque document object
- * \param callback
+ * \param callback The callback to get the opaque model object
+ * \remark The function is only used for loading the PMM 1.0 document
  */
 NANOEM_DECL_API void APIENTRY
 nanoemDocumentSetParseModelCallback(nanoem_document_t *document, nanoem_document_parse_model_callback_t callback);
 
 /**
- * \brief
+ * \brief Set the callback user opaque data to the given opaque document object
  *
  * \param document The opaque document object
- * \param user_data
+ * \param user_data The opaque user data for callback
  */
 NANOEM_DECL_API void APIENTRY
 nanoemDocumentSetParseModelCallbackUserData(nanoem_document_t *document, void *user_data);
@@ -1632,8 +1654,8 @@ nanoemMutableDocumentOutsideParentCreate(nanoem_mutable_document_t *document, na
 /**
  * \brief
  *
- * \param op
- * \param value
+ * \param op The opaque document outside parent object
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentOutsideParentSetModelObject(nanoem_mutable_document_outside_parent_t *op, const nanoem_document_model_t *value);
@@ -1641,8 +1663,8 @@ nanoemMutableDocumentOutsideParentSetModelObject(nanoem_mutable_document_outside
 /**
  * \brief
  *
- * \param op
- * \param value
+ * \param op The opaque document outside parent object
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -1651,7 +1673,7 @@ nanoemMutableDocumentOutsideParentSetBoneName(nanoem_mutable_document_outside_pa
 /**
  * \brief Destroy the given opaque document outside parent object
  *
- * \param op
+ * \param op The opaque document outside parent object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentOutsideParentDestroy(nanoem_mutable_document_outside_parent_t *op);
@@ -1675,7 +1697,7 @@ nanoemMutableDocumentAccessoryKeyframeCreate(nanoem_mutable_document_accessory_t
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetParentModelObject(nanoem_mutable_document_accessory_keyframe_t *keyframe, const nanoem_document_model_t *value);
@@ -1684,7 +1706,7 @@ nanoemMutableDocumentAccessoryKeyframeSetParentModelObject(nanoem_mutable_docume
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -1694,7 +1716,7 @@ nanoemMutableDocumentAccessoryKeyframeSetParentModelBoneName(nanoem_mutable_docu
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetTranslation(nanoem_mutable_document_accessory_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1703,7 +1725,7 @@ nanoemMutableDocumentAccessoryKeyframeSetTranslation(nanoem_mutable_document_acc
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetOrientation(nanoem_mutable_document_accessory_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1712,7 +1734,7 @@ nanoemMutableDocumentAccessoryKeyframeSetOrientation(nanoem_mutable_document_acc
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetScaleFactor(nanoem_mutable_document_accessory_keyframe_t *keyframe, nanoem_f32_t value);
@@ -1721,7 +1743,7 @@ nanoemMutableDocumentAccessoryKeyframeSetScaleFactor(nanoem_mutable_document_acc
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetOpacity(nanoem_mutable_document_accessory_keyframe_t *keyframe, nanoem_f32_t value);
@@ -1730,7 +1752,7 @@ nanoemMutableDocumentAccessoryKeyframeSetOpacity(nanoem_mutable_document_accesso
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetVisible(nanoem_mutable_document_accessory_keyframe_t *keyframe, nanoem_bool_t value);
@@ -1739,7 +1761,7 @@ nanoemMutableDocumentAccessoryKeyframeSetVisible(nanoem_mutable_document_accesso
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetShadowEnabled(nanoem_mutable_document_accessory_keyframe_t *keyframe, nanoem_bool_t value);
@@ -1762,7 +1784,7 @@ nanoemMutableDocumentAccessoryKeyframeDestroy(nanoem_mutable_document_accessory_
  * \brief Create an opaque document bone keyframe object
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_document_model_bone_keyframe_t * APIENTRY
@@ -1772,7 +1794,7 @@ nanoemMutableDocumentModelBoneKeyframeCreate(nanoem_mutable_document_model_t *mo
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneKeyframeSetTranslation(nanoem_mutable_document_model_bone_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1781,7 +1803,7 @@ nanoemMutableDocumentModelBoneKeyframeSetTranslation(nanoem_mutable_document_mod
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneKeyframeSetOrientation(nanoem_mutable_document_model_bone_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1791,7 +1813,7 @@ nanoemMutableDocumentModelBoneKeyframeSetOrientation(nanoem_mutable_document_mod
  *
  * \param keyframe The opaque document keyframe object
  * \param type
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneKeyframeSetInterpolation(nanoem_mutable_document_model_bone_keyframe_t *keyframe, nanoem_motion_bone_keyframe_interpolation_type_t type, const nanoem_u8_t *value);
@@ -1800,7 +1822,7 @@ nanoemMutableDocumentModelBoneKeyframeSetInterpolation(nanoem_mutable_document_m
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneKeyframeSetPhysicsSimulationDisabled(nanoem_mutable_document_model_bone_keyframe_t *keyframe, nanoem_bool_t value);
@@ -1832,7 +1854,7 @@ nanoemMutableDocumentCameraKeyframeCreate(nanoem_mutable_document_camera_t *came
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetParentModelObject(nanoem_mutable_document_camera_keyframe_t *keyframe, const nanoem_document_model_t *value);
@@ -1841,7 +1863,7 @@ nanoemMutableDocumentCameraKeyframeSetParentModelObject(nanoem_mutable_document_
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -1851,7 +1873,7 @@ nanoemMutableDocumentCameraKeyframeSetParentModelBoneName(nanoem_mutable_documen
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetLookAt(nanoem_mutable_document_camera_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1860,7 +1882,7 @@ nanoemMutableDocumentCameraKeyframeSetLookAt(nanoem_mutable_document_camera_keyf
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetAngle(nanoem_mutable_document_camera_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1870,7 +1892,7 @@ nanoemMutableDocumentCameraKeyframeSetAngle(nanoem_mutable_document_camera_keyfr
  *
  * \param keyframe The opaque document keyframe object
  * \param type
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetInterpolation(nanoem_mutable_document_camera_keyframe_t *keyframe, nanoem_motion_camera_keyframe_interpolation_type_t type, const nanoem_u8_t *value);
@@ -1879,7 +1901,7 @@ nanoemMutableDocumentCameraKeyframeSetInterpolation(nanoem_mutable_document_came
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetDistance(nanoem_mutable_document_camera_keyframe_t *keyframe, nanoem_f32_t value);
@@ -1888,7 +1910,7 @@ nanoemMutableDocumentCameraKeyframeSetDistance(nanoem_mutable_document_camera_ke
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetFov(nanoem_mutable_document_camera_keyframe_t *keyframe, int value);
@@ -1897,7 +1919,7 @@ nanoemMutableDocumentCameraKeyframeSetFov(nanoem_mutable_document_camera_keyfram
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetPerspectiveView(nanoem_mutable_document_camera_keyframe_t *keyframe, nanoem_bool_t value);
@@ -1929,7 +1951,7 @@ nanoemMutableDocumentGravityKeyframeCreate(nanoem_mutable_document_gravity_t *gr
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravityKeyframeSetDirection(nanoem_mutable_document_gravity_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1938,7 +1960,7 @@ nanoemMutableDocumentGravityKeyframeSetDirection(nanoem_mutable_document_gravity
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravityKeyframeSetAcceleration(nanoem_mutable_document_gravity_keyframe_t *keyframe, nanoem_f32_t value);
@@ -1947,7 +1969,7 @@ nanoemMutableDocumentGravityKeyframeSetAcceleration(nanoem_mutable_document_grav
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravityKeyframeSetNoise(nanoem_mutable_document_gravity_keyframe_t *keyframe, int value);
@@ -1956,7 +1978,7 @@ nanoemMutableDocumentGravityKeyframeSetNoise(nanoem_mutable_document_gravity_key
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravityKeyframeSetNoiseEnabled(nanoem_mutable_document_gravity_keyframe_t *keyframe, nanoem_bool_t value);
@@ -1988,7 +2010,7 @@ nanoemMutableDocumentLightKeyframeCreate(nanoem_mutable_document_light_t *light,
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentLightKeyframeSetColor(nanoem_mutable_document_light_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -1997,7 +2019,7 @@ nanoemMutableDocumentLightKeyframeSetColor(nanoem_mutable_document_light_keyfram
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentLightKeyframeSetDirection(nanoem_mutable_document_light_keyframe_t *keyframe, const nanoem_f32_t *value);
@@ -2040,7 +2062,7 @@ nanoemMutableDocumentModelKeyframeCreateAsReference(nanoem_mutable_document_mode
  *
  * \param keyframe The opaque document keyframe object
  * \param name
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2071,7 +2093,7 @@ nanoemMutableDocumentModelKeyframeRemoveOutsideParentObject(nanoem_mutable_docum
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelKeyframeSetVisible(nanoem_mutable_document_model_keyframe_t *keyframe, nanoem_bool_t value);
@@ -2094,7 +2116,7 @@ nanoemMutableDocumentModelKeyframeDestroy(nanoem_mutable_document_model_keyframe
  * \brief Create an opaque document morph keyframe object
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_mutable_document_model_morph_keyframe_t * APIENTRY
@@ -2104,7 +2126,7 @@ nanoemMutableDocumentModelMorphKeyframeCreate(nanoem_mutable_document_model_t *m
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelMorphKeyframeSetWeight(nanoem_mutable_document_model_morph_keyframe_t *keyframe, nanoem_f32_t value);
@@ -2136,7 +2158,7 @@ nanoemMutableDocumentSelfShadowKeyframeCreate(nanoem_mutable_document_self_shado
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSelfShadowKeyframeSetDistance(nanoem_mutable_document_self_shadow_keyframe_t *keyframe, nanoem_f32_t value);
@@ -2145,7 +2167,7 @@ nanoemMutableDocumentSelfShadowKeyframeSetDistance(nanoem_mutable_document_self_
  * \brief
  *
  * \param keyframe The opaque document keyframe object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSelfShadowKeyframeSetMode(nanoem_mutable_document_self_shadow_keyframe_t *keyframe, int value);
@@ -2177,7 +2199,7 @@ nanoemMutableDocumentModelBoneStateCreate(nanoem_mutable_document_model_t *model
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneStateSetTranslation(nanoem_mutable_document_model_bone_state_t *state, const nanoem_f32_t *value);
@@ -2186,7 +2208,7 @@ nanoemMutableDocumentModelBoneStateSetTranslation(nanoem_mutable_document_model_
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneStateSetOrientation(nanoem_mutable_document_model_bone_state_t *state, const nanoem_f32_t *value);
@@ -2195,7 +2217,7 @@ nanoemMutableDocumentModelBoneStateSetOrientation(nanoem_mutable_document_model_
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneStateSetPhysicsSimulationDisabled(nanoem_mutable_document_model_bone_state_t *state, nanoem_bool_t value);
@@ -2227,7 +2249,7 @@ nanoemMutableDocumentModelConstraintStateCreate(nanoem_mutable_document_model_t 
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelConstraintStateSetEnabled(nanoem_mutable_document_model_constraint_state_t *state, nanoem_bool_t value);
@@ -2261,7 +2283,7 @@ nanoemMutableDocumentModelMorphStateCreate(nanoem_mutable_document_model_t *mode
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelMorphStateSetWeight(nanoem_mutable_document_model_morph_state_t *state, nanoem_f32_t value);
@@ -2293,7 +2315,7 @@ nanoemMutableDocumentModelOutsideParentStateCreate(nanoem_mutable_document_model
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelOutsideParentStateSetBeginFrameIndex(nanoem_mutable_document_model_outside_parent_state_t *state, nanoem_frame_index_t value);
@@ -2302,7 +2324,7 @@ nanoemMutableDocumentModelOutsideParentStateSetBeginFrameIndex(nanoem_mutable_do
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelOutsideParentStateSetEndFrameIndex(nanoem_mutable_document_model_outside_parent_state_t *state, nanoem_frame_index_t value);
@@ -2311,7 +2333,7 @@ nanoemMutableDocumentModelOutsideParentStateSetEndFrameIndex(nanoem_mutable_docu
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelOutsideParentStateSetTargetModelObject(nanoem_mutable_document_model_outside_parent_state_t *state, const nanoem_document_model_t *value);
@@ -2320,7 +2342,7 @@ nanoemMutableDocumentModelOutsideParentStateSetTargetModelObject(nanoem_mutable_
  * \brief
  *
  * \param state The opaque document state object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelOutsideParentStateSetTargetBoneName(nanoem_mutable_document_model_outside_parent_state_t *state, const nanoem_unicode_string_t *value);
@@ -2542,7 +2564,7 @@ nanoemMutableDocumentModelRemoveModelOutsideParentStateObject(nanoem_mutable_doc
  *
  * \param model The opaque document model object
  * \param language
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2552,7 +2574,7 @@ nanoemMutableDocumentModelSetName(nanoem_mutable_document_model_t *model, nanoem
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2562,7 +2584,7 @@ nanoemMutableDocumentModelSetPath(nanoem_mutable_document_model_t *model, const 
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2573,7 +2595,7 @@ nanoemMutableDocumentModelSetSelectedBoneName(nanoem_mutable_document_model_t *m
  *
  * \param model The opaque document model object
  * \param category
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2583,7 +2605,7 @@ nanoemMutableDocumentModelSetSelectedMorphName(nanoem_mutable_document_model_t *
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetEdgeWidth(nanoem_mutable_document_model_t *model, nanoem_f32_t value);
@@ -2592,7 +2614,7 @@ nanoemMutableDocumentModelSetEdgeWidth(nanoem_mutable_document_model_t *model, n
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetLastFrameIndex(nanoem_mutable_document_model_t *model, nanoem_frame_index_t value);
@@ -2601,7 +2623,7 @@ nanoemMutableDocumentModelSetLastFrameIndex(nanoem_mutable_document_model_t *mod
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetDrawOrderIndex(nanoem_mutable_document_model_t *model, int value);
@@ -2610,7 +2632,7 @@ nanoemMutableDocumentModelSetDrawOrderIndex(nanoem_mutable_document_model_t *mod
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetTransformOrderIndex(nanoem_mutable_document_model_t *model, int value);
@@ -2619,7 +2641,7 @@ nanoemMutableDocumentModelSetTransformOrderIndex(nanoem_mutable_document_model_t
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetBlendEnabled(nanoem_mutable_document_model_t *model, nanoem_bool_t value);
@@ -2628,7 +2650,7 @@ nanoemMutableDocumentModelSetBlendEnabled(nanoem_mutable_document_model_t *model
  * \brief
  *
  * \param model The opaque document model object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelSetSelfShadowEnabled(nanoem_mutable_document_model_t *model, nanoem_bool_t value);
@@ -2699,7 +2721,7 @@ nanoemMutableDocumentAccessoryRemoveAccessoryKeyframeObject(nanoem_mutable_docum
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2709,7 +2731,7 @@ nanoemMutableDocumentAccessorySetName(nanoem_mutable_document_accessory_t *acces
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2719,7 +2741,7 @@ nanoemMutableDocumentAccessorySetPath(nanoem_mutable_document_accessory_t *acces
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetParentModelObject(nanoem_mutable_document_accessory_t *accessory, const nanoem_document_model_t *value);
@@ -2728,7 +2750,7 @@ nanoemMutableDocumentAccessorySetParentModelObject(nanoem_mutable_document_acces
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -2738,7 +2760,7 @@ nanoemMutableDocumentAccessorySetParentModelBoneName(nanoem_mutable_document_acc
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetTranslation(nanoem_mutable_document_accessory_t *accessory, const nanoem_f32_t *value);
@@ -2747,7 +2769,7 @@ nanoemMutableDocumentAccessorySetTranslation(nanoem_mutable_document_accessory_t
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetOrientation(nanoem_mutable_document_accessory_t *accessory, const nanoem_f32_t *value);
@@ -2756,7 +2778,7 @@ nanoemMutableDocumentAccessorySetOrientation(nanoem_mutable_document_accessory_t
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetScaleFactor(nanoem_mutable_document_accessory_t *accessory, nanoem_f32_t value);
@@ -2765,7 +2787,7 @@ nanoemMutableDocumentAccessorySetScaleFactor(nanoem_mutable_document_accessory_t
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetOpacity(nanoem_mutable_document_accessory_t *accessory, nanoem_f32_t value);
@@ -2774,7 +2796,7 @@ nanoemMutableDocumentAccessorySetOpacity(nanoem_mutable_document_accessory_t *ac
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetDrawOrderIndex(nanoem_mutable_document_accessory_t *accessory, int value);
@@ -2783,7 +2805,7 @@ nanoemMutableDocumentAccessorySetDrawOrderIndex(nanoem_mutable_document_accessor
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetVisible(nanoem_mutable_document_accessory_t *accessory, nanoem_bool_t value);
@@ -2792,7 +2814,7 @@ nanoemMutableDocumentAccessorySetVisible(nanoem_mutable_document_accessory_t *ac
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetShadowEnabled(nanoem_mutable_document_accessory_t *accessory, nanoem_bool_t value);
@@ -2801,7 +2823,7 @@ nanoemMutableDocumentAccessorySetShadowEnabled(nanoem_mutable_document_accessory
  * \brief
  *
  * \param accessory The opaque document accessory object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessorySetAddBlendEnabled(nanoem_mutable_document_accessory_t *accessory, nanoem_bool_t value);
@@ -2862,7 +2884,7 @@ nanoemMutableDocumentCameraRemoveCameraKeyframeObject(nanoem_mutable_document_ca
  * \brief
  *
  * \param camera The opaque document camera object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetLookAt(nanoem_mutable_document_camera_t *camera, const nanoem_f32_t *value);
@@ -2871,7 +2893,7 @@ nanoemMutableDocumentCameraSetLookAt(nanoem_mutable_document_camera_t *camera, c
  * \brief
  *
  * \param camera The opaque document camera object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetAngle(nanoem_mutable_document_camera_t *camera, const nanoem_f32_t *value);
@@ -2880,7 +2902,7 @@ nanoemMutableDocumentCameraSetAngle(nanoem_mutable_document_camera_t *camera, co
  * \brief
  *
  * \param camera The opaque document camera object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetDistance(nanoem_mutable_document_camera_t *camera, nanoem_f32_t value);
@@ -2889,7 +2911,7 @@ nanoemMutableDocumentCameraSetDistance(nanoem_mutable_document_camera_t *camera,
  * \brief
  *
  * \param camera The opaque document camera object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetPosition(nanoem_mutable_document_camera_t *camera, const nanoem_f32_t *value);
@@ -2898,7 +2920,7 @@ nanoemMutableDocumentCameraSetPosition(nanoem_mutable_document_camera_t *camera,
  * \brief
  *
  * \param camera The opaque document camera object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetFov(nanoem_mutable_document_camera_t *camera, nanoem_f32_t value);
@@ -2907,7 +2929,7 @@ nanoemMutableDocumentCameraSetFov(nanoem_mutable_document_camera_t *camera, nano
  * \brief
  *
  * \param camera The opaque document camera object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraSetPerspectiveEnabled(nanoem_mutable_document_camera_t *camera, nanoem_bool_t value);
@@ -2968,7 +2990,7 @@ nanoemMutableDocumentGravityRemoveGravityKeyframeObject(nanoem_mutable_document_
  * \brief
  *
  * \param gravity The opaque document gravity object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravitySetDirection(nanoem_mutable_document_gravity_t *gravity, const nanoem_f32_t *value);
@@ -2977,7 +2999,7 @@ nanoemMutableDocumentGravitySetDirection(nanoem_mutable_document_gravity_t *grav
  * \brief
  *
  * \param gravity The opaque document gravity object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravitySetAcceleration(nanoem_mutable_document_gravity_t *gravity, nanoem_f32_t value);
@@ -2986,7 +3008,7 @@ nanoemMutableDocumentGravitySetAcceleration(nanoem_mutable_document_gravity_t *g
  * \brief
  *
  * \param gravity The opaque document gravity object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravitySetNoise(nanoem_mutable_document_gravity_t *gravity, int value);
@@ -2995,7 +3017,7 @@ nanoemMutableDocumentGravitySetNoise(nanoem_mutable_document_gravity_t *gravity,
  * \brief
  *
  * \param gravity The opaque document gravity object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravitySetNoiseEnabled(nanoem_mutable_document_gravity_t *gravity, nanoem_bool_t value);
@@ -3056,7 +3078,7 @@ nanoemMutableDocumentLightRemoveLightKeyframeObject(nanoem_mutable_document_ligh
  * \brief
  *
  * \param light The opaque document light object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentLightSetColor(nanoem_mutable_document_light_t *light, const nanoem_f32_t *value);
@@ -3065,7 +3087,7 @@ nanoemMutableDocumentLightSetColor(nanoem_mutable_document_light_t *light, const
  * \brief
  *
  * \param light The opaque document light object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentLightSetDirection(nanoem_mutable_document_light_t *light, const nanoem_f32_t *value);
@@ -3126,7 +3148,7 @@ nanoemMutableDocumentSelfShadowRemoveSelfShadowKeyframeObject(nanoem_mutable_doc
  * \brief
  *
  * \param self_shadow The opaque document self shadow object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSelfShadowSetDistance(nanoem_mutable_document_self_shadow_t *self_shadow, nanoem_f32_t value);
@@ -3135,7 +3157,7 @@ nanoemMutableDocumentSelfShadowSetDistance(nanoem_mutable_document_self_shadow_t
  * \brief
  *
  * \param self_shadow The opaque document self shadow object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSelfShadowSetEnabled(nanoem_mutable_document_self_shadow_t *self_shadow, nanoem_bool_t value);
@@ -3226,7 +3248,7 @@ nanoemMutableDocumentRemoveModelObject(nanoem_mutable_document_t *document, nano
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetCameraObject(nanoem_mutable_document_t *document, nanoem_mutable_document_camera_t *value);
@@ -3235,7 +3257,7 @@ nanoemMutableDocumentSetCameraObject(nanoem_mutable_document_t *document, nanoem
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetGravityObject(nanoem_mutable_document_t *document, nanoem_mutable_document_gravity_t *value);
@@ -3244,7 +3266,7 @@ nanoemMutableDocumentSetGravityObject(nanoem_mutable_document_t *document, nanoe
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetLightObject(nanoem_mutable_document_t *document, nanoem_mutable_document_light_t *value);
@@ -3253,7 +3275,7 @@ nanoemMutableDocumentSetLightObject(nanoem_mutable_document_t *document, nanoem_
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetSelfShadowObject(nanoem_mutable_document_t *document, nanoem_mutable_document_self_shadow_t *value);
@@ -3262,7 +3284,7 @@ nanoemMutableDocumentSetSelfShadowObject(nanoem_mutable_document_t *document, na
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3272,7 +3294,7 @@ nanoemMutableDocumentSetAudioPath(nanoem_mutable_document_t *document, const nan
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3282,7 +3304,7 @@ nanoemMutableDocumentSetBackgroundVideoPath(nanoem_mutable_document_t *document,
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -3292,7 +3314,7 @@ nanoemMutableDocumentSetBackgroundImagePath(nanoem_mutable_document_t *document,
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetEdgeColor(nanoem_mutable_document_t *document, const nanoem_f32_t *value);
@@ -3301,7 +3323,7 @@ nanoemMutableDocumentSetEdgeColor(nanoem_mutable_document_t *document, const nan
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetPreferredFPS(nanoem_mutable_document_t *document, nanoem_f32_t value);
@@ -3310,7 +3332,7 @@ nanoemMutableDocumentSetPreferredFPS(nanoem_mutable_document_t *document, nanoem
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundVideoScaleFactor(nanoem_mutable_document_t *document, nanoem_f32_t value);
@@ -3319,7 +3341,7 @@ nanoemMutableDocumentSetBackgroundVideoScaleFactor(nanoem_mutable_document_t *do
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundImageScaleFactor(nanoem_mutable_document_t *document, nanoem_f32_t value);
@@ -3328,7 +3350,7 @@ nanoemMutableDocumentSetBackgroundImageScaleFactor(nanoem_mutable_document_t *do
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetPhysicsSimulationMode(nanoem_mutable_document_t *document, nanoem_document_physics_simulation_mode_t value);
@@ -3337,7 +3359,7 @@ nanoemMutableDocumentSetPhysicsSimulationMode(nanoem_mutable_document_t *documen
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetCurrentFrameIndex(nanoem_mutable_document_t *document, nanoem_frame_index_t value);
@@ -3346,7 +3368,7 @@ nanoemMutableDocumentSetCurrentFrameIndex(nanoem_mutable_document_t *document, n
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetCurrentFrameIndexInTextField(nanoem_mutable_document_t *document, nanoem_frame_index_t value);
@@ -3355,7 +3377,7 @@ nanoemMutableDocumentSetCurrentFrameIndexInTextField(nanoem_mutable_document_t *
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBeginFrameIndex(nanoem_mutable_document_t *document, nanoem_frame_index_t value);
@@ -3364,7 +3386,7 @@ nanoemMutableDocumentSetBeginFrameIndex(nanoem_mutable_document_t *document, nan
  * \brief
  *
  * \param document The opaque document objectt
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetEndFrameIndex(nanoem_mutable_document_t *documentt, nanoem_frame_index_t value);
@@ -3373,7 +3395,7 @@ nanoemMutableDocumentSetEndFrameIndex(nanoem_mutable_document_t *documentt, nano
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetEditingMode(nanoem_mutable_document_t *document, nanoem_document_editing_mode_t value);
@@ -3382,7 +3404,7 @@ nanoemMutableDocumentSetEditingMode(nanoem_mutable_document_t *document, nanoem_
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetViewportWidth(nanoem_mutable_document_t *document, int value);
@@ -3391,7 +3413,7 @@ nanoemMutableDocumentSetViewportWidth(nanoem_mutable_document_t *document, int v
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetViewportHeight(nanoem_mutable_document_t *document, int value);
@@ -3400,7 +3422,7 @@ nanoemMutableDocumentSetViewportHeight(nanoem_mutable_document_t *document, int 
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetTimelineWidth(nanoem_mutable_document_t *document, int value);
@@ -3409,7 +3431,7 @@ nanoemMutableDocumentSetTimelineWidth(nanoem_mutable_document_t *document, int v
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetSelectedModelIndex(nanoem_mutable_document_t *document, int value);
@@ -3418,7 +3440,7 @@ nanoemMutableDocumentSetSelectedModelIndex(nanoem_mutable_document_t *document, 
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetSelectedAccessoryIndex(nanoem_mutable_document_t *document, int value);
@@ -3427,7 +3449,7 @@ nanoemMutableDocumentSetSelectedAccessoryIndex(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetAccessoryIndexAfterModel(nanoem_mutable_document_t *document, int value);
@@ -3436,7 +3458,7 @@ nanoemMutableDocumentSetAccessoryIndexAfterModel(nanoem_mutable_document_t *docu
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundVideoOffsetX(nanoem_mutable_document_t *document, int value);
@@ -3445,7 +3467,7 @@ nanoemMutableDocumentSetBackgroundVideoOffsetX(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundVideoOffsetY(nanoem_mutable_document_t *document, int value);
@@ -3454,7 +3476,7 @@ nanoemMutableDocumentSetBackgroundVideoOffsetY(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundImageOffsetX(nanoem_mutable_document_t *document, int value);
@@ -3463,7 +3485,7 @@ nanoemMutableDocumentSetBackgroundImageOffsetX(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundImageOffsetY(nanoem_mutable_document_t *document, int value);
@@ -3472,7 +3494,7 @@ nanoemMutableDocumentSetBackgroundImageOffsetY(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetAudioEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3481,7 +3503,7 @@ nanoemMutableDocumentSetAudioEnabled(nanoem_mutable_document_t *document, nanoem
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundVideoEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3490,7 +3512,7 @@ nanoemMutableDocumentSetBackgroundVideoEnabled(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBackgroundImageEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3499,7 +3521,7 @@ nanoemMutableDocumentSetBackgroundImageEnabled(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetEditingCLAEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3508,7 +3530,7 @@ nanoemMutableDocumentSetEditingCLAEnabled(nanoem_mutable_document_t *document, n
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetGridAndAxisShown(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3517,7 +3539,7 @@ nanoemMutableDocumentSetGridAndAxisShown(nanoem_mutable_document_t *document, na
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetInformationShown(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3526,7 +3548,7 @@ nanoemMutableDocumentSetInformationShown(nanoem_mutable_document_t *document, na
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetGroundShadowShown(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3535,7 +3557,7 @@ nanoemMutableDocumentSetGroundShadowShown(nanoem_mutable_document_t *document, n
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetLoopEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3544,7 +3566,7 @@ nanoemMutableDocumentSetLoopEnabled(nanoem_mutable_document_t *document, nanoem_
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBeginFrameIndexEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3553,7 +3575,7 @@ nanoemMutableDocumentSetBeginFrameIndexEnabled(nanoem_mutable_document_t *docume
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetEndFrameIndexEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3562,7 +3584,7 @@ nanoemMutableDocumentSetEndFrameIndexEnabled(nanoem_mutable_document_t *document
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetPhysicsGroundEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3571,7 +3593,7 @@ nanoemMutableDocumentSetPhysicsGroundEnabled(nanoem_mutable_document_t *document
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetTranslucentGroundShadowEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);
@@ -3580,7 +3602,7 @@ nanoemMutableDocumentSetTranslucentGroundShadowEnabled(nanoem_mutable_document_t
  * \brief
  *
  * \param document The opaque document object
- * \param value
+ * \param value The value to set
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSetBlackBackgroundEnabled(nanoem_mutable_document_t *document, nanoem_bool_t value);

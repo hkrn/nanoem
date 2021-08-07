@@ -209,6 +209,8 @@ nanoemMutableMotionEffectParameterSetValue(nanoem_mutable_motion_effect_paramete
 /**
  * \brief Copy contents of the given opaque effect parameter object
  *
+ * All children of the opaque effect parameter object are cloned and added to the destination \b new_parameter
+ *
  * \param new_parameter
  * \param parameter The opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -306,6 +308,8 @@ nanoemMutableMotionOutsideParentSetSubjectBoneName(nanoem_mutable_motion_outside
 
 /**
  * \brief Copy contents of the given opaque motion outside parent object
+ *
+ * All children of the opaque motion outside parent object are cloned and added to the destination \b new_op
  *
  * \param new_op
  * \param op The opaque outside parent object
@@ -442,6 +446,8 @@ nanoemMutableMotionAccessoryKeyframeSetOutsideParent(nanoem_mutable_motion_acces
 
 /**
  * \brief Copy contents of the given opaque motion accessory keyframe object
+ *
+ * All children of the opaque motion accessory keyframe object are cloned and added to the destination \b new_keyframe
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -924,6 +930,8 @@ nanoemMutableMotionModelKeyframeSetPhysicsSimulationEnabled(nanoem_mutable_motio
 
 /**
  * \brief Copy contents of the given opaque motion model keyframe object
+ *
+ * All children of the opaque motion model keyframe object are cloned and added to the destination \b new_keyframe
  *
  * \param new_keyframe
  * \param keyframe The opaque motion keyframe object
@@ -1470,9 +1478,7 @@ NANOEM_DECL_API nanoem_motion_t *APIENTRY
 nanoemMutableMotionGetOriginObject(nanoem_mutable_motion_t *motion);
 
 /**
- * \brief
- *
- * \param motion The opaque motion object
+ * \private
  */
 NANOEM_DECL_API nanoem_motion_t *APIENTRY
 nanoemMutableMotionGetOriginObjectReference(nanoem_mutable_motion_t *motion);
@@ -1959,6 +1965,8 @@ nanoemMutableModelMaterialSetLineDrawEnabled(nanoem_mutable_model_material_t *ma
 /**
  * \brief Copy contents of the given opaque model material object
  *
+ * All children of the opaque model material object are cloned and added to the destination \b material
+ *
  * \param material The opaque model material object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -2150,10 +2158,7 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneSetStageIndex(nanoem_mutable_model_bone_t *bone, int value);
 
 /**
- * \brief
- *
- * \param bone The opaque model bone object
- * \param value value to set to the opaque object
+ * \private
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableModelBoneSetOffsetRelative(nanoem_mutable_model_bone_t *bone, nanoem_bool_t value);
@@ -2268,6 +2273,8 @@ nanoemMutableModelBoneEnableExternalParentBone(nanoem_mutable_model_bone_t *bone
 
 /**
  * \brief Copy contents of the given opaque model bone object
+ *
+ * All children of the opaque model bone object are cloned and added to the destination \b bone
  *
  * \param bone The opaque model bone object
  * \param value value to set to the opaque object
@@ -2385,6 +2392,8 @@ nanoemMutableModelConstraintRemoveJointObject(nanoem_mutable_model_constraint_t 
 
 /**
  * \brief Copy contents of the given opaque model constraint object
+ *
+ * All children of the opaque model constraint object are cloned and added to the destination \b constraint
  *
  * \param constraint
  * \param value value to set to the opaque object
@@ -2552,6 +2561,8 @@ nanoemMutableModelTextureSetPath(nanoem_mutable_model_texture_t *texture, const 
 
 /**
  * \brief Copy contents of the given opaque model texture object
+ *
+ * All children of the opaque model texture object are cloned and added to the destination \b texture
  *
  * \param texture
  * \param value value to set to the opaque object
@@ -3467,6 +3478,8 @@ nanoemMutableModelMorphRemoveVertexMorphObject(nanoem_mutable_model_morph_t *mor
 /**
  * \brief Copy contents of the given opaque model morph object
  *
+ * All children of the opaque model morph object are cloned and added to the destination \b morph
+ *
  * \param morph The opaque model morph object
  * \param value The opaque model morph object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -3546,6 +3559,8 @@ nanoemMutableModelLabelSetSpecial(nanoem_mutable_model_label_t *label, nanoem_bo
 
 /**
  * \brief Copy contents of the given opaque model label object
+ *
+ * All children of the opaque model label object are cloned and added to the destination \b label
  *
  * \param label The opaque model label object
  * \param value value to set to the opaque object
@@ -3811,6 +3826,8 @@ nanoemMutableModelRigidBodySetCollisionMask(nanoem_mutable_model_rigid_body_t *r
 /**
  * \brief Copy contents of the given opaque model rigid body object
  *
+ * All children of the opaque model rigid body object are cloned and added to the destination \b rigid_body
+ *
  * \param rigid_body The opaque model rigid body object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -3988,6 +4005,8 @@ nanoemMutableModelJointSetAngularStiffness(nanoem_mutable_model_joint_t *joint, 
 
 /**
  * \brief Copy contents of the given opaque model joint object
+ *
+ * All children of the opaque model joint object are cloned and added to the destination \b joint
  *
  * \param joint The opaque model joint object
  * \param value value to set to the opaque object
@@ -4425,6 +4444,8 @@ nanoemMutableModelSoftBodyRemoveAnchorObject(nanoem_mutable_model_soft_body_t *s
 /**
  * \brief Copy contents of the given opaque model soft body object
  *
+ * All children of the opaque model soft body object are cloned and added to the destination \b soft_body
+ *
  * \param soft_body The opaque model soft body object
  * \param value value to set to the opaque object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
@@ -4824,9 +4845,7 @@ NANOEM_DECL_API nanoem_model_t *APIENTRY
 nanoemMutableModelGetOriginObject(nanoem_mutable_model_t *model);
 
 /**
- * \brief
- *
- * \param model The opaque model object
+ * \private
  */
 NANOEM_DECL_API nanoem_model_t *APIENTRY
 nanoemMutableModelGetOriginObjectReference(nanoem_mutable_model_t *model);

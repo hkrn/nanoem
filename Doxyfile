@@ -16,6 +16,7 @@ ABBREVIATE_BRIEF       = "The $name class" \
                          the
 EXTRACT_ALL            = NO
 INPUT                  = nanoem/nanoem.h \
+                         nanoem/ext/converter.h \
                          nanoem/ext/document.h \
                          nanoem/ext/motion.h \
                          nanoem/ext/mutable.h \

@@ -22,30 +22,29 @@
 NANOEM_DECL_OPAQUE(nanoem_model_converter_t);
 
 /**
- * \brief 
- * 
- * \param model 
- * \param status 
- * \return NANOEM_DECL_API nanoem_model_converter_t* APIENTRY 
+ * \brief Create an opaque model converter object
+ *
+ * \param model The opaque input model object
+ * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API nanoem_model_converter_t *APIENTRY
 nanoemModelConverterCreate(nanoem_model_t *model, nanoem_status_t *status);
 
 /**
- * \brief 
- * 
- * \param converter 
- * \param target 
- * \param status 
- * \return NANOEM_DECL_API nanoem_mutable_model_t* APIENTRY 
+ * \brief Perform converting the opaque model object and creates new opaque converted model object
+ *
+ * \param converter The opaque model converter object
+ * \param target The target model format type
+ * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
+ * \return The opaque converted mutable model object
  */
 NANOEM_DECL_API nanoem_mutable_model_t *APIENTRY
 nanoemModelConverterExecute(nanoem_model_converter_t *converter, nanoem_model_format_type_t target, nanoem_status_t *status);
 
 /**
- * \brief 
- * 
- * \param converter 
+ * \brief Destroy the given opaque model converter object
+ *
+ * \param converter The opaque model converter object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemModelConverterDestroy(nanoem_model_converter_t *converter);
