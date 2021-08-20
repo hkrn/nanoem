@@ -21,10 +21,9 @@ jobs:
           submodules: recursive
       - name: setup prerequisite packages
         run: |
-          sudo apt-get install -y \
+          sudo apt-get update && sudo apt-get install -y \
             clang-6.0 \
             cmake \
-            libicu-dev \
             libgtk-3-dev \
             libglu1-mesa-dev \
             ninja-build \
@@ -35,6 +34,8 @@ jobs:
         run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: checkout glfw
         run: git clone https://github.com/glfw/glfw.git dependencies/glfw
+      - name: checkout ICU
+        run: git clone https://github.com/unicode-org/icu.git dependencies/icu
       - name: build all dependencies of nanoem
         run:
           cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
@@ -63,6 +64,55 @@ jobs:
             -DNANOEM_TARGET_ARCHITECTURE=x86_64 \
             -DNANOEM_TARGET_COMPILER=clang \
             -GNinja \
+            ../..
+          cmake --build . --config release
+      - name: test nanoem's unit tests
+        run: |
+          cd ${{ github.workspace }}/out/core
+          ctest
+  build-macos:
+    runs-on: macos-latest
+    env:
+      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+      NANOEM_TARGET_GENERATOR: Xcode
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: checkout ffmpeg
+        run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
+      - name: checkout ICU
+        run: git clone https://github.com/unicode-org/icu.git dependencies/icu
+      - name: build all dependencies of nanoem
+        run:
+          cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
+        env:
+          NANOEM_TARGET_ARCHITECTURES: x86_64
+          NANOEM_TARGET_CONFIGURATIONS: "debug;release"
+          NANOEM_TARGET_COMPILER: clang
+          NANOEM_DISABLE_BUILD_MIMALLOC: 1
+          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
+          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
+      - name: build nanoem itself
+        run: |
+          mkdir -p ${{ github.workspace }}/out/core
+          cd ${{ github.workspace }}/out/core
+          cmake \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/out/core/install-root \
+            -DFX9_ENABLE_OPTIMIZER=OFF \
+            -DNANOEM_ENABLE_BULLET=ON \
+            -DNANOEM_ENABLE_ICU=ON \
+            -DNANOEM_ENABLE_NMD=ON \
+            -DNANOEM_ENABLE_TEST=ON \
+            -DNANOEM_INSTALL_EFFECT_PLUGIN=ON \
+            -DNANOEM_INSTALL_FFMPEG_PLUGIN=ON \
+            -DNANOEM_INSTALL_GIF_PLUGIN=OFF \
+            -DNANOEM_INSTALL_LSMASH_PLUGIN=ON \
+            -DNANOEM_TARGET_ARCHITECTURE=x86_64 \
+            -DNANOEM_TARGET_COMPILER=clang \
+            -GXcode \
             ../..
           cmake --build . --config release
       - name: test nanoem's unit tests
