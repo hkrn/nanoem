@@ -1128,6 +1128,7 @@ PMM::Context::loadModel(
         model->setActiveMorph(category, model->findMorph(nanoemDocumentModelGetSelectedMorphName(mo, category)));
     }
     Motion *motion = m_project->resolveMotion(model);
+    IMotionKeyframeSelection *selection = motion->selection();
     nanoem_motion_t *originModelMotion = motion->data();
     nanoem_mutable_motion_t *mutableModelMotion = nanoemMutableMotionCreateAsReference(originModelMotion, status);
     nanoem_document_model_bone_keyframe_t *const *boneKeyframes =
@@ -1142,6 +1143,9 @@ PMM::Context::loadModel(
         if (!keyframe) {
             keyframe = nanoemMutableMotionBoneKeyframeCreate(originModelMotion, status);
             nanoemMutableMotionAddBoneKeyframe(mutableModelMotion, keyframe, name, frameIndex, status);
+        }
+        if (nanoemDocumentBaseKeyframeIsSelected(base)) {
+            selection->add(nanoemMutableMotionBoneKeyframeGetOriginObject(keyframe));
         }
         nanoemMutableMotionBoneKeyframeSetTranslation(keyframe, nanoemDocumentModelBoneKeyframeGetTranslation(ko));
         nanoemMutableMotionBoneKeyframeSetOrientation(keyframe, nanoemDocumentModelBoneKeyframeGetOrientation(ko));
@@ -1168,6 +1172,9 @@ PMM::Context::loadModel(
             keyframe = nanoemMutableMotionModelKeyframeCreate(originModelMotion, status);
             nanoemMutableMotionAddModelKeyframe(mutableModelMotion, keyframe, frameIndex, status);
         }
+        if (nanoemDocumentBaseKeyframeIsSelected(base)) {
+            selection->add(nanoemMutableMotionModelKeyframeGetOriginObject(keyframe));
+        }
         nanoemMutableMotionModelKeyframeSetVisible(keyframe, nanoemDocumentModelKeyframeIsVisible(ko));
         nanoemMutableMotionModelKeyframeDestroy(keyframe);
     }
@@ -1184,13 +1191,15 @@ PMM::Context::loadModel(
             keyframe = nanoemMutableMotionMorphKeyframeCreate(originModelMotion, status);
             nanoemMutableMotionAddMorphKeyframe(mutableModelMotion, keyframe, name, frameIndex, status);
         }
+        if (nanoemDocumentBaseKeyframeIsSelected(base)) {
+            selection->add(nanoemMutableMotionMorphKeyframeGetOriginObject(keyframe));
+        }
         nanoemMutableMotionMorphKeyframeSetWeight(keyframe, nanoemDocumentModelMorphKeyframeGetWeight(ko));
         nanoemMutableMotionMorphKeyframeDestroy(keyframe);
     }
     nanoemMutableMotionSortAllKeyframes(mutableModelMotion);
     nanoemMutableMotionDestroy(mutableModelMotion);
     m_project->setBaseDuration(nanoemMotionGetMaxFrameIndex(originModelMotion));
-    motion->selection()->addAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
 }
 
 void
