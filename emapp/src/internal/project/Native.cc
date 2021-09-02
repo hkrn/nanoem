@@ -1134,7 +1134,39 @@ Native::Context::loadMotion(
             if (Model *model = m_project->findModelByHandle(handle)) {
                 Motion *motion = m_project->resolveMotion(model);
                 needsRestart |= loadMotionPayload(m, item->payload, motion, error);
-                motion->selection()->addAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
+                IMotionKeyframeSelection *selection = motion->selection();
+                {
+                    nanoem_rsize_t numKeyframes;
+                    nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(motion->data(), &numKeyframes);
+                    for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+                        const nanoem_motion_bone_keyframe_t *keyframe = keyframes[i];
+                        if (nanoemMotionKeyframeObjectIsSelected(nanoemMotionBoneKeyframeGetKeyframeObject(keyframe))) {
+                            selection->add(keyframe);
+                        }
+                    }
+                }
+                {
+                    nanoem_rsize_t numKeyframes;
+                    nanoem_motion_model_keyframe_t *const *keyframes =
+                        nanoemMotionGetAllModelKeyframeObjects(motion->data(), &numKeyframes);
+                    for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+                        const nanoem_motion_model_keyframe_t *keyframe = keyframes[i];
+                        if (nanoemMotionKeyframeObjectIsSelected(nanoemMotionModelKeyframeGetKeyframeObject(keyframe))) {
+                            selection->add(keyframe);
+                        }
+                    }
+                }
+                {
+                    nanoem_rsize_t numKeyframes;
+                    nanoem_motion_morph_keyframe_t *const *keyframes =
+                        nanoemMotionGetAllMorphKeyframeObjects(motion->data(), &numKeyframes);
+                    for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+                        const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
+                        if (nanoemMotionKeyframeObjectIsSelected(nanoemMotionMorphKeyframeGetKeyframeObject(keyframe))) {
+                            selection->add(keyframe);
+                        }
+                    }
+                }
                 /* reset dirty morph state at initializing model to apply morph motion correctly */
                 model->updateStagingVertexBuffer();
             }

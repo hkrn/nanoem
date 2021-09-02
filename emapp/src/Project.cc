@@ -3419,11 +3419,11 @@ Project::copyAllSelectedKeyframes(Model *model, Error &error)
         selection->getAll(modelKeyframes, &modelKeyframeStartOffset);
         selection->getAll(morphKeyframes, &morphKeyframeStartOffset);
         Motion::copyAllBoneKeyframes(const_cast<nanoem_motion_bone_keyframe_t *const *>(boneKeyframes.data()),
-            boneKeyframes.size(), model, motion, boneKeyframeStartOffset * -1, status);
+            boneKeyframes.size(), selection, model, motion, boneKeyframeStartOffset * -1, status);
         Motion::copyAllModelKeyframes(const_cast<nanoem_motion_model_keyframe_t *const *>(modelKeyframes.data()),
-            modelKeyframes.size(), motion, modelKeyframeStartOffset * -1, status);
+            modelKeyframes.size(), selection, motion, modelKeyframeStartOffset * -1, status);
         Motion::copyAllMorphKeyframes(const_cast<nanoem_motion_morph_keyframe_t *const *>(morphKeyframes.data()),
-            morphKeyframes.size(), model, motion, morphKeyframeStartOffset * -1, status);
+            morphKeyframes.size(), selection, model, motion, morphKeyframeStartOffset * -1, status);
         const nanoem_unicode_string_t *name = nanoemModelGetName(model->data(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
         nanoemMutableMotionSetTargetModelName(motion, name, &status);
     }
