@@ -6090,6 +6090,20 @@ nanoemMotionKeyframeObjectGetFrameIndexWithOffset(const nanoem_motion_keyframe_o
     return frame_index;
 }
 
+nanoem_bool_t APIENTRY
+nanoemMotionKeyframeObjectIsSelected(const nanoem_motion_keyframe_object_t *object)
+{
+    return nanoem_is_not_null(object) ? object->is_selected : nanoem_false;
+}
+
+void APIENTRY
+nanoemMotionKeyframeObjectSetSelected(nanoem_motion_keyframe_object_t *object, nanoem_bool_t value)
+{
+    if (nanoem_is_not_null(object)) {
+        object->is_selected = value ? nanoem_true : nanoem_false;
+    }
+}
+
 nanoem_user_data_t *APIENTRY
 nanoemMotionKeyframeObjectGetUserDataObject(const nanoem_motion_keyframe_object_t *object)
 {

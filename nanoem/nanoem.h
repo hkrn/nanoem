@@ -3215,6 +3215,23 @@ NANOEM_DECL_API nanoem_frame_index_t APIENTRY
 nanoemMotionKeyframeObjectGetFrameIndexWithOffset(const nanoem_motion_keyframe_object_t *object, int offset);
 
 /**
+ * \brief Get whether the keyframe is selected from the given opaque motion keyframe obejct
+ *
+ * \param object The opaque motion keyframe object
+ */
+NANOEM_DECL_API nanoem_bool_t APIENTRY
+nanoemMotionKeyframeObjectIsSelected(const nanoem_motion_keyframe_object_t *object);
+
+/**
+ * \brief Set whether the keyframe is selected to the given opaque motion keyframe obejct
+ *
+ * \param object The opaque motion keyframe object
+ * \param value The value to set
+ */
+NANOEM_DECL_API void APIENTRY
+nanoemMotionKeyframeObjectSetSelected(nanoem_motion_keyframe_object_t *object, nanoem_bool_t value);
+
+/**
  * \brief Get the opaque mutable user data object from the given opaque motion keyframe obejct
  *
  * \param object The opaque motion keyframe object

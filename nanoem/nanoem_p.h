@@ -701,6 +701,7 @@ struct nanoem_motion_keyframe_object_t {
     int index;
     nanoem_motion_t *parent_motion;
     nanoem_frame_index_t frame_index;
+    nanoem_bool_t is_selected;
     nanoem_user_data_t *user_data;
     kh_annotation_t *annotations;
 };
