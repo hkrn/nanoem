@@ -17,6 +17,7 @@
 #include "emapp/IFileManager.h"
 #include "emapp/ILight.h"
 #include "emapp/IModelObjectSelection.h"
+#include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/ModelProgramBundle.h"
@@ -1189,6 +1190,7 @@ PMM::Context::loadModel(
     nanoemMutableMotionSortAllKeyframes(mutableModelMotion);
     nanoemMutableMotionDestroy(mutableModelMotion);
     m_project->setBaseDuration(nanoemMotionGetMaxFrameIndex(originModelMotion));
+    motion->selection()->addAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
 }
 
 void

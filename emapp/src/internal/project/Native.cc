@@ -13,6 +13,7 @@
 #include "emapp/IBackgroundVideoRenderer.h"
 #include "emapp/IFileManager.h"
 #include "emapp/ILight.h"
+#include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/Model.h"
 #include "emapp/PerspectiveCamera.h"
 #include "emapp/PhysicsEngine.h"
@@ -1133,6 +1134,7 @@ Native::Context::loadMotion(
             if (Model *model = m_project->findModelByHandle(handle)) {
                 Motion *motion = m_project->resolveMotion(model);
                 needsRestart |= loadMotionPayload(m, item->payload, motion, error);
+                motion->selection()->addAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
                 /* reset dirty morph state at initializing model to apply morph motion correctly */
                 model->updateStagingVertexBuffer();
             }

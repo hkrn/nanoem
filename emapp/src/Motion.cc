@@ -1776,6 +1776,37 @@ Motion::scaleAllSelfShadowKeyframesIn(nanoem_frame_index_t from, nanoem_frame_in
     }
 }
 
+void
+Motion::selectAllModelObjectKeyframes(const Model *model)
+{
+    m_selection->addAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MODEL);
+    {
+        nanoem_rsize_t numKeyframes;
+        nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(data(), &numKeyframes);
+        for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+            const nanoem_motion_bone_keyframe_t *keyframe = keyframes[i];
+            const nanoem_motion_keyframe_object_t *ko = nanoemMotionBoneKeyframeGetKeyframeObject(keyframe);
+            const nanoem_unicode_string_t *name = nanoemMotionBoneKeyframeGetName(keyframe);
+            if (model->containsBone(name)) {
+                m_selection->add(keyframe);
+            }
+        }
+    }
+    {
+        nanoem_rsize_t numKeyframes;
+        nanoem_motion_morph_keyframe_t *const *keyframes =
+            nanoemMotionGetAllMorphKeyframeObjects(data(), &numKeyframes);
+        for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+            const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
+            const nanoem_motion_keyframe_object_t *ko = nanoemMotionMorphKeyframeGetKeyframeObject(keyframe);
+            const nanoem_unicode_string_t *name = nanoemMotionMorphKeyframeGetName(keyframe);
+            if (model->containsMorph(name)) {
+                m_selection->add(keyframe);
+            }
+        }
+    }
+}
+
 bool
 Motion::testAllMissingModelObjects(const Model *model, StringSet &bones, StringSet &morphs) const
 {

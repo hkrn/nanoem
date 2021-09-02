@@ -16,6 +16,7 @@
 #include "emapp/IEventPublisher.h"
 #include "emapp/IFileManager.h"
 #include "emapp/IModalDialog.h"
+#include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/ImageLoader.h"
 #include "emapp/ModalDialogFactory.h"
 #include "emapp/Model.h"
@@ -1147,6 +1148,7 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
                     m_applicationPtr->addModalDialog(ModalDialogFactory::createDisplayPlainTextDialog(
                         m_applicationPtr, translator()->translate("nanoem.motion.model.diagnostics.title"), message));
                 }
+                motion->selectAllModelObjectKeyframes(model);
                 lastMotionPtr = project->addModelMotion(motion, model);
                 project->restart();
             }
