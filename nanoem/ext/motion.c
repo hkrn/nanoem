@@ -132,6 +132,7 @@ NANOEM_DECL_INLINE static void
 nanoemMotionReadKeyframeCommonNMD(nanoem_motion_keyframe_object_t *dst, const Nanoem__Motion__KeyframeCommon *src, nanoem_frame_index_t offset, nanoem_status_t *status)
 {
     dst->frame_index = ((nanoem_frame_index_t) src->frame_index) + offset;
+    dst->is_selected = src->has_is_selected ? src->is_selected : nanoem_false;
     nanoemMotionSetMaxFrameIndex(dst->parent_motion, dst);
     nanoemMotionReadAnnotationsNMD(&dst->annotations, src->annotations, src->n_annotations, status);
 }
@@ -194,6 +195,8 @@ NANOEM_DECL_INLINE static void
 nanoemMutableMotionWriteKeyframeCommonNMD(Nanoem__Motion__KeyframeCommon *dst, const nanoem_motion_keyframe_object_t *src, nanoem_status_t *status)
 {
     dst->frame_index = (uint64_t) src->frame_index;
+    dst->is_selected = src->is_selected;
+    dst->has_is_selected = 1;
     nanoemMutableMotionWriteAnnotationsNMD(&dst->annotations, &dst->n_annotations, src->annotations, status);
 }
 

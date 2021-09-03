@@ -1863,7 +1863,7 @@ const ProtobufCMessageDescriptor nanoem__motion__track__descriptor =
   (ProtobufCMessageInit) nanoem__motion__track__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__motion__keyframe_common__field_descriptors[3] =
+static const ProtobufCFieldDescriptor nanoem__motion__keyframe_common__field_descriptors[4] =
 {
   {
     "annotations",
@@ -1901,16 +1901,29 @@ static const ProtobufCFieldDescriptor nanoem__motion__keyframe_common__field_des
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "is_selected",
+    4,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_BOOL,
+    offsetof(Nanoem__Motion__KeyframeCommon, has_is_selected),
+    offsetof(Nanoem__Motion__KeyframeCommon, is_selected),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned nanoem__motion__keyframe_common__field_indices_by_name[] = {
   0,   /* field[0] = annotations */
   1,   /* field[1] = frame_index */
+  3,   /* field[3] = is_selected */
   2,   /* field[2] = layer_index */
 };
 static const ProtobufCIntRange nanoem__motion__keyframe_common__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 3 }
+  { 0, 4 }
 };
 const ProtobufCMessageDescriptor nanoem__motion__keyframe_common__descriptor =
 {
@@ -1920,7 +1933,7 @@ const ProtobufCMessageDescriptor nanoem__motion__keyframe_common__descriptor =
   "Nanoem__Motion__KeyframeCommon",
   "nanoem.motion",
   sizeof(Nanoem__Motion__KeyframeCommon),
-  3,
+  4,
   nanoem__motion__keyframe_common__field_descriptors,
   nanoem__motion__keyframe_common__field_indices_by_name,
   1,  nanoem__motion__keyframe_common__number_ranges,
