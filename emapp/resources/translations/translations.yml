@@ -3660,6 +3660,11 @@
     en_US: 'Collapse All Tracks'
     ja_JP: '全てのトラックを折りたたみ'
   description: ''
+- key: nanoem.menu.model.measure-height
+  phrase:
+    en_US: 'Measure Model Height'
+    ja_JP: 'モデルの身長測定'
+  description: ''
 - key: nanoem.menu.model.validation
   phrase:
     en_US: 'Perform Model Data Validation'
@@ -4196,6 +4201,15 @@
   phrase:
     en_US: 'All Missing Morphs'
     ja_JP: '不足しているモーフ一覧'
+
+- key: nanoem.model.measure-height.title
+  phrase:
+    en_US: 'Approximate Model Height of %s'
+    ja_JP: '「%s」の身長の近似値'
+- key: nanoem.model.measure-height.message
+  phrase:
+    en_US: 'The approximate model height of %s is %.2f cm (%.0f ft %.2f inch).'
+    ja_JP: 'モデル「%s」の身長の近似値は %.2f センチメートルです。'
 
 - key: nanoem.model.validator.result.title
   phrase:

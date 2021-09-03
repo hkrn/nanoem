@@ -212,6 +212,8 @@ struct DummyLight : ILight {
 } /* namespace anonymous */
 
 const Matrix4x4 Model::kInitialWorldMatrix = Constants::kIdentity;
+const nanoem_f32_t Model::kDefaultCMScaleFactor = 0.1259496f;
+const nanoem_f32_t Model::kDefaultModelCorrectionHeight = -2.0f;
 
 struct Model::LoadingImageItem {
     LoadingImageItem(const URI &fileURI, const String &filename, sg_wrap wrap, nanoem_u32_t flags)
@@ -2759,6 +2761,28 @@ Model::rename(const String &value, nanoem_language_type_t language)
     }
     nanoemMutableModelDestroy(model);
     StringUtils::getUtf8String(nanoemModelGetName(m_opaque, NANOEM_LANGUAGE_TYPE_FIRST_ENUM), factory, m_canonicalName);
+}
+
+nanoem_f32_t
+Model::measureHeight() const
+{
+    return measureHeight(kDefaultCMScaleFactor, kDefaultModelCorrectionHeight);
+}
+
+nanoem_f32_t
+Model::measureHeight(nanoem_f32_t scaleFactor, nanoem_f32_t correctionHeight) const
+{
+    nanoem_rsize_t numVertices;
+    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_opaque, &numVertices);
+    Vector3 min(FLT_MAX), max(-FLT_MAX);
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[i];
+        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
+        max = glm::max(max, origin);
+        min = glm::min(min, origin);
+    }
+    const nanoem_f32_t modelHeight = max.y - min.y;
+    return (modelHeight / scaleFactor) + correctionHeight;
 }
 
 void

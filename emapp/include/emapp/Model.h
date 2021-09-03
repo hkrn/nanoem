@@ -158,6 +158,8 @@ public:
     };
 
     static const Matrix4x4 kInitialWorldMatrix;
+    static const nanoem_f32_t kDefaultCMScaleFactor;
+    static const nanoem_f32_t kDefaultModelCorrectionHeight;
     static StringList loadableExtensions();
     static StringSet loadableExtensionsSet();
     static bool isLoadableExtension(const String &extension);
@@ -262,6 +264,8 @@ public:
     void setRigidBodiesVisualization(const model::RigidBody::VisualizationClause &clause);
     void setSoftBodiesVisualization();
     void rename(const String &value, nanoem_language_type_t language);
+    nanoem_f32_t measureHeight() const;
+    nanoem_f32_t measureHeight(nanoem_f32_t scaleFactor, nanoem_f32_t correctionHeight) const;
 
     void addAttachment(const String &name, const URI &fullPath);
     void removeAttachment(const String &name);

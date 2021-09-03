@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -880,7 +880,8 @@ $nanoem.menu.model.select.morph.titleモーフを選択(&O)m
 *nanoem.menu.model.select.morph.other.title	その他1
 $nanoem.menu.model.select.morph.title	モーフL
 *nanoem.menu.model.select.expand-all-tracks全てのトラックを展開W
-,nanoem.menu.model.select.collapse-all-tracks'全てのトラックを折りたたみD
+,nanoem.menu.model.select.collapse-all-tracks'全てのトラックを折りたたみ<
+ nanoem.menu.model.measure-heightモデルの身長測定D
 nanoem.menu.model.validation$モデルデータの検証を実行5
 "nanoem.menu.model.edit-mode.select選択モード5
 "nanoem.menu.model.edit-mode.rotate回転モード3
@@ -994,7 +995,9 @@ $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモ�
 %nanoem.motion.model.diagnostics.title3読み込まれたモデルモーションの警告�
 'nanoem.motion.model.diagnostics.message�モデルモーションの読み込みに成功しましたが、「%s」のために作られており以下のボーンあるいはモーフが不足しているため正常に動作しない可能性がありますV
 1nanoem.motion.model.diagnostics.all-missing-bones!不足しているボーン一覧W
-2nanoem.motion.model.diagnostics.all-missing-morphs!不足しているモーフ一覧>
+2nanoem.motion.model.diagnostics.all-missing-morphs!不足しているモーフ一覧B
+!nanoem.model.measure-height.title「%s」の身長の近似値t
+#nanoem.model.measure-height.messageMモデル「%s」の身長の近似値は %.2f センチメートルです。>
 #nanoem.model.validator.result.title「%s」の検証結果\
 %nanoem.model.validator.result.success3検証した結果問題はありませんでしたd
 %nanoem.model.validator.result.failure;検証した結果 %zu 件の問題が見つかりましたJ
@@ -1174,7 +1177,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -2073,7 +2076,8 @@ $nanoem.menu.model.select.morph.titleSelect M&orph from...X
 *nanoem.menu.model.select.morph.other.titleOther-
 $nanoem.menu.model.select.morph.titleMorph?
 *nanoem.menu.model.select.expand-all-tracksExpand All TracksC
-,nanoem.menu.model.select.collapse-all-tracksCollapse All Tracks=
+,nanoem.menu.model.select.collapse-all-tracksCollapse All Tracks8
+ nanoem.menu.model.measure-heightMeasure Model Height=
 nanoem.menu.model.validationPerform Model Data Validation4
 "nanoem.menu.model.edit-mode.selectSelection Mode1
 "nanoem.menu.model.edit-mode.rotateRotate Mode-
@@ -2190,7 +2194,9 @@ $nanoem.error.motion.not-model.reason,The loading motion is not intended for mo
 %nanoem.motion.model.diagnostics.titleLoaded Model Motion Warning�
 'nanoem.motion.model.diagnostics.messageLoading the model motion is succeeded, however below bones/morphs are missing due to made for "%s" so may not work as properly.F
 1nanoem.motion.model.diagnostics.all-missing-bonesAll Missing BonesH
-2nanoem.motion.model.diagnostics.all-missing-morphsAll Missing Morphs>
+2nanoem.motion.model.diagnostics.all-missing-morphsAll Missing MorphsC
+!nanoem.model.measure-height.titleApproximate Model Height of %si
+#nanoem.model.measure-height.messageBThe approximate model height of %s is %.2f cm (%.0f ft %.2f inch).>
 #nanoem.model.validator.result.titleValidation result of %sD
 %nanoem.model.validator.result.successNo validation problem foundH
 %nanoem.model.validator.result.failure%zu validation problem(s) foundI

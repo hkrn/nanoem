@@ -163,6 +163,7 @@ public:
         kMenuItemTypeModelSelectAllBoneKeyframesFromSelectedBoneSet,
         kMenuItemTypeModelExpandAllTracks,
         kMenuItemTypeModelCollapseAllTracks,
+        kMenuItemTypeModelMeasureHeight,
         kMenuItemTypeModelPerformValidation,
         kMenuItemTypeModelEditModeSelect,
         kMenuItemTypeModelEditModeRotate,
