@@ -4448,6 +4448,7 @@ nanoemMutableDocumentModelAddBoneKeyframeObject(nanoem_mutable_document_model_t 
             nanoem_crt_memcpy(initial_keyframe->orientation.values, origin_keyframe->orientation.values, sizeof(initial_keyframe->orientation.values));
             nanoem_crt_memcpy(initial_keyframe->interpolation, origin_keyframe->interpolation, sizeof(initial_keyframe->interpolation));
             initial_keyframe->is_physics_simulation_disabled = origin_keyframe->is_physics_simulation_disabled;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             initial_keyframe->base.object_index = bone_index;
             return;
         }
@@ -4582,6 +4583,7 @@ nanoemMutableDocumentModelAddModelKeyframeObject(nanoem_mutable_document_model_t
         nanoemDocumentKeyframeCompareResultReset(&next);
         if (frame_index == 0) {
             initial_keyframe = origin_model->initial_model_keyframe;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             initial_keyframe->visible = origin_keyframe->visible;
             num_constraint_states = origin_keyframe->num_constraint_states;
             if (num_constraint_states > 0) {
@@ -4687,6 +4689,7 @@ nanoemMutableDocumentModelAddMorphKeyframeObject(nanoem_mutable_document_model_t
         else if (frame_index == 0) {
             initial_keyframe = origin_model->initial_morph_keyframes[morph_index];
             initial_keyframe->weight = origin_keyframe->weight;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             initial_keyframe->base.object_index = morph_index;
             return;
         }
@@ -5139,6 +5142,7 @@ nanoemMutableDocumentAccessoryAddAccessoryKeyframeObject(nanoem_mutable_document
         nanoemDocumentKeyframeCompareResultReset(&next);
         if (frame_index == 0) {
             initial_keyframe = origin_accessory->initial_accessory_keyframe;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             nanoem_crt_memcpy(initial_keyframe->orientation.values, origin_keyframe->orientation.values, sizeof(initial_keyframe->orientation.values));
             nanoem_crt_memcpy(initial_keyframe->translation.values, origin_keyframe->translation.values, sizeof(initial_keyframe->translation.values));
             initial_keyframe->is_shadow_enabled = origin_keyframe->is_shadow_enabled;
@@ -5402,6 +5406,7 @@ nanoemMutableDocumentCameraAddCameraKeyframeObject(nanoem_mutable_document_camer
         nanoemDocumentKeyframeCompareResultReset(&next);
         if (frame_index == 0) {
             initial_keyframe = origin_camera->initial_camera_keyframe;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             nanoem_crt_memcpy(initial_keyframe->angle.values, origin_keyframe->angle.values, sizeof(initial_keyframe->angle.values));
             nanoem_crt_memcpy(initial_keyframe->look_at.values, origin_keyframe->look_at.values, sizeof(initial_keyframe->look_at.values));
             nanoem_crt_memcpy(initial_keyframe->interpolation, origin_keyframe->interpolation, sizeof(initial_keyframe->interpolation));
@@ -5597,6 +5602,7 @@ nanoemMutableDocumentGravityAddGravityKeyframeObject(nanoem_mutable_document_gra
         nanoemDocumentKeyframeCompareResultReset(&next);
         if (frame_index == 0) {
             initial_keyframe = origin_gravity->initial_gravity_keyframe;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             nanoem_crt_memcpy(initial_keyframe->direction.values, origin_keyframe->direction.values, sizeof(initial_keyframe->direction.values));
             initial_keyframe->acceleration = origin_keyframe->acceleration;
             initial_keyframe->is_noise_enabled = origin_keyframe->is_noise_enabled;
@@ -5772,6 +5778,7 @@ nanoemMutableDocumentLightAddLightKeyframeObject(nanoem_mutable_document_light_t
         nanoemDocumentKeyframeCompareResultReset(&next);
         if (frame_index == 0) {
             initial_keyframe = origin_light->initial_light_keyframe;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             nanoem_crt_memcpy(initial_keyframe->color.values, origin_keyframe->color.values, sizeof(initial_keyframe->color.values));
             nanoem_crt_memcpy(initial_keyframe->direction.values, origin_keyframe->direction.values, sizeof(initial_keyframe->direction.values));
             nanoem_status_ptr_assign_succeeded(status);
@@ -5929,6 +5936,7 @@ nanoemMutableDocumentSelfShadowAddSelfShadowKeyframeObject(nanoem_mutable_docume
         nanoemDocumentKeyframeCompareResultReset(&next);
         if (frame_index == 0) {
             initial_keyframe = origin_self_shadow->initial_self_shadow_keyframe;
+            initial_keyframe->base.is_selected = origin_keyframe->base.is_selected;
             initial_keyframe->distance = origin_keyframe->distance;
             initial_keyframe->mode = origin_keyframe->mode;
             nanoem_status_ptr_assign_succeeded(status);
