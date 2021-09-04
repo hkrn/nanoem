@@ -2051,6 +2051,7 @@ PMM::Context::saveAllBoneKeyframes(const Motion *motion, nanoem_mutable_document
     nanoem_rsize_t numKeyframes;
     nanoem_motion_bone_keyframe_t *const *keyframes =
         nanoemMotionGetAllBoneKeyframeObjects(motion->data(), &numKeyframes);
+    const IMotionKeyframeSelection *selection = motion->selection();
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_motion_bone_keyframe_t *keyframe = keyframes[i];
         const nanoem_frame_index_t frameIndex =
@@ -2062,6 +2063,9 @@ PMM::Context::saveAllBoneKeyframes(const Motion *motion, nanoem_mutable_document
         nanoemMutableDocumentModelBoneKeyframeSetTranslation(ko, nanoemMotionBoneKeyframeGetTranslation(keyframe));
         nanoemMutableDocumentModelBoneKeyframeSetPhysicsSimulationDisabled(
             ko, nanoemMotionBoneKeyframeIsPhysicsSimulationEnabled(keyframe));
+        nanoemDocumentBaseKeyframeSetSelected(nanoemDocumentModelBoneKeyframeGetBaseKeyframeObjectMutable(
+                                                  nanoemMutableDocumentModelBoneKeyframeGetOrigin(ko)),
+            selection->contains(keyframe));
         for (nanoem_rsize_t j = NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_FIRST_ENUM;
              j < NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_MAX_ENUM; j++) {
             nanoem_motion_bone_keyframe_interpolation_type_t type =
@@ -2080,6 +2084,7 @@ PMM::Context::saveAllModelKeyframes(const Motion *motion, nanoem_mutable_documen
     nanoem_rsize_t numKeyframes;
     nanoem_motion_model_keyframe_t *const *keyframes =
         nanoemMotionGetAllModelKeyframeObjects(motion->data(), &numKeyframes);
+    const IMotionKeyframeSelection *selection = motion->selection();
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_motion_model_keyframe_t *keyframe = keyframes[i];
         const nanoem_frame_index_t frameIndex =
@@ -2095,6 +2100,9 @@ PMM::Context::saveAllModelKeyframes(const Motion *motion, nanoem_mutable_documen
             nanoemMutableDocumentModelKeyframeSetConstraintEnabled(ko, name, enabled, status);
         }
         nanoemMutableDocumentModelKeyframeSetVisible(ko, nanoemMotionModelKeyframeIsVisible(keyframe));
+        nanoemDocumentBaseKeyframeSetSelected(
+            nanoemDocumentModelKeyframeGetBaseKeyframeObjectMutable(nanoemMutableDocumentModelKeyframeGetOrigin(ko)),
+            selection->contains(keyframe));
         nanoemMutableDocumentModelAddModelKeyframeObject(mo, ko, frameIndex, status);
         nanoemMutableDocumentModelKeyframeDestroy(ko);
     }
@@ -2106,6 +2114,7 @@ PMM::Context::saveAllMorphKeyframes(const Motion *motion, nanoem_mutable_documen
     nanoem_rsize_t numKeyframes;
     nanoem_motion_morph_keyframe_t *const *keyframes =
         nanoemMotionGetAllMorphKeyframeObjects(motion->data(), &numKeyframes);
+    const IMotionKeyframeSelection *selection = motion->selection();
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
         const nanoem_frame_index_t frameIndex =
@@ -2114,6 +2123,9 @@ PMM::Context::saveAllMorphKeyframes(const Motion *motion, nanoem_mutable_documen
         nanoem_mutable_document_model_morph_keyframe_t *ko =
             nanoemMutableDocumentModelMorphKeyframeCreate(mo, name, status);
         nanoemMutableDocumentModelMorphKeyframeSetWeight(ko, nanoemMotionMorphKeyframeGetWeight(keyframe));
+        nanoemDocumentBaseKeyframeSetSelected(nanoemDocumentModelMorphKeyframeGetBaseKeyframeObjectMutable(
+                                                  nanoemMutableDocumentModelMorphKeyframeGetOrigin(ko)),
+            selection->contains(keyframe));
         nanoemMutableDocumentModelAddMorphKeyframeObject(mo, ko, name, frameIndex, status);
         nanoemMutableDocumentModelMorphKeyframeDestroy(ko);
     }
