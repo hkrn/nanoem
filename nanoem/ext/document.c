@@ -89,6 +89,14 @@ nanoemDocumentBaseKeyframeIsSelected(const nanoem_document_base_keyframe_t *keyf
     return nanoem_is_not_null(keyframe) ? keyframe->is_selected : nanoem_false;
 }
 
+void APIENTRY
+nanoemDocumentBaseKeyframeSetSelected(nanoem_document_base_keyframe_t *keyframe, nanoem_bool_t value)
+{
+    if (nanoem_is_not_null(keyframe)) {
+        keyframe->is_selected = value ? nanoem_true : nanoem_false;
+    }
+}
+
 nanoem_document_accessory_keyframe_t *
 nanoemDocumentAccessoryKeyframeCreate(nanoem_document_accessory_t *accessory, nanoem_status_t *status)
 {
@@ -129,6 +137,12 @@ nanoemDocumentAccessoryKeyframeParse(nanoem_document_accessory_keyframe_t *keyfr
 
 const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentAccessoryKeyframeGetBaseKeyframeObject(const nanoem_document_accessory_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentAccessoryKeyframeGetBaseKeyframeObjectMutable(nanoem_document_accessory_keyframe_t *keyframe)
 {
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
@@ -435,6 +449,12 @@ nanoemDocumentModelBoneKeyframeGetBaseKeyframeObject(const nanoem_document_model
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
 
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentModelBoneKeyframeGetBaseKeyframeObjectMutable(nanoem_document_model_bone_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
 const nanoem_unicode_string_t * APIENTRY
 nanoemDocumentModelBoneKeyframeGetName(const nanoem_document_model_bone_keyframe_t *keyframe)
 {
@@ -565,6 +585,12 @@ nanoemDocumentCameraKeyframeParse(nanoem_document_camera_keyframe_t *keyframe, n
 
 const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentCameraKeyframeGetBaseKeyframeObject(const nanoem_document_camera_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentCameraKeyframeGetBaseKeyframeObjectMutable(nanoem_document_camera_keyframe_t *keyframe)
 {
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
@@ -853,6 +879,12 @@ nanoemDocumentGravityKeyframeGetBaseKeyframeObject(const nanoem_document_gravity
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
 
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentGravityKeyframeGetBaseKeyframeObjectMutable(nanoem_document_gravity_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
 const nanoem_f32_t *APIENTRY
 nanoemDocumentGravityKeyframeGetDirection(const nanoem_document_gravity_keyframe_t *keyframe)
 {
@@ -1031,6 +1063,12 @@ nanoemDocumentLightKeyframeParse(nanoem_document_light_keyframe_t *keyframe, nan
 
 const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentLightKeyframeGetBaseKeyframeObject(const nanoem_document_light_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentLightKeyframeGetBaseKeyframeObjectMutable(nanoem_document_light_keyframe_t *keyframe)
 {
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
@@ -1256,6 +1294,12 @@ nanoemDocumentModelKeyframeGetBaseKeyframeObject(const nanoem_document_model_key
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
 
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentModelKeyframeGetBaseKeyframeObjectMutable(nanoem_document_model_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
 nanoem_bool_t APIENTRY
 nanoemDocumentModelKeyframeIsVisible(const nanoem_document_model_keyframe_t *keyframe)
 {
@@ -1305,6 +1349,12 @@ nanoemDocumentModelMorphKeyframeParse(nanoem_document_model_morph_keyframe_t *ke
 
 const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentModelMorphKeyframeGetBaseKeyframeObject(const nanoem_document_model_morph_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentModelMorphKeyframeGetBaseKeyframeObjectMutable(nanoem_document_model_morph_keyframe_t *keyframe)
 {
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
@@ -2433,6 +2483,12 @@ nanoemDocumentSelfShadowKeyframeGetBaseKeyframeObject(const nanoem_document_self
     return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
 }
 
+nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentSelfShadowKeyframeGetBaseKeyframeObjectMutable(nanoem_document_self_shadow_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? &keyframe->base : NULL;
+}
+
 nanoem_f32_t APIENTRY
 nanoemDocumentSelfShadowKeyframeGetDistance(const nanoem_document_self_shadow_keyframe_t *keyframe)
 {
@@ -3403,6 +3459,12 @@ nanoemMutableDocumentAccessoryKeyframeSetShadowEnabled(nanoem_mutable_document_a
     }
 }
 
+nanoem_document_accessory_keyframe_t* APIENTRY
+nanoemMutableDocumentAccessoryKeyframeGetOrigin(nanoem_mutable_document_accessory_keyframe_t* keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
+}
+
 void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeDestroy(nanoem_mutable_document_accessory_keyframe_t *keyframe)
 {
@@ -3464,6 +3526,12 @@ nanoemMutableDocumentModelBoneKeyframeSetPhysicsSimulationDisabled(nanoem_mutabl
     if (nanoem_is_not_null(keyframe)) {
         keyframe->origin->is_physics_simulation_disabled = value ? nanoem_true : nanoem_false;
     }
+}
+
+nanoem_document_model_bone_keyframe_t *APIENTRY
+nanoemMutableDocumentModelBoneKeyframeGetOrigin(nanoem_mutable_document_model_bone_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
 }
 
 void APIENTRY
@@ -3572,6 +3640,12 @@ nanoemMutableDocumentCameraKeyframeSetPerspectiveView(nanoem_mutable_document_ca
     }
 }
 
+nanoem_document_camera_keyframe_t* APIENTRY
+nanoemMutableDocumentCameraKeyframeGetOrigin(nanoem_mutable_document_camera_keyframe_t* keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
+}
+
 void APIENTRY
 nanoemMutableDocumentCameraKeyframeDestroy(nanoem_mutable_document_camera_keyframe_t *keyframe)
 {
@@ -3630,6 +3704,12 @@ nanoemMutableDocumentGravityKeyframeSetNoiseEnabled(nanoem_mutable_document_grav
     }
 }
 
+nanoem_document_gravity_keyframe_t *APIENTRY
+nanoemMutableDocumentGravityKeyframeGetOrigin(nanoem_mutable_document_gravity_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
+}
+
 void APIENTRY
 nanoemMutableDocumentGravityKeyframeDestroy(nanoem_mutable_document_gravity_keyframe_t *keyframe)
 {
@@ -3670,6 +3750,12 @@ nanoemMutableDocumentLightKeyframeSetDirection(nanoem_mutable_document_light_key
     if (nanoem_is_not_null(keyframe) && nanoem_is_not_null(value)) {
         nanoem_crt_memcpy(keyframe->origin->direction.values, value, sizeof(keyframe->origin->direction.values));
     }
+}
+
+nanoem_document_light_keyframe_t *APIENTRY
+nanoemMutableDocumentLightKeyframeGetOrigin(nanoem_mutable_document_light_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
 }
 
 void APIENTRY
@@ -3802,6 +3888,12 @@ nanoemMutableDocumentModelKeyframeSetVisible(nanoem_mutable_document_model_keyfr
     }
 }
 
+nanoem_document_model_keyframe_t *APIENTRY
+nanoemMutableDocumentModelKeyframeGetOrigin(nanoem_mutable_document_model_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
+}
+
 void APIENTRY
 nanoemMutableDocumentModelKeyframeDestroy(nanoem_mutable_document_model_keyframe_t *keyframe)
 {
@@ -3835,6 +3927,12 @@ nanoemMutableDocumentModelMorphKeyframeSetWeight(nanoem_mutable_document_model_m
     if (nanoem_is_not_null(keyframe)) {
         keyframe->origin->weight = value;
     }
+}
+
+nanoem_document_model_morph_keyframe_t *APIENTRY
+nanoemMutableDocumentModelMorphKeyframeGetOrigin(nanoem_mutable_document_model_morph_keyframe_t *keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
 }
 
 void APIENTRY
@@ -3880,6 +3978,12 @@ nanoemMutableDocumentSelfShadowKeyframeSetMode(nanoem_mutable_document_self_shad
     if (nanoem_is_not_null(keyframe)) {
         keyframe->origin->mode = value;
     }
+}
+
+nanoem_document_base_keyframe_t* APIENTRY
+nanoemMutableDocumentSelfShadowKeyframeGetOrigin(nanoem_mutable_document_self_shadow_keyframe_t* keyframe)
+{
+    return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
 }
 
 void APIENTRY
