@@ -11,6 +11,8 @@
 
 #include "./document_p.h"
 
+KHASH_SET_INIT_INT64(frame_index_set)
+
 nanoem_document_outside_parent_t *
 nanoemDocumentOutsideParentCreate(const nanoem_document_t *document, nanoem_status_t *status)
 {
@@ -3266,14 +3268,32 @@ nanoemMutableDocumentModelResolveConstraintBoneId(nanoem_mutable_document_model_
 }
 
 static nanoem_bool_t
+nanoemDocumentFrameIndexSetInsert(kh_frame_index_set_t *set, nanoem_frame_index_t frame_index)
+{
+    nanoem_bool_t res = nanoem_false;
+    khint_t it = kh_get_frame_index_set(set, (khint64_t) frame_index);
+    int ret = 0;
+    if (it == kh_end(set)) {
+        kh_put_frame_index_set(set, (khint64_t) frame_index, &ret);
+        res = nanoem_true;
+    }
+    return res;
+}
+
+static nanoem_bool_t
 nanoemDocumentModelFindBoneKeyframeIndex(nanoem_document_model_t *model, int bone_index, nanoem_frame_index_t frame_index, nanoem_document_keyframe_compare_result_t *previous, nanoem_document_keyframe_compare_result_t *next)
 {
     nanoem_document_model_bone_keyframe_t *keyframe = model->initial_bone_keyframes[bone_index];
     nanoem_bool_t found = nanoem_false;
+    kh_frame_index_set_t *set = kh_init_frame_index_set();
     while (keyframe->base.next_keyframe_index > 0) {
         found |= nanoemDocumentBaseKeyframeCompare(&keyframe->base, frame_index, previous, next);
         keyframe = model->all_bone_keyframes_ptr[keyframe->base.next_keyframe_index];
+        if (!nanoemDocumentFrameIndexSetInsert(set, frame_index)) {
+            break;
+        }
     }
+    kh_destroy_frame_index_set(set);
     found |= nanoemDocumentBaseKeyframeCompare(&keyframe->base, frame_index, previous, next);
     return found;
 }
@@ -3302,10 +3322,15 @@ nanoemDocumentModelFindMorphKeyframeIndex(nanoem_document_model_t *model, int mo
 {
     nanoem_document_model_morph_keyframe_t *keyframe = model->initial_morph_keyframes[morph_index];
     nanoem_bool_t found = nanoem_false;
+    kh_frame_index_set_t *set = kh_init_frame_index_set();
     while (keyframe->base.next_keyframe_index > 0) {
         found |= nanoemDocumentBaseKeyframeCompare(&keyframe->base, frame_index, previous, next);
         keyframe = model->all_morph_keyframes_ptr[keyframe->base.next_keyframe_index];
+        if (!nanoemDocumentFrameIndexSetInsert(set, frame_index)) {
+            break;
+        }
     }
+    kh_destroy_frame_index_set(set);
     found |= nanoemDocumentBaseKeyframeCompare(&keyframe->base, frame_index, previous, next);
     return found;
 }
