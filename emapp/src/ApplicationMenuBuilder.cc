@@ -417,6 +417,9 @@ ApplicationMenuBuilder::menuItemString(MenuItemType type) NANOEM_DECL_NOEXCEPT
     case kMenuItemTypeModelCollapseAllTracks:
         text = "nanoem.menu.model.select.collapse-all-tracks";
         break;
+    case kMenuItemTypeModelMeasureHeight:
+        text = "nanoem.menu.model.measure-height";
+        break;
     case kMenuItemTypeModelPerformValidation:
         text = "nanoem.menu.model.validation";
         break;
@@ -1171,6 +1174,7 @@ ApplicationMenuBuilder::createModelMenu(MainMenuBarHandle bar)
     createModelBoneMenu(m_modelMenu);
     createModelMorphMenu(m_modelMenu);
     appendMenuItem(m_modelMenu, kMenuItemTypeModelEdgeConfiguraiton);
+    appendMenuItem(m_modelMenu, kMenuItemTypeModelMeasureHeight);
     appendMenuItem(m_modelMenu, kMenuItemTypeModelPerformValidation);
     appendMenuSeparator(m_modelMenu);
     appendMenuItem(m_modelMenu, kMenuItemTypeModelRegisterKeyframe);

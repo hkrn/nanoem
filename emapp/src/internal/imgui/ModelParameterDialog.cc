@@ -39,9 +39,6 @@ namespace internal {
 namespace imgui {
 namespace {
 
-static const nanoem_f32_t kDefaultCMScaleFactor = 0.1259496f;
-static const nanoem_f32_t kDefaultModelCorrectionHeight = -2.0f;
-
 struct BaseSetTextureCallback : IFileManager::QueryFileDialogCallbacks {
     struct BaseUserData {
         BaseUserData(nanoem_model_material_t *material, Model *model)
@@ -905,8 +902,8 @@ ModelParameterDialog::ModelParameterDialog(
     , m_savedTranslation(0)
     , m_savedRotation(0)
     , m_savedScale(1)
-    , m_savedCMScaleFactor(kDefaultCMScaleFactor)
-    , m_savedModelCorrectionHeight(kDefaultModelCorrectionHeight)
+    , m_savedCMScaleFactor(Model::kDefaultCMScaleFactor)
+    , m_savedModelCorrectionHeight(Model::kDefaultModelCorrectionHeight)
     , m_savedModelHeight(-1)
     , m_editingMode(project->editingMode())
     , m_heightBased(true)
@@ -1252,16 +1249,7 @@ ModelParameterDialog::layoutMeasure()
 void
 ModelParameterDialog::layoutHeightBasedBatchTransformPane()
 {
-    nanoem_rsize_t numVertices;
-    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_activeModel->data(), &numVertices);
-    Vector3 min(FLT_MAX), max(-FLT_MAX);
-    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
-        const nanoem_model_vertex_t *vertexPtr = vertices[i];
-        const Vector3 origin(glm::make_vec3(nanoemModelVertexGetOrigin(vertexPtr)));
-        max = glm::max(max, origin);
-        min = glm::min(min, origin);
-    }
-    nanoem_f32_t modelHeight = max.y - min.y;
+    nanoem_f32_t modelHeight = m_activeModel->measureHeight(1.0f, 0.0f);
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.height-based.a"));
     ImGui::InputFloat("##model.height.unit", &modelHeight, 0.0f, 0.0f, "%.6f pt", ImGuiInputTextFlags_ReadOnly);
     ImGui::TextUnformatted(tr("nanoem.gui.model.edit.measure.transform.height-based.b"));
@@ -7579,8 +7567,8 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
 void
 ModelParameterDialog::resetMeasureState()
 {
-    m_savedCMScaleFactor = kDefaultCMScaleFactor;
-    m_savedModelCorrectionHeight = kDefaultModelCorrectionHeight;
+    m_savedCMScaleFactor = Model::kDefaultCMScaleFactor;
+    m_savedModelCorrectionHeight = Model::kDefaultModelCorrectionHeight;
     m_savedTranslation = Constants::kZeroV3;
     m_savedRotation = Constants::kZeroV3;
     m_savedScale = Vector3(1);

@@ -2194,6 +2194,20 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
         project->collapseAllTracks();
         break;
     }
+    case ApplicationMenuBuilder::kMenuItemTypeModelMeasureHeight: {
+        if (const Model *activeModel = project->activeModel()) {
+            const nanoem_f32_t modelHeightCM = activeModel->measureHeight();
+            nanoem_f32_t modelHeightFT;
+            nanoem_f32_t modelHeightInch = glm::modf(modelHeightCM * 0.032808f, modelHeightFT);
+            char title[Inline::kLongNameStackBufferSize];
+            String text;
+            StringUtils::format(title, sizeof(title), m_translatorPtr->translate("nanoem.model.measure-height.title"), activeModel->nameConstString());
+            StringUtils::format(text, m_translatorPtr->translate("nanoem.model.measure-height.message"), activeModel->nameConstString(), modelHeightCM, modelHeightFT, modelHeightInch * 12.0f);
+            IModalDialog *dialog = ModalDialogFactory::createDisplayPlainTextDialog(this, title, text);
+            addModalDialog(dialog);
+        }
+        break;
+    }
     case ApplicationMenuBuilder::kMenuItemTypeModelPerformValidation: {
         if (const Model *activeModel = project->activeModel()) {
             model::Validator validator;
