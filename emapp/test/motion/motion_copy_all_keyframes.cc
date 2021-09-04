@@ -46,7 +46,7 @@ TEST_CASE("motion_copy_all_bone_keyframes", "[emapp][motion]")
     first->m_project->addModel(bindingModel);
     {
         CHECK(numKeyframes == 2);
-        Motion::copyAllBoneKeyframes(keyframes, numKeyframes, bindingModel, dest, 0, status);
+        Motion::copyAllBoneKeyframes(keyframes, numKeyframes, nullptr, bindingModel, dest, 0, status);
         CHECK(status != NANOEM_STATUS_ERROR_MOTION_BONE_KEYFRAME_ALREADY_EXISTS);
         CHECK(status == NANOEM_STATUS_SUCCESS);
     }
@@ -172,7 +172,7 @@ TEST_CASE("motion_copy_all_model_keyframes", "[emapp][motion]")
     nanoem_mutable_motion_t *dest = nanoemMutableMotionCreate(first->m_project->unicodeStringFactory(), &status);
     {
         CHECK(numKeyframes == 2);
-        Motion::copyAllModelKeyframes(keyframes, numKeyframes, dest, 0, status);
+        Motion::copyAllModelKeyframes(keyframes, numKeyframes, nullptr, dest, 0, status);
         CHECK(status != NANOEM_STATUS_ERROR_MOTION_MODEL_KEYFRAME_ALREADY_EXISTS);
         CHECK(status == NANOEM_STATUS_SUCCESS);
     }
@@ -215,7 +215,7 @@ TEST_CASE("motion_copy_all_morph_keyframes", "[emapp][motion]")
     first->m_project->addModel(bindingModel);
     {
         CHECK(numKeyframes == 2);
-        Motion::copyAllMorphKeyframes(keyframes, numKeyframes, bindingModel, dest, 0, status);
+        Motion::copyAllMorphKeyframes(keyframes, numKeyframes, nullptr, bindingModel, dest, 0, status);
         CHECK(status != NANOEM_STATUS_ERROR_MOTION_MORPH_KEYFRAME_ALREADY_EXISTS);
         CHECK(status == NANOEM_STATUS_SUCCESS);
     }

@@ -92,7 +92,7 @@ nanoemDocumentOutsideParentGetBoneName(const nanoem_document_outside_parent_t *p
 /** @} */
 
 /**
-* \defgroup nanoem_document_accessory_keyframe_t Accessory Keyframe Object
+* \defgroup nanoem_document_base_keyframe_t Base Keyframe Object
 * @{
 */
 
@@ -135,6 +135,16 @@ nanoemDocumentBaseKeyframeGetIndex(const nanoem_document_base_keyframe_t *keyfra
  */
 NANOEM_DECL_API nanoem_bool_t APIENTRY
 nanoemDocumentBaseKeyframeIsSelected(const nanoem_document_base_keyframe_t *keyframe);
+
+/**
+ * \brief Set whether the keyframe is selected to the given opaque document base keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ * \param value The value to set
+ */
+NANOEM_DECL_API void APIENTRY
+nanoemDocumentBaseKeyframeSetSelected(nanoem_document_base_keyframe_t *keyframe, nanoem_bool_t value);
+
 /** @} */
 
 /**
@@ -149,6 +159,14 @@ nanoemDocumentBaseKeyframeIsSelected(const nanoem_document_base_keyframe_t *keyf
  */
 NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentAccessoryKeyframeGetBaseKeyframeObject(const nanoem_document_accessory_keyframe_t *keyframe);
+
+/**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document accessory keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentAccessoryKeyframeGetBaseKeyframeObjectMutable(nanoem_document_accessory_keyframe_t *keyframe);
 
 /**
  * \brief Get the opaque document model keyframe object from the given opaque document accessory keyframe object
@@ -229,6 +247,15 @@ NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentModelBoneKeyframeGetBaseKeyframeObject(const nanoem_document_model_bone_keyframe_t *keyframe);
 
 /**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document bone keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentModelBoneKeyframeGetBaseKeyframeObjectMutable(nanoem_document_model_bone_keyframe_t *keyframe);
+
+
+/**
  * \brief Get the name from the given opaque document bone keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -282,6 +309,14 @@ nanoemDocumentModelBoneKeyframeIsPhysicsSimulationDisabled(const nanoem_document
  */
 NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentCameraKeyframeGetBaseKeyframeObject(const nanoem_document_camera_keyframe_t *keyframe);
+
+/**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document camera keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentCameraKeyframeGetBaseKeyframeObjectMutable(nanoem_document_camera_keyframe_t *keyframe);
 
 /**
  * \brief Get the opaque document model object from the given opaque document camera keyframe object
@@ -363,6 +398,14 @@ NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentGravityKeyframeGetBaseKeyframeObject(const nanoem_document_gravity_keyframe_t *keyframe);
 
 /**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document gravity keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentGravityKeyframeGetBaseKeyframeObjectMutable(nanoem_document_gravity_keyframe_t *keyframe);
+
+/**
  * \brief Get the direction vector from the given opaque document gravity keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -409,6 +452,14 @@ NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentLightKeyframeGetBaseKeyframeObject(const nanoem_document_light_keyframe_t *keyframe);
 
 /**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document light keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentLightKeyframeGetBaseKeyframeObjectMutable(nanoem_document_light_keyframe_t *keyframe);
+
+/**
  * \brief Get the color from the given opaque document light keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -437,6 +488,14 @@ nanoemDocumentLightKeyframeGetDirection(const nanoem_document_light_keyframe_t *
  */
 NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentModelKeyframeGetBaseKeyframeObject(const nanoem_document_model_keyframe_t *keyframe);
+
+/**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document model keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentModelKeyframeGetBaseKeyframeObjectMutable(nanoem_document_model_keyframe_t *keyframe);
 
 /**
  * \brief Get all opaque model constraint state objects from the given opaque document model keyframe object
@@ -479,6 +538,14 @@ NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentModelMorphKeyframeGetBaseKeyframeObject(const nanoem_document_model_morph_keyframe_t *keyframe);
 
 /**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document morph keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentModelMorphKeyframeGetBaseKeyframeObjectMutable(nanoem_document_model_morph_keyframe_t *keyframe);
+
+/**
  * \brief Get the name from the given opaque document morph keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -507,6 +574,14 @@ nanoemDocumentModelMorphKeyframeGetWeight(const nanoem_document_model_morph_keyf
  */
 NANOEM_DECL_API const nanoem_document_base_keyframe_t * APIENTRY
 nanoemDocumentSelfShadowKeyframeGetBaseKeyframeObject(const nanoem_document_self_shadow_keyframe_t *keyframe);
+
+/**
+ * \brief Get the opaque mutable document base keyframe object from the given opaque document self shadow keyframe object
+ *
+ * \param keyframe The opaque document keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemDocumentSelfShadowKeyframeGetBaseKeyframeObjectMutable(nanoem_document_self_shadow_keyframe_t *keyframe);
 
 /**
  * \brief Get the distance from the given opaque document self shadow keyframe object
@@ -1767,6 +1842,14 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentAccessoryKeyframeSetShadowEnabled(nanoem_mutable_document_accessory_keyframe_t *keyframe, nanoem_bool_t value);
 
 /**
+ * \brief Get the opaque origin document accessory keyframe object from the given opaque document accessory keyframe object
+ *
+ * \param model The opaque document accessory keyframe object
+ */
+NANOEM_DECL_API nanoem_document_accessory_keyframe_t *APIENTRY
+nanoemMutableDocumentAccessoryKeyframeGetOrigin(nanoem_mutable_document_accessory_keyframe_t *keyframe);
+
+/**
  * \brief Destroy the given opaque document accessory keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -1826,6 +1909,14 @@ nanoemMutableDocumentModelBoneKeyframeSetInterpolation(nanoem_mutable_document_m
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelBoneKeyframeSetPhysicsSimulationDisabled(nanoem_mutable_document_model_bone_keyframe_t *keyframe, nanoem_bool_t value);
+
+/**
+ * \brief Get the opaque origin document model bone keyframe object from the given opaque document model bone keyframe object
+ *
+ * \param model The opaque document model bone keyframe object
+ */
+NANOEM_DECL_API nanoem_document_model_bone_keyframe_t *APIENTRY
+nanoemMutableDocumentModelBoneKeyframeGetOrigin(nanoem_mutable_document_model_bone_keyframe_t *keyframe);
 
 /**
  * \brief Destroy the given opaque document bone keyframe object
@@ -1925,6 +2016,14 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentCameraKeyframeSetPerspectiveView(nanoem_mutable_document_camera_keyframe_t *keyframe, nanoem_bool_t value);
 
 /**
+ * \brief Get the opaque origin document camera keyframe object from the given opaque document camera keyframe object
+ *
+ * \param model The opaque document camera keyframe object
+ */
+NANOEM_DECL_API nanoem_document_camera_keyframe_t *APIENTRY
+nanoemMutableDocumentCameraKeyframeGetOrigin(nanoem_mutable_document_camera_keyframe_t *keyframe);
+
+/**
  * \brief Destroy the given opaque document camera keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -1984,6 +2083,14 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentGravityKeyframeSetNoiseEnabled(nanoem_mutable_document_gravity_keyframe_t *keyframe, nanoem_bool_t value);
 
 /**
+ * \brief Get the opaque origin document gravity keyframe object from the given opaque document gravity keyframe object
+ *
+ * \param model The opaque document gravity keyframe object
+ */
+NANOEM_DECL_API nanoem_document_gravity_keyframe_t *APIENTRY
+nanoemMutableDocumentGravityKeyframeGetOrigin(nanoem_mutable_document_gravity_keyframe_t *keyframe);
+
+/**
  * \brief Destroy the given opaque document gravity keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -2023,6 +2130,14 @@ nanoemMutableDocumentLightKeyframeSetColor(nanoem_mutable_document_light_keyfram
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentLightKeyframeSetDirection(nanoem_mutable_document_light_keyframe_t *keyframe, const nanoem_f32_t *value);
+
+/**
+ * \brief Get the opaque origin document light keyframe object from the given opaque document light keyframe object
+ *
+ * \param model The opaque document light keyframe object
+ */
+NANOEM_DECL_API nanoem_document_light_keyframe_t *APIENTRY
+nanoemMutableDocumentLightKeyframeGetOrigin(nanoem_mutable_document_light_keyframe_t *keyframe);
 
 /**
  * \brief Destroy the given opaque document light keyframe object
@@ -2099,6 +2214,14 @@ NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelKeyframeSetVisible(nanoem_mutable_document_model_keyframe_t *keyframe, nanoem_bool_t value);
 
 /**
+ * \brief Get the opaque origin document model keyframe object from the given opaque document model keyframe object
+ *
+ * \param model The opaque document gravity keyframe object
+ */
+NANOEM_DECL_API nanoem_document_model_keyframe_t *APIENTRY
+nanoemMutableDocumentModelKeyframeGetOrigin(nanoem_mutable_document_model_keyframe_t *keyframe);
+
+/**
  * \brief Destroy the given opaque document model keyframe object
  *
  * \param keyframe The opaque document keyframe object
@@ -2130,6 +2253,14 @@ nanoemMutableDocumentModelMorphKeyframeCreate(nanoem_mutable_document_model_t *m
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentModelMorphKeyframeSetWeight(nanoem_mutable_document_model_morph_keyframe_t *keyframe, nanoem_f32_t value);
+
+/**
+ * \brief Get the opaque origin document model morph keyframe object from the given opaque document model morph keyframe object
+ *
+ * \param model The opaque document gravity keyframe object
+ */
+NANOEM_DECL_API nanoem_document_model_morph_keyframe_t *APIENTRY
+nanoemMutableDocumentModelMorphKeyframeGetOrigin(nanoem_mutable_document_model_morph_keyframe_t *keyframe);
 
 /**
  * \brief Destroy the given opaque document morph keyframe object
@@ -2171,6 +2302,14 @@ nanoemMutableDocumentSelfShadowKeyframeSetDistance(nanoem_mutable_document_self_
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableDocumentSelfShadowKeyframeSetMode(nanoem_mutable_document_self_shadow_keyframe_t *keyframe, int value);
+
+/**
+ * \brief Get the opaque origin document base keyframe object from the given opaque document self shadow keyframe object
+ *
+ * \param model The opaque document gravity keyframe object
+ */
+NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+nanoemMutableDocumentSelfShadowKeyframeGetOrigin(nanoem_mutable_document_self_shadow_keyframe_t *keyframe);
 
 /**
  * \brief Destroy the given opaque document self shadow keyframe object

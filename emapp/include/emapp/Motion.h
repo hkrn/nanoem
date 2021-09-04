@@ -113,9 +113,10 @@ public:
     static void copyAllAccessoryKeyframes(
         const nanoem_motion_t *source, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     static void copyAllBoneKeyframes(nanoem_motion_bone_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
+        const IMotionKeyframeSelection *selection, const Model *model, nanoem_mutable_motion_t *motion, int offset,
+        nanoem_status_t &status);
+    static void copyAllBoneKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
         const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
-    static void copyAllBoneKeyframes(const nanoem_motion_t *source, const Model *model, nanoem_mutable_motion_t *motion,
-        int offset, nanoem_status_t &status);
     static void copyAllCameraKeyframes(nanoem_motion_camera_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
         nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     static void copyAllCameraKeyframes(
@@ -125,13 +126,15 @@ public:
     static void copyAllLightKeyframes(
         const nanoem_motion_t *source, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     static void copyAllModelKeyframes(nanoem_motion_model_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
+        const IMotionKeyframeSelection *selection, nanoem_mutable_motion_t *motion, int offset,
+        nanoem_status_t &status);
+    static void copyAllModelKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
         nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
-    static void copyAllModelKeyframes(
-        const nanoem_motion_t *source, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     static void copyAllMorphKeyframes(nanoem_motion_morph_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
+        const IMotionKeyframeSelection *selection, const Model *model, nanoem_mutable_motion_t *motion, int offset,
+        nanoem_status_t &status);
+    static void copyAllMorphKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
         const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
-    static void copyAllMorphKeyframes(const nanoem_motion_t *source, const Model *model,
-        nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     static void copyAllSelfShadowKeyframes(nanoem_motion_self_shadow_keyframe_t *const *keyframes,
         nanoem_rsize_t numKeyframes, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     static void copyAllSelfShadowKeyframes(
@@ -176,6 +179,7 @@ public:
     void scaleAllMorphKeyframesIn(
         const Model *model, nanoem_frame_index_t from, nanoem_frame_index_t to, nanoem_f32_t scaleFactor);
     void scaleAllSelfShadowKeyframesIn(nanoem_frame_index_t from, nanoem_frame_index_t to, nanoem_f32_t scaleFactor);
+    void selectAllModelObjectKeyframes(const Model *model);
     bool testAllMissingModelObjects(const Model *model, StringSet &bones, StringSet &morphs) const;
 
     void destroyState(SelectionState *&selectionState) const NANOEM_DECL_NOEXCEPT;
@@ -239,8 +243,8 @@ private:
         nanoem_mutable_motion_accessory_keyframe_t *mutableAccessoryKeyframe);
     static void copyAllAccessoryEffectParameters(const nanoem_motion_accessory_keyframe_t *keyframe,
         nanoem_mutable_motion_accessory_keyframe_t *mutableAccessoryKeyframe, nanoem_status_t &status);
-    static void copyAllModelKeyframeParameters(const nanoem_motion_t *source, const Model *model,
-        nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
+    static void copyAllModelKeyframeParameters(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
+        const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status);
     void internalWriteLoadCommandMessage(nanoem_u32_t type, nanoem_u16_t handle, const URI &fileURI, Error &error);
     bool internalSave(nanoem_mutable_motion_t *mutableMotion, IWriter *bytes, Error &error) const;
     void internalMergeAllKeyframes(const Motion *source, bool _override, bool reverse);

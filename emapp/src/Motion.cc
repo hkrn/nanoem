@@ -695,7 +695,8 @@ Motion::copyAllAccessoryKeyframes(
 
 void
 Motion::copyAllBoneKeyframes(nanoem_motion_bone_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
-    const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
+    const IMotionKeyframeSelection *selection, const Model *model, nanoem_mutable_motion_t *motion, int offset,
+    nanoem_status_t &status)
 {
     if (model) {
         nanoem_motion_t *originMotion = nanoemMutableMotionGetOriginObject(motion);
@@ -708,6 +709,10 @@ Motion::copyAllBoneKeyframes(nanoem_motion_bone_keyframe_t *const *keyframes, na
                 nanoem_mutable_motion_bone_keyframe_t *mutableBoneKeyframe =
                     nanoemMutableMotionBoneKeyframeCreate(originMotion, &status);
                 nanoemMutableMotionBoneKeyframeCopy(mutableBoneKeyframe, keyframe);
+                nanoemMotionKeyframeObjectSetSelected(
+                    nanoemMotionBoneKeyframeGetKeyframeObjectMutable(
+                        nanoemMutableMotionBoneKeyframeGetOriginObject(mutableBoneKeyframe)),
+                    selection ? selection->contains(keyframe) : false);
                 nanoemMutableMotionAddBoneKeyframe(motion, mutableBoneKeyframe, name, frameIndex, &status);
                 nanoemMutableMotionBoneKeyframeDestroy(mutableBoneKeyframe);
                 if (status == NANOEM_STATUS_ERROR_MOTION_BONE_KEYFRAME_ALREADY_EXISTS) {
@@ -723,12 +728,13 @@ Motion::copyAllBoneKeyframes(nanoem_motion_bone_keyframe_t *const *keyframes, na
 }
 
 void
-Motion::copyAllBoneKeyframes(const nanoem_motion_t *source, const Model *model, nanoem_mutable_motion_t *motion,
+Motion::copyAllBoneKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
+    const Model *model, nanoem_mutable_motion_t *motion,
     int offset, nanoem_status_t &status)
 {
     nanoem_rsize_t numKeyframes;
     nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(source, &numKeyframes);
-    copyAllBoneKeyframes(keyframes, numKeyframes, model, motion, offset, status);
+    copyAllBoneKeyframes(keyframes, numKeyframes, selection, model, motion, offset, status);
 }
 
 void
@@ -801,7 +807,7 @@ Motion::copyAllLightKeyframes(
 
 void
 Motion::copyAllModelKeyframes(nanoem_motion_model_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
-    nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
+    const IMotionKeyframeSelection *selection, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
 {
     nanoem_motion_t *originMotion = nanoemMutableMotionGetOriginObject(motion);
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
@@ -811,6 +817,10 @@ Motion::copyAllModelKeyframes(nanoem_motion_model_keyframe_t *const *keyframes, 
         nanoem_frame_index_t frameIndex = nanoemMotionKeyframeObjectGetFrameIndexWithOffset(
             nanoemMotionModelKeyframeGetKeyframeObject(keyframe), offset);
         nanoemMutableMotionModelKeyframeCopy(mutableModelKeyframe, keyframe, &status);
+        nanoemMotionKeyframeObjectSetSelected(
+            nanoemMotionModelKeyframeGetKeyframeObjectMutable(
+                nanoemMutableMotionModelKeyframeGetOriginObject(mutableModelKeyframe)),
+            selection ? selection->contains(keyframe) : false);
         nanoemMutableMotionAddModelKeyframe(motion, mutableModelKeyframe, frameIndex, &status);
         nanoemMutableMotionModelKeyframeDestroy(mutableModelKeyframe);
         if (status == NANOEM_STATUS_ERROR_MOTION_MODEL_KEYFRAME_ALREADY_EXISTS) {
@@ -823,18 +833,19 @@ Motion::copyAllModelKeyframes(nanoem_motion_model_keyframe_t *const *keyframes, 
 }
 
 void
-Motion::copyAllModelKeyframes(
-    const nanoem_motion_t *source, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
+Motion::copyAllModelKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
+    nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
 {
     nanoem_rsize_t numKeyframes;
     nanoem_motion_model_keyframe_t *const *modelKeyframes =
         nanoemMotionGetAllModelKeyframeObjects(source, &numKeyframes);
-    copyAllModelKeyframes(modelKeyframes, numKeyframes, motion, offset, status);
+    copyAllModelKeyframes(modelKeyframes, numKeyframes, selection, motion, offset, status);
 }
 
 void
 Motion::copyAllMorphKeyframes(nanoem_motion_morph_keyframe_t *const *keyframes, nanoem_rsize_t numKeyframes,
-    const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
+    const IMotionKeyframeSelection *selection, const Model *model, nanoem_mutable_motion_t *motion, int offset,
+    nanoem_status_t &status)
 {
     if (model) {
         nanoem_motion_t *originMotion = nanoemMutableMotionGetOriginObject(motion);
@@ -847,6 +858,10 @@ Motion::copyAllMorphKeyframes(nanoem_motion_morph_keyframe_t *const *keyframes, 
                 nanoem_mutable_motion_morph_keyframe_t *mutableMorphKeyframe =
                     nanoemMutableMotionMorphKeyframeCreate(originMotion, &status);
                 nanoemMutableMotionMorphKeyframeCopy(mutableMorphKeyframe, keyframe);
+                nanoemMotionKeyframeObjectSetSelected(
+                    nanoemMotionMorphKeyframeGetKeyframeObjectMutable(
+                        nanoemMutableMotionMorphKeyframeGetOriginObject(mutableMorphKeyframe)),
+                    selection ? selection->contains(keyframe) : false);
                 nanoemMutableMotionAddMorphKeyframe(motion, mutableMorphKeyframe, name, frameIndex, &status);
                 nanoemMutableMotionMorphKeyframeDestroy(mutableMorphKeyframe);
                 if (status == NANOEM_STATUS_ERROR_MOTION_MORPH_KEYFRAME_ALREADY_EXISTS) {
@@ -862,12 +877,12 @@ Motion::copyAllMorphKeyframes(nanoem_motion_morph_keyframe_t *const *keyframes, 
 }
 
 void
-Motion::copyAllMorphKeyframes(const nanoem_motion_t *source, const Model *model, nanoem_mutable_motion_t *motion,
-    int offset, nanoem_status_t &status)
+Motion::copyAllMorphKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
+    const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
 {
     nanoem_rsize_t numKeyframes;
     nanoem_motion_morph_keyframe_t *const *keyframes = nanoemMotionGetAllMorphKeyframeObjects(source, &numKeyframes);
-    copyAllMorphKeyframes(keyframes, numKeyframes, model, motion, offset, status);
+    copyAllMorphKeyframes(keyframes, numKeyframes, selection, model, motion, offset, status);
 }
 
 void
@@ -1336,7 +1351,7 @@ Motion::save(IWriter *writer, const Model *model, nanoem_u32_t flags, Error &err
     }
     if (status == NANOEM_STATUS_SUCCESS && EnumUtils::isEnabled(flags, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MODEL) &&
         model) {
-        copyAllModelKeyframeParameters(data(), model, mutableMotion, 0, status);
+        copyAllModelKeyframeParameters(data(), m_selection, model, mutableMotion, 0, status);
         if (status == NANOEM_STATUS_SUCCESS) {
             nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
             StringUtils::UnicodeStringScope us(factory);
@@ -1776,6 +1791,37 @@ Motion::scaleAllSelfShadowKeyframesIn(nanoem_frame_index_t from, nanoem_frame_in
     }
 }
 
+void
+Motion::selectAllModelObjectKeyframes(const Model *model)
+{
+    m_selection->addAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_MODEL);
+    {
+        nanoem_rsize_t numKeyframes;
+        nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(data(), &numKeyframes);
+        for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+            const nanoem_motion_bone_keyframe_t *keyframe = keyframes[i];
+            const nanoem_motion_keyframe_object_t *ko = nanoemMotionBoneKeyframeGetKeyframeObject(keyframe);
+            const nanoem_unicode_string_t *name = nanoemMotionBoneKeyframeGetName(keyframe);
+            if (model->containsBone(name)) {
+                m_selection->add(keyframe);
+            }
+        }
+    }
+    {
+        nanoem_rsize_t numKeyframes;
+        nanoem_motion_morph_keyframe_t *const *keyframes =
+            nanoemMotionGetAllMorphKeyframeObjects(data(), &numKeyframes);
+        for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
+            const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
+            const nanoem_motion_keyframe_object_t *ko = nanoemMotionMorphKeyframeGetKeyframeObject(keyframe);
+            const nanoem_unicode_string_t *name = nanoemMotionMorphKeyframeGetName(keyframe);
+            if (model->containsMorph(name)) {
+                m_selection->add(keyframe);
+            }
+        }
+    }
+}
+
 bool
 Motion::testAllMissingModelObjects(const Model *model, StringSet &bones, StringSet &morphs) const
 {
@@ -2168,19 +2214,19 @@ Motion::copyAllAccessoryEffectParameters(const nanoem_motion_accessory_keyframe_
 }
 
 void
-Motion::copyAllModelKeyframeParameters(const nanoem_motion_t *source, const Model *model,
-    nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
+Motion::copyAllModelKeyframeParameters(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
+    const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
 {
     nanoem_parameter_assert(model, "must not be nullptr");
     nanoem_parameter_assert(motion, "must not be nullptr");
     if (status == NANOEM_STATUS_SUCCESS) {
-        copyAllBoneKeyframes(source, model, motion, offset, status);
+        copyAllBoneKeyframes(source, selection, model, motion, offset, status);
     }
     if (status == NANOEM_STATUS_SUCCESS) {
-        copyAllModelKeyframes(source, motion, offset, status);
+        copyAllModelKeyframes(source, selection, motion, offset, status);
     }
     if (status == NANOEM_STATUS_SUCCESS) {
-        copyAllMorphKeyframes(source, model, motion, offset, status);
+        copyAllMorphKeyframes(source, selection, model, motion, offset, status);
     }
     if (status == NANOEM_STATUS_SUCCESS) {
         const nanoem_unicode_string_t *name = nanoemModelGetName(model->data(), NANOEM_LANGUAGE_TYPE_FIRST_ENUM);
