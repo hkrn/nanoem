@@ -8,6 +8,7 @@
 
 #include "emapp/CommandRegistrator.h"
 #include "emapp/ICamera.h"
+#include "emapp/IMotionKeyframeSelection.h"
 
 using namespace nanoem;
 using namespace test;
@@ -64,6 +65,7 @@ TEST_CASE("motion_add_camera_keyframe", "[emapp][motion]")
                       keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == Vector4U8(24, 26, 28, 30));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
                       NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == Vector4U8(25, 27, 29, 31));
+            CHECK(project->cameraMotion()->selection()->contains(keyframe));
             CHECK(project->cameraMotion()->isDirty());
             CHECK_FALSE(scope.hasAnyError());
         }
@@ -100,6 +102,7 @@ TEST_CASE("motion_add_camera_keyframe", "[emapp][motion]")
                       keyframe, NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_FOV)) == Vector4U8(24, 26, 28, 30));
             CHECK(glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(keyframe,
                       NANOEM_MOTION_CAMERA_KEYFRAME_INTERPOLATION_TYPE_DISTANCE)) == Vector4U8(25, 27, 29, 31));
+            CHECK(project->cameraMotion()->selection()->contains(keyframe));
             CHECK_FALSE(scope.hasAnyError());
         }
         SECTION("recovery")

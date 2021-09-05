@@ -8,6 +8,7 @@
 
 #include "emapp/CommandRegistrator.h"
 #include "emapp/ILight.h"
+#include "emapp/IMotionKeyframeSelection.h"
 
 using namespace nanoem;
 using namespace test;
@@ -35,6 +36,7 @@ TEST_CASE("motion_add_light_keyframe", "[emapp][motion]")
             CHECK_THAT(glm::make_vec3(nanoemMotionLightKeyframeGetColor(keyframe)), Equals(Vector3(0.7, 0.5, 0.3)));
             CHECK(glm::make_vec3(nanoemMotionLightKeyframeGetDirection(keyframe)) ==
                 glm::radians(Vector3(-0.4, 0.9, 0.2)));
+            CHECK(project->lightMotion()->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK(project->lightMotion()->isDirty());
         }
@@ -56,6 +58,7 @@ TEST_CASE("motion_add_light_keyframe", "[emapp][motion]")
             CHECK_THAT(glm::make_vec3(nanoemMotionLightKeyframeGetColor(keyframe)), Equals(Vector3(0.7, 0.5, 0.3)));
             CHECK_THAT(glm::make_vec3(nanoemMotionLightKeyframeGetDirection(keyframe)),
                 EqualsRadians(Vector3(-0.4, 0.9, 0.2)));
+            CHECK(project->lightMotion()->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK_FALSE(scope.hasAnyError());
         }

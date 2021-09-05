@@ -65,6 +65,13 @@ static int kFrameIndexDeltaPlus = 10;
 static int kFrameIndexDeltaMinus = -kFrameIndexDeltaPlus;
 static int kKeyframeIndexShouldNotChangedForZero[] = { 0, kFrameIndexDeltaPlus };
 
+static void
+clearAllDirtyStates(Motion *motion)
+{
+    undoStackClear(motion->project()->undoStack());
+    motion->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
+}
+
 TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
 {
     Error error;
@@ -87,8 +94,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             activeAccessory->setScaleFactor(5.0f);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeAccessory);
+        clearAllDirtyStates(motion);
         motion->selection()->addAccessoryKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -127,8 +134,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             activeModel->performAllBonesTransform();
             registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addBoneKeyframes(activeBonePtr, 1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -161,8 +168,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             camera->setFov(21);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->cameraMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addCameraKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -196,8 +203,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             light->setDirection(Vector3(0.4f, 0.5f, 0.6f));
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->lightMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addLightKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -228,8 +235,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             activeModel->setVisible(false);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addModelKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -262,8 +269,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             activeModel->performAllBonesTransform();
             registrator.registerAddMorphKeyframesCommandByActiveMorph(activeModel, NANOEM_MODEL_MORPH_CATEGORY_BASE);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addMorphKeyframes(activeMorphPtr, 1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -292,8 +299,8 @@ TEST_CASE("project_move_all_keyframes_command_plus", "[emapp][project]")
             shadow->setCoverageMode(ShadowCamera::kCoverageModeType2);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->selfShadowMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addSelfShadowKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -335,8 +342,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             activeAccessory->setScaleFactor(5.0f);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeAccessory);
+        clearAllDirtyStates(motion);
         motion->selection()->addAccessoryKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -375,8 +382,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             activeModel->performAllBonesTransform();
             registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addBoneKeyframes(activeBonePtr, 1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -409,8 +416,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             camera->setFov(21);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->cameraMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addCameraKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -444,8 +451,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             light->setDirection(Vector3(0.4f, 0.5f, 0.6f));
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->lightMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addLightKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -476,8 +483,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             activeModel->setVisible(false);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addModelKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -510,8 +517,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             activeModel->performAllBonesTransform();
             registrator.registerAddMorphKeyframesCommandByActiveMorph(activeModel, NANOEM_MODEL_MORPH_CATEGORY_BASE);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addMorphKeyframes(activeMorphPtr, 1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -540,8 +547,8 @@ TEST_CASE("project_move_all_keyframes_command_minus", "[emapp][project]")
             shadow->setCoverageMode(ShadowCamera::kCoverageModeType2);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->selfShadowMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addSelfShadowKeyframes(1339, 1341);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -583,8 +590,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             activeAccessory->setScaleFactor(5.0f);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeAccessory);
+        clearAllDirtyStates(motion);
         motion->selection()->addAccessoryKeyframes(0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -615,8 +622,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             activeModel->performAllBonesTransform();
             registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addBoneKeyframes(activeBonePtr, 0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -643,8 +650,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             camera->setFov(21);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->cameraMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addCameraKeyframes(0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -670,8 +677,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             light->setDirection(Vector3(0.4f, 0.5f, 0.6f));
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->lightMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addLightKeyframes(0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -696,8 +703,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             activeModel->setVisible(false);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addModelKeyframes(0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -725,8 +732,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             activeModel->performAllBonesTransform();
             registrator.registerAddMorphKeyframesCommandByActiveMorph(activeModel, NANOEM_MODEL_MORPH_CATEGORY_BASE);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addMorphKeyframes(activeMorphPtr, 0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -750,8 +757,8 @@ TEST_CASE("project_move_all_keyframes_command_zero", "[emapp][project]")
             shadow->setCoverageMode(ShadowCamera::kCoverageModeType2);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->selfShadowMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addSelfShadowKeyframes(0, 0);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -787,8 +794,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             activeAccessory->setScaleFactor(5.0f);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeAccessory);
+        clearAllDirtyStates(motion);
         motion->selection()->addAccessoryKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -820,8 +827,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             activeModel->performAllBonesTransform();
             registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addBoneKeyframes(activeBonePtr, 0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -849,8 +856,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             camera->setFov(21);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->cameraMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addCameraKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -877,8 +884,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             light->setDirection(Vector3(0.4f, 0.5f, 0.6f));
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->lightMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addLightKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -904,8 +911,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             activeModel->setVisible(false);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addModelKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -934,8 +941,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             activeModel->performAllBonesTransform();
             registrator.registerAddMorphKeyframesCommandByActiveMorph(activeModel, NANOEM_MODEL_MORPH_CATEGORY_BASE);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addMorphKeyframes(activeMorphPtr, 0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -960,8 +967,8 @@ TEST_CASE("project_move_all_keyframes_command_forward_override", "[emapp][projec
             shadow->setCoverageMode(ShadowCamera::kCoverageModeType2);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->selfShadowMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addSelfShadowKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaMinus, error);
         CHECK_FALSE(error.hasReason());
@@ -998,8 +1005,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             activeAccessory->setScaleFactor(5.0f);
             registrator.registerAddAccessoryKeyframesCommandByCurrentLocalFrameIndex(activeAccessory);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeAccessory);
+        clearAllDirtyStates(motion);
         motion->selection()->addAccessoryKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -1036,8 +1043,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             activeModel->performAllBonesTransform();
             registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addBoneKeyframes(activeBonePtr, 0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -1068,8 +1075,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             camera->setFov(21);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->cameraMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addCameraKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -1101,8 +1108,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             light->setDirection(Vector3(0.4f, 0.5f, 0.6f));
             registrator.registerAddLightKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->lightMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addLightKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -1131,8 +1138,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             activeModel->setVisible(false);
             registrator.registerAddModelKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addModelKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -1163,8 +1170,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             activeModel->performAllBonesTransform();
             registrator.registerAddMorphKeyframesCommandByActiveMorph(activeModel, NANOEM_MODEL_MORPH_CATEGORY_BASE);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addMorphKeyframes(activeMorphPtr, 0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());
@@ -1191,8 +1198,8 @@ TEST_CASE("project_move_all_keyframes_command_backward_override", "[emapp][proje
             shadow->setCoverageMode(ShadowCamera::kCoverageModeType2);
             registrator.registerAddSelfShadowKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->selfShadowMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addSelfShadowKeyframes(0, kFrameIndexDeltaPlus);
         registrator.registerMoveAllSelectedKeyframesCommand(kFrameIndexDeltaPlus, error);
         CHECK_FALSE(error.hasReason());

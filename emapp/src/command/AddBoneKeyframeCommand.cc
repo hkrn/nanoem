@@ -177,6 +177,7 @@ AddBoneKeyframeCommand::toKeyframe(const nanoem_model_bone_t *bonePtr, const Mot
             }
             keyframe.m_bezierCurveOverrideTargetFrameIndex = prevKeyframeIndex;
         }
+        keyframe.m_selected = true;
     }
     return keyframe;
 }

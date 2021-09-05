@@ -111,6 +111,7 @@ AddCameraKeyframeCommand::toKeyframeList(
                         prev, nanoem_motion_camera_keyframe_interpolation_type_t(i)));
                 }
             }
+            keyframe.m_selected = true;
         }
         newKeyframes.push_back(keyframe);
     }

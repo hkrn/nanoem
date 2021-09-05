@@ -7,6 +7,7 @@
 #include "../common.h"
 
 #include "emapp/CommandRegistrator.h"
+#include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/Model.h"
 
 using namespace nanoem;
@@ -67,6 +68,7 @@ TEST_CASE("motion_add_bone_keyframe", "[emapp][motion]")
                       NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == Vector4U8(11, 13, 15, 17));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
                       NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == Vector4U8(12, 14, 16, 18));
+            CHECK(project->resolveMotion(activeModel)->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
@@ -113,6 +115,7 @@ TEST_CASE("motion_add_bone_keyframe", "[emapp][motion]")
                       NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_TRANSLATION_Z)) == Vector4U8(11, 13, 15, 17));
             CHECK(glm::make_vec4(nanoemMotionBoneKeyframeGetInterpolation(keyframe,
                       NANOEM_MOTION_BONE_KEYFRAME_INTERPOLATION_TYPE_ORIENTATION)) == Vector4U8(12, 14, 16, 18));
+            CHECK(project->resolveMotion(activeModel)->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);

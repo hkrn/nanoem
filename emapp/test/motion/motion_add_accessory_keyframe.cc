@@ -8,6 +8,7 @@
 
 #include "emapp/Accessory.h"
 #include "emapp/CommandRegistrator.h"
+#include "emapp/IMotionKeyframeSelection.h"
 
 using namespace nanoem;
 using namespace test;
@@ -53,6 +54,7 @@ TEST_CASE("motion_add_accessory_keyframe", "[emapp][motion]")
                 Quaternion(glm::radians(Vector3(15, 30, 45))));
             CHECK(nanoemMotionAccessoryKeyframeGetOpacity(keyframe) == Approx(0.4));
             CHECK(nanoemMotionAccessoryKeyframeGetScaleFactor(keyframe) == Approx(0.8));
+            CHECK(project->resolveMotion(activeAccessory)->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeAccessory) == 1337);
             CHECK(first->motionDuration(other1Accessory) == 0);
@@ -93,6 +95,7 @@ TEST_CASE("motion_add_accessory_keyframe", "[emapp][motion]")
                 Quaternion(glm::radians(Vector3(15, 30, 45))));
             CHECK(nanoemMotionAccessoryKeyframeGetOpacity(keyframe) == Approx(0.4));
             CHECK(nanoemMotionAccessoryKeyframeGetScaleFactor(keyframe) == Approx(0.8));
+            CHECK(project->resolveMotion(activeAccessory)->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeAccessory) == 1337);
             CHECK(first->motionDuration(other1Accessory) == 0);

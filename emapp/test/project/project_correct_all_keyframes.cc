@@ -67,6 +67,13 @@ struct EqualsQuaternion : Catch::Matchers::Impl::MatcherBase<Quaternion> {
     Quaternion m_data;
 };
 
+static void
+clearAllDirtyStates(Motion *motion)
+{
+    undoStackClear(motion->project()->undoStack());
+    motion->selection()->clearAllKeyframes(NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL);
+}
+
 TEST_CASE("project_register_correct_all_motion_keyframes_command", "[emapp][project]")
 {
     TestScope scope;
@@ -88,8 +95,8 @@ TEST_CASE("project_register_correct_all_motion_keyframes_command", "[emapp][proj
             activeModel->performAllBonesTransform();
             registrator.registerAddBoneKeyframesCommandBySelectedBoneSet(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addBoneKeyframes(activeBonePtr, kKeyframeIndexSelectBegin, kKeyframeIndexSelectEnd);
         registrator.registerCorrectAllSelectedBoneKeyframesCommand(activeModel,
             Motion::CorrectionVectorFactor(Vector3(0.4f), Vector3(0.2f)),
@@ -120,8 +127,8 @@ TEST_CASE("project_register_correct_all_motion_keyframes_command", "[emapp][proj
             camera->setFov(21);
             registrator.registerAddCameraKeyframesCommandByCurrentLocalFrameIndex();
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->cameraMotion();
+        clearAllDirtyStates(motion);
         motion->selection()->addCameraKeyframes(kKeyframeIndexSelectBegin, kKeyframeIndexSelectEnd);
         registrator.registerCorrectAllSelectedCameraKeyframesCommand(
             Motion::CorrectionVectorFactor(Vector3(0.7f), Vector3(-0.3f)),
@@ -157,8 +164,8 @@ TEST_CASE("project_register_correct_all_motion_keyframes_command", "[emapp][proj
             activeMorph->setWeight(0.42f);
             registrator.registerAddMorphKeyframesCommandByAllMorphs(activeModel);
         }
-        undoStackClear(project->undoStack());
         Motion *motion = project->resolveMotion(activeModel);
+        clearAllDirtyStates(motion);
         motion->selection()->addMorphKeyframes(activeMorphPtr, kKeyframeIndexSelectBegin, kKeyframeIndexSelectEnd);
         registrator.registerCorrectAllSelectedMorphKeyframesCommand(
             activeModel, Motion::CorrectionScalarFactor(0.75f, 0.25f), error);
