@@ -1137,7 +1137,8 @@ Native::Context::loadMotion(
                 IMotionKeyframeSelection *selection = motion->selection();
                 {
                     nanoem_rsize_t numKeyframes;
-                    nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(motion->data(), &numKeyframes);
+                    nanoem_motion_bone_keyframe_t *const *keyframes =
+                        nanoemMotionGetAllBoneKeyframeObjects(motion->data(), &numKeyframes);
                     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
                         const nanoem_motion_bone_keyframe_t *keyframe = keyframes[i];
                         if (nanoemMotionKeyframeObjectIsSelected(nanoemMotionBoneKeyframeGetKeyframeObject(keyframe))) {
@@ -1151,7 +1152,8 @@ Native::Context::loadMotion(
                         nanoemMotionGetAllModelKeyframeObjects(motion->data(), &numKeyframes);
                     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
                         const nanoem_motion_model_keyframe_t *keyframe = keyframes[i];
-                        if (nanoemMotionKeyframeObjectIsSelected(nanoemMotionModelKeyframeGetKeyframeObject(keyframe))) {
+                        if (nanoemMotionKeyframeObjectIsSelected(
+                                nanoemMotionModelKeyframeGetKeyframeObject(keyframe))) {
                             selection->add(keyframe);
                         }
                     }
@@ -1162,7 +1164,8 @@ Native::Context::loadMotion(
                         nanoemMotionGetAllMorphKeyframeObjects(motion->data(), &numKeyframes);
                     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
                         const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
-                        if (nanoemMotionKeyframeObjectIsSelected(nanoemMotionMorphKeyframeGetKeyframeObject(keyframe))) {
+                        if (nanoemMotionKeyframeObjectIsSelected(
+                                nanoemMotionMorphKeyframeGetKeyframeObject(keyframe))) {
                             selection->add(keyframe);
                         }
                     }

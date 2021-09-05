@@ -30,21 +30,21 @@
  */
 typedef struct nanoem_application_plugin_encoder_t nanoem_application_plugin_encoder_t;
 
-NANOEM_DECL_ENUM(int, nanoem_application_plugin_encoder_option_t) {
-    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_UNKNOWN = -1,  ///< Unknown
+NANOEM_DECL_ENUM(int,
+    nanoem_application_plugin_encoder_option_t) { NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_UNKNOWN = -1, ///< Unknown
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FIRST_ENUM,
-    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS = NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FIRST_ENUM, ///< Setting encode FPS value (u32)
+    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS =
+        NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FIRST_ENUM, ///< Setting encode FPS value (u32)
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_DURATION, ///< Setting encode duration (u32)
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_LOCATION, ///< Setting encode audio/video location (string)
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_AUDIO_NUM_FREQUENCY, ///< Setting encode audio number of frequency (u32)
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_AUDIO_NUM_CHANNELS, ///< Setting encode audio number of channels (u32)
-    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_AUDIO_NUM_BITS,  ///< Setting encode audio number of bits (u32)
+    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_AUDIO_NUM_BITS, ///< Setting encode audio number of bits (u32)
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, ///< Setting encode video width (u32)
-    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HEIGHT,  ///< Setting encode video height (u32)
+    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HEIGHT, ///< Setting encode video height (u32)
     NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_YFLIP, ///< Setting encode video with Y-flip enabled (u32)
-    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HDR_NUM_BITS,  ///< Setting encode video color depth (u32)
-    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_MAX_ENUM
-};
+    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HDR_NUM_BITS, ///< Setting encode video color depth (u32)
+    NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_MAX_ENUM };
 
 /**
  * \brief Get plugin's ABI version

@@ -729,8 +729,7 @@ Motion::copyAllBoneKeyframes(nanoem_motion_bone_keyframe_t *const *keyframes, na
 
 void
 Motion::copyAllBoneKeyframes(const nanoem_motion_t *source, const IMotionKeyframeSelection *selection,
-    const Model *model, nanoem_mutable_motion_t *motion,
-    int offset, nanoem_status_t &status)
+    const Model *model, nanoem_mutable_motion_t *motion, int offset, nanoem_status_t &status)
 {
     nanoem_rsize_t numKeyframes;
     nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(source, &numKeyframes);
@@ -1485,8 +1484,8 @@ Motion::correctAllSelectedCameraKeyframes(
             const Vector3 &actualLookAt =
                 glm::make_vec3(nanoemMotionCameraKeyframeGetLookAt(origin)) * lookAt.m_mul + lookAt.m_add;
             nanoemMutableMotionCameraKeyframeSetLookAt(keyframe, glm::value_ptr(Vector4(actualLookAt, 1)));
-            const Vector3 &actualAngle = glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(origin)) *
-                angle.m_mul + angle.m_add * PerspectiveCamera::kAngleScaleFactor;
+            const Vector3 &actualAngle = glm::make_vec3(nanoemMotionCameraKeyframeGetAngle(origin)) * angle.m_mul +
+                angle.m_add * PerspectiveCamera::kAngleScaleFactor;
             nanoemMutableMotionCameraKeyframeSetAngle(keyframe, glm::value_ptr(Vector4(actualAngle, 0)));
             nanoemMutableMotionCameraKeyframeSetDistance(
                 keyframe, nanoemMotionCameraKeyframeGetDistance(origin) * distance.m_mul + distance.m_add);
