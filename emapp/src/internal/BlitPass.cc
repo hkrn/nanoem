@@ -51,6 +51,8 @@ void
 BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, const sg::NamedImage &source,
     const Vector4 &rect, const PixelFormat &format)
 {
+    nanoem_parameter_assert(sg::query_image_state(source.first) == SG_RESOURCESTATE_VALID, "source image must NOT be null");
+    nanoem_parameter_assert(sg::query_pass_state(dest.first) == SG_RESOURCESTATE_VALID, "destination pass must NOT be null");
     SG_INSERT_MARKERF("BlitPass::blit(destHandle=%d, destPass=%s, sourceHandle=%d, sourceImage=%s, x=%.0f, y=%.0f, "
                       "width=%.0f, height=%.0f)",
         dest.first, dest.second, source.first, source.second, rect.x, rect.y, rect.z, rect.w);
@@ -67,6 +69,8 @@ void
 BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, const sg::NamedImage &source,
     const Vector4 &rect, const PixelFormat &format, const Vector4 &viewport)
 {
+    nanoem_parameter_assert(sg::query_image_state(source.first) == SG_RESOURCESTATE_VALID, "source image must NOT be null");
+    nanoem_parameter_assert(sg::query_pass_state(dest.first) == SG_RESOURCESTATE_VALID, "destination pass must NOT be null");
     SG_INSERT_MARKERF("BlitPass::blit(destHandle=%d, destPass=%s, sourceHandle=%d, sourceImage=%s, x=%.0f, y=%.0f, "
                       "width=%.0f, height=%.0f)",
         dest.first, dest.second, source.first, source.second, rect.x, rect.y, rect.z, rect.w);
@@ -95,6 +99,8 @@ BlitPass::markAsDirty()
 void
 BlitPass::draw(sg::PassBlock::IDrawQueue *drawQueue, sg_pipeline pipeline, sg_pass dest, sg_image source)
 {
+    nanoem_parameter_assert(sg::query_image_state(source) == SG_RESOURCESTATE_VALID, "source image must NOT be null");
+    nanoem_parameter_assert(sg::query_pass_state(dest) == SG_RESOURCESTATE_VALID, "destination pass must NOT be null");
     sg_pass_action pa;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
