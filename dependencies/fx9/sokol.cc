@@ -167,15 +167,15 @@ struct Main {
             static const uint8_t kExclamationIcon[] = { 0xE2, 0x9D, 0x97, 0x0 }; // \u2757
             takeAllErrorMessageLogs();
             log("%s\t%s (%zu:%zu)\n[INFO]\n%s\n[TRANSLATOR]\n%s\n[OPTIMIZER]\n%s\n[VALIDATOR]\n%s\n", kExclamationIcon,
-                path, effect.numPasses, effect.numCompiledPasses, effect.sink.info.c_str(),
-                translator.c_str(), optimizer.c_str(), effect.sink.validator.c_str());
+                path, effect.numPasses, effect.numCompiledPasses, effect.sink.info.c_str(), translator.c_str(),
+                optimizer.c_str(), effect.sink.validator.c_str());
         }
         else if (!effect.sink.isEmpty()) {
             static const uint8_t kCrossMarkIcon[] = { 0xE2, 0x9D, 0x8C, 0x0 }; // \u274c
             takeAllErrorMessageLogs();
             log("%s\t%s (%zu:%zu)\n[INFO]\n%s\n[TRANSLATOR]\n%s\n[OPTIMIZER]\n%s\n[VALIDATOR]\n%s\n", kCrossMarkIcon,
-                path, effect.numPasses, effect.numCompiledPasses, effect.sink.info.c_str(),
-                translator.c_str(), optimizer.c_str(), effect.sink.validator.c_str());
+                path, effect.numPasses, effect.numCompiledPasses, effect.sink.info.c_str(), translator.c_str(),
+                optimizer.c_str(), effect.sink.validator.c_str());
         }
         fflush(m_out);
         if (performCompile) {

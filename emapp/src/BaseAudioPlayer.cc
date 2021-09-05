@@ -61,7 +61,8 @@ BaseAudioPlayer::initializeDescription(nanoem_u8_t bits, nanoem_u16_t channels, 
     sampleRate = glm::max(sampleRate, nanoem_u32_t(1));
     const nanoem_u16_t bytesPerPakcet = nanoem_u16_t((bits / 8) * channels);
     output.m_header.m_riffChunk.m_id = nanoem_fourcc('R', 'I', 'F', 'F');
-    output.m_header.m_riffChunk.m_size = Inline::saturateInt32U(size + sizeof(output) - sizeof(output.m_header.m_riffChunk.m_id));
+    output.m_header.m_riffChunk.m_size =
+        Inline::saturateInt32U(size + sizeof(output) - sizeof(output.m_header.m_riffChunk.m_id));
     output.m_header.m_wave = nanoem_fourcc('W', 'A', 'V', 'E');
     output.m_formatChunk.m_id = nanoem_fourcc('f', 'm', 't', ' ');
     output.m_formatChunk.m_size = sizeof(output.m_formatData);

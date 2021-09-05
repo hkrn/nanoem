@@ -2035,7 +2035,8 @@ nanoemApplicationPluginReleaseMemoryWASM(void *ptr)
 }
 
 /* dummy function for WASI SDK */
-int main(int /* argc */, char ** /* argv */)
+int
+main(int /* argc */, char ** /* argv */)
 {
     return 0;
 }

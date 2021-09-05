@@ -2201,8 +2201,10 @@ BaseApplicationService::dispatchMenuItemAction(Project *project, nanoem_u32_t ty
             nanoem_f32_t modelHeightInch = glm::modf(modelHeightCM * 0.032808f, modelHeightFT);
             char title[Inline::kLongNameStackBufferSize];
             String text;
-            StringUtils::format(title, sizeof(title), m_translatorPtr->translate("nanoem.model.measure-height.title"), activeModel->nameConstString());
-            StringUtils::format(text, m_translatorPtr->translate("nanoem.model.measure-height.message"), activeModel->nameConstString(), modelHeightCM, modelHeightFT, modelHeightInch * 12.0f);
+            StringUtils::format(title, sizeof(title), m_translatorPtr->translate("nanoem.model.measure-height.title"),
+                activeModel->nameConstString());
+            StringUtils::format(text, m_translatorPtr->translate("nanoem.model.measure-height.message"),
+                activeModel->nameConstString(), modelHeightCM, modelHeightFT, modelHeightInch * 12.0f);
             IModalDialog *dialog = ModalDialogFactory::createDisplayPlainTextDialog(this, title, text);
             addModalDialog(dialog);
         }

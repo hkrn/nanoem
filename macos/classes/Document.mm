@@ -319,7 +319,7 @@ Document ()
 + (JSON_Value *)addJsonObject:(JSON_Value *)target uuid:(DocumentUUID *)uuid filename:(NSString *)filename;
 + (NSFileWrapper *)newModelFileWrapper:(Model *)model withFilePath:(NSString *)filePath error:(NSError **)outError;
 
-typedef NSString * (^SavingMotionCallback) (Motion *, ByteArray &);
+typedef NSString * (^SavingMotionCallback)(Motion *, ByteArray &);
 - (NSFileWrapper *)saveMotion:(Motion *)motion
                        parent:(NSFileWrapper *)parent
                         block:(SavingMotionCallback)savingMotionCallbackApply;
