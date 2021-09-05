@@ -7041,7 +7041,7 @@ Project::clearViewportPrimaryPass()
 void
 Project::drawBackgroundVideo()
 {
-    const sg_pass pass = currentRenderPass();
+    const sg_pass pass = sg::is_valid(m_currentRenderPass) ? currentRenderPass() : viewportPrimaryPass();
     if (m_backgroundVideoRect == Vector4SI32()) {
         m_backgroundVideoRenderer->draw(pass, kRectCoordination, m_backgroundVideoScaleFactor, this);
     }
