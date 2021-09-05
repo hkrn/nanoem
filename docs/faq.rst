@@ -13,7 +13,14 @@ MikuMikuDance の違いはなんですか？
 =======================================================
 
 .. important::
-   nanoem は MikuMikuDance の互換実装ではありますが、 **MikuMikuDance ではありません** （なので MikuMikuDance の代わりにはなりません）
+   nanoem は MikuMikuDance の互換実装ではありますが、 **MikuMikuDance ではありません。** よって MikuMikuDance の代わりにはなりません。
+
+   互換あるいはそれに類するモーション編集が可能な実装は他にも以下があります。
+
+   * `MikuMikuMoving <https://sites.google.com/site/mikumikumoving/>`_ （略称として MMM）
+   * `NexGiMa <https://sites.google.com/view/nexgima/Home>`_
+
+   いずれも DirectX をベースとしているため Windows のみの対応です。
 
 * nanoem は DirectX11 をつかうが、MikuMikuDance は DirectX9 をつかう
 * 見た目は MikuMikuDance に似ているが細かいところの使い勝手が再現できない
@@ -64,11 +71,11 @@ nanoem 特有の特徴は以下です。
 - `Xismo <http://mqdl.jpn.org>`_
 
   - ver 2.0 以降は macOS に対応していません
-  - ver 1.x でも将来的には動作しなくなる可能性があります
+  - ver 1.x でも OpenGL を利用しているため将来的には動作しなくなる可能性があります
 
 - `VRoid Studio <https://studio.vroid.com/>`_
 
-  - 書き出しは VRM のみで、後述しますが直接 nanoem で読み込むことはできません
+  - 書き出しは VRM のみで「:ref:`EFC55993-3D0E-4D90-855F-860FBBA5A90F`」で解説してる通り直接 nanoem で読み込むことはできません
 
 .. _28185A65-88E5-4C4C-BF60-41BBB5520B70:
 
@@ -114,10 +121,14 @@ MMD のプロジェクトファイルの読み込みはできますか？
 VRoid Studio で作った VRM を読み込むことができますか？
 =======================================================
 
-できません。また、今後の実装予定もないので `VRoid→MMDが楽になりました <https://aideq.goat.me/bnbRNcrIfC>`_ にある方法で PMX に変換してください。
+できません。また、今後の実装予定もないので `VRoid→MMDが楽になりました <https://aideq.goat.me/bnbRNcrIfC>`_
+または `VRMtoPMXExporterを改めて使ってみました【2019年4月版】 <https://aideq.goat.me/h70ydDLPP2>`_ にある方法で PMX に変換してください。
 
-.. note::
+.. caution::
    上記記事で言及されている ``VRM2PMXConverter`` は Windows 専用ですので macOS 版の場合 ``VRMtoPMXExporter`` を使う方法しかとれません（つまり Unity を使う必要があります）。
+
+上記ツールを使っても配布モーションで事実上必須となる準標準ボーンが作成されません（変換するツール及びバージョンによっては対応している可能性があります）。
+その場合は nanoem 用に作られた「:ref:`CCDE11E1-3416-425D-80DF-A347F79E7BDD`」で作成可能です。
 
 .. _1AF55799-DCCF-4989-AA91-C186F073FDA0:
 
