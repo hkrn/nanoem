@@ -7,6 +7,7 @@
 #include "../common.h"
 
 #include "emapp/CommandRegistrator.h"
+#include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/Model.h"
 
 using namespace nanoem;
@@ -47,6 +48,7 @@ TEST_CASE("motion_add_model_keyframe", "[emapp][motion]")
                 glm::make_vec4(nanoemMotionModelKeyframeGetEdgeColor(keyframe)), Equals(Vector4(0.7, 0.3, 0.5, 0.9)));
             CHECK_FALSE(nanoemMotionModelKeyframeIsVisible(keyframe));
             CHECK(nanoemMotionModelKeyframeGetEdgeScaleFactor(keyframe) == Approx(0.25f));
+            CHECK(project->resolveMotion(activeModel)->selection()->contains(keyframe));
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
             CHECK(first->motionDuration(other2Model) == 0);
@@ -85,6 +87,7 @@ TEST_CASE("motion_add_model_keyframe", "[emapp][motion]")
                 glm::make_vec4(nanoemMotionModelKeyframeGetEdgeColor(keyframe)), Equals(Vector4(0.7, 0.3, 0.5, 0.9)));
             CHECK_FALSE(nanoemMotionModelKeyframeIsVisible(keyframe));
             CHECK(nanoemMotionModelKeyframeGetEdgeScaleFactor(keyframe) == Approx(0.25f));
+            CHECK(project->resolveMotion(activeModel)->selection()->contains(keyframe));
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
             CHECK(first->motionDuration(other2Model) == 0);

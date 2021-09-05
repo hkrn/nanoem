@@ -7,6 +7,7 @@
 #include "../common.h"
 
 #include "emapp/CommandRegistrator.h"
+#include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/Model.h"
 
 using namespace nanoem;
@@ -46,6 +47,7 @@ TEST_CASE("motion_add_morph_keyframe", "[emapp][motion]")
             CHECK_FALSE(first->findMorphKeyframe(other1Model, name, 1337));
             CHECK_FALSE(first->findMorphKeyframe(other2Model, name, 1337));
             CHECK(nanoemMotionMorphKeyframeGetWeight(keyframe) == Approx(0.42f));
+            CHECK(project->resolveMotion(activeModel)->selection()->contains(keyframe));
             CHECK(project->duration() == 1337);
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
@@ -82,6 +84,7 @@ TEST_CASE("motion_add_morph_keyframe", "[emapp][motion]")
             CHECK_FALSE(first->findMorphKeyframe(other2Model, name, 1337));
             CHECK(nanoemMotionMorphKeyframeGetWeight(keyframe) == Approx(0.42f));
             CHECK(project->duration() == 1337);
+            CHECK(project->resolveMotion(activeModel)->selection()->contains(keyframe));
             CHECK(first->motionDuration(activeModel) == 1337);
             CHECK(first->motionDuration(other1Model) == 0);
             CHECK(first->motionDuration(other2Model) == 0);

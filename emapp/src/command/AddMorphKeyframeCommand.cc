@@ -74,6 +74,9 @@ AddMorphKeyframeCommand::toKeyframeList(
                     keyframe.m_state.second.assign(ko);
                     keyframe.m_updated = true;
                 }
+                else {
+                    keyframe.m_selected = true;
+                }
                 newKeyframes.push_back(keyframe);
             }
         }
