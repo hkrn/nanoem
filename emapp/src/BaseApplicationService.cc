@@ -3031,19 +3031,24 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         const Nanoem__Application__LoadFileCommand *commandPtr = command->load_file;
         const Nanoem__Application__URI *uri = commandPtr->file_uri;
         const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-        IFileManager::DialogType type = static_cast<IFileManager::DialogType>(commandPtr->type);
-        if (g_sentryAvailable) {
-            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-            sentry_value_t data = sentry_value_new_object();
-            sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
-            sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("saving"));
-            sentry_value_set_by_key(breadcrumb, "data", data);
-            sentry_add_breadcrumb(breadcrumb);
+        if (!hasModalDialog()) {
+            IFileManager::DialogType type = static_cast<IFileManager::DialogType>(commandPtr->type);
+            if (g_sentryAvailable) {
+                sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                sentry_value_t data = sentry_value_new_object();
+                sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
+                sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("saving"));
+                sentry_value_set_by_key(breadcrumb, "data", data);
+                sentry_add_breadcrumb(breadcrumb);
+            }
+            const nanoem_u64_t startedAt = stm_now();
+            succeeded = saveAsFile(fileURI, project, type, error);
+            const nanoem_u64_t interval = stm_since(startedAt);
+            sendSaveFileMessage(fileURI, commandPtr->type, interval, succeeded);
         }
-        const nanoem_u64_t startedAt = stm_now();
-        succeeded = saveAsFile(fileURI, project, type, error);
-        const nanoem_u64_t interval = stm_since(startedAt);
-        sendSaveFileMessage(fileURI, commandPtr->type, interval, succeeded);
+        else {
+            sendSaveFileMessage(fileURI, commandPtr->type, 0, false);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_ALL_MODEL_BONES: {
@@ -3116,7 +3121,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             Nanoem__Application__IsProjectDirtyResponseEvent base =
                 NANOEM__APPLICATION__IS_PROJECT_DIRTY_RESPONSE_EVENT__INIT;
-            base.dirty = project->isDirty();
+            base.dirty = project->isDirty() && !hasModalDialog();
             Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
             event.type_case = NANOEM__APPLICATION__EVENT__TYPE_IS_PROJECT_DIRTY;
             event.is_project_dirty = &base;
@@ -3125,11 +3130,13 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_NEW_PROJECT: {
-        handleNewProject();
+        if (!hasModalDialog()) {
+            handleNewProject();
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SAVE_PROJECT: {
-        if (nanoem_likely(project)) {
+        if (nanoem_likely(project) && !hasModalDialog()) {
             const URI fileURI(project->fileURI());
             if (fileURI.isEmpty()) {
                 m_window->openSaveProjectDialog(project);
@@ -3551,7 +3558,9 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_MENU_ACTION: {
-        succeeded = dispatchMenuItemAction(project, command->menu_action->value, error);
+        if (!hasModalDialog()) {
+            succeeded = dispatchMenuItemAction(project, command->menu_action->value, error);
+        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_RENDER_FRAME: {
