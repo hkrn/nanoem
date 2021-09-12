@@ -5624,9 +5624,10 @@ Effect::createImageFromContainer(const ImageResourceParameter &parameter, bimg::
         if (newParamImageDescriptionRef.num_mipmaps > 1) {
             nanoem_f32_t widthf = static_cast<nanoem_f32_t>(newParamImageDescriptionRef.width),
                          heightf = static_cast<nanoem_f32_t>(newParamImageDescriptionRef.height);
+            const int numMipmaps = int(glm::log2(glm::max(widthf, heightf)));
             newParamImageDescriptionRef.num_mipmaps = container->m_numMips > 1
-                ? Inline::saturateInt32(container->m_numMips)
-                : int(glm::log2(glm::max(widthf, heightf))) + 1;
+                ? glm::min(Inline::saturateInt32(container->m_numMips), numMipmaps)
+                : numMipmaps;
         }
         else {
             switch (container->m_format) {
