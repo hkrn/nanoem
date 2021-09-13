@@ -526,7 +526,7 @@ CapturingPassAsImageState::ModalDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 CapturingPassAsImageState::ModalDialog::draw(const Project *project)
 {
-    StateController *stateController = m_parent->m_stateControllerPtr;
+    StateController *stateController = m_parent->stateController();
     BaseApplicationService *applicationPtr = stateController->application();
     const ITranslator *translator = applicationPtr->translator();
     ImGui::PushItemWidth(-1);
@@ -575,7 +575,7 @@ IModalDialog *
 CapturingPassAsImageState::ModalDialog::onCancelled(Project *project)
 {
     project->eventPublisher()->publishCompleteExportingImageConfigurationEvent(StringList());
-    m_parent->m_stateControllerPtr->application()->clearAllModalDialog();
+    m_parent->stateController()->application()->clearAllModalDialog();
     return nullptr;
 }
 
@@ -618,13 +618,13 @@ private:
 CapturingPassAsVideoState::ModalDialog::ModalDialog(CapturingPassAsVideoState *parent)
     : BaseModalDialog()
     , m_parent(parent)
-    , m_pluginUI(this, nullptr, nullptr, parent->m_project->windowDevicePixelRatio())
+    , m_pluginUI(this, nullptr, nullptr, parent->stateController()->currentProject()->windowDevicePixelRatio())
     , m_exportFrameIndexRange(0, 0)
     , m_plugin(nullptr)
     , m_reloadLayout(false)
     , m_enableVideoRecorder(false)
 {
-    m_exportFrameIndexRange.second = parent->m_stateControllerPtr->currentProject()->duration();
+    m_exportFrameIndexRange.second = parent->stateController()->currentProject()->duration();
 }
 
 CapturingPassAsVideoState::ModalDialog::~ModalDialog()
@@ -640,7 +640,7 @@ CapturingPassAsVideoState::ModalDialog::title() const NANOEM_DECL_NOEXCEPT
 void
 CapturingPassAsVideoState::ModalDialog::draw(const Project *project)
 {
-    StateController *stateController = m_parent->m_stateControllerPtr;
+    StateController *stateController = m_parent->stateController();
     BaseApplicationService *applicationPtr = stateController->application();
     const ITranslator *translator = applicationPtr->translator();
     ImGui::PushItemWidth(-1);
@@ -786,8 +786,8 @@ CapturingPassAsVideoState::ModalDialog::onAccepted(Project *project)
     }
     else {
         const IFileManager::EncoderPluginList plugins(
-            m_parent->m_stateControllerPtr->fileManager()->allVideoEncoderPluginList());
-        m_parent->m_stateControllerPtr->application()->destroyVideoRecorder(m_parent->m_videoRecorder);
+            m_parent->stateController()->fileManager()->allVideoEncoderPluginList());
+        m_parent->stateController()->application()->destroyVideoRecorder(m_parent->m_videoRecorder);
         m_parent->m_videoRecorder = nullptr;
         m_parent->setViewportAspectRatioEnabled(m_viewportAspectRatioEnabled);
         m_parent->setPreventFrameMisalighmentEnabled(m_preventFrameMisalighmentEnabled);
@@ -809,7 +809,7 @@ IModalDialog *
 CapturingPassAsVideoState::ModalDialog::onCancelled(Project *project)
 {
     project->eventPublisher()->publishCompleteExportingVideoConfigurationEvent(StringList());
-    m_parent->m_stateControllerPtr->application()->clearAllModalDialog();
+    m_parent->stateController()->application()->clearAllModalDialog();
     return nullptr;
 }
 
@@ -834,7 +834,7 @@ CapturingPassAsVideoState::ModalDialog::handleUIComponent(
         if (nanoem__application__plugin__uicomponent__pack(component, bytes.data())) {
             Error error;
             proxy.setUIComponentLayout(id, bytes, m_reloadLayout, error);
-            error.notify(m_parent->m_stateControllerPtr->application()->eventPublisher());
+            error.notify(m_parent->stateController()->application()->eventPublisher());
         }
     }
 }
@@ -891,6 +891,7 @@ CapturingPassState::CapturingPassState(StateController *stateControllerPtr, Proj
     m_outputImageDescription.pixel_format = SG_PIXELFORMAT_RGBA8;
     m_outputImageDescription.render_target = true;
     m_outputPass = { SG_INVALID_ID };
+    m_asyncCount = 0;
     m_blitter = nanoem_new(ImageBlitter(m_project, false));
 }
 
@@ -957,17 +958,20 @@ CapturingPassState::transitDestruction(Project *project)
     case internal::CapturingPassState::kNone:
     case internal::CapturingPassState::kFinished:
     case internal::CapturingPassState::kCancelled: {
-        m_state = kDestroyReady;
+        setStateTransition(kDestroyReady);
         break;
     }
     case internal::CapturingPassState::kDestroyReady: {
         restore(project);
-        m_state = kRestored;
+        setStateTransition(kRestored);
         break;
     }
     case internal::CapturingPassState::kRestored: {
-        destroy();
-        m_state = kDestroyed;
+        const int asyncCount = m_asyncCount;
+        if (asyncCount <= 0) {
+            destroy();
+            setStateTransition(kDestroyed);
+        }
         break;
     }
     case internal::CapturingPassState::kDestroyed: {
@@ -1049,7 +1053,8 @@ bool
 CapturingPassState::prepareCapturingViewport(Project *project)
 {
     const nanoem_u16_t width = m_outputImageDescription.width, height = m_outputImageDescription.height;
-    if (m_state == kInitialized && width > 0 && height > 0) {
+    StateTransition state = stateTransition();
+    if (state == kInitialized && width > 0 && height > 0) {
         project->setViewportCaptured(true);
         project->setViewportDevicePixelRatio(1.0f);
         project->resizeUniformedViewportImage(Vector2UI16(width, height));
@@ -1065,13 +1070,15 @@ CapturingPassState::prepareCapturingViewport(Project *project)
         else {
             m_blitter->setRect(Vector4(0, 0, 1, 1));
         }
-        m_state = kConfigured;
+        state = kConfigured;
+        setStateTransition(state);
     }
-    else if (m_state >= kConfigured && m_state < kReady && project->isViewportCaptured()) {
-        m_blitter->blit(m_outputPass);
-        m_state = kReady;
+    else if (state >= kConfigured && state < kReady && project->isViewportCaptured()) {
+        blitOutputPass();
+        state = kReady;
+        setStateTransition(state);
     }
-    return m_state >= kReady && m_state < kFinished;
+    return state >= kReady && state < kFinished;
 }
 
 void
@@ -1085,6 +1092,106 @@ CapturingPassState::readPassImage()
             *ptr = 0 | ((v & 0x000000ff) << 16) | (v & 0x0000ff00) | ((v & 0x00ff0000) >> 16) | (v & 0xff000000);
         }
     }
+}
+
+StateController *
+CapturingPassState::stateController()
+{
+    return m_stateControllerPtr;
+}
+
+const ByteArray &
+CapturingPassState::frameImageData() const
+{
+    return m_frameImageData;
+}
+
+nanoem_u8_t *
+CapturingPassState::frameImageDataPtr()
+{
+    return m_frameImageData.data();
+}
+
+sg_image_desc
+CapturingPassState::outputImageDescription() const
+{
+    return m_outputImageDescription;
+}
+
+CapturingPassState::StateTransition
+CapturingPassState::stateTransition()
+{
+    bx::MutexScope scope(m_mutex);
+    BX_UNUSED_1(scope);
+    return m_state;
+}
+
+void
+CapturingPassState::setStateTransition(StateTransition value)
+{
+    bx::MutexScope scope(m_mutex);
+    BX_UNUSED_1(scope);
+    m_state = value;
+}
+
+sg_pass
+CapturingPassState::outputPass() const
+{
+    return m_outputPass;
+}
+
+sg_buffer
+CapturingPassState::frameStagingBuffer() const
+{
+    return m_frameStagingBuffer;
+}
+
+nanoem_frame_index_t
+CapturingPassState::startFrameIndex() const
+{
+    return m_startFrameIndex;
+}
+
+nanoem_frame_index_t
+CapturingPassState::lastPTS() const
+{
+    return m_lastPTS;
+}
+
+void
+CapturingPassState::setLastPTS(nanoem_frame_index_t value)
+{
+    m_lastPTS = value;
+}
+
+bool
+CapturingPassState::hasSaveState() const
+{
+    return m_saveState != nullptr;
+}
+
+void
+CapturingPassState::blitOutputPass()
+{
+    m_blitter->blit(m_outputPass);
+}
+
+void
+CapturingPassState::incrementAsyncCount()
+{
+    bx::atomicAddAndFetch(&m_asyncCount, 1);
+}
+
+void
+CapturingPassState::decrementAsyncCount()
+{
+    bx::atomicSubAndFetch(&m_asyncCount, 1);
+}
+
+bool
+CapturingPassState::canBlitTransition()
+{
+    return m_blittedCount++ >= 2;
 }
 
 void
@@ -1108,56 +1215,61 @@ CapturingPassAsImageState::~CapturingPassAsImageState() NANOEM_DECL_NOEXCEPT
 bool
 CapturingPassAsImageState::start(Error & /* error */)
 {
-    nanoem_assert(!m_fileURI.isEmpty(), "must NOT be empty");
-    m_state = kInitialized;
+    nanoem_assert(!fileURI().isEmpty(), "must NOT be empty");
+    setStateTransition(kInitialized);
     return true;
 }
 
 IModalDialog *
 CapturingPassAsImageState::createDialog()
 {
-    const ITranslator *translator = m_project->translator();
+    StateController *controller = stateController();
+    const ITranslator *translator = controller->currentProject()->translator();
     String message;
     StringUtils::format(message, translator->translate("nanoem.window.progress.capture-image"),
-        m_fileURI.lastPathComponentConstString());
+        fileURI().lastPathComponentConstString());
     return ModalDialogFactory::createProgressDialog(
-        m_stateControllerPtr->application(), "Capturing Image", message, handleCancelExportingImage, this);
+        controller->application(), "Capturing Image", message, handleCancelExportingImage, this);
 }
 
 bool
 CapturingPassAsImageState::capture(Project *project, Error &error)
 {
+    StateTransition state(stateTransition());
     if (prepareCapturingViewport(project)) {
-        if (m_state == kReady) {
-            m_blitter->blit(m_outputPass);
-            if (m_blittedCount++ >= 2) {
-                m_state = kBlitted;
+        const sg_image_desc desc(outputImageDescription());
+        if (state == kReady) {
+            blitOutputPass();
+            if (canBlitTransition()) {
+                state = kBlitted;
+                setStateTransition(state);
             }
         }
-        else if (m_state == kBlitted) {
-            SG_PUSH_GROUPF("internal::CapturingPassAsImageState::capture(width=%d, height=%d)",
-                m_outputImageDescription.width, m_outputImageDescription.height);
+        else if (state == kBlitted) {
+            SG_PUSH_GROUPF(
+                "internal::CapturingPassAsImageState::capture(width=%d, height=%d)", desc.width, desc.height);
             readPassImage();
-            ImageWriter writer(m_fileURI, error);
-            const nanoem_u32_t width = m_outputImageDescription.width, height = m_outputImageDescription.height;
-            writer.write(m_frameImageData.data(), width, height, m_outputImageDescription.pixel_format);
-            m_state = kFinished;
+            ImageWriter writer(fileURI(), error);
+            const nanoem_u32_t width = desc.width, height = desc.height;
+            writer.write(frameImageDataPtr(), width, height, desc.pixel_format);
+            state = kFinished;
+            setStateTransition(state);
             SG_POP_GROUP();
         }
     }
-    return m_state >= kFinished;
+    return state >= kFinished;
 }
 
 void
 CapturingPassAsImageState::cancel()
 {
-    m_state = kCancelled;
+    setStateTransition(kCancelled);
 }
 
 void
 CapturingPassAsImageState::addExportImageDialog(Project * /* project */)
 {
-    BaseApplicationService *applicationPtr = m_stateControllerPtr->application();
+    BaseApplicationService *applicationPtr = stateController()->application();
     IModalDialog *dialog = nanoem_new(ModalDialog(this));
     applicationPtr->addModalDialog(dialog);
 }
@@ -1188,22 +1300,24 @@ CapturingPassAsVideoState::~CapturingPassAsVideoState() NANOEM_DECL_NOEXCEPT
 bool
 CapturingPassAsVideoState::start(Error &error)
 {
-    nanoem_assert(!m_fileURI.isEmpty(), "must NOT be empty");
+    nanoem_assert(!fileURI().isEmpty(), "must NOT be empty");
+    StateTransition state = kNone;
     if (m_videoRecorder) {
-        m_videoRecorder->setFileURI(m_fileURI);
-        m_state = m_videoRecorder->start(error) ? kInitialized : kCancelled;
+        m_videoRecorder->setFileURI(fileURI());
+        state = m_videoRecorder->start(error) ? kInitialized : kCancelled;
+        setStateTransition(state);
     }
     else if (m_encoderPluginPtr) {
+        const sg_image_desc desc(outputImageDescription());
         const bool topLeft = sg::query_features().origin_top_left;
+        Project *project = stateController()->currentProject();
         m_encoderPluginPtr->setOption(
-            NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, m_project->preferredMotionFPS(), error);
+            NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, project->preferredMotionFPS(), error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_DURATION, duration(), error);
-        m_encoderPluginPtr->setOption(
-            NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, m_outputImageDescription.width, error);
-        m_encoderPluginPtr->setOption(
-            NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HEIGHT, m_outputImageDescription.height, error);
+        m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, desc.width, error);
+        m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HEIGHT, desc.height, error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_YFLIP, !topLeft, error);
-        const IAudioPlayer *audio = m_project->audioPlayer();
+        const IAudioPlayer *audio = project->audioPlayer();
         if (audio->isLoaded()) {
             m_encoderPluginPtr->setOption(
                 NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_AUDIO_NUM_BITS, audio->bitsPerSample(), error);
@@ -1212,39 +1326,41 @@ CapturingPassAsVideoState::start(Error &error)
             m_encoderPluginPtr->setOption(
                 NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_AUDIO_NUM_FREQUENCY, audio->sampleRate(), error);
         }
-        if (m_encoderPluginPtr->open(m_fileURI, error)) {
-            m_state = kInitialized;
+        if (m_encoderPluginPtr->open(fileURI(), error)) {
+            state = kInitialized;
         }
         else {
-            m_state = kCancelled;
+            state = kCancelled;
         }
+        setStateTransition(state);
     }
-    return m_state == kInitialized;
+    return state == kInitialized;
 }
 
 IModalDialog *
 CapturingPassAsVideoState::createDialog()
 {
-    const ITranslator *translator = m_project->translator();
+    const Project *project = stateController()->currentProject();
+    const ITranslator *translator = project->translator();
     String message;
     StringUtils::format(message, translator->translate("nanoem.window.progress.capture-video"),
-        m_fileURI.lastPathComponentConstString(), m_project->actualFPS());
+        fileURI().lastPathComponentConstString(), project->actualFPS());
     return ModalDialogFactory::createProgressDialog(
-        m_stateControllerPtr->application(), "Capturing Video", message, handleCancelExportingVideo, this);
+        stateController()->application(), "Capturing Video", message, handleCancelExportingVideo, this);
 }
 
 bool
 CapturingPassAsVideoState::capture(Project *project, Error &error)
 {
     if (prepareCapturingViewport(project)) {
+        const sg_image_desc desc(outputImageDescription());
         SG_PUSH_GROUPF("CapturingPassAsVideoState::capture(frameIndex=%d, amount=%.3f, width=%d, height=%d)",
-            project->currentLocalFrameIndex(), m_amount, m_outputImageDescription.width,
-            m_outputImageDescription.height);
+            project->currentLocalFrameIndex(), m_amount, desc.width, desc.height);
         nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
         const nanoem_f32_t deltaScaleFactor = project->motionFPSScaleFactor();
         const nanoem_frame_index_t videoFrameIndex = static_cast<nanoem_frame_index_t>(
                                                          frameIndex * deltaScaleFactor + m_amount * deltaScaleFactor) -
-            nanoem_frame_index_t(m_startFrameIndex * deltaScaleFactor),
+            nanoem_frame_index_t(startFrameIndex() * deltaScaleFactor),
                                    durationFrameIndices = static_cast<nanoem_frame_index_t>(duration());
         if (m_videoRecorder) {
             handleCaptureViaVideoRecorder(project, frameIndex, videoFrameIndex, durationFrameIndices, deltaScaleFactor);
@@ -1255,7 +1371,7 @@ CapturingPassAsVideoState::capture(Project *project, Error &error)
         }
         SG_POP_GROUP();
     }
-    return m_state >= kFinished;
+    return stateTransition() >= kFinished;
 }
 
 void
@@ -1263,13 +1379,13 @@ CapturingPassAsVideoState::cancel()
 {
     Error error;
     stopEncoding(error);
-    m_state = kCancelled;
+    setStateTransition(kCancelled);
 }
 
 void
 CapturingPassAsVideoState::restore(Project *project)
 {
-    if (m_saveState) {
+    if (hasSaveState()) {
         setEncoderPlugin(nullptr);
         CapturingPassState::restore(project);
     }
@@ -1294,7 +1410,7 @@ CapturingPassAsVideoState::setEndFrameIndex(nanoem_frame_index_t value)
 void
 CapturingPassAsVideoState::addExportVideoDialog(Project * /* project */)
 {
-    BaseApplicationService *applicationPtr = m_stateControllerPtr->application();
+    BaseApplicationService *applicationPtr = stateController()->application();
     IModalDialog *dialog = nanoem_new(ModalDialog(this));
     applicationPtr->addModalDialog(dialog);
 }
@@ -1322,8 +1438,8 @@ nanoem_frame_index_t
 CapturingPassAsVideoState::duration() const NANOEM_DECL_NOEXCEPT
 {
     nanoem_assert(
-        m_endFrameIndex >= m_startFrameIndex, "must be m_endFrameIndex greater than or equal to m_startFrameIndex");
-    return m_endFrameIndex - m_startFrameIndex;
+        m_endFrameIndex >= startFrameIndex(), "must be m_endFrameIndex greater than or equal to m_startFrameIndex");
+    return m_endFrameIndex - startFrameIndex();
 }
 
 void
@@ -1338,14 +1454,14 @@ CapturingPassAsVideoState::handleCaptureViaVideoRecorder(Project *project, nanoe
             finishEncoding();
         }
         else if (m_videoRecorder->capture(videoFrameIndex)) {
-            if (IModalDialog *dialog = m_stateControllerPtr->application()->currentModalDialog()) {
+            if (IModalDialog *dialog = stateController()->application()->currentModalDialog()) {
                 const ITranslator *translator = project->translator();
                 char message[Inline::kLongNameStackBufferSize];
                 nanoem_f32_t percentage =
-                    nanoem_f32_t((frameIndex - m_startFrameIndex) / nanoem_f64_t(durationFrameIndices));
+                    nanoem_f32_t((frameIndex - startFrameIndex()) / nanoem_f64_t(durationFrameIndices));
                 StringUtils::format(message, sizeof(message),
                     translator->translate("nanoem.window.progress.capture-video"),
-                    m_fileURI.lastPathComponentConstString(), project->actualFPS());
+                    fileURI().lastPathComponentConstString(), project->actualFPS());
                 dialog->setProgress(percentage);
                 dialog->setText(message);
             }
@@ -1370,9 +1486,11 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
             : m_state(state)
             , m_videoFrameIndex(videoFrameIndex)
         {
+            m_state->incrementAsyncCount();
         }
         ~AsyncReadHandler()
         {
+            m_state->decrementAsyncCount();
         }
         static void
         handleReadPassAsync(const void *data, size_t size, void *opaque)
@@ -1380,24 +1498,24 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
             AsyncReadHandler *self = static_cast<AsyncReadHandler *>(opaque);
             CapturingPassAsVideoState *state = self->m_state;
             Error error;
-            if (state->m_frameImageData.size() == size) {
-                memcpy(state->m_frameImageData.data(), data, size);
-                if (state->m_outputImageDescription.pixel_format == SG_PIXELFORMAT_RGBA8) {
-                    nanoem_u32_t *dataPtr = reinterpret_cast<nanoem_u32_t *>(state->m_frameImageData.data());
+            if (state->frameImageData().size() == size) {
+                memcpy(state->frameImageDataPtr(), data, size);
+                if (state->outputImageDescription().pixel_format == SG_PIXELFORMAT_RGBA8) {
+                    nanoem_u32_t *dataPtr = reinterpret_cast<nanoem_u32_t *>(state->frameImageDataPtr());
                     for (size_t i = 0, numPixels = size / sizeof(*dataPtr); i < numPixels; i++) {
                         nanoem_u32_t *ptr = dataPtr + i, v = *ptr;
                         *ptr = 0 | ((v & 0x000000ff) << 16) | (v & 0x0000ff00) | ((v & 0x00ff0000) >> 16) |
                             (v & 0xff000000);
                     }
                 }
-                if (!state->encodeVideoFrame(state->m_frameImageData, self->m_videoFrameIndex, error)) {
+                if (!state->encodeVideoFrame(state->frameImageData(), self->m_videoFrameIndex, error)) {
                     state->stopEncoding(error);
-                    state->m_state = kCancelled;
+                    state->setStateTransition(kCancelled);
                 }
             }
             else {
                 state->stopEncoding(error);
-                state->m_state = kCancelled;
+                state->setStateTransition(kCancelled);
             }
             nanoem_delete(self);
         }
@@ -1405,23 +1523,24 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
         nanoem_frame_index_t m_videoFrameIndex;
     };
     BX_UNUSED_1(error);
-    m_blitter->blit(m_outputPass);
-    if (m_state == kReady) {
+    blitOutputPass();
+    StateTransition state = stateTransition();
+    if (state == kReady) {
         /* same as blit except without calculation of frame index */
         seekAndProgress(project, frameIndex, durationFrameIndices);
-        if (m_blittedCount++ >= 2) {
-            m_state = kBlitted;
+        if (canBlitTransition()) {
+            setStateTransition(kBlitted);
         }
     }
-    else if (m_state == kBlitted) {
+    else if (state == kBlitted) {
         if (sg::read_pass_async) {
             AsyncReadHandler *handler = nanoem_new(AsyncReadHandler(this, videoFrameIndex));
-            sg::read_pass_async(m_outputPass, m_frameStagingBuffer, &AsyncReadHandler::handleReadPassAsync, handler);
+            sg::read_pass_async(outputPass(), frameStagingBuffer(), &AsyncReadHandler::handleReadPassAsync, handler);
         }
         else {
             readPassImage();
-            if (!encodeVideoFrame(m_frameImageData, videoFrameIndex, error)) {
-                m_state = kCancelled;
+            if (!encodeVideoFrame(frameImageData(), videoFrameIndex, error)) {
+                setStateTransition(kCancelled);
             }
         }
         calculateFrameIndex(deltaScaleFactor, m_amount, frameIndex);
@@ -1433,12 +1552,13 @@ bool
 CapturingPassAsVideoState::encodeVideoFrame(const ByteArray &frameData, nanoem_frame_index_t pts, Error &error)
 {
     bool continuable = true;
-    if (m_encoderPluginPtr && (m_lastPTS == Motion::kMaxFrameIndex || pts > m_lastPTS)) {
-        const IAudioPlayer *audioPlayer = m_project->audioPlayer();
+    if (m_encoderPluginPtr && (lastPTS() == Motion::kMaxFrameIndex || pts > lastPTS())) {
+        const Project *project = stateController()->currentProject();
+        const IAudioPlayer *audioPlayer = project->audioPlayer();
         const ByteArray *samplesPtr = audioPlayer->linearPCMSamples();
         if (audioPlayer->isLoaded() && !samplesPtr->empty()) {
             const size_t bufferSize = size_t(audioPlayer->numChannels() * audioPlayer->sampleRate() *
-                (audioPlayer->bitsPerSample() / 8) * m_project->invertedPreferredMotionFPS());
+                (audioPlayer->bitsPerSample() / 8) * project->invertedPreferredMotionFPS());
             const size_t offset = size_t(pts * bufferSize);
             ByteArray slice(bufferSize);
             memcpy(slice.data(), samplesPtr->data() + offset, bufferSize);
@@ -1446,7 +1566,7 @@ CapturingPassAsVideoState::encodeVideoFrame(const ByteArray &frameData, nanoem_f
                 m_encoderPluginPtr->encodeAudioFrame(nanoem_frame_index_t(pts), slice.data(), slice.size(), error);
         }
         continuable &= m_encoderPluginPtr->encodeVideoFrame(pts, frameData.data(), frameData.size(), error);
-        m_lastPTS = pts;
+        setLastPTS(pts);
     }
     return continuable;
 }
@@ -1456,16 +1576,16 @@ CapturingPassAsVideoState::seekAndProgress(
     Project *project, nanoem_frame_index_t frameIndex, nanoem_frame_index_t durationFrameIndices)
 {
     if (frameIndex > m_endFrameIndex) {
-        m_state = kFinished;
+        setStateTransition(kFinished);
     }
     else {
-        if (IModalDialog *dialog = m_stateControllerPtr->application()->currentModalDialog()) {
+        if (IModalDialog *dialog = stateController()->application()->currentModalDialog()) {
             const ITranslator *translator = project->translator();
             char message[Inline::kLongNameStackBufferSize];
             nanoem_f32_t percentage =
-                nanoem_f32_t((frameIndex - m_startFrameIndex) / nanoem_f64_t(durationFrameIndices));
+                nanoem_f32_t((frameIndex - startFrameIndex()) / nanoem_f64_t(durationFrameIndices));
             StringUtils::format(message, sizeof(message), translator->translate("nanoem.window.progress.capture-video"),
-                m_fileURI.lastPathComponentConstString(), project->actualFPS());
+                fileURI().lastPathComponentConstString(), project->actualFPS());
             dialog->setProgress(percentage);
             dialog->setText(message);
         }
@@ -1477,15 +1597,15 @@ void
 CapturingPassAsVideoState::finishEncoding()
 {
     if (m_videoRecorder) {
-        BaseApplicationService *application = m_stateControllerPtr->application();
+        BaseApplicationService *application = stateController()->application();
         Error error;
         if (m_videoRecorder->finish(error)) {
             application->clearAllModalDialog();
-            m_state = kFinished;
+            setStateTransition(kFinished);
         }
         else {
             error.addModalDialog(application);
-            m_state = kCancelled;
+            setStateTransition(kCancelled);
         }
         m_destroyingVideoRecorder = m_videoRecorder;
         m_videoRecorder = nullptr;
@@ -1499,7 +1619,7 @@ CapturingPassAsVideoState::stopEncoding(Error &error)
         m_encoderPluginPtr->close(error);
         m_encoderPluginPtr->wait();
         m_encoderPluginPtr = nullptr;
-        m_state = kFinished;
+        setStateTransition(kFinished);
     }
 }
 
@@ -1508,7 +1628,7 @@ CapturingPassAsVideoState::destroy()
 {
     CapturingPassState::destroy();
     if (m_destroyingVideoRecorder) {
-        BaseApplicationService *application = m_stateControllerPtr->application();
+        BaseApplicationService *application = stateController()->application();
         application->destroyVideoRecorder(m_destroyingVideoRecorder);
         m_destroyingVideoRecorder = nullptr;
     }

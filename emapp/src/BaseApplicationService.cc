@@ -1694,9 +1694,7 @@ BaseApplicationService::destroy()
 {
     SG_PUSH_GROUP("BaseApplication::destroy");
     if (m_capturingPassState) {
-        while (!m_capturingPassState->transitDestruction(nullptr)) {
-        }
-        nanoem_delete_safe(m_capturingPassState);
+        destroyCapturePassState(nullptr);
     }
     m_sharedResourceRepository.destroy();
     m_window->destroy();
@@ -3337,9 +3335,10 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     case NANOEM__APPLICATION__COMMAND__TYPE_EXECUTE_EXPORTING_IMAGE: {
         const Nanoem__Application__ExecuteExportingImageCommand *commandPtr = command->execute_exporting_image;
         const Nanoem__Application__URI *uri = commandPtr->file_uri;
+        const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         Project *project = m_stateController->currentProject();
-        startCapture(project, URI::createFromFilePath(uri->absolute_path, uri->fragment), error);
-        if (g_sentryAvailable && !error.hasReason()) {
+        startCapture(project, fileURI, error);
+        if (g_sentryAvailable && !fileURI.isEmpty() && !error.hasReason()) {
             sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
             sentry_value_t data = sentry_value_new_object();
             sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(uri->absolute_path));
@@ -3353,9 +3352,10 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     case NANOEM__APPLICATION__COMMAND__TYPE_EXECUTE_EXPORTING_VIDEO: {
         const Nanoem__Application__ExecuteExportingVideoCommand *commandPtr = command->execute_exporting_video;
         const Nanoem__Application__URI *uri = commandPtr->file_uri;
+        const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         Project *project = m_stateController->currentProject();
-        startCapture(project, URI::createFromFilePath(uri->absolute_path, uri->fragment), error);
-        if (g_sentryAvailable && !error.hasReason()) {
+        startCapture(project, fileURI, error);
+        if (g_sentryAvailable && !fileURI.isEmpty() && !error.hasReason()) {
             sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
             sentry_value_t data = sentry_value_new_object();
             sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(uri->absolute_path));
@@ -5314,22 +5314,22 @@ BaseApplicationService::packEventMessage(const Nanoem__Application__Event *event
 void
 BaseApplicationService::startCapture(Project *project, const URI &fileURI, Error &error)
 {
-    if (project && m_capturingPassState && !fileURI.isEmpty()) {
-        m_capturingPassState->setFileURI(fileURI);
-        m_capturingPassState->save(project);
-        if (m_capturingPassState->start(error)) {
-            addModalDialog(m_capturingPassState->createDialog());
-            project->eventPublisher()->publishPlayEvent(project->duration(), 0);
+    if (m_capturingPassState) {
+        if (!fileURI.isEmpty()) {
+            m_capturingPassState->setFileURI(fileURI);
+            m_capturingPassState->save(project);
+            if (m_capturingPassState->start(error)) {
+                addModalDialog(m_capturingPassState->createDialog());
+                project->eventPublisher()->publishPlayEvent(project->duration(), 0);
+            }
+            else {
+                stopCapture(project);
+                error.addModalDialog(this);
+            }
         }
         else {
-            stopCapture(project);
-            error.addModalDialog(this);
+            destroyCapturePassState(project);
         }
-    }
-    else {
-        internal::CapturingPassState *state = m_capturingPassState;
-        m_capturingPassState = nullptr;
-        nanoem_delete(state);
     }
 }
 
@@ -5337,9 +5337,7 @@ void
 BaseApplicationService::stopCapture(Project *project)
 {
     if (m_capturingPassState) {
-        if (m_capturingPassState->transitDestruction(project)) {
-            nanoem_delete_safe(m_capturingPassState);
-        }
+        destroyCapturePassState(project);
         if (project) {
             project->eventPublisher()->publishStopEvent(project->duration(), 0);
         }
@@ -5728,6 +5726,14 @@ BaseApplicationService::performRedo(undo_command_t *commandPtr, undo_stack_t *st
     undoStackPushCommand(stack, commandPtr);
     undoCommandSetOnPersistRedoCallback(commandPtr, cb);
     commandPtrRef = commandPtr;
+}
+
+void
+BaseApplicationService::destroyCapturePassState(Project *project)
+{
+    while (!m_capturingPassState->transitDestruction(project)) {
+    }
+    nanoem_delete_safe(m_capturingPassState);
 }
 
 void
