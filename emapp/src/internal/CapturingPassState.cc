@@ -1615,10 +1615,11 @@ CapturingPassAsVideoState::finishEncoding()
 void
 CapturingPassAsVideoState::stopEncoding(Error &error)
 {
-    if (m_encoderPluginPtr) {
-        m_encoderPluginPtr->close(error);
-        m_encoderPluginPtr->wait();
-        m_encoderPluginPtr = nullptr;
+    if (plugin::EncoderPlugin *plugin = static_cast<plugin::EncoderPlugin *>(
+            bx::atomicExchangePtr(reinterpret_cast<void **>(&m_encoderPluginPtr), nullptr))) {
+        plugin->close(error);
+        plugin->wait();
+        plugin = nullptr;
         setStateTransition(kFinished);
     }
 }
