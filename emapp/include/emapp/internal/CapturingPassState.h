@@ -13,6 +13,8 @@
 #include "emapp/Project.h"
 #include "emapp/URI.h"
 
+#include "bx/mutex.h"
+
 namespace nanoem {
 
 class BaseApplicationService;
@@ -87,14 +89,33 @@ protected:
 
     bool prepareCapturingViewport(Project *project);
     void readPassImage();
+    void blitOutputPass();
+    void incrementAsyncCount();
+    void decrementAsyncCount();
+    bool canBlitTransition();
     virtual void destroy();
 
+    StateController *stateController();
+    const ByteArray &frameImageData() const;
+    nanoem_u8_t *frameImageDataPtr();
+    sg_image_desc outputImageDescription() const;
+    StateTransition stateTransition();
+    void setStateTransition(StateTransition value);
+    sg_pass outputPass() const;
+    sg_buffer frameStagingBuffer() const;
+    nanoem_frame_index_t startFrameIndex() const;
+    nanoem_frame_index_t lastPTS() const;
+    void setLastPTS(nanoem_frame_index_t value);
+    bool hasSaveState() const;
+
+private:
     URI m_fileURI;
     StateController *m_stateControllerPtr;
     ImageBlitter *m_blitter;
     Project *m_project;
     Project::SaveState *m_saveState;
     StateTransition m_state;
+    bx::Mutex m_mutex;
     ByteArray m_frameImageData;
     sg_buffer m_frameStagingBuffer;
     Vector2UI16 m_lastLogicalScaleUniformedViewportImageSize;
@@ -107,6 +128,7 @@ protected:
     nanoem_u32_t m_sampleLevel;
     nanoem_frame_index_t m_lastPTS;
     nanoem_frame_index_t m_startFrameIndex;
+    volatile int m_asyncCount;
     int m_blittedCount;
     bool m_viewportAspectRatioEnabled;
     bool m_displaySyncDisabled;

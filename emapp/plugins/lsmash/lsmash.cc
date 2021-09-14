@@ -79,14 +79,16 @@ public:
     void
     waitForCompletion()
     {
-        Packet packet;
-        packet.m_type = kPacketTypeFinish;
-        packet.m_currentFrameIndex = 0;
-        packet.m_data = nullptr;
-        thread_mutex_lock(&m_mutex);
-        m_packets.push_back(packet);
-        thread_mutex_unlock(&m_mutex);
-        thread_signal_wait(&m_signal, THREAD_SIGNAL_WAIT_INFINITE);
+        if (m_running) {
+            Packet packet;
+            packet.m_type = kPacketTypeFinish;
+            packet.m_currentFrameIndex = 0;
+            packet.m_data = nullptr;
+            thread_mutex_lock(&m_mutex);
+            m_packets.push_back(packet);
+            thread_mutex_unlock(&m_mutex);
+            thread_signal_wait(&m_signal, THREAD_SIGNAL_WAIT_INFINITE);
+        }
     }
 
 private:
@@ -205,7 +207,7 @@ private:
     nanoem_u32_t m_videoTrackID;
     nanoem_u32_t m_audioSummaryIndex;
     nanoem_u32_t m_videoSummaryIndex;
-    bool m_running;
+    volatile bool m_running;
 };
 
 struct LSmashEncoder {
