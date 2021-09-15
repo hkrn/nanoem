@@ -1107,9 +1107,15 @@ CapturingPassState::frameImageData() const
 }
 
 nanoem_u8_t *
-CapturingPassState::frameImageDataPtr()
+CapturingPassState::mutableFrameImageDataPtr()
 {
     return m_frameImageData.data();
+}
+
+bx::Mutex &
+CapturingPassState::mutex()
+{
+    return m_mutex;
 }
 
 sg_image_desc
@@ -1251,7 +1257,7 @@ CapturingPassAsImageState::capture(Project *project, Error &error)
             readPassImage();
             ImageWriter writer(fileURI(), error);
             const nanoem_u32_t width = desc.width, height = desc.height;
-            writer.write(frameImageDataPtr(), width, height, desc.pixel_format);
+            writer.write(mutableFrameImageDataPtr(), width, height, desc.pixel_format);
             state = kFinished;
             setStateTransition(state);
             SG_POP_GROUP();
@@ -1496,28 +1502,33 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
         handleReadPassAsync(const void *data, size_t size, void *opaque)
         {
             AsyncReadHandler *self = static_cast<AsyncReadHandler *>(opaque);
-            CapturingPassAsVideoState *state = self->m_state;
+            self->readPassAsync(data, size);
+            nanoem_delete(self);
+        }
+        void
+        readPassAsync(const void *data, size_t size)
+        {
+            bx::MutexScope scope(m_state->mutex());
             Error error;
-            if (state->frameImageData().size() == size) {
-                memcpy(state->frameImageDataPtr(), data, size);
-                if (state->outputImageDescription().pixel_format == SG_PIXELFORMAT_RGBA8) {
-                    nanoem_u32_t *dataPtr = reinterpret_cast<nanoem_u32_t *>(state->frameImageDataPtr());
+            if (m_state->frameImageData().size() == size) {
+                memcpy(m_state->mutableFrameImageDataPtr(), data, size);
+                if (m_state->outputImageDescription().pixel_format == SG_PIXELFORMAT_RGBA8) {
+                    nanoem_u32_t *dataPtr = reinterpret_cast<nanoem_u32_t *>(m_state->mutableFrameImageDataPtr());
                     for (size_t i = 0, numPixels = size / sizeof(*dataPtr); i < numPixels; i++) {
                         nanoem_u32_t *ptr = dataPtr + i, v = *ptr;
                         *ptr = 0 | ((v & 0x000000ff) << 16) | (v & 0x0000ff00) | ((v & 0x00ff0000) >> 16) |
                             (v & 0xff000000);
                     }
                 }
-                if (!state->encodeVideoFrame(state->frameImageData(), self->m_videoFrameIndex, error)) {
-                    state->stopEncoding(error);
-                    state->setStateTransition(kCancelled);
+                if (!m_state->encodeVideoFrame(m_state->frameImageData(), m_videoFrameIndex, error)) {
+                    m_state->stopEncoding(error);
+                    m_state->setStateTransition(kCancelled);
                 }
             }
             else {
-                state->stopEncoding(error);
-                state->setStateTransition(kCancelled);
+                m_state->stopEncoding(error);
+                m_state->setStateTransition(kCancelled);
             }
-            nanoem_delete(self);
         }
         CapturingPassAsVideoState *m_state;
         nanoem_frame_index_t m_videoFrameIndex;
