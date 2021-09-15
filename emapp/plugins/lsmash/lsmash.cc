@@ -397,7 +397,11 @@ struct LSmashEncoder {
     {
         int result = 0;
         if (m_root) {
-            m_worker->waitForCompletion();
+            if (m_worker) {
+                m_worker->waitForCompletion();
+                delete m_worker;
+                m_worker = nullptr;
+            }
             result = lsmash_close_file(&m_fileParameters);
             handleStatusCode(result, status);
             lsmash_cleanup_summary(reinterpret_cast<lsmash_summary_t *>(m_audioSummary));

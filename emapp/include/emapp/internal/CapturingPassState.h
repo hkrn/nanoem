@@ -97,7 +97,8 @@ protected:
 
     StateController *stateController();
     const ByteArray &frameImageData() const;
-    nanoem_u8_t *frameImageDataPtr();
+    nanoem_u8_t *mutableFrameImageDataPtr();
+    bx::Mutex &mutex();
     sg_image_desc outputImageDescription() const;
     StateTransition stateTransition();
     void setStateTransition(StateTransition value);
