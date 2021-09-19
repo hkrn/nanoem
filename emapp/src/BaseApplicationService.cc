@@ -2971,26 +2971,51 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
     case NANOEM__APPLICATION__COMMAND__TYPE_LOAD_FILE: {
         const Nanoem__Application__LoadFileCommand *commandPtr = command->load_file;
         const Nanoem__Application__URI *uri = commandPtr->file_uri;
-        const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
-        IFileManager::DialogType type = static_cast<IFileManager::DialogType>(commandPtr->type);
-        if (g_sentryAvailable) {
-            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-            sentry_value_t data = sentry_value_new_object();
-            sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
-            sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("loading"));
-            sentry_value_set_by_key(breadcrumb, "data", data);
-            sentry_add_breadcrumb(breadcrumb);
-        }
-        if (IDebugCapture *debugCapture = m_sharedDebugCaptureRepository.debugCapture()) {
-            debugCapture->start(nullptr);
-        }
-        beginDrawContext();
-        const nanoem_u64_t startedAt = stm_now();
-        succeeded = loadFromFile(fileURI, project, type, error);
-        const nanoem_u64_t interval = stm_since(startedAt);
-        endDrawContext();
-        if (IDebugCapture *debugCapture = m_sharedDebugCaptureRepository.debugCapture()) {
-            debugCapture->stop();
+        const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
+        nanoem_u64_t interval = 0;
+        bool hasTicks = false;
+        if (!fileURI.isEmpty() && !hasModalDialog()) {
+            const IFileManager::DialogType type = static_cast<IFileManager::DialogType>(commandPtr->type);
+            if (g_sentryAvailable) {
+                sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                sentry_value_t data = sentry_value_new_object();
+                sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
+                sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("loading"));
+                sentry_value_set_by_key(breadcrumb, "data", data);
+                sentry_add_breadcrumb(breadcrumb);
+            }
+            if (IDebugCapture *debugCapture = m_sharedDebugCaptureRepository.debugCapture()) {
+                debugCapture->start(nullptr);
+            }
+            beginDrawContext();
+            const nanoem_u64_t startedAt = stm_now();
+            succeeded = loadFromFile(fileURI, project, type, error);
+            interval = stm_since(startedAt);
+            hasTicks = true;
+            endDrawContext();
+            if (IDebugCapture *debugCapture = m_sharedDebugCaptureRepository.debugCapture()) {
+                debugCapture->stop();
+            }
+            if (g_sentryAvailable) {
+                if (succeeded) {
+                    sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                    sentry_value_t data = sentry_value_new_object();
+                    sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
+                    sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
+                    sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("loaded"));
+                    sentry_value_set_by_key(breadcrumb, "data", data);
+                    sentry_add_breadcrumb(breadcrumb);
+                }
+                else if (error.isCancelled()) {
+                    sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
+                    sentry_value_t data = sentry_value_new_object();
+                    sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
+                    sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
+                    sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("cancelled"));
+                    sentry_value_set_by_key(breadcrumb, "data", data);
+                    sentry_add_breadcrumb(breadcrumb);
+                }
+            }
         }
         Nanoem__Application__CompleteLoadingFileEvent base = NANOEM__APPLICATION__COMPLETE_LOADING_FILE_EVENT__INIT;
         Nanoem__Application__URI uri2;
@@ -2998,39 +3023,19 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         base.file_uri = internal::ApplicationUtils::assignURI(&uri2, absolutePath, fragment, fileURI);
         base.type = commandPtr->type;
         base.ticks = interval;
-        base.has_ticks = 1;
+        base.has_ticks = hasTicks;
         Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
         event.type_case = NANOEM__APPLICATION__EVENT__TYPE_COMPLETE_LOADING_FILE;
         event.complete_loading_file = &base;
         sendEventMessage(&event);
-        if (g_sentryAvailable) {
-            if (succeeded) {
-                sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-                sentry_value_t data = sentry_value_new_object();
-                sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
-                sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
-                sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("loaded"));
-                sentry_value_set_by_key(breadcrumb, "data", data);
-                sentry_add_breadcrumb(breadcrumb);
-            }
-            else if (error.isCancelled()) {
-                sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
-                sentry_value_t data = sentry_value_new_object();
-                sentry_value_set_by_key(data, "path", g_sentryMaskStringProc(fileURI.absolutePathConstString()));
-                sentry_value_set_by_key(data, "seconds", sentry_value_new_double(stm_sec(interval)));
-                sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("cancelled"));
-                sentry_value_set_by_key(breadcrumb, "data", data);
-                sentry_add_breadcrumb(breadcrumb);
-            }
-        }
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_SAVE_FILE: {
         const Nanoem__Application__LoadFileCommand *commandPtr = command->load_file;
         const Nanoem__Application__URI *uri = commandPtr->file_uri;
-        const URI &fileURI = URI::createFromFilePath(uri->absolute_path, uri->fragment);
+        const URI fileURI(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         if (!hasModalDialog()) {
-            IFileManager::DialogType type = static_cast<IFileManager::DialogType>(commandPtr->type);
+            const IFileManager::DialogType type = static_cast<IFileManager::DialogType>(commandPtr->type);
             if (g_sentryAvailable) {
                 sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, nullptr);
                 sentry_value_t data = sentry_value_new_object();
