@@ -3405,8 +3405,10 @@ Model::internalUpdateStagingVertexBuffer(nanoem_u8_t *ptr, nanoem_rsize_t numVer
             }
         }
         ParallelSkinningTaskData s(this, m_project->drawType(), edgeSize());
-        s.m_output = ptr;
-        dispatchParallelTasks(&Model::handlePerformSkinningVertexTransform, &s, numVertices);
+        if (nanoem_likely(s.m_numVertices > 0)) {
+            s.m_output = ptr;
+            dispatchParallelTasks(&Model::handlePerformSkinningVertexTransform, &s, numVertices);
+        }
         for (nanoem_rsize_t i = 0; i < numSoftBodies; i++) {
             const nanoem_model_soft_body_t *softBodyPtr = softBodies[i];
             if (model::SoftBody *softBody = model::SoftBody::cast(softBodyPtr)) {
@@ -3416,8 +3418,10 @@ Model::internalUpdateStagingVertexBuffer(nanoem_u8_t *ptr, nanoem_rsize_t numVer
     }
     else {
         ParallelSkinningTaskData s(this, m_project->drawType(), edgeSize());
-        s.m_output = ptr;
-        dispatchParallelTasks(&Model::handlePerformSkinningVertexTransform, &s, numVertices);
+        if (nanoem_likely(s.m_numVertices > 0)) {
+            s.m_output = ptr;
+            dispatchParallelTasks(&Model::handlePerformSkinningVertexTransform, &s, numVertices);
+        }
     }
 }
 
