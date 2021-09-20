@@ -1838,6 +1838,7 @@ Project::newModel(Error &error)
                 if (model->load(bytes, error)) {
                     model->setupAllBindings();
                     model->upload();
+                    model->setFileURI(fileURI);
                     addModel(model);
                     setActiveModel(model);
                     model->writeLoadCommandMessage(error);
