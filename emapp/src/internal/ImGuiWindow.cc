@@ -1861,7 +1861,7 @@ ImGuiWindow::drawAllWindows(Project *project, IState *state, nanoem_u32_t flags)
         SG_PUSH_GROUP("ImGuiWindow::drawAllWindows");
         const ImGuiIO &io = ImGui::GetIO();
         const Vector2UI16 deviceScaleWindowSize(io.DisplaySize.x, io.DisplaySize.y);
-        int sampleCount;
+        int sampleCount = 1;
         m_applicationPtr->beginDefaultPass(0, pa, deviceScaleWindowSize.x, deviceScaleWindowSize.y, sampleCount);
         setupDeviceInput(project);
         ImGui::NewFrame();
@@ -1909,7 +1909,7 @@ ImGuiWindow::drawWindow(Project *project, ImDrawData *drawData, bool load)
     pa.colors[0].value.b = 0.7f;
     pa.colors[0].value.a = 1.0f;
     ImGuiID id = drawData->OwnerViewport->ID;
-    int sampleCount;
+    int sampleCount = 1;
     m_applicationPtr->beginDefaultPass(id, pa, drawData->DisplaySize.x, drawData->DisplaySize.y, sampleCount);
     Buffer *buffer = &m_buffers[drawData->OwnerViewport->ID];
     renderDrawList(project, drawData, sampleCount, buffer, m_bindings, pb);

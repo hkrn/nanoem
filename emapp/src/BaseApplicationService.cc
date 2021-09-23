@@ -2599,7 +2599,6 @@ BaseApplicationService::beginDefaultPass(
     nanoem_u32_t /* windowID */, const sg_pass_action &pa, int width, int height, int &sampleCount)
 {
     sg::begin_default_pass(&pa, width, height);
-    sampleCount = 1;
 }
 
 void

@@ -1494,19 +1494,14 @@ CocoaThreadedApplicationService::beginDefaultPass(
 {
     const sg_backend backend = sg::query_backend();
     if (backend == SG_BACKEND_METAL_MACOS) {
-        sampleCount = 1;
-        if (const Project *project = projectHolder()->currentProject()) {
-            sampleCount = project->sampleCount();
-        }
         auto it = m_colorImageDescriptions.find(windowID);
         auto beginPass = [this, windowID, width, height, sampleCount, &pa](sg_image_desc &desc) {
             const bool needsUpdatingDepthImage =
-                desc.width != width || desc.height != height || desc.sample_count != int(sampleCount);
+                desc.width != width || desc.height != height;
             auto view = (__bridge MTKView *) m_nativeView;
             id<MTLTexture> texture = view.currentDrawable.texture;
             desc.width = width;
             desc.height = height;
-            desc.sample_count = sampleCount;
             desc.pixel_format = resolveMetalPixelFormat();
             desc.render_target = true;
             desc.mtl_textures[0] = (__bridge const void *) texture;
