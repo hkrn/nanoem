@@ -1074,7 +1074,6 @@ Win32ThreadedApplicationService::resizeDefaultRenderTarget(
         destroyDefaultRenderTarget();
         auto swapChain = (IDXGISwapChain *) m_nativeSwapChain;
         auto swapChainDesc = (DXGI_SWAP_CHAIN_DESC *) m_nativeSwapChainDescription;
-        swapChainDesc->SampleDesc.Count = project->sampleCount();
         swapChain->ResizeBuffers(
             2, devicePixelWindowSize.x, devicePixelWindowSize.y, swapChainDesc->BufferDesc.Format, 0);
         createDefaultRenderTarget(devicePixelWindowSize);
