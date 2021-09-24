@@ -945,7 +945,6 @@ Project::Pass::update(const Vector2UI16 &size)
     }
     m_depthImage = sg::make_image(&id);
     nanoem_assert(sg::query_image_state(m_depthImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
-    ;
     SG_LABEL_IMAGE(m_depthImage, label);
     sg::destroy_pass(m_handle);
     sg_pass_desc pd;
@@ -964,10 +963,10 @@ Project::Pass::update(const Vector2UI16 &size)
     desc.m_depthImage = m_depthImage;
     desc.m_desciption = pd;
     PixelFormat &format = desc.m_format;
-    format.m_colorPixelFormats[0] = colorPixelFormat;
-    format.m_depthPixelFormat = SG_PIXELFORMAT_DEPTH_STENCIL;
-    format.m_numSamples = id.sample_count;
-    format.m_numColorAttachments = 1;
+    format.setColorPixelFormat(colorPixelFormat, 0);
+    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL);
+    format.setNumSamples(id.sample_count);
+    format.setNumColorAttachemnts(1);
     SG_POP_GROUP();
 }
 
@@ -3016,17 +3015,11 @@ Project::clearRenderPass(
 }
 
 PixelFormat
-Project::findRenderPassPixelFormat(sg_pass value) const NANOEM_DECL_NOEXCEPT
-{
-    return findRenderPassPixelFormat(value, sampleCount());
-}
-
-PixelFormat
 Project::findRenderPassPixelFormat(sg_pass value, int sampleCount) const NANOEM_DECL_NOEXCEPT
 {
     PixelFormat format;
-    format.m_colorPixelFormats[0] = viewportPixelFormat();
-    format.m_numSamples = sampleCount;
+    format.setColorPixelFormat(viewportPixelFormat(), 0);
+    format.setNumSamples(sampleCount);
     if (sg::is_valid(value)) {
         RenderPassBundleMap::const_iterator it = m_renderPassBundleMap.find(value.id);
         if (it != m_renderPassBundleMap.end()) {
@@ -3039,7 +3032,7 @@ Project::findRenderPassPixelFormat(sg_pass value, int sampleCount) const NANOEM_
 PixelFormat
 Project::currentRenderPassPixelFormat() const NANOEM_DECL_NOEXCEPT
 {
-    return findRenderPassPixelFormat(currentRenderPass());
+    return findRenderPassPixelFormat(currentRenderPass(), sampleCount());
 }
 
 const char *
@@ -3082,8 +3075,8 @@ Project::getOriginOffscreenRenderPassColorImageDescription(
             found = sg::is_valid(colorImage);
             if (found) {
                 const PixelFormat &format = desc.m_format;
-                id.pixel_format = format.m_colorPixelFormats[0];
-                id.sample_count = format.m_numSamples;
+                id.pixel_format = format.colorPixelFormat(0);
+                id.sample_count = format.numSamples();
                 pd.color_attachments[0].image = colorImage;
                 const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
                 id.width = imageSize.x;
@@ -3120,8 +3113,8 @@ Project::getRenderPassColorImageDescription(
     if (found) {
         const RenderPassBundle &desc = it->second;
         const PixelFormat &format = desc.m_format;
-        id.pixel_format = format.m_colorPixelFormats[0];
-        id.sample_count = format.m_numSamples;
+        id.pixel_format = format.colorPixelFormat(0);
+        id.sample_count = format.numSamples();
         pd.color_attachments[0].image = desc.m_desciption.color_attachments[0].image;
         const Vector2UI16 imageSize(deviceScaleUniformedViewportImageSize());
         id.width = imageSize.x;
@@ -5033,10 +5026,10 @@ Project::registerOffscreenRenderPass(const Effect *ownerEffect, const effect::Of
         pd.label = label;
     }
     PixelFormat format;
-    format.m_colorPixelFormats[0] = option.m_colorImageDescription.pixel_format;
-    format.m_depthPixelFormat = option.m_depthStencilImageDescription.pixel_format;
-    format.m_numColorAttachments = countColorAttachments(pd);
-    format.m_numSamples = option.m_colorImageDescription.sample_count;
+    format.setColorPixelFormat(option.m_colorImageDescription.pixel_format, 0);
+    format.setDepthPixelFormat(option.m_depthStencilImageDescription.pixel_format);
+    format.setNumColorAttachemnts(countColorAttachments(pd));
+    format.setNumSamples(option.m_colorImageDescription.sample_count);
     const sg_pass pass = registerRenderPass(pd, format, descPtrRef);
     descPtrRef->m_colorImage = option.m_colorImage;
     descPtrRef->m_depthImage = option.m_depthStencilImage;
@@ -5123,7 +5116,7 @@ Project::setScriptExternalRenderPass(sg_pass value, const Vector4 &clearColor, n
             pa.colors[0].action = pa.depth.action = SG_ACTION_CLEAR;
             memcpy(&pa.colors[0].value, glm::value_ptr(clearColor), sizeof(pa.colors[0].value));
             pa.depth.value = clearDepth;
-            const PixelFormat format(findRenderPassPixelFormat(value, pd.m_format.m_numSamples));
+            const PixelFormat format(findRenderPassPixelFormat(value, pd.m_format.numSamples()));
             m_renderPassCleaner->clear(sharedBatchDrawQueue(), value, pa, format);
         }
     }
@@ -6862,8 +6855,8 @@ Project::resetViewportPassFormatAndDescription()
 {
     const sg_pass viewportPass = viewportPrimaryPass();
     PixelFormat format;
-    format.m_colorPixelFormats[0] = viewportPixelFormat();
-    format.m_numSamples = sampleCount();
+    format.setColorPixelFormat(viewportPixelFormat(), 0);
+    format.setNumSamples(sampleCount());
     RenderPassBundle &descRef = m_renderPassBundleMap[viewportPass.id];
     descRef.m_format = format;
     m_viewportPrimaryPass.getDescription(descRef.m_desciption);
@@ -6938,7 +6931,8 @@ Project::drawOffscreenRenderTarget(Effect *ownerEffect)
             findRenderPassName(pass), ownerEffect->nameConstString());
         option->getPassAction(pa);
         setOffscreenRenderPassScope(&renderPassScope);
-        const PixelFormat format(findRenderPassPixelFormat(pass));
+        const int numSamples = option->m_colorImageDescription.sample_count;
+        const PixelFormat format(findRenderPassPixelFormat(pass, numSamples));
         clearRenderPass(sharedBatchDrawQueue(), pass, pa, format);
         for (DrawableList::const_iterator it2 = m_drawableOrderList.begin(), end2 = m_drawableOrderList.end();
              it2 != end2; ++it2) {
@@ -7034,7 +7028,7 @@ Project::clearViewportPrimaryPass()
     action.colors[0].action = action.depth.action = action.stencil.action = SG_ACTION_CLEAR;
     memcpy(&action.colors[0].value, glm::value_ptr(m_viewportBackgroundColor), sizeof(action.colors[0].value));
     action.depth.value = 1;
-    const PixelFormat format(findRenderPassPixelFormat(currentRenderPass()));
+    const PixelFormat format(findRenderPassPixelFormat(currentRenderPass(), sampleCount()));
     clearRenderPass(sharedBatchDrawQueue(), currentRenderPass(), action, format);
     SG_POP_GROUP();
 }
@@ -7103,13 +7097,18 @@ Project::blitRenderPass(
                 destRenderPass.id != m_viewportSecondaryPass.m_handle.id) {
                 blitter->blit(drawQueue, tinystl::make_pair(m_viewportSecondaryPass.m_handle, kViewportSecondaryName),
                     tinystl::make_pair(sourceColorImage, kViewportPrimaryName), kRectCoordination,
-                    findRenderPassPixelFormat(m_viewportSecondaryPass.m_handle));
+                    findRenderPassPixelFormat(m_viewportSecondaryPass.m_handle, sampleCount()));
                 sourceColorImage = m_viewportSecondaryPass.m_colorImage;
+            }
+            RenderPassBundleMap::const_iterator it = m_renderPassBundleMap.find(destRenderPass.id);
+            int numSamples = sampleCount();
+            if (it != m_renderPassBundleMap.end()) {
+                numSamples = it->second.m_format.numSamples();
             }
             blitter->blit(drawQueue,
                 tinystl::make_pair(destRenderPass, findRenderPassName(destRenderPass, "(unknown)")),
                 tinystl::make_pair(sourceColorImage, findRenderPassName(sourceRenderPass, "(unknown)")),
-                kRectCoordination, findRenderPassPixelFormat(destRenderPass));
+                kRectCoordination, findRenderPassPixelFormat(destRenderPass, numSamples));
         }
     }
 }

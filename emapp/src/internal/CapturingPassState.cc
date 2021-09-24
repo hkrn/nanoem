@@ -170,10 +170,10 @@ CapturingPassState::ImageBlitter::blit(sg_pass pass)
 {
     sg_pipeline pipeline = { SG_INVALID_ID };
     PixelFormat format;
-    format.m_numSamples = 1;
-    format.m_colorPixelFormats[0] = SG_PIXELFORMAT_RGBA8;
-    format.m_depthPixelFormat = SG_PIXELFORMAT_DEPTH_STENCIL;
-    format.m_numColorAttachments = 1;
+    format.setNumSamples(1);
+    format.setColorPixelFormat(SG_PIXELFORMAT_RGBA8, 0);
+    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL);
+    format.setNumColorAttachemnts(1);
     setupPipeline(format, pipeline);
     draw(pipeline, pass, m_project->viewportPrimaryImage());
 }

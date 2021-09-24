@@ -88,7 +88,7 @@ DecoderPluginBasedBackgroundVideoRenderer::draw(
             m_blitter->markAsDirty();
             m_lastRect = rect;
         }
-        const PixelFormat format(project->findRenderPassPixelFormat(pass));
+        const PixelFormat format(project->findRenderPassPixelFormat(pass, project->sampleCount()));
         m_blitter->blit(project->sharedBatchDrawQueue(), namedPass, namedImage, rect, format);
     }
 }

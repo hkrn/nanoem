@@ -122,6 +122,7 @@ public:
     void destroyAllDrawableRenderTargetColorImages(const IDrawable *drawable);
     void generateRenderTargetMipmapImagesChain();
     void generateOffscreenMipmapImagesChain(const effect::OffscreenRenderTargetOption &option);
+    void updateCurrentRenderTargetPixelFormatSampleCount();
     void destroy();
 
     const effect::RenderTargetColorImageContainer *findRenderTargetImageContainer(

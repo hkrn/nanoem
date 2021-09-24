@@ -878,7 +878,6 @@ PrivateEffectUtils::retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, 
             SamplerRegisterIndexMap::iterator it = shaderRegisterIndices.find(name);
             if (it != shaderRegisterIndices.end()) {
                 SamplerRegisterIndex &samplerRegisterIndex = it->second;
-                ;
                 samplerRegisterIndex.m_indices.push_back(samplerIndex);
             }
             else {
@@ -2241,9 +2240,9 @@ Effect::generateOffscreenMipmapImagesChain(const effect::OffscreenRenderTargetOp
             SG_PUSH_GROUPF("Effect::generateOffscreenMipmapImagesChain(numImages=%d)", colorImageDesc.num_mipmaps);
             OffscreenRenderTargetImageContainer *offscreenContainer = it->second;
             PixelFormat format;
-            format.m_colorPixelFormats[0] = colorImageDesc.pixel_format;
-            format.m_depthPixelFormat = offscreenContainer->depthStencilImageDescription().pixel_format;
-            format.m_numSamples = colorImageDesc.sample_count;
+            format.setColorPixelFormat(colorImageDesc.pixel_format, 0);
+            format.setDepthPixelFormat(offscreenContainer->depthStencilImageDescription().pixel_format);
+            format.setNumSamples(colorImageDesc.sample_count);
             RenderTargetMipmapGenerator *generator = offscreenContainer->mipmapGenerator();
             if (!generator) {
                 generator = nanoem_new(RenderTargetMipmapGenerator(this, name.c_str(), colorImageDesc));
@@ -2254,6 +2253,12 @@ Effect::generateOffscreenMipmapImagesChain(const effect::OffscreenRenderTargetOp
             SG_POP_GROUP();
         }
     }
+}
+
+void
+Effect::updateCurrentRenderTargetPixelFormatSampleCount()
+{
+    m_currentRenderTargetPixelFormat.setNumSamples(m_project->sampleCount());
 }
 
 void
@@ -5461,36 +5466,37 @@ Effect::overridePipelineDescription(sg_pipeline_desc &pd, ScriptClassType classT
         activeRenderPass = { SG_INVALID_ID };
     }
     if (sg::is_valid(activeRenderPass)) {
-        const PixelFormat format(m_project->findRenderPassPixelFormat(activeRenderPass));
-        const int numColorAttachments = format.m_numColorAttachments;
-        if (numColorAttachments != m_currentRenderTargetPixelFormat.m_numColorAttachments) {
+        const int numSampleCount = m_currentRenderTargetPixelFormat.numSamples();
+        const PixelFormat format(m_project->findRenderPassPixelFormat(activeRenderPass, numSampleCount));
+        const int numColorAttachments = format.numColorAttachments();
+        if (numColorAttachments != m_currentRenderTargetPixelFormat.numColorAttachments()) {
             m_project->overrideOffscreenRenderPass(
                 m_currentRenderTargetPassDescription, m_currentRenderTargetPixelFormat);
-            const int numColorAttachments = m_currentRenderTargetPixelFormat.m_numColorAttachments;
+            const int numColorAttachments = m_currentRenderTargetPixelFormat.numColorAttachments();
             pd.color_count = numColorAttachments;
             for (int i = 0; i < numColorAttachments; i++) {
-                pd.colors[i].pixel_format = m_currentRenderTargetPixelFormat.m_colorPixelFormats[i];
+                pd.colors[i].pixel_format = m_currentRenderTargetPixelFormat.colorPixelFormat(i);
             }
-            pd.depth.pixel_format = m_currentRenderTargetPixelFormat.m_depthPixelFormat;
-            pd.sample_count = m_currentRenderTargetPixelFormat.m_numSamples;
+            pd.depth.pixel_format = m_currentRenderTargetPixelFormat.depthPixelFormat();
+            pd.sample_count = numSampleCount;
         }
         else {
             pd.color_count = numColorAttachments;
             for (int i = 0; i < numColorAttachments; i++) {
-                pd.colors[i].pixel_format = format.m_colorPixelFormats[i];
+                pd.colors[i].pixel_format = format.colorPixelFormat(i);
             }
-            pd.depth.pixel_format = format.m_depthPixelFormat;
-            pd.sample_count = format.m_numSamples;
+            pd.depth.pixel_format = format.depthPixelFormat();
+            pd.sample_count = format.numSamples();
         }
     }
     else {
-        const int numColorAttachments = m_currentRenderTargetPixelFormat.m_numColorAttachments;
+        const int numColorAttachments = m_currentRenderTargetPixelFormat.numColorAttachments();
         pd.color_count = numColorAttachments;
         for (int i = 0; i < numColorAttachments; i++) {
-            pd.colors[i].pixel_format = m_currentRenderTargetPixelFormat.m_colorPixelFormats[i];
+            pd.colors[i].pixel_format = m_currentRenderTargetPixelFormat.colorPixelFormat(i);
         }
-        pd.depth.pixel_format = m_currentRenderTargetPixelFormat.m_depthPixelFormat;
-        pd.sample_count = m_currentRenderTargetPixelFormat.m_numSamples;
+        pd.depth.pixel_format = m_currentRenderTargetPixelFormat.depthPixelFormat();
+        pd.sample_count = m_currentRenderTargetPixelFormat.numSamples();
     }
     SG_INSERT_MARKERF(
         "Effect::overridePipelineDescription(handle=%d, active=%s, colorFormat=%d, depthFormat=%d, sampleCount=%d, "
@@ -5669,7 +5675,7 @@ Effect::resetPassDescription()
     Inline::clearZeroMemory(m_currentRenderTargetPassDescription);
     Inline::clearZeroMemory(m_currentNamedDepthStencilImageDescription.second);
     Inline::clearZeroMemory(colorImageDesc);
-    m_currentRenderTargetPixelFormat.reset();
+    m_currentRenderTargetPixelFormat.reset(m_project->sampleCount());
     if (!m_project->getOriginOffscreenRenderPassColorImageDescription(
             m_currentRenderTargetPassDescription, colorImageDesc)) {
         m_project->getViewportRenderPassColorImageDescription(m_currentRenderTargetPassDescription, colorImageDesc);
@@ -5706,18 +5712,18 @@ Effect::resetRenderPass(
             normalizer->normalize(drawable, passPtr, m_currentRenderTargetPixelFormat, normalizedColorFormat,
                 m_currentRenderTargetPassDescription);
             m_currentNamedPrimaryRenderTargetColorImageDescription.second.pixel_format =
-                m_currentRenderTargetPixelFormat.m_colorPixelFormats[0] = normalizedColorFormat;
+                m_currentRenderTargetPixelFormat.colorPixelFormat(0);
         }
         else {
             normalizer = nanoem_new(RenderTargetNormalizer(this));
             PixelFormat normalizedPixelFormat(m_currentRenderTargetPixelFormat);
-            normalizedPixelFormat.m_colorPixelFormats[0] = normalizedColorFormat;
+            normalizedPixelFormat.setColorPixelFormat(normalizedColorFormat, 0);
             normalizer->setNormalizedColorImagePixelFormat(normalizedPixelFormat);
             m_normalizers.insert(tinystl::make_pair(currentPassDescriptionKey, normalizer));
             normalizer->normalize(drawable, passPtr, m_currentRenderTargetPixelFormat, normalizedColorFormat,
                 m_currentRenderTargetPassDescription);
-            m_currentNamedPrimaryRenderTargetColorImageDescription.second.pixel_format =
-                m_currentRenderTargetPixelFormat.m_colorPixelFormats[0] = normalizedColorFormat;
+            m_currentNamedPrimaryRenderTargetColorImageDescription.second.pixel_format = normalizedColorFormat;
+            m_currentRenderTargetPixelFormat.setColorPixelFormat(normalizedColorFormat, 0);
             hash.begin();
             hash.add(m_currentRenderTargetPassDescription);
             nanoem_u32_t newPassDescriptionKey = hash.end();
@@ -5866,9 +5872,9 @@ Effect::generateRenderTargetMipmapImagesChain(const IDrawable *drawable, const S
             RenderTargetColorImageContainer *colorImageContainer = it->second;
             RenderTargetDepthStencilImageContainer *depthStencilImageContainer = it2->second;
             PixelFormat format;
-            format.m_colorPixelFormats[0] = imageDescription.pixel_format;
-            format.m_depthPixelFormat = depthStencilImageContainer->depthStencilImageDescription().pixel_format;
-            format.m_numSamples = imageDescription.sample_count;
+            format.setColorPixelFormat(imageDescription.pixel_format, 0);
+            format.setDepthPixelFormat(depthStencilImageContainer->depthStencilImageDescription().pixel_format);
+            format.setNumSamples(imageDescription.sample_count);
             RenderTargetMipmapGenerator *generator = colorImageContainer->mipmapGenerator();
             if (!generator) {
                 generator = nanoem_new(
@@ -6014,9 +6020,9 @@ Effect::setRenderTargetColorImageDescription(const IDrawable *drawable, size_t r
             const sg_image_desc &sourceColorImageDescription = container->colorImageDescription();
             m_currentRenderTargetPassDescription.color_attachments[renderTargetIndex].image =
                 container->colorImageHandle();
-            m_currentRenderTargetPixelFormat.m_colorPixelFormats[renderTargetIndex] =
-                sourceColorImageDescription.pixel_format;
-            m_currentRenderTargetPixelFormat.m_numSamples = sourceColorImageDescription.sample_count;
+            m_currentRenderTargetPixelFormat.setColorPixelFormat(
+                sourceColorImageDescription.pixel_format, renderTargetIndex);
+            m_currentRenderTargetPixelFormat.setNumSamples(sourceColorImageDescription.sample_count);
             if (renderTargetIndex == 0) {
                 const String &name = m_currentNamedDepthStencilImageDescription.first;
                 const sg_image_desc &dd = m_currentNamedDepthStencilImageDescription.second;
@@ -6040,20 +6046,22 @@ Effect::setRenderTargetColorImageDescription(const IDrawable *drawable, size_t r
         m_currentRenderTargetPassDescription.color_attachments[renderTargetIndex].image = { SG_INVALID_ID };
         if (renderTargetIndex == 0) {
             Inline::clearZeroMemory(destColorImageDescription);
+            int numSamples = destColorImageDescription.sample_count;
             if (!m_project->getOriginOffscreenRenderPassColorImageDescription(
                     m_currentRenderTargetPassDescription, destColorImageDescription) &&
                 !m_project->getScriptExternalRenderPassColorImageDescription(
                     m_currentRenderTargetPassDescription, destColorImageDescription)) {
                 m_project->getViewportRenderPassColorImageDescription(
                     m_currentRenderTargetPassDescription, destColorImageDescription);
+                numSamples = m_project->sampleCount();
             }
-            m_currentRenderTargetPixelFormat.m_colorPixelFormats[0] = destColorImageDescription.pixel_format;
-            m_currentRenderTargetPixelFormat.m_numSamples = destColorImageDescription.sample_count;
+            m_currentRenderTargetPixelFormat.setColorPixelFormat(destColorImageDescription.pixel_format, 0);
+            m_currentRenderTargetPixelFormat.setNumSamples(numSamples);
         }
         SG_POP_GROUP();
     }
-    m_currentRenderTargetPixelFormat.m_numColorAttachments =
-        Project::countColorAttachments(m_currentRenderTargetPassDescription);
+    m_currentRenderTargetPixelFormat.setNumColorAttachemnts(
+        Project::countColorAttachments(m_currentRenderTargetPassDescription));
 }
 
 void

@@ -378,7 +378,6 @@ public:
     void blitRenderPass(sg::PassBlock::IDrawQueue *drawQueue, sg_pass destRenderPass, sg_pass sourceRenderPass);
     void clearRenderPass(
         sg::PassBlock::IDrawQueue *drawQueue, sg_pass pass, const sg_pass_action &action, const PixelFormat &format);
-    PixelFormat findRenderPassPixelFormat(sg_pass value) const NANOEM_DECL_NOEXCEPT;
     PixelFormat findRenderPassPixelFormat(sg_pass value, int sampleCount) const NANOEM_DECL_NOEXCEPT;
     PixelFormat currentRenderPassPixelFormat() const NANOEM_DECL_NOEXCEPT;
     const char *findRenderPassName(sg_pass value) const NANOEM_DECL_NOEXCEPT;

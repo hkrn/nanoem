@@ -136,7 +136,7 @@ D3D11BackgroundVideoDrawer::draw(sg_pass pass, const Vector4 &rect, nanoem_f32_t
     if (m_reader && sg::is_valid(m_image)) {
         const sg::NamedPass namedPass(tinystl::make_pair(pass, Project::kViewportPrimaryName));
         const sg::NamedImage namedImage(tinystl::make_pair(m_image, kLabelPrefix));
-        const PixelFormat format(project->findRenderPassPixelFormat(pass));
+        const PixelFormat format(project->findRenderPassPixelFormat(pass, project->sampleCount()));
         project->sharedImageBlitter()->blit(project->sharedBatchDrawQueue(), namedPass, namedImage, rect, format);
         if (!m_durationUpdated) {
             PROPVARIANT pd;

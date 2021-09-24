@@ -320,6 +320,7 @@ Technique::execute(const IDrawable *drawable, bool scriptExternalColor)
                     char nameBuffer[Inline::kMarkerStringLength];
                     StringUtils::format(nameBuffer, sizeof(nameBuffer), "%s/%s/ScriptExternalColor",
                         m_effect->nameConstString(), nameConstString());
+                    m_effect->updateCurrentRenderTargetPixelFormatSampleCount();
                     m_scriptExternalColor.save(drawable, nameBuffer);
                     m_offsets.second = scriptIndex + 1;
                     break;

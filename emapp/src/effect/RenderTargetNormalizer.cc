@@ -68,7 +68,7 @@ RenderTargetNormalizer::normalize(const IDrawable *drawable, const Pass *passPtr
                 const sg_pixel_format colorImageFormat = containerPtr->colorImageDescription().pixel_format;
                 PixelFormat pixelFormat(preferredPixelFormat);
                 if (i > 0) {
-                    pixelFormat.m_colorPixelFormats[0] = colorImageFormat;
+                    pixelFormat.setColorPixelFormat(colorImageFormat, 0);
                 }
                 if (normalizedColorFormat != colorImageFormat) {
                     normalizeRenderTargetColorImage(containerPtr, pixelFormat, originPassDescription, i,
@@ -90,7 +90,7 @@ RenderTargetNormalizer::read()
     PixelFormat format(m_normalizedColorImageFormat);
     internal::BlitPass *blitter = m_effect->project()->sharedImageBlitter();
     sg::PassBlock::IDrawQueue *drawQueue = m_effect->project()->sharedBatchDrawQueue();
-    format.m_numColorAttachments = 1;
+    format.setNumColorAttachemnts(1);
     for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
         const sg::NamedImage &source = m_originColorImageRefs[i];
         if (sg::is_valid(source.first)) {
@@ -106,12 +106,12 @@ RenderTargetNormalizer::apply(
 {
     PipelineDescriptor dest(pass->pipelineDescriptor());
     pass->technique()->overrideObjectPipelineDescription(drawable, dest);
-    dest.m_body.color_count = m_normalizedColorImageFormat.m_numColorAttachments;
-    dest.m_body.colors[0].pixel_format = m_normalizedColorImageFormat.m_colorPixelFormats[0];
+    dest.m_body.color_count = m_normalizedColorImageFormat.numColorAttachments();
+    dest.m_body.colors[0].pixel_format = m_normalizedColorImageFormat.colorPixelFormat(0);
     sg_pipeline pipeline = pass->registerPipelineSet(dest.m_body);
     pb.applyPipelineBindings(pipeline, bindings);
     SG_INSERT_MARKERF("effect::RenderTargetNormalizer::apply(pipeline=%d, format=%d)", pipeline.id,
-        m_normalizedColorImageFormat.m_colorPixelFormats);
+        m_normalizedColorImageFormat.colorPixelFormat(0));
 }
 
 void
@@ -265,7 +265,7 @@ RenderTargetNormalizer::createNormalizePass(const char *name, const PixelFormat 
     }
     PixelFormat &format = m_originColorImageFormats[index];
     format = originFormat;
-    format.m_numColorAttachments = 1;
+    format.setNumColorAttachemnts(1);
     SG_POP_GROUP();
 }
 
