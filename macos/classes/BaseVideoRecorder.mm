@@ -468,7 +468,7 @@ BaseVideoRecorder::blitPass(sg::PassBlock::IDrawQueue *drawQueue, sg_pass value)
 {
     static const char *kSourceImageName = "IOSurfaceRef";
     PixelFormat format;
-    format.m_colorPixelFormats[0] = pixelFormat();
+    format.setColorPixelFormat(pixelFormat(), 0);
     sg_image viewportImage = m_project->viewportPrimaryImage();
     uint32_t sampleCount = m_project->sampleCount();
     if (sampleCount > 1) {

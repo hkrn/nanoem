@@ -139,9 +139,9 @@ LineDrawer::draw(sg::PassBlock &pb, const Option &option)
         sg_pipeline_desc pd;
         Inline::clearZeroMemory(pd);
         pd.shader = option.m_primitiveType == SG_PRIMITIVETYPE_POINTS ? m_pointedShader : m_shader;
-        pd.colors[0].pixel_format = format.m_colorPixelFormats[0];
-        pd.depth.pixel_format = format.m_depthPixelFormat;
-        pd.color_count = format.m_numColorAttachments;
+        pd.colors[0].pixel_format = format.colorPixelFormat(0);
+        pd.depth.pixel_format = format.depthPixelFormat();
+        pd.color_count = format.numColorAttachments();
         if (option.m_enableBlendMode) {
             Project::setAlphaBlendMode(pd.colors[0]);
         }
@@ -149,7 +149,7 @@ LineDrawer::draw(sg::PassBlock &pb, const Option &option)
             pd.depth.write_enabled = true;
             pd.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
         }
-        pd.sample_count = format.m_numSamples;
+        pd.sample_count = format.numSamples();
         sg_layout_desc &ld = pd.layout;
         ld.buffers[0].stride = sizeof(sg::LineVertexUnit);
         ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };

@@ -1077,7 +1077,7 @@ RenderPassScope::modifyPipelineDescription(sg_pipeline_desc &pd) const NANOEM_DE
 {
     if (m_normalizer) {
         const PixelFormat format(m_normalizer->normalizedColorImagePixelFormat());
-        pd.colors[0].pixel_format = format.m_colorPixelFormats[0];
+        pd.colors[0].pixel_format = format.colorPixelFormat(0);
     }
 }
 

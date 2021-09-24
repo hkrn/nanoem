@@ -10,15 +10,15 @@
 
 namespace nanoem {
 
-PixelFormat::PixelFormat()
-    : m_depthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL)
+PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT
+    : m_depthPixelFormat(_SG_PIXELFORMAT_DEFAULT)
     , m_numColorAttachments(1)
     , m_numSamples(1)
 {
     Inline::clearZeroMemory(m_colorPixelFormats);
 }
 
-PixelFormat::PixelFormat(const PixelFormat &value)
+PixelFormat::PixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT
     : m_depthPixelFormat(value.m_depthPixelFormat)
     , m_numColorAttachments(value.m_numColorAttachments)
     , m_numSamples(value.m_numSamples)
@@ -26,12 +26,12 @@ PixelFormat::PixelFormat(const PixelFormat &value)
     memcpy(m_colorPixelFormats, value.m_colorPixelFormats, sizeof(m_colorPixelFormats));
 }
 
-PixelFormat::~PixelFormat()
+PixelFormat::~PixelFormat() NANOEM_DECL_NOEXCEPT
 {
 }
 
 nanoem_u32_t
-PixelFormat::hash() const
+PixelFormat::hash() const NANOEM_DECL_NOEXCEPT
 {
     bx::HashMurmur2A v;
     v.begin();
@@ -49,14 +49,73 @@ PixelFormat::addHash(bx::HashMurmur2A &value) const
 }
 
 void
-PixelFormat::reset()
+PixelFormat::reset(int numSamples)
 {
     for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
         m_colorPixelFormats[i] = _SG_PIXELFORMAT_DEFAULT;
     }
     m_depthPixelFormat = _SG_PIXELFORMAT_DEFAULT;
     m_numColorAttachments = 1;
-    m_numSamples = 1;
+    m_numSamples = numSamples;
+}
+
+sg_pixel_format
+PixelFormat::colorPixelFormat(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT
+{
+    return offset < SG_MAX_COLOR_ATTACHMENTS ? m_colorPixelFormats[offset] : SG_PIXELFORMAT_NONE;
+}
+
+void
+PixelFormat::setColorPixelFormat(sg_pixel_format value, nanoem_rsize_t offset)
+{
+    if (offset < SG_MAX_COLOR_ATTACHMENTS) {
+        m_colorPixelFormats[offset] = value;
+    }
+}
+
+sg_pixel_format
+PixelFormat::depthPixelFormat() const NANOEM_DECL_NOEXCEPT
+{
+    return m_depthPixelFormat;
+}
+
+void
+PixelFormat::setDepthPixelFormat(sg_pixel_format value)
+{
+    m_depthPixelFormat = value;
+}
+
+int
+PixelFormat::numColorAttachments() const NANOEM_DECL_NOEXCEPT
+{
+    return m_numColorAttachments;
+}
+
+void
+PixelFormat::setNumColorAttachemnts(int value)
+{
+    m_numColorAttachments = glm::clamp(value, 1, int(SG_MAX_COLOR_ATTACHMENTS));
+}
+
+int
+PixelFormat::numSamples() const NANOEM_DECL_NOEXCEPT
+{
+    return m_numSamples;
+}
+
+void
+PixelFormat::setNumSamples(int value)
+{
+    m_numSamples = glm::max(value, 1);
+}
+
+void
+PixelFormat::operator=(const PixelFormat &value) NANOEM_DECL_NOEXCEPT
+{
+    memcpy(m_colorPixelFormats, value.m_colorPixelFormats, sizeof(m_colorPixelFormats));
+    m_depthPixelFormat = value.m_depthPixelFormat;
+    m_numColorAttachments = value.m_numColorAttachments;
+    m_numSamples = value.m_numSamples;
 }
 
 } /* namespace nanoem */

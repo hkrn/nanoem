@@ -16,8 +16,8 @@
 namespace nanoem {
 
 class Effect;
+class PixelFormat;
 struct APNGImage;
-struct PixelFormat;
 
 namespace internal {
 class BlitPass;

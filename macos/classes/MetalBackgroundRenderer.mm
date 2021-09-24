@@ -54,7 +54,7 @@ MetalBackgroundRenderer::draw(sg_pass pass, const Vector4 &rect, Project *projec
     }
     const sg::NamedPass namedPass(tinystl::make_pair(pass, Project::kViewportPrimaryName));
     const sg::NamedImage namedImage(tinystl::make_pair(m_imageHandle, kLabelPrefix));
-    const PixelFormat format(project->findRenderPassPixelFormat(pass));
+    const PixelFormat format(project->findRenderPassPixelFormat(pass, project->sampleCount()));
     blitter->blit(project->sharedBatchDrawQueue(), namedPass, namedImage, rect, format);
     SG_POP_GROUP();
 }

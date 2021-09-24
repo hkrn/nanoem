@@ -14,15 +14,28 @@
 
 namespace nanoem {
 
-struct PixelFormat {
-    PixelFormat();
-    PixelFormat(const PixelFormat &value);
-    ~PixelFormat();
+class PixelFormat NANOEM_DECL_SEALED : private NonCopyable {
+public:
+    PixelFormat() NANOEM_DECL_NOEXCEPT;
+    PixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT;
+    ~PixelFormat() NANOEM_DECL_NOEXCEPT;
 
-    nanoem_u32_t hash() const;
+    nanoem_u32_t hash() const NANOEM_DECL_NOEXCEPT;
     void addHash(bx::HashMurmur2A &value) const;
-    void reset();
+    void reset(int numSamples);
 
+    sg_pixel_format colorPixelFormat(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT;
+    void setColorPixelFormat(sg_pixel_format value, nanoem_rsize_t offset);
+    sg_pixel_format depthPixelFormat() const NANOEM_DECL_NOEXCEPT;
+    void setDepthPixelFormat(sg_pixel_format value);
+    int numColorAttachments() const NANOEM_DECL_NOEXCEPT;
+    void setNumColorAttachemnts(int value);
+    int numSamples() const NANOEM_DECL_NOEXCEPT;
+    void setNumSamples(int value);
+
+    void operator=(const PixelFormat &value) NANOEM_DECL_NOEXCEPT;
+
+private:
     sg_pixel_format m_colorPixelFormats[SG_MAX_COLOR_ATTACHMENTS];
     sg_pixel_format m_depthPixelFormat;
     int m_numColorAttachments;

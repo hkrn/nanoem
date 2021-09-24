@@ -44,7 +44,7 @@ BasePass::destroy() NANOEM_DECL_NOEXCEPT
 void
 BasePass::setupPipeline(const PixelFormat &format, sg_pipeline &pipelineRef)
 {
-    nanoem_u32_t key = format.hash();
+    const nanoem_u32_t key = format.hash();
     PipelineMap::const_iterator it = m_pipelines.find(key);
     if (it != m_pipelines.end()) {
         pipelineRef = it->second;
@@ -64,12 +64,12 @@ BasePass::setupPipeline(const PixelFormat &format, sg_pipeline &pipelineRef)
         sg_pipeline_desc pd;
         Inline::clearZeroMemory(pd);
         setupPipelineDescription(pd);
-        pd.color_count = format.m_numColorAttachments;
+        pd.color_count = format.numColorAttachments();
         for (int i = 0, numColorAttachments = pd.color_count; i < numColorAttachments; i++) {
-            pd.colors[i].pixel_format = format.m_colorPixelFormats[i];
+            pd.colors[i].pixel_format = format.colorPixelFormat(i);
         }
-        pd.depth.pixel_format = format.m_depthPixelFormat;
-        pd.sample_count = format.m_numSamples;
+        pd.depth.pixel_format = format.depthPixelFormat();
+        pd.sample_count = format.numSamples();
         pd.shader = m_shader;
         char label[Inline::kMarkerStringLength];
         if (Inline::isDebugLabelEnabled()) {

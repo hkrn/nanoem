@@ -122,9 +122,10 @@ ShadowCamera::update()
         Inline::clearZeroMemory(id);
         id.width = m_textureSize.x;
         id.height = m_textureSize.y;
-        id.pixel_format = format.m_colorPixelFormats[0] = SG_PIXELFORMAT_R32F;
+        id.pixel_format = SG_PIXELFORMAT_R32F;
         id.mag_filter = id.min_filter = SG_FILTER_NEAREST;
         id.render_target = true;
+        format.setColorPixelFormat(SG_PIXELFORMAT_R32F, 0);
         sg_image &colorImage = m_shadowPassDesc.color_attachments[0].image;
         sg::destroy_image(colorImage);
         if (Inline::isDebugLabelEnabled()) {
@@ -133,7 +134,8 @@ ShadowCamera::update()
         colorImage = sg::make_image(&id);
         nanoem_assert(sg::query_image_state(colorImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
         SG_LABEL_IMAGE(colorImage, kColorImageName);
-        id.pixel_format = format.m_depthPixelFormat = SG_PIXELFORMAT_DEPTH_STENCIL;
+        id.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL);
         sg_image &depthImage = m_shadowPassDesc.depth_stencil_attachment.image;
         sg::destroy_image(depthImage);
         if (Inline::isDebugLabelEnabled()) {
@@ -143,8 +145,8 @@ ShadowCamera::update()
         nanoem_assert(sg::query_image_state(depthImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
         SG_LABEL_IMAGE(depthImage, kDepthImageName);
         sg::destroy_pass(m_shadowPass);
-        format.m_numColorAttachments = 1;
-        format.m_numSamples = 0;
+        format.setNumColorAttachemnts(1);
+        format.setNumSamples(1);
         m_shadowPass = m_project->registerRenderPass(m_shadowPassDesc, format);
         m_project->setRenderPassName(m_shadowPass, kPassName);
         SG_POP_GROUP();

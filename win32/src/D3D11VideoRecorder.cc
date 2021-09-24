@@ -478,7 +478,7 @@ D3D11VideoRecorder::blitPass(sg::PassBlock::IDrawQueue *drawQueue, sg_pass value
     const sg_image viewportImage = m_project->viewportPrimaryImage();
     const int sampleCount = m_project->sampleCount();
     PixelFormat format;
-    format.m_colorPixelFormats[0] = m_colorImageDescription.pixel_format;
+    format.setColorPixelFormat(m_colorImageDescription.pixel_format, 0);
     if (sampleCount > 1) {
         m_blitterMSAA->blit(drawQueue, tinystl::make_pair(m_receiveMSAAPass, kLabelPrefixName),
             tinystl::make_pair(viewportImage, Project::kViewportPrimaryName), kRect, format);

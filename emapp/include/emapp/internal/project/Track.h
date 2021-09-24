@@ -56,7 +56,7 @@ class LightTrack NANOEM_DECL_SEALED : public BaseTrack {
 public:
     LightTrack(DirectionalLight *light);
     ~LightTrack() NANOEM_DECL_NOEXCEPT;
-    ;
+
     Type type() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     const void *opaque() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void *opaque() NANOEM_DECL_NOEXCEPT_OVERRIDE;

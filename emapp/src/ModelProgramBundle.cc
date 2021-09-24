@@ -384,7 +384,7 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
                isOffscreenRenderPassActive = project->isOffscreenRenderPassActive();
     const sg_pass pass =
         isOffscreenRenderPassActive ? project->currentOffscreenRenderPass() : project->currentRenderPass();
-    const PixelFormat &format = project->findRenderPassPixelFormat(pass);
+    const PixelFormat format(project->findRenderPassPixelFormat(pass, project->sampleCount()));
     const TechniqueType techniqueType = m_parentTechnique->techniqueType();
     bx::HashMurmur2A hash;
     hash.begin();
@@ -412,12 +412,12 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
         }
         desc.shader = m_parentTechnique->shader();
         desc.primitive_type = m_primitiveType;
-        desc.color_count = format.m_numColorAttachments;
+        desc.color_count = format.numColorAttachments();
         sg_color_state &cs = desc.colors[0];
-        cs.pixel_format = format.m_colorPixelFormats[0];
+        cs.pixel_format = format.colorPixelFormat(0);
         sg_depth_state &ds = desc.depth;
         ds.compare = isDepthEnabled ? SG_COMPAREFUNC_LESS_EQUAL : SG_COMPAREFUNC_ALWAYS;
-        ds.pixel_format = format.m_depthPixelFormat;
+        ds.pixel_format = format.depthPixelFormat();
         ds.write_enabled = isDepthEnabled;
         if (isAddBlend) {
             Project::setAddBlendMode(cs);
@@ -432,7 +432,7 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
             Project::setShadowDepthStencilState(desc.depth, desc.stencil);
         }
         desc.cull_mode = m_cullMode;
-        desc.sample_count = format.m_numSamples;
+        desc.sample_count = format.numSamples();
         char label[Inline::kMarkerStringLength];
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(

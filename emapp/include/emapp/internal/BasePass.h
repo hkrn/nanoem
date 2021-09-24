@@ -12,7 +12,7 @@
 
 namespace nanoem {
 
-struct PixelFormat;
+class PixelFormat;
 class Project;
 
 namespace internal {
