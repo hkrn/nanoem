@@ -20,7 +20,6 @@ class ITranslator;
 
 namespace macos {
 
-class AnalyticsTracker;
 class MainWindow;
 class Preference;
 
@@ -35,8 +34,8 @@ public:
     static void getAllowedProjectExtensions(StringList &extensions);
     static void clearModalPanel(NSPanel *panel, NSWindow *window);
 
-    CocoaApplicationMenuBuilder(MainWindow *parent, ThreadedApplicationClient *client, AnalyticsTracker *tracker,
-        const ITranslator *translator, const Preference *preference);
+    CocoaApplicationMenuBuilder(MainWindow *parent, ThreadedApplicationClient *client, const ITranslator *translator,
+        const Preference *preference);
     ~CocoaApplicationMenuBuilder();
 
     void openProject();
@@ -95,7 +94,6 @@ private:
     NSMutableArray *m_modelPluginMenus = [[NSMutableArray alloc] init];
     NSMutableArray *m_motionPluginMenus = [[NSMutableArray alloc] init];
     MainWindow *m_parent = nil;
-    AnalyticsTracker *m_tracker = nil;
     MenuItemCollection *m_appMenu = nil;
     MenuItemCollection *m_fileMenu = nil;
     MenuItemCollection *m_importMenu = nil;
