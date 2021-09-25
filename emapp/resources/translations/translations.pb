@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -353,12 +353,14 @@ $nanoem.gui.model.edit.vertex.sdef.r1	SDEF (R1)5
 ,nanoem.gui.model.edit.material.ambient.color$環境光色（アンビエント）T
 ,nanoem.gui.model.edit.material.diffuse.color$拡散光色（ディフューズ）G
 .nanoem.gui.model.edit.material.diffuse.opacity拡散光の透明度U
--nanoem.gui.model.edit.material.specular.color$鏡面光色（スペキュラー）F
--nanoem.gui.model.edit.material.specular.power鏡面光色の強度6
+-nanoem.gui.model.edit.material.specular.color$鏡面光色（スペキュラー）=
+-nanoem.gui.model.edit.material.specular.power鏡面強度J
+4nanoem.gui.model.edit.material.specular.power.format鏡面強度: %.2f6
 )nanoem.gui.model.edit.material.edge.title	エッジ9
 )nanoem.gui.model.edit.material.edge.colorエッジ色G
 +nanoem.gui.model.edit.material.edge.opacityエッジ色の透明度8
-(nanoem.gui.model.edit.material.edge.sizeエッジ幅I
+(nanoem.gui.model.edit.material.edge.sizeエッジ幅E
+/nanoem.gui.model.edit.material.edge.size.formatエッジ幅: %.2fI
 -nanoem.gui.model.edit.material.primitive.typeプリミティブ種別L
 -nanoem.gui.model.edit.material.spheremap.typeスフィアマップ種別?
 ,nanoem.gui.model.edit.material.texture.titleテクスチャF
@@ -1177,7 +1179,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1543,13 +1545,15 @@ Edge Width1
 ,nanoem.gui.model.edit.material.diffuse.colorDiffuse ColorA
 .nanoem.gui.model.edit.material.diffuse.opacityDiffuse Opacity?
 -nanoem.gui.model.edit.material.specular.colorSpecular Color?
--nanoem.gui.model.edit.material.specular.powerSpecular Power1
+-nanoem.gui.model.edit.material.specular.powerSpecular PowerL
+4nanoem.gui.model.edit.material.specular.power.formatSpecular Power: %.2f1
 )nanoem.gui.model.edit.material.edge.titleEdge7
 )nanoem.gui.model.edit.material.edge.color
 Edge Color;
 +nanoem.gui.model.edit.material.edge.opacityEdge Opacity6
 (nanoem.gui.model.edit.material.edge.size
-Edge Width?
+Edge WidthC
+/nanoem.gui.model.edit.material.edge.size.formatEdge Width: %.2f?
 -nanoem.gui.model.edit.material.primitive.typePrimitive Type?
 -nanoem.gui.model.edit.material.spheremap.typeSpheremap Type8
 ,nanoem.gui.model.edit.material.texture.titleTexturesD

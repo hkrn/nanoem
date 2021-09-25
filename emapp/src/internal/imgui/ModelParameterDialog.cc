@@ -2298,7 +2298,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.ambient.color"));
         Vector4 value(glm::make_vec4(nanoemModelMaterialGetAmbientColor(materialPtr)));
-        if (ImGui::ColorEdit3("##ambient", glm::value_ptr(value))) {
+        if (ImGui::ColorEdit3("##ambient.color", glm::value_ptr(value))) {
             command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetAmbientColor(scoped, glm::value_ptr(value));
         }
@@ -2307,7 +2307,7 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.diffuse.color"));
         Vector4 value(glm::make_vec3(nanoemModelMaterialGetDiffuseColor(materialPtr)),
             nanoemModelMaterialGetDiffuseOpacity(materialPtr));
-        if (ImGui::ColorEdit4("##diffuse", glm::value_ptr(value))) {
+        if (ImGui::ColorEdit4("##diffuse.color", glm::value_ptr(value))) {
             command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetDiffuseColor(scoped, glm::value_ptr(value));
             nanoemMutableModelMaterialSetDiffuseOpacity(scoped, value.w);
@@ -2316,9 +2316,17 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
     {
         ImGui::TextUnformatted(tr("nanoem.gui.model.edit.material.specular.color"));
         Vector4 value(glm::make_vec4(nanoemModelMaterialGetSpecularColor(materialPtr)));
-        if (ImGui::ColorEdit3("##specular", glm::value_ptr(value))) {
+        if (ImGui::ColorEdit3("##specular.color", glm::value_ptr(value))) {
             command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetSpecularColor(scoped, glm::value_ptr(value));
+        }
+    }
+    {
+        nanoem_f32_t specularPower = nanoemModelMaterialGetSpecularPower(materialPtr);
+        if (ImGui::DragFloat("##specular.power", &specularPower, 1.0f, 0.0f, 0.0f,
+                tr("nanoem.gui.model.edit.material.specular.power.format"))) {
+            command::ScopedMutableMaterial scoped(materialPtr);
+            nanoemMutableModelMaterialSetSpecularPower(scoped, specularPower);
         }
     }
     addSeparator();
@@ -2332,7 +2340,8 @@ ModelParameterDialog::layoutMaterialPropertyPane(nanoem_model_material_t *materi
             nanoemMutableModelMaterialSetEdgeOpacity(scoped, value.w);
         }
         nanoem_f32_t width = nanoemModelMaterialGetEdgeSize(materialPtr);
-        if (ImGui::SliderFloat("##edge.size", &width, 0.0f, 0.0f, "Size: %.3f")) {
+        if (ImGui::SliderFloat(
+                "##edge.size", &width, 0.0f, 2.0f, tr("nanoem.gui.model.edit.material.edge.size.format"))) {
             command::ScopedMutableMaterial scoped(materialPtr);
             nanoemMutableModelMaterialSetEdgeSize(scoped, width);
         }
