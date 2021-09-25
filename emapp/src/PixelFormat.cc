@@ -10,18 +10,17 @@
 
 namespace nanoem {
 
-PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT
-    : m_depthPixelFormat(_SG_PIXELFORMAT_DEFAULT)
-    , m_numColorAttachments(1)
-    , m_numSamples(1)
+PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT : m_depthPixelFormat(_SG_PIXELFORMAT_DEFAULT),
+                                                  m_numColorAttachments(1),
+                                                  m_numSamples(1)
 {
     Inline::clearZeroMemory(m_colorPixelFormats);
 }
 
 PixelFormat::PixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT
-    : m_depthPixelFormat(value.m_depthPixelFormat)
-    , m_numColorAttachments(value.m_numColorAttachments)
-    , m_numSamples(value.m_numSamples)
+    : m_depthPixelFormat(value.m_depthPixelFormat),
+      m_numColorAttachments(value.m_numColorAttachments),
+      m_numSamples(value.m_numSamples)
 {
     memcpy(m_colorPixelFormats, value.m_colorPixelFormats, sizeof(m_colorPixelFormats));
 }
