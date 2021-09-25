@@ -1496,8 +1496,7 @@ CocoaThreadedApplicationService::beginDefaultPass(
     if (backend == SG_BACKEND_METAL_MACOS) {
         auto it = m_colorImageDescriptions.find(windowID);
         auto beginPass = [this, windowID, width, height, sampleCount, &pa](sg_image_desc &desc) {
-            const bool needsUpdatingDepthImage =
-                desc.width != width || desc.height != height;
+            const bool needsUpdatingDepthImage = desc.width != width || desc.height != height;
             auto view = (__bridge MTKView *) m_nativeView;
             id<MTLTexture> texture = view.currentDrawable.texture;
             desc.width = width;

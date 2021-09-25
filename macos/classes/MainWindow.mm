@@ -493,8 +493,7 @@ MainWindow::MainWindow(const bx::CommandLine *cmd, macos::CocoaThreadedApplicati
     , m_lazyExecutionQueue(dispatch_queue_create(nullptr, nullptr))
     , m_metricsQueue(dispatch_queue_create(nullptr, nullptr))
     , m_metricsSemaphore(dispatch_semaphore_create(0))
-    , m_tracker(preference)
-    , m_menu(this, client, &m_tracker, m_translator, preference)
+    , m_menu(this, client, m_translator, preference)
     , m_runningMetrics(true)
 {
     m_menu.build();
@@ -1580,7 +1579,6 @@ MainWindow::registerAllPrerequisiteEventListeners()
             char hardwareModelName[128];
             size_t len = sizeof(hardwareModelName);
             sysctlbyname("hw.model", hardwareModelName, &len, NULL, 0);
-            self->m_tracker.send("main", "nanoem.session", "begin", hardwareModelName);
             const JSON_Object *config = json_object(self->m_service->applicationConfiguration());
             NSURL *libSentryDllURL =
                 [[NSBundle mainBundle].builtInPlugInsURL URLByAppendingPathComponent:@"libsentry.dylib"];
@@ -2003,7 +2001,6 @@ MainWindow::sendDestroyMessage()
     m_client->addCompleteDestructionEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
-            self->m_tracker.send("main", "nanoem.session", "end", nullptr);
             self->m_client->addCompleteTerminationEventListener(
                 [](void *userData) {
                     auto self = static_cast<MainWindow *>(userData);

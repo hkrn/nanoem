@@ -41,7 +41,7 @@ if(MACOSX_VERSION VERSION_GREATER "10.6")
 else()
   target_link_libraries(${NANOEM_EXECUTABLE_NAME} "-framework QTKit")
 endif()
-target_link_libraries(${NANOEM_EXECUTABLE_NAME} "-framework AudioUnit -framework AudioToolbox -framework CoreAudio -weak_framework WebKit -weak_framework Security")
+target_link_libraries(${NANOEM_EXECUTABLE_NAME} "-framework AudioUnit -framework AudioToolbox -framework CoreAudio -weak_framework Security")
 
 # integration
 option(NANOEM_ENABLE_TEST_RUNNER_OSX OFF)
@@ -55,7 +55,7 @@ if(${NANOEM_ENABLE_TEST_RUNNER_OSX})
     target_link_libraries(${_executable} "-framework QTKit")
   endif()
   nanoem_emapp_link_executable(${_executable})
-  target_link_libraries(${_executable} "-framework AudioUnit -framework AudioToolbox -framework CoreAudio -weak_framework WebKit -weak_framework Security")
+  target_link_libraries(${_executable} "-framework AudioUnit -framework AudioToolbox -framework CoreAudio -weak_framework Security")
 endif()
 
 # Sentry Native SDK

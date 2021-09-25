@@ -6,7 +6,6 @@
 
 #import "CocoaApplicationMenuBuilder.h"
 
-#import "AnalyticsTracker.h"
 #import "CocoaThreadedApplicationService.h"
 #import "MainWindow.h"
 #import "Preference.h"
@@ -96,13 +95,12 @@ CocoaApplicationMenuBuilder::clearModalPanel(NSPanel *panel, NSWindow *window)
     [window makeKeyWindow];
 }
 
-CocoaApplicationMenuBuilder::CocoaApplicationMenuBuilder(MainWindow *parent, ThreadedApplicationClient *client,
-    AnalyticsTracker *tracker, const ITranslator *translator, const Preference *preference)
+CocoaApplicationMenuBuilder::CocoaApplicationMenuBuilder(
+    MainWindow *parent, ThreadedApplicationClient *client, const ITranslator *translator, const Preference *preference)
     : ApplicationMenuBuilder(client, preference->applicationPreference()->isModelEditingEnabled())
     , m_translator(translator)
     , m_preference(preference)
     , m_parent(parent)
-    , m_tracker(tracker)
 {
 }
 

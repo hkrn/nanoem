@@ -7,7 +7,6 @@
 #import <IOKit/pwr_mgt/IOPMLib.h>
 #import <QuartzCore/CVDisplayLink.h>
 
-#import "AnalyticsTracker.h"
 #import "CocoaApplicationMenuBuilder.h"
 #import "MenuItemCollection.h"
 
@@ -167,7 +166,6 @@ private:
     dispatch_semaphore_t m_metricsSemaphore = nullptr;
     void *m_logger = nullptr;
     void *m_sentryDllHandle = nullptr;
-    AnalyticsTracker m_tracker;
     CocoaApplicationMenuBuilder m_menu;
     FileHandleMap m_watchEffectSourceHandles;
     Vector2SI32 m_lastLogicalCursorPosition = Vector2SI32(0);
