@@ -1418,7 +1418,11 @@
 - key: nanoem.gui.model.edit.material.specular.power
   phrase:
     en_US: 'Specular Power'
-    ja_JP: '鏡面光色の強度'
+    ja_JP: '鏡面強度'
+- key: nanoem.gui.model.edit.material.specular.power.format
+  phrase:
+    en_US: 'Specular Power: %.2f'
+    ja_JP: '鏡面強度: %.2f'
 - key: nanoem.gui.model.edit.material.edge.title
   phrase:
     en_US: 'Edge'
@@ -1435,6 +1439,10 @@
   phrase:
     en_US: 'Edge Width'
     ja_JP: 'エッジ幅'
+- key: nanoem.gui.model.edit.material.edge.size.format
+  phrase:
+    en_US: 'Edge Width: %.2f'
+    ja_JP: 'エッジ幅: %.2f'
 - key: nanoem.gui.model.edit.material.primitive.type
   phrase:
     en_US: 'Primitive Type'
