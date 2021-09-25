@@ -89,8 +89,7 @@ RenderTargetColorImageContainer::resizeWithScale(const Vector2UI16 &size)
 {
     if (m_scaleFactor.x > 0 && m_scaleFactor.y > 0) {
         const Vector2SI32 newSize(Vector2(size) * m_scaleFactor);
-        m_colorImageDescription.width = newSize.x;
-        m_colorImageDescription.height = newSize.y;
+        resizeColorImageDescription(newSize.x, newSize.y);
         m_dirty = true;
     }
 }
@@ -232,6 +231,11 @@ RenderTargetColorImageContainer::resizeColorImageDescription(int width, int heig
 {
     m_colorImageDescription.width = width;
     m_colorImageDescription.height = height;
+    if (m_colorImageDescription.num_mipmaps > 1) {
+        const Vector2 sizeF(width, height);
+        int maxMipLevels = glm::min(int(glm::log2(glm::max(sizeF.x, sizeF.y))), int(SG_MAX_MIPMAPS));
+        m_colorImageDescription.num_mipmaps = maxMipLevels;
+    }
 }
 
 } /* namespace effect */
