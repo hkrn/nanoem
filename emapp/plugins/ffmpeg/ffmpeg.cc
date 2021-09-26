@@ -53,13 +53,13 @@ struct FFmpegEncoder {
 
     FFmpegEncoder()
         : m_formatContext(nullptr)
-        , m_audioFifo(nullptr)
         , m_audioStream(nullptr)
         , m_videoStream(nullptr)
         , m_audioCodecContext(nullptr)
         , m_videoCodecContext(nullptr)
         , m_resampleContext(nullptr)
         , m_scaleContext(nullptr)
+        , m_tempAudioBuffer(nullptr)
         , m_audioCodecID(AV_CODEC_ID_PCM_S16LE)
         , m_videoCodecID(AV_CODEC_ID_RAWVIDEO)
         , m_videoPixelFormat(AV_PIX_FMT_BGR24)
@@ -87,22 +87,44 @@ struct FFmpegEncoder {
         if ((m_audioStream = avformat_new_stream(m_formatContext, codec)) != nullptr) {
             m_audioCodecContext = avcodec_alloc_context3(codec);
             m_audioCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
-            m_audioCodecContext->sample_rate = m_numFrequency;
-            m_audioCodecContext->channels = m_numChannels;
-            m_audioCodecContext->channel_layout = av_get_default_channel_layout(m_numChannels);
+            m_audioCodecContext->sample_rate = std::max(m_numFrequency, 44100);
+            m_audioCodecContext->channels = std::max(m_numChannels, 2);
+            m_audioCodecContext->channel_layout = av_get_default_channel_layout(m_audioCodecContext->channels);
             m_audioCodecContext->time_base.num = 1;
             m_audioCodecContext->time_base.den = m_audioCodecContext->sample_rate;
+            AVSampleFormat inputSampleFormat;
+            switch (m_numBits) {
+            case 32: {
+                inputSampleFormat = AV_SAMPLE_FMT_S32;
+                break;
+            }
+            case 24: {
+                /* needs conversion S24 to FLT */
+                inputSampleFormat = AV_SAMPLE_FMT_FLT;
+                break;
+            }
+            case 16: {
+                inputSampleFormat = AV_SAMPLE_FMT_S16;
+                break;
+            }
+            case 8: {
+                inputSampleFormat = AV_SAMPLE_FMT_U8;
+                break;
+            }
+            default:
+                inputSampleFormat = AV_SAMPLE_FMT_S16;
+                break;
+            }
             if ((m_formatContext->oformat->flags & AVFMT_GLOBALHEADER) != 0) {
                 m_audioCodecContext->flags |= AV_CODEC_FLAG_GLOBAL_HEADER;
             }
-            m_audioFifo = av_audio_fifo_alloc(m_audioCodecContext->sample_fmt, m_audioCodecContext->channels, 1);
-            m_resampleContext = swr_alloc_set_opts(nullptr, AV_CH_LAYOUT_STEREO, AV_SAMPLE_FMT_S16, 44100,
-                m_audioCodecContext->channel_layout, m_audioCodecContext->sample_fmt, m_audioCodecContext->sample_rate,
-                0, nullptr);
+            m_resampleContext = swr_alloc_set_opts(nullptr, m_audioCodecContext->channel_layout,
+                m_audioCodecContext->sample_fmt, m_audioCodecContext->sample_rate,
+                av_get_default_channel_layout(m_numChannels), inputSampleFormat, m_numFrequency, 0, nullptr);
             swr_init(m_resampleContext);
         }
         int rc = avcodec_open2(m_audioCodecContext, codec, nullptr);
-        if (rc == 0) {
+        if (rc == 0 && m_audioStream) {
             rc = avcodec_parameters_from_context(m_audioStream->codecpar, m_audioCodecContext);
         }
         return rc;
@@ -126,7 +148,7 @@ struct FFmpegEncoder {
                 m_videoCodecContext->pix_fmt, SWS_BICUBIC, nullptr, nullptr, nullptr);
         }
         int rc = avcodec_open2(m_videoCodecContext, codec, nullptr);
-        if (rc == 0) {
+        if (rc == 0 && m_videoStream) {
             rc = avcodec_parameters_from_context(m_videoStream->codecpar, m_videoCodecContext);
         }
         return rc;
@@ -155,7 +177,6 @@ struct FFmpegEncoder {
     void
     setOption(nanoem_u32_t key, const void *value, nanoem_u32_t size, nanoem_application_plugin_status_t *status)
     {
-        int ret = NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS;
         switch (key) {
         case NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS: {
             if (Inline::validateArgument<nanoem_u32_t>(value, size, status)) {
@@ -210,7 +231,8 @@ struct FFmpegEncoder {
             break;
         }
         default:
-            ret = NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_REFER_REASON;
+            nanoem_application_plugin_status_assign_error(
+                status, NANOEM_APPLICATION_PLUGIN_STATUS_ERROR_UNKNOWN_OPTION);
             break;
         }
     }
@@ -218,41 +240,44 @@ struct FFmpegEncoder {
     encodeAudioFrame(nanoem_frame_index_t /* currentFrameIndex */, const nanoem_u8_t *data, nanoem_u32_t size,
         nanoem_application_plugin_status_t *status)
     {
-        const AVCodecParameters *parameters = m_audioStream->codecpar;
-        int numSamplesPerFrame = 0;
-        if ((m_audioCodecContext->codec->capabilities & AV_CODEC_CAP_VARIABLE_FRAME_SIZE) != 0) {
-            numSamplesPerFrame = int(size * (1.0f / (parameters->channels * (m_numBits / 8))));
-        }
-        else {
-            numSamplesPerFrame = parameters->frame_size;
-        }
-        if (!wrapCall(av_audio_fifo_write(m_audioFifo, (void **) &data, numSamplesPerFrame), status)) {
+        int inputSampleCount = size / (m_numChannels * (m_numBits / 8)),
+            outputSampleCount = av_rescale_rnd(inputSampleCount, 44100, m_numFrequency, AV_ROUND_UP);
+        ScopedAudioFrame output(m_audioStream->codecpar, outputSampleCount, m_nextAudioPTS);
+        if (!wrapCall(av_frame_get_buffer(output, 0), status) || !wrapCall(av_frame_make_writable(output), status)) {
             return;
         }
-        ScopedAudioFrame frame(parameters, numSamplesPerFrame, m_nextAudioPTS);
-        m_nextAudioPTS += numSamplesPerFrame;
-        if (!wrapCall(av_frame_get_buffer(frame.m_opaque, 1), status)) {
-            return;
+        const nanoem_u8_t *dataPtr = data;
+        if (m_numBits == 24) {
+            const nanoem_rsize_t numComponents = size / 3;
+            if (!m_tempAudioBuffer) {
+                m_tempAudioBuffer = new float[numComponents];
+            }
+            for (nanoem_rsize_t i = 0; i < numComponents; i++) {
+                const nanoem_u8_t *ptr = &dataPtr[i * 3];
+                int v = 0;
+                if ((ptr[2] & 0x80) != 0) {
+                    v = (0xff << 24) | (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+                }
+                else {
+                    v = (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+                }
+                m_tempAudioBuffer[i] = v / 8388607.0f;
+            }
+            dataPtr = reinterpret_cast<const nanoem_u8_t *>(m_tempAudioBuffer);
         }
-        else if (!wrapCall(av_frame_make_writable(frame.m_opaque), status)) {
-            return;
-        }
-        int actualRead = 0;
-        if ((actualRead = makeFailureReason(
-                 av_audio_fifo_read(m_audioFifo, (void **) &frame.m_opaque->data[0], numSamplesPerFrame), status)) <
-            0) {
-            return;
-        }
-        else if (actualRead < numSamplesPerFrame) {
-            return;
-        }
-        else if (wrapCall(avcodec_send_frame(m_audioCodecContext, frame.m_opaque), status)) {
+        if (wrapCall(swr_convert(
+                         m_resampleContext, &output.m_opaque->data[0], outputSampleCount, &dataPtr, inputSampleCount),
+                status) &&
+            wrapCall(avcodec_send_frame(m_audioCodecContext, output), status)) {
             AVPacket packet = {};
             av_init_packet(&packet);
             if (wrapCall(avcodec_receive_packet(m_audioCodecContext, &packet), status)) {
                 av_packet_rescale_ts(&packet, m_audioCodecContext->time_base, m_audioStream->time_base);
                 packet.stream_index = m_audioStream->index;
                 makeFailureReason(av_interleaved_write_frame(m_formatContext, &packet), status);
+                if (status && *status == NANOEM_APPLICATION_PLUGIN_STATUS_SUCCESS) {
+                    m_nextAudioPTS += outputSampleCount;
+                }
             }
         }
     }
@@ -262,10 +287,7 @@ struct FFmpegEncoder {
     {
         const AVCodecParameters *parameters = m_videoStream->codecpar;
         ScopedVideoFrame frame(parameters, currentFrameIndex);
-        if (!wrapCall(av_frame_get_buffer(frame.m_opaque, 1), status)) {
-            return;
-        }
-        else if (!wrapCall(av_frame_make_writable(frame.m_opaque), status)) {
+        if (!wrapCall(av_frame_get_buffer(frame, 0), status) || !wrapCall(av_frame_make_writable(frame), status)) {
             return;
         }
         const nanoem_u8_t *dataPtr[] = { 0, 0, 0, 0 };
@@ -280,7 +302,7 @@ struct FFmpegEncoder {
             dataPtr[0] = data;
         }
         sws_scale(m_scaleContext, dataPtr, lineSizePtr, 0, m_height, frame.m_opaque->data, frame.m_opaque->linesize);
-        if (wrapCall(avcodec_send_frame(m_videoCodecContext, frame.m_opaque), status)) {
+        if (wrapCall(avcodec_send_frame(m_videoCodecContext, frame), status)) {
             AVPacket packet = {};
             av_init_packet(&packet);
             if (wrapCall(avcodec_receive_packet(m_videoCodecContext, &packet), status)) {
@@ -317,9 +339,9 @@ struct FFmpegEncoder {
             sws_freeContext(m_scaleContext);
             m_scaleContext = nullptr;
         }
-        if (m_audioFifo) {
-            av_audio_fifo_free(m_audioFifo);
-            m_audioFifo = nullptr;
+        if (m_tempAudioBuffer) {
+            delete[] m_tempAudioBuffer;
+            m_tempAudioBuffer = nullptr;
         }
         if (m_formatContext) {
             makeFailureReason(avio_closep(&m_formatContext->pb), status);
@@ -480,6 +502,11 @@ struct FFmpegEncoder {
             av_frame_free(&m_opaque);
         }
 
+        operator AVFrame *()
+        {
+            return m_opaque;
+        }
+
         AVFrame *m_opaque;
     };
     struct ScopedVideoFrame {
@@ -496,6 +523,11 @@ struct FFmpegEncoder {
             av_frame_free(&m_opaque);
         }
 
+        operator AVFrame *()
+        {
+            return m_opaque;
+        }
+
         AVFrame *m_opaque;
     };
 
@@ -504,13 +536,13 @@ struct FFmpegEncoder {
     char m_reason[1024];
     ComponentList m_components;
     AVFormatContext *m_formatContext;
-    AVAudioFifo *m_audioFifo;
     AVStream *m_audioStream;
     AVStream *m_videoStream;
     AVCodecContext *m_audioCodecContext;
     AVCodecContext *m_videoCodecContext;
     SwrContext *m_resampleContext;
     SwsContext *m_scaleContext;
+    nanoem_f32_t *m_tempAudioBuffer;
     AVCodecID m_audioCodecID;
     AVCodecID m_videoCodecID;
     AVPixelFormat m_videoPixelFormat;
