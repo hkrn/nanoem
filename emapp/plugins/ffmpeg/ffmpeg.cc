@@ -4,6 +4,8 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
+#define NOMINMAX
+#include <algorithm>
 #include <vector>
 
 #include "emapp/sdk/Decoder.h"
