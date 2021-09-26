@@ -2308,7 +2308,7 @@ nanoemMutableDocumentSelfShadowKeyframeSetMode(nanoem_mutable_document_self_shad
  *
  * \param model The opaque document gravity keyframe object
  */
-NANOEM_DECL_API nanoem_document_base_keyframe_t *APIENTRY
+NANOEM_DECL_API nanoem_document_self_shadow_keyframe_t *APIENTRY
 nanoemMutableDocumentSelfShadowKeyframeGetOrigin(nanoem_mutable_document_self_shadow_keyframe_t *keyframe);
 
 /**
