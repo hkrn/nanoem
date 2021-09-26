@@ -5292,11 +5292,13 @@ BatchChangeAllSoftBodyObjectsCommand::create(Model *activeModel, const List &obj
 void
 BatchChangeAllSoftBodyObjectsCommand::save(const nanoem_model_soft_body_t *softBodyPtr, Parameter &parameter)
 {
+    BX_UNUSED_2(softBodyPtr, parameter);
 }
 
 void
 BatchChangeAllSoftBodyObjectsCommand::restore(const Parameter &parameter, nanoem_mutable_model_soft_body_t *softBodyPtr)
 {
+    BX_UNUSED_2(parameter, softBodyPtr);
 }
 
 BatchChangeAllSoftBodyObjectsCommand::BatchChangeAllSoftBodyObjectsCommand(

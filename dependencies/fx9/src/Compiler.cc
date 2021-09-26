@@ -650,7 +650,7 @@ Compiler::BaseParameterConverter::fillParameterValues(const ParserContext::NodeI
                     parameterPtr->value.data =
                         static_cast<uint8_t *>(m_parent->m_allocator->allocate(parameterPtr->value.len));
                 }
-                else if (value->m_type->isVector() && value->m_type->getVectorSize() == sequence.size()) {
+                else if (value->m_type->isVector() && size_t(value->m_type->getVectorSize()) == sequence.size()) {
                     size_t numComponents = sequence.size();
                     parameterPtr->value.len = 16;
                     parameterPtr->value.data =
@@ -697,7 +697,6 @@ Compiler::BaseParameterConverter::fillParameterValues(const ParserContext::NodeI
                 }
             }
             else if (const TIntermConstantUnion *constantUnionNode = initializerNode->getAsConstantUnion()) {
-                const TConstUnionArray &values = constantUnionNode->getConstArray();
                 parameterPtr->value.len = 16;
                 parameterPtr->value.data =
                     static_cast<uint8_t *>(m_parent->m_allocator->allocate(parameterPtr->value.len));

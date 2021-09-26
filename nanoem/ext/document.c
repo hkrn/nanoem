@@ -4005,8 +4005,8 @@ nanoemMutableDocumentSelfShadowKeyframeSetMode(nanoem_mutable_document_self_shad
     }
 }
 
-nanoem_document_base_keyframe_t* APIENTRY
-nanoemMutableDocumentSelfShadowKeyframeGetOrigin(nanoem_mutable_document_self_shadow_keyframe_t* keyframe)
+nanoem_document_self_shadow_keyframe_t *APIENTRY
+nanoemMutableDocumentSelfShadowKeyframeGetOrigin(nanoem_mutable_document_self_shadow_keyframe_t *keyframe)
 {
     return nanoem_is_not_null(keyframe) ? keyframe->origin : NULL;
 }

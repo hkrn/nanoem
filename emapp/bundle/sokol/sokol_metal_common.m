@@ -151,7 +151,7 @@ sgx_push_group(const char *text)
 }
 
 SGX_API_DECL void
-sgx_pop_group()
+sgx_pop_group(void)
 {
     if (@available(macOS 10.13, *)) {
         if (_sg.mtl.cmd_buffer) {
@@ -264,7 +264,7 @@ sgx_insert_marker(const char *text)
 }
 
 SGX_API_DECL void *
-sgx_mtl_cmd_queue()
+sgx_mtl_cmd_queue(void)
 {
     return (__bridge void *) _sg.mtl.cmd_queue;
 }
