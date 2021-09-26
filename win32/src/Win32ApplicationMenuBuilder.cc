@@ -48,7 +48,6 @@ Win32ApplicationMenuBuilder::dispatch(UINT menuItemID)
 void
 Win32ApplicationMenuBuilder::fillStaticMenuItem(MenuItemType type, MENUITEMINFOW &info)
 {
-    ZeroMemory(&info, sizeof(info));
     info.cbSize = sizeof(info);
     info.fMask = MIIM_STRING | MIIM_DATA | MIIM_STATE | MIIM_ID;
     info.fState = MFS_ENABLED;
@@ -178,7 +177,7 @@ Win32ApplicationMenuBuilder::appendMenuItem(MenuBarHandle menu, MenuItemType typ
         }
     }
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
-    MENUITEMINFOW info;
+    MENUITEMINFOW info = {};
     fillStaticMenuItem(type, info);
     info.dwTypeData = const_cast<LPWSTR>(localizedMenuItemString(translateMenuItemWin32(type), shortcut));
     HMENU hmenu = mu->parentMenu;
@@ -193,7 +192,7 @@ void
 Win32ApplicationMenuBuilder::createSelectAccessoryMenuItem(MenuBarHandle menu, uint16_t handle, const char *name)
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
-    MENUITEMINFOW info;
+    MENUITEMINFOW info = {};
     fillDynamicMenuItem([this, handle]() { m_client->sendSetActiveAccessoryMessage(handle); }, info);
     MutableWideString ws;
     StringUtils::getWideCharString(name, ws);
@@ -208,7 +207,7 @@ void
 Win32ApplicationMenuBuilder::createSelectModelMenuItem(MenuBarHandle menu, uint16_t handle, const char *name)
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
-    MENUITEMINFOW info;
+    MENUITEMINFOW info = {};
     fillDynamicMenuItem([this, handle]() { m_client->sendSetActiveModelMessage(handle); }, info);
     MutableWideString ws;
     StringUtils::getWideCharString(name, ws);
@@ -224,7 +223,7 @@ Win32ApplicationMenuBuilder::createSelectBoneMenuItem(MenuBarHandle menu, const 
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
     HMENU hmenu = mu->parentMenu;
-    MENUITEMINFOW info;
+    MENUITEMINFOW info = {};
     const std::string s(name);
     fillDynamicMenuItem([this, s]() { m_client->sendSetActiveModelBoneMessage(s.c_str()); }, info);
     MutableWideString ws;
@@ -241,7 +240,7 @@ Win32ApplicationMenuBuilder::createSelectMorphMenuItem(
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
     HMENU hmenu = mu->parentMenu;
-    MENUITEMINFOW info;
+    MENUITEMINFOW info = {};
     const std::string s(name);
     fillDynamicMenuItem([this, s]() { m_client->sendSetActiveModelMorphMessage(s.c_str(), true); }, info);
     MutableWideString ws;
@@ -260,7 +259,7 @@ Win32ApplicationMenuBuilder::createPluginMenuItem(
     HMENU base = CreatePopupMenu();
     nanoem_rsize_t offset = 0;
     for (StringList::const_iterator it = items.begin(), end = items.end(); it != end; ++it, offset++) {
-        MENUITEMINFOW info;
+        MENUITEMINFOW info = {};
         const nanoem_rsize_t functionIndex = offset;
         if (type == kMenuItemTypeModelPluginExecute) {
             fillDynamicMenuItem(
@@ -335,8 +334,7 @@ void
 Win32ApplicationMenuBuilder::appendMenuSeparator(MenuBarHandle menu)
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
-    MENUITEMINFOW info;
-    ZeroMemory(&info, sizeof(info));
+    MENUITEMINFOW info = {};
     info.cbSize = sizeof(info);
     info.fMask = MIIM_TYPE;
     info.fType = MFT_SEPARATOR;
@@ -400,8 +398,7 @@ bool
 Win32ApplicationMenuBuilder::isMenuItemEnabled(MenuItemHandle item) const noexcept
 {
     Win32MenuItem *mi = reinterpret_cast<Win32MenuItem *>(item);
-    MENUITEMINFOW info;
-    ZeroMemory(&info, sizeof(info));
+    MENUITEMINFOW info = {};
     info.cbSize = sizeof(info);
     info.fMask = MIIM_STATE;
     getMenuItemState(mi, &info);
@@ -412,8 +409,7 @@ bool
 Win32ApplicationMenuBuilder::isMenuItemChecked(MenuItemHandle item) const noexcept
 {
     Win32MenuItem *mi = reinterpret_cast<Win32MenuItem *>(item);
-    MENUITEMINFOW info;
-    ZeroMemory(&info, sizeof(info));
+    MENUITEMINFOW info = {};
     info.cbSize = sizeof(info);
     info.fMask = MIIM_STATE;
     getMenuItemState(mi, &info);
@@ -468,7 +464,6 @@ Win32ApplicationMenuBuilder::clearAllMenuItems()
 void
 Win32ApplicationMenuBuilder::fillDynamicMenuItem(const Lambda &lambda, MENUITEMINFOW &info)
 {
-    ZeroMemory(&info, sizeof(info));
     info.cbSize = sizeof(info);
     info.fMask = MIIM_STRING | MIIM_DATA | MIIM_STATE | MIIM_ID | MIIM_DATA;
     info.fState = MFS_ENABLED;
