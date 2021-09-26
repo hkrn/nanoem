@@ -70,7 +70,7 @@ IGFD_OpenDialog(ImGuiFileDialog *vContext, const char *vKey, const char *vTitle,
     const char *vPath, const char *vFileName, const int vCountSelectionMax, void *vUserDatas,
     ImGuiFileDialogFlags vFlags)
 {
-    BX_UNUSED_8(vContext, vKey, vTitle, vFilters, vFileName, vCountSelectionMax, vUserDatas, vFlags);
+    BX_UNUSED_9(vContext, vKey, vTitle, vFilters, vPath, vFileName, vCountSelectionMax, vUserDatas, vFlags);
 }
 IMGUIFILEDIALOG_API void
 IGFD_CloseDialog(ImGuiFileDialog *vContext)

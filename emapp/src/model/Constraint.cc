@@ -242,7 +242,7 @@ Constraint::destroy(void *opaque, nanoem_model_object_t * /* constraintPtr */) N
     nanoem_delete(self);
 }
 
-Constraint::Constraint(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_states(kPrivateStateEnabled)
+Constraint::Constraint(const PlaceHolder & /* holder */) NANOEM_DECL_NOEXCEPT : m_states(kPrivateStateInitialValue)
 {
 }
 
