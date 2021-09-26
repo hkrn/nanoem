@@ -248,7 +248,7 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     }
     addSeparator();
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
-    if (ImGui::TreeNode(textureID, tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
+    if (ImGui::TreeNode(textureID, "%s", tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
         ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), ImVec2(0, 0), ImVec2(1, 1),
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
         ImGui::TreePop();
@@ -377,7 +377,8 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     if (ImGuiWindow::handleButton(tr("nanoem.gui.window.project.effect.emd.load"),
             ImGui::GetContentRegionAvail().x * 0.5f, isModelSelected)) {
         Model *model = models->data()[m_activeModelTargetIndex];
-        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleLoadingModelEffectSetting, nullptr };
+        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleLoadingModelEffectSetting, nullptr,
+            nullptr };
         project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
         extensions.push_back("emd");
@@ -388,7 +389,8 @@ EffectParameterDialog::layoutAllModelMaterialEffectAttachments(Project *project)
     if (ImGuiWindow::handleButton(
             tr("nanoem.gui.window.project.effect.emd.save"), ImGui::GetContentRegionAvail().x, isModelSelected)) {
         Model *model = models->data()[m_activeModelTargetIndex];
-        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleSaveingModelEffectSetting, nullptr };
+        const IFileManager::QueryFileDialogCallbacks callbacks = { model, handleSaveingModelEffectSetting, nullptr,
+            nullptr };
         project->fileManager()->setTransientQueryFileDialogCallback(callbacks);
         StringList extensions;
         extensions.push_back("emd");
