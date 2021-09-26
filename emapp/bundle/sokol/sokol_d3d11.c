@@ -89,33 +89,46 @@ sgx_label_image(sg_image image, const char *text)
 {
     _sg_image_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
     if (ptr && text) {
-        int length = strlen(text), count = MultiByteToWideChar(CP_UTF8, 0, text, length, 0, 0), size = count * sizeof(wchar_t);
-        wchar_t *name = (wchar_t *) malloc(size);
-        MultiByteToWideChar(CP_UTF8, 0, text, length, name, count);
+        int new_size, length = strlen(text), count = MultiByteToWideChar(CP_UTF8, 0, text, length, 0, 0), size = count * sizeof(wchar_t);
+        wchar_t *name = NULL;
         ID3D11Texture2D *tex2d = ptr->d3d11.tex2d;
         if (tex2d) {
-            tex2d->lpVtbl->SetPrivateData(tex2d, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-            tex2d->lpVtbl->SetPrivateData(tex2d, &WKPDID_D3DDebugObjectNameW, size, name);
+            name = appendSuffix(text, length, L"/Texture2D", &new_size);
+            if (name) {
+                tex2d->lpVtbl->SetPrivateData(tex2d, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                tex2d->lpVtbl->SetPrivateData(tex2d, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                free(name);
+            }
         }
         ID3D11Texture3D *tex3d = ptr->d3d11.tex3d;
         if (tex3d) {
-            tex3d->lpVtbl->SetPrivateData(tex3d, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-            tex3d->lpVtbl->SetPrivateData(tex3d, &WKPDID_D3DDebugObjectNameW, size, name);
+            name = appendSuffix(text, length, L"/Texture3D", &new_size);
+            if (name) {
+                tex3d->lpVtbl->SetPrivateData(tex3d, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                tex3d->lpVtbl->SetPrivateData(tex3d, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                free(name);
+            }
         }
         ID3D11Texture2D *texds = ptr->d3d11.texds;
-        if (ptr->d3d11.texds) {
-            texds->lpVtbl->SetPrivateData(texds, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-            texds->lpVtbl->SetPrivateData(texds, &WKPDID_D3DDebugObjectNameW, size, name);
+        if (texds) {
+            name = appendSuffix(text, length, L"/DepthStencil", &new_size);
+            if (name) {
+                texds->lpVtbl->SetPrivateData(texds, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                texds->lpVtbl->SetPrivateData(texds, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                free(name);
+            }
         }
         ID3D11Texture2D *texmsaa = ptr->d3d11.texmsaa;
-        if (ptr->d3d11.texmsaa) {
-            texmsaa->lpVtbl->SetPrivateData(texmsaa, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-            texmsaa->lpVtbl->SetPrivateData(texmsaa, &WKPDID_D3DDebugObjectNameW, size, name);
+        if (texmsaa) {
+            name = appendSuffix(text, length, L"/MSAA", &new_size);
+            if (name) {
+                texmsaa->lpVtbl->SetPrivateData(texmsaa, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                texmsaa->lpVtbl->SetPrivateData(texmsaa, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                free(name);
+            }
         }
-        free(name);
         ID3D11SamplerState *smp = ptr->d3d11.smp;
         if (smp) {
-            int new_size;
             name = appendSuffix(text, length, L"/SamplerState", &new_size);
             if (name) {
                 smp->lpVtbl->SetPrivateData(smp, &WKPDID_D3DDebugObjectNameW, 0, NULL);
@@ -125,7 +138,6 @@ sgx_label_image(sg_image image, const char *text)
         }
         ID3D11ShaderResourceView *srv = ptr->d3d11.srv;
         if (srv) {
-            int new_size;
             name = appendSuffix(text, length, L"/ShaderResourceView", &new_size);
             if (name) {
                 srv->lpVtbl->SetPrivateData(srv, &WKPDID_D3DDebugObjectNameW, 0, NULL);
@@ -169,7 +181,7 @@ sgx_label_shader(sg_shader shader, const char *text)
             for (int j = 0, num_uniform_blocks = stage->num_uniform_blocks; j < num_uniform_blocks; j++) {
                 ID3D11Buffer *buffer = stage_d3d11->cbufs[j];
                 if (buffer) {
-                    const wchar_t *suffix = i == SG_SHADERSTAGE_VS ? L"/VertexShaderConstantBuffer" : L"/PixelShaderConstantBuffer";
+                    const wchar_t *suffix = i == SG_SHADERSTAGE_VS ? L"/VSConstantBuffer" : L"/PSConstantBuffer";
                     int new_size;
                     name = appendSuffix(text, length,  suffix, &new_size);
                     if (name) {
@@ -195,16 +207,27 @@ sgx_label_pass(sg_pass pass, const char *text)
             for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
                 ID3D11RenderTargetView *color_view = ptr->d3d11.color_atts[i].rtv;
                 if (color_view) {
-                    color_view->lpVtbl->SetPrivateData(color_view, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-                    color_view->lpVtbl->SetPrivateData(color_view, &WKPDID_D3DDebugObjectNameW, size, name);
+                    wchar_t suffix[16];
+                    int new_size;
+                    swprintf_s(suffix, ARRAYSIZE(suffix), L"/ColorView/%d", i);
+                    name = appendSuffix(text, length, suffix, &new_size);
+                    if (name) {
+                        color_view->lpVtbl->SetPrivateData(color_view, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                        color_view->lpVtbl->SetPrivateData(color_view, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                        free(name);
+                    }
                 }
             }
             ID3D11RenderTargetView *depth_view = ptr->d3d11.ds_att.dsv;
             if (depth_view) {
-                depth_view->lpVtbl->SetPrivateData(depth_view, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-                depth_view->lpVtbl->SetPrivateData(depth_view, &WKPDID_D3DDebugObjectNameW, size, name);
+                int new_size;
+                name = appendSuffix(text, length, L"/DepthStencilView", &new_size);
+                if (name) {
+                    depth_view->lpVtbl->SetPrivateData(depth_view, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                    depth_view->lpVtbl->SetPrivateData(depth_view, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                    free(name);
+                }
             }
-            free(name);
         }
     }
 }
