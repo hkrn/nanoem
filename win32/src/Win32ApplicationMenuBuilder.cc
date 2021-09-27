@@ -8,6 +8,7 @@
 
 #include "MainWindow.h"
 
+#include "emapp/EnumUtils.h"
 #include "emapp/StringUtils.h"
 #include "emapp/ThreadedApplicationClient.h"
 #include "emapp/private/CommonInclude.h"
@@ -76,22 +77,100 @@ Win32ApplicationMenuBuilder::getPlainMenuItemName(MenuBarHandle handle, UINT id,
 void
 Win32ApplicationMenuBuilder::setMenuItemState(Win32MenuItem *item, const MENUITEMINFOW *info)
 {
-    if (item->type != kMenuItemTypeMaxEnum) {
-        SetMenuItemInfoW(item->parentMenu, static_cast<UINT>(item->type), FALSE, info);
-    }
-    else {
+    switch (item->type) {
+    case kMenuItemTypeMaxEnum: {
         SetMenuItemInfoW(item->parentMenu, static_cast<UINT>(item->index), TRUE, info);
+        break;
+    }
+    case kMenuItemTypeFileTitle:
+    case kMenuItemTypeFileImportTitle:
+    case kMenuItemTypeFileImportMotionTitle:
+    case kMenuItemTypeFileExportTitle:
+    case kMenuItemTypeEditTitle:
+    case kMenuItemTypeEditBoneTitle:
+    case kMenuItemTypeEditCameraTitle:
+    case kMenuItemTypeEditMorphTitle:
+    case kMenuItemTypeEditModelPluginTitle:
+    case kMenuItemTypeEditMotionPluginTitle:
+    case kMenuItemTypeProjectTitle:
+    case kMenuItemTypeProjectMSAATitle:
+    case kMenuItemTypeProjectPhysicsSimulationTitle:
+    case kMenuItemTypeProjectPhysicsSimulationDebugDrawTitle:
+    case kMenuItemTypeProjectPreferredFPSTitle:
+    case kMenuItemTypeCameraTitle:
+    case kMenuItemTypeCameraPresetTitle:
+    case kMenuItemTypeLightTitle:
+    case kMenuItemTypeLightSelfShadowTitle:
+    case kMenuItemTypeModelTitle:
+    case kMenuItemTypeModelSelectTitle:
+    case kMenuItemTypeModelSelectBoneTitle:
+    case kMenuItemTypeModelSelectMorphTitle:
+    case kMenuItemTypeModelSelectMorphEyebrowTitle:
+    case kMenuItemTypeModelSelectMorphEyeTitle:
+    case kMenuItemTypeModelSelectMorphLipTitle:
+    case kMenuItemTypeModelSelectMorphOtherTitle:
+    case kMenuItemTypeModelPreferenceTitle:
+    case kMenuItemTypeAccessoryTitle:
+    case kMenuItemTypeAccessorySelectTitle:
+    case kMenuItemTypeMotionTitle:
+    case kMenuItemTypeWindowTitle:
+    case kMenuItemTypeHelpTitle: {
+        /* do nothing */
+        break;
+    }
+    default:
+        SetMenuItemInfoW(item->parentMenu, static_cast<UINT>(item->type), FALSE, info);
+        break;
     }
 }
 
 void
 Win32ApplicationMenuBuilder::getMenuItemState(Win32MenuItem *item, MENUITEMINFOW *info)
 {
-    if (item->type != kMenuItemTypeMaxEnum) {
-        GetMenuItemInfoW(item->parentMenu, static_cast<UINT>(item->type), FALSE, info);
-    }
-    else {
+    switch (item->type) {
+    case kMenuItemTypeMaxEnum: {
         GetMenuItemInfoW(item->parentMenu, static_cast<UINT>(item->index), TRUE, info);
+        break;
+    }
+    case kMenuItemTypeFileTitle:
+    case kMenuItemTypeFileImportTitle:
+    case kMenuItemTypeFileImportMotionTitle:
+    case kMenuItemTypeFileExportTitle:
+    case kMenuItemTypeEditTitle:
+    case kMenuItemTypeEditBoneTitle:
+    case kMenuItemTypeEditCameraTitle:
+    case kMenuItemTypeEditMorphTitle:
+    case kMenuItemTypeEditModelPluginTitle:
+    case kMenuItemTypeEditMotionPluginTitle:
+    case kMenuItemTypeProjectTitle:
+    case kMenuItemTypeProjectMSAATitle:
+    case kMenuItemTypeProjectPhysicsSimulationTitle:
+    case kMenuItemTypeProjectPhysicsSimulationDebugDrawTitle:
+    case kMenuItemTypeProjectPreferredFPSTitle:
+    case kMenuItemTypeCameraTitle:
+    case kMenuItemTypeCameraPresetTitle:
+    case kMenuItemTypeLightTitle:
+    case kMenuItemTypeLightSelfShadowTitle:
+    case kMenuItemTypeModelTitle:
+    case kMenuItemTypeModelSelectTitle:
+    case kMenuItemTypeModelSelectBoneTitle:
+    case kMenuItemTypeModelSelectMorphTitle:
+    case kMenuItemTypeModelSelectMorphEyebrowTitle:
+    case kMenuItemTypeModelSelectMorphEyeTitle:
+    case kMenuItemTypeModelSelectMorphLipTitle:
+    case kMenuItemTypeModelSelectMorphOtherTitle:
+    case kMenuItemTypeModelPreferenceTitle:
+    case kMenuItemTypeAccessoryTitle:
+    case kMenuItemTypeAccessorySelectTitle:
+    case kMenuItemTypeMotionTitle:
+    case kMenuItemTypeWindowTitle:
+    case kMenuItemTypeHelpTitle: {
+        /* do nothing */
+        break;
+    }
+    default:
+        GetMenuItemInfoW(item->parentMenu, static_cast<UINT>(item->type), FALSE, info);
+        break;
     }
 }
 
@@ -378,8 +457,9 @@ Win32ApplicationMenuBuilder::setMenuItemEnabled(MenuItemHandle item, bool value)
     Win32MenuItem *mi = reinterpret_cast<Win32MenuItem *>(item);
     MENUITEMINFOW info = {};
     info.cbSize = sizeof(info);
-    info.fState = value ? MFS_ENABLED : MFS_DISABLED;
     info.fMask = MIIM_STATE;
+    getMenuItemState(mi, &info);
+    EnumUtils::setEnabled(MFS_DISABLED, info.fState, !value);
     setMenuItemState(mi, &info);
 }
 
@@ -389,8 +469,9 @@ Win32ApplicationMenuBuilder::setMenuItemChecked(MenuItemHandle item, bool value)
     Win32MenuItem *mi = reinterpret_cast<Win32MenuItem *>(item);
     MENUITEMINFOW info = {};
     info.cbSize = sizeof(info);
-    info.fState = value ? MFS_CHECKED : MFS_UNCHECKED;
     info.fMask = MIIM_STATE;
+    getMenuItemState(mi, &info);
+    EnumUtils::setEnabled(MFS_CHECKED, info.fState, value);
     setMenuItemState(mi, &info);
 }
 
@@ -402,7 +483,7 @@ Win32ApplicationMenuBuilder::isMenuItemEnabled(MenuItemHandle item) const noexce
     info.cbSize = sizeof(info);
     info.fMask = MIIM_STATE;
     getMenuItemState(mi, &info);
-    return info.fState == MFS_ENABLED;
+    return !EnumUtils::isEnabled(info.fState, MFS_DISABLED);
 }
 
 bool
@@ -413,7 +494,7 @@ Win32ApplicationMenuBuilder::isMenuItemChecked(MenuItemHandle item) const noexce
     info.cbSize = sizeof(info);
     info.fMask = MIIM_STATE;
     getMenuItemState(mi, &info);
-    return info.fState == MFS_CHECKED;
+    return EnumUtils::isEnabled(info.fState, MFS_CHECKED);
 }
 
 void
