@@ -931,6 +931,7 @@ Project::Pass::update(const Vector2UI16 &size)
     id.width = size.x;
     id.height = size.y;
     id.pixel_format = colorPixelFormat;
+    id.mag_filter = id.min_filter = SG_FILTER_LINEAR;
     id.wrap_u = id.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     id.sample_count = enableMSAA ? m_project->sampleCount() : 1;
     sg::destroy_image(m_colorImage);
