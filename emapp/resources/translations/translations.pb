@@ -51,8 +51,8 @@ $nanoem.gui.panel.accessory.bone.none(なし)+
 "nanoem.gui.panel.camera.model.none(なし)?
 #nanoem.gui.panel.camera.perspectiveパースペクティブ*
  nanoem.gui.panel.camera.register登録4
-$nanoem.gui.panel.interpolation.title補完曲線8
-(nanoem.gui.panel.interpolation.automatic自動補完9
+$nanoem.gui.panel.interpolation.title補間曲線8
+(nanoem.gui.panel.interpolation.automatic自動補間9
 /nanoem.gui.panel.interpolation.bone.orientation回転A
 1nanoem.gui.panel.interpolation.bone.translation.x移動(X軸)A
 1nanoem.gui.panel.interpolation.bone.translation.y移動(Y軸)A

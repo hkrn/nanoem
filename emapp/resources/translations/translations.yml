@@ -205,11 +205,11 @@
 - key: nanoem.gui.panel.interpolation.title
   phrase:
     en_US: Interpolation
-    ja_JP: 補完曲線
+    ja_JP: 補間曲線
 - key: nanoem.gui.panel.interpolation.automatic
   phrase:
     en_US: Automatic
-    ja_JP: 自動補完
+    ja_JP: 自動補間
 - key: nanoem.gui.panel.interpolation.bone.orientation
   phrase:
     en_US: Orientation
