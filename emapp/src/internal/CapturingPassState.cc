@@ -1360,6 +1360,7 @@ CapturingPassAsVideoState::capture(Project *project, Error &error)
 {
     if (prepareCapturingViewport(project)) {
         const sg_image_desc desc(outputImageDescription());
+        BX_UNUSED_1(desc);
         SG_PUSH_GROUPF("CapturingPassAsVideoState::capture(frameIndex=%d, amount=%.3f, width=%d, height=%d)",
             project->currentLocalFrameIndex(), m_amount, desc.width, desc.height);
         nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
@@ -1455,6 +1456,7 @@ CapturingPassAsVideoState::handleCaptureViaVideoRecorder(Project *project, nanoe
     nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS, nanoem_frame_index_t durationFrameIndices,
     nanoem_f32_t deltaScaleFactor)
 {
+    BX_UNUSED_1(audioPTS);
     if (m_videoRecorder->isCancelled()) {
         finishEncoding();
     }
@@ -1581,7 +1583,6 @@ CapturingPassAsVideoState::encodeVideoFrame(
                          rest = samplesPtr->size() >= offset ? samplesPtr->size() - offset : 0;
             ByteArray slice(bufferSize);
             memcpy(slice.data(), samplesPtr->data() + offset, glm::min(rest, bufferSize));
-            bx::debugPrintf("%llu:%llu => %llu:%llu\n", bufferSize, audioPTS, offset, rest);
             continuable &=
                 m_encoderPluginPtr->encodeAudioFrame(nanoem_frame_index_t(videoPTS), slice.data(), slice.size(), error);
         }
