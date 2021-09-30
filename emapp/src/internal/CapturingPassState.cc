@@ -716,7 +716,7 @@ CapturingPassAsVideoState::ModalDialog::draw(const Project *project)
                     const Vector2UI16 size(resolutionSize(project));
                     const nanoem_frame_index_t duration =
                         m_exportFrameIndexRange.second - m_exportFrameIndexRange.first;
-                    const nanoem_u32_t fps = project->preferredMotionFPS();
+                    const nanoem_u32_t fps = 60;
                     Error error;
                     plugin->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, fps, error);
                     plugin->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, size.x, error);
@@ -1315,10 +1315,10 @@ CapturingPassAsVideoState::start(Error &error)
     }
     else if (m_encoderPluginPtr) {
         const sg_image_desc desc(outputImageDescription());
+        const nanoem_u32_t fps = 60;
         const bool topLeft = sg::query_features().origin_top_left;
         Project *project = stateController()->currentProject();
-        m_encoderPluginPtr->setOption(
-            NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, project->preferredMotionFPS(), error);
+        m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, fps, error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_DURATION, duration(), error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, desc.width, error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HEIGHT, desc.height, error);
