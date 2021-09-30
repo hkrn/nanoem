@@ -52,6 +52,8 @@ struct FFmpegEncoder {
     static const char kAudioCodecComponentID[];
     static const char kVideoCodecComponentID[];
     static const char kVideoPixelFormatComponentID[];
+    static const int kMinimumSampleRate;
+    static const int kMinimumNumChannels;
 
     FFmpegEncoder()
         : m_formatContext(nullptr)
@@ -89,8 +91,8 @@ struct FFmpegEncoder {
         if ((m_audioStream = avformat_new_stream(m_formatContext, codec)) != nullptr) {
             m_audioCodecContext = avcodec_alloc_context3(codec);
             m_audioCodecContext->sample_fmt = AV_SAMPLE_FMT_S16;
-            m_audioCodecContext->sample_rate = std::max(m_numFrequency, 44100);
-            m_audioCodecContext->channels = std::max(m_numChannels, 2);
+            m_audioCodecContext->sample_rate = std::max(m_numFrequency, kMinimumSampleRate);
+            m_audioCodecContext->channels = std::max(m_numChannels, kMinimumNumChannels);
             m_audioCodecContext->channel_layout = av_get_default_channel_layout(m_audioCodecContext->channels);
             m_audioCodecContext->time_base.num = 1;
             m_audioCodecContext->time_base.den = m_audioCodecContext->sample_rate;
@@ -243,7 +245,7 @@ struct FFmpegEncoder {
         nanoem_application_plugin_status_t *status)
     {
         int inputSampleCount = size / (m_numChannels * (m_numBits / 8)),
-            outputSampleCount = av_rescale_rnd(inputSampleCount, 44100, m_numFrequency, AV_ROUND_UP);
+            outputSampleCount = av_rescale_rnd(inputSampleCount, m_audioCodecContext->sample_rate, m_numFrequency, AV_ROUND_UP);
         ScopedAudioFrame output(m_audioStream->codecpar, outputSampleCount, m_nextAudioPTS);
         if (!wrapCall(av_frame_get_buffer(output, 0), status) || !wrapCall(av_frame_make_writable(output), status)) {
             return;
@@ -561,6 +563,8 @@ struct FFmpegEncoder {
 const char FFmpegEncoder::kAudioCodecComponentID[] = "ffmpeg.audio-codec";
 const char FFmpegEncoder::kVideoCodecComponentID[] = "ffmpeg.video-codec";
 const char FFmpegEncoder::kVideoPixelFormatComponentID[] = "ffmpeg.video-pixel-format";
+const int FFmpegEncoder::kMinimumSampleRate = 44100;
+const int FFmpegEncoder::kMinimumNumChannels = 2;
 
 struct FFmpegDecoder {
     FFmpegDecoder()
