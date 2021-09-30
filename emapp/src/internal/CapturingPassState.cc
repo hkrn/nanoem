@@ -661,8 +661,8 @@ CapturingPassAsVideoState::ModalDialog::draw(const Project *project)
     ImGui::NextColumn();
     ImGui::PushItemWidth(-1);
     ImGui::TextUnformatted(translator->translate("nanoem.window.dialog.export.video.range"));
-    if (ImGui::DragIntRange2(
-            "##range", &m_exportFrameIndexRange.first, &m_exportFrameIndexRange.second, 1.0f, 0, project->duration()) &&
+    if (ImGui::DragIntRange2("##range", &m_exportFrameIndexRange.first, &m_exportFrameIndexRange.second, 1.0f, 0,
+            project->duration(), "%dF", nullptr, ImGuiSliderFlags_AlwaysClamp) &&
         m_plugin) {
         const nanoem_frame_index_t duration = m_exportFrameIndexRange.second - m_exportFrameIndexRange.first;
         Error error;
