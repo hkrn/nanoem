@@ -1367,8 +1367,7 @@ CapturingPassAsVideoState::capture(Project *project, Error &error)
         const nanoem_f32_t deltaScaleFactor = project->motionFPSScaleFactor();
         const nanoem_frame_index_t audioPTS = static_cast<nanoem_frame_index_t>(
                                        frameIndex * deltaScaleFactor + m_amount * deltaScaleFactor),
-                                   videoPTS =
-                                       audioPTS - nanoem_frame_index_t(startFrameIndex() * deltaScaleFactor),
+                                   videoPTS = audioPTS - nanoem_frame_index_t(startFrameIndex() * deltaScaleFactor),
                                    durationFrameIndices = static_cast<nanoem_frame_index_t>(duration());
         if (m_videoRecorder) {
             handleCaptureViaVideoRecorder(
@@ -1493,8 +1492,7 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
     nanoem_f32_t deltaScaleFactor, Error &error)
 {
     struct AsyncReadHandler {
-        AsyncReadHandler(
-            CapturingPassAsVideoState *state, nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS)
+        AsyncReadHandler(CapturingPassAsVideoState *state, nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS)
             : m_state(state)
             , m_audioPTS(audioPTS)
             , m_videoPTS(videoPTS)

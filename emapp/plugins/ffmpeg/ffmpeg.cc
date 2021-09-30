@@ -245,7 +245,8 @@ struct FFmpegEncoder {
         nanoem_application_plugin_status_t *status)
     {
         int inputSampleCount = size / (m_numChannels * (m_numBits / 8)),
-            outputSampleCount = av_rescale_rnd(inputSampleCount, m_audioCodecContext->sample_rate, m_numFrequency, AV_ROUND_UP);
+            outputSampleCount =
+                av_rescale_rnd(inputSampleCount, m_audioCodecContext->sample_rate, m_numFrequency, AV_ROUND_UP);
         ScopedAudioFrame output(m_audioStream->codecpar, outputSampleCount, m_nextAudioPTS);
         if (!wrapCall(av_frame_get_buffer(output, 0), status) || !wrapCall(av_frame_make_writable(output), status)) {
             return;
