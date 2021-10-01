@@ -268,25 +268,23 @@ struct LSmashEncoder {
                     crop, m_videoSummary->width, m_videoSummary->height, &m_videoSummary->clap);
                 m_root = lsmash_create_root();
                 m_file = lsmash_set_file(m_root, &m_fileParameters);
-                m_videoMediaParameters.timescale = m_movieParameters.timescale;
-                nanoem_u32_t videoTrackID = lsmash_create_track(m_root, ISOM_MEDIA_HANDLER_TYPE_VIDEO_TRACK);
-                nanoem_u32_t videoSummaryIndex = lsmash_add_sample_entry(m_root, videoTrackID, m_videoSummary);
-                lsmash_set_movie_parameters(m_root, &m_movieParameters);
-                lsmash_set_track_parameters(m_root, videoTrackID, &m_videoTrackParameters);
-                lsmash_set_media_parameters(m_root, videoTrackID, &m_videoMediaParameters);
+                nanoem_u32_t audioTrackID = 0, audioSummaryIndex = 0;
                 if (m_audioSummary->frequency > 0 && m_audioSummary->channels > 0 && m_audioSummary->sample_size > 0) {
                     m_audioSummary->samples_in_frame = m_audioSummary->frequency / m_movieParameters.timescale;
                     m_audioMediaParameters.timescale = m_audioSummary->frequency;
-                    nanoem_u32_t audioTrackID = lsmash_create_track(m_root, ISOM_MEDIA_HANDLER_TYPE_AUDIO_TRACK);
-                    nanoem_u32_t audioSummaryIndex = lsmash_add_sample_entry(m_root, audioTrackID, m_audioSummary);
+                    audioTrackID = lsmash_create_track(m_root, ISOM_MEDIA_HANDLER_TYPE_AUDIO_TRACK);
+                    audioSummaryIndex = lsmash_add_sample_entry(m_root, audioTrackID, m_audioSummary);
                     lsmash_set_track_parameters(m_root, audioTrackID, &m_audioTrackParameters);
                     lsmash_set_media_parameters(m_root, audioTrackID, &m_audioMediaParameters);
-                    m_worker = new LSmashEncodeWorker(
-                        m_root, audioTrackID, videoTrackID, audioSummaryIndex, videoSummaryIndex);
                 }
-                else {
-                    m_worker = new LSmashEncodeWorker(m_root, 0, videoTrackID, 0, videoSummaryIndex);
-                }
+                m_videoMediaParameters.timescale = m_movieParameters.timescale;
+                const nanoem_u32_t videoTrackID = lsmash_create_track(m_root, ISOM_MEDIA_HANDLER_TYPE_VIDEO_TRACK),
+                                   videoSummaryIndex = lsmash_add_sample_entry(m_root, videoTrackID, m_videoSummary);
+                lsmash_set_movie_parameters(m_root, &m_movieParameters);
+                lsmash_set_track_parameters(m_root, videoTrackID, &m_videoTrackParameters);
+                lsmash_set_media_parameters(m_root, videoTrackID, &m_videoMediaParameters);
+                m_worker =
+                    new LSmashEncodeWorker(m_root, audioTrackID, videoTrackID, audioSummaryIndex, videoSummaryIndex);
             }
         }
         handleStatusCode(result, status);

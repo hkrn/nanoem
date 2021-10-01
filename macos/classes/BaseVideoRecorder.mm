@@ -431,7 +431,8 @@ BaseVideoRecorder::appendAudioSampleBuffer(nanoem_frame_index_t frameIndex)
         const ByteArray *samplesPtr = audio->linearPCMSamples();
         /* use malloc for kCFAllocatorMalloc */
         if (void *slice = ::malloc(sampleBufferSize)) {
-            memcpy(slice, samplesPtr->data() + offset, glm::min(sampleBufferSize, samplesPtr->size() - offset));
+            const size_t rest = samplesPtr->size() >= offset ? samplesPtr->size() - offset : 0;
+            memcpy(slice, samplesPtr->data() + offset, glm::min(sampleBufferSize, rest));
             CMBlockBufferRef blockBuffer;
             OSStatus status = CMBlockBufferCreateWithMemoryBlock(kCFAllocatorDefault, slice, sampleBufferSize,
                 kCFAllocatorMalloc, nullptr, 0, sampleBufferSize, kCMBlockBufferAssureMemoryNowFlag, &blockBuffer);

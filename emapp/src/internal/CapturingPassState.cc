@@ -661,8 +661,8 @@ CapturingPassAsVideoState::ModalDialog::draw(const Project *project)
     ImGui::NextColumn();
     ImGui::PushItemWidth(-1);
     ImGui::TextUnformatted(translator->translate("nanoem.window.dialog.export.video.range"));
-    if (ImGui::DragIntRange2(
-            "##range", &m_exportFrameIndexRange.first, &m_exportFrameIndexRange.second, 1.0f, 0, project->duration()) &&
+    if (ImGui::DragIntRange2("##range", &m_exportFrameIndexRange.first, &m_exportFrameIndexRange.second, 1.0f, 0,
+            project->duration(), "%dF", nullptr, ImGuiSliderFlags_AlwaysClamp) &&
         m_plugin) {
         const nanoem_frame_index_t duration = m_exportFrameIndexRange.second - m_exportFrameIndexRange.first;
         Error error;
@@ -716,7 +716,7 @@ CapturingPassAsVideoState::ModalDialog::draw(const Project *project)
                     const Vector2UI16 size(resolutionSize(project));
                     const nanoem_frame_index_t duration =
                         m_exportFrameIndexRange.second - m_exportFrameIndexRange.first;
-                    const nanoem_u32_t fps = project->preferredMotionFPS();
+                    const nanoem_u32_t fps = 60;
                     Error error;
                     plugin->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, fps, error);
                     plugin->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, size.x, error);
@@ -879,7 +879,7 @@ CapturingPassState::CapturingPassState(StateController *stateControllerPtr, Proj
     , m_lastPreferredMotionFPS(0)
     , m_lastSampleLevel(0)
     , m_sampleLevel(0)
-    , m_lastPTS(Motion::kMaxFrameIndex)
+    , m_lastVideoPTS(Motion::kMaxFrameIndex)
     , m_startFrameIndex(0)
     , m_blittedCount(0)
     , m_viewportAspectRatioEnabled(false)
@@ -1159,15 +1159,15 @@ CapturingPassState::startFrameIndex() const
 }
 
 nanoem_frame_index_t
-CapturingPassState::lastPTS() const
+CapturingPassState::lastVideoPTS() const
 {
-    return m_lastPTS;
+    return m_lastVideoPTS;
 }
 
 void
-CapturingPassState::setLastPTS(nanoem_frame_index_t value)
+CapturingPassState::setLastVideoPTS(nanoem_frame_index_t value)
 {
-    m_lastPTS = value;
+    m_lastVideoPTS = value;
 }
 
 bool
@@ -1315,10 +1315,10 @@ CapturingPassAsVideoState::start(Error &error)
     }
     else if (m_encoderPluginPtr) {
         const sg_image_desc desc(outputImageDescription());
+        const nanoem_u32_t fps = 60;
         const bool topLeft = sg::query_features().origin_top_left;
         Project *project = stateController()->currentProject();
-        m_encoderPluginPtr->setOption(
-            NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, project->preferredMotionFPS(), error);
+        m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_FPS, fps, error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_DURATION, duration(), error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_WIDTH, desc.width, error);
         m_encoderPluginPtr->setOption(NANOEM_APPLICATION_PLUGIN_ENCODER_OPTION_VIDEO_HEIGHT, desc.height, error);
@@ -1360,20 +1360,22 @@ CapturingPassAsVideoState::capture(Project *project, Error &error)
 {
     if (prepareCapturingViewport(project)) {
         const sg_image_desc desc(outputImageDescription());
+        BX_UNUSED_1(desc);
         SG_PUSH_GROUPF("CapturingPassAsVideoState::capture(frameIndex=%d, amount=%.3f, width=%d, height=%d)",
             project->currentLocalFrameIndex(), m_amount, desc.width, desc.height);
         nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
         const nanoem_f32_t deltaScaleFactor = project->motionFPSScaleFactor();
-        const nanoem_frame_index_t videoFrameIndex = static_cast<nanoem_frame_index_t>(
-                                                         frameIndex * deltaScaleFactor + m_amount * deltaScaleFactor) -
-            nanoem_frame_index_t(startFrameIndex() * deltaScaleFactor),
+        const nanoem_frame_index_t audioPTS = static_cast<nanoem_frame_index_t>(
+                                       frameIndex * deltaScaleFactor + m_amount * deltaScaleFactor),
+                                   videoPTS = audioPTS - nanoem_frame_index_t(startFrameIndex() * deltaScaleFactor),
                                    durationFrameIndices = static_cast<nanoem_frame_index_t>(duration());
         if (m_videoRecorder) {
-            handleCaptureViaVideoRecorder(project, frameIndex, videoFrameIndex, durationFrameIndices, deltaScaleFactor);
+            handleCaptureViaVideoRecorder(
+                project, frameIndex, audioPTS, videoPTS, durationFrameIndices, deltaScaleFactor);
         }
         else {
             handleCaptureViaEncoderPlugin(
-                project, frameIndex, videoFrameIndex, durationFrameIndices, deltaScaleFactor, error);
+                project, frameIndex, audioPTS, videoPTS, durationFrameIndices, deltaScaleFactor, error);
         }
         SG_POP_GROUP();
     }
@@ -1450,8 +1452,10 @@ CapturingPassAsVideoState::duration() const NANOEM_DECL_NOEXCEPT
 
 void
 CapturingPassAsVideoState::handleCaptureViaVideoRecorder(Project *project, nanoem_frame_index_t frameIndex,
-    nanoem_frame_index_t videoFrameIndex, nanoem_frame_index_t durationFrameIndices, nanoem_f32_t deltaScaleFactor)
+    nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS, nanoem_frame_index_t durationFrameIndices,
+    nanoem_f32_t deltaScaleFactor)
 {
+    BX_UNUSED_1(audioPTS);
     if (m_videoRecorder->isCancelled()) {
         finishEncoding();
     }
@@ -1459,7 +1463,7 @@ CapturingPassAsVideoState::handleCaptureViaVideoRecorder(Project *project, nanoe
         if (frameIndex > durationFrameIndices) {
             finishEncoding();
         }
-        else if (m_videoRecorder->capture(videoFrameIndex)) {
+        else if (m_videoRecorder->capture(videoPTS)) {
             if (IModalDialog *dialog = stateController()->application()->currentModalDialog()) {
                 const ITranslator *translator = project->translator();
                 char message[Inline::kLongNameStackBufferSize];
@@ -1484,13 +1488,14 @@ CapturingPassAsVideoState::handleCaptureViaVideoRecorder(Project *project, nanoe
 
 void
 CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoem_frame_index_t frameIndex,
-    nanoem_frame_index_t videoFrameIndex, nanoem_frame_index_t durationFrameIndices, nanoem_f32_t deltaScaleFactor,
-    Error &error)
+    nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS, nanoem_frame_index_t durationFrameIndices,
+    nanoem_f32_t deltaScaleFactor, Error &error)
 {
     struct AsyncReadHandler {
-        AsyncReadHandler(CapturingPassAsVideoState *state, nanoem_frame_index_t videoFrameIndex)
+        AsyncReadHandler(CapturingPassAsVideoState *state, nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS)
             : m_state(state)
-            , m_videoFrameIndex(videoFrameIndex)
+            , m_audioPTS(audioPTS)
+            , m_videoPTS(videoPTS)
         {
             m_state->incrementAsyncCount();
         }
@@ -1520,7 +1525,7 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
                             (v & 0xff000000);
                     }
                 }
-                if (!m_state->encodeVideoFrame(m_state->frameImageData(), m_videoFrameIndex, error)) {
+                if (!m_state->encodeVideoFrame(m_state->frameImageData(), m_audioPTS, m_videoPTS, error)) {
                     m_state->stopEncoding(error);
                     m_state->setStateTransition(kCancelled);
                 }
@@ -1531,7 +1536,8 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
             }
         }
         CapturingPassAsVideoState *m_state;
-        nanoem_frame_index_t m_videoFrameIndex;
+        nanoem_frame_index_t m_audioPTS;
+        nanoem_frame_index_t m_videoPTS;
     };
     BX_UNUSED_1(error);
     blitOutputPass();
@@ -1545,12 +1551,12 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
     }
     else if (state == kBlitted) {
         if (sg::read_pass_async) {
-            AsyncReadHandler *handler = nanoem_new(AsyncReadHandler(this, videoFrameIndex));
+            AsyncReadHandler *handler = nanoem_new(AsyncReadHandler(this, audioPTS, videoPTS));
             sg::read_pass_async(outputPass(), frameStagingBuffer(), &AsyncReadHandler::handleReadPassAsync, handler);
         }
         else {
             readPassImage();
-            if (!encodeVideoFrame(frameImageData(), videoFrameIndex, error)) {
+            if (!encodeVideoFrame(frameImageData(), audioPTS, videoPTS, error)) {
                 setStateTransition(kCancelled);
             }
         }
@@ -1560,24 +1566,26 @@ CapturingPassAsVideoState::handleCaptureViaEncoderPlugin(Project *project, nanoe
 }
 
 bool
-CapturingPassAsVideoState::encodeVideoFrame(const ByteArray &frameData, nanoem_frame_index_t pts, Error &error)
+CapturingPassAsVideoState::encodeVideoFrame(
+    const ByteArray &frameData, nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS, Error &error)
 {
     bool continuable = true;
-    if (m_encoderPluginPtr && (lastPTS() == Motion::kMaxFrameIndex || pts > lastPTS())) {
+    if (m_encoderPluginPtr && (lastVideoPTS() == Motion::kMaxFrameIndex || videoPTS > lastVideoPTS())) {
         const Project *project = stateController()->currentProject();
         const IAudioPlayer *audioPlayer = project->audioPlayer();
         const ByteArray *samplesPtr = audioPlayer->linearPCMSamples();
         if (audioPlayer->isLoaded() && !samplesPtr->empty()) {
             const size_t bufferSize = size_t(audioPlayer->numChannels() * audioPlayer->sampleRate() *
                 (audioPlayer->bitsPerSample() / 8) * project->invertedPreferredMotionFPS());
-            const size_t offset = size_t(pts * bufferSize);
+            const size_t offset = size_t(audioPTS * bufferSize),
+                         rest = samplesPtr->size() >= offset ? samplesPtr->size() - offset : 0;
             ByteArray slice(bufferSize);
-            memcpy(slice.data(), samplesPtr->data() + offset, bufferSize);
+            memcpy(slice.data(), samplesPtr->data() + offset, glm::min(rest, bufferSize));
             continuable &=
-                m_encoderPluginPtr->encodeAudioFrame(nanoem_frame_index_t(pts), slice.data(), slice.size(), error);
+                m_encoderPluginPtr->encodeAudioFrame(nanoem_frame_index_t(videoPTS), slice.data(), slice.size(), error);
         }
-        continuable &= m_encoderPluginPtr->encodeVideoFrame(pts, frameData.data(), frameData.size(), error);
-        setLastPTS(pts);
+        continuable &= m_encoderPluginPtr->encodeVideoFrame(videoPTS, frameData.data(), frameData.size(), error);
+        setLastVideoPTS(videoPTS);
     }
     return continuable;
 }

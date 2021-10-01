@@ -105,8 +105,8 @@ protected:
     sg_pass outputPass() const;
     sg_buffer frameStagingBuffer() const;
     nanoem_frame_index_t startFrameIndex() const;
-    nanoem_frame_index_t lastPTS() const;
-    void setLastPTS(nanoem_frame_index_t value);
+    nanoem_frame_index_t lastVideoPTS() const;
+    void setLastVideoPTS(nanoem_frame_index_t value);
     bool hasSaveState() const;
 
 private:
@@ -127,7 +127,7 @@ private:
     nanoem_u32_t m_lastPreferredMotionFPS;
     nanoem_u32_t m_lastSampleLevel;
     nanoem_u32_t m_sampleLevel;
-    nanoem_frame_index_t m_lastPTS;
+    nanoem_frame_index_t m_lastVideoPTS;
     nanoem_frame_index_t m_startFrameIndex;
     volatile int m_asyncCount;
     int m_blittedCount;
@@ -184,12 +184,13 @@ private:
         nanoem_f32_t deltaScaleFactor, nanoem_f32_t &amount, nanoem_frame_index_t &frameIndex);
 
     nanoem_frame_index_t duration() const NANOEM_DECL_NOEXCEPT;
-    void handleCaptureViaVideoRecorder(Project *project, nanoem_frame_index_t frameIndex,
-        nanoem_frame_index_t videoFrameIndex, nanoem_frame_index_t durationFrameIndices, nanoem_f32_t deltaScaleFactor);
-    void handleCaptureViaEncoderPlugin(Project *project, nanoem_frame_index_t frameIndex,
-        nanoem_frame_index_t videoFrameIndex, nanoem_frame_index_t durationFrameIndices, nanoem_f32_t deltaScaleFactor,
+    void handleCaptureViaVideoRecorder(Project *project, nanoem_frame_index_t frameIndex, nanoem_frame_index_t audioPTS,
+        nanoem_frame_index_t videoPTS, nanoem_frame_index_t durationFrameIndices, nanoem_f32_t deltaScaleFactor);
+    void handleCaptureViaEncoderPlugin(Project *project, nanoem_frame_index_t frameIndex, nanoem_frame_index_t audioPTS,
+        nanoem_frame_index_t videoPTS, nanoem_frame_index_t durationFrameIndices, nanoem_f32_t deltaScaleFactor,
         Error &error);
-    bool encodeVideoFrame(const ByteArray &frameData, nanoem_frame_index_t pts, Error &error);
+    bool encodeVideoFrame(
+        const ByteArray &frameData, nanoem_frame_index_t audioPTS, nanoem_frame_index_t videoPTS, Error &error);
     void seekAndProgress(Project *project, nanoem_frame_index_t frameIndex, nanoem_frame_index_t durationFrameIndices);
     void finishEncoding();
     void stopEncoding(Error &error);
