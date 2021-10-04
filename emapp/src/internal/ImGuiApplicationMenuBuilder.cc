@@ -829,8 +829,8 @@ ImGuiApplicationMenuBuilder::ImGuiMenuBar::drawAllMenuItems()
 
 ImGuiApplicationMenuBuilder::FileDialogState::FileDialogState()
     : m_instance(nullptr)
+    , m_lastOpenDirectoryPath(".")
     , m_type(0)
-    , m_opened(false)
 {
 }
 
@@ -850,7 +850,6 @@ ImGuiApplicationMenuBuilder::FileDialogState::initialize(const StringList &exten
         }
         m_allowedExtensions = extensions;
         m_type = type;
-        m_opened = false;
     }
 }
 
@@ -868,23 +867,26 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
             filePath.append("/");
             filePath.append(currentFileNamePtr);
             if (filePathPtr) {
-                free(filePathPtr);
+                delete[] filePathPtr;
             }
             if (currentFileNamePtr) {
-                free(currentFileNamePtr);
+                delete[] currentFileNamePtr;
             }
             FileUtils::canonicalizePathSeparator(filePath, canonicalizedFilePath);
             const URI fileURI(URI::createFromFilePath(canonicalizedFilePath.c_str()));
             execute(fileURI, client);
+            m_lastOpenDirectoryPath = fileURI.absolutePathByDeletingLastPathComponent();
         }
         else {
             execute(URI(), client);
+            char *path = IGFD_GetCurrentPath(instance);
+            m_lastOpenDirectoryPath = path;
+            delete[] path;
         }
         IGFD_CloseDialog(instance);
-        m_opened = false;
         m_allowedExtensions.clear();
     }
-    else if (!m_opened) {
+    else if (!IGFD_IsOpened(instance)) {
         String extension;
         for (StringList::const_iterator it = m_allowedExtensions.begin(), end = m_allowedExtensions.end(); it != end;
              ++it) {
@@ -894,8 +896,7 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
                 extension.append(",");
             }
         }
-        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), ".", "", 1, nullptr, 0);
-        m_opened = true;
+        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1, nullptr, 0);
     }
     ImGui::PopStyleVar();
 }
