@@ -53,6 +53,12 @@ IGFD_IsOk(ImGuiFileDialog *vContext)
     BX_UNUSED_1(vContext);
     return false;
 }
+IMGUIFILEDIALOG_API bool
+IGFD_IsOpened(ImGuiFileDialog *vContext)
+{
+    BX_UNUSED_1(vContext);
+    return false;
+}
 IMGUIFILEDIALOG_API char *
 IGFD_GetCurrentFileName(ImGuiFileDialog *vContext)
 {
