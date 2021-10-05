@@ -5615,7 +5615,7 @@ ImGuiWindow::PrimitiveContext::strokeCircle(const Vector4 &rect, const Vector4 &
     const ImVec2 center(m_offset.x + rect.x + rect.z * 0.5f, m_offset.y + rect.y + rect.w * 0.5f);
     const nanoem_f32_t radius = glm::sqrt(rect.z * rect.z + rect.w * rect.w) * kScaleFactor;
     ImGui::GetWindowDrawList()->AddCircle(
-        center, radius, c, int(kDrawCircleSegmentCount * m_scaleFactor), thickness *m_scaleFactor);
+        center, radius, c, int(kDrawCircleSegmentCount * m_scaleFactor), thickness * m_scaleFactor);
 }
 
 void

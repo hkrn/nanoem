@@ -36,7 +36,8 @@ SoundIOAudioPlayer::initialize(nanoem_frame_index_t, nanoem_u32_t sampleRate, Er
     return !error.hasReason();
 }
 
-void SoundIOAudioPlayer::expandDuration(nanoem_frame_index_t)
+void
+SoundIOAudioPlayer::expandDuration(nanoem_frame_index_t)
 {
     if (isPlaying()) {
         Error error;

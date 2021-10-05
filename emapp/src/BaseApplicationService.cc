@@ -175,7 +175,8 @@ struct TimeBasedAudioPlayer : BaseAudioPlayer {
         m_state.first = kStopState;
         return true;
     }
-    void expandDuration(nanoem_frame_index_t /* frameIndex */) NANOEM_DECL_OVERRIDE
+    void
+    expandDuration(nanoem_frame_index_t /* frameIndex */) NANOEM_DECL_OVERRIDE
     {
     }
     void
@@ -187,7 +188,8 @@ struct TimeBasedAudioPlayer : BaseAudioPlayer {
     {
         return false;
     }
-    void playPart(nanoem_f64_t /* start */, nanoem_f64_t /* length */) NANOEM_DECL_OVERRIDE
+    void
+    playPart(nanoem_f64_t /* start */, nanoem_f64_t /* length */) NANOEM_DECL_OVERRIDE
     {
     }
     void
@@ -243,7 +245,8 @@ struct StubBackgroundVideoRenderer : IBackgroundVideoRenderer {
         Project * /* project */) NANOEM_DECL_OVERRIDE
     {
     }
-    void seek(nanoem_f64_t /* seconds */) NANOEM_DECL_OVERRIDE
+    void
+    seek(nanoem_f64_t /* seconds */) NANOEM_DECL_OVERRIDE
     {
     }
     void
@@ -267,7 +270,8 @@ struct StubRendererCapability : Project::IRendererCapability {
     {
         return value;
     }
-    bool supportsSampleLevel(nanoem_u32_t /* value */) const NANOEM_DECL_NOEXCEPT
+    bool
+    supportsSampleLevel(nanoem_u32_t /* value */) const NANOEM_DECL_NOEXCEPT
     {
         return true;
     }

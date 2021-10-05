@@ -8,13 +8,15 @@
 
 #include "emapp/Error.h"
 
-@interface NSError (Extension)
+@interface
+NSError (Extension)
 
 @property (readonly) nanoem::Error nanoem;
 
 @end
 
-@implementation NSError (Extension)
+@implementation
+NSError (Extension)
 
 - (nanoem::Error)nanoem
 {

@@ -902,7 +902,8 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
                 extension.append(",");
             }
         }
-        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1, nullptr, 0);
+        IGFD_OpenDialog(
+            instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1, nullptr, 0);
     }
     ImGui::PopStyleVar();
 }
