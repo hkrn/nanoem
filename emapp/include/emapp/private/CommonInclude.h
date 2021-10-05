@@ -163,6 +163,18 @@ public:
     {
         return (value < -1 || value > 1) ? glm::fract(value) : value;
     }
+    static inline int
+    readI24(const nanoem_u8_t *ptr) NANOEM_DECL_NOEXCEPT
+    {
+        int v = 0;
+        if ((ptr[2] & 0x80) != 0) {
+            v = (0xff << 24) | (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+        }
+        else {
+            v = (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
+        }
+        return v;
+    }
     template <typename T>
     static inline void
     resolveSymbol(void *handle, const char *name, T &func)

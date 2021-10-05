@@ -295,14 +295,7 @@ WaveFormPanelDrawer::plotSample24(nanoem_rsize_t index) const NANOEM_DECL_NOEXCE
     const nanoem_rsize_t offset = sampleBytesOffset(index);
     if (m_linearPCMSamplesPtr && offset < m_linearPCMSamplesPtr->size() - m_bytesPerSample) {
         const nanoem_u8_t *ptr = m_linearPCMSamplesPtr->data() + offset;
-        int v = 0;
-        if ((ptr[2] & 0x80) != 0) {
-            v = (0xff << 24) | (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
-        }
-        else {
-            v = (ptr[2] << 16) | (ptr[1] << 8) | ptr[0];
-        }
-        value = v / 8388607.0f;
+        value = Inline::readI24(ptr) / 8388607.0f;
     }
     return value;
 }
