@@ -111,8 +111,8 @@ private:
 
         void *m_instance;
         StringList m_allowedExtensions;
+        String m_lastOpenDirectoryPath;
         nanoem_u32_t m_type;
-        bool m_opened;
     };
     struct OpenFileDialogState : FileDialogState {
         void execute(const URI &fileURI, BaseApplicationClient *client) NANOEM_DECL_OVERRIDE;
