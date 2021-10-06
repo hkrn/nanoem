@@ -18,15 +18,25 @@ namespace nanoem {
 const size_t BaseAudioPlayer::kRIFFTagSize = 44;
 
 static const nanoem_u8_t *
-findLinearPCMSamplesPayload(const nanoem_u8_t *dataPtr, nanoem_rsize_t dataSize, nanoem_rsize_t &payloadSize)
+findLinearPCMSamplesPayload(
+    const nanoem_u8_t *dataPtr, nanoem_rsize_t dataSize, BaseAudioPlayer::Format &format, nanoem_rsize_t &payloadSize)
 {
     const nanoem_u8_t *newDataPtr = nullptr;
     BaseAudioPlayer::Chunk chunk = { 0, 0 };
     nanoem_rsize_t offset = 0;
     payloadSize = 0;
+    bool formatFound = false;
     while (chunk.m_size < dataSize && (offset + sizeof(chunk)) < dataSize) {
         chunk = *reinterpret_cast<const BaseAudioPlayer::Chunk *>(dataPtr + offset);
-        if (chunk.m_id == nanoem_fourcc('d', 'a', 't', 'a')) {
+        if (chunk.m_id == nanoem_fourcc('R', 'I', 'F', 'F')) {
+            chunk.m_size = 0;
+            offset += 4;
+        }
+        else if (chunk.m_id == nanoem_fourcc('f', 'm', 't', ' ') && chunk.m_size == sizeof(format)) {
+            format = *reinterpret_cast<const BaseAudioPlayer::Format *>(dataPtr + offset + sizeof(chunk));
+            formatFound = true;
+        }
+        else if (chunk.m_id == nanoem_fourcc('d', 'a', 't', 'a')) {
             newDataPtr = dataPtr + offset + sizeof(chunk);
             if (chunk.m_size + offset + sizeof(chunk) <= dataSize) {
                 payloadSize = chunk.m_size;
@@ -38,9 +48,12 @@ findLinearPCMSamplesPayload(const nanoem_u8_t *dataPtr, nanoem_rsize_t dataSize,
                 break;
             }
         }
+        else if (chunk.m_size == 0) {
+            break;
+        }
         offset += chunk.m_size + sizeof(chunk);
     }
-    return newDataPtr;
+    return formatFound ? newDataPtr : nullptr;
 }
 
 bool
@@ -126,16 +139,20 @@ BaseAudioPlayer::load(const ByteArray &bytes, Error &error)
     const WAVDescription *descPtr;
     bool succeeded = false;
     if (bytes.size() >= sizeof(*descPtr)) {
-        descPtr = reinterpret_cast<const WAVDescription *>(bytes.data());
-        const nanoem_u8_t *bytesPtr = bytes.data() + sizeof(WAVHeader);
-        const size_t bytesSize = bytes.size() - sizeof(WAVHeader);
-        nanoem_rsize_t samplesSize;
-        if (const nanoem_u8_t *samplesPtr = findLinearPCMSamplesPayload(bytesPtr, bytesSize, samplesSize)) {
-            const Format &format = descPtr->m_formatData;
+        Format format;
+        nanoem_rsize_t sampleDataSize;
+        if (const nanoem_u8_t *sampleDataPtr =
+                findLinearPCMSamplesPayload(bytes.data(), bytes.size(), format, sampleDataSize)) {
             initializeDescription(
-                format.m_bitsPerSample, format.m_numChannels, format.m_sampleRate, bytesSize, m_description);
-            succeeded = loadAllLinearPCMSamples(samplesPtr, samplesSize, error);
+                format.m_bitsPerSample, format.m_numChannels, format.m_sampleRate, bytes.size(), m_description);
+            succeeded = loadAllLinearPCMSamples(sampleDataPtr, sampleDataSize + sizeof(WAVHeader), error);
         }
+        else {
+            error = Error("Cannot find PCM audio buffer", 0, Error::kDomainTypeApplication);
+        }
+    }
+    else {
+        error = Error("Insufficient buffer size", 0, Error::kDomainTypeApplication);
     }
     return succeeded;
 }
