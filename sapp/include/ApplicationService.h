@@ -26,6 +26,7 @@ public:
 
 private:
     BaseApplicationClient *menubarApplicationClient() override;
+    IAudioPlayer *createAudioPlayer() override;
     bool isRendererAvailable(const char *value) const noexcept override;
     void handleSetupGraphicsEngine(sg_desc &desc) override;
     void sendEventMessage(const Nanoem__Application__Event *event) override;

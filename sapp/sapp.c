@@ -15,4 +15,6 @@ BOOL SwapBuffers(HDC Arg1) { return 0; }
 #endif /* NANOEM_WIN32_HAS_OPENGL */
 
 #define SOKOL_IMPL
+#define SOKOL_AUDIO_IMPL
 #include "sokol/sokol_app.h"
+#include "sokol/sokol_audio.h"

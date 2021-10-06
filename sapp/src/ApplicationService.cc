@@ -12,6 +12,7 @@
 
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/Error.h"
+#include "emapp/private/CommonInclude.h"
 
 #include "sokol/sokol_audio.h"
 #include <atomic>
@@ -28,19 +29,21 @@ struct AudioPlayer : BaseAudioPlayer {
     AudioPlayer()
         : BaseAudioPlayer()
         , m_offset(0)
+        , m_volumeGain(1.0f)
     {
     }
 
     bool
-    initialize(nanoem_frame_index_t /* duration */, nanoem_u32_t sampleRate, Error & /* error */) NANOEM_DECL_OVERRIDE
+    initialize(nanoem_frame_index_t /* duration */, nanoem_u32_t sampleRate, Error &error) NANOEM_DECL_OVERRIDE
     {
         nanoem_u32_t actualSampleRate = sampleRate * kSmoothnessScaleFactor;
         initializeDescription(8, 1, actualSampleRate, m_linearPCMSamples.size(), m_description);
         m_currentRational.m_denominator = m_description.m_formatData.m_sampleRate;
         m_state.first = kStopState;
-        return true;
+        return !error.hasReason();
     }
-    void expandDuration(nanoem_frame_index_t /* frameIndex */) NANOEM_DECL_OVERRIDE
+    void
+    expandDuration(nanoem_frame_index_t /* frameIndex */) NANOEM_DECL_OVERRIDE
     {
         if (isPlaying()) {
             Error error;
@@ -53,11 +56,15 @@ struct AudioPlayer : BaseAudioPlayer {
         saudio_shutdown();
     }
     bool
-    loadAllLinearPCMSamples(const nanoem_u8_t *data, size_t size, Error & /* error */) NANOEM_DECL_OVERRIDE
+    loadAllLinearPCMSamples(const nanoem_u8_t *data, size_t size, Error &error) NANOEM_DECL_OVERRIDE
     {
         m_loaded = true;
         m_linearPCMSamples.assign(data, data + size);
-        return true;
+        m_currentRational.m_denominator = m_description.m_formatData.m_sampleRate;
+        m_durationRational.m_numerator = size;
+        m_durationRational.m_denominator = m_description.m_formatData.m_bytesPerSecond;
+        m_offset = 0;
+        return !error.hasReason();
     }
     void
     playPart(double /* start */, double /* length */) NANOEM_DECL_OVERRIDE
@@ -67,7 +74,7 @@ struct AudioPlayer : BaseAudioPlayer {
     update() NANOEM_DECL_OVERRIDE
     {
         const Format &format = m_description.m_formatData;
-        const nanoem_u64_t audioSampleOffset = static_cast<nanoem_u64_t>(m_offset / format.m_bytesPerSecond),
+        const nanoem_u64_t audioSampleOffset = static_cast<nanoem_u64_t>(m_offset / format.m_bytesPerPacket),
                            clockSampleOffset = static_cast<nanoem_u64_t>(m_clock.seconds() * format.m_sampleRate),
                            clockSampleLatencyThreshold = format.m_sampleRate / kClockLatencyThresholdFPSCount,
                            clockSampleLatency =
@@ -90,8 +97,9 @@ struct AudioPlayer : BaseAudioPlayer {
         m_finished = false;
     }
     void
-    internalSetVolumeGain(float /* value */, Error & /* error */) NANOEM_DECL_OVERRIDE
+    internalSetVolumeGain(float value, Error & /* error */) NANOEM_DECL_OVERRIDE
     {
+        m_volumeGain = glm::clamp(value, 0.0f, 1.0f);
     }
     void
     internalTransitStateStarted(Error & /* error */) NANOEM_DECL_OVERRIDE
@@ -116,6 +124,7 @@ struct AudioPlayer : BaseAudioPlayer {
     {
         saudio_shutdown();
         m_clock.stop();
+        m_offset = 0;
     }
 
     void
@@ -130,17 +139,41 @@ struct AudioPlayer : BaseAudioPlayer {
                 const uint64_t offset = self->m_offset;
                 const int numSamples = numFrames * numChannels, numBytes = numSamples * (format.m_bitsPerSample / 8);
                 if (offset + numBytes <= self->m_linearPCMSamples.size()) {
-                    if (format.m_bitsPerSample == 16) {
-                        auto data = reinterpret_cast<const uint16_t *>(&self->m_linearPCMSamples[offset]);
+                    const nanoem_f32_t volumeGain = self->m_volumeGain;
+                    switch (format.m_bitsPerSample) {
+                    case 32: {
+                        auto data = reinterpret_cast<const nanoem_i32_t *>(&self->m_linearPCMSamples[offset]);
                         for (int i = 0; i < numSamples; i++) {
-                            buffer[i] = (data[i] / 32767.0f);
+                            buffer[i] = (data[i] / 2147483647.0f) * volumeGain;
                         }
+                        break;
                     }
-                    else if (format.m_bitsPerSample == 8) {
-                        auto data = reinterpret_cast<const int8_t *>(&self->m_linearPCMSamples[offset]);
+                    case 24: {
+                        auto data = &self->m_linearPCMSamples[offset];
                         for (int i = 0; i < numSamples; i++) {
-                            buffer[i] = (data[i] / 127.0f);
+                            buffer[i] = (Inline::readI24(&data[i * 3]) / 8388607.0f) * volumeGain;
                         }
+                        break;
+                    }
+                    case 16: {
+                        auto data = reinterpret_cast<const nanoem_i16_t *>(&self->m_linearPCMSamples[offset]);
+                        for (int i = 0; i < numSamples; i++) {
+                            buffer[i] = (data[i] / 32767.0f) * volumeGain;
+                        }
+                        break;
+                    }
+                    case 8: {
+                        auto data = reinterpret_cast<const nanoem_u8_t *>(&self->m_linearPCMSamples[offset]);
+                        for (int i = 0; i < numSamples; i++) {
+                            buffer[i] = (data[i] / 255.0f) * volumeGain;
+                        }
+                        break;
+                    }
+                    default:
+                        for (int i = 0; i < numSamples; i++) {
+                            buffer[i] = 0.0f;
+                        }
+                        break;
                     }
                     self->m_offset += numBytes;
                 }
@@ -154,6 +187,7 @@ struct AudioPlayer : BaseAudioPlayer {
 
     Clock m_clock;
     std::atomic<uint64_t> m_offset;
+    std::atomic<nanoem_f32_t> m_volumeGain;
 };
 
 } /* namespace anonymous */
@@ -196,6 +230,12 @@ void
 ApplicationService::dispatchAllEventMessages()
 {
     m_menubarApplciationClient.dispatchAllEventMessages();
+}
+
+IAudioPlayer *
+ApplicationService::createAudioPlayer()
+{
+    return nanoem_new(AudioPlayer);
 }
 
 bool

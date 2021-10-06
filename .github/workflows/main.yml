@@ -24,6 +24,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y \
             clang-6.0 \
             cmake \
+            libasound-dev \
             libgtk-3-dev \
             libglu1-mesa-dev \
             ninja-build \
@@ -184,6 +185,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y \
             cmake \
+            libasound-dev \
             libicu-dev \
             libgtk-3-dev \
             libglu1-mesa-dev \
