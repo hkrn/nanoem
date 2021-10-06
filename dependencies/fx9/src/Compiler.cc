@@ -439,7 +439,8 @@ public:
     {
         return m_commonString;
     }
-    const TString &getStageString(EShLanguage /* language */) const override
+    const TString &
+    getStageString(EShLanguage /* language */) const override
     {
         return m_stageString;
     }

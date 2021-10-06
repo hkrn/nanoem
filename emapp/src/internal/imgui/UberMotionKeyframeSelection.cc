@@ -188,20 +188,24 @@ UberMotionKeyframeSelection::remove(const nanoem_motion_self_shadow_keyframe_t *
     m_selfShadowKeyframeSelection.erase(keyframe);
 }
 
-void UberMotionKeyframeSelection::addAllKeyframes(nanoem_u32_t)
+void
+UberMotionKeyframeSelection::addAllKeyframes(nanoem_u32_t)
 {
 }
 
-bool UberMotionKeyframeSelection::hasAllKeyframes(nanoem_u32_t) const NANOEM_DECL_NOEXCEPT
+bool
+UberMotionKeyframeSelection::hasAllKeyframes(nanoem_u32_t) const NANOEM_DECL_NOEXCEPT
 {
     return false;
 }
 
-void UberMotionKeyframeSelection::clearAllKeyframes(nanoem_u32_t)
+void
+UberMotionKeyframeSelection::clearAllKeyframes(nanoem_u32_t)
 {
 }
 
-void UberMotionKeyframeSelection::addAccessoryKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
+void
+UberMotionKeyframeSelection::addAccessoryKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
 {
 }
 
@@ -210,15 +214,18 @@ UberMotionKeyframeSelection::addBoneKeyframes(const nanoem_model_bone_t *, nanoe
 {
 }
 
-void UberMotionKeyframeSelection::addCameraKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
+void
+UberMotionKeyframeSelection::addCameraKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
 {
 }
 
-void UberMotionKeyframeSelection::addLightKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
+void
+UberMotionKeyframeSelection::addLightKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
 {
 }
 
-void UberMotionKeyframeSelection::addModelKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
+void
+UberMotionKeyframeSelection::addModelKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
 {
 }
 
@@ -227,7 +234,8 @@ UberMotionKeyframeSelection::addMorphKeyframes(const nanoem_model_morph_t *, nan
 {
 }
 
-void UberMotionKeyframeSelection::addSelfShadowKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
+void
+UberMotionKeyframeSelection::addSelfShadowKeyframes(nanoem_frame_index_t, nanoem_frame_index_t)
 {
 }
 

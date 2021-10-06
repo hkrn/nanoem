@@ -16,14 +16,16 @@
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1100
 
-@interface NSFileWrapper (MacOSX_1090_polyfill)
+@interface
+NSFileWrapper (MacOSX_1090_polyfill)
 
 @property (readonly, nonatomic) BOOL regularFile;
 @property (readonly, nonatomic) BOOL symbolicLink;
 
 @end
 
-@implementation NSFileWrapper (MacOSX_1090_polyfill)
+@implementation
+NSFileWrapper (MacOSX_1090_polyfill)
 
 - (BOOL)regularFile
 {
@@ -48,20 +50,23 @@ static NSString *NSWindowDidChangeBackingPropertiesNotification = @"NSWindowDidC
 static NSUInteger NSWindowCollectionBehaviorFullScreenPrimary = 0;
 static const NSUInteger NSAutosaveInPlaceOperation = 4;
 
-@interface NSWindow (MacOSX_1060_polyfill)
+@interface
+NSWindow (MacOSX_1060_polyfill)
 
 @property (readonly, nonatomic) CGFloat backingScaleFactor;
 @property (assign, nonatomic) BOOL restorable;
 
 @end
 
-@interface NSView (MacOSX_1060_polyfill)
+@interface
+NSView (MacOSX_1060_polyfill)
 
 @property (assign, nonatomic) BOOL wantsBestResolutionOpenGLSurface;
 
 @end
 
-@interface NSEvent (MacOSX_1060_polyfill)
+@interface
+NSEvent (MacOSX_1060_polyfill)
 
 @property (readonly, nonatomic) BOOL hasPreciseScrollingDeltas;
 @property (readonly, nonatomic) CGFloat scrollingDeltaX;
@@ -69,7 +74,8 @@ static const NSUInteger NSAutosaveInPlaceOperation = 4;
 
 @end
 
-@implementation NSWindow (MacOSX_1060_polyfill)
+@implementation
+NSWindow (MacOSX_1060_polyfill)
 
 - (CGFloat)backingScaleFactor
 {
@@ -87,7 +93,8 @@ static const NSUInteger NSAutosaveInPlaceOperation = 4;
 
 @end
 
-@implementation NSView (MacOSX_1060_polyfill)
+@implementation
+NSView (MacOSX_1060_polyfill)
 
 - (BOOL)wantsBestResolutionOpenGLSurface
 {
@@ -100,7 +107,8 @@ static const NSUInteger NSAutosaveInPlaceOperation = 4;
 
 @end
 
-@implementation NSEvent (MacOSX_1060_polyfill)
+@implementation
+NSEvent (MacOSX_1060_polyfill)
 
 - (BOOL)hasPreciseScrollingDeltas
 {
