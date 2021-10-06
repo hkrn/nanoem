@@ -24,7 +24,12 @@ elseif(EMSCRIPTEN)
   target_link_options(${NANOEM_EXECUTABLE_NAME} PRIVATE "-s ALLOW_MEMORY_GROWTH=1 -s STRICT_JS=1 -s USE_WEBGL2=1")
   set_target_properties(${NANOEM_EXECUTABLE_NAME} PROPERTIES SUFFIX .html)
 else()
-   target_compile_definitions(${NANOEM_EXECUTABLE_NAME} PRIVATE SOKOL_GLCORE33)
+  find_path(ASOUND_INCLUDE_DIR alsa/asoundlib.h)
+  find_library(ASOUND_LIBRARY asound)
+  mark_as_advanced(ASOUND_INCLUDE_DIR ASOUND_LIBRARY)
+  target_compile_definitions(${NANOEM_EXECUTABLE_NAME} PRIVATE SOKOL_GLCORE33)
+  target_include_directories(${NANOEM_EXECUTABLE_NAME} PRIVATE ${ASOUND_INCLUDE_DIR})
+  target_link_libraries(${NANOEM_EXECUTABLE_NAME} ${ASOUND_LIBRARY})
 endif()
 
 # plugins
