@@ -27,8 +27,13 @@
 #include "imguifiledialog/ImGuiFileDialog.h"
 #else
 #define IMGUIFILEDIALOG_API extern
+
 struct ImGuiFileDialog;
 typedef int ImGuiFileDialogFlags;
+enum ImGuiFileDialogFlags_ {
+    ImGuiFileDialogFlags_ConfirmOverwrite = (1 << 0),
+    ImGuiFileDialogFlags_DontShowHiddenFiles = (1 << 1),
+};
 extern "C" {
 IMGUIFILEDIALOG_API ImGuiFileDialog *
 IGFD_Create(void)
@@ -902,8 +907,8 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
                 extension.append(",");
             }
         }
-        IGFD_OpenDialog(
-            instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1, nullptr, 0);
+        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1,
+            nullptr, flags());
     }
     ImGui::PopStyleVar();
 }
@@ -932,6 +937,12 @@ ImGuiApplicationMenuBuilder::OpenFileDialogState::windowTitle() const NANOEM_DEC
     return "Open File Dialog";
 }
 
+int
+ImGuiApplicationMenuBuilder::OpenFileDialogState::flags() const NANOEM_DECL_NOEXCEPT
+{
+    return ImGuiFileDialogFlags_DontShowHiddenFiles;
+}
+
 void
 ImGuiApplicationMenuBuilder::SaveFileDialogState::execute(const URI &fileURI, BaseApplicationClient *client)
 {
@@ -948,6 +959,12 @@ const char *
 ImGuiApplicationMenuBuilder::SaveFileDialogState::windowTitle() const NANOEM_DECL_NOEXCEPT
 {
     return "Open Save Dialog";
+}
+
+int
+ImGuiApplicationMenuBuilder::SaveFileDialogState::flags() const NANOEM_DECL_NOEXCEPT
+{
+    return ImGuiFileDialogFlags_DontShowHiddenFiles | ImGuiFileDialogFlags_ConfirmOverwrite;
 }
 
 } /* namespace internal */
