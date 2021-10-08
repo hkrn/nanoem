@@ -902,8 +902,8 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
                 extension.append(",");
             }
         }
-        IGFD_OpenDialog(
-            instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1, nullptr, 0);
+        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1,
+            nullptr, flags());
     }
     ImGui::PopStyleVar();
 }
@@ -932,6 +932,12 @@ ImGuiApplicationMenuBuilder::OpenFileDialogState::windowTitle() const NANOEM_DEC
     return "Open File Dialog";
 }
 
+int
+ImGuiApplicationMenuBuilder::OpenFileDialogState::flags() const NANOEM_DECL_NOEXCEPT
+{
+    return ImGuiFileDialogFlags_DontShowHiddenFiles;
+}
+
 void
 ImGuiApplicationMenuBuilder::SaveFileDialogState::execute(const URI &fileURI, BaseApplicationClient *client)
 {
@@ -948,6 +954,12 @@ const char *
 ImGuiApplicationMenuBuilder::SaveFileDialogState::windowTitle() const NANOEM_DECL_NOEXCEPT
 {
     return "Open Save Dialog";
+}
+
+int
+ImGuiApplicationMenuBuilder::SaveFileDialogState::flags() const NANOEM_DECL_NOEXCEPT
+{
+    return ImGuiFileDialogFlags_DontShowHiddenFiles | ImGuiFileDialogFlags_ConfirmOverwrite;
 }
 
 } /* namespace internal */

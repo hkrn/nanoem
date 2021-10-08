@@ -104,6 +104,7 @@ private:
         virtual void execute(const URI &fileURI, BaseApplicationClient *client) = 0;
         virtual const char *windowID() const NANOEM_DECL_NOEXCEPT = 0;
         virtual const char *windowTitle() const NANOEM_DECL_NOEXCEPT = 0;
+        virtual int flags() const NANOEM_DECL_NOEXCEPT = 0;
 
         void initialize(const StringList &extensions, nanoem_u32_t type);
         void draw(BaseApplicationClient *client);
@@ -118,11 +119,13 @@ private:
         void execute(const URI &fileURI, BaseApplicationClient *client) NANOEM_DECL_OVERRIDE;
         const char *windowID() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
         const char *windowTitle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+        int flags() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     };
     struct SaveFileDialogState : FileDialogState {
         void execute(const URI &fileURI, BaseApplicationClient *client) NANOEM_DECL_OVERRIDE;
         const char *windowID() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
         const char *windowTitle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+        int flags() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     };
 
     typedef tinystl::vector<ImGuiMenuObject *, TinySTLAllocator> ImGuiMenuObjectList;
