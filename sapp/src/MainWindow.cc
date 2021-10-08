@@ -11,10 +11,9 @@
 namespace nanoem {
 namespace sapp {
 
-MainWindow::MainWindow()
-    : m_root(json_value_init_object())
-    , m_client(&m_bridge)
-    , m_service(m_root, &m_bridge)
+MainWindow::MainWindow(const JSON_Value *root)
+    : m_client(&m_bridge)
+    , m_service(root, &m_bridge)
     , m_lastCursorPosition(0)
     , m_movingCursorPosition(0)
 {
@@ -22,23 +21,20 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow() noexcept
 {
-    if (m_root) {
-        json_value_free(m_root);
-        m_root = nullptr;
-    }
 }
 
 void
 MainWindow::initialize()
 {
+    String sokolPath(json_object_dotget_string(json_object(m_service.applicationConfiguration()), "sapp.plugin.path"));
 #if defined(_WIN32)
-    const char *pluginPath = "plugins/sokol_d3d11." BX_DL_EXT;
+    sokolPath.append("/sokol_d3d11." BX_DL_EXT);
     const sg_pixel_format colorFormat = SG_PIXELFORMAT_BGRA8;
 #elif defined(__APPLE__)
-    const char *pluginPath = "plugins/sokol_metal_macos." BX_DL_EXT;
+    sokolPath.append("/sokol_metal_macos." BX_DL_EXT);
     const sg_pixel_format colorFormat = SG_PIXELFORMAT_BGRA8;
 #else
-    const char *pluginPath = "plugins/sokol_glcore33." BX_DL_EXT;
+    sokolPath.append("/sokol_glcore33." BX_DL_EXT);
     const sg_pixel_format colorFormat = SG_PIXELFORMAT_RGBA8;
 #endif
     m_client.addInitializationCompleteEventListener(
@@ -55,7 +51,7 @@ MainWindow::initialize()
         this, false);
     const Vector2UI32 logicalWindowSize(Vector2(sapp_width(), sapp_height()) / Vector2(sapp_dpi_scale()));
     const BaseApplicationClient::InitializeMessageDescription desc(
-        logicalWindowSize, colorFormat, sapp_dpi_scale(), pluginPath);
+        logicalWindowSize, colorFormat, sapp_dpi_scale(), sokolPath.c_str());
     m_client.sendInitializeMessage(desc);
 }
 
@@ -74,15 +70,20 @@ MainWindow::handleMouseDown(const Vector2SI32 &position, sapp_mousebutton button
     if (button != SAPP_MOUSEBUTTON_INVALID) {
         m_client.sendCursorPressMessage(position, button, modifiers);
         m_lastCursorPosition = position;
+        m_currentPressedMouseButton = button;
     }
 }
 
 void
-MainWindow::handleMouseMove(const Vector2SI32 &position, sapp_mousebutton button, uint32_t modifiers)
+MainWindow::handleMouseMove(const Vector2SI32 &position, uint32_t modifiers)
 {
-    m_client.sendCursorMoveMessage(position, position - m_lastCursorPosition, button, modifiers);
+    Vector2SI32 delta(0);
+    if (m_currentPressedMouseButton != SAPP_MOUSEBUTTON_INVALID) {
+        delta = position - m_movingCursorPosition;
+    }
+    m_client.sendCursorMoveMessage(position, delta, 0, modifiers);
     m_movingCursorPosition = position;
-    if (button != SAPP_MOUSEBUTTON_INVALID) {
+    if (m_currentPressedMouseButton != SAPP_MOUSEBUTTON_INVALID) {
         m_lastCursorPosition = position;
     }
 }
@@ -93,6 +94,7 @@ MainWindow::handleMouseUp(const Vector2SI32 &position, sapp_mousebutton button, 
     if (button != SAPP_MOUSEBUTTON_INVALID) {
         m_client.sendCursorReleaseMessage(position, button, modifiers);
         m_lastCursorPosition = Vector2SI32(0);
+        m_currentPressedMouseButton = SAPP_MOUSEBUTTON_INVALID;
     }
 }
 

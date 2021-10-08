@@ -73,3 +73,6 @@
 [submodule "dependencies/tinyobjloader-c"]
 	path = dependencies/tinyobjloader-c
 	url = https://github.com/syoyo/tinyobjloader-c
+[submodule "dependencies/whereami"]
+	path = dependencies/whereami
+	url = https://github.com/gpakosz/whereami
