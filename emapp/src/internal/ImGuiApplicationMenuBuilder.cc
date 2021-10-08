@@ -27,8 +27,13 @@
 #include "imguifiledialog/ImGuiFileDialog.h"
 #else
 #define IMGUIFILEDIALOG_API extern
+
 struct ImGuiFileDialog;
 typedef int ImGuiFileDialogFlags;
+enum ImGuiFileDialogFlags_ {
+    ImGuiFileDialogFlags_ConfirmOverwrite = (1 << 0),
+    ImGuiFileDialogFlags_DontShowHiddenFiles = (1 << 1),
+};
 extern "C" {
 IMGUIFILEDIALOG_API ImGuiFileDialog *
 IGFD_Create(void)
