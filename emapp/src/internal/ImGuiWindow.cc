@@ -1815,8 +1815,10 @@ void
 ImGuiWindow::resizeDevicePixelWindowSize(const Vector2UI16 &value)
 {
     ImGuiIO &io = ImGui::GetIO();
-    io.DisplaySize.x = value.x;
-    io.DisplaySize.y = value.y;
+    const nanoem_u16_t minimumWindowWidth = kMinimumMainWindowSize.x * io.DisplayFramebufferScale.x,
+                       minimumWindowHeight = kMinimumMainWindowSize.y * io.DisplayFramebufferScale.y;
+    io.DisplaySize.x = glm::max(value.x, minimumWindowWidth);
+    io.DisplaySize.y = glm::max(value.y, minimumWindowHeight);
     m_timelineWidth = m_lastTimelineWidth = m_defaultTimelineWidth = 0;
 }
 

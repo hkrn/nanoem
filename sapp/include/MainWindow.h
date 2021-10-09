@@ -22,13 +22,13 @@ namespace sapp {
 
 class MainWindow {
 public:
-    MainWindow();
+    MainWindow(const JSON_Value *root);
     ~MainWindow() noexcept;
 
     void initialize();
     void draw();
     void handleMouseDown(const Vector2SI32 &position, sapp_mousebutton button, uint32_t modifiers);
-    void handleMouseMove(const Vector2SI32 &position, sapp_mousebutton button, uint32_t modifiers);
+    void handleMouseMove(const Vector2SI32 &position, uint32_t modifiers);
     void handleMouseUp(const Vector2SI32 &position, sapp_mousebutton button, uint32_t modifiers);
     void handleMouseScroll(float deltaY, uint32_t modifiers);
     void handleKeyDown(sapp_keycode keycode);
@@ -45,12 +45,12 @@ public:
 private:
     void destroyWindow();
 
-    JSON_Value *m_root;
     ApplicationClient::Bridge m_bridge;
     ApplicationClient m_client;
     ApplicationService m_service;
     Vector2SI32 m_lastCursorPosition;
     Vector2SI32 m_movingCursorPosition;
+    sapp_mousebutton m_currentPressedMouseButton;
 };
 
 } /* namespace sapp */
