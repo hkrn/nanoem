@@ -58,8 +58,8 @@ private:
         void updateMorphWeightBuffer(Error &error);
         void createMatrixBuffer(nanoem_rsize_t numBones, Error &error);
         void createMorphWeightBuffer(nanoem_rsize_t numMorphs, Error &error);
-        void createVertexBuffer(nanoem_rsize_t numVertices, Error &error);
-        void createSdefBuffer(nanoem_rsize_t numVertices, Error &error);
+        void createVertexBuffer(Error &error);
+        void createSdefBuffer(Error &error);
 
         D3D11SkinDeformerFactory *m_parent;
         Model *m_model;
