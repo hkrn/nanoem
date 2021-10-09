@@ -47,6 +47,7 @@
 #include "emapp/internal/BoneValueState.h"
 #include "emapp/internal/CameraValueState.h"
 #include "emapp/internal/CapturingPassState.h"
+#include "emapp/internal/DecoderPluginBasedBackgroundVideoRenderer.h"
 #include "emapp/internal/ImGuiWindow.h"
 #include "emapp/internal/LightValueState.h"
 #include "emapp/model/Morph.h"
@@ -232,36 +233,6 @@ struct TimeBasedAudioPlayer : BaseAudioPlayer {
     }
 
     Clock m_clock;
-};
-
-struct StubBackgroundVideoRenderer : IBackgroundVideoRenderer {
-    bool
-    load(const URI & /* fileURI */, Error & /* error */) NANOEM_DECL_OVERRIDE
-    {
-        return true;
-    }
-    void
-    draw(sg_pass /* pass */, const Vector4 & /* rect */, nanoem_f32_t /* scaleFactor */,
-        Project * /* project */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    seek(nanoem_f64_t /* seconds */) NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    flush() NANOEM_DECL_OVERRIDE
-    {
-    }
-    void
-    destroy() NANOEM_DECL_OVERRIDE
-    {
-    }
-    URI
-    fileURI() const NANOEM_DECL_NOEXCEPT_OVERRIDE
-    {
-        return URI();
-    }
 };
 
 struct StubRendererCapability : Project::IRendererCapability {
@@ -2759,7 +2730,7 @@ BaseApplicationService::createDebugCapture()
 IBackgroundVideoRenderer *
 BaseApplicationService::createBackgroundVideoRenderer()
 {
-    return nanoem_new(StubBackgroundVideoRenderer);
+    return nanoem_new(internal::DecoderPluginBasedBackgroundVideoRenderer(m_defaultFileManager));
 }
 
 Project::IRendererCapability *
