@@ -310,7 +310,7 @@ bool
 MainWindow::setupWindow(String &pluginPath)
 {
     const JSON_Object *config = json_object(m_service->applicationConfiguration());
-    pluginPath.append(json_object_dotget_string(config, "glfw.path"));
+    pluginPath.append(json_object_dotget_string(config, "glfw.plugin.path"));
     glfwSetErrorCallback(handleErrorCallback);
     GLFWmonitor *monitor = glfwGetPrimaryMonitor();
     int x, y, width, height;
@@ -346,7 +346,7 @@ MainWindow::setupWindow(String &pluginPath)
         m_window = glfwCreateWindow(windowWidth, windowHeight, kWindowTitle, nullptr, nullptr);
     }
     if (m_window) {
-        pluginPath.append("/plugins/sokol_glcore33." BX_DL_EXT);
+        pluginPath.append("/sokol_glcore33." BX_DL_EXT);
     }
     else {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -354,7 +354,7 @@ MainWindow::setupWindow(String &pluginPath)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         m_window = glfwCreateWindow(windowWidth, windowHeight, kWindowTitle, nullptr, nullptr);
         if (m_window) {
-            pluginPath.append("/plugins/sokol_gles3." BX_DL_EXT);
+            pluginPath.append("/sokol_gles3." BX_DL_EXT);
         }
     }
     if (m_window) {

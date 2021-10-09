@@ -14,6 +14,7 @@
 #include "GLFW/glfw3.h"
 #include "bx/commandline.h"
 #include "bx/os.h"
+#include "whereami.h"
 
 #include <dirent.h>
 #if defined(_WIN32)
@@ -29,10 +30,16 @@ runMain(int argc, const char *const *argv)
     Allocator::initialize();
     BaseApplicationService::setup();
     {
-        JSON_Value *config = json_value_init_object();
-        JSON_Object *root = json_object(config);
-        bx::FilePath basePath(bx::Dir::Current), tempPath(bx::Dir::Temp);
-        String effectPath(basePath.getCPtr()), pluginDirPath(basePath.getCPtr());
+        char localeBuffer[32] = { 0 };
+        uint32_t localeSize = sizeof(localeBuffer);
+        bx::getEnv(localeBuffer, &localeSize, "LANG");
+        char executablePathBuffer[1024] = { 0 };
+        int executableDirPathSize;
+        wai_getExecutablePath(executablePathBuffer, sizeof(executablePathBuffer), &executableDirPathSize);
+        MutableString executableDirPath(executablePathBuffer, executablePathBuffer + executableDirPathSize);
+        executableDirPath.push_back(0);
+        FileUtils::canonicalizePathSeparator(executableDirPath);
+        String pluginDirPath(executableDirPath.data());
         pluginDirPath.append("/plugins");
         URIList pluginURIs;
         if (DIR *dir = opendir(pluginDirPath.c_str())) {
@@ -46,12 +53,16 @@ runMain(int argc, const char *const *argv)
             }
             closedir(dir);
         }
-        effectPath.append("/plugins/plugin_effect." BX_DL_EXT);
-        json_object_dotset_string(root, "glfw.path", basePath.getCPtr());
+        String effectPluginPath(pluginDirPath);
+        effectPluginPath.append("/plugin_effect." BX_DL_EXT);
+        bx::FilePath tempPath(bx::Dir::Temp);
+        JSON_Value *config = json_value_init_object();
+        JSON_Object *root = json_object(config);
+        json_object_dotset_string(root, "glfw.plugin.path", pluginDirPath.c_str());
+        json_object_dotset_string(root, "plugin.effect.path", effectPluginPath.c_str());
         json_object_dotset_string(root, "project.tmp.path", tempPath.getCPtr());
-        json_object_dotset_string(root, "plugin.effect.path", effectPath.c_str());
-        String sentryCrashpadHandlerPath(basePath.getCPtr()), sentryDllPath(basePath.getCPtr()),
-            sentryDatabasePath(basePath.getCPtr());
+        String sentryCrashpadHandlerPath(executableDirPath.data()), sentryDllPath(sentryCrashpadHandlerPath),
+            sentryDatabasePath(sentryCrashpadHandlerPath);
         sentryCrashpadHandlerPath.append("/sentry/crashpad_handler");
         sentryDllPath.append("/sentry/");
 #if defined(_WIN32)
@@ -66,9 +77,6 @@ runMain(int argc, const char *const *argv)
         json_object_dotset_string(root, "glfw.sentry.database.path", sentryDatabasePath.c_str());
         json_object_dotset_string(root, "glfw.sentry.handler.path", sentryCrashpadHandlerPath.c_str());
         json_object_dotset_string(root, "glfw.sentry.library.path", sentryDllPath.c_str());
-        char localeBuffer[32];
-        uint32_t localeSize = sizeof(localeBuffer);
-        bx::getEnv(localeBuffer, &localeSize, "LANG");
         json_object_dotset_string(root, "project.locale", localeBuffer);
         bx::CommandLine command(argc, argv);
         glfw::GLFWApplicationClient::Bridge bridge;
