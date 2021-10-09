@@ -185,10 +185,12 @@ D3D11SkinDeformerFactory::Deformer::create(const sg_buffer_desc &desc, int buffe
     if (!m_outputBuffersView[bufferIndex]) {
         createOutputBuffer(desc, bufferIndex, error);
     }
-    nanoem_rsize_t numVertices;
-    nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
-    createSdefBuffer(numVertices, error);
-    createVertexBuffer(numVertices, error);
+    if (!m_sdefBufferView) {
+        createSdefBuffer(error);
+    }
+    if (!m_vertexBufferView) {
+        createVertexBuffer(error);
+    }
     sg_buffer_desc d(desc);
     d.d3d11_buffer = (const void *) m_outputBuffers[bufferIndex];
     d.data.ptr = nullptr;
@@ -431,11 +433,13 @@ D3D11SkinDeformerFactory::Deformer::createMorphWeightBuffer(nanoem_rsize_t numMo
 }
 
 void
-D3D11SkinDeformerFactory::Deformer::createVertexBuffer(nanoem_rsize_t numVertices, Error &error)
+D3D11SkinDeformerFactory::Deformer::createVertexBuffer(Error &error)
 {
     typedef tinystl::pair<const nanoem_model_morph_t *, const nanoem_model_morph_vertex_t *> VertexMorphPair;
     typedef tinystl::vector<VertexMorphPair, TinySTLAllocator> MorphPairList;
     tinystl::vector<MorphPairList, TinySTLAllocator> vertex2morphs;
+    nanoem_rsize_t numVertices;
+    auto vetices = nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
     {
         nanoem_rsize_t numMorphs;
         auto morphs = nanoemModelGetAllMorphObjects(m_model->data(), &numMorphs);
@@ -507,8 +511,10 @@ D3D11SkinDeformerFactory::Deformer::createVertexBuffer(nanoem_rsize_t numVertice
 }
 
 void
-D3D11SkinDeformerFactory::Deformer::createSdefBuffer(nanoem_rsize_t numVertices, Error &error)
+D3D11SkinDeformerFactory::Deformer::createSdefBuffer(Error &error)
 {
+    nanoem_rsize_t numVertices;
+    auto vertices = nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
     ID3D11Device *device = m_parent->m_device;
     D3D11_BUFFER_DESC bufferDesc = {};
     bufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
@@ -517,8 +523,6 @@ D3D11SkinDeformerFactory::Deformer::createSdefBuffer(nanoem_rsize_t numVertices,
     bufferDesc.Usage = D3D11_USAGE_IMMUTABLE;
     bufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
     ByteArray bytes(bufferDesc.ByteWidth);
-    nanoem_rsize_t numObjects;
-    auto vertices = nanoemModelGetAllVertexObjects(m_model->data(), &numObjects);
     bx::simd128_t *sdefPtr = reinterpret_cast<bx::simd128_t *>(bytes.data());
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertex = vertices[i];
