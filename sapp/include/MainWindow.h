@@ -27,6 +27,7 @@ public:
 
     void initialize();
     void draw();
+
     void handleMouseDown(const Vector2SI32 &position, sapp_mousebutton button, uint32_t modifiers);
     void handleMouseMove(const Vector2SI32 &position, uint32_t modifiers);
     void handleMouseUp(const Vector2SI32 &position, sapp_mousebutton button, uint32_t modifiers);
@@ -43,6 +44,7 @@ public:
     void handleQuitRequest();
 
 private:
+    void loadAllPlugins();
     void destroyWindow();
 
     ApplicationClient::Bridge m_bridge;
