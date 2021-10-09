@@ -890,9 +890,10 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
         }
         else {
             execute(URI(), client);
-            char *path = IGFD_GetCurrentPath(instance);
-            m_lastOpenDirectoryPath = path;
-            delete[] path;
+            if (char *path = IGFD_GetCurrentPath(instance)) {
+                m_lastOpenDirectoryPath = path;
+                delete[] path;
+            }
         }
         IGFD_CloseDialog(instance);
         m_allowedExtensions.clear();
