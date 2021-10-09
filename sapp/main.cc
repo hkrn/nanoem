@@ -8,6 +8,7 @@
 #include "emapp/emapp.h"
 
 #include "MainWindow.h"
+
 #include "bx/commandline.h"
 #include "whereami.h"
 
@@ -35,6 +36,7 @@ ApplicationState::ApplicationState(int argc, char *argv[])
     , m_window(nullptr)
     , m_command(argc, argv)
 {
+    m_config = json_value_init_object();
 }
 
 ApplicationState::~ApplicationState()
@@ -48,21 +50,26 @@ ApplicationState::~ApplicationState()
 void
 ApplicationState::initialize()
 {
-    m_config = json_value_init_object();
-    JSON_Object *root = json_value_get_object(m_config);
-    char buffer[1024] = { 0 };
-    int length;
-    wai_getExecutablePath(buffer, sizeof(buffer), &length);
-    MutableString ms(buffer, buffer + length);
-    ms.push_back(0);
-    FileUtils::canonicalizePathSeparator(ms);
-    String pluginPath(ms.data());
-    pluginPath.append("/plugins");
-    String effectPluginPath(pluginPath);
+    char localeBuffer[32] = { 0 };
+    uint32_t localeSize = sizeof(localeBuffer);
+    bx::getEnv(localeBuffer, &localeSize, "LANG");
+    char executablePathBuffer[1024] = { 0 };
+    int executableDirPathSize;
+    wai_getExecutablePath(executablePathBuffer, sizeof(executablePathBuffer), &executableDirPathSize);
+    MutableString executableDirPath(executablePathBuffer, executablePathBuffer + executableDirPathSize);
+    executableDirPath.push_back(0);
+    FileUtils::canonicalizePathSeparator(executableDirPath);
+    String pluginDirPath(executableDirPath.data());
+    pluginDirPath.append("/plugins");
+    String effectPluginPath(pluginDirPath);
     effectPluginPath.append("/plugin_effect." BX_DL_EXT);
-    json_object_dotset_string(root, "sapp.executable.path", buffer);
-    json_object_dotset_string(root, "sapp.plugin.path", pluginPath.c_str());
+    bx::FilePath tempPath(bx::Dir::Temp);
+    JSON_Object *root = json_value_get_object(m_config);
+    json_object_dotset_string(root, "sapp.executable.path", executablePathBuffer);
+    json_object_dotset_string(root, "sapp.plugin.path", pluginDirPath.c_str());
     json_object_dotset_string(root, "plugin.effect.path", effectPluginPath.c_str());
+    json_object_dotset_string(root, "project.tmp.path", tempPath.getCPtr());
+    json_object_dotset_string(root, "project.locale", localeBuffer);
     m_window = new sapp::MainWindow(m_config);
     m_window->initialize();
 }

@@ -7,6 +7,9 @@
 #include "MainWindow.h"
 
 #include "bx/os.h"
+#include "emapp/StringUtils.h"
+
+#include <dirent.h>
 
 namespace nanoem {
 namespace sapp {
@@ -40,6 +43,7 @@ MainWindow::initialize()
     m_client.addInitializationCompleteEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
+            self->loadAllPlugins();
             self->m_client.sendActivateMessage();
         },
         this, true);
@@ -194,6 +198,29 @@ MainWindow::handleQuitRequest()
         },
         this);
     sapp_cancel_quit();
+}
+
+void
+MainWindow::loadAllPlugins()
+{
+    const JSON_Object *config = json_object(m_service.applicationConfiguration());
+    const char *pluginDirPath = json_object_dotget_string(config, "sapp.plugin.path");
+    URIList pluginURIs;
+    if (DIR *dir = ::opendir(pluginDirPath)) {
+        while (dirent *ent = ::readdir(dir)) {
+            if (StringUtils::equals(ent->d_name, "plugin", 6)) {
+                String pluginPath(pluginDirPath);
+                pluginPath.append("/");
+                pluginPath.append(ent->d_name);
+                pluginURIs.push_back(URI::createFromFilePath(pluginPath));
+            }
+        }
+        ::closedir(dir);
+    }
+    m_client.sendLoadAllDecoderPluginsMessage(pluginURIs);
+    m_client.sendLoadAllEncoderPluginsMessage(pluginURIs);
+    m_client.sendLoadAllModelPluginsMessage(pluginURIs);
+    m_client.sendLoadAllMotionPluginsMessage(pluginURIs);
 }
 
 void
