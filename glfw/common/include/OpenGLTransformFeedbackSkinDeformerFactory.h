@@ -48,6 +48,8 @@ private:
         void execute(int bufferIndex) override;
 
     private:
+        static nanoem_rsize_t alignBufferSize(nanoem_rsize_t value) NANOEM_DECL_NOEXCEPT;
+        static void reserveBufferWithAlignedSize(ByteArray &bytes);
         static void initializeBufferObject(const void *data, nanoem_rsize_t size, nanoem_u32_t &object);
         static void initializeBufferObject(nanoem_rsize_t size, nanoem_u32_t &object);
         static void initializeTextureObject(nanoem_rsize_t size, nanoem_u32_t &object, Vector2SI32 &s);

@@ -301,6 +301,24 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::execute(int bufferIndex)
     sg::reset_state_cache();
 }
 
+nanoem_rsize_t 
+OpenGLTransformFeedbackSkinDeformerFactory::Deformer::alignBufferSize(nanoem_rsize_t value) NANOEM_DECL_NOEXCEPT
+{
+    const nanoem_rsize_t logicalSize = value / 16;
+    const int stride = static_cast<int>(glm::ceil(glm::sqrt(logicalSize * 1.0f)));
+    nanoem_rsize_t actualSize = value;
+    if (stride * stride > logicalSize) {
+        actualSize = stride * stride * 16;
+    }
+    return actualSize;
+}
+
+void
+OpenGLTransformFeedbackSkinDeformerFactory::Deformer::reserveBufferWithAlignedSize(ByteArray &bytes)
+{
+    bytes.reserve(alignBufferSize(bytes.size()));
+}
+
 void
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeBufferObject(
     const void *data, nanoem_rsize_t size, GLuint &object)
@@ -329,7 +347,7 @@ void
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeTextureObject(nanoem_rsize_t size, GLuint &object, Vector2SI32 &s)
 {
     if (!object) {
-        const int stride = static_cast<int>(glm::ceil(glm::sqrt(size * 1.0f)));
+        const int stride = static_cast<int>(glm::ceil(glm::sqrt(size / sizeof(bx::simd128_t) * 1.0f)));
         s = Vector2SI32(stride, stride);
         glGenTextures(1, &object);
         glBindTexture(GL_TEXTURE_2D, object);
@@ -350,14 +368,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeTextureObject(
         s = Vector2SI32(stride, stride);
         glGenTextures(1, &object);
         glBindTexture(GL_TEXTURE_2D, object);
-        if (stride * stride > logicalSize) {
-            ByteArray innerBytes(bytes);
-            innerBytes.resize(stride * stride * 16);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, s.x, s.y, 0, GL_RGBA, GL_FLOAT, innerBytes.data());
-        }
-        else {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, s.x, s.y, 0, GL_RGBA, GL_FLOAT, bytes.data());
-        }
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, s.x, s.y, 0, GL_RGBA, GL_FLOAT, bytes.data());
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glBindTexture(GL_TEXTURE_2D, 0);
@@ -433,6 +444,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::updateMatrixBuffer()
             numBones = 1;
         }
         m_matrixBufferData.resize(numBones * sizeof(bx::float4x4_t));
+        reserveBufferWithAlignedSize(m_matrixBufferData);
         createMatrixBuffer();
     }
     BatchUpdateMatrixBufferRunner runner(&m_matrixBufferData, m_bones.data());
@@ -450,7 +462,8 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::updateMorphWeightBuffer()
         for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
             m_morphs[i] = model::Morph::cast(morphs[i]);
         }
-        m_morphWeightBufferData.resize(((numMorphs / 4) + 1) * sizeof(bx::simd128_t));
+        m_morphWeightBufferData.resize(((numMorphs + 1) / 4) * sizeof(bx::simd128_t));
+        reserveBufferWithAlignedSize(m_morphWeightBufferData);
         createMorphWeightBuffer();
     }
     BatchUpdateMorphWeightBufferRunner runner(&m_morphWeightBufferData, m_morphs.data());
@@ -518,10 +531,10 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createVertexBuffer()
             m_numMaxMorphItems = glm::max(m_numMaxMorphItems, it->size());
         }
     }
-    const nanoem_rsize_t bufferSize =
-        glm::max(numVertices * m_numMaxMorphItems, nanoem_rsize_t(1)) * sizeof(bx::simd128_t);
+    const nanoem_rsize_t bufferSize = glm::max(numVertices * m_numMaxMorphItems, nanoem_rsize_t(1)) * sizeof(bx::simd128_t);
     nanoem_rsize_t offset = 0;
     ByteArray vertexBufferData(bufferSize);
+    reserveBufferWithAlignedSize(vertexBufferData);
     bx::simd128_t *buffers = reinterpret_cast<bx::simd128_t *>(vertexBufferData.data());
     for (tinystl::vector<MorphPairList, TinySTLAllocator>::const_iterator it = vertex2morphs.begin(),
                                                                           end = vertex2morphs.end();
@@ -546,8 +559,9 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createSdefBuffer()
 {
     nanoem_rsize_t numVertices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
-    ByteArray sdefBuffer(numVertices * sizeof(bx::simd128_t) * 3);
-    bx::simd128_t *sdefBufferPtr = reinterpret_cast<bx::simd128_t *>(sdefBuffer.data());
+    ByteArray sdefBufferData(numVertices * sizeof(bx::simd128_t) * 3);
+    reserveBufferWithAlignedSize(sdefBufferData);
+    bx::simd128_t *sdefBufferPtr = reinterpret_cast<bx::simd128_t *>(sdefBufferData.data());
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
         const nanoem_rsize_t offset = i * 3;
@@ -556,7 +570,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createSdefBuffer()
         memcpy(&sdefBufferPtr[offset + 2], nanoemModelVertexGetSdefR1(vertexPtr), sizeof(*sdefBufferPtr));
     }
     Vector2SI32 size;
-    initializeTextureObject(sdefBuffer, m_sdefTextureObject, size);
+    initializeTextureObject(sdefBufferData, m_sdefTextureObject, size);
     setDebugLabel(m_sdefTextureObject, GL_TEXTURE, "SdefTexture");
 }
 
