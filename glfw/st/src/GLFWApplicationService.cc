@@ -385,7 +385,7 @@ GLFWApplicationService::createSkinDeformerFactory()
     ApplicationPreference preference(this);
     if (preference.isSkinDeformAcceleratorEnabled()) {
         if (glDispatchCompute) {
-            factory = nanoem_new(OpenGLComputeShaderSkinDeformerFactory);
+            factory = nanoem_new(OpenGLComputeShaderSkinDeformerFactory(glfwGetProcAddress));
         }
         else {
             factory = nanoem_new(OpenGLTransformFeedbackSkinDeformerFactory);

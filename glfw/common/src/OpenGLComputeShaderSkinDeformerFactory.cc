@@ -20,6 +20,67 @@ namespace nanoem {
 namespace glfw {
 namespace {
 
+#define APIENTRYP APIENTRY *
+#define GL_ARRAY_BUFFER 0x8892
+#define GL_BUFFER 0x82E0
+#define GL_COMPUTE_SHADER 0x91B9
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_LINK_STATUS 0x8B82
+#define GL_SHADER_STORAGE_BUFFER 0x90D2
+#define GL_STATIC_READ 0x88E5
+#define GL_STREAM_DRAW 0x88E0
+#define GL_STREAM_READ 0x88E1
+#define GL_UNIFORM_BUFFER 0x8A11
+
+typedef char GLchar;
+typedef int GLint;
+typedef unsigned int GLuint;
+typedef unsigned int GLenum;
+typedef int GLsizei;
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+
+typedef void(APIENTRYP PFNGLATTACHSHADERPROC)(GLuint program, GLuint shader);
+typedef void(APIENTRYP PFNGLBINDBUFFERPROC)(GLenum target, GLuint buffer);
+typedef void(APIENTRYP PFNGLBINDBUFFERBASEPROC)(GLenum target, GLuint index, GLuint buffer);
+typedef void(APIENTRYP PFNGLBUFFERDATAPROC)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void(APIENTRYP PFNGLBUFFERSUBDATAPROC)(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
+typedef void(APIENTRYP PFNGLCOMPILESHADERPROC)(GLuint shader);
+typedef void(APIENTRYP PFNGLDISPATCHCOMPUTEPROC)(GLuint num_groups_x, GLuint num_groups_y, GLuint num_groups_z);
+typedef GLuint(APIENTRYP PFNGLCREATEPROGRAMPROC)(void);
+typedef GLuint(APIENTRYP PFNGLCREATESHADERPROC)(GLenum type);
+typedef void(APIENTRYP PFNGLDELETEBUFFERSPROC)(GLsizei n, const GLuint *buffers);
+typedef void(APIENTRYP PFNGLDELETEPROGRAMPROC)(GLuint program);
+typedef void(APIENTRYP PFNGLDELETESHADERPROC)(GLuint shader);
+typedef void(APIENTRYP PFNGLGENBUFFERSPROC)(GLsizei n, GLuint *buffers);
+typedef void(APIENTRYP PFNGLGETPROGRAMIVPROC)(GLuint program, GLenum pname, GLint *params);
+typedef void(APIENTRYP PFNGLGETSHADERIVPROC)(GLuint shader, GLenum pname, GLint *params);
+typedef void(APIENTRYP PFNGLLINKPROGRAMPROC)(GLuint program);
+typedef void(APIENTRYP PFNGLOBJECTLABELPROC)(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
+typedef void(APIENTRYP PFNGLSHADERSOURCEPROC)(
+    GLuint shader, GLsizei count, const GLchar *const *string, const GLint *length);
+typedef void(APIENTRYP PFNGLUSEPROGRAMPROC)(GLuint program);
+
+PFNGLATTACHSHADERPROC glAttachShader = nullptr;
+PFNGLBINDBUFFERPROC glBindBuffer = nullptr;
+PFNGLBINDBUFFERBASEPROC glBindBufferBase = nullptr;
+PFNGLBUFFERDATAPROC glBufferData = nullptr;
+PFNGLBUFFERSUBDATAPROC glBufferSubData = nullptr;
+PFNGLCOMPILESHADERPROC glCompileShader = nullptr;
+PFNGLCREATEPROGRAMPROC glCreateProgram = nullptr;
+PFNGLCREATESHADERPROC glCreateShader = nullptr;
+PFNGLDELETEBUFFERSPROC glDeleteBuffers = nullptr;
+PFNGLDELETEPROGRAMPROC glDeleteProgram = nullptr;
+PFNGLDELETESHADERPROC glDeleteShader = nullptr;
+PFNGLDISPATCHCOMPUTEPROC glDispatchCompute = nullptr;
+PFNGLGENBUFFERSPROC glGenBuffers = nullptr;
+PFNGLGETPROGRAMIVPROC glGetProgramiv = nullptr;
+PFNGLGETSHADERIVPROC glGetShaderiv = nullptr;
+PFNGLLINKPROGRAMPROC glLinkProgram = nullptr;
+PFNGLOBJECTLABELPROC glObjectLabel = nullptr;
+PFNGLSHADERSOURCEPROC glShaderSource = nullptr;
+PFNGLUSEPROGRAMPROC glUseProgram = nullptr;
+
 #include "emapp/private/shaders/model_skinning_cs_glsl_core43.h"
 #include "emapp/private/shaders/model_skinning_cs_glsl_es31.h"
 
@@ -96,8 +157,27 @@ struct BatchUpdateMorphWeightBufferRunner {
 
 } /* namespace anonymous */
 
-OpenGLComputeShaderSkinDeformerFactory::OpenGLComputeShaderSkinDeformerFactory()
+OpenGLComputeShaderSkinDeformerFactory::OpenGLComputeShaderSkinDeformerFactory(PFN_GetProcAddress func)
 {
+    glAttachShader = reinterpret_cast<PFNGLATTACHSHADERPROC>(func("glAttachShader"));
+    glBindBuffer = reinterpret_cast<PFNGLBINDBUFFERPROC>(func("glBindBuffer"));
+    glBindBufferBase = reinterpret_cast<PFNGLBINDBUFFERBASEPROC>(func("glBindBufferBase"));
+    glBufferData = reinterpret_cast<PFNGLBUFFERDATAPROC>(func("glBufferData"));
+    glBufferSubData = reinterpret_cast<PFNGLBUFFERSUBDATAPROC>(func("glBufferSubData"));
+    glCompileShader = reinterpret_cast<PFNGLCOMPILESHADERPROC>(func("glCompileShader"));
+    glCreateProgram = reinterpret_cast<PFNGLCREATEPROGRAMPROC>(func("glCreateProgram"));
+    glCreateShader = reinterpret_cast<PFNGLCREATESHADERPROC>(func("glCreateShader"));
+    glDeleteBuffers = reinterpret_cast<PFNGLDELETEBUFFERSPROC>(func("glDeleteBuffers"));
+    glDeleteProgram = reinterpret_cast<PFNGLDELETEPROGRAMPROC>(func("glDeleteProgram"));
+    glDeleteShader = reinterpret_cast<PFNGLDELETESHADERPROC>(func("glDeleteShader"));
+    glDispatchCompute = reinterpret_cast<PFNGLDISPATCHCOMPUTEPROC>(func("glDispatchCompute"));
+    glGenBuffers = reinterpret_cast<PFNGLGENBUFFERSPROC>(func("glGenBuffers"));
+    glGetProgramiv = reinterpret_cast<PFNGLGETPROGRAMIVPROC>(func("glGetProgramiv"));
+    glGetShaderiv = reinterpret_cast<PFNGLGETSHADERIVPROC>(func("glGetShaderiv"));
+    glLinkProgram = reinterpret_cast<PFNGLLINKPROGRAMPROC>(func("glLinkProgram"));
+    glObjectLabel = reinterpret_cast<PFNGLOBJECTLABELPROC>(func("glObjectLabel"));
+    glShaderSource = reinterpret_cast<PFNGLSHADERSOURCEPROC>(func("glShaderSource"));
+    glUseProgram = reinterpret_cast<PFNGLUSEPROGRAMPROC>(func("glUseProgram"));
 }
 
 OpenGLComputeShaderSkinDeformerFactory::~OpenGLComputeShaderSkinDeformerFactory() noexcept
@@ -251,19 +331,19 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::execute(int bufferIndex)
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(const void *data, int size, GLuint &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(const void *data, int size, nanoem_u32_t &object)
 {
     if (!object) {
         glGenBuffers(1, &object);
         glBindBuffer(GL_ARRAY_BUFFER, object);
-        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_READ);
         glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(int size, GLuint &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(int size, nanoem_u32_t &object)
 {
     if (!object) {
         glGenBuffers(1, &object);
@@ -274,7 +354,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(int siz
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferObject(int size, GLuint &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferObject(int size, nanoem_u32_t &object)
 {
     if (!object) {
         glGenBuffers(1, &object);
@@ -286,7 +366,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferO
 
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferObject(
-    const ByteArray &bytes, GLuint &object)
+    const ByteArray &bytes, nanoem_u32_t &object)
 {
     if (!object) {
         glGenBuffers(1, &object);
@@ -297,7 +377,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferO
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::updateBufferObject(const ByteArray &bytes, GLuint object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::updateBufferObject(const ByteArray &bytes, nanoem_u32_t object)
 {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, object);
     glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, Inline::saturateInt32(bytes.size()), bytes.data());
@@ -305,7 +385,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::updateBufferObject(const ByteA
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::destroyBufferObject(GLuint &object) noexcept
+OpenGLComputeShaderSkinDeformerFactory::Deformer::destroyBufferObject(nanoem_u32_t &object) noexcept
 {
     if (object != 0) {
         glDeleteBuffers(1, &object);
@@ -469,7 +549,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createSdefBuffer(Error &error)
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::setDebugLabel(GLuint object, const char *suffix)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t object, const char *suffix)
 {
 #if defined(SOKOL_DEBUG)
     char label[Inline::kMarkerStringLength];
