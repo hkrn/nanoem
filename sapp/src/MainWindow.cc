@@ -46,6 +46,14 @@ MainWindow::initialize()
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
             self->loadAllPlugins();
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
+            auto cmd = self->m_cmd;
+            if (cmd->hasArg("bootstrap-project")) {
+                const char *path = cmd->findOption("bootstrap-project");
+                const URI fileURI(URI::createFromFilePath(path));
+                self->m_client.sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
+            }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
             self->m_client.sendActivateMessage();
         },
         this, true);
