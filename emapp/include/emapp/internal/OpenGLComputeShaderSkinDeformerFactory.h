@@ -55,14 +55,15 @@ private:
         static void updateBufferObject(const ByteArray &bytes, nanoem_u32_t object);
         static void destroyBufferObject(nanoem_u32_t &object) NANOEM_DECL_NOEXCEPT;
 
-        void createInputBuffer(const sg_buffer_desc &desc, Error &error);
-        void createOutputBuffer(const sg_buffer_desc &desc, int bufferIndex, Error &error);
-        void updateMatrixBuffer(Error &error);
-        void updateMorphWeightBuffer(Error &error);
-        void createMatrixBuffer(Error &error);
-        void createMorphWeightBuffer(Error &error);
-        void createVertexBuffer(Error &error);
-        void createSdefBuffer(Error &error);
+        void createInputBuffer(const sg_buffer_desc &desc);
+        void createOutputBuffer(const sg_buffer_desc &desc, int bufferIndex);
+        void updateArgumentBuffer(nanoem_rsize_t numVertices);
+        void updateMatrixBuffer();
+        void updateMorphWeightBuffer();
+        void createMatrixBuffer();
+        void createMorphWeightBuffer();
+        void createVertexBuffer();
+        void createSdefBuffer();
         void setDebugLabel(nanoem_u32_t object, const char *suffix);
 
         OpenGLComputeShaderSkinDeformerFactory *m_parent;
