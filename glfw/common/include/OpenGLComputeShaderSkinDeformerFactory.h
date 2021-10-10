@@ -27,7 +27,7 @@ namespace glfw {
 class OpenGLComputeShaderSkinDeformerFactory : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
     using BoneList = tinystl::vector<model::Bone *, TinySTLAllocator>;
-    using VertexList = tinystl::vector<model::Vertex *, TinySTLAllocator>;
+    using MorphList = tinystl::vector<model::Morph *, TinySTLAllocator>;
 
     OpenGLComputeShaderSkinDeformerFactory();
     ~OpenGLComputeShaderSkinDeformerFactory() override;
@@ -51,20 +51,35 @@ private:
         static void initializeBufferObject(const void *data, int size, GLuint &object);
         static void initializeBufferObject(int size, GLuint &object);
         static void initializeShaderStorageBufferObject(int size, GLuint &object);
+        static void initializeShaderStorageBufferObject(const ByteArray &bytes, GLuint &object);
+        static void updateBufferObject(const ByteArray &bytes, GLuint object);
+        static void destroyBufferObject(GLuint &object);
+
+        void createInputBuffer(const sg_buffer_desc &desc, Error &error);
+        void createOutputBuffer(const sg_buffer_desc &desc, int bufferIndex, Error &error);
+        void updateMatrixBuffer(Error &error);
+        void updateMorphWeightBuffer(Error &error);
+        void createMatrixBuffer(Error &error);
+        void createMorphWeightBuffer(Error &error);
+        void createVertexBuffer(Error &error);
+        void createSdefBuffer(Error &error);
+        void setDebugLabel(GLuint object, const char *suffix);
 
         OpenGLComputeShaderSkinDeformerFactory *m_parent;
         Model *m_model;
-        GLuint m_inputBuffer = 0;
-        GLuint m_matrixBuffer = 0;
-        GLuint m_vertexDeltaBuffer = 0;
-        GLuint m_sdefBuffer = 0;
-        GLuint m_argumentBuffer = 0;
-        GLuint m_outputBuffers[2] = { 0, 0 };
         sg_buffer m_buffer = { SG_INVALID_ID };
         BoneList m_bones;
-        VertexList m_vertexDeltas;
+        MorphList m_morphs;
         ByteArray m_matrixBufferData;
-        ByteArray m_vertexDeltaBufferData;
+        ByteArray m_morphWeightBufferData;
+        GLuint m_inputBufferObject = 0;
+        GLuint m_matrixBufferObject = 0;
+        GLuint m_morphWeightBufferObject = 0;
+        GLuint m_vertexBufferObject = 0;
+        GLuint m_sdefBufferObject = 0;
+        GLuint m_argumentBufferObject = 0;
+        GLuint m_outputBufferObjects[2] = { 0, 0 };
+        nanoem_rsize_t m_numMaxMorphItems = 0;
     };
 
     GLuint m_program = 0;

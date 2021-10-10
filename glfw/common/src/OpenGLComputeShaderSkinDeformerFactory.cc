@@ -24,8 +24,8 @@ namespace {
 #include "emapp/private/shaders/model_skinning_cs_glsl_es31.h"
 
 struct BatchUpdateMatrixBufferRunner {
-    BatchUpdateMatrixBufferRunner(ByteArray *bytes, model::Bone *const *bones)
-        : m_bytes(bytes)
+    BatchUpdateMatrixBufferRunner(ByteArray *matricesBuffer, model::Bone *const *bones)
+        : m_matricesBuffer(matricesBuffer)
         , m_bones(bones)
     {
     }
@@ -36,8 +36,8 @@ struct BatchUpdateMatrixBufferRunner {
     void
     execute(nanoem_rsize_t numBones)
     {
-        bx::float4x4_t *matrices = reinterpret_cast<bx::float4x4_t *>(m_bytes->data());
-        nanoem_parameter_assert(m_bytes->size() >= numBones * sizeof(*matrices), "must be bigger than capacity");
+        bx::float4x4_t *matrices = reinterpret_cast<bx::float4x4_t *>(m_matricesBuffer->data());
+        nanoem_parameter_assert(m_matricesBuffer->size() >= numBones * sizeof(*matrices), "must be bigger than capacity");
 #if defined(NANOEM_ENABLE_TBB)
         tbb::parallel_for(tbb::blocked_range<nanoem_rsize_t>(0, numBones),
             [this, matrices](const tbb::blocked_range<nanoem_rsize_t> &range) {
@@ -56,44 +56,42 @@ struct BatchUpdateMatrixBufferRunner {
 #endif /* NANOEM_ENABLE_TBB */
     }
 
-    ByteArray *m_bytes;
+    ByteArray *m_matricesBuffer;
     model::Bone *const *m_bones;
 };
 
-struct BatchUpdateVertexDeltaBufferRunner {
-    BatchUpdateVertexDeltaBufferRunner(ByteArray *bytes, model::Vertex *const *vertices)
-        : m_bytes(bytes)
-        , m_vertexDeltas(vertices)
+struct BatchUpdateMorphWeightBufferRunner {
+    BatchUpdateMorphWeightBufferRunner(ByteArray *morphWeightBuffer, model::Morph *const *morphs)
+        : m_morphWeightBuffer(morphWeightBuffer)
+        , m_morphs(morphs)
     {
     }
-    ~BatchUpdateVertexDeltaBufferRunner()
+    ~BatchUpdateMorphWeightBufferRunner()
     {
     }
 
     void
-    execute(nanoem_rsize_t numVertices)
+    execute(nanoem_rsize_t numMorphs)
     {
-        bx::simd128_t *vertexDeltas = reinterpret_cast<bx::simd128_t *>(m_bytes->data());
+        auto weights = reinterpret_cast<nanoem_f32_t *>(m_morphWeightBuffer->data());
 #if defined(NANOEM_ENABLE_TBB)
-        tbb::parallel_for(tbb::blocked_range<nanoem_rsize_t>(0, numVertices),
-            [this, vertexDeltas](const tbb::blocked_range<nanoem_rsize_t> &range) {
+        tbb::parallel_for(tbb::blocked_range<nanoem_rsize_t>(0, numMorphs),
+            [this, weights](const tbb::blocked_range<nanoem_rsize_t> &range) {
                 for (nanoem_rsize_t i = range.begin(), end = range.end(); i != end; i++) {
-                    model::Vertex *vertex = m_vertexDeltas[i];
-                    vertexDeltas[i] = vertex->m_simd.m_delta;
-                    vertex->reset();
+                    model::Morph *morph = m_morphs[i];
+                    weights[i + 1] = morph->weight();
                 }
             });
 #else
-        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
-            model::Vertex *vertex = m_vertexDeltas[i];
-            vertexDeltas[i] = vertex->m_simd.m_delta;
-            vertex->reset();
+        for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+            model::Morph *morph = m_morphs[i];
+            weights[i + 1] = morph->weight();
         }
 #endif /* NANOEM_ENABLE_TBB */
     }
 
-    ByteArray *m_bytes;
-    model::Vertex *const *m_vertexDeltas;
+    ByteArray *m_morphWeightBuffer;
+    model::Morph *const *m_morphs;
 };
 
 } /* namespace anonymous */
@@ -166,74 +164,36 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::Deformer(OpenGLComputeShaderSk
 
 OpenGLComputeShaderSkinDeformerFactory::Deformer::~Deformer()
 {
-    glDeleteBuffers(1, &m_inputBuffer);
-    m_inputBuffer = 0;
-    glDeleteBuffers(1, &m_matrixBuffer);
-    m_matrixBuffer = 0;
-    glDeleteBuffers(1, &m_vertexDeltaBuffer);
-    m_vertexDeltaBuffer = 0;
-    glDeleteBuffers(1, &m_sdefBuffer);
-    m_sdefBuffer = 0;
-    glDeleteBuffers(2, m_outputBuffers);
-    m_outputBuffers[0] = m_outputBuffers[1] = 0;
+    destroyBufferObject(m_inputBufferObject);
+    destroyBufferObject(m_matrixBufferObject);
+    destroyBufferObject(m_morphWeightBufferObject);
+    destroyBufferObject(m_sdefBufferObject);
+    glDeleteBuffers(2, m_outputBufferObjects);
+    m_outputBufferObjects[0] = m_outputBufferObjects[1] = 0;
 }
 
 sg_buffer
 OpenGLComputeShaderSkinDeformerFactory::Deformer::create(const sg_buffer_desc &desc, int bufferIndex)
 {
     Error error;
-    nanoem_rsize_t numBones, numVertices;
-    nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_model->data(), &numBones);
-    nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
-    initializeBufferObject(desc.data.ptr, Inline::saturateInt32(desc.data.size), m_inputBuffer);
-    const nanoem_rsize_t matrixBufferSize = sizeof(bx::simd128_t) * numBones * 4;
-    initializeShaderStorageBufferObject(Inline::saturateInt32(matrixBufferSize), m_matrixBuffer);
-    m_matrixBufferData.resize(matrixBufferSize);
-    const nanoem_rsize_t vertexBufferSize = sizeof(bx::simd128_t) * numVertices;
-    initializeShaderStorageBufferObject(Inline::saturateInt32(vertexBufferSize), m_vertexDeltaBuffer);
-    initializeShaderStorageBufferObject(48, m_argumentBuffer);
-    m_vertexDeltaBufferData.resize(vertexBufferSize);
-    initializeBufferObject(desc.size, m_outputBuffers[bufferIndex]);
-    if (m_bones.empty()) {
-        m_bones.resize(numBones);
-        for (nanoem_rsize_t i = 0; i < numBones; i++) {
-            m_bones[i] = model::Bone::cast(bones[i]);
-        }
+    if (m_argumentBufferObject == 0) {
+        initializeShaderStorageBufferObject(48, m_argumentBufferObject);
+        setDebugLabel(m_argumentBufferObject, "ArgumentBuffer");
     }
-    if (m_vertexDeltas.empty()) {
-        m_vertexDeltas.resize(numVertices);
-        glGenBuffers(1, &m_sdefBuffer);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_sdefBuffer);
-        ByteArray bytes(numVertices * sizeof(bx::simd128_t) * 3);
-        auto sdefPtr = reinterpret_cast<bx::simd128_t *>(bytes.data());
-        for (nanoem_rsize_t i = 0; i < numVertices; i++) {
-            const nanoem_model_vertex_t *vertexPtr = vertices[i];
-            model::Vertex *vertex = model::Vertex::cast(vertexPtr);
-            const nanoem_rsize_t offset = i * 3;
-            m_vertexDeltas[i] = vertex;
-            memcpy(&sdefPtr[offset + 0], nanoemModelVertexGetSdefC(vertexPtr), sizeof(*sdefPtr));
-            memcpy(&sdefPtr[offset + 1], nanoemModelVertexGetSdefR0(vertexPtr), sizeof(*sdefPtr));
-            memcpy(&sdefPtr[offset + 2], nanoemModelVertexGetSdefR1(vertexPtr), sizeof(*sdefPtr));
-        }
-        glBufferData(GL_SHADER_STORAGE_BUFFER, bytes.size(), bytes.data(), GL_STATIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    if (m_inputBufferObject == 0) {
+        createInputBuffer(desc, error);
     }
-#if defined(SOKOL_DEBUG)
-    char markerPrefix[Inline::kMarkerStringLength], markerBuffer[Inline::kMarkerStringLength];
-    StringUtils::format(markerPrefix, sizeof(markerPrefix), "Models/%s/Compute", m_model->canonicalNameConstString());
-    StringUtils::format(markerBuffer, sizeof(markerBuffer), "%s/InputBuffer", markerPrefix);
-    glObjectLabel(GL_BUFFER, m_inputBuffer, -1, markerBuffer);
-    StringUtils::format(markerBuffer, sizeof(markerBuffer), "%s/MatrixBuffer", markerPrefix);
-    glObjectLabel(GL_BUFFER, m_matrixBuffer, -1, markerBuffer);
-    StringUtils::format(markerBuffer, sizeof(markerBuffer), "%s/VertexBuffer", markerPrefix);
-    glObjectLabel(GL_BUFFER, m_vertexDeltaBuffer, -1, markerBuffer);
-    StringUtils::format(markerBuffer, sizeof(markerBuffer), "%s/SdefBuffer", markerPrefix);
-    glObjectLabel(GL_BUFFER, m_sdefBuffer, -1, markerBuffer);
-    StringUtils::format(markerBuffer, sizeof(markerBuffer), "%s/Arguments", markerPrefix);
-    glObjectLabel(GL_BUFFER, m_argumentBuffer, -1, markerBuffer);
-#endif
+    if (m_outputBufferObjects[bufferIndex] == 0) {
+        createOutputBuffer(desc, bufferIndex, error);
+    }
+    if (m_vertexBufferObject == 0) {
+        createVertexBuffer(error);
+    }
+    if (m_sdefBufferObject == 0) {
+        createSdefBuffer(error);
+    }
     sg_buffer_desc d(desc);
-    d.gl_buffers[0] = d.gl_buffers[1] = m_outputBuffers[bufferIndex];
+    d.gl_buffers[0] = d.gl_buffers[1] = m_outputBufferObjects[bufferIndex];
     d.data.ptr = nullptr;
     sg_buffer buffer = m_buffer = sg::make_buffer(&d);
     return buffer;
@@ -249,47 +209,44 @@ void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) noexcept
 {
     sg::destroy_buffer(value);
-    GLuint &outputBuffer = m_outputBuffers[bufferIndex];
-    glDeleteBuffers(1, &outputBuffer);
-    outputBuffer = 0;
+    destroyBufferObject(m_outputBufferObjects[bufferIndex]);
 }
 
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::execute(int bufferIndex)
 {
+    Error error;
+    nanoem_rsize_t numVertices;
+    nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
+    updateMatrixBuffer(error);
+    updateMorphWeightBuffer(error);
     glUseProgram(m_parent->m_program);
     {
         struct Argument {
             nanoem_u32_t m_numVertices;
+            nanoem_u32_t m_numMaxMorphItems;
             nanoem_f32_t m_edgeScaleFactor;
-            nanoem_u8_t m_padding[8];
-        } args = {};
-        args.m_numVertices = Inline::saturateInt32U(m_vertexDeltas.size()),
-        args.m_edgeScaleFactor = m_model->edgeSize();
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_argumentBuffer);
+            nanoem_u32_t m_padding;
+        } args = {
+            Inline::saturateInt32U(numVertices),
+            Inline::saturateInt32U(m_numMaxMorphItems),
+            m_model->edgeSize(),
+            0,
+        };
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_argumentBufferObject);
         glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(args), &args);
-        glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_argumentBuffer);
+        glBindBufferBase(GL_UNIFORM_BUFFER, 0, m_argumentBufferObject);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
-    {
-        BatchUpdateMatrixBufferRunner runner(&m_matrixBufferData, m_bones.data());
-        runner.execute(m_bones.size());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_matrixBuffer);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, m_matrixBufferData.size(), m_matrixBufferData.data());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 0, m_matrixBuffer);
-    }
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, m_inputBuffer);
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_sdefBuffer);
-    {
-        BatchUpdateVertexDeltaBufferRunner runner(&m_vertexDeltaBufferData, m_vertexDeltas.data());
-        runner.execute(m_vertexDeltas.size());
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, m_vertexDeltaBuffer);
-        glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, m_vertexDeltaBufferData.size(), m_vertexDeltaBufferData.data());
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_vertexDeltaBuffer);
-    }
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_outputBuffers[bufferIndex]);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    const nanoem_u32_t numGroups = (Inline::saturateInt32U(m_vertexDeltas.size()) / 256) + 1;
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 1, m_matrixBufferObject);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, m_morphWeightBufferObject);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, m_inputBufferObject);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, m_sdefBufferObject);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 5, m_vertexBufferObject);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 6, m_outputBufferObjects[bufferIndex]);
+    const nanoem_u32_t numGroups = (Inline::saturateInt32U(numVertices) / 256) + 1;
     glDispatchCompute(numGroups, 1, 1);
+    glUseProgram(0);
     sg::reset_state_cache();
 }
 
@@ -325,6 +282,203 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferO
         glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_STREAM_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferObject(
+    const ByteArray &bytes, GLuint &object)
+{
+    if (!object) {
+        glGenBuffers(1, &object);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, object);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, Inline::saturateInt32(bytes.size()), bytes.data(), GL_STATIC_READ);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::updateBufferObject(const ByteArray &bytes, GLuint object)
+{
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, object);
+    glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, Inline::saturateInt32(bytes.size()), bytes.data());
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::destroyBufferObject(GLuint &object)
+{
+    if (object != 0) {
+        glDeleteBuffers(1, &object);
+        object = 0;
+    }
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::createInputBuffer(const sg_buffer_desc &desc, Error &error)
+{
+    initializeBufferObject(desc.data.ptr, Inline::saturateInt32(desc.data.size), m_inputBufferObject);
+    setDebugLabel(m_inputBufferObject, "InputBuffer");
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::createOutputBuffer(
+    const sg_buffer_desc &desc, int bufferIndex, Error &error)
+{
+    char suffix[16] = { 0 };
+    StringUtils::format(suffix, sizeof(suffix), "OutputBuffer/%d", bufferIndex);
+    initializeBufferObject(Inline::saturateInt32(desc.size), m_outputBufferObjects[bufferIndex]);
+    setDebugLabel(m_outputBufferObjects[bufferIndex], suffix);
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMatrixBuffer(Error &error)
+{
+    if (m_bones.empty()) {
+        nanoem_rsize_t numBones;
+        auto bones = nanoemModelGetAllBoneObjects(m_model->data(), &numBones);
+        if (numBones > 0) {
+            m_bones.resize(numBones);
+            for (nanoem_rsize_t i = 0; i < numBones; i++) {
+                m_bones[i] = model::Bone::cast(bones[i]);
+            }
+        }
+        else {
+            m_bones.push_back(m_model->sharedFallbackBone());
+            numBones = 1;
+        }
+        m_matrixBufferData.resize(numBones * sizeof(bx::float4x4_t));
+        createMatrixBuffer(error);
+    }
+    BatchUpdateMatrixBufferRunner runner(&m_matrixBufferData, m_bones.data());
+    runner.execute(m_bones.size());
+    updateBufferObject(m_matrixBufferData, m_matrixBufferObject);
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMorphWeightBuffer(Error &error)
+{
+    if (m_morphs.empty()) {
+        nanoem_rsize_t numMorphs;
+        auto morphs = nanoemModelGetAllMorphObjects(m_model->data(), &numMorphs);
+        m_morphs.resize(numMorphs);
+        for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+            m_morphs[i] = model::Morph::cast(morphs[i]);
+        }
+        m_morphWeightBufferData.resize(numMorphs * sizeof(nanoem_f32_t));
+        createMorphWeightBuffer(error);
+    }
+    BatchUpdateMorphWeightBufferRunner runner(&m_morphWeightBufferData, m_morphs.data());
+    runner.execute(m_morphs.size());
+    updateBufferObject(m_morphWeightBufferData, m_morphWeightBufferObject);
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::createMatrixBuffer(Error &error)
+{
+    const nanoem_rsize_t bufferSize = m_matrixBufferData.size();
+    initializeShaderStorageBufferObject(Inline::saturateInt32(bufferSize), m_matrixBufferObject);
+    setDebugLabel(m_matrixBufferObject, "MatrixBuffer");
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::createMorphWeightBuffer(Error &error)
+{
+    const nanoem_rsize_t bufferSize = m_morphWeightBufferData.size();
+    initializeShaderStorageBufferObject(Inline::saturateInt32(bufferSize), m_morphWeightBufferObject);
+    setDebugLabel(m_morphWeightBufferObject, "MorphWeightBuffer");
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::createVertexBuffer(Error &error)
+{
+    typedef tinystl::pair<const nanoem_model_morph_t *, const nanoem_model_morph_vertex_t *> VertexMorphPair;
+    typedef tinystl::vector<VertexMorphPair, TinySTLAllocator> MorphPairList;
+    tinystl::vector<MorphPairList, TinySTLAllocator> vertex2morphs;
+    nanoem_rsize_t numVertices;
+    nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
+    {
+        nanoem_rsize_t numMorphs;
+        auto morphs = nanoemModelGetAllMorphObjects(m_model->data(), &numMorphs);
+        vertex2morphs.resize(numVertices);
+        for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
+            const nanoem_model_morph_t *morphPtr = morphs[i];
+            switch (nanoemModelMorphGetType(morphPtr)) {
+            case NANOEM_MODEL_MORPH_TYPE_VERTEX: {
+                nanoem_rsize_t numItems;
+                auto items = nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
+                for (nanoem_rsize_t j = 0; j < numItems; j++) {
+                    auto itemPtr = items[j];
+                    auto vertexPtr = nanoemModelMorphVertexGetVertexObject(itemPtr);
+                    int index = nanoemModelObjectGetIndex(nanoemModelVertexGetModelObject(vertexPtr));
+                    vertex2morphs[index].push_back(
+                        tinystl::make_pair(morphPtr, static_cast<const nanoem_model_morph_vertex_t *>(itemPtr)));
+                }
+                break;
+            }
+            case NANOEM_MODEL_MORPH_TYPE_UVA1:
+            case NANOEM_MODEL_MORPH_TYPE_UVA2:
+            case NANOEM_MODEL_MORPH_TYPE_UVA3:
+            case NANOEM_MODEL_MORPH_TYPE_UVA4: {
+                break;
+            }
+            default:
+                break;
+            }
+        }
+        for (auto it = vertex2morphs.begin(), end = vertex2morphs.end(); it != end; ++it) {
+            m_numMaxMorphItems = glm::max(m_numMaxMorphItems, it->size());
+        }
+    }
+    const nanoem_rsize_t bufferSize =
+        glm::max(numVertices * m_numMaxMorphItems, nanoem_rsize_t(1)) * sizeof(bx::simd128_t);
+    nanoem_rsize_t offset = 0;
+    ByteArray vertexBufferData(bufferSize);
+    auto buffers = reinterpret_cast<bx::simd128_t *>(vertexBufferData.data());
+    for (auto it = vertex2morphs.begin(), end = vertex2morphs.end(); it != end; ++it) {
+        bx::simd128_t *item = &buffers[offset * m_numMaxMorphItems];
+        int i = 0;
+        for (auto it2 = it->begin(), end2 = it->end(); it2 != end2; ++it2, ++i) {
+            auto position = nanoemModelMorphVertexGetPosition(it2->second);
+            /* reserve index zero for non morph weight */
+            int index = nanoemModelObjectGetIndex(nanoemModelMorphGetModelObject(it2->first)) + 1;
+            item[i] = bx::simd_ld(position[0], position[1], position[2], float(index));
+        }
+        offset++;
+    }
+    initializeShaderStorageBufferObject(vertexBufferData, m_vertexBufferObject);
+    setDebugLabel(m_vertexBufferObject, "VertexBuffer");
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::createSdefBuffer(Error &error)
+{
+    nanoem_rsize_t numVertices;
+    auto vertices = nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
+    ByteArray sdefBuffer(numVertices * sizeof(bx::simd128_t) * 3);
+    auto sdefBufferPtr = reinterpret_cast<bx::simd128_t *>(sdefBuffer.data());
+    for (nanoem_rsize_t i = 0; i < numVertices; i++) {
+        const nanoem_model_vertex_t *vertexPtr = vertices[i];
+        model::Vertex *vertex = model::Vertex::cast(vertexPtr);
+        const nanoem_rsize_t offset = i * 3;
+        memcpy(&sdefBufferPtr[offset + 0], nanoemModelVertexGetSdefC(vertexPtr), sizeof(*sdefBufferPtr));
+        memcpy(&sdefBufferPtr[offset + 1], nanoemModelVertexGetSdefR0(vertexPtr), sizeof(*sdefBufferPtr));
+        memcpy(&sdefBufferPtr[offset + 2], nanoemModelVertexGetSdefR1(vertexPtr), sizeof(*sdefBufferPtr));
+    }
+    initializeShaderStorageBufferObject(sdefBuffer, m_sdefBufferObject);
+    setDebugLabel(m_sdefBufferObject, "SdefBuffer");
+}
+
+void
+OpenGLComputeShaderSkinDeformerFactory::Deformer::setDebugLabel(GLuint object, const char *suffix)
+{
+#if defined(SOKOL_DEBUG)
+    char label[Inline::kMarkerStringLength];
+    const char *name = m_model->canonicalNameConstString();
+    StringUtils::format(label, sizeof(label), "Models/%s/Compute/%s", name, suffix);
+    glObjectLabel(GL_BUFFER, object, -1, label);
+#else
+    BX_UNUSED_2(object, suffix);
+#endif /* SOKOL_DEBUG */
 }
 
 } /* namespace glfw */
