@@ -10,8 +10,10 @@
 #include "emapp/StringUtils.h"
 #include "sokol/sokol_app.h"
 
+#include "emapp/ApplicationPreference.h"
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/Error.h"
+#include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "sokol/sokol_audio.h"
@@ -207,6 +209,29 @@ BaseApplicationClient *
 ApplicationService::menubarApplicationClient()
 {
     return &m_menubarApplciationClient;
+}
+
+Project::ISkinDeformerFactory *
+ApplicationService::createSkinDeformerFactory()
+{
+    Project::ISkinDeformerFactory *factory = nullptr;
+    ApplicationPreference preference(this);
+    if (preference.isSkinDeformAcceleratorEnabled()) {
+        switch (sg::query_backend()) {
+        case SG_BACKEND_GLCORE33:
+        case SG_BACKEND_GLES3: {
+#if defined(_WIN32)
+            factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(
+                reinterpret_cast<internal ::OpenGLComputeShaderSkinDeformerFactory::PFN_GetProcAddress>(
+                    wglGetProcAddress)));
+#endif
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return factory;
 }
 
 void
