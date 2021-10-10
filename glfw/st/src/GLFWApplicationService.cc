@@ -382,7 +382,6 @@ Project::ISkinDeformerFactory *
 GLFWApplicationService::createSkinDeformerFactory()
 {
     Project::ISkinDeformerFactory *factory = nullptr;
-#if !defined(__APPLE__)
     ApplicationPreference preference(this);
     if (preference.isSkinDeformAcceleratorEnabled()) {
         if (glDispatchCompute) {
@@ -392,7 +391,6 @@ GLFWApplicationService::createSkinDeformerFactory()
             factory = nanoem_new(OpenGLTransformFeedbackSkinDeformerFactory);
         }
     }
-#endif
     return factory;
 }
 
