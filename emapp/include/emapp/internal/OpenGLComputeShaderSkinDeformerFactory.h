@@ -48,9 +48,9 @@ private:
         void execute(int bufferIndex) NANOEM_DECL_OVERRIDE;
 
     private:
-        static void initializeBufferObject(const void *data, int size, nanoem_u32_t &object);
-        static void initializeBufferObject(int size, nanoem_u32_t &object);
-        static void initializeShaderStorageBufferObject(int size, nanoem_u32_t &object);
+        static void initializeBufferObject(const void *data, nanoem_rsize_t size, nanoem_u32_t &object);
+        static void initializeBufferObject(nanoem_rsize_t size, nanoem_u32_t &object);
+        static void initializeShaderStorageBufferObject(nanoem_rsize_t size, nanoem_u32_t &object);
         static void initializeShaderStorageBufferObject(const ByteArray &bytes, nanoem_u32_t &object);
         static void updateBufferObject(const ByteArray &bytes, nanoem_u32_t object);
         static void destroyBufferObject(nanoem_u32_t &object) NANOEM_DECL_NOEXCEPT;

@@ -322,35 +322,38 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::execute(int bufferIndex)
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(const void *data, int size, nanoem_u32_t &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(
+    const void *data, nanoem_rsize_t size, nanoem_u32_t &object)
 {
     if (!object) {
+        const int innerSize = Inline::saturateInt32(size);
         glGenBuffers(1, &object);
         glBindBuffer(GL_ARRAY_BUFFER, object);
-        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_READ);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+        glBufferData(GL_ARRAY_BUFFER, innerSize, nullptr, GL_STATIC_READ);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, innerSize, data);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(int size, nanoem_u32_t &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeBufferObject(nanoem_rsize_t size, nanoem_u32_t &object)
 {
     if (!object) {
         glGenBuffers(1, &object);
         glBindBuffer(GL_ARRAY_BUFFER, object);
-        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STREAM_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, Inline::saturateInt32(size), nullptr, GL_STREAM_DRAW);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferObject(int size, nanoem_u32_t &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::initializeShaderStorageBufferObject(
+    nanoem_rsize_t size, nanoem_u32_t &object)
 {
     if (!object) {
         glGenBuffers(1, &object);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, object);
-        glBufferData(GL_SHADER_STORAGE_BUFFER, size, nullptr, GL_STREAM_DRAW);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, Inline::saturateInt32(size), nullptr, GL_STREAM_DRAW);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
     }
 }
