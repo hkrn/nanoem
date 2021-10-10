@@ -22,7 +22,7 @@ class Vertex;
 
 namespace internal {
 
-class OpenGLComputeShaderSkinDeformerFactory NANOEM_DECL_NOEXCEPT : public Project::ISkinDeformerFactory, private NonCopyable {
+class OpenGLComputeShaderSkinDeformerFactory NANOEM_DECL_SEALED : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
     typedef void (*ProcAddress)(void);
     typedef ProcAddress (*PFN_GetProcAddress)(const char *);

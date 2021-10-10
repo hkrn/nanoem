@@ -406,6 +406,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::destroyBufferObject(nanoem_u32
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::createInputBuffer(const sg_buffer_desc &desc, Error &error)
 {
+    BX_UNUSED_1(error);
     initializeBufferObject(desc.data.ptr, Inline::saturateInt32(desc.data.size), m_inputBufferObject);
     setDebugLabel(m_inputBufferObject, "InputBuffer");
 }
@@ -414,6 +415,7 @@ void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::createOutputBuffer(
     const sg_buffer_desc &desc, int bufferIndex, Error &error)
 {
+    BX_UNUSED_1(error);
     char suffix[16] = { 0 };
     StringUtils::format(suffix, sizeof(suffix), "OutputBuffer/%d", bufferIndex);
     initializeBufferObject(Inline::saturateInt32(desc.size), m_outputBufferObjects[bufferIndex]);
@@ -423,6 +425,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createOutputBuffer(
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMatrixBuffer(Error &error)
 {
+    BX_UNUSED_1(error);
     if (m_bones.empty()) {
         nanoem_rsize_t numBones;
         nanoem_model_bone_t *const *bones = nanoemModelGetAllBoneObjects(m_model->data(), &numBones);
@@ -447,6 +450,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMatrixBuffer(Error &erro
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMorphWeightBuffer(Error &error)
 {
+    BX_UNUSED_1(error);
     if (m_morphs.empty()) {
         nanoem_rsize_t numMorphs;
         nanoem_model_morph_t *const *morphs = nanoemModelGetAllMorphObjects(m_model->data(), &numMorphs);
@@ -465,6 +469,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMorphWeightBuffer(Error 
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::createMatrixBuffer(Error &error)
 {
+    BX_UNUSED_1(error);
     const nanoem_rsize_t bufferSize = m_matrixBufferData.size();
     initializeShaderStorageBufferObject(Inline::saturateInt32(bufferSize), m_matrixBufferObject);
     setDebugLabel(m_matrixBufferObject, "MatrixBuffer");
@@ -481,6 +486,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createMorphWeightBuffer(Error 
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::createVertexBuffer(Error &error)
 {
+    BX_UNUSED_1(error);
     typedef tinystl::pair<const nanoem_model_morph_t *, const nanoem_model_morph_vertex_t *> VertexMorphPair;
     typedef tinystl::vector<VertexMorphPair, TinySTLAllocator> MorphPairList;
     tinystl::vector<MorphPairList, TinySTLAllocator> vertex2morphs;
@@ -545,13 +551,13 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createVertexBuffer(Error &erro
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::createSdefBuffer(Error &error)
 {
+    BX_UNUSED_1(error);
     nanoem_rsize_t numVertices;
     nanoem_model_vertex_t *const *vertices = nanoemModelGetAllVertexObjects(m_model->data(), &numVertices);
     ByteArray sdefBuffer(numVertices * sizeof(bx::simd128_t) * 3);
     bx::simd128_t *sdefBufferPtr = reinterpret_cast<bx::simd128_t *>(sdefBuffer.data());
     for (nanoem_rsize_t i = 0; i < numVertices; i++) {
         const nanoem_model_vertex_t *vertexPtr = vertices[i];
-        model::Vertex *vertex = model::Vertex::cast(vertexPtr);
         const nanoem_rsize_t offset = i * 3;
         memcpy(&sdefBufferPtr[offset + 0], nanoemModelVertexGetSdefC(vertexPtr), sizeof(*sdefBufferPtr));
         memcpy(&sdefBufferPtr[offset + 1], nanoemModelVertexGetSdefR0(vertexPtr), sizeof(*sdefBufferPtr));
