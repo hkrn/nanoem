@@ -6,7 +6,6 @@
 
 #include "GLFWApplicationService.h"
 
-#include "OpenGLComputeShaderSkinDeformerFactory.h"
 #include "OpenGLTransformFeedbackSkinDeformerFactory.h"
 #include "SoundIOAudioPlayer.h"
 
@@ -16,6 +15,7 @@
 #include "emapp/StateController.h"
 #include "emapp/StringUtils.h"
 #include "emapp/internal/ImGuiWindow.h"
+#include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "GLFW/glfw3.h"
@@ -385,7 +385,7 @@ GLFWApplicationService::createSkinDeformerFactory()
     ApplicationPreference preference(this);
     if (preference.isSkinDeformAcceleratorEnabled()) {
         if (glDispatchCompute) {
-            factory = nanoem_new(OpenGLComputeShaderSkinDeformerFactory(glfwGetProcAddress));
+            factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(glfwGetProcAddress));
         }
         else {
             factory = nanoem_new(OpenGLTransformFeedbackSkinDeformerFactory);

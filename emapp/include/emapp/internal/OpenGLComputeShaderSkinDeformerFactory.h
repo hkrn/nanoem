@@ -5,8 +5,8 @@
  */
 
 #pragma once
-#ifndef NANOEM_EMAPP_GLFW_OPENGLCOMPUTESHADERSKINDEFORMERFACTORY_H_
-#define NANOEM_EMAPP_GLFW_OPENGLCOMPUTESHADERSKINDEFORMERFACTORY_H_
+#ifndef NANOEM_EMAPP_INTERNAL_OPENGLCOMPUTESHADERSKINDEFORMERFACTORY_H_
+#define NANOEM_EMAPP_INTERNAL_OPENGLCOMPUTESHADERSKINDEFORMERFACTORY_H_
 
 #include "emapp/Project.h"
 #include "emapp/model/ISkinDeformer.h"
@@ -18,34 +18,34 @@ class Model;
 namespace model {
 class Bone;
 class Vertex;
-}
+} /* namespace model */
 
-namespace glfw {
+namespace internal {
 
-class OpenGLComputeShaderSkinDeformerFactory : public Project::ISkinDeformerFactory, private NonCopyable {
+class OpenGLComputeShaderSkinDeformerFactory NANOEM_DECL_NOEXCEPT : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
-    using ProcAddress = void (*)(void);
-    using PFN_GetProcAddress = ProcAddress (*)(const char *);
-    using BoneList = tinystl::vector<model::Bone *, TinySTLAllocator>;
-    using MorphList = tinystl::vector<model::Morph *, TinySTLAllocator>;
+    typedef void (*ProcAddress)(void);
+    typedef ProcAddress (*PFN_GetProcAddress)(const char *);
+    typedef tinystl::vector<model::Bone *, TinySTLAllocator> BoneList;
+    typedef tinystl::vector<model::Morph *, TinySTLAllocator> MorphList;
 
     OpenGLComputeShaderSkinDeformerFactory(PFN_GetProcAddress func);
-    ~OpenGLComputeShaderSkinDeformerFactory() noexcept override;
+    ~OpenGLComputeShaderSkinDeformerFactory() NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
-    model::ISkinDeformer *create(Model *model) override;
-    void begin() override;
-    void commit() override;
+    model::ISkinDeformer *create(Model *model) NANOEM_DECL_OVERRIDE;
+    void begin() NANOEM_DECL_OVERRIDE;
+    void commit() NANOEM_DECL_OVERRIDE;
 
 private:
     class Deformer : public model::ISkinDeformer, private NonCopyable {
     public:
         Deformer(OpenGLComputeShaderSkinDeformerFactory *parent, Model *model);
-        ~Deformer() noexcept override;
+        ~Deformer() NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
-        sg_buffer create(const sg_buffer_desc &desc, int bufferIndex) override;
-        void rebuildAllBones() override;
-        void destroy(sg_buffer value, int bufferIndex) noexcept override;
-        void execute(int bufferIndex) override;
+        sg_buffer create(const sg_buffer_desc &desc, int bufferIndex) NANOEM_DECL_OVERRIDE;
+        void rebuildAllBones() NANOEM_DECL_OVERRIDE;
+        void destroy(sg_buffer value, int bufferIndex) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+        void execute(int bufferIndex) NANOEM_DECL_OVERRIDE;
 
     private:
         static void initializeBufferObject(const void *data, int size, nanoem_u32_t &object);
@@ -53,7 +53,7 @@ private:
         static void initializeShaderStorageBufferObject(int size, nanoem_u32_t &object);
         static void initializeShaderStorageBufferObject(const ByteArray &bytes, nanoem_u32_t &object);
         static void updateBufferObject(const ByteArray &bytes, nanoem_u32_t object);
-        static void destroyBufferObject(nanoem_u32_t &object) noexcept;
+        static void destroyBufferObject(nanoem_u32_t &object) NANOEM_DECL_NOEXCEPT;
 
         void createInputBuffer(const sg_buffer_desc &desc, Error &error);
         void createOutputBuffer(const sg_buffer_desc &desc, int bufferIndex, Error &error);
@@ -67,25 +67,25 @@ private:
 
         OpenGLComputeShaderSkinDeformerFactory *m_parent;
         Model *m_model;
-        sg_buffer m_buffer = { SG_INVALID_ID };
+        sg_buffer m_buffer;
         BoneList m_bones;
         MorphList m_morphs;
         ByteArray m_matrixBufferData;
         ByteArray m_morphWeightBufferData;
-        nanoem_u32_t m_inputBufferObject = 0;
-        nanoem_u32_t m_matrixBufferObject = 0;
-        nanoem_u32_t m_morphWeightBufferObject = 0;
-        nanoem_u32_t m_vertexBufferObject = 0;
-        nanoem_u32_t m_sdefBufferObject = 0;
-        nanoem_u32_t m_argumentBufferObject = 0;
-        nanoem_u32_t m_outputBufferObjects[2] = { 0, 0 };
-        nanoem_rsize_t m_numMaxMorphItems = 0;
+        nanoem_u32_t m_inputBufferObject;
+        nanoem_u32_t m_matrixBufferObject;
+        nanoem_u32_t m_morphWeightBufferObject;
+        nanoem_u32_t m_vertexBufferObject;
+        nanoem_u32_t m_sdefBufferObject;
+        nanoem_u32_t m_argumentBufferObject;
+        nanoem_u32_t m_outputBufferObjects[2];
+        nanoem_rsize_t m_numMaxMorphItems;
     };
 
     nanoem_u32_t m_program = 0;
 };
 
-} /* namespace glfw */
+} /* namespace internal */
 } /* namespace nanoem */
 
-#endif /* NANOEM_EMAPP_GLFW_OPENGLCOMPUTESHADERSKINDEFORMERFACTORY_H_ */
+#endif /* NANOEM_EMAPP_INTERNAL_OPENGLCOMPUTESHADERSKINDEFORMERFACTORY_H_ */
