@@ -16,6 +16,7 @@
 #include "GL/gl3w.h"
 #include "GLFW/glfw3.h"
 
+#include "bx/commandline.h"
 #include "bx/os.h"
 
 namespace nanoem {
@@ -45,8 +46,9 @@ buildFileFilter(const StringList &allowedExtensions, String &filter)
 
 } /* namespace anonymous */
 
-MainWindow::MainWindow(GLFWApplicationService *service, GLFWApplicationClient *client)
-    : m_service(service)
+MainWindow::MainWindow(const bx::CommandLine *cmd, GLFWApplicationService *service, GLFWApplicationClient *client)
+    : m_cmd(cmd)
+    , m_service(service)
     , m_client(client)
 {
     m_client->addDisableCursorEventListener(

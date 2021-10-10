@@ -82,7 +82,7 @@ runMain(int argc, const char *const *argv)
         glfw::GLFWApplicationClient::Bridge bridge;
         glfw::GLFWApplicationClient client(&bridge);
         glfw::GLFWApplicationService service(config, &bridge);
-        glfw::MainWindow window(&service, &client);
+        glfw::MainWindow window(&command, &service, &client);
         if (window.initialize()) {
             client.sendLoadAllDecoderPluginsMessage(pluginURIs);
             client.sendLoadAllEncoderPluginsMessage(pluginURIs);

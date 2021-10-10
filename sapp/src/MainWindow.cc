@@ -6,6 +6,7 @@
 
 #include "MainWindow.h"
 
+#include "bx/commandline.h"
 #include "bx/os.h"
 #include "emapp/StringUtils.h"
 
@@ -14,8 +15,9 @@
 namespace nanoem {
 namespace sapp {
 
-MainWindow::MainWindow(const JSON_Value *root)
-    : m_client(&m_bridge)
+MainWindow::MainWindow(const bx::CommandLine *cmd, const JSON_Value *root)
+    : m_cmd(cmd)
+    , m_client(&m_bridge)
     , m_service(root, &m_bridge)
     , m_lastCursorPosition(0)
     , m_movingCursorPosition(0)

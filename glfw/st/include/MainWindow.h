@@ -16,6 +16,7 @@
 struct GLFWwindow;
 
 namespace bx {
+class CommandLine;
 class Semaphore;
 }
 
@@ -27,7 +28,7 @@ class GLFWApplicationService;
 
 class MainWindow final {
 public:
-    MainWindow(GLFWApplicationService *service, GLFWApplicationClient *client);
+    MainWindow(const bx::CommandLine *cmd, GLFWApplicationService *service, GLFWApplicationClient *client);
     ~MainWindow();
 
     bool initialize();
@@ -51,6 +52,7 @@ private:
     void setTitle(const URI &fileURI);
     void destroyWindow();
 
+    const bx::CommandLine *m_cmd = nullptr;
     GLFWApplicationService *m_service = nullptr;
     GLFWApplicationClient *m_client = nullptr;
     GLFWwindow *m_window = nullptr;

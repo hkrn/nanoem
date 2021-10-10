@@ -70,7 +70,7 @@ ApplicationState::initialize()
     json_object_dotset_string(root, "plugin.effect.path", effectPluginPath.c_str());
     json_object_dotset_string(root, "project.tmp.path", tempPath.getCPtr());
     json_object_dotset_string(root, "project.locale", localeBuffer);
-    m_window = new sapp::MainWindow(m_config);
+    m_window = new sapp::MainWindow(&m_command, m_config);
     m_window->initialize();
 }
 
