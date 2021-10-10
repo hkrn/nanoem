@@ -2115,6 +2115,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
             URIList plugins(self->cachedAggregateAllPlugins());
             self->m_client->sendLoadAllModelPluginsMessage(plugins);
             self->m_client->sendLoadAllMotionPluginsMessage(plugins);
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
             if (cmd->hasArg("bootstrap-project-from-clipboard") && IsClipboardFormatAvailable(CF_UNICODETEXT)) {
                 HANDLE clipboard = nullptr;
                 if (OpenClipboard(windowHandle) && (clipboard = GetClipboardData(CF_UNICODETEXT))) {
@@ -2180,6 +2181,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
                     self->m_client->sendRecoveryMessage(fileURI);
                 }
             }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
             DWORD processId = GetCurrentProcessId();
             self->m_processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, processId);
             if (self->m_processHandle != nullptr) {
