@@ -5,6 +5,11 @@
  */
 
 Texture2D u_matricesTexture : register(t0);
+Texture2D u_morphWeightTexture : register(t1);
+Texture2D u_verticesTexture : register(t2);
+Texture2D u_sdefTexture : register(t3);
+
+uniform float4 u_args;
 
 static void
 getBufferTextureCoord(uint width, uint height, uint index, out int3 coord)
@@ -32,11 +37,28 @@ makeMatrix(float index)
     return transpose(float4x4(x, y, z, w));
 }
 
-#include "nanoem/skinning.hlsl"
+static float3
+makeVertexPositionDelta(uint index)
+{
+    uint numMorphDepths = uint(u_args.y);
+    uint vertexTextureWidth, vertexTextureHeight, morphWeightTextureWidth, morphWeightTextureHeight;
+	u_verticesTexture.GetDimensions(vertexTextureWidth, vertexTextureHeight);
+	u_morphWeightTexture.GetDimensions(morphWeightTextureWidth, morphWeightTextureHeight);
+    float3 vertexPositionDelta = 0;
+    for (uint i = 0; i < numMorphDepths; i++) {
+        uint offset = index * numMorphDepths + i;
+    	int3 coord;
+        getBufferTextureCoord(vertexTextureWidth, vertexTextureHeight, offset, coord);
+        float4 value = u_verticesTexture.Load(coord);
+        uint morphIndex = uint(value.w);
+        getBufferTextureCoord(morphWeightTextureWidth, morphWeightTextureHeight, morphIndex, coord);
+        float weight = u_morphWeightTexture.Load(coord);
+        vertexPositionDelta += value.xyz * weight;
+    }
+    return vertexPositionDelta;
+}
 
-Texture2D u_verticesTexture : register(t1);
-Texture2D u_sdefTexture : register(t2);
-uniform float u_edgeScaleFactor;
+#include "nanoem/skinning.hlsl"
 
 struct vs_input_t {
     float4 position : SV_POSITION;
@@ -92,11 +114,9 @@ nanoemVSMain(vs_input_t input)
     getBufferTextureCoord(width, height, vertexIndex + 2, coord);
     float4 sdefR1 = u_sdefTexture.Load(coord);
     SdefUnit sdef = { sdefC, sdefR0, sdefR1 };
-	u_verticesTexture.GetDimensions(width, height);
-    getBufferTextureCoord(width, height, vertexIndex, coord);
-    float3 vertexPositionDelta = u_verticesTexture.Load(coord).xyz;
+    float3 vertexPositionDelta = makeVertexPositionDelta(vertexIndex);
     performSkinning(sdef, vertexPositionDelta, unit);
-    unit.m_edge.xyz = unit.m_position.xyz + (unit.m_normal.xyz * unit.m_info.xxx) * u_edgeScaleFactor.xxx;
+    unit.m_edge.xyz = unit.m_position.xyz + (unit.m_normal.xyz * unit.m_info.xxx) * u_args.xxx;
     vs_output_t output;
 	output.sv_position = output.position = unit.m_position;
     output.normal = unit.m_normal;
