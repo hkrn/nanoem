@@ -126,6 +126,22 @@ MainWindow::initialize()
                 desc.m_transportSendEnvelope = nullptr;
                 desc.m_transportUserData = nullptr;
                 self->m_sentryDllHandle = BaseApplicationService::openSentryDll(desc);
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
+                auto cmd = self->m_cmd;
+                if (cmd->hasArg("bootstrap-project")) {
+                    const char *path = cmd->findOption("bootstrap-project");
+#if defined(_WIN32)
+                    MutableWideString ws;
+                    MutableString ms;
+                    StringUtils::getWideCharString(cmd->findOption("bootstrap-project"), ws, 932);
+                    StringUtils::getMultiBytesString(ws.data(), ms);
+                    const URI fileURI(URI::createFromFilePath(ms.data()));
+#else
+                    const URI fileURI(URI::createFromFilePath(path));
+#endif
+                    self->m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
+                }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
                 self->m_client->sendActivateMessage();
                 glfwShowWindow(self->m_window);
             },
