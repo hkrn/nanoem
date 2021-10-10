@@ -34,6 +34,7 @@ private:
 
     ApplicationClient m_menubarApplciationClient;
     ApplicationClient::Bridge *m_bridge;
+    void *m_dllHandle = nullptr;
 };
 
 } /* namespace sapp */
