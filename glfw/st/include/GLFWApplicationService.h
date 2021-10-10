@@ -43,7 +43,7 @@ private:
     bool isRendererAvailable(const char *value) const noexcept override;
     void handleInitializeApplication() override;
     void sendEventMessage(const Nanoem__Application__Event *event) override;
-    void presentDefaultPass(const Project *project);
+    void presentDefaultPass(const Project *project) override;
 
     void updateAllMonitors();
 
