@@ -364,7 +364,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::updateMorphWeightBuffer(Error 
         for (nanoem_rsize_t i = 0; i < numMorphs; i++) {
             m_morphs[i] = model::Morph::cast(morphs[i]);
         }
-        m_morphWeightBufferData.resize(numMorphs * sizeof(nanoem_f32_t));
+        m_morphWeightBufferData.resize((numMorphs + 1) * sizeof(nanoem_f32_t));
         createMorphWeightBuffer(error);
     }
     BatchUpdateMorphWeightBufferRunner runner(&m_morphWeightBufferData, m_morphs.data());
