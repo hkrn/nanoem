@@ -100,7 +100,7 @@ OpenGLComputeShaderSkinDeformerFactory::OpenGLComputeShaderSkinDeformerFactory()
 {
 }
 
-OpenGLComputeShaderSkinDeformerFactory::~OpenGLComputeShaderSkinDeformerFactory()
+OpenGLComputeShaderSkinDeformerFactory::~OpenGLComputeShaderSkinDeformerFactory() noexcept
 {
     if (m_program) {
         glDeleteProgram(m_program);
@@ -162,7 +162,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::Deformer(OpenGLComputeShaderSk
 {
 }
 
-OpenGLComputeShaderSkinDeformerFactory::Deformer::~Deformer()
+OpenGLComputeShaderSkinDeformerFactory::Deformer::~Deformer() noexcept
 {
     destroyBufferObject(m_inputBufferObject);
     destroyBufferObject(m_matrixBufferObject);
@@ -305,7 +305,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::updateBufferObject(const ByteA
 }
 
 void
-OpenGLComputeShaderSkinDeformerFactory::Deformer::destroyBufferObject(GLuint &object)
+OpenGLComputeShaderSkinDeformerFactory::Deformer::destroyBufferObject(GLuint &object) noexcept
 {
     if (object != 0) {
         glDeleteBuffers(1, &object);

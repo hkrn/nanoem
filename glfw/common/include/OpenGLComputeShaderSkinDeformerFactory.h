@@ -30,7 +30,7 @@ public:
     using MorphList = tinystl::vector<model::Morph *, TinySTLAllocator>;
 
     OpenGLComputeShaderSkinDeformerFactory();
-    ~OpenGLComputeShaderSkinDeformerFactory() override;
+    ~OpenGLComputeShaderSkinDeformerFactory() noexcept override;
 
     model::ISkinDeformer *create(Model *model) override;
     void begin() override;
@@ -40,7 +40,7 @@ private:
     class Deformer : public model::ISkinDeformer, private NonCopyable {
     public:
         Deformer(OpenGLComputeShaderSkinDeformerFactory *parent, Model *model);
-        ~Deformer() override;
+        ~Deformer() noexcept override;
 
         sg_buffer create(const sg_buffer_desc &desc, int bufferIndex) override;
         void rebuildAllBones() override;
@@ -53,7 +53,7 @@ private:
         static void initializeShaderStorageBufferObject(int size, GLuint &object);
         static void initializeShaderStorageBufferObject(const ByteArray &bytes, GLuint &object);
         static void updateBufferObject(const ByteArray &bytes, GLuint object);
-        static void destroyBufferObject(GLuint &object);
+        static void destroyBufferObject(GLuint &object) noexcept;
 
         void createInputBuffer(const sg_buffer_desc &desc, Error &error);
         void createOutputBuffer(const sg_buffer_desc &desc, int bufferIndex, Error &error);
