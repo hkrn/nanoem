@@ -50,6 +50,7 @@ function(compile_vertex_shader_spirv _source _include_path _intermediate_path _o
     add_custom_command(OUTPUT ${intermediate_spirv_vs_filename}
                        COMMAND ${GLSLANG_PATH}
                          -I${_include_path}
+                         $<$<BOOL:${NANOEM_ENABLE_SDEF}>:-DNANOEM_ENABLE_SDEF>
                          ${glslang_vertex_shader_options}
                          -o ${intermediate_spirv_vs_filename}
                          ${source}
@@ -62,6 +63,7 @@ function(compile_vertex_shader_spirv _source _include_path _intermediate_path _o
     add_custom_command(OUTPUT ${intermediate_spirv_vs_filename}
                        COMMAND ${GLSLANG_PATH}
                          -I${_include_path}
+                         $<$<BOOL:${NANOEM_ENABLE_SDEF}>:-DNANOEM_ENABLE_SDEF>
                          ${glslang_vertex_shader_options}
                          -o ${intermediate_spirv_vs_filename}
                          ${source}

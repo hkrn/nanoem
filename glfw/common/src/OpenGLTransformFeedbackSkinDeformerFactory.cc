@@ -175,14 +175,18 @@ void main()
         glTransformFeedbackVaryings(
             program, BX_COUNTOF(kTransformFeedbackOutput), kTransformFeedbackOutput, GL_INTERLEAVED_ATTRIBS);
         glLinkProgram(program);
-        m_argumentUniformLocation = glGetUniformLocation(program, "_Global");
-        m_matrixTextureLocation = glGetUniformLocation(program, "SPIRV_Cross_Combinedu_matricesTextureSPIRV_Cross_DummySampler");
-        m_morphWeightTextureLocation = glGetUniformLocation(program, "SPIRV_Cross_Combinedu_morphWeightTextureSPIRV_Cross_DummySampler");
-        m_sdefTextureLocation = glGetUniformLocation(program, "SPIRV_Cross_Combinedu_sdefTextureSPIRV_Cross_DummySampler");
-        m_vertexTextureLocation = glGetUniformLocation(program, "SPIRV_Cross_Combinedu_verticesTextureSPIRV_Cross_DummySampler");
         GLint result;
         glGetProgramiv(program, GL_LINK_STATUS, &result);
         if (result) {
+            m_argumentUniformLocation = glGetUniformLocation(program, "_Global");
+            m_matrixTextureLocation =
+                glGetUniformLocation(program, "SPIRV_Cross_Combinedu_matricesTextureSPIRV_Cross_DummySampler");
+            m_morphWeightTextureLocation =
+                glGetUniformLocation(program, "SPIRV_Cross_Combinedu_morphWeightTextureSPIRV_Cross_DummySampler");
+            m_sdefTextureLocation =
+                glGetUniformLocation(program, "SPIRV_Cross_Combinedu_sdefTextureSPIRV_Cross_DummySampler");
+            m_vertexTextureLocation =
+                glGetUniformLocation(program, "SPIRV_Cross_Combinedu_verticesTextureSPIRV_Cross_DummySampler");
             deformer = nanoem_new(Deformer(this, model));
             m_program = program;
         }
@@ -298,17 +302,16 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::execute(int bufferIndex)
     glEndTransformFeedback();
     glDisable(GL_RASTERIZER_DISCARD);
     glUseProgram(0);
-    sg::reset_state_cache();
 }
 
 nanoem_rsize_t 
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::alignBufferSize(nanoem_rsize_t value) NANOEM_DECL_NOEXCEPT
 {
-    const nanoem_rsize_t logicalSize = value / 16;
+    const nanoem_rsize_t logicalSize = value / sizeof(bx::simd128_t);
     const int stride = static_cast<int>(glm::ceil(glm::sqrt(logicalSize * 1.0f)));
     nanoem_rsize_t actualSize = value;
     if (stride * stride > logicalSize) {
-        actualSize = stride * stride * 16;
+        actualSize = stride * stride * sizeof(bx::simd128_t);
     }
     return actualSize;
 }
@@ -326,8 +329,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeBufferObject(
     if (!object) {
         glGenBuffers(1, &object);
         glBindBuffer(GL_ARRAY_BUFFER, object);
-        glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_STATIC_READ);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+        glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_READ);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 }

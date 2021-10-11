@@ -4,11 +4,12 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
+#include "nanoem/skinning.hlsl"
+
 Texture2D u_matricesTexture : register(t0);
 Texture2D u_morphWeightTexture : register(t1);
-Texture2D u_verticesTexture : register(t2);
-Texture2D u_sdefTexture : register(t3);
-
+Texture2D u_sdefTexture : register(t2);
+Texture2D u_verticesTexture : register(t3);
 uniform float4 u_args;
 
 static void
@@ -45,20 +46,21 @@ makeVertexPositionDelta(uint index)
 	u_verticesTexture.GetDimensions(vertexTextureWidth, vertexTextureHeight);
 	u_morphWeightTexture.GetDimensions(morphWeightTextureWidth, morphWeightTextureHeight);
     float3 vertexPositionDelta = 0;
+    [loop]
     for (uint i = 0; i < numMorphDepths; i++) {
         uint offset = index * numMorphDepths + i;
     	int3 coord;
         getBufferTextureCoord(vertexTextureWidth, vertexTextureHeight, offset, coord);
         float4 value = u_verticesTexture.Load(coord);
-        uint morphIndex = uint(value.w);
-        getBufferTextureCoord(morphWeightTextureWidth, morphWeightTextureHeight, morphIndex, coord);
-        float weight = u_morphWeightTexture.Load(coord);
-        vertexPositionDelta += value.xyz * weight;
+        uint morphIndex = uint(value.w), morphOffset1 = morphIndex / 4, morphOffset2 = morphIndex % 4;
+        getBufferTextureCoord(morphWeightTextureWidth, morphWeightTextureHeight, morphOffset1, coord);
+        float weight = u_morphWeightTexture.Load(coord)[morphOffset2];
+        if (weight != 0) {
+            vertexPositionDelta += value.xyz * weight;
+        }
     }
     return vertexPositionDelta;
 }
-
-#include "nanoem/skinning.hlsl"
 
 struct vs_input_t {
     float4 position : SV_POSITION;
@@ -104,7 +106,7 @@ nanoemVSMain(vs_input_t input)
     unit.m_weights = input.weights;
     unit.m_indices = input.indices;
 	unit.m_info = input.info;
-    uint vertexIndex = uint(unit.m_indices.y), width, height;
+    uint vertexIndex = uint(unit.m_info.z), width, height;
 	int3 coord;
 	u_sdefTexture.GetDimensions(width, height);
     getBufferTextureCoord(width, height, vertexIndex + 0, coord);
