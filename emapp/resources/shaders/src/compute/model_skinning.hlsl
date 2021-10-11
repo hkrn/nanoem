@@ -55,12 +55,15 @@ nanoemCSMain(const uint3 gid : SV_DispatchThreadID)
     SdefUnit sdef = u_sdefBuffer[index];
     float3 vertexPositionDelta = 0;
     uint numMorphDepths = c_arg.y;
+    [loop][allow_uav_condition]
     for (uint i = 0; i < numMorphDepths; i++) {
         uint offset = index * numMorphDepths + i;
         float4 value = u_vertexPositionDeltasBuffer[offset];
         float morphIndex = value.w;
         float weight = u_morphWeightBuffer[uint(morphIndex)];
-        vertexPositionDelta += value.xyz * weight;
+        if (weight != 0) {
+            vertexPositionDelta += value.xyz * weight;
+        }
     }
     performSkinning(sdef, vertexPositionDelta, unit);
     unit.m_edge.xyz = unit.m_position.xyz + (unit.m_normal.xyz * unit.m_info.xxx) * asfloat(c_arg.z);
