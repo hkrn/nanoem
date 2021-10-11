@@ -106,14 +106,14 @@ nanoemVSMain(vs_input_t input)
     unit.m_weights = input.weights;
     unit.m_indices = input.indices;
 	unit.m_info = input.info;
-    uint vertexIndex = uint(unit.m_info.z), width, height;
+    uint vertexIndex = uint(unit.m_info.z), sdefIndex = vertexIndex * 3, width, height;
 	int3 coord;
 	u_sdefTexture.GetDimensions(width, height);
-    getBufferTextureCoord(width, height, vertexIndex + 0, coord);
+    getBufferTextureCoord(width, height, sdefIndex + 0, coord);
     float4 sdefC = u_sdefTexture.Load(coord);
-    getBufferTextureCoord(width, height, vertexIndex + 1, coord);
+    getBufferTextureCoord(width, height, sdefIndex + 1, coord);
     float4 sdefR0 = u_sdefTexture.Load(coord);
-    getBufferTextureCoord(width, height, vertexIndex + 2, coord);
+    getBufferTextureCoord(width, height, sdefIndex + 2, coord);
     float4 sdefR1 = u_sdefTexture.Load(coord);
     SdefUnit sdef = { sdefC, sdefR0, sdefR1 };
     float3 vertexPositionDelta = makeVertexPositionDelta(vertexIndex);
