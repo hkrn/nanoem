@@ -22,6 +22,10 @@
 
 struct IProgressDialog;
 
+namespace bx {
+class CommandLine;
+} /* namespace bx */
+
 namespace nanoem {
 
 class ThreadedApplicationClient;

@@ -22,7 +22,7 @@ namespace sapp {
 
 class MainWindow {
 public:
-    MainWindow(const JSON_Value *root);
+    MainWindow(const bx::CommandLine *cmd, const JSON_Value *root);
     ~MainWindow() noexcept;
 
     void initialize();
@@ -47,6 +47,7 @@ private:
     void loadAllPlugins();
     void destroyWindow();
 
+    const bx::CommandLine *m_cmd;
     ApplicationClient::Bridge m_bridge;
     ApplicationClient m_client;
     ApplicationService m_service;

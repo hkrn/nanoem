@@ -4,7 +4,13 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
+#include "nanoem/skinning.hlsl"
+
 Texture2D u_matricesTexture : register(t0);
+Texture2D u_morphWeightTexture : register(t1);
+Texture2D u_sdefTexture : register(t2);
+Texture2D u_verticesTexture : register(t3);
+uniform float4 u_args;
 
 static void
 getBufferTextureCoord(uint width, uint height, uint index, out int3 coord)
@@ -32,11 +38,29 @@ makeMatrix(float index)
     return transpose(float4x4(x, y, z, w));
 }
 
-#include "nanoem/skinning.hlsl"
-
-Texture2D u_verticesTexture : register(t1);
-Texture2D u_sdefTexture : register(t2);
-uniform float u_edgeScaleFactor;
+static float3
+makeVertexPositionDelta(uint index)
+{
+    uint numMorphDepths = uint(u_args.y);
+    uint vertexTextureWidth, vertexTextureHeight, morphWeightTextureWidth, morphWeightTextureHeight;
+	u_verticesTexture.GetDimensions(vertexTextureWidth, vertexTextureHeight);
+	u_morphWeightTexture.GetDimensions(morphWeightTextureWidth, morphWeightTextureHeight);
+    float3 vertexPositionDelta = 0;
+    [loop]
+    for (uint i = 0; i < numMorphDepths; i++) {
+        uint offset = index * numMorphDepths + i;
+    	int3 coord;
+        getBufferTextureCoord(vertexTextureWidth, vertexTextureHeight, offset, coord);
+        float4 value = u_verticesTexture.Load(coord);
+        uint morphIndex = uint(value.w), morphOffset1 = morphIndex / 4, morphOffset2 = morphIndex % 4;
+        getBufferTextureCoord(morphWeightTextureWidth, morphWeightTextureHeight, morphOffset1, coord);
+        float weight = u_morphWeightTexture.Load(coord)[morphOffset2];
+        if (weight != 0) {
+            vertexPositionDelta += value.xyz * weight;
+        }
+    }
+    return vertexPositionDelta;
+}
 
 struct vs_input_t {
     float4 position : SV_POSITION;
@@ -82,21 +106,19 @@ nanoemVSMain(vs_input_t input)
     unit.m_weights = input.weights;
     unit.m_indices = input.indices;
 	unit.m_info = input.info;
-    uint vertexIndex = uint(unit.m_indices.y), width, height;
+    uint vertexIndex = uint(unit.m_info.z), sdefIndex = vertexIndex * 3, width, height;
 	int3 coord;
 	u_sdefTexture.GetDimensions(width, height);
-    getBufferTextureCoord(width, height, vertexIndex + 0, coord);
+    getBufferTextureCoord(width, height, sdefIndex + 0, coord);
     float4 sdefC = u_sdefTexture.Load(coord);
-    getBufferTextureCoord(width, height, vertexIndex + 1, coord);
+    getBufferTextureCoord(width, height, sdefIndex + 1, coord);
     float4 sdefR0 = u_sdefTexture.Load(coord);
-    getBufferTextureCoord(width, height, vertexIndex + 2, coord);
+    getBufferTextureCoord(width, height, sdefIndex + 2, coord);
     float4 sdefR1 = u_sdefTexture.Load(coord);
     SdefUnit sdef = { sdefC, sdefR0, sdefR1 };
-	u_verticesTexture.GetDimensions(width, height);
-    getBufferTextureCoord(width, height, vertexIndex, coord);
-    float3 vertexPositionDelta = u_verticesTexture.Load(coord).xyz;
+    float3 vertexPositionDelta = makeVertexPositionDelta(vertexIndex);
     performSkinning(sdef, vertexPositionDelta, unit);
-    unit.m_edge.xyz = unit.m_position.xyz + (unit.m_normal.xyz * unit.m_info.xxx) * u_edgeScaleFactor.xxx;
+    unit.m_edge.xyz = unit.m_position.xyz + (unit.m_normal.xyz * unit.m_info.xxx) * u_args.xxx;
     vs_output_t output;
 	output.sv_position = output.position = unit.m_position;
     output.normal = unit.m_normal;

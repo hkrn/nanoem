@@ -26,6 +26,7 @@ public:
 
 private:
     BaseApplicationClient *menubarApplicationClient() override;
+    Project::ISkinDeformerFactory *createSkinDeformerFactory() override;
     IAudioPlayer *createAudioPlayer() override;
     bool isRendererAvailable(const char *value) const noexcept override;
     void handleSetupGraphicsEngine(sg_desc &desc) override;
@@ -33,6 +34,7 @@ private:
 
     ApplicationClient m_menubarApplciationClient;
     ApplicationClient::Bridge *m_bridge;
+    void *m_dllHandle = nullptr;
 };
 
 } /* namespace sapp */

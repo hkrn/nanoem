@@ -385,6 +385,8 @@ struct nanoem_physics_world_t {
         m_world = 0;
         delete m_worldInfo;
         m_worldInfo = 0;
+        delete m_nullMotionState;
+        m_nullMotionState = 0;
         delete m_nullRigidBody;
         m_nullRigidBody = 0;
         delete m_gravity;

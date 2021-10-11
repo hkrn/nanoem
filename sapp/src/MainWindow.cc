@@ -6,6 +6,7 @@
 
 #include "MainWindow.h"
 
+#include "bx/commandline.h"
 #include "bx/os.h"
 #include "emapp/StringUtils.h"
 
@@ -14,8 +15,9 @@
 namespace nanoem {
 namespace sapp {
 
-MainWindow::MainWindow(const JSON_Value *root)
-    : m_client(&m_bridge)
+MainWindow::MainWindow(const bx::CommandLine *cmd, const JSON_Value *root)
+    : m_cmd(cmd)
+    , m_client(&m_bridge)
     , m_service(root, &m_bridge)
     , m_lastCursorPosition(0)
     , m_movingCursorPosition(0)
@@ -44,6 +46,14 @@ MainWindow::initialize()
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
             self->loadAllPlugins();
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
+            auto cmd = self->m_cmd;
+            if (cmd->hasArg("bootstrap-project")) {
+                const char *path = cmd->findOption("bootstrap-project");
+                const URI fileURI(URI::createFromFilePath(path));
+                self->m_client.sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
+            }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
             self->m_client.sendActivateMessage();
         },
         this, true);

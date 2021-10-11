@@ -10,8 +10,10 @@
 #include "emapp/StringUtils.h"
 #include "sokol/sokol_app.h"
 
+#include "emapp/ApplicationPreference.h"
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/Error.h"
+#include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "sokol/sokol_audio.h"
@@ -201,12 +203,51 @@ ApplicationService::ApplicationService(const JSON_Value *config, ApplicationClie
 
 ApplicationService::~ApplicationService() noexcept
 {
+    if (m_dllHandle) {
+        bx::dlclose(m_dllHandle);
+        m_dllHandle = nullptr;
+    }
 }
 
 BaseApplicationClient *
 ApplicationService::menubarApplicationClient()
 {
     return &m_menubarApplciationClient;
+}
+
+Project::ISkinDeformerFactory *
+ApplicationService::createSkinDeformerFactory()
+{
+    Project::ISkinDeformerFactory *factory = nullptr;
+    ApplicationPreference preference(this);
+    if (preference.isSkinDeformAcceleratorEnabled()) {
+        switch (sg::query_backend()) {
+        case SG_BACKEND_GLCORE33:
+        case SG_BACKEND_GLES3: {
+#if defined(_WIN32)
+            factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(
+                reinterpret_cast<internal ::OpenGLComputeShaderSkinDeformerFactory::PFN_GetProcAddress>(
+                    wglGetProcAddress)));
+#else
+            if (void *handle = bx::dlopen("libGL.so")) {
+                using PFN_glXGetProcAddress = internal::OpenGLComputeShaderSkinDeformerFactory::PFN_GetProcAddress;
+                auto func = reinterpret_cast<PFN_glXGetProcAddress>(bx::dlsym(handle, "glXGetProcAddress"));
+                if (!func) {
+                    func = reinterpret_cast<PFN_glXGetProcAddress>(bx::dlsym(handle, "glXGetProcAddressARB"));
+                }
+                if (func("glDispatchCompute")) {
+                    factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(func));
+                }
+                m_dllHandle = handle;
+            }
+#endif
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    return factory;
 }
 
 void

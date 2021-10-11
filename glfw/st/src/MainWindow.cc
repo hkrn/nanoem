@@ -16,6 +16,7 @@
 #include "GL/gl3w.h"
 #include "GLFW/glfw3.h"
 
+#include "bx/commandline.h"
 #include "bx/os.h"
 
 namespace nanoem {
@@ -45,8 +46,9 @@ buildFileFilter(const StringList &allowedExtensions, String &filter)
 
 } /* namespace anonymous */
 
-MainWindow::MainWindow(GLFWApplicationService *service, GLFWApplicationClient *client)
-    : m_service(service)
+MainWindow::MainWindow(const bx::CommandLine *cmd, GLFWApplicationService *service, GLFWApplicationClient *client)
+    : m_cmd(cmd)
+    , m_service(service)
     , m_client(client)
 {
     m_client->addDisableCursorEventListener(
@@ -124,6 +126,22 @@ MainWindow::initialize()
                 desc.m_transportSendEnvelope = nullptr;
                 desc.m_transportUserData = nullptr;
                 self->m_sentryDllHandle = BaseApplicationService::openSentryDll(desc);
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
+                auto cmd = self->m_cmd;
+                if (cmd->hasArg("bootstrap-project")) {
+                    const char *path = cmd->findOption("bootstrap-project");
+#if defined(_WIN32)
+                    MutableWideString ws;
+                    MutableString ms;
+                    StringUtils::getWideCharString(cmd->findOption("bootstrap-project"), ws, 932);
+                    StringUtils::getMultiBytesString(ws.data(), ms);
+                    const URI fileURI(URI::createFromFilePath(ms.data()));
+#else
+                    const URI fileURI(URI::createFromFilePath(path));
+#endif
+                    self->m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenProject);
+                }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
                 self->m_client->sendActivateMessage();
                 glfwShowWindow(self->m_window);
             },
@@ -310,7 +328,7 @@ bool
 MainWindow::setupWindow(String &pluginPath)
 {
     const JSON_Object *config = json_object(m_service->applicationConfiguration());
-    pluginPath.append(json_object_dotget_string(config, "glfw.path"));
+    pluginPath.append(json_object_dotget_string(config, "glfw.plugin.path"));
     glfwSetErrorCallback(handleErrorCallback);
     GLFWmonitor *monitor = glfwGetPrimaryMonitor();
     int x, y, width, height;
@@ -346,7 +364,7 @@ MainWindow::setupWindow(String &pluginPath)
         m_window = glfwCreateWindow(windowWidth, windowHeight, kWindowTitle, nullptr, nullptr);
     }
     if (m_window) {
-        pluginPath.append("/plugins/sokol_glcore33." BX_DL_EXT);
+        pluginPath.append("/sokol_glcore33." BX_DL_EXT);
     }
     else {
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -354,7 +372,7 @@ MainWindow::setupWindow(String &pluginPath)
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
         m_window = glfwCreateWindow(windowWidth, windowHeight, kWindowTitle, nullptr, nullptr);
         if (m_window) {
-            pluginPath.append("/plugins/sokol_gles3." BX_DL_EXT);
+            pluginPath.append("/sokol_gles3." BX_DL_EXT);
         }
     }
     if (m_window) {

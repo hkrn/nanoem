@@ -17,10 +17,6 @@ struct undo_command_t;
 struct Nanoem__Application__Command;
 struct Nanoem__Application__Event;
 
-namespace bx {
-class CommandLine;
-} /* namespace bx */
-
 namespace nanoem {
 
 class BaseApplicationClient;

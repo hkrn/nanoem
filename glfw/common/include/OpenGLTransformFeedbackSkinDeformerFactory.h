@@ -26,8 +26,8 @@ namespace glfw {
 
 class OpenGLTransformFeedbackSkinDeformerFactory : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
-    using BoneList = tinystl::vector<model::Bone *, TinySTLAllocator>;
-    using VertexList = tinystl::vector<model::Vertex *, TinySTLAllocator>;
+    typedef tinystl::vector<model::Bone *, TinySTLAllocator> BoneList;
+    typedef tinystl::vector<model::Morph *, TinySTLAllocator> MorphList;
 
     OpenGLTransformFeedbackSkinDeformerFactory();
     ~OpenGLTransformFeedbackSkinDeformerFactory() override;
@@ -48,31 +48,51 @@ private:
         void execute(int bufferIndex) override;
 
     private:
-        static void initializeBufferObject(const void *data, int size, GLuint &object);
-        static void initializeBufferObject(int size, GLuint &object);
-        static void initializeTextureObject(int size, GLuint &object, Vector2SI32 &s);
+        static nanoem_rsize_t alignBufferSize(nanoem_rsize_t value) NANOEM_DECL_NOEXCEPT;
+        static void reserveBufferWithAlignedSize(ByteArray &bytes);
+        static void initializeBufferObject(const void *data, nanoem_rsize_t size, nanoem_u32_t &object);
+        static void initializeBufferObject(nanoem_rsize_t size, nanoem_u32_t &object);
+        static void initializeTextureObject(nanoem_rsize_t size, nanoem_u32_t &object, Vector2SI32 &s);
+        static void initializeTextureObject(const ByteArray &bytes, nanoem_u32_t &object, Vector2SI32 &s);
+        static void updateTextureObject(const ByteArray &bytes, const Vector2SI32 &s, nanoem_u32_t object);
+        static void activateTextureUniform(nanoem_u32_t location, nanoem_u32_t object, int offset);
+        static void destroyBufferObject(nanoem_u32_t &object) NANOEM_DECL_NOEXCEPT;
+        static void destroyTextureObject(nanoem_u32_t &object) NANOEM_DECL_NOEXCEPT;
+
+        void createInputBuffer(const sg_buffer_desc &desc);
+        void createOutputBuffer(const sg_buffer_desc &desc, int bufferIndex);
+        void updateMatrixBuffer();
+        void updateMorphWeightBuffer();
+        void createMatrixBuffer();
+        void createMorphWeightBuffer();
+        void createVertexBuffer();
+        void createSdefBuffer();
+        void setDebugLabel(nanoem_u32_t object, nanoem_u32_t type, const char *suffix);
 
         OpenGLTransformFeedbackSkinDeformerFactory *m_parent;
         Model *m_model;
-        GLuint m_inputBuffer = 0;
-        GLuint m_matrixTexture = 0;
-        GLuint m_vertexDeltaTexture = 0;
-        GLuint m_sdefTexture = 0;
-        GLuint m_outputBuffers[2] = { 0, 0 };
-        sg_buffer m_buffer = { SG_INVALID_ID };
-        Vector2SI32 m_matrixTextureSize = Vector2SI32(0);
-        Vector2SI32 m_vertexDeltaTextureSize = Vector2SI32(0);
+        nanoem_u32_t m_inputBufferObject;
+        nanoem_u32_t m_outputBufferObjects[2];
+        nanoem_u32_t m_matrixTextureObject;
+        nanoem_u32_t m_morphWeightTextureObject;
+        nanoem_u32_t m_sdefTextureObject;
+        nanoem_u32_t m_vertexTextureObject;
+        sg_buffer m_buffer;
+        Vector2SI32 m_matrixTextureSize;
+        Vector2SI32 m_morphWeightTextureSize;
         BoneList m_bones;
-        VertexList m_vertexDeltas;
-        ByteArray m_matrixTextureData;
-        ByteArray m_vertexDeltaTextureData;
+        MorphList m_morphs;
+        ByteArray m_matrixBufferData;
+        ByteArray m_morphWeightBufferData;
+        nanoem_rsize_t m_numMaxMorphItems;
     };
 
-    GLuint m_program = 0;
-    GLint m_matrixTextureLocation = -1;
-    GLint m_vertexTextureLocation = -1;
-    GLint m_sdefTextureLocation = -1;
-    GLint m_edgeScaleFactorLocation = -1;
+    nanoem_u32_t m_program;
+    GLint m_matrixTextureLocation;
+    GLint m_morphWeightTextureLocation;
+    GLint m_sdefTextureLocation;
+    GLint m_vertexTextureLocation;
+    GLint m_argumentUniformLocation;
 };
 
 } /* namespace glfw */

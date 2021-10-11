@@ -17,13 +17,9 @@ sgx_debug_callback(GLenum source, GLenum type, GLuint eid, GLenum severity, GLsi
     _SOKOL_UNUSED(severity);
     _SOKOL_UNUSED(length);
     _SOKOL_UNUSED(user_param);
-    if (type != GL_DEBUG_TYPE_MARKER &&
-        type != GL_DEBUG_TYPE_PUSH_GROUP &&
-        type != GL_DEBUG_TYPE_POP_GROUP) {
-        SOKOL_LOG(message);
-    }
+    SOKOL_LOG(message);
 }
-#endif
+#endif /* SOKOL_DEBUG */
 
 SGX_API_DECL void APIENTRY
 sgx_setup(const sg_desc *desc)
@@ -31,10 +27,12 @@ sgx_setup(const sg_desc *desc)
     gl3wInit();
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
     if (glDebugMessageCallback) {
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, NULL, GL_TRUE);
         glDebugMessageCallback(sgx_debug_callback, NULL);
         _SG_GL_CHECK_ERROR();
     }
-#endif
+#endif /* SOKOL_DEBUG */
     sg_setup(desc);
 }
 
@@ -147,7 +145,7 @@ sgx_read_image(sg_image image,  sg_buffer buffer, void *data, size_t size)
             glGetnTexImage(target, 0, format, type, size, data);
         }
         else
-#endif
+#endif /* SOKOL_DEBUG */
         {
             _SOKOL_UNUSED(size);
             glGetTexImage(target, 0, format, type, data);
@@ -175,7 +173,7 @@ sgx_read_pass(sg_pass pass, sg_buffer buffer, void *data, size_t size)
             glReadnPixels(0, 0, image->cmn.width, image->cmn.height, format, type, size, data);
         }
         else
-#endif
+#endif /* SOKOL_DEBUG */
         {
             _SOKOL_UNUSED(size);
             glReadPixels(0, 0, image->cmn.width, image->cmn.height, format, type, data);
@@ -246,7 +244,7 @@ sgx_unmap_buffer(sg_buffer buffer, void *address)
     }
 #else
     _SOKOL_UNUSED(ptr);
-#endif
+#endif /* SOKOL_DEBUG */
 }
 
 SGX_API_DECL void APIENTRY
