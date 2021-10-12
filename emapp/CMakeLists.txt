@@ -250,6 +250,7 @@ function(nanoem_emapp_find_bimg)
                           ${BIMG_ASTC_SOURCES} ${BIMG_ASTC_CODEC_SOURCES}
                           ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/etc1/etc1.cpp
                           ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/edtaa3/edtaa3func.cpp
+                          ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/tinyexr/deps/miniz/miniz.c
                           ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/nvtt/nvtt.cpp
                           ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/nvtt/nvmath/fitting.cpp)
   nanoem_cmake_enable_lto(bimg)
@@ -264,6 +265,7 @@ function(nanoem_emapp_find_bimg)
                             ${BIMG_INCLUDE_DIR}
                             ${BIMG_THIRDPARTY_INCLUDE_DIR}
                             ${BIMG_THIRDPARTY_INCLUDE_DIR}/nvtt
+                            ${BIMG_THIRDPARTY_INCLUDE_DIR}/tinyexr/deps/miniz
                             ${BIMG_THIRDPARTY_INCLUDE_DIR}/iqa/include
                             ${BIMG_THIRDPARTY_INCLUDE_DIR}/astc-codec
                             ${BIMG_THIRDPARTY_INCLUDE_DIR}/astc-codec/include)
