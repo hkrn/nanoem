@@ -4,8 +4,6 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
-#include "nanoem/skinning.hlsl"
-
 Texture2D u_matricesTexture : register(t0);
 Texture2D u_morphWeightTexture : register(t1);
 Texture2D u_sdefTexture : register(t2);
@@ -61,6 +59,8 @@ makeVertexPositionDelta(uint index)
     }
     return vertexPositionDelta;
 }
+
+#include "nanoem/skinning.hlsl"
 
 struct vs_input_t {
     float4 position : SV_POSITION;
@@ -132,4 +132,10 @@ nanoemVSMain(vs_input_t input)
     output.indices = unit.m_indices;
 	output.info = unit.m_info;
     return output;
+}
+
+float4
+nanoemPSMain(vs_output_t input) : SV_TARGET0
+{
+    return 1.0;
 }

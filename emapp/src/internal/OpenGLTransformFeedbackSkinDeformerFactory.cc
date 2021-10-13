@@ -21,6 +21,7 @@ namespace internal {
 namespace {
 
 #include "emapp/private/shaders/model_skinning_tf_vs_glsl_es3.h"
+#include "emapp/private/shaders/model_skinning_tf_fs_glsl_es3.h"
 
 #define APIENTRYP APIENTRY *
 #define GL_ARRAY_BUFFER 0x8892
@@ -307,19 +308,11 @@ OpenGLTransformFeedbackSkinDeformerFactory::create(Model *model)
     }
     else {
         GLuint vss = glCreateShader(GL_VERTEX_SHADER);
-        const char *const vsSource = reinterpret_cast<const char *const>(g_nanoem_model_skinning_tf_fs_glsl_es3_data);
+        const char *const vsSource = reinterpret_cast<const char *const>(g_nanoem_model_skinning_tf_vs_glsl_es3_data);
         glShaderSource(vss, 1, &vsSource, nullptr);
         glCompileShader(vss);
         GLuint fss = glCreateShader(GL_FRAGMENT_SHADER);
-        const char *const fsSource = R"(#version 300 es
-precision highp float;
-out vec4 o_color;
-
-void main()
-{
-  o_color = vec4(1.0);
-}
-                                   )";
+        const char *const fsSource = reinterpret_cast<const char *const>(g_nanoem_model_skinning_tf_fs_glsl_es3_data);
         glShaderSource(fss, 1, &fsSource, nullptr);
         glCompileShader(fss);
         GLint program = glCreateProgram();
@@ -423,7 +416,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::rebuildAllBones()
 }
 
 void
-OpenGLTransformFeedbackSkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) noexcept
+OpenGLTransformFeedbackSkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) NANOEM_DECL_NOEXCEPT
 {
     sg::destroy_buffer(value);
     GLuint &outputBuffer = m_outputBufferObjects[bufferIndex];

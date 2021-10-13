@@ -30,22 +30,22 @@ public:
     typedef tinystl::vector<model::Morph *, TinySTLAllocator> MorphList;
 
     OpenGLTransformFeedbackSkinDeformerFactory(PFN_GetProcAddress func);
-    ~OpenGLTransformFeedbackSkinDeformerFactory() override;
+    ~OpenGLTransformFeedbackSkinDeformerFactory() NANOEM_DECL_OVERRIDE;
 
-    model::ISkinDeformer *create(Model *model) override;
-    void begin() override;
-    void commit() override;
+    model::ISkinDeformer *create(Model *model) NANOEM_DECL_OVERRIDE;
+    void begin() NANOEM_DECL_OVERRIDE;
+    void commit() NANOEM_DECL_OVERRIDE;
 
 private:
     class Deformer : public model::ISkinDeformer, private NonCopyable {
     public:
         Deformer(OpenGLTransformFeedbackSkinDeformerFactory *parent, Model *model);
-        ~Deformer() override;
+        ~Deformer() NANOEM_DECL_OVERRIDE;
 
-        sg_buffer create(const sg_buffer_desc &desc, int bufferIndex) override;
-        void rebuildAllBones() override;
-        void destroy(sg_buffer value, int bufferIndex) noexcept override;
-        void execute(int bufferIndex) override;
+        sg_buffer create(const sg_buffer_desc &desc, int bufferIndex) NANOEM_DECL_OVERRIDE;
+        void rebuildAllBones() NANOEM_DECL_OVERRIDE;
+        void destroy(sg_buffer value, int bufferIndex) NANOEM_DECL_NOEXCEPT_OVERRIDE;
+        void execute(int bufferIndex) NANOEM_DECL_OVERRIDE;
 
     private:
         static nanoem_rsize_t alignBufferSize(nanoem_rsize_t value) NANOEM_DECL_NOEXCEPT;

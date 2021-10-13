@@ -54,9 +54,6 @@ if(TARGET plugin_ffmpeg)
   endforeach()
 endif()
 
-add_dependencies(${NANOEM_EXECUTABLE_NAME} ${PROJECT_NAME}_glfw_shaders)
-target_include_directories(${NANOEM_EXECUTABLE_NAME} PRIVATE "${PROJECT_BINARY_DIR}/emapp/resources/include")
-
 if(LIBRARY_PATHS)
   list(REMOVE_DUPLICATES LIBRARY_PATHS)
 endif()
