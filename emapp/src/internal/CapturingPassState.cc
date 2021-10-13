@@ -34,7 +34,6 @@ namespace nanoem {
 namespace internal {
 namespace {
 
-#define STBI_WRITE_NO_STDIO
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STBIW_ASSERT(x) /* prevent _wassert confliction on win32 */
