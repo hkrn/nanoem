@@ -3,11 +3,11 @@
 This software uses below libraries.
 
   - [bimg](https://github.com/bkaradzic/bimg/)
-    - [BSDL](https://github.com/bkaradzic/bimg/blob/bfe3c683f9c628fb3fd5d71b1a80d8fbdb6044a4/LICENSE)
+    - [BSDL](https://github.com/bkaradzic/bimg/blob/6693de0e50ff7e76a22d6f37251fa2dec12168cd/LICENSE)
   - [Bullet Physics](http://bulletphysics.org)
     - [zlib](https://github.com/bulletphysics/bullet3/blob/3629df72fd924f44c25c04ba901ebe5d211cacc0/LICENSE)
   - [bx](https://github.com/bkaradzic/bx/)
-    - [BSDL](https://github.com/bkaradzic/bx/blob/7837d90865b391fd45698add941082823f5a83a6/LICENSE)
+    - [BSDL](https://github.com/bkaradzic/bx/blob/44c966116966d49513776717117445065fa7a2f6/LICENSE)
   - [debug-draw](https://github.com/glampert/debug-draw)
     - [PD](https://github.com/glampert/debug-draw/blob/fac46d3e4cd98b016272196f3b4933b1dc833b80/README.md#license)
   - [Font Awesome](http://fontawesome.io/)
@@ -59,7 +59,7 @@ This software uses below libraries.
   - [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools/)
     - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Tools/blob/4c2f34a504817cc96d3e8b0435265a743cb2038a/LICENSE)
   - [STB](https://github.com/nothings/stb/)
-    - [PD/MIT](https://github.com/nothings/stb/blob/b42009b3b9d4ca35bc703f5310eedc74f584be58/README.md#whats-the-license)
+    - [PD/MIT](https://github.com/nothings/stb/blob/af1a5bc352164740c1cc1354942b1c6b72eacb8a/README.md#whats-the-license)
   - [TBB](https://github.com/wjakob/tbb/)
     - [Apache License 2.0](https://github.com/wjakob/tbb/blob/20357d83871e4cb93b2c724fe0c337cd999fd14f/LICENSE)
   - [zlib](https://github.com/madler/zlib/)
