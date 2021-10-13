@@ -4,7 +4,7 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
-#include "OpenGLTransformFeedbackSkinDeformerFactory.h"
+#include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
 
 #include "emapp/Error.h"
 #include "emapp/ICamera.h"
@@ -17,10 +17,129 @@
 #endif /* NANOEM_ENABLE_TBB */
 
 namespace nanoem {
-namespace glfw {
+namespace internal {
 namespace {
 
 #include "emapp/private/shaders/model_skinning_tf_vs_glsl_es3.h"
+#include "emapp/private/shaders/model_skinning_tf_fs_glsl_es3.h"
+
+#define APIENTRYP APIENTRY *
+#define GL_ARRAY_BUFFER 0x8892
+#define GL_BUFFER 0x82E0
+#define GL_COMPILE_STATUS 0x8B81
+#define GL_FALSE 0
+#define GL_FLOAT 0x1406
+#define GL_FRAGMENT_SHADER 0x8B30
+#define GL_INTERLEAVED_ATTRIBS 0x8C8C
+#define GL_LINK_STATUS 0x8B82
+#define GL_NEAREST 0x2600
+#define GL_POINTS 0x0000
+#define GL_RASTERIZER_DISCARD 0x8C89
+#define GL_RGBA 0x1908
+#define GL_RGBA32F 0x8814
+#define GL_STATIC_READ 0x88E5
+#define GL_STREAM_DRAW 0x88E0
+#define GL_STREAM_READ 0x88E1
+#define GL_TEXTURE 0x1702
+#define GL_TEXTURE0 0x84C0
+#define GL_TEXTURE_2D 0x0DE1
+#define GL_TEXTURE_MAG_FILTER 0x2800
+#define GL_TEXTURE_MIN_FILTER 0x2801
+#define GL_TRANSFORM_FEEDBACK_BUFFER 0x8C8E
+#define GL_VERTEX_SHADER 0x8B31
+#define GL_UNIFORM_BUFFER 0x8A11
+
+typedef char GLchar;
+typedef int GLint;
+typedef float GLfloat;
+typedef unsigned char GLboolean;
+typedef unsigned int GLuint;
+typedef unsigned int GLenum;
+typedef int GLsizei;
+typedef ptrdiff_t GLintptr;
+typedef ptrdiff_t GLsizeiptr;
+
+typedef void(APIENTRYP PFNGLACTIVETEXTUREPROC)(GLenum texture);
+typedef void(APIENTRYP PFNGLATTACHSHADERPROC)(GLuint program, GLuint shader);
+typedef void(APIENTRYP PFNGLBEGINTRANSFORMFEEDBACKPROC)(GLenum primitiveMode);
+typedef void(APIENTRYP PFNGLBINDATTRIBLOCATIONPROC)(GLuint program, GLuint index, const GLchar *name);
+typedef void(APIENTRYP PFNGLBINDBUFFERPROC)(GLenum target, GLuint buffer);
+typedef void(APIENTRYP PFNGLBINDBUFFERBASEPROC)(GLenum target, GLuint index, GLuint buffer);
+typedef void(APIENTRYP PFNGLBUFFERDATAPROC)(GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void(APIENTRYP PFNGLBUFFERSUBDATAPROC)(GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
+typedef void(APIENTRYP PFNGLBINDTEXTUREPROC)(GLenum target, GLuint texture);
+typedef void(APIENTRYP PFNGLCOMPILESHADERPROC)(GLuint shader);
+typedef GLuint(APIENTRYP PFNGLCREATEPROGRAMPROC)(void);
+typedef GLuint(APIENTRYP PFNGLCREATESHADERPROC)(GLenum type);
+typedef void(APIENTRYP PFNGLDELETEBUFFERSPROC)(GLsizei n, const GLuint *buffers);
+typedef void(APIENTRYP PFNGLDELETEPROGRAMPROC)(GLuint program);
+typedef void(APIENTRYP PFNGLDELETESHADERPROC)(GLuint shader);
+typedef void(APIENTRYP PFNGLDELETETEXTURESPROC)(GLsizei n, const GLuint *textures);
+typedef void(APIENTRYP PFNGLDISABLEPROC)(GLenum cap);
+typedef void(APIENTRYP PFNGLDRAWARRAYSPROC)(GLenum mode, GLint first, GLsizei count);
+typedef void(APIENTRYP PFNGLENABLEPROC)(GLenum cap);
+typedef void(APIENTRYP PFNGLENABLEVERTEXATTRIBARRAYPROC)(GLuint index);
+typedef void(APIENTRYP PFNGLENDTRANSFORMFEEDBACKPROC)(void);
+typedef void(APIENTRYP PFNGLGENBUFFERSPROC)(GLsizei n, GLuint *buffers);
+typedef void(APIENTRYP PFNGLGENTEXTURESPROC)(GLsizei n, GLuint *textures);
+typedef void(APIENTRYP PFNGLGETPROGRAMIVPROC)(GLuint program, GLenum pname, GLint *params);
+typedef void(APIENTRYP PFNGLGETSHADERIVPROC)(GLuint shader, GLenum pname, GLint *params);
+typedef GLint(APIENTRYP PFNGLGETUNIFORMLOCATIONPROC)(GLuint program, const GLchar *name);
+typedef void(APIENTRYP PFNGLGETVERTEXATTRIBPOINTERVPROC)(GLuint index, GLenum pname, void **pointer);
+typedef void(APIENTRYP PFNGLLINKPROGRAMPROC)(GLuint program);
+typedef void(APIENTRYP PFNGLOBJECTLABELPROC)(GLenum identifier, GLuint name, GLsizei length, const GLchar *label);
+typedef void(APIENTRYP PFNGLSHADERSOURCEPROC)(
+    GLuint shader, GLsizei count, const GLchar *const *string, const GLint *length);
+typedef void(APIENTRYP PFNGLTEXIMAGE2DPROC)(GLenum target, GLint level, GLint internalformat, GLsizei width,
+    GLsizei height, GLint border, GLenum format, GLenum type, const void *pixels);
+typedef void(APIENTRYP PFNGLTEXPARAMETERIPROC)(GLenum target, GLenum pname, GLint param);
+typedef void(APIENTRYP PFNGLTEXSUBIMAGE2DPROC)(GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
+    GLsizei height, GLenum format, GLenum type, const void *pixels);
+typedef void(APIENTRYP PFNGLTRANSFORMFEEDBACKVARYINGSPROC)(
+    GLuint program, GLsizei count, const GLchar *const *varyings, GLenum bufferMode);
+typedef void(APIENTRYP PFNGLUNIFORM1IPROC)(GLint location, GLint v0);
+typedef void(APIENTRYP PFNGLUNIFORM4FPROC)(GLint location, GLfloat v0, GLfloat v1, GLfloat v2, GLfloat v3);
+typedef void(APIENTRYP PFNGLUSEPROGRAMPROC)(GLuint program);
+typedef void(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)(
+    GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+
+PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
+PFNGLATTACHSHADERPROC glAttachShader = nullptr;
+PFNGLBEGINTRANSFORMFEEDBACKPROC glBeginTransformFeedback = nullptr;
+PFNGLBINDATTRIBLOCATIONPROC glBindAttribLocation = nullptr;
+PFNGLBINDBUFFERPROC glBindBuffer = nullptr;
+PFNGLBINDBUFFERBASEPROC glBindBufferBase = nullptr;
+PFNGLBUFFERDATAPROC glBufferData = nullptr;
+PFNGLBUFFERSUBDATAPROC glBufferSubData = nullptr;
+PFNGLBINDTEXTUREPROC glBindTexture = nullptr;
+PFNGLCOMPILESHADERPROC glCompileShader = nullptr;
+PFNGLCREATEPROGRAMPROC glCreateProgram = nullptr;
+PFNGLCREATESHADERPROC glCreateShader = nullptr;
+PFNGLDELETEBUFFERSPROC glDeleteBuffers = nullptr;
+PFNGLDELETEPROGRAMPROC glDeleteProgram = nullptr;
+PFNGLDELETESHADERPROC glDeleteShader = nullptr;
+PFNGLDELETETEXTURESPROC glDeleteTextures = nullptr;
+PFNGLENDTRANSFORMFEEDBACKPROC glEndTransformFeedback = nullptr;
+PFNGLGENBUFFERSPROC glGenBuffers = nullptr;
+PFNGLGENTEXTURESPROC glGenTextures = nullptr;
+PFNGLDISABLEPROC glDisable = nullptr;
+PFNGLDRAWARRAYSPROC glDrawArrays = nullptr;
+PFNGLENABLEPROC glEnable = nullptr;
+PFNGLENABLEVERTEXATTRIBARRAYPROC glEnableVertexAttribArray = nullptr;
+PFNGLGETPROGRAMIVPROC glGetProgramiv = nullptr;
+PFNGLGETSHADERIVPROC glGetShaderiv = nullptr;
+PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation = nullptr;
+PFNGLLINKPROGRAMPROC glLinkProgram = nullptr;
+PFNGLOBJECTLABELPROC glObjectLabel = nullptr;
+PFNGLSHADERSOURCEPROC glShaderSource = nullptr;
+PFNGLTEXIMAGE2DPROC glTexImage2D = nullptr;
+PFNGLTEXPARAMETERIPROC glTexParameteri = nullptr;
+PFNGLTEXSUBIMAGE2DPROC glTexSubImage2D = nullptr;
+PFNGLTRANSFORMFEEDBACKVARYINGSPROC glTransformFeedbackVaryings = nullptr;
+PFNGLUNIFORM1IPROC glUniform1i = nullptr;
+PFNGLUNIFORM4FPROC glUniform4f = nullptr;
+PFNGLUSEPROGRAMPROC glUseProgram = nullptr;
+PFNGLVERTEXATTRIBPOINTERPROC glVertexAttribPointer = nullptr;
 
 static const char *kTransformFeedbackInput[] = {
     "a_position",
@@ -124,7 +243,7 @@ struct BatchUpdateMorphWeightBufferRunner {
 
 } /* namespace anonymous */
 
-OpenGLTransformFeedbackSkinDeformerFactory::OpenGLTransformFeedbackSkinDeformerFactory()
+OpenGLTransformFeedbackSkinDeformerFactory::OpenGLTransformFeedbackSkinDeformerFactory(PFN_GetProcAddress func)
     : m_program(0)
     , m_matrixTextureLocation(-1)
     , m_morphWeightTextureLocation(-1)
@@ -132,6 +251,44 @@ OpenGLTransformFeedbackSkinDeformerFactory::OpenGLTransformFeedbackSkinDeformerF
     , m_vertexTextureLocation(-1)
     , m_argumentUniformLocation(-1)
 {
+    glActiveTexture = reinterpret_cast<PFNGLACTIVETEXTUREPROC>(func("glActiveTexture"));
+    glAttachShader = reinterpret_cast<PFNGLATTACHSHADERPROC>(func("glAttachShader"));
+    glBeginTransformFeedback = reinterpret_cast<PFNGLBEGINTRANSFORMFEEDBACKPROC>(func("glBeginTransformFeedback"));
+    glBindAttribLocation = reinterpret_cast<PFNGLBINDATTRIBLOCATIONPROC>(func("glBindAttribLocation"));
+    glBindBuffer = reinterpret_cast<PFNGLBINDBUFFERPROC>(func("glBindBuffer"));
+    glBindBufferBase = reinterpret_cast<PFNGLBINDBUFFERBASEPROC>(func("glBindBufferBase"));
+    glBindTexture = reinterpret_cast<PFNGLBINDTEXTUREPROC>(func("glBindTexture"));
+    glBufferData = reinterpret_cast<PFNGLBUFFERDATAPROC>(func("glBufferData"));
+    glBufferSubData = reinterpret_cast<PFNGLBUFFERSUBDATAPROC>(func("glBufferSubData"));
+    glCompileShader = reinterpret_cast<PFNGLCOMPILESHADERPROC>(func("glCompileShader"));
+    glCreateProgram = reinterpret_cast<PFNGLCREATEPROGRAMPROC>(func("glCreateProgram"));
+    glCreateShader = reinterpret_cast<PFNGLCREATESHADERPROC>(func("glCreateShader"));
+    glDeleteBuffers = reinterpret_cast<PFNGLDELETEBUFFERSPROC>(func("glDeleteBuffers"));
+    glDeleteProgram = reinterpret_cast<PFNGLDELETEPROGRAMPROC>(func("glDeleteProgram"));
+    glDeleteShader = reinterpret_cast<PFNGLDELETESHADERPROC>(func("glDeleteShader"));
+    glDeleteTextures = reinterpret_cast<PFNGLDELETETEXTURESPROC>(func("glDeleteTextures"));
+    glDisable = reinterpret_cast<PFNGLDISABLEPROC>(func("glDisable"));
+    glDrawArrays = reinterpret_cast<PFNGLDRAWARRAYSPROC>(func("glDrawArrays"));
+    glEnable = reinterpret_cast<PFNGLENABLEPROC>(func("glEnable"));
+    glEnableVertexAttribArray = reinterpret_cast<PFNGLENABLEVERTEXATTRIBARRAYPROC>(func("glEnableVertexAttribArray"));
+    glEndTransformFeedback = reinterpret_cast<PFNGLENDTRANSFORMFEEDBACKPROC>(func("glEndTransformFeedback"));
+    glGenBuffers = reinterpret_cast<PFNGLGENBUFFERSPROC>(func("glGenBuffers"));
+    glGenTextures = reinterpret_cast<PFNGLGENTEXTURESPROC>(func("glGenTextures"));
+    glGetProgramiv = reinterpret_cast<PFNGLGETPROGRAMIVPROC>(func("glGetProgramiv"));
+    glGetShaderiv = reinterpret_cast<PFNGLGETSHADERIVPROC>(func("glGetShaderiv"));
+    glGetUniformLocation = reinterpret_cast<PFNGLGETUNIFORMLOCATIONPROC>(func("glGetUniformLocation"));
+    glLinkProgram = reinterpret_cast<PFNGLLINKPROGRAMPROC>(func("glLinkProgram"));
+    glObjectLabel = reinterpret_cast<PFNGLOBJECTLABELPROC>(func("glObjectLabel"));
+    glShaderSource = reinterpret_cast<PFNGLSHADERSOURCEPROC>(func("glShaderSource"));
+    glTexImage2D = reinterpret_cast<PFNGLTEXIMAGE2DPROC>(func("glTexImage2D"));
+    glTexParameteri = reinterpret_cast<PFNGLTEXPARAMETERIPROC>(func("glTexParameteri"));
+    glTexSubImage2D = reinterpret_cast<PFNGLTEXSUBIMAGE2DPROC>(func("glTexSubImage2D"));
+    glTransformFeedbackVaryings =
+        reinterpret_cast<PFNGLTRANSFORMFEEDBACKVARYINGSPROC>(func("glTransformFeedbackVaryings"));
+    glUniform1i = reinterpret_cast<PFNGLUNIFORM1IPROC>(func("glUniform1i"));
+    glUniform4f = reinterpret_cast<PFNGLUNIFORM4FPROC>(func("glUniform4f"));
+    glUseProgram = reinterpret_cast<PFNGLUSEPROGRAMPROC>(func("glUseProgram"));
+    glVertexAttribPointer = reinterpret_cast<PFNGLVERTEXATTRIBPOINTERPROC>(func("glVertexAttribPointer"));
 }
 
 OpenGLTransformFeedbackSkinDeformerFactory::~OpenGLTransformFeedbackSkinDeformerFactory()
@@ -151,19 +308,11 @@ OpenGLTransformFeedbackSkinDeformerFactory::create(Model *model)
     }
     else {
         GLuint vss = glCreateShader(GL_VERTEX_SHADER);
-        const char *const vsSource = reinterpret_cast<const char *const>(g_nanoem_model_skinning_tf_fs_glsl_es3_data);
+        const char *const vsSource = reinterpret_cast<const char *const>(g_nanoem_model_skinning_tf_vs_glsl_es3_data);
         glShaderSource(vss, 1, &vsSource, nullptr);
         glCompileShader(vss);
         GLuint fss = glCreateShader(GL_FRAGMENT_SHADER);
-        const char *const fsSource = R"(#version 300 es
-precision highp float;
-out vec4 o_color;
-
-void main()
-{
-  o_color = vec4(1.0);
-}
-                                   )";
+        const char *const fsSource = reinterpret_cast<const char *const>(g_nanoem_model_skinning_tf_fs_glsl_es3_data);
         glShaderSource(fss, 1, &fsSource, nullptr);
         glCompileShader(fss);
         GLint program = glCreateProgram();
@@ -267,7 +416,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::rebuildAllBones()
 }
 
 void
-OpenGLTransformFeedbackSkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) noexcept
+OpenGLTransformFeedbackSkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) NANOEM_DECL_NOEXCEPT
 {
     sg::destroy_buffer(value);
     GLuint &outputBuffer = m_outputBufferObjects[bufferIndex];
@@ -589,5 +738,5 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t
 #endif /* SOKOL_DEBUG */
 }
 
-} /* namespace glfw */
+} /* namespace internal */
 } /* namespace nanoem */

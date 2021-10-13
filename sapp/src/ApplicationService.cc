@@ -14,6 +14,7 @@
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/Error.h"
 #include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
+#include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "sokol/sokol_audio.h"
@@ -237,6 +238,9 @@ ApplicationService::createSkinDeformerFactory()
                 }
                 if (func("glDispatchCompute")) {
                     factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(func));
+                }
+                else if (func("glTransformFeedbackVaryings")) {
+                    factory = nanoem_new(internal::OpenGLTransformFeedbackSkinDeformerFactory(func));
                 }
                 m_dllHandle = handle;
             }
