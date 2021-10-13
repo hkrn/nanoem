@@ -8,8 +8,6 @@
 #ifndef NANOEM_EMAPP_GLFW_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_
 #define NANOEM_EMAPP_GLFW_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_
 
-#include "GL/gl3w.h"
-
 #include "emapp/Project.h"
 #include "emapp/model/ISkinDeformer.h"
 
@@ -26,10 +24,12 @@ namespace glfw {
 
 class OpenGLTransformFeedbackSkinDeformerFactory : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
+    typedef void (*ProcAddress)(void);
+    typedef ProcAddress (*PFN_GetProcAddress)(const char *);
     typedef tinystl::vector<model::Bone *, TinySTLAllocator> BoneList;
     typedef tinystl::vector<model::Morph *, TinySTLAllocator> MorphList;
 
-    OpenGLTransformFeedbackSkinDeformerFactory();
+    OpenGLTransformFeedbackSkinDeformerFactory(PFN_GetProcAddress func);
     ~OpenGLTransformFeedbackSkinDeformerFactory() override;
 
     model::ISkinDeformer *create(Model *model) override;
@@ -88,11 +88,11 @@ private:
     };
 
     nanoem_u32_t m_program;
-    GLint m_matrixTextureLocation;
-    GLint m_morphWeightTextureLocation;
-    GLint m_sdefTextureLocation;
-    GLint m_vertexTextureLocation;
-    GLint m_argumentUniformLocation;
+    nanoem_i32_t m_matrixTextureLocation;
+    nanoem_i32_t m_morphWeightTextureLocation;
+    nanoem_i32_t m_sdefTextureLocation;
+    nanoem_i32_t m_vertexTextureLocation;
+    nanoem_i32_t m_argumentUniformLocation;
 };
 
 } /* namespace glfw */

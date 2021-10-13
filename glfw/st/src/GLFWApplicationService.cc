@@ -384,11 +384,11 @@ GLFWApplicationService::createSkinDeformerFactory()
     Project::ISkinDeformerFactory *factory = nullptr;
     ApplicationPreference preference(this);
     if (preference.isSkinDeformAcceleratorEnabled()) {
-        if (glDispatchCompute) {
+        if (glfwGetProcAddress("glDispatchCompute")) {
             factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(glfwGetProcAddress));
         }
-        else {
-            factory = nanoem_new(OpenGLTransformFeedbackSkinDeformerFactory);
+        else if (glfwGetProcAddress("glTransformFeedbackVaryings")) {
+            factory = nanoem_new(OpenGLTransformFeedbackSkinDeformerFactory(glfwGetProcAddress));
         }
     }
     return factory;
