@@ -4,7 +4,7 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
-#include "OpenGLTransformFeedbackSkinDeformerFactory.h"
+#include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
 
 #include "emapp/Error.h"
 #include "emapp/ICamera.h"
@@ -17,7 +17,7 @@
 #endif /* NANOEM_ENABLE_TBB */
 
 namespace nanoem {
-namespace glfw {
+namespace internal {
 namespace {
 
 #include "emapp/private/shaders/model_skinning_tf_vs_glsl_es3.h"
@@ -745,5 +745,5 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t
 #endif /* SOKOL_DEBUG */
 }
 
-} /* namespace glfw */
+} /* namespace internal */
 } /* namespace nanoem */

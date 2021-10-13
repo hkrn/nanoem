@@ -6,7 +6,6 @@
 
 #include "GLFWApplicationService.h"
 
-#include "OpenGLTransformFeedbackSkinDeformerFactory.h"
 #include "SoundIOAudioPlayer.h"
 
 #include "emapp/ApplicationPreference.h"
@@ -16,6 +15,7 @@
 #include "emapp/StringUtils.h"
 #include "emapp/internal/ImGuiWindow.h"
 #include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
+#include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "GLFW/glfw3.h"
@@ -388,7 +388,7 @@ GLFWApplicationService::createSkinDeformerFactory()
             factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(glfwGetProcAddress));
         }
         else if (glfwGetProcAddress("glTransformFeedbackVaryings")) {
-            factory = nanoem_new(OpenGLTransformFeedbackSkinDeformerFactory(glfwGetProcAddress));
+            factory = nanoem_new(internal::OpenGLTransformFeedbackSkinDeformerFactory(glfwGetProcAddress));
         }
     }
     return factory;

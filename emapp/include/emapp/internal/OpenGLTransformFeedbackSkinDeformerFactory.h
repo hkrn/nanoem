@@ -5,8 +5,8 @@
  */
 
 #pragma once
-#ifndef NANOEM_EMAPP_GLFW_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_
-#define NANOEM_EMAPP_GLFW_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_
+#ifndef NANOEM_EMAPP_INTERNAL_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_
+#define NANOEM_EMAPP_INTERNAL_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_
 
 #include "emapp/Project.h"
 #include "emapp/model/ISkinDeformer.h"
@@ -20,7 +20,7 @@ class Bone;
 class Vertex;
 }
 
-namespace glfw {
+namespace internal {
 
 class OpenGLTransformFeedbackSkinDeformerFactory : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
@@ -95,7 +95,7 @@ private:
     nanoem_i32_t m_argumentUniformLocation;
 };
 
-} /* namespace glfw */
+} /* namespace internal */
 } /* namespace nanoem */
 
-#endif /* NANOEM_EMAPP_GLFW_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_ */
+#endif /* NANOEM_EMAPP_INTERNAL_OPENGLTRANSFORMFEEDBACKSKINDEFORMERFACTORY_H_ */
