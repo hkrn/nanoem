@@ -26,7 +26,7 @@ class ImGuiApplicationMenuBuilder NANOEM_DECL_SEALED : public ApplicationMenuBui
 public:
     ImGuiApplicationMenuBuilder(BaseApplicationClient *client, IEventPublisher *eventPublisher,
         IFileManager *fileManager, const ITranslator *translator, bool enableModelEditing);
-    ~ImGuiApplicationMenuBuilder();
+    ~ImGuiApplicationMenuBuilder() NANOEM_DECL_NOEXCEPT;
 
     void draw(void *debugger);
     void openSaveProjectDialog(Project *project);
@@ -50,10 +50,10 @@ private:
     void createPluginMenuItem(MenuBarHandle menu, MenuItemType type, nanoem_u16_t handle, const String &name,
         const StringList &items) NANOEM_DECL_OVERRIDE;
     void updateAllSelectDrawableItems(MenuBarHandle menu, nanoem_u16_t handle) NANOEM_DECL_OVERRIDE;
-    void removeMenuItemById(MenuBarHandle menu, int index) NANOEM_DECL_OVERRIDE;
+    void removeMenuItemById(MenuBarHandle menu, int index) NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     void appendMenuSeparator(MenuBarHandle menu) NANOEM_DECL_OVERRIDE;
-    void clearAllMenuItems(MenuBarHandle menu) NANOEM_DECL_OVERRIDE;
+    void clearAllMenuItems(MenuBarHandle menu) NANOEM_DECL_NOEXCEPT_OVERRIDE;
     void setParentMenu(MenuItemHandle parent, MenuBarHandle menu) NANOEM_DECL_OVERRIDE;
     void setMenuItemEnabled(MenuItemHandle item, bool value) NANOEM_DECL_OVERRIDE;
     void setMenuItemChecked(MenuItemHandle item, bool value) NANOEM_DECL_OVERRIDE;

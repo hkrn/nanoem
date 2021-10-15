@@ -104,7 +104,7 @@ CocoaApplicationMenuBuilder::CocoaApplicationMenuBuilder(
 {
 }
 
-CocoaApplicationMenuBuilder::~CocoaApplicationMenuBuilder()
+CocoaApplicationMenuBuilder::~CocoaApplicationMenuBuilder() noexcept
 {
 }
 
@@ -384,7 +384,7 @@ CocoaApplicationMenuBuilder::updateAllSelectDrawableItems(MenuBarHandle menu, ui
 }
 
 void
-CocoaApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index)
+CocoaApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index) noexcept
 {
     auto collection = (__bridge MenuItemCollection *) menu;
     NSMenu *parent = collection.menu;
@@ -406,7 +406,7 @@ CocoaApplicationMenuBuilder::appendMenuSeparator(MenuBarHandle menu)
 }
 
 void
-CocoaApplicationMenuBuilder::clearAllMenuItems(MenuBarHandle menu)
+CocoaApplicationMenuBuilder::clearAllMenuItems(MenuBarHandle menu) noexcept
 {
     auto collection = (__bridge MenuItemCollection *) menu;
     [collection removeAllItems];

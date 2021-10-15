@@ -28,7 +28,7 @@ Win32ApplicationMenuBuilder::Win32ApplicationMenuBuilder(
     m_allocator->alloc();
 }
 
-Win32ApplicationMenuBuilder::~Win32ApplicationMenuBuilder()
+Win32ApplicationMenuBuilder::~Win32ApplicationMenuBuilder() noexcept
 {
     clearAllMenuItems();
     bx::destroyHandleAlloc(g_emapp_allocator, m_allocator);
@@ -399,7 +399,7 @@ Win32ApplicationMenuBuilder::updateAllSelectDrawableItems(MenuBarHandle menu, ui
 }
 
 void
-Win32ApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index)
+Win32ApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index) noexcept
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
     MENUITEMINFOW info = {};
@@ -527,7 +527,7 @@ Win32ApplicationMenuBuilder::createHelpMenu(MainMenuBarHandle mainMenu)
 }
 
 void
-Win32ApplicationMenuBuilder::clearAllMenuItems()
+Win32ApplicationMenuBuilder::clearAllMenuItems() noexcept
 {
     for (auto it : m_menuItemInstances) {
         delete it;
@@ -559,13 +559,13 @@ Win32ApplicationMenuBuilder::fillDynamicMenuItem(const Lambda &lambda, MENUITEMI
 }
 
 const char *
-Win32ApplicationMenuBuilder::translateMenuItemWin32(MenuItemType type) const
+Win32ApplicationMenuBuilder::translateMenuItemWin32(MenuItemType type) const noexcept
 {
     return m_translator->translate(menuItemString(type));
 }
 
 const wchar_t *
-Win32ApplicationMenuBuilder::localizedMenuItemString(const char *text, const char *shortcut) const
+Win32ApplicationMenuBuilder::localizedMenuItemString(const char *text, const char *shortcut) const noexcept
 {
     auto it = m_localizedMessageCache.find(text);
     if (it == m_localizedMessageCache.end()) {

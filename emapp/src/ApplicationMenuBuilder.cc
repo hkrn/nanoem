@@ -1289,7 +1289,7 @@ ApplicationMenuBuilder::createProjectMenu(MainMenuBarHandle bar)
 }
 
 bool
-ApplicationMenuBuilder::isMenuItemEnabled(MenuItemType type) const
+ApplicationMenuBuilder::isMenuItemEnabled(MenuItemType type) const NANOEM_DECL_NOEXCEPT
 {
     MenuItemMap::const_iterator it = m_menuItems.find(type);
     bool enabled = false;
@@ -1309,7 +1309,7 @@ ApplicationMenuBuilder::setMenuItemEnable(MenuItemType first, MenuItemType last,
 }
 
 bool
-ApplicationMenuBuilder::isMenuItemChecked(MenuItemType type) const
+ApplicationMenuBuilder::isMenuItemChecked(MenuItemType type) const NANOEM_DECL_NOEXCEPT
 {
     MenuItemMap::const_iterator it = m_menuItems.find(type);
     bool checked = false;
