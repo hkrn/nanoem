@@ -150,7 +150,6 @@ private:
     void resizeWindow(const Vector2UI32 &logicalWindowSize);
     void updatePreferredFPS(const POWERBROADCAST_SETTING *settings);
     void enablePowerSaving(bool value);
-    void sendAnalyticsEvent(const char *screen, const char *category, const char *action, const char *label);
     bool isEditingDisplaySyncEnabled() const noexcept;
 
     URIList cachedAggregateAllPlugins();
