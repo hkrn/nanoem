@@ -24,6 +24,8 @@
 #include "emapp/StringUtils.h"
 #include "emapp/internal/DecoderPluginBasedBackgroundVideoRenderer.h"
 #include "emapp/internal/ImGuiWindow.h"
+#include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
+#include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
 #include "emapp/private/CommonInclude.h"
 
 #if defined(NANOEM_ENABLE_RENDERDOC)
@@ -589,6 +591,18 @@ Win32ThreadedApplicationService::createSkinDeformerFactory()
             HRESULT rc = device->CheckFeatureSupport(D3D11_FEATURE_D3D10_X_HARDWARE_OPTIONS, &options, sizeof(options));
             if (rc == S_OK && options.ComputeShaders_Plus_RawAndStructuredBuffers_Via_Shader_4_x) {
                 factory = nanoem_new(D3D11SkinDeformerFactory(device, context));
+            }
+        }
+        else if (backend == SG_BACKEND_GLCORE33 || backend == SG_BACKEND_GLES3) {
+            if (wglGetProcAddress("glDispatchCompute")) {
+                factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(
+                    reinterpret_cast<internal::OpenGLComputeShaderSkinDeformerFactory::PFN_GetProcAddress>(
+                        wglGetProcAddress)));
+            }
+            else if (wglGetProcAddress("glTransformFeedbackVaryings")) {
+                factory = nanoem_new(internal::OpenGLTransformFeedbackSkinDeformerFactory(
+                    reinterpret_cast<internal::OpenGLTransformFeedbackSkinDeformerFactory::PFN_GetProcAddress>(
+                        wglGetProcAddress)));
             }
         }
     }

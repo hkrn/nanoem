@@ -24,30 +24,6 @@ namespace {
 #include "emapp/private/shaders/model_skinning_tf_fs_glsl_es3.h"
 
 #define APIENTRYP APIENTRY *
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_BUFFER 0x82E0
-#define GL_COMPILE_STATUS 0x8B81
-#define GL_FALSE 0
-#define GL_FLOAT 0x1406
-#define GL_FRAGMENT_SHADER 0x8B30
-#define GL_INTERLEAVED_ATTRIBS 0x8C8C
-#define GL_LINK_STATUS 0x8B82
-#define GL_NEAREST 0x2600
-#define GL_POINTS 0x0000
-#define GL_RASTERIZER_DISCARD 0x8C89
-#define GL_RGBA 0x1908
-#define GL_RGBA32F 0x8814
-#define GL_STATIC_READ 0x88E5
-#define GL_STREAM_DRAW 0x88E0
-#define GL_STREAM_READ 0x88E1
-#define GL_TEXTURE 0x1702
-#define GL_TEXTURE0 0x84C0
-#define GL_TEXTURE_2D 0x0DE1
-#define GL_TEXTURE_MAG_FILTER 0x2800
-#define GL_TEXTURE_MIN_FILTER 0x2801
-#define GL_TRANSFORM_FEEDBACK_BUFFER 0x8C8E
-#define GL_VERTEX_SHADER 0x8B31
-#define GL_UNIFORM_BUFFER 0x8A11
 
 typedef char GLchar;
 typedef int GLint;
@@ -102,6 +78,31 @@ typedef void(APIENTRYP PFNGLUNIFORM4FPROC)(GLint location, GLfloat v0, GLfloat v
 typedef void(APIENTRYP PFNGLUSEPROGRAMPROC)(GLuint program);
 typedef void(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)(
     GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void *pointer);
+
+static const GLenum GL_ARRAY_BUFFER = 0x8892;
+static const GLenum GL_BUFFER = 0x82E0;
+static const GLenum GL_COMPILE_STATUS = 0x8B81;
+static const GLenum GL_FALSE = 0;
+static const GLenum GL_FLOAT = 0x1406;
+static const GLenum GL_FRAGMENT_SHADER = 0x8B30;
+static const GLenum GL_INTERLEAVED_ATTRIBS = 0x8C8C;
+static const GLenum GL_LINK_STATUS = 0x8B82;
+static const GLenum GL_NEAREST = 0x2600;
+static const GLenum GL_POINTS = 0x0000;
+static const GLenum GL_RASTERIZER_DISCARD = 0x8C89;
+static const GLenum GL_RGBA = 0x1908;
+static const GLenum GL_RGBA32F = 0x8814;
+static const GLenum GL_STATIC_READ = 0x88E5;
+static const GLenum GL_STREAM_DRAW = 0x88E0;
+static const GLenum GL_STREAM_READ = 0x88E1;
+static const GLenum GL_TEXTURE = 0x1702;
+static const GLenum GL_TEXTURE0 = 0x84C0;
+static const GLenum GL_TEXTURE_2D = 0x0DE1;
+static const GLenum GL_TEXTURE_MAG_FILTER = 0x2800;
+static const GLenum GL_TEXTURE_MIN_FILTER = 0x2801;
+static const GLenum GL_TRANSFORM_FEEDBACK_BUFFER = 0x8C8E;
+static const GLenum GL_VERTEX_SHADER = 0x8B31;
+static const GLenum GL_UNIFORM_BUFFER = 0x8A11;
 
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLATTACHSHADERPROC glAttachShader = nullptr;

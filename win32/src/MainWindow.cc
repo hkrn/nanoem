@@ -31,7 +31,7 @@
 /* IDXGIFactory6 */
 #include <dxgi1_6.h>
 
-#if !defined(NDEBUG) && !defined(__MINGW32__)
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
 #include <dxgidebug.h>
 #endif
 
@@ -1933,7 +1933,7 @@ MainWindow::setupDirectXRenderer(HWND windowHandle, int width, int height, bool 
         else {
             isLowPower = true;
         }
-#if !defined(NDEBUG)
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
         static const wchar_t kSwapChainLabel[] = L"IDXGISwapChain";
         swapChain->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kSwapChainLabel), kSwapChainLabel);
         static const wchar_t kDeviceLabel[] = L"ID3D11Device";
@@ -1978,12 +1978,22 @@ MainWindow::setupOpenGLRenderer(HWND windowHandle, Error &error)
     static const int WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x0002;
     static const int WGL_CONTEXT_PROFILE_MASK_ARB = 0x9126;
     static const int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x1;
-    static const int attributes[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 3, WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB, 0 };
+    static const int kCreateOpenGLContextAttributes[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB,
+        3,
+        WGL_CONTEXT_MINOR_VERSION_ARB,
+        3,
+        WGL_CONTEXT_FLAGS_ARB,
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
+        WGL_CONTEXT_DEBUG_BIT_ARB |
+#endif /* SOKOL_DEBUG */
+            WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB,
+        WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0
+    };
     HDC device = GetDC(windowHandle);
-    PIXELFORMATDESCRIPTOR pfd;
-    memset(&pfd, 0, sizeof(pfd));
+    PIXELFORMATDESCRIPTOR pfd = {};
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
     pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
@@ -2010,7 +2020,7 @@ MainWindow::setupOpenGLRenderer(HWND windowHandle, Error &error)
     HGLRC context = nullptr;
     if (auto wglCreateContextAttribsARB =
             reinterpret_cast<pfn_wglCreateContextAttribsARB>(wglGetProcAddress("wglCreateContextAttribsARB"))) {
-        context = wglCreateContextAttribsARB(device, temp, attributes);
+        context = wglCreateContextAttribsARB(device, temp, kCreateOpenGLContextAttributes);
     }
     if (!context) {
         createLastError(error);
@@ -2051,7 +2061,7 @@ MainWindow::destroyRenderer()
         context->Release();
         device->Release();
         swapChain->Release();
-#if !defined(NDEBUG) && !defined(__MINGW32__)
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
         if (sizeof(void *) == 8) {
             typedef HRESULT(WINAPI * pfn_DXGIGetDebugInterface)(const IID, void **);
             if (HMODULE module = GetModuleHandleW(L"dxgidebug.dll")) {
@@ -2088,7 +2098,6 @@ MainWindow::destroyWindow()
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
             self->m_renderable = false;
-            self->sendAnalyticsEvent("main", "nanoem.session", "end", nullptr);
             self->m_client->addCompleteTerminationEventListener(
                 [](void *userData) {
                     auto self = static_cast<MainWindow *>(userData);
@@ -2250,12 +2259,6 @@ MainWindow::registerAllPrerequisiteEventListeners()
             UpdateWindow(windowHandle);
         },
         this, true);
-    m_client->addTrackEventListener(
-        [](void *userData, const char *screen, const char *category, const char *action, const char *label) {
-            auto self = static_cast<MainWindow *>(userData);
-            self->sendAnalyticsEvent(screen, category, action, label);
-        },
-        this, false);
     m_client->addDisableCursorEventListener(
         [](void *userData, const Vector2SI32 &logicalCursorPosition) {
             auto self = static_cast<MainWindow *>(userData);
@@ -2641,97 +2644,6 @@ void
 MainWindow::enablePowerSaving(bool value)
 {
     m_playingThresholder.m_preferred = m_editingThresholder.m_preferred = value ? 30 : 60;
-}
-
-void
-MainWindow::sendAnalyticsEvent(const char *screen, const char *category, const char *action, const char *label)
-{
-#if defined(NANOEM_GA_TRACKING_ID)
-    const ApplicationPreference preference(m_service);
-    if (preference.isAnalyticsEnabled()) {
-        OSVERSIONINFOA os = {};
-        os.dwOSVersionInfoSize = sizeof(os);
-        GetVersionExA(&os);
-        SYSTEM_INFO sys = {};
-        GetNativeSystemInfo(&sys);
-        wchar_t userAgentString[256];
-        swprintf_s(userAgentString, ARRAYSIZE(userAgentString),
-            L"Mozilla/5.0 (Windows NT %d.%d%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/77.0.3865.120 "
-            L"Safari/537.36",
-            os.dwMajorVersion, os.dwMinorVersion,
-            sys.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64 ? L";Win64; x64" : L"");
-        if (HINTERNET session = WinHttpOpen(userAgentString, WINHTTP_ACCESS_TYPE_DEFAULT_PROXY, WINHTTP_NO_PROXY_NAME,
-                WINHTTP_NO_PROXY_BYPASS, 0)) {
-            if (HINTERNET connect =
-                    WinHttpConnect(session, L"www.google-analytics.com", INTERNET_DEFAULT_HTTPS_PORT, 0)) {
-                if (HINTERNET request = WinHttpOpenRequest(connect, L"POST", L"/collect", NULL, WINHTTP_NO_REFERER,
-                        WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE)) {
-                    String body;
-                    char part[256], language[8], country[8], identity[17];
-                    body.append("v=1&tid=");
-                    body.append(NANOEM_GA_TRACKING_ID);
-                    body.append("&cid=");
-                    body.append(m_preference->uuidConstString());
-                    body.append("&aip=1");
-                    GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO3166CTRYNAME, country, sizeof(country));
-                    GetLocaleInfoA(LOCALE_USER_DEFAULT, LOCALE_SISO639LANGNAME, language, sizeof(language));
-                    StringUtils::format(identity, sizeof(identity), "%s_%s", language, country);
-                    body.append("&ul=");
-                    body.append(identity);
-                    int screenWidth = GetSystemMetrics(SM_CXSCREEN);
-                    int screenHeight = GetSystemMetrics(SM_CYSCREEN);
-                    StringUtils::format(part, sizeof(part), "&sr=%dx%d", screenWidth, screenHeight);
-                    body.append(part);
-                    HDC hdc = GetDC(m_windowHandle);
-                    int colorDepth = GetDeviceCaps(hdc, BITSPIXEL) * GetDeviceCaps(hdc, PLANES);
-                    StringUtils::format(part, sizeof(part), "&sd=%ld-bits", colorDepth);
-                    body.append(part);
-                    StringUtils::format(part, sizeof(part), "&vp=%dx%d", m_logicalWindowSize.x, m_logicalWindowSize.y);
-                    body.append(part);
-                    if (screen) {
-                        body.append("&cd=");
-                        body.append(escapeString(screen).c_str());
-                    }
-                    body.append("&ds=app&an=nanoem&av=");
-                    body.append(escapeString(nanoemGetVersionString()).c_str());
-                    body.append("&t=event");
-                    if (category) {
-                        body.append("&ec=");
-                        body.append(escapeString(category).c_str());
-                    }
-                    if (action) {
-                        body.append("&ea=");
-                        body.append(escapeString(action).c_str());
-                    }
-                    if (label) {
-                        body.append("&el=");
-                        body.append(escapeString(label).c_str());
-                    }
-                    if (category && action && StringUtils::equals(category, "nanoem.session") &&
-                        StringUtils::equals(action, "begin")) {
-                        body.append("&sc=start");
-                    }
-                    if (category && action && StringUtils::equals(category, "nanoem.session") &&
-                        StringUtils::equals(action, "end")) {
-                        body.append("&sc=end");
-                    }
-                    MutableString ms(body.c_str(), body.c_str() + body.size());
-                    const wchar_t header[] = L"Content-Type: application/x-www-form-urlencoded\r\n";
-                    WinHttpSendRequest(request, header, lstrlenW(header), WINHTTP_NO_REQUEST_DATA, 0,
-                        Inline::saturateInt32(ms.size()), 0);
-                    DWORD written = 0;
-                    WinHttpWriteData(request, ms.data(), Inline::saturateInt32(ms.size()), &written);
-                    WinHttpCloseHandle(request);
-                }
-                WinHttpCloseHandle(connect);
-            }
-            WinHttpCloseHandle(session);
-        }
-    }
-#else
-    BX_UNUSED_4(screen, category, action, label);
-    bx::debugPrintf("TRACK: screen=%s, category=%s, action=%s label=%s\n", screen, category, action, label);
-#endif
 }
 
 bool

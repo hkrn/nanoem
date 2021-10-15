@@ -24,8 +24,8 @@ namespace internal {
 
 class OpenGLComputeShaderSkinDeformerFactory NANOEM_DECL_SEALED : public Project::ISkinDeformerFactory, private NonCopyable {
 public:
-    typedef void (*ProcAddress)(void);
-    typedef ProcAddress (*PFN_GetProcAddress)(const char *);
+    typedef void(APIENTRY *ProcAddress)(void);
+    typedef ProcAddress(APIENTRY *PFN_GetProcAddress)(const char *);
     typedef tinystl::vector<model::Bone *, TinySTLAllocator> BoneList;
     typedef tinystl::vector<model::Morph *, TinySTLAllocator> MorphList;
 

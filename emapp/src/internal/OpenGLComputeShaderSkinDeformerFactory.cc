@@ -21,17 +21,6 @@ namespace internal {
 namespace {
 
 #define APIENTRYP APIENTRY *
-#define GL_ARRAY_BUFFER 0x8892
-#define GL_BUFFER 0x82E0
-#define GL_COMPUTE_SHADER 0x91B9
-#define GL_COMPILE_STATUS 0x8B81
-#define GL_LINK_STATUS 0x8B82
-#define GL_SHADER_STORAGE_BUFFER 0x90D2
-#define GL_STATIC_READ 0x88E5
-#define GL_STREAM_DRAW 0x88E0
-#define GL_STREAM_READ 0x88E1
-#define GL_UNIFORM_BUFFER 0x8A11
-
 typedef char GLchar;
 typedef int GLint;
 typedef unsigned int GLuint;
@@ -60,6 +49,17 @@ typedef void(APIENTRYP PFNGLOBJECTLABELPROC)(GLenum identifier, GLuint name, GLs
 typedef void(APIENTRYP PFNGLSHADERSOURCEPROC)(
     GLuint shader, GLsizei count, const GLchar *const *string, const GLint *length);
 typedef void(APIENTRYP PFNGLUSEPROGRAMPROC)(GLuint program);
+
+static const GLenum GL_ARRAY_BUFFER = 0x8892;
+static const GLenum GL_BUFFER = 0x82E0;
+static const GLenum GL_COMPUTE_SHADER = 0x91B9;
+static const GLenum GL_COMPILE_STATUS = 0x8B81;
+static const GLenum GL_LINK_STATUS = 0x8B82;
+static const GLenum GL_SHADER_STORAGE_BUFFER = 0x90D2;
+static const GLenum GL_STATIC_READ = 0x88E5;
+static const GLenum GL_STREAM_DRAW = 0x88E0;
+static const GLenum GL_STREAM_READ = 0x88E1;
+static const GLenum GL_UNIFORM_BUFFER = 0x8A11;
 
 PFNGLATTACHSHADERPROC glAttachShader = nullptr;
 PFNGLBINDBUFFERPROC glBindBuffer = nullptr;
