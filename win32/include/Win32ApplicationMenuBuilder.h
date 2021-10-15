@@ -31,7 +31,7 @@ class Win32ApplicationMenuBuilder final : public ApplicationMenuBuilder {
 public:
     Win32ApplicationMenuBuilder(
         MainWindow *window, ThreadedApplicationClient *client, const ITranslator *translator, bool enableModelEditing);
-    ~Win32ApplicationMenuBuilder() override;
+    ~Win32ApplicationMenuBuilder() noexcept override;
 
     void dispatch(UINT menuItemID);
 
@@ -65,7 +65,7 @@ private:
     void createPluginMenuItem(
         MenuBarHandle menu, MenuItemType type, uint16_t handle, const String &name, const StringList &items) override;
     void updateAllSelectDrawableItems(MenuBarHandle menu, uint16_t handle) override;
-    void removeMenuItemById(MenuBarHandle menu, int index) override;
+    void removeMenuItemById(MenuBarHandle menu, int index) noexcept override;
 
     void appendMenuSeparator(MenuBarHandle menu) override;
     void clearAllMenuItems(MenuBarHandle menu) override;
@@ -77,11 +77,11 @@ private:
 
     void createWindowMenu(MainMenuBarHandle mainMenu);
     void createHelpMenu(MainMenuBarHandle mainMenu);
-    void clearAllMenuItems();
+    void clearAllMenuItems() noexcept;
     void fillDynamicMenuItem(const Lambda &lambda, MENUITEMINFOW &info);
 
-    const char *translateMenuItemWin32(MenuItemType type) const;
-    const wchar_t *localizedMenuItemString(const char *text, const char *shortcut) const;
+    const char *translateMenuItemWin32(MenuItemType type) const noexcept;
+    const wchar_t *localizedMenuItemString(const char *text, const char *shortcut) const noexcept;
 
     using TranslatedMessageCache = tinystl::unordered_map<const char *, MutableWideString, TinySTLAllocator>;
     using Win32MenuList = tinystl::vector<Win32Menu *, TinySTLAllocator>;

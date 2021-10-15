@@ -258,10 +258,10 @@ protected:
     virtual void createPluginMenuItem(
         MenuBarHandle menu, MenuItemType type, nanoem_u16_t handle, const String &name, const StringList &items) = 0;
     virtual void updateAllSelectDrawableItems(MenuBarHandle menu, nanoem_u16_t handle) = 0;
-    virtual void removeMenuItemById(MenuBarHandle menu, int index) = 0;
+    virtual void removeMenuItemById(MenuBarHandle menu, int index) NANOEM_DECL_NOEXCEPT = 0;
 
     virtual void appendMenuSeparator(MenuBarHandle menu) = 0;
-    virtual void clearAllMenuItems(MenuBarHandle menu) = 0;
+    virtual void clearAllMenuItems(MenuBarHandle menu) NANOEM_DECL_NOEXCEPT = 0;
     virtual void setParentMenu(MenuItemHandle parent, MenuBarHandle menu) = 0;
     virtual void setMenuItemEnabled(MenuItemHandle item, bool value) = 0;
     virtual void setMenuItemChecked(MenuItemHandle item, bool value) = 0;
@@ -292,9 +292,9 @@ protected:
     void createAccessoryMenu(MainMenuBarHandle bar);
     void createProjectMenu(MainMenuBarHandle bar);
     void setMenuItemEnable(MenuItemType first, MenuItemType last, bool value);
-    bool isMenuItemEnabled(MenuItemType type) const;
+    bool isMenuItemEnabled(MenuItemType type) const NANOEM_DECL_NOEXCEPT;
     void setMenuItemEnable(MenuItemType type, bool value);
-    bool isMenuItemChecked(MenuItemType type) const;
+    bool isMenuItemChecked(MenuItemType type) const NANOEM_DECL_NOEXCEPT;
     void setMenuItemChecked(MenuItemType type, bool value);
     void setAllAccessoryMenuItemsEnabled(bool value);
     void setAllModelMenuItemsEnabled(bool value);

@@ -308,7 +308,7 @@ ImGuiApplicationMenuBuilder::ImGuiApplicationMenuBuilder(BaseApplicationClient *
         this, false);
 }
 
-ImGuiApplicationMenuBuilder::~ImGuiApplicationMenuBuilder()
+ImGuiApplicationMenuBuilder::~ImGuiApplicationMenuBuilder() NANOEM_DECL_NOEXCEPT
 {
     clearAllMenuItems();
 }
@@ -482,7 +482,7 @@ ImGuiApplicationMenuBuilder::updateAllSelectDrawableItems(MenuBarHandle menu, na
 }
 
 void
-ImGuiApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index)
+ImGuiApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index) NANOEM_DECL_NOEXCEPT
 {
     ImGuiMenuBar *parent = reinterpret_cast<ImGuiMenuBar *>(menu);
     if (index >= 0 && index < Inline::saturateInt32(parent->m_items.size())) {
@@ -501,7 +501,7 @@ ImGuiApplicationMenuBuilder::appendMenuSeparator(MenuBarHandle menu)
 }
 
 void
-ImGuiApplicationMenuBuilder::clearAllMenuItems(MenuBarHandle menu)
+ImGuiApplicationMenuBuilder::clearAllMenuItems(MenuBarHandle menu) NANOEM_DECL_NOEXCEPT
 {
     ImGuiMenuBar *parent = reinterpret_cast<ImGuiMenuBar *>(menu);
     parent->m_items.clear();

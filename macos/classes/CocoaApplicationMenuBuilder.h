@@ -36,7 +36,7 @@ public:
 
     CocoaApplicationMenuBuilder(MainWindow *parent, ThreadedApplicationClient *client, const ITranslator *translator,
         const Preference *preference);
-    ~CocoaApplicationMenuBuilder();
+    ~CocoaApplicationMenuBuilder() noexcept;
 
     void openProject();
     void saveProject();
@@ -61,10 +61,10 @@ private:
     void createPluginMenuItem(
         MenuBarHandle menu, MenuItemType type, uint16_t handle, const String &name, const StringList &items) override;
     void updateAllSelectDrawableItems(MenuBarHandle menu, uint16_t handle) override;
-    void removeMenuItemById(MenuBarHandle menu, int index) override;
+    void removeMenuItemById(MenuBarHandle menu, int index) noexcept override;
 
     void appendMenuSeparator(MenuBarHandle menu) override;
-    void clearAllMenuItems(MenuBarHandle menu) override;
+    void clearAllMenuItems(MenuBarHandle menu) noexcept override;
     void setParentMenu(MenuItemHandle parent, MenuBarHandle menu) override;
     void setMenuItemEnabled(MenuItemHandle item, bool value) override;
     void setMenuItemChecked(MenuItemHandle item, bool value) override;

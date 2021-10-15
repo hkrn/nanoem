@@ -28,7 +28,7 @@ Win32ApplicationMenuBuilder::Win32ApplicationMenuBuilder(
     m_allocator->alloc();
 }
 
-Win32ApplicationMenuBuilder::~Win32ApplicationMenuBuilder()
+Win32ApplicationMenuBuilder::~Win32ApplicationMenuBuilder() noexcept
 {
     clearAllMenuItems();
     bx::destroyHandleAlloc(g_emapp_allocator, m_allocator);
@@ -177,21 +177,26 @@ Win32ApplicationMenuBuilder::getMenuItemState(Win32MenuItem *item, MENUITEMINFOW
 void
 Win32ApplicationMenuBuilder::createAllMenus()
 {
+    auto windowHandle = m_mainWindow->windowHandle();
+    SetMenu(windowHandle, nullptr);
+    DrawMenuBar(windowHandle);
     clearAllMenuItems();
     initialize();
-    MainMenuBarHandle handle = reinterpret_cast<MainMenuBarHandle>(m_mainWindow->menuHandle());
-    createFileMenu(handle);
-    createEditMenu(handle);
+    auto menuHandle = m_mainWindow->menuHandle();
+    auto mainMenuHandle = reinterpret_cast<MainMenuBarHandle>(menuHandle);
+    createFileMenu(mainMenuHandle);
+    createEditMenu(mainMenuHandle);
     appendMenuSeparator(m_editMenu);
     appendMenuItem(m_editMenu, kMenuItemTypeEditPreference);
-    createProjectMenu(handle);
-    createCameraMenu(handle);
-    createLightMenu(handle);
-    createModelMenu(handle);
-    createAccessoryMenu(handle);
-    createWindowMenu(handle);
-    createHelpMenu(handle);
-    DrawMenuBar(m_mainWindow->windowHandle());
+    createProjectMenu(mainMenuHandle);
+    createCameraMenu(mainMenuHandle);
+    createLightMenu(mainMenuHandle);
+    createModelMenu(mainMenuHandle);
+    createAccessoryMenu(mainMenuHandle);
+    createWindowMenu(mainMenuHandle);
+    createHelpMenu(mainMenuHandle);
+    SetMenu(windowHandle, menuHandle);
+    DrawMenuBar(windowHandle);
 }
 
 ApplicationMenuBuilder::MenuBarHandle
@@ -394,7 +399,7 @@ Win32ApplicationMenuBuilder::updateAllSelectDrawableItems(MenuBarHandle menu, ui
 }
 
 void
-Win32ApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index)
+Win32ApplicationMenuBuilder::removeMenuItemById(MenuBarHandle menu, int index) noexcept
 {
     Win32Menu *mu = reinterpret_cast<Win32Menu *>(menu);
     MENUITEMINFOW info = {};
@@ -522,7 +527,7 @@ Win32ApplicationMenuBuilder::createHelpMenu(MainMenuBarHandle mainMenu)
 }
 
 void
-Win32ApplicationMenuBuilder::clearAllMenuItems()
+Win32ApplicationMenuBuilder::clearAllMenuItems() noexcept
 {
     for (auto it : m_menuItemInstances) {
         delete it;
@@ -554,13 +559,13 @@ Win32ApplicationMenuBuilder::fillDynamicMenuItem(const Lambda &lambda, MENUITEMI
 }
 
 const char *
-Win32ApplicationMenuBuilder::translateMenuItemWin32(MenuItemType type) const
+Win32ApplicationMenuBuilder::translateMenuItemWin32(MenuItemType type) const noexcept
 {
     return m_translator->translate(menuItemString(type));
 }
 
 const wchar_t *
-Win32ApplicationMenuBuilder::localizedMenuItemString(const char *text, const char *shortcut) const
+Win32ApplicationMenuBuilder::localizedMenuItemString(const char *text, const char *shortcut) const noexcept
 {
     auto it = m_localizedMessageCache.find(text);
     if (it == m_localizedMessageCache.end()) {
