@@ -177,21 +177,26 @@ Win32ApplicationMenuBuilder::getMenuItemState(Win32MenuItem *item, MENUITEMINFOW
 void
 Win32ApplicationMenuBuilder::createAllMenus()
 {
+    auto windowHandle = m_mainWindow->windowHandle();
+    SetMenu(windowHandle, nullptr);
+    DrawMenuBar(windowHandle);
     clearAllMenuItems();
     initialize();
-    MainMenuBarHandle handle = reinterpret_cast<MainMenuBarHandle>(m_mainWindow->menuHandle());
-    createFileMenu(handle);
-    createEditMenu(handle);
+    auto menuHandle = m_mainWindow->menuHandle();
+    auto mainMenuHandle = reinterpret_cast<MainMenuBarHandle>(menuHandle);
+    createFileMenu(mainMenuHandle);
+    createEditMenu(mainMenuHandle);
     appendMenuSeparator(m_editMenu);
     appendMenuItem(m_editMenu, kMenuItemTypeEditPreference);
-    createProjectMenu(handle);
-    createCameraMenu(handle);
-    createLightMenu(handle);
-    createModelMenu(handle);
-    createAccessoryMenu(handle);
-    createWindowMenu(handle);
-    createHelpMenu(handle);
-    DrawMenuBar(m_mainWindow->windowHandle());
+    createProjectMenu(mainMenuHandle);
+    createCameraMenu(mainMenuHandle);
+    createLightMenu(mainMenuHandle);
+    createModelMenu(mainMenuHandle);
+    createAccessoryMenu(mainMenuHandle);
+    createWindowMenu(mainMenuHandle);
+    createHelpMenu(mainMenuHandle);
+    SetMenu(windowHandle, menuHandle);
+    DrawMenuBar(windowHandle);
 }
 
 ApplicationMenuBuilder::MenuBarHandle

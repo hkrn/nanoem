@@ -115,7 +115,7 @@ MainWindow::MainWindow(const bx::CommandLine *cmd, const Preference *preference,
         m_accelerators = CreateAcceleratorTableW(accelerators, BX_COUNTOF(accelerators));
         m_devicePixelRatio = devicePixelRatio;
         RECT windowRect = { 0, 0, LONG(rect.z * devicePixelRatio), LONG(rect.w * devicePixelRatio) };
-        AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, FALSE, 0);
+        AdjustWindowRectEx(&windowRect, WS_OVERLAPPEDWINDOW, TRUE, 0);
         m_menuHandle = CreateMenu();
         const ApplicationPreference preference(m_service);
         m_menuBuilder =
