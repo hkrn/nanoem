@@ -1978,12 +1978,22 @@ MainWindow::setupOpenGLRenderer(HWND windowHandle, Error &error)
     static const int WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x0002;
     static const int WGL_CONTEXT_PROFILE_MASK_ARB = 0x9126;
     static const int WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x1;
-    static const int attributes[] = { WGL_CONTEXT_MAJOR_VERSION_ARB, 3, WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-        WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_DEBUG_BIT_ARB | WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
-        WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB, 0 };
+    static const int kCreateOpenGLContextAttributes[] = {
+        WGL_CONTEXT_MAJOR_VERSION_ARB,
+        3,
+        WGL_CONTEXT_MINOR_VERSION_ARB,
+        3,
+        WGL_CONTEXT_FLAGS_ARB,
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
+        WGL_CONTEXT_DEBUG_BIT_ARB |
+#endif /* SOKOL_DEBUG */
+            WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+        WGL_CONTEXT_PROFILE_MASK_ARB,
+        WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+        0
+    };
     HDC device = GetDC(windowHandle);
-    PIXELFORMATDESCRIPTOR pfd;
-    memset(&pfd, 0, sizeof(pfd));
+    PIXELFORMATDESCRIPTOR pfd = {};
     pfd.nSize = sizeof(pfd);
     pfd.nVersion = 1;
     pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
@@ -2010,7 +2020,7 @@ MainWindow::setupOpenGLRenderer(HWND windowHandle, Error &error)
     HGLRC context = nullptr;
     if (auto wglCreateContextAttribsARB =
             reinterpret_cast<pfn_wglCreateContextAttribsARB>(wglGetProcAddress("wglCreateContextAttribsARB"))) {
-        context = wglCreateContextAttribsARB(device, temp, attributes);
+        context = wglCreateContextAttribsARB(device, temp, kCreateOpenGLContextAttributes);
     }
     if (!context) {
         createLastError(error);
