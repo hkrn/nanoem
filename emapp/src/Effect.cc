@@ -1459,7 +1459,7 @@ Effect::findTechnique(const String &passType, const nanoem_model_material_t *mat
                     break;
                 }
             }
-            if (!foundTechnique) {
+            if (!foundTechnique && !m_project->isOffscreenRenderPassActive()) {
                 foundTechnique = m_fallbackModelProgramBundle->findTechnique(
                     passType, materialPtr, materialIndex, numMaterials, model);
             }
