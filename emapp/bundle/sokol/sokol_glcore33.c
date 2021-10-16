@@ -28,7 +28,7 @@ sgx_setup(const sg_desc *desc)
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
     if (glDebugMessageCallback) {
         glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, GL_FALSE);
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_LOW, 0, NULL, GL_TRUE);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_MEDIUM, 0, NULL, GL_TRUE);
         glDebugMessageCallback(sgx_debug_callback, NULL);
         _SG_GL_CHECK_ERROR();
     }
