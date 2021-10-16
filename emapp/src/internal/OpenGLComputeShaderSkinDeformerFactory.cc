@@ -566,7 +566,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createSdefBuffer()
 void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t object, const char *suffix)
 {
-#if defined(SOKOL_DEBUG)
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
     char label[Inline::kMarkerStringLength];
     const char *name = m_model->canonicalNameConstString();
     StringUtils::format(label, sizeof(label), "Models/%s/Compute/%s", name, suffix);

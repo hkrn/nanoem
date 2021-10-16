@@ -729,7 +729,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createSdefBuffer()
 void
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t object, nanoem_u32_t type, const char *suffix)
 {
-#if defined(SOKOL_DEBUG)
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
     char label[Inline::kMarkerStringLength];
     const char *name = m_model->canonicalNameConstString();
     StringUtils::format(label, sizeof(label), "Models/%s/TransformFeedback/%s", name, suffix);

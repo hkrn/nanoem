@@ -29,11 +29,11 @@ endfunction()
 
 function(nanoem_emapp_link_executable item)
   target_compile_definitions(${item} PRIVATE BX_CONFIG_ALLOCATOR_CRT=0
-                             BX_CONFIG_ALLOCATOR_DEBUG=$<BOOL:${NANOEM_ENABLE_DEBUG_ALLOCATOR}>
-                             SOKOL_DEBUG=$<BOOL:${SOKOL_ENABLE_DEBUG}>)
+                             BX_CONFIG_ALLOCATOR_DEBUG=$<BOOL:${NANOEM_ENABLE_DEBUG_ALLOCATOR}>)
   set_property(TARGET ${item} emapp APPEND PROPERTY COMPILE_DEFINITIONS
                $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS=1>
-               $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL>
+               $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL=1>
+               $<$<BOOL:${SOKOL_ENABLE_DEBUG}>:SOKOL_DEBUG=1>
                __STDC_LIMIT_MACROS
                __STDC_CONSTANT_MACROS
                __STDC_FORMAT_MACROS)
