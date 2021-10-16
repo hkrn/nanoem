@@ -157,6 +157,7 @@ public:
         const char *label, int *value, bool enabled, int min, int max, const char *format, ImGuiSliderFlags flags);
     static bool handleSliderScalarN(const char *label, ImGuiDataType dataType, void *value, int numComponents,
         bool enabled, const void *min, const void *max, const char *format, ImGuiSliderFlags flags);
+    static void getImageCoordinate(ImVec2 &uv0, ImVec2 &uv1) NANOEM_DECL_NOEXCEPT;
     static void saveDefaultStyle(nanoem_f32_t devicePixelRatio);
     static void restoreDefaultStyle();
 
