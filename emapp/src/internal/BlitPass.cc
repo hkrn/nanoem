@@ -87,10 +87,11 @@ BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, 
     sg_pass_action pa;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
-    m_bindings.fs_images[0] = source.first;
+    sg_bindings bindings(m_bindings);
+    bindings.fs_images[0] = source.first;
     sg::PassBlock pb(drawQueue, dest.first, pa);
     pb.applyViewport(viewport.x, viewport.y, viewport.z, viewport.w);
-    pb.applyPipelineBindings(pipeline, m_bindings);
+    pb.applyPipelineBindings(pipeline, bindings);
     pb.draw(0, 4);
 }
 
@@ -108,9 +109,10 @@ BlitPass::draw(sg::PassBlock::IDrawQueue *drawQueue, sg_pipeline pipeline, sg_pa
     sg_pass_action pa;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
-    m_bindings.fs_images[0] = source;
+    sg_bindings bindings(m_bindings);
+    bindings.fs_images[0] = source;
     sg::PassBlock pb(drawQueue, dest, pa);
-    pb.applyPipelineBindings(pipeline, m_bindings);
+    pb.applyPipelineBindings(pipeline, bindings);
     pb.draw(0, 4);
 }
 
