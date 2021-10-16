@@ -6189,10 +6189,8 @@ Effect::clearRenderPass(
         pa.depth.value = m_clearDepth;
     }
     RenderTargetNormalizer *renderTargetNormalizer = nullptr;
-    char nameBuffer[Inline::kMarkerStringLength];
-    StringUtils::format(nameBuffer, sizeof(nameBuffer), "Effects/%s/ClearPass/%s", nameConstString(), target.c_str());
-    sg_pass pass = resetRenderPass(drawable, nameBuffer, nullptr, renderTargetNormalizer);
-    m_project->setRenderPassName(pass, nameBuffer);
+    sg_pass pass = resetRenderPass(drawable, name, nullptr, renderTargetNormalizer);
+    m_project->setRenderPassName(pass, name);
     if (renderTargetNormalizer) {
         renderPassScope->reset(renderTargetNormalizer);
         m_project->clearRenderPass(

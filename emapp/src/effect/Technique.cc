@@ -696,9 +696,9 @@ Technique::interpretScriptCommand(ScriptCommandType type, const String &value, c
         SG_INSERT_MARKERF(
             "%d: %s/%s/Clear=%s", scriptIndex, m_effect->nameConstString(), nameConstString(), value.c_str());
         char nameBuffer[Inline::kMarkerStringLength];
-        StringUtils::format(
-            nameBuffer, sizeof(nameBuffer), "%s/%s/Clear", m_effect->nameConstString(), nameConstString());
-        m_effect->clearRenderPass(drawable, nameConstString(), value, currentRenderPassScope());
+        StringUtils::format(nameBuffer, sizeof(nameBuffer), "Effects/%s/Techniques/%s",
+            m_effect->nameConstString(), nameConstString());
+        m_effect->clearRenderPass(drawable, nameBuffer, value, currentRenderPassScope());
         break;
     }
     case kScriptCommandTypeSetRenderDepthStencilTarget: {

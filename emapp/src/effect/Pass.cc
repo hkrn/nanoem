@@ -149,8 +149,8 @@ Pass::interpretScriptCommand(ScriptCommandType type, const String &value, const 
         SG_INSERT_MARKERF("%d: %s/%s/%s/Clear=%s", scriptIndex, m_effect->nameConstString(),
             m_techniquePtr->nameConstString(), nameConstString(), value.c_str());
         char nameBuffer[Inline::kMarkerStringLength];
-        StringUtils::format(nameBuffer, sizeof(nameBuffer), "Effects/%s/%s/%s/Clear", m_effect->nameConstString(),
-            m_techniquePtr->nameConstString(), nameConstString());
+        StringUtils::format(nameBuffer, sizeof(nameBuffer), "Effects/%s/Techniques/%s/Passes/%s",
+            m_effect->nameConstString(), m_techniquePtr->nameConstString(), nameConstString());
         m_effect->clearRenderPass(drawable, nameBuffer, value, m_techniquePtr->currentRenderPassScope());
         break;
     }
