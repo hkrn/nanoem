@@ -26,6 +26,7 @@ class AccessoryOpacityValueState;
 class AccessoryOrientationVectorValueState;
 class AccessoryScaleFactorValueState;
 class AccessoryTranslationVectorValueState;
+class BaseCameraVectorValueState;
 class BoneOrientationValueState;
 class BoneTranslationValueState;
 class CameraAngleVectorValueState;
@@ -327,6 +328,8 @@ private:
     static nanoem_rsize_t findTrack(const void *opaque, ITrack::Type targetTrackType, Project::TrackList &tracks);
     static bool isRhombusReactionSelectable(RhombusReactionType type) NANOEM_DECL_NOEXCEPT;
     static bool handleVectorValueState(IVectorValueState *state);
+    static bool validateCameraState(
+        BaseCameraVectorValueState *state, const ICamera *camera, const Project *project) NANOEM_DECL_NOEXCEPT;
     static void appendDrawFlags(
         const Model *activeModel, const imgui::ModelParameterDialog *dialog, nanoem_u32_t &flags) NANOEM_DECL_NOEXCEPT;
 

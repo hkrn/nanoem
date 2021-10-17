@@ -2101,6 +2101,13 @@ ImGuiWindow::isRhombusReactionSelectable(RhombusReactionType type) NANOEM_DECL_N
 }
 
 bool
+ImGuiWindow::validateCameraState(
+    BaseCameraVectorValueState *state, const ICamera *camera, const Project *project) NANOEM_DECL_NOEXCEPT
+{
+    return state->camera() == camera && state->project() == project;
+}
+
+bool
 ImGuiWindow::handleVectorValueState(IVectorValueState *state)
 {
     bool deletable = true;
@@ -2257,7 +2264,12 @@ void
 ImGuiWindow::setCameraLookAt(const Vector3 &value, ICamera *camera, Project *project)
 {
     if (m_cameraLookAtVectorValueState) {
-        m_cameraLookAtVectorValueState->setValue(glm::value_ptr(value));
+        if (validateCameraState(m_cameraLookAtVectorValueState, camera, project)) {
+            m_cameraLookAtVectorValueState->setValue(glm::value_ptr(value));
+        }
+        else {
+            nanoem_delete_safe(m_cameraLookAtVectorValueState);
+        }
     }
     else if (camera && project && !project->isPlaying()) {
         m_cameraLookAtVectorValueState = nanoem_new(CameraLookAtVectorValueState(project, camera));
@@ -2268,7 +2280,12 @@ void
 ImGuiWindow::setCameraAngle(const Vector3 &value, ICamera *camera, Project *project)
 {
     if (m_cameraAngleVectorValueState) {
-        m_cameraAngleVectorValueState->setValue(glm::value_ptr(glm::radians(value)));
+        if (validateCameraState(m_cameraAngleVectorValueState, camera, project)) {
+            m_cameraAngleVectorValueState->setValue(glm::value_ptr(glm::radians(value)));
+        }
+        else {
+            nanoem_delete_safe(m_cameraAngleVectorValueState);
+        }
     }
     else if (camera && project && !project->isPlaying()) {
         m_cameraAngleVectorValueState = nanoem_new(CameraAngleVectorValueState(project, camera));
@@ -2279,7 +2296,12 @@ void
 ImGuiWindow::setCameraDistance(nanoem_f32_t value, ICamera *camera, Project *project)
 {
     if (m_cameraDistanceVectorValueState) {
-        m_cameraDistanceVectorValueState->setValue(&value);
+        if (validateCameraState(m_cameraDistanceVectorValueState, camera, project)) {
+            m_cameraDistanceVectorValueState->setValue(&value);
+        }
+        else {
+            nanoem_delete_safe(m_cameraDistanceVectorValueState);
+        }
     }
     else if (camera && project && !project->isPlaying()) {
         m_cameraDistanceVectorValueState = nanoem_new(CameraDistanceVectorValueState(project, camera));
@@ -2290,7 +2312,12 @@ void
 ImGuiWindow::setCameraFov(nanoem_f32_t value, ICamera *camera, Project *project)
 {
     if (m_cameraFovVectorValueState) {
-        m_cameraFovVectorValueState->setValue(&value);
+        if (validateCameraState(m_cameraFovVectorValueState, camera, project)) {
+            m_cameraFovVectorValueState->setValue(&value);
+        }
+        else {
+            nanoem_delete_safe(m_cameraFovVectorValueState);
+        }
     }
     else if (camera && project && !project->isPlaying()) {
         m_cameraFovVectorValueState = nanoem_new(CameraFovVectorValueState(project, camera));
