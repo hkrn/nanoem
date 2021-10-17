@@ -199,16 +199,25 @@ struct AVFoundationEncoder {
                     m_numChannels, AVNumberOfChannelsKey,
                     [[NSData alloc] initWithBytes:&channelLayout length:sizeof(channelLayout)], AVChannelLayoutKey,
                     nil];
-                audioInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio
-                                                            outputSettings:outputAudioSettings];
-                if ([writer canAddInput:audioInput]) {
-                    [writer addInput:audioInput];
+                @try {
+                    audioInput = [[AVAssetWriterInput alloc] initWithMediaType:AVMediaTypeAudio
+                                                                outputSettings:outputAudioSettings];
+                    if ([writer canAddInput:audioInput]) {
+                        [writer addInput:audioInput];
+                    }
+                } @catch (NSException *exception) {
+                    NSDictionary *userInfo =
+                        [[NSDictionary alloc] initWithObjectsAndKeys:exception.reason, NSLocalizedFailureReasonErrorKey, nil];
+                    error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:0 userInfo:userInfo];
                 }
             }
             else {
                 dispatch_semaphore_signal(m_audioCompletionSema);
             }
-            if ([writer canAddInput:videoInput]) {
+            if (error != nil) {
+                m_error = error;
+            }
+            else if ([writer canAddInput:videoInput]) {
                 [writer addInput:videoInput];
                 NSNumber *stride = [[NSNumber alloc] initWithInt:m_width.intValue * 4];
                 AudioStreamBasicDescription streamBasicDescription;

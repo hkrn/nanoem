@@ -32,7 +32,7 @@ findLinearPCMSamplesPayload(
             chunk.m_size = 0;
             offset += 4;
         }
-        else if (chunk.m_id == nanoem_fourcc('f', 'm', 't', ' ') && chunk.m_size == sizeof(format)) {
+        else if (chunk.m_id == nanoem_fourcc('f', 'm', 't', ' ') && chunk.m_size >= sizeof(format)) {
             format = *reinterpret_cast<const BaseAudioPlayer::Format *>(dataPtr + offset + sizeof(chunk));
             formatFound = true;
         }
