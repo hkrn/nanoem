@@ -17,14 +17,15 @@ ImVec2
 BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height, nanoem_f32_t scaleFactor) NANOEM_DECL_NOEXCEPT
 {
     const ImGuiStyle &style = ImGui::GetStyle();
-    const nanoem_f32_t avail = ImGui::GetContentRegionAvail().x - (style.IndentSpacing + style.FramePadding.x);
+    const nanoem_f32_t avail = ImGui::GetContentRegionAvail().x - (style.IndentSpacing + style.FramePadding.x),
+        inverseAspectRatio = (height * 1.0f) / (width * 1.0f);
     ImVec2 size;
     if (width > avail) {
-        size = height > avail ? ImVec2(avail * scaleFactor, avail * scaleFactor)
-                              : ImVec2(avail * scaleFactor, height * scaleFactor);
+        size = height > avail ? ImVec2(avail * scaleFactor, avail * inverseAspectRatio * scaleFactor)
+                              : ImVec2(avail * scaleFactor, height * inverseAspectRatio * scaleFactor);
     }
     else {
-        size = ImVec2(width * scaleFactor, height * scaleFactor);
+        size = ImVec2(width * scaleFactor, height * inverseAspectRatio * scaleFactor);
     }
     return size;
 }

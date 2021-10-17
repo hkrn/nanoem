@@ -588,7 +588,6 @@ void
 EffectParameterDialog::layoutRenderTargetImage(
     sg_image handle, const Vector2UI16 &size, const String &name, const String &desc)
 {
-    BX_UNUSED_1(size);
     ImGui::TextUnformatted(name.c_str());
     MutableString descMut(desc.c_str(), desc.c_str() + desc.size());
     descMut.push_back(0);
@@ -596,7 +595,7 @@ EffectParameterDialog::layoutRenderTargetImage(
         ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 2), ImGuiInputTextFlags_ReadOnly);
     ImVec2 uv0, uv1;
     ImGuiWindow::getImageCoordinate(uv0, uv1);
-    ImGui::Image(reinterpret_cast<ImTextureID>(handle.id), ImGui::GetContentRegionAvail(), uv0, uv1);
+    ImGui::Image(reinterpret_cast<ImTextureID>(handle.id), calcExpandedImageSize(size.x, size.y, 1.0f), uv0, uv1);
 }
 
 void
