@@ -21,6 +21,9 @@ public:
     BaseCameraVectorValueState(Project *project, ICamera *camera);
     ~BaseCameraVectorValueState();
 
+    const Project *project() const NANOEM_DECL_NOEXCEPT;
+    const ICamera *camera() const NANOEM_DECL_NOEXCEPT;
+
 protected:
     void update();
 

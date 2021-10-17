@@ -28,6 +28,18 @@ BaseCameraVectorValueState::~BaseCameraVectorValueState()
     m_camera = 0;
 }
 
+const Project *
+BaseCameraVectorValueState::project() const NANOEM_DECL_NOEXCEPT
+{
+    return m_project;
+}
+
+const ICamera *
+BaseCameraVectorValueState::camera() const NANOEM_DECL_NOEXCEPT
+{
+    return m_camera;
+}
+
 void
 BaseCameraVectorValueState::update()
 {
