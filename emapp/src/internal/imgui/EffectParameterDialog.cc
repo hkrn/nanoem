@@ -249,7 +249,9 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     addSeparator();
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
     if (ImGui::TreeNode(textureID, "%s", tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
-        ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), ImVec2(0, 0), ImVec2(1, 1),
+        ImVec2 uv0, uv1;
+        ImGuiWindow::getImageCoordinate(uv0, uv1);
+        ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), uv0, uv1,
             ImVec4(1, 1, 1, 1), ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
         ImGui::TreePop();
     }
@@ -586,13 +588,14 @@ void
 EffectParameterDialog::layoutRenderTargetImage(
     sg_image handle, const Vector2UI16 &size, const String &name, const String &desc)
 {
-    BX_UNUSED_1(size);
     ImGui::TextUnformatted(name.c_str());
     MutableString descMut(desc.c_str(), desc.c_str() + desc.size());
     descMut.push_back(0);
     ImGui::InputTextMultiline("##desc", descMut.data(), descMut.size(),
         ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 2), ImGuiInputTextFlags_ReadOnly);
-    ImGui::Image(reinterpret_cast<ImTextureID>(handle.id), ImGui::GetContentRegionAvail()); // ImVec2(size.x, size.y));
+    ImVec2 uv0, uv1;
+    ImGuiWindow::getImageCoordinate(uv0, uv1);
+    ImGui::Image(reinterpret_cast<ImTextureID>(handle.id), calcExpandedImageSize(size.x, size.y, 1.0f), uv0, uv1);
 }
 
 void

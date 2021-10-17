@@ -1046,6 +1046,19 @@ ImGuiWindow::handleSliderScalarN(const char *label, ImGuiDataType dataType, void
 }
 
 void
+ImGuiWindow::getImageCoordinate(ImVec2 &uv0, ImVec2 &uv1) NANOEM_DECL_NOEXCEPT
+{
+    if (sg::query_features().origin_top_left) {
+        uv0 = ImVec2(0, 0);
+        uv1 = ImVec2(1, 1);
+    }
+    else {
+        uv0 = ImVec2(0, 1);
+        uv1 = ImVec2(1, 0);
+    }
+}
+
+void
 ImGuiWindow::saveDefaultStyle(nanoem_f32_t deviceScaleRatio)
 {
     ImGui::PushStyleColor(ImGuiCol_WindowBg, kColorWindowBg);

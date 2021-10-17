@@ -459,9 +459,10 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::alignBufferSize(nanoem_rsi
 {
     const nanoem_rsize_t logicalSize = value / sizeof(bx::simd128_t);
     const int stride = static_cast<int>(glm::ceil(glm::sqrt(logicalSize * 1.0f)));
+    const nanoem_rsize_t stride2 = static_cast<nanoem_rsize_t>(stride) * stride;
     nanoem_rsize_t actualSize = value;
-    if (stride * stride > logicalSize) {
-        actualSize = stride * stride * sizeof(bx::simd128_t);
+    if (stride2 > logicalSize) {
+        actualSize = stride2 * sizeof(bx::simd128_t);
     }
     return actualSize;
 }
@@ -729,7 +730,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createSdefBuffer()
 void
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t object, nanoem_u32_t type, const char *suffix)
 {
-#if defined(SOKOL_DEBUG)
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
     char label[Inline::kMarkerStringLength];
     const char *name = m_model->canonicalNameConstString();
     StringUtils::format(label, sizeof(label), "Models/%s/TransformFeedback/%s", name, suffix);

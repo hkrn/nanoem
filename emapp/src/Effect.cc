@@ -4086,10 +4086,7 @@ Effect::handleRenderColorTargetSemantic(
             if (it2 != annotations.end()) {
                 enableAA = it2->second.toBool();
             }
-            ImageDescriptionMap::const_iterator it3 = self->m_imageDescriptions.find(parameter.m_name);
-            if (it3 != self->m_imageDescriptions.end()) {
-                container->setColorImageDescription(it3->second);
-            }
+            self->setNormalizedColorImageContainer(parameter.m_name, numMipLevels, container);
             int sampleCount = enableAA ? project->sampleCount() : 1;
             container->create(self, size, scaleFactor, numMipLevels, sampleCount, format);
             if (parameter.m_shared) {
@@ -4246,10 +4243,7 @@ Effect::handleOffscreenRenderTargetSemantic(
                         tinystl::make_pair(StringUtils::skipWhiteSpaces(ptr), StringUtils::skipWhiteSpaces(q)));
                 }
             }
-            ImageDescriptionMap::const_iterator it2 = self->m_imageDescriptions.find(parameter.m_name);
-            if (it2 != self->m_imageDescriptions.end()) {
-                container->setColorImageDescription(it2->second);
-            }
+            self->setNormalizedColorImageContainer(parameter.m_name, numMipLevels, container);
             int sampleCount = enableAA ? project->sampleCount() : 1;
             container->create(self, size, scaleFactor, numMipLevels, sampleCount, format);
             self->m_offscreenRenderTargetOptions.insert(tinystl::make_pair(name, option));
@@ -4655,18 +4649,21 @@ Effect::createOverrideImage(const String &name, const IImageView *image, bool mi
             const int numMipmaps = overridenImageDescription.num_mipmaps;
             if (mipmap && m_project->isMipmapEnabled() && numMipmaps != 1) {
                 switch (minFilterValue) {
-                case SG_FILTER_LINEAR:
+                case SG_FILTER_LINEAR: {
                     imageDescription.min_filter = SG_FILTER_LINEAR_MIPMAP_LINEAR;
                     break;
-                case SG_FILTER_NEAREST:
+                }
+                case SG_FILTER_NEAREST: {
                     imageDescription.min_filter = SG_FILTER_NEAREST_MIPMAP_NEAREST;
                     break;
+                }
                 case SG_FILTER_LINEAR_MIPMAP_LINEAR:
                 case SG_FILTER_LINEAR_MIPMAP_NEAREST:
                 case SG_FILTER_NEAREST_MIPMAP_LINEAR:
-                case SG_FILTER_NEAREST_MIPMAP_NEAREST:
+                case SG_FILTER_NEAREST_MIPMAP_NEAREST: {
                     imageDescription.min_filter = minFilterValue;
                     break;
+                }
                 default:
                     break;
                 }
@@ -5669,6 +5666,25 @@ Effect::createImageFromContainer(const ImageResourceParameter &parameter, bimg::
 }
 
 void
+Effect::setNormalizedColorImageContainer(const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container)
+{
+    ImageDescriptionMap::const_iterator it = m_imageDescriptions.find(name);
+    if (it != m_imageDescriptions.end()) {
+        const sg_backend backend = sg::query_backend();
+        if (backend == SG_BACKEND_GLCORE33 || backend == SG_BACKEND_GLES3) {
+            sg_image_desc desc(it->second);
+            if (numMipLevels == 1) {
+                effect::RenderState::normalizeMinFilter(desc.min_filter);
+            }
+            container->setColorImageDescription(desc);
+        }
+        else {
+            container->setColorImageDescription(it->second);
+        }
+    }
+}
+
+void
 Effect::resetPassDescription()
 {
     sg_image_desc &colorImageDesc = m_currentNamedPrimaryRenderTargetColorImageDescription.second;
@@ -6173,10 +6189,8 @@ Effect::clearRenderPass(
         pa.depth.value = m_clearDepth;
     }
     RenderTargetNormalizer *renderTargetNormalizer = nullptr;
-    char nameBuffer[Inline::kMarkerStringLength];
-    StringUtils::format(nameBuffer, sizeof(nameBuffer), "Effects/%s/ClearPass/%s", nameConstString(), target.c_str());
-    sg_pass pass = resetRenderPass(drawable, nameBuffer, nullptr, renderTargetNormalizer);
-    m_project->setRenderPassName(pass, nameBuffer);
+    sg_pass pass = resetRenderPass(drawable, name, nullptr, renderTargetNormalizer);
+    m_project->setRenderPassName(pass, name);
     if (renderTargetNormalizer) {
         renderPassScope->reset(renderTargetNormalizer);
         m_project->clearRenderPass(

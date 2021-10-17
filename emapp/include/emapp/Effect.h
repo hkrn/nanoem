@@ -400,6 +400,8 @@ private:
     void parseImagePayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
     void parsePortableFloatMapPayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
     void createImageFromContainer(const ImageResourceParameter &parameter, bimg::ImageContainer *&container);
+    void setNormalizedColorImageContainer(
+        const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container);
     void resetPassDescription();
     sg_pass resetRenderPass(const IDrawable *drawable, const char *label, effect::Pass *passPtr,
         effect::RenderTargetNormalizer *&normalizer);

@@ -87,10 +87,11 @@ BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, 
     sg_pass_action pa;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
-    m_bindings.fs_images[0] = source.first;
+    sg_bindings bindings(m_bindings);
+    bindings.fs_images[0] = source.first;
     sg::PassBlock pb(drawQueue, dest.first, pa);
     pb.applyViewport(viewport.x, viewport.y, viewport.z, viewport.w);
-    pb.applyPipelineBindings(pipeline, m_bindings);
+    pb.applyPipelineBindings(pipeline, bindings);
     pb.draw(0, 4);
 }
 
@@ -108,9 +109,10 @@ BlitPass::draw(sg::PassBlock::IDrawQueue *drawQueue, sg_pipeline pipeline, sg_pa
     sg_pass_action pa;
     Inline::clearZeroMemory(pa);
     pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
-    m_bindings.fs_images[0] = source;
+    sg_bindings bindings(m_bindings);
+    bindings.fs_images[0] = source;
     sg::PassBlock pb(drawQueue, dest, pa);
-    pb.applyPipelineBindings(pipeline, m_bindings);
+    pb.applyPipelineBindings(pipeline, bindings);
     pb.draw(0, 4);
 }
 
@@ -160,12 +162,20 @@ BlitPass::setupShaderDescription(sg_shader_desc &desc)
     else if (backend == SG_BACKEND_GLCORE33) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_blit_fs_glsl_core33_data);
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_blit_vs_glsl_core33_data);
+#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+#else
+        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     else if (backend == SG_BACKEND_GLES3) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_blit_fs_glsl_es3_data);
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_blit_vs_glsl_es3_data);
+#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+#else
+        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     desc.vs.entry = "nanoemVSMain";
     desc.fs.entry = "nanoemPSMain";
