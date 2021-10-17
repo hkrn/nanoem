@@ -235,12 +235,22 @@ CapturingPassState::ImageBlitter::setupShaderDescription(sg_shader_desc &desc)
     else if (backend == SG_BACKEND_GLCORE33) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_fs_glsl_core33_data);
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_vs_glsl_core33_data);
+#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+#else
+        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D,
+            SG_SAMPLERTYPE_FLOAT };
+#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     else if (backend == SG_BACKEND_GLES3) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_fs_glsl_es3_data);
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_vs_glsl_es3_data);
+#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+#else
+        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D,
+            SG_SAMPLERTYPE_FLOAT };
+#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     desc.vs.entry = "nanoemVSMain";
     desc.fs.entry = "nanoemPSMain";

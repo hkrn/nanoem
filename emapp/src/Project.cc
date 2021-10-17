@@ -501,7 +501,7 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
                 "Project::DrawQueue::drawPass(pass=%s, index=%d, type=kCommandTypeApplyPipelineBinding, name=%s)",
                 project->findRenderPassName(pass->m_handle), it2 - pass->m_items->begin(),
                 project->findRenderPipelineName(item.u.m_pb.m_pipeline));
-#endif
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
             sg::apply_pipeline(item.u.m_pb.m_pipeline);
             sg::apply_bindings(&item.u.m_pb.m_bindings);
             hasher.add(item.u.m_pb);
