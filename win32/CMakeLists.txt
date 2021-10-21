@@ -22,7 +22,7 @@ if(TARGET sokol_glcore33)
 endif()
 nanoem_emapp_link_executable(${NANOEM_EXECUTABLE_NAME})
 
-set(win32_api_libraries psapi winhttp shlwapi d3d11 dxgi dxguid mf mfplat mfreadwrite mfuuid evr pdh gdi32 shell32 comdlg32)
+set(win32_api_libraries psapi winhttp shlwapi d3d11 dxgi dxguid mf mfplat mfreadwrite mfuuid evr pdh gdi32 shell32 comdlg32 wmcodecdspuuid)
 target_link_libraries(${NANOEM_EXECUTABLE_NAME} ${win32_api_libraries})
 target_include_directories(${NANOEM_EXECUTABLE_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/emapp/resources/include)
 if(NANOEM_GA_TRACKING_ID)

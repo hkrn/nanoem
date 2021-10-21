@@ -81,7 +81,8 @@ runMain(HINSTANCE hInstance, int argc, const char *const *argv)
     Allocator::initialize();
     ThreadedApplicationService::setup();
     int exitCode = -1;
-    if (!FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)) && !FAILED(MFStartup(MF_VERSION))) {
+    if (!FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED)) &&
+        !FAILED(MFStartup(MF_VERSION, MFSTARTUP_NOSOCKET))) {
         GetModuleFileNameW(GetInstanceModule(hInstance), executablePath, ARRAYSIZE(executablePath));
         exitCode = runApplication(hInstance, argc, argv, executablePath);
     }
