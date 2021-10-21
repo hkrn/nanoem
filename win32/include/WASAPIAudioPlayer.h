@@ -79,12 +79,13 @@ private:
     void internalTransitStatePaused(Error &error) override;
     void internalTransitStateResumed(Error &error) override;
     void internalTransitStateStopped(Error &error) override;
-    bool initializeClient(IMMDevice *device, const WAVDescription &desc, Error &error);
+    bool initializeClient(IMMDevice *device, Error &error);
     void destroyClient();
+    void resampleAllLinearPCMSamples(const nanoem_u8_t *data, size_t size, const WAVEFORMATEX *format, Error &error);
     void createAudioRenderThread();
     void createNullRenderThread();
-    void renderAudioBuffer(uint32_t numPaddingPackets, bool enableOffset);
-    void renderNullBuffer(uint32_t numPaddingPackets, bool enableOffset);
+    void renderAudioBuffer(nanoem_rsize_t bytesPerPacket, uint32_t numAvailablePackets, bool enableOffset);
+    void renderNullBuffer(nanoem_rsize_t bytesPerPacket, uint32_t numAvailablePackets, bool enableOffset);
     void destroyRenderThread();
 
     IEventPublisher *m_eventPublisher = nullptr;
@@ -98,6 +99,8 @@ private:
     AudioSessionEventsHandler m_audioSessionEventsHandler;
     NotificationClient m_notificationClient;
     Clock m_clock;
+    ByteArray m_resampledAudioSamples;
+    WAVEFORMATEX m_nativeOutputDescription = {};
     std::atomic<uint64_t> m_offset = 0;
     std::atomic<uint64_t> m_numProceededPackets = 0;
     std::atomic<RequestState> m_requestState = kRequestStateNone;

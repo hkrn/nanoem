@@ -12,6 +12,11 @@
 #include "emapp/IEventPublisher.h"
 #include "emapp/private/CommonInclude.h"
 
+#include <Mferror.h>
+#include <mfapi.h>
+#include <mftransform.h>
+#include <wmcodecdsp.h>
+
 namespace nanoem {
 namespace win32 {
 namespace {
@@ -59,13 +64,13 @@ WASAPIAudioPlayer::initialize(nanoem_frame_index_t duration, nanoem_u32_t sample
         nanoem_u32_t actualSampleRate = sampleRate * kSmoothnessScaleFactor;
         m_linearPCMSamples.resize((static_cast<nanoem_rsize_t>(duration) + 1) * actualSampleRate);
         initializeDescription(8, 1, actualSampleRate, m_linearPCMSamples.size(), m_description);
-        if (!error.hasReason() && initializeClient(device, m_description, error)) {
+        if (!error.hasReason() && initializeClient(device, error)) {
             createNullRenderThread();
         }
         COMInline::safeRelease(device);
         m_offset = 0;
         m_numProceededPackets = 0;
-        m_currentRational.m_denominator = m_description.m_formatData.m_sampleRate;
+        m_currentRational.m_denominator = m_nativeOutputDescription.nSamplesPerSec;
         m_state.first = kStopState;
     }
     return !error.hasReason();
@@ -78,11 +83,11 @@ WASAPIAudioPlayer::expandDuration(nanoem_frame_index_t frameIndex)
         m_client->Stop();
     }
     if (isLoaded()) {
-        const Format &format = m_description.m_formatData;
         const nanoem_rsize_t size = static_cast<nanoem_rsize_t>(frameIndex) *
-            (format.m_sampleRate / Constants::kHalfBaseFPS) * format.m_bytesPerPacket;
-        if (size > m_linearPCMSamples.size()) {
-            m_linearPCMSamples.resize(nanoem_rsize_t(size * 1.5));
+            (m_nativeOutputDescription.nSamplesPerSec / Constants::kHalfBaseFPS) *
+            m_nativeOutputDescription.nBlockAlign;
+        if (size > m_resampledAudioSamples.size()) {
+            m_resampledAudioSamples.resize(nanoem_rsize_t(size * 1.5));
         }
     }
 }
@@ -102,18 +107,19 @@ WASAPIAudioPlayer::loadAllLinearPCMSamples(const nanoem_u8_t *data, size_t size,
     internalTransitStateStopped(error);
     if (m_enumerator) {
         COMInline::wrapCall(m_enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device), error);
-        if (initializeClient(device, m_description, error)) {
+        if (initializeClient(device, error) && !error.hasReason()) {
+            WAVEFORMATEX *mixFormat = nullptr;
+            m_client->GetMixFormat(&mixFormat);
+            resampleAllLinearPCMSamples(data, size, mixFormat, error);
+            m_durationRational.m_numerator = m_resampledAudioSamples.size();
+            m_durationRational.m_denominator =
+                m_nativeOutputDescription.nBlockAlign * m_nativeOutputDescription.nSamplesPerSec;
             m_running = true;
-            if (!error.hasReason()) {
-                createAudioRenderThread();
-                m_durationRational.m_numerator = size;
-                m_linearPCMSamples.assign(data, data + size);
-                m_currentRational.m_denominator = m_description.m_formatData.m_sampleRate;
-                m_durationRational.m_denominator = m_description.m_formatData.m_bytesPerSecond;
-                m_offset = 0;
-                m_numProceededPackets = 0;
-                m_loaded = succeeded = true;
-            }
+            m_linearPCMSamples.assign(data, data + size);
+            m_offset = 0;
+            m_numProceededPackets = 0;
+            m_loaded = succeeded = true;
+            createAudioRenderThread();
         }
         COMInline::safeRelease(device);
     }
@@ -128,10 +134,11 @@ WASAPIAudioPlayer::playPart(double, double)
 void
 WASAPIAudioPlayer::update()
 {
-    const Format &format = m_description.m_formatData;
-    const nanoem_u64_t audioSampleOffset = static_cast<nanoem_u64_t>(m_offset / format.m_bytesPerPacket),
-                       clockSampleOffset = static_cast<nanoem_u64_t>(m_clock.seconds() * format.m_sampleRate),
-                       clockSampleLatencyThreshold = (format.m_sampleRate / 60) * kClockLatencyThresholdFPSCount,
+    const nanoem_u64_t audioSampleOffset =
+                           static_cast<nanoem_u64_t>(m_offset / m_nativeOutputDescription.nBlockAlign),
+                       clockSampleOffset =
+                           static_cast<nanoem_u64_t>(m_clock.seconds() * m_nativeOutputDescription.nSamplesPerSec),
+                       clockSampleLatencyThreshold = (m_nativeOutputDescription.nSamplesPerSec / 60) * kClockLatencyThresholdFPSCount,
                        clockSampleLatency =
                            (clockSampleOffset > audioSampleOffset ? clockSampleOffset - audioSampleOffset
                                                                   : audioSampleOffset - clockSampleOffset) *
@@ -157,7 +164,7 @@ WASAPIAudioPlayer::update()
         IMMDevice *device = nullptr;
         pause();
         COMInline::wrapCall(m_enumerator->GetDefaultAudioEndpoint(eRender, eConsole, &device), error);
-        if (initializeClient(device, m_description, error)) {
+        if (initializeClient(device, error)) {
             m_running = true;
             isLoaded() ? createAudioRenderThread() : createNullRenderThread();
             if (state > kRequestStatePause) {
@@ -174,8 +181,7 @@ WASAPIAudioPlayer::seek(const IAudioPlayer::Rational &value)
 {
     Error error;
     const nanoem_u64_t numProceededPackets = value.m_numerator,
-                       offset =
-                           numProceededPackets * static_cast<nanoem_i64_t>(m_description.m_formatData.m_bytesPerPacket);
+                       offset = numProceededPackets * static_cast<nanoem_i64_t>(m_nativeOutputDescription.nBlockAlign);
     m_clock.seek(value);
     m_numProceededPackets = numProceededPackets;
     m_offset = offset;
@@ -184,37 +190,36 @@ WASAPIAudioPlayer::seek(const IAudioPlayer::Rational &value)
 }
 
 bool
-WASAPIAudioPlayer::initializeClient(IMMDevice *device, const WAVDescription &desc, Error &error)
+WASAPIAudioPlayer::initializeClient(IMMDevice *device, Error &error)
 {
-    const Format &format = desc.m_formatData;
-    WAVEFORMATEX requestFormat = {};
-    requestFormat.wFormatTag = WAVE_FORMAT_PCM;
-    requestFormat.nChannels = format.m_numChannels;
-    requestFormat.nSamplesPerSec = format.m_sampleRate;
-    requestFormat.wBitsPerSample = format.m_bitsPerSample;
-    requestFormat.nBlockAlign = format.m_bytesPerPacket;
-    requestFormat.nAvgBytesPerSec = format.m_bytesPerSecond;
+    const REFERENCE_TIME bufferDuration = static_cast<REFERENCE_TIME>(kNanoSecondsUnit / 10); /* 100msecs */
     const nanoem_u32_t flags = 0 | AUDCLNT_STREAMFLAGS_EVENTCALLBACK | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM |
         AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY;
-    const REFERENCE_TIME bufferDuration = static_cast<REFERENCE_TIME>(kNanoSecondsUnit / 10); /* 100msecs */
     IAudioClient *client = nullptr;
+    bool succeeded = false;
     COMInline::wrapCall(
         device->Activate(__uuidof(IAudioClient), CLSCTX_INPROC_SERVER, nullptr, reinterpret_cast<void **>(&client)),
         error);
-    WAVEFORMATEX *mixFormat;
-    client->GetMixFormat(&mixFormat);
-    COMInline::wrapCall(
-        client->Initialize(AUDCLNT_SHAREMODE_SHARED, flags, bufferDuration, 0, &requestFormat, nullptr), error);
-    COMInline::wrapCall(client->GetBufferSize(&m_numBufferPackets), error);
-    COMInline::wrapCall(client->SetEventHandle(m_eventHandle), error);
-    bool succeeded = !error.hasReason();
-    if (succeeded) {
-        destroyClient();
-        COMInline::wrapCall(client->GetService(IID_PPV_ARGS(&m_renderer)), error);
-        COMInline::wrapCall(client->GetService(IID_PPV_ARGS(&m_volume)), error);
-        COMInline::wrapCall(client->GetService(IID_PPV_ARGS(&m_control)), error);
-        m_control->RegisterAudioSessionNotification(&m_audioSessionEventsHandler);
-        m_client = client;
+    if (client) {
+        WAVEFORMATEX *mixedFormat = nullptr;
+        client->GetMixFormat(&mixedFormat);
+        COMInline::wrapCall(
+            client->Initialize(AUDCLNT_SHAREMODE_SHARED, flags, bufferDuration, 0, mixedFormat, nullptr), error);
+        COMInline::wrapCall(client->GetBufferSize(&m_numBufferPackets), error);
+        COMInline::wrapCall(client->SetEventHandle(m_eventHandle), error);
+        succeeded = !error.hasReason();
+        if (succeeded) {
+            destroyClient();
+            COMInline::wrapCall(client->GetService(IID_PPV_ARGS(&m_renderer)), error);
+            COMInline::wrapCall(client->GetService(IID_PPV_ARGS(&m_volume)), error);
+            COMInline::wrapCall(client->GetService(IID_PPV_ARGS(&m_control)), error);
+            m_control->RegisterAudioSessionNotification(&m_audioSessionEventsHandler);
+            m_nativeOutputDescription = *mixedFormat;
+            m_client = client;
+        }
+        else {
+            COMInline::safeRelease(client);
+        }
     }
     return succeeded;
 }
@@ -236,17 +241,103 @@ WASAPIAudioPlayer::destroyClient()
 }
 
 void
+WASAPIAudioPlayer::resampleAllLinearPCMSamples(
+    const nanoem_u8_t *data, size_t size, const WAVEFORMATEX *format, Error &error)
+{
+    IMFTransform *transform = nullptr;
+    IUnknown *resamplerSink = nullptr;
+    CoCreateInstance(CLSID_CResamplerMediaObject, nullptr, CLSCTX_INPROC_SERVER, IID_IUnknown,
+        reinterpret_cast<void **>(&resamplerSink));
+    resamplerSink->QueryInterface(IID_PPV_ARGS(&transform));
+    IWMResamplerProps *props;
+    transform->QueryInterface(IID_PPV_ARGS(&props));
+    props->SetHalfFilterLength(60);
+    IMFMediaType *inputType = nullptr;
+    WAVEFORMATEXTENSIBLE inputFormatEX = {};
+    auto &inputFormat = inputFormatEX.Format;
+    inputFormatEX.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+    inputFormat.cbSize = 22;
+    inputFormat.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+    inputFormat.nChannels = m_description.m_formatData.m_numChannels;
+    inputFormat.nSamplesPerSec = m_description.m_formatData.m_sampleRate;
+    inputFormat.nBlockAlign = m_description.m_formatData.m_bytesPerPacket;
+    inputFormat.nAvgBytesPerSec = m_description.m_formatData.m_bytesPerSecond;
+    inputFormat.wBitsPerSample = m_description.m_formatData.m_bitsPerSample;
+    MFCreateMediaType(&inputType);
+    MFInitMediaTypeFromWaveFormatEx(inputType, &inputFormat, sizeof(inputFormatEX));
+    transform->SetInputType(0, inputType, 0);
+    IMFMediaType *outputType = nullptr;
+    MFCreateMediaType(&outputType);
+    MFInitMediaTypeFromWaveFormatEx(outputType, format, sizeof(inputFormatEX));
+    transform->SetOutputType(0, outputType, 0);
+    inputType->Release();
+    outputType->Release();
+    transform->ProcessMessage(MFT_MESSAGE_COMMAND_FLUSH, NULL);
+    transform->ProcessMessage(MFT_MESSAGE_NOTIFY_BEGIN_STREAMING, NULL);
+    transform->ProcessMessage(MFT_MESSAGE_NOTIFY_START_OF_STREAM, NULL);
+    const nanoem_rsize_t bufferLength = m_description.m_formatData.m_bytesPerSecond;
+    const DWORD bufferLengthI32 = Inline::saturateInt32U(bufferLength);
+    nanoem_rsize_t offset = 0;
+    DWORD status = 0;
+    HRESULT rc = S_OK;
+    while (size - offset > 0) {
+        IMFMediaBuffer *inputBuffer = nullptr;
+        MFCreateMemoryBuffer(bufferLengthI32, &inputBuffer);
+        BYTE *bytesPtr = nullptr;
+        const nanoem_rsize_t copySize = glm::min(bufferLength, size - offset);
+        inputBuffer->Lock(&bytesPtr, nullptr, nullptr);
+        memcpy(bytesPtr, data + offset, copySize);
+        offset += copySize;
+        inputBuffer->Unlock();
+        inputBuffer->SetCurrentLength(bufferLengthI32);
+        IMFSample *inputSample = nullptr;
+        MFCreateSample(&inputSample);
+        inputSample->AddBuffer(inputBuffer);
+        transform->ProcessInput(0, inputSample, 0);
+        inputBuffer->Release();
+        inputSample->Release();
+        do {
+            MFT_OUTPUT_DATA_BUFFER output = {};
+            IMFMediaBuffer *outputBuffer = nullptr;
+            MFCreateMemoryBuffer(format->nAvgBytesPerSec, &outputBuffer);
+            MFCreateSample(&output.pSample);
+            output.pSample->AddBuffer(outputBuffer);
+            rc = transform->ProcessOutput(0, 1, &output, &status);
+            if (rc != S_OK) {
+                outputBuffer->Release();
+                output.pSample->Release();
+                break;
+            }
+            BYTE *bytesPtr = nullptr;
+            DWORD bytesLength = 0;
+            outputBuffer->Lock(&bytesPtr, nullptr, &bytesLength);
+            m_resampledAudioSamples.insert(m_resampledAudioSamples.end(), bytesPtr, bytesPtr + bytesLength);
+            outputBuffer->Unlock();
+            outputBuffer->Release();
+            output.pSample->Release();
+        } while (true);
+    }
+    transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_OF_STREAM, NULL);
+    transform->ProcessMessage(MFT_MESSAGE_COMMAND_DRAIN, NULL);
+    transform->ProcessMessage(MFT_MESSAGE_NOTIFY_END_STREAMING, NULL);
+    transform->Release();
+}
+
+void
 WASAPIAudioPlayer::createAudioRenderThread()
 {
     auto callback = [](LPVOID userData) -> DWORD {
         auto self = static_cast<WASAPIAudioPlayer *>(userData);
         if (!FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))) {
+            const nanoem_rsize_t bytesPerPacket = self->m_nativeOutputDescription.nBlockAlign;
+            const nanoem_u32_t numBufferPackets = self->m_numBufferPackets;
             while (self->m_running) {
                 WaitForSingleObject(self->m_eventHandle, kRenderAudioEventTimeoutMillis);
                 uint32_t numPaddingPackets = 0;
                 if (!FAILED(self->m_client->GetCurrentPadding(&numPaddingPackets)) &&
-                    numPaddingPackets < self->m_numBufferPackets) {
-                    self->renderAudioBuffer(numPaddingPackets, true);
+                    numPaddingPackets < numBufferPackets) {
+                    const uint32_t numAvailablePackets = numBufferPackets - numPaddingPackets;
+                    self->renderAudioBuffer(bytesPerPacket, numAvailablePackets, true);
                 }
             }
             CoUninitialize();
@@ -262,12 +353,15 @@ WASAPIAudioPlayer::createNullRenderThread()
     auto callback = [](LPVOID userData) -> DWORD {
         auto self = static_cast<WASAPIAudioPlayer *>(userData);
         if (!FAILED(CoInitializeEx(nullptr, COINIT_MULTITHREADED))) {
+            const nanoem_rsize_t bytesPerPacket = self->m_nativeOutputDescription.nBlockAlign;
+            const nanoem_u32_t numBufferPackets = self->m_numBufferPackets;
             while (self->m_running) {
                 WaitForSingleObject(self->m_eventHandle, kRenderAudioEventTimeoutMillis);
                 uint32_t numPaddingPackets = 0;
                 if (!FAILED(self->m_client->GetCurrentPadding(&numPaddingPackets)) &&
-                    numPaddingPackets < self->m_numBufferPackets) {
-                    self->renderNullBuffer(numPaddingPackets, true);
+                    numPaddingPackets < numBufferPackets) {
+                    const uint32_t numAvailablePackets = numBufferPackets - numPaddingPackets;
+                    self->renderNullBuffer(bytesPerPacket, numAvailablePackets, true);
                 }
             }
             CoUninitialize();
@@ -278,20 +372,18 @@ WASAPIAudioPlayer::createNullRenderThread()
 }
 
 void
-WASAPIAudioPlayer::renderAudioBuffer(uint32_t numPaddingPackets, bool enableOffset)
+WASAPIAudioPlayer::renderAudioBuffer(
+    nanoem_rsize_t bytesPerPacket, uint32_t numAvailablePackets, bool enableOffset)
 {
-    nanoem_parameter_assert(numPaddingPackets < m_numBufferPackets, "must be less than m_numBufferPackets");
-    const uint32_t numAvailablePackets = m_numBufferPackets - numPaddingPackets;
-    const nanoem_rsize_t bytesPerPacket = m_description.m_formatData.m_bytesPerPacket,
-                         size = glm::min(numAvailablePackets * bytesPerPacket,
-                             nanoem_rsize_t(m_linearPCMSamples.size() - m_offset));
+    const nanoem_rsize_t size =
+        glm::min(numAvailablePackets * bytesPerPacket, nanoem_rsize_t(m_resampledAudioSamples.size() - m_offset));
     Error error;
     BYTE *buffer = nullptr;
     HRESULT result = m_renderer->GetBuffer(numAvailablePackets, &buffer);
     if (result == S_OK) {
         uint64_t numProceededPackets = m_numProceededPackets;
         if (buffer) {
-            memcpy(buffer, m_linearPCMSamples.data() + numProceededPackets * bytesPerPacket, size);
+            memcpy(buffer, m_resampledAudioSamples.data() + numProceededPackets * bytesPerPacket, size);
         }
         COMInline::wrapCall(m_renderer->ReleaseBuffer(numAvailablePackets, 0), error);
         if (enableOffset) {
@@ -308,11 +400,8 @@ WASAPIAudioPlayer::renderAudioBuffer(uint32_t numPaddingPackets, bool enableOffs
 }
 
 void
-WASAPIAudioPlayer::renderNullBuffer(uint32_t numPaddingPackets, bool enableOffset)
+WASAPIAudioPlayer::renderNullBuffer(nanoem_rsize_t bytesPerPacket, uint32_t numAvailablePackets, bool enableOffset)
 {
-    nanoem_parameter_assert(numPaddingPackets < m_numBufferPackets, "must be less than m_numBufferPackets");
-    const nanoem_rsize_t bytesPerPacket = m_description.m_formatData.m_bytesPerPacket;
-    const uint32_t numAvailablePackets = m_numBufferPackets - numPaddingPackets;
     Error error;
     BYTE *buffer = nullptr;
     HRESULT result = m_renderer->GetBuffer(numAvailablePackets, &buffer);
