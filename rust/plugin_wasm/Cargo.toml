@@ -6,19 +6,20 @@ edition = "2018"
 license = "MPL-2.0"
 
 [dependencies]
-anyhow = "~1.0"
-env_logger = "~0.9"
-log = "~0.4"
-wasmer = "~2.0"
-wasmer-wasi = "~2.0"
-walkdir = "~2.0"
+anyhow = "1.0"
+atty = "0.2"
+env_logger = "0.9"
+log = "0.4"
+wasmer = "2.0"
+wasmer-wasi = "2.0"
+walkdir = "2.0"
 
 [dev-dependencies]
-serde = "~1.0"
-serde_derive = "~1.0"
-serde_json = "~1.0"
-maplit = "~1.0"
-rand = "~0.8"
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+maplit = "1.0"
+rand = "0.8"
 
 [lib]
 path = "src/lib.rs"

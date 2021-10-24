@@ -4,6 +4,8 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
+use crate::initialize_env_logger;
+
 use super::super::nanoem_application_plugin_status_t;
 use super::super::PLUGIN_MOTION_IO_ABI_VERSION;
 use super::core::nanoem_application_plugin_motion_io_t;
@@ -24,7 +26,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetABIVersion() -> u32 {
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOInitialize() {
-    env_logger::try_init().unwrap_or_default();
+    initialize_env_logger();
 }
 
 /// # Safety

@@ -92,7 +92,7 @@ fn validate_plugin(instance: &Instance) -> Result<()> {
 
 impl MotionIOPlugin {
     pub fn new(bytes: &[u8], store: &Store, env: &mut WasiEnv) -> Result<Self> {
-        let module = Module::new(&store, bytes)?;
+        let module = Module::new(store, bytes)?;
         let imports = env.import_object(&module)?;
         let instance = Instance::new(&module, &imports)?;
         validate_plugin(&instance)?;
