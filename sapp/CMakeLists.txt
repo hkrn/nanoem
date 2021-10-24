@@ -41,7 +41,7 @@ if(NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN)
   target_link_libraries(${NANOEM_EXECUTABLE_NAME} ${_plugins})
 else()
   foreach(_item ${_plugins})
-    set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/${_item}.touch")
+    set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/intermediate/${_item}.touch")
     add_custom_command(OUTPUT ${touch_file}
                        COMMAND ${CMAKE_COMMAND} -E touch ${touch_file}
                        COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/main.cc

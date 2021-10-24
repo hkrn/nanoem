@@ -1,6 +1,5 @@
 option(NANOEM_ENABLE_UPLOAD_PDB "Enable uploading debug symbols to sentry.io" OFF)
 option(NANOEM_ENABLE_RENDERDOC_WIN32 "Enable renderdoc integration" OFF)
-option(NANOEM_ENABLE_PLUGIN_WASM "Enable bundling plugin_wasm (release)" OFF)
 set(CMAKE_EXE_LINKER_FLAGS "/LARGEADDRESSAWARE")
 
 # version
@@ -80,16 +79,8 @@ get_property(_plugins GLOBAL PROPERTY NANOEM_PROPERTY_INSTALL_PLUGINS)
 if(NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN)
   target_link_libraries(${NANOEM_EXECUTABLE_NAME} ${_plugins})
 else()
-  if(NANOEM_ENABLE_PLUGIN_WASM)
-    set(PLUGIN_WASM_PATH "${PROJECT_SOURCE_DIR}/rust/target/release/plugin_wasm.dll")
-    if(EXISTS ${PLUGIN_WASM_PATH})
-      add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
-                         COMMAND ${CMAKE_COMMAND} ARGS -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins"
-                         COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${PLUGIN_WASM_PATH}" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/plugin_wasm.dll")
-    endif()
-  endif()
   foreach(_item ${_plugins})
-    set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/${_item}.touch")
+    set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/intermediate/${_item}.touch")
     add_custom_command(OUTPUT ${touch_file}
                        COMMAND ${CMAKE_COMMAND} ARGS -E touch ${touch_file}
                        COMMAND ${CMAKE_COMMAND} ARGS -E touch ${CMAKE_CURRENT_BINARY_DIR}/version.rc
