@@ -12,6 +12,7 @@ log = "~0.4"
 wasmer = "~2.0"
 wasmer-wasi = "~2.0"
 walkdir = "~2.0"
+atty = "0.2"
 
 [dev-dependencies]
 serde = "~1.0"

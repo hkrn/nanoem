@@ -106,6 +106,12 @@ fn inner_set_data_internal(
     Ok(())
 }
 
+pub(crate) fn initialize_env_logger() {
+    if atty::is(atty::Stream::Stderr) {
+        env_logger::try_init().unwrap_or_default();
+    }
+}
+
 pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
     instance.exports.get_memory("memory").unwrap()
 }
