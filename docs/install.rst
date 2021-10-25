@@ -67,10 +67,21 @@ nanoem は Retina のような高解像度環境に対応していますが、�
 .. important::
   * 事前に上記の「利用条件」に同意したものとみなします
   * 今後ダウンロード方法が変更される可能性があります
-  * 古いバージョンからアップグレードする場合で巻き戻しをしたい場合は nanoem 自体のバックアップをとってください
+  * 古いバージョンからアップグレードする場合で巻き戻しをしたい場合は github から過去のバージョンをダウンロードしてください
 
-* `macOS 版の配布ページ <https://bowlroll.net/file/71328>`_ または `Windows 版の配布ページ <https://bowlroll.net/file/122592>`_ にアクセス
-* `Download` ボタンを押してダウンロード
+    * 過去に bowlroll で配布されたものと同じものです
+
+* github あるいは bowlroll いずれかからダウンロード（どちらも中身は同じです）
+
+  * github の場合は `Releases <https://github.com/hkrn/nanoem/releases>`_ からダウンロード
+  * bowlroll の場合は以下のリンクから `Download` ボタンを押す
+
+    * `macOS 版の配布ページ <https://bowlroll.net/file/71328>`_
+    * `Windows 版の配布ページ <https://bowlroll.net/file/122592>`_
+
+ダウンロード後の実行方法
+-------------------------------------------------------
+
 * zip ファイルを解凍
 * ``Applications`` フォルダに ``nanoem`` をドラッグ・アンド・ドロップ ※ macOS 版のみ
 
