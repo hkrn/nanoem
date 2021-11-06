@@ -56,6 +56,7 @@ jobs:
             -DNANOEM_ENABLE_BULLET=ON \
             -DNANOEM_ENABLE_GLFW=ON \
             -DNANOEM_ENABLE_ICU=ON \
+            -DNANOEM_ENABLE_IMGUI_FILE_DIALOG=ON \
             -DNANOEM_ENABLE_NMD=ON \
             -DNANOEM_ENABLE_TEST=ON \
             -DNANOEM_INSTALL_EFFECT_PLUGIN=ON \
@@ -72,11 +73,10 @@ jobs:
           cd ${{ github.workspace }}/out/core
           ctest
   build-macos:
-    runs-on: macos-latest
+    runs-on: macos-11
     env:
       FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
       NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
-      NANOEM_TARGET_GENERATOR: Xcode
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -86,11 +86,13 @@ jobs:
         run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: checkout ICU
         run: git clone https://github.com/unicode-org/icu.git dependencies/icu
+      - name: setup prerequisite packages
+        run:
+          brew install ninja
       - name: build all dependencies of nanoem
         run:
           cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
-          NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
           NANOEM_DISABLE_BUILD_MIMALLOC: 1
@@ -113,7 +115,7 @@ jobs:
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON \
             -DNANOEM_TARGET_ARCHITECTURE=x86_64 \
             -DNANOEM_TARGET_COMPILER=clang \
-            -GXcode \
+            -GNinja \
             ../..
           cmake --build . --config release
       - name: test nanoem's unit tests
@@ -166,7 +168,7 @@ jobs:
           cd ${{ github.workspace }}/out/core
           ctest
   codeql:
-    if: github.ref == 'refs/heads/main'
+    if: ${{ false }}
     runs-on: ubuntu-latest
     env:
       FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
