@@ -66,6 +66,8 @@ set_property(CACHE NANOEM_TARGET_ARCHITECTURE PROPERTY STRINGS "x86_64;i386;arm6
 if(MSVC)
   if(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang")
     set(NANOEM_TARGET_COMPILER "clang" CACHE STRING "Target architecture to build nanoem")
+  elseif(${MSVC_VERSION} GREATER_EQUAL 1930)
+    set(NANOEM_TARGET_COMPILER "vs2022" CACHE STRING "Target architecture to build nanoem")
   elseif(${MSVC_VERSION} GREATER_EQUAL 1920)
     set(NANOEM_TARGET_COMPILER "vs2019" CACHE STRING "Target architecture to build nanoem")
   elseif(${MSVC_VERSION} GREATER_EQUAL 1910)

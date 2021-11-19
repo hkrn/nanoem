@@ -123,7 +123,7 @@ jobs:
           cd ${{ github.workspace }}/out/core
           ctest
   build-windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
     env:
       FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
       NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
@@ -139,7 +139,6 @@ jobs:
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: vs2017
-          NANOEM_TARGET_GENERATOR: "Visual Studio 16 2019"
           NANOEM_TARGET_TOOLSET: v141
           NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
           NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
@@ -159,7 +158,7 @@ jobs:
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON `
             -DNANOEM_TARGET_ARCHITECTURE=x86_64 `
             -DNANOEM_TARGET_COMPILER=vs2017 `
-            -G"Visual Studio 16 2019" `
+            -G"Visual Studio 17 2022" `
             -Tv141 `
             ../..
           cmake --build . --config release
