@@ -771,6 +771,37 @@ ImageLoader::flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t hei
     }
 }
 
+bool
+ImageLoader::decodeImageWithSTB(
+    const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr)
+{
+    int width, height, components;
+    bool result = false;
+    if (stbi_uc *data =
+            stbi_load_from_memory(dataPtr, Inline::saturateInt32(dataSize), &width, &height, &components, 4)) {
+        desc.width = width;
+        desc.height = height;
+        desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+        desc.min_filter = SG_FILTER_LINEAR;
+        desc.mag_filter = SG_FILTER_LINEAR;
+        // desc.max_anisotropy = maxAnisotropy;
+        // desc.wrap_u = desc.wrap_v = container.m_wrap;
+        sg_range &content = desc.data.subimage[0][0];
+        content.ptr = data;
+        content.size = nanoem_rsize_t(4) * width * height;
+        *decodedImagePtr = data;
+        result = true;
+    }
+    return result;
+}
+
+void
+ImageLoader::releaseDecodedImageWithSTB(nanoem_u8_t **decodedImagePtr)
+{
+    stbi_image_free(*decodedImagePtr);
+    *decodedImagePtr = nullptr;
+}
+
 APNGImage::~APNGImage()
 {
     for (APNGImage::FrameSequenceList::const_iterator it = m_frames.begin(), end = m_frames.end(); it != end; ++it) {
@@ -848,22 +879,13 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
     bx::Error err;
     sg_image_desc desc;
     IImageView *imageView = nullptr;
-    int width, height, components;
+    nanoem_u8_t *decodedImagePtr = nullptr;
     Inline::clearZeroMemory(desc);
-    if (stbi_uc *data = stbi_load_from_memory(
-            container.m_dataPtr, Inline::saturateInt32(container.m_dataSize), &width, &height, &components, 4)) {
-        desc.width = width;
-        desc.height = height;
-        desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-        desc.min_filter = SG_FILTER_LINEAR;
-        desc.mag_filter = SG_FILTER_LINEAR;
+    if (decodeImageWithSTB(container.m_dataPtr, container.m_dataSize, desc, &decodedImagePtr)) {
         desc.max_anisotropy = container.m_anisotropy;
         desc.wrap_u = desc.wrap_v = container.m_wrap;
-        sg_range &content = desc.data.subimage[0][0];
-        content.ptr = data;
-        content.size = nanoem_rsize_t(4) * width * height;
         imageView = drawable->uploadImage(container.m_name, desc);
-        stbi_image_free(data);
+        releaseDecodedImageWithSTB(&decodedImagePtr);
     }
     else if (bimg::ImageContainer *decodedImageContainer = bimg::imageParse(g_bimg_allocator, container.m_dataPtr,
                  Inline::saturateInt32U(container.m_dataSize), bimg::TextureFormat::Count, &err)) {

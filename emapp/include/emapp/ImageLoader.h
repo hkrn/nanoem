@@ -130,6 +130,9 @@ public:
     static void fill1x1BlackPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void fill1x1TransparentPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t height, nanoem_u32_t bpp);
+    static bool decodeImageWithSTB(
+        const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr);
+    static void releaseDecodedImageWithSTB(nanoem_u8_t **decodedImagePtr);
 
     ImageLoader(const Project *project);
     ~ImageLoader();

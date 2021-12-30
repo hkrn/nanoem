@@ -5530,7 +5530,19 @@ void
 Effect::parseImagePayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
 {
     bx::Error err;
-    if (bimg::ImageContainer *container = bimg::imageParse(
+    sg_image_desc desc;
+    nanoem_u8_t *decodedImagePtr = nullptr;
+    Inline::clearZeroMemory(desc);
+    if (ImageLoader::decodeImageWithSTB(bytes.data(), bytes.size(), desc, &decodedImagePtr)) {
+        const sg_range &data = desc.data.subimage[0][0];
+        ImageResourceParameter newParameter(parameter);
+        newParameter.m_desc.width = desc.width;
+        newParameter.m_desc.height = desc.height;
+        newParameter.m_desc.pixel_format = desc.pixel_format;
+        createImageResource(data.ptr, data.size, newParameter);
+        ImageLoader::releaseDecodedImageWithSTB(&decodedImagePtr);
+    }
+    else if (bimg::ImageContainer *container = bimg::imageParse(
             g_bimg_allocator, bytes.data(), Inline::saturateInt32U(bytes.size()), bimg::TextureFormat::Count, &err)) {
         createImageFromContainer(parameter, container);
         bimg::imageFree(container);
