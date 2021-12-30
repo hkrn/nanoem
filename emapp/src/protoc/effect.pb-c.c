@@ -322,6 +322,51 @@ void   fx9__effect__texture__free_unpacked
   assert(message->base.descriptor == &fx9__effect__texture__descriptor);
   protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
 }
+void   fx9__effect__semantic__init
+                     (Fx9__Effect__Semantic         *message)
+{
+  static const Fx9__Effect__Semantic init_value = FX9__EFFECT__SEMANTIC__INIT;
+  *message = init_value;
+}
+size_t fx9__effect__semantic__get_packed_size
+                     (const Fx9__Effect__Semantic *message)
+{
+  assert(message->base.descriptor == &fx9__effect__semantic__descriptor);
+  return protobuf_c_message_get_packed_size ((const ProtobufCMessage*)(message));
+}
+size_t fx9__effect__semantic__pack
+                     (const Fx9__Effect__Semantic *message,
+                      uint8_t       *out)
+{
+  assert(message->base.descriptor == &fx9__effect__semantic__descriptor);
+  return protobuf_c_message_pack ((const ProtobufCMessage*)message, out);
+}
+size_t fx9__effect__semantic__pack_to_buffer
+                     (const Fx9__Effect__Semantic *message,
+                      ProtobufCBuffer *buffer)
+{
+  assert(message->base.descriptor == &fx9__effect__semantic__descriptor);
+  return protobuf_c_message_pack_to_buffer ((const ProtobufCMessage*)message, buffer);
+}
+Fx9__Effect__Semantic *
+       fx9__effect__semantic__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data)
+{
+  return (Fx9__Effect__Semantic *)
+     protobuf_c_message_unpack (&fx9__effect__semantic__descriptor,
+                                allocator, len, data);
+}
+void   fx9__effect__semantic__free_unpacked
+                     (Fx9__Effect__Semantic *message,
+                      ProtobufCAllocator *allocator)
+{
+  if(!message)
+    return;
+  assert(message->base.descriptor == &fx9__effect__semantic__descriptor);
+  protobuf_c_message_free_unpacked ((ProtobufCMessage*)message, allocator);
+}
 void   fx9__effect__shader__init
                      (Fx9__Effect__Shader         *message)
 {
@@ -1390,6 +1435,83 @@ const ProtobufCMessageDescriptor fx9__effect__texture__descriptor =
   (ProtobufCMessageInit) fx9__effect__texture__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
+static const ProtobufCFieldDescriptor fx9__effect__semantic__field_descriptors[4] =
+{
+  {
+    "index",
+    1,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_UINT32,
+    0,   /* quantifier_offset */
+    offsetof(Fx9__Effect__Semantic, index),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "input_name",
+    2,
+    PROTOBUF_C_LABEL_REQUIRED,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Fx9__Effect__Semantic, input_name),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "output_name",
+    3,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Fx9__Effect__Semantic, output_name),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "parameter_name",
+    4,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Fx9__Effect__Semantic, parameter_name),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+};
+static const unsigned fx9__effect__semantic__field_indices_by_name[] = {
+  0,   /* field[0] = index */
+  1,   /* field[1] = input_name */
+  2,   /* field[2] = output_name */
+  3,   /* field[3] = parameter_name */
+};
+static const ProtobufCIntRange fx9__effect__semantic__number_ranges[1 + 1] =
+{
+  { 1, 0 },
+  { 0, 4 }
+};
+const ProtobufCMessageDescriptor fx9__effect__semantic__descriptor =
+{
+  PROTOBUF_C__MESSAGE_DESCRIPTOR_MAGIC,
+  "fx9.effect.Semantic",
+  "Semantic",
+  "Fx9__Effect__Semantic",
+  "fx9.effect",
+  sizeof(Fx9__Effect__Semantic),
+  4,
+  fx9__effect__semantic__field_descriptors,
+  fx9__effect__semantic__field_indices_by_name,
+  1,  fx9__effect__semantic__number_ranges,
+  (ProtobufCMessageInit) fx9__effect__semantic__init,
+  NULL,NULL,NULL    /* reserved[123] */
+};
 static const ProtobufCEnumValue fx9__effect__shader__type__enum_values_by_number[2] =
 {
   { "ST_PIXEL", "FX9__EFFECT__SHADER__TYPE__ST_PIXEL", 1 },
@@ -1418,7 +1540,7 @@ const ProtobufCEnumDescriptor fx9__effect__shader__type__descriptor =
   fx9__effect__shader__type__value_ranges,
   NULL,NULL,NULL,NULL   /* reserved[1234] */
 };
-static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[11] =
+static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[14] =
 {
   {
     "type",
@@ -1552,6 +1674,42 @@ static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[11]
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "wgsl",
+    12,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    offsetof(Fx9__Effect__Shader, body_case),
+    offsetof(Fx9__Effect__Shader, wgsl),
+    NULL,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "semantics",
+    20,
+    PROTOBUF_C_LABEL_REPEATED,
+    PROTOBUF_C_TYPE_MESSAGE,
+    offsetof(Fx9__Effect__Shader, n_semantics),
+    offsetof(Fx9__Effect__Shader, semantics),
+    &fx9__effect__semantic__descriptor,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
+  {
+    "uniform_block_name",
+    21,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    0,   /* quantifier_offset */
+    offsetof(Fx9__Effect__Shader, uniform_block_name),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned fx9__effect__shader__field_indices_by_name[] = {
   7,   /* field[7] = glsl */
@@ -1560,16 +1718,20 @@ static const unsigned fx9__effect__shader__field_indices_by_name[] = {
   8,   /* field[8] = msl */
   5,   /* field[5] = outputs */
   2,   /* field[2] = samplers */
+  12,   /* field[12] = semantics */
   10,   /* field[10] = spirv */
   6,   /* field[6] = symbols */
   3,   /* field[3] = textures */
   0,   /* field[0] = type */
+  13,   /* field[13] = uniform_block_name */
   1,   /* field[1] = uniforms */
+  11,   /* field[11] = wgsl */
 };
-static const ProtobufCIntRange fx9__effect__shader__number_ranges[1 + 1] =
+static const ProtobufCIntRange fx9__effect__shader__number_ranges[2 + 1] =
 {
   { 1, 0 },
-  { 0, 11 }
+  { 20, 12 },
+  { 0, 14 }
 };
 const ProtobufCMessageDescriptor fx9__effect__shader__descriptor =
 {
@@ -1579,10 +1741,10 @@ const ProtobufCMessageDescriptor fx9__effect__shader__descriptor =
   "Fx9__Effect__Shader",
   "fx9.effect",
   sizeof(Fx9__Effect__Shader),
-  11,
+  14,
   fx9__effect__shader__field_descriptors,
   fx9__effect__shader__field_indices_by_name,
-  1,  fx9__effect__shader__number_ranges,
+  2,  fx9__effect__shader__number_ranges,
   (ProtobufCMessageInit) fx9__effect__shader__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
