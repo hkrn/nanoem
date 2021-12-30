@@ -824,8 +824,9 @@ private:
     void internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect,
         const IncludeEffectSourceMap &includeEffectSources, bool enableEffectPlugin, bool enableSourceCache,
         Progress &progress, Error &error);
-    void internalAttachOffscreenRenderTargetEffect(IDrawable *drawable);
-    void internalAttachOffscreenRenderTargetEffect(IDrawable *drawable, Effect *ownerEffect);
+    void applyAllOffscreenRenderTargetEffectsToDrawable(IDrawable *drawable);
+    void applyAllDrawablesToOffscreenRenderTargetEffect(IDrawable *ownerDrawable, Effect *ownerEffect);
+    void applyDrawableToOffscreenRenderTargetEffect(IDrawable *drawable, Effect *ownerEffect);
     void loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffectSourceMap &includeEffectSources,
         const StringPair &condition, bool enableEffectPlugin, bool enableSourceCache,
         OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error);
@@ -835,6 +836,8 @@ private:
     bool loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const URI &fileURI,
         const StringPair &condition, const ByteArray &bytes, OffscreenRenderTargetConditionList &newConditionsoid,
         Progress &progress, Error &error);
+    void cancelRenderOffscreenRenderTarget(Effect *ownerEffect);
+
     void internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool symmetric, Error &error);
     void internalPasteAllSelectedBones(Model *model, bool symmetric, Error &error);
     void internalSeek(nanoem_frame_index_t frameIndex);

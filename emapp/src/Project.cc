@@ -1876,7 +1876,7 @@ Project::addModel(Model *model)
     Motion *motion = createMotion();
     undoStackClear(model->undoStack());
     addModelMotion(motion, model);
-    internalAttachOffscreenRenderTargetEffect(model);
+    applyAllOffscreenRenderTargetEffectsToDrawable(model);
 }
 
 void
@@ -1891,7 +1891,7 @@ Project::addAccessory(Accessory *accessory)
     Motion *motion = createMotion();
     undoStackClear(accessory->undoStack());
     addAccessoryMotion(motion, accessory);
-    internalAttachOffscreenRenderTargetEffect(accessory);
+    applyAllOffscreenRenderTargetEffectsToDrawable(accessory);
 }
 
 void
@@ -2003,12 +2003,16 @@ Project::reloadDrawableEffect(IDrawable *drawable, Progress &progress, Error &er
             ListUtils::removeItem(drawable, m_dependsOnScriptExternal);
         }
         if (loadAttachedDrawableEffect(drawable, false, progress, error)) {
+            cancelRenderOffscreenRenderTarget(lastEffect);
             /* decrement self reference to destroy correctly */
             EffectReferenceMap::iterator it = m_effectReferences.find(lastEffect->fileURI().absolutePath());
             if (it != m_effectReferences.end()) {
                 it->second.second--;
             }
             destroyEffect(lastEffect);
+            if (Effect *ownerEffect = resolveEffect(drawable)) {
+                applyAllDrawablesToOffscreenRenderTargetEffect(drawable, ownerEffect);
+            }
             succeeded = true;
         }
         else if (hasScriptExternal) {
@@ -6379,15 +6383,9 @@ Project::internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect,
     }
     createAllOffscreenRenderTargets(
         effect, includeEffectSources, enableEffectPlugin, enableSourceCache, progress, error);
-    internalAttachOffscreenRenderTargetEffect(drawable, effect);
+    applyDrawableToOffscreenRenderTargetEffect(drawable, effect);
     /* register all drawables with the offscreen render target effect before loading the offscreen effect */
-    for (DrawableList::const_iterator it = m_drawableOrderList.begin(), end = m_drawableOrderList.end(); it != end;
-         ++it) {
-        IDrawable *drawablePtr = *it;
-        if (drawablePtr != drawable) {
-            internalAttachOffscreenRenderTargetEffect(drawablePtr, effect);
-        }
-    }
+    applyAllDrawablesToOffscreenRenderTargetEffect(drawable, effect);
 }
 
 void
@@ -6411,6 +6409,11 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
             if (!resolvedURI.isEmpty()) {
                 Effect *targetEffect = findEffect(resolvedURI);
                 if (targetEffect) {
+                    OffscreenRenderTargetCondition cond;
+                    cond.m_pattern = condition.first;
+                    cond.m_passiveEffect = targetEffect;
+                    cond.m_hidden = cond.m_none = false;
+                    newConditions.push_back(cond);
                     m_allOffscreenRenderTargetEffectSets[ownerEffect].insert(targetEffect);
                 }
                 else {
@@ -6536,6 +6539,31 @@ Project::loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, cons
         }
     }
     return result;
+}
+
+void
+Project::cancelRenderOffscreenRenderTarget(Effect *ownerEffect)
+{
+    effect::OffscreenRenderTargetOptionList options;
+    ownerEffect->getAllOffscreenRenderTargetOptions(options);
+    for (effect::OffscreenRenderTargetOptionList::const_iterator it = options.begin(), end = options.end(); it != end;
+         ++it) {
+        sg_pass_desc pd;
+        it->getPassDescription(pd);
+        const nanoem_u32_t key = bx::hash<bx::HashMurmur2A>(pd);
+        HashedRenderPassBundleMap::const_iterator it2 = m_hashedRenderPassBundleMap.find(key);
+        if (it2 != m_hashedRenderPassBundleMap.end()) {
+            const sg_pass pass = it2->second->m_handle;
+            DrawQueue::PassCommandBufferList &buffers = m_drawQueue->m_commandBuffers;
+            for (DrawQueue::PassCommandBufferList::iterator it3 = buffers.begin(), end3 = buffers.end(); it3 != end3;
+                 ++it3) {
+                if (it3->m_handle.id == pass.id) {
+                    it3 = buffers.erase(it3);
+                    EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+                }
+            }
+        }
+    }
 }
 
 void
@@ -7192,17 +7220,29 @@ Project::loadAttachedDrawableEffect(IDrawable *drawable, bool enableSourceCache,
 }
 
 void
-Project::internalAttachOffscreenRenderTargetEffect(IDrawable *drawable)
+Project::applyAllOffscreenRenderTargetEffectsToDrawable(IDrawable *drawable)
 {
     for (OffscreenRenderTargetConditionListMap::const_iterator it = m_allOffscreenRenderTargets.begin(),
                                                                end = m_allOffscreenRenderTargets.end();
          it != end; ++it) {
-        internalAttachOffscreenRenderTargetEffect(drawable, it->first);
+        applyDrawableToOffscreenRenderTargetEffect(drawable, it->first);
     }
 }
 
 void
-Project::internalAttachOffscreenRenderTargetEffect(IDrawable *drawable, Effect *ownerEffect)
+Project::applyAllDrawablesToOffscreenRenderTargetEffect(IDrawable *ownerDrawable, Effect *ownerEffect)
+{
+    for (DrawableList::const_iterator it = m_drawableOrderList.begin(), end = m_drawableOrderList.end(); it != end;
+         ++it) {
+        IDrawable *drawablePtr = *it;
+        if (drawablePtr != ownerDrawable) {
+            applyDrawableToOffscreenRenderTargetEffect(drawablePtr, ownerEffect);
+        }
+    }
+}
+
+void
+Project::applyDrawableToOffscreenRenderTargetEffect(IDrawable *drawable, Effect *ownerEffect)
 {
     OffscreenRenderTargetConditionListMap::const_iterator it = m_allOffscreenRenderTargets.find(ownerEffect);
     if (it != m_allOffscreenRenderTargets.end()) {
