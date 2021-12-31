@@ -1785,6 +1785,12 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                             effect::RenderState::convertPipeline(state->key, state->value, pd);
                         }
                         SG_POP_GROUP();
+                        if (const char *name = vertexShader->uniform_block_name) {
+                            shaderDescription.vs.uniform_blocks[0].uniforms[0].name = name;
+                        }
+                        if (const char *name = pixelShader->uniform_block_name) {
+                            shaderDescription.fs.uniform_blocks[0].uniforms[0].name = name;
+                        }
                         break;
                     }
                     if (!PrivateEffectUtils::hasShaderSource(shaderDescription)) {
@@ -1800,6 +1806,45 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         shaderDescription.attrs[5] = sg_shader_attr_desc { "a_texcoord3", "TEXCOORD", 3 };
                         shaderDescription.attrs[6] = sg_shader_attr_desc { "a_texcoord4", "TEXCOORD", 4 };
                         shaderDescription.attrs[7] = sg_shader_attr_desc { "a_color0", "COLOR", 0 };
+                        const nanoem_rsize_t numSemantics = passPtr->vertex_shader->n_semantics;
+                        if (numSemantics > 0) {
+                            for (nanoem_rsize_t i = 0; i < numSemantics; i++) {
+                                const Fx9__Effect__Semantic *semantic = passPtr->vertex_shader->semantics[i];
+                                const char *name = semantic->input_name;
+                                int index = -1;
+                                if (StringUtils::equalsIgnoreCase(name, "POSITION") ||
+                                    StringUtils::equalsIgnoreCase(name, "SV_POSITION")) {
+                                    index = 0;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "NORMAL")) {
+                                    index = 1;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "TEXCOORD4")) {
+                                    index = 6;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "TEXCOORD3")) {
+                                    index = 5;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "TEXCOORD2")) {
+                                    index = 4;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "TEXCOORD1")) {
+                                    index = 3;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "TEXCOORD0") ||
+                                    StringUtils::equalsIgnoreCase(name, "TEXCOORD")) {
+                                    index = 2;
+                                }
+                                else if (StringUtils::equalsIgnoreCase(name, "COLOR0") ||
+                                    StringUtils::equalsIgnoreCase(name, "COLOR")) {
+                                    index = 7;
+                                }
+                                if (index >= 0) {
+                                    shaderDescription.attrs[index] = sg_shader_attr_desc { semantic->parameter_name,
+                                        semantic->output_name, Inline::saturateInt32(semantic->index) };
+                                }
+                            }
+                        }
                         if (shaderDescription.fs.images[0].image_type == _SG_IMAGETYPE_DEFAULT) {
                             SamplerRegisterIndex samplerRegisterIndex;
                             samplerRegisterIndex.m_indices.push_back(0);

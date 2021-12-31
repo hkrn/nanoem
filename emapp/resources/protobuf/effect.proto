@@ -80,6 +80,13 @@ message Texture {
   required string name = 2;
 };
 
+message Semantic {
+  required uint32 index = 1;
+  required string input_name = 2;
+  optional string output_name = 3;
+  optional string parameter_name = 4;
+};
+
 message Shader {
   enum Type {
     ST_PIXEL = 1;
@@ -97,7 +104,10 @@ message Shader {
     string msl = 9;
     string hlsl = 10;
     bytes spirv = 11;
+    string wgsl = 12;
   };
+  repeated Semantic semantics = 20;
+  optional string uniform_block_name = 21;
 };
 
 message Metadata {

@@ -12,9 +12,6 @@
 #endif
 
 #include <stddef.h> /* size_t */
-#ifdef _WIN32
-#include <windows.h>
-#endif
 
 #if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L /* C11 */
 #ifndef NANOEM_STATIC_ASSERT
@@ -190,6 +187,12 @@ NANOEM_DECL_ENUM(int, nanoem_application_plugin_status_t) { NANOEM_APPLICATION_P
 #include <stdarg.h>
 #include <stdio.h>
 #endif
+#if defined(_WIN32)
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif /* WIN32_LEAN_AND_MEAN */
+#include <windows.h>
+#endif /* _WIN32 */
 
 /**
  * \brief

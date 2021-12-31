@@ -23,6 +23,7 @@ typedef struct Fx9__Effect__Attribute Fx9__Effect__Attribute;
 typedef struct Fx9__Effect__Symbol Fx9__Effect__Symbol;
 typedef struct Fx9__Effect__RenderState Fx9__Effect__RenderState;
 typedef struct Fx9__Effect__Texture Fx9__Effect__Texture;
+typedef struct Fx9__Effect__Semantic Fx9__Effect__Semantic;
 typedef struct Fx9__Effect__Shader Fx9__Effect__Shader;
 typedef struct Fx9__Effect__Metadata Fx9__Effect__Metadata;
 typedef struct Fx9__Effect__Vector4i Fx9__Effect__Vector4i;
@@ -200,12 +201,26 @@ struct  Fx9__Effect__Texture
     , 0, NULL }
 
 
+struct  Fx9__Effect__Semantic
+{
+  ProtobufCMessage base;
+  uint32_t index;
+  char *input_name;
+  char *output_name;
+  char *parameter_name;
+};
+#define FX9__EFFECT__SEMANTIC__INIT \
+ { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__semantic__descriptor) \
+    , 0, NULL, NULL, NULL }
+
+
 typedef enum {
   FX9__EFFECT__SHADER__BODY__NOT_SET = 0,
   FX9__EFFECT__SHADER__BODY_GLSL = 8,
   FX9__EFFECT__SHADER__BODY_MSL = 9,
   FX9__EFFECT__SHADER__BODY_HLSL = 10,
-  FX9__EFFECT__SHADER__BODY_SPIRV = 11
+  FX9__EFFECT__SHADER__BODY_SPIRV = 11,
+  FX9__EFFECT__SHADER__BODY_WGSL = 12
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(FX9__EFFECT__SHADER__BODY__CASE)
 } Fx9__Effect__Shader__BodyCase;
 
@@ -225,17 +240,21 @@ struct  Fx9__Effect__Shader
   Fx9__Effect__Attribute **outputs;
   size_t n_symbols;
   Fx9__Effect__Symbol **symbols;
+  size_t n_semantics;
+  Fx9__Effect__Semantic **semantics;
+  char *uniform_block_name;
   Fx9__Effect__Shader__BodyCase body_case;
   union {
     char *glsl;
     char *msl;
     char *hlsl;
     ProtobufCBinaryData spirv;
+    char *wgsl;
   };
 };
 #define FX9__EFFECT__SHADER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__shader__descriptor) \
-    , FX9__EFFECT__SHADER__TYPE__ST_PIXEL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, FX9__EFFECT__SHADER__BODY__NOT_SET, {0} }
+    , FX9__EFFECT__SHADER__TYPE__ST_PIXEL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, NULL, FX9__EFFECT__SHADER__BODY__NOT_SET, {0} }
 
 
 struct  Fx9__Effect__Metadata
@@ -551,6 +570,25 @@ Fx9__Effect__Texture *
 void   fx9__effect__texture__free_unpacked
                      (Fx9__Effect__Texture *message,
                       ProtobufCAllocator *allocator);
+/* Fx9__Effect__Semantic methods */
+void   fx9__effect__semantic__init
+                     (Fx9__Effect__Semantic         *message);
+size_t fx9__effect__semantic__get_packed_size
+                     (const Fx9__Effect__Semantic   *message);
+size_t fx9__effect__semantic__pack
+                     (const Fx9__Effect__Semantic   *message,
+                      uint8_t             *out);
+size_t fx9__effect__semantic__pack_to_buffer
+                     (const Fx9__Effect__Semantic   *message,
+                      ProtobufCBuffer     *buffer);
+Fx9__Effect__Semantic *
+       fx9__effect__semantic__unpack
+                     (ProtobufCAllocator  *allocator,
+                      size_t               len,
+                      const uint8_t       *data);
+void   fx9__effect__semantic__free_unpacked
+                     (Fx9__Effect__Semantic *message,
+                      ProtobufCAllocator *allocator);
 /* Fx9__Effect__Shader methods */
 void   fx9__effect__shader__init
                      (Fx9__Effect__Shader         *message);
@@ -764,6 +802,9 @@ typedef void (*Fx9__Effect__RenderState_Closure)
 typedef void (*Fx9__Effect__Texture_Closure)
                  (const Fx9__Effect__Texture *message,
                   void *closure_data);
+typedef void (*Fx9__Effect__Semantic_Closure)
+                 (const Fx9__Effect__Semantic *message,
+                  void *closure_data);
 typedef void (*Fx9__Effect__Shader_Closure)
                  (const Fx9__Effect__Shader *message,
                   void *closure_data);
@@ -811,6 +852,7 @@ extern const ProtobufCMessageDescriptor fx9__effect__symbol__descriptor;
 extern const ProtobufCEnumDescriptor    fx9__effect__symbol__register_set__descriptor;
 extern const ProtobufCMessageDescriptor fx9__effect__render_state__descriptor;
 extern const ProtobufCMessageDescriptor fx9__effect__texture__descriptor;
+extern const ProtobufCMessageDescriptor fx9__effect__semantic__descriptor;
 extern const ProtobufCMessageDescriptor fx9__effect__shader__descriptor;
 extern const ProtobufCEnumDescriptor    fx9__effect__shader__type__descriptor;
 extern const ProtobufCMessageDescriptor fx9__effect__metadata__descriptor;
