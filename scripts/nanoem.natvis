@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <!-- nanoem::String -->
+    <Type Name="tinystl::stringT&lt;nanoem::TinySTLAllocator&gt;">
+        <DisplayString>{m_first,[m_last - m_first]s8}</DisplayString>
+        <StringView>m_first,[m_last - m_first]s8</StringView>
+        <Expand>
+            <Item Name="[size]">m_last - m_first</Item>
+            <Item Name="[capacity]">m_capacity - m_first</Item>
+            <ArrayItems>
+                <Size>m_last - m_first</Size>
+                <ValuePointer>m_first</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <!-- nanoem::MutableString (excludes null terminator) -->
+    <Type Name="tinystl::vector&lt;char,nanoem::TinySTLAllocator&gt;">
+        <DisplayString>{m_buffer.first,[m_buffer.last - m_buffer.first - 1]s8}</DisplayString>
+        <StringView>m_buffer.first,[m_buffer.last - m_buffer.first - 1]s8</StringView>
+        <Expand>
+            <Item Name="[size]">m_buffer.last - m_buffer.first - 1</Item>
+            <ArrayItems>
+                <Size>m_buffer.last - m_buffer.first - 1</Size>
+                <ValuePointer>m_buffer.first</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    <!-- nanoem::MutableWideString (excludes null terminator) -->
+    <Type Name="tinystl::vector&lt;wchar_t,nanoem::TinySTLAllocator&gt;">
+        <DisplayString>{m_buffer.first,[m_buffer.last - m_buffer.first  -1]su}</DisplayString>
+        <StringView>m_buffer.first,[m_buffer.last - m_buffer.first - 1]su</StringView>
+        <Expand>
+            <Item Name="[size]">m_buffer.last - m_buffer.first - 1</Item>
+            <ArrayItems>
+                <Size>m_buffer.last - m_buffer.first - 1</Size>
+                <ValuePointer>m_buffer.first</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+</AutoVisualizer>
