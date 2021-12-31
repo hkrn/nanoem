@@ -563,6 +563,19 @@ nanoem の GUI バックエンドとして利用しているライブラリで�
 主にゲーム開発における GUI ライブラリとして利用されますが、nanoem では直接ユーザが利用する GUI ライブラリとして利用しています。
 初期から利用しておりその時はデフォルトのルックフィールを利用していましたが、 `nuklear <https://github.com/vurtun/nuklear>`_ を一時期に採用してた関係から nuklear の見た目と合わせる形でルックフィールを変更しています。
 
+デバッグ表示の可視化
+==========================================
+
+Visual Studio を利用している場合は以下に natvis のファイルがあるので、それらを ``%UserProfile%Visual Studio XXXX\Visualizers`` に配置することでデバッグ時に表示を可視化できます。
+
+* dependencies/bx/scripts/bx.natvis
+* dependencies/bx/scripts/tinystl.natvis
+* dependencies/glm/util/glm.natvis
+* dependencies/imgui/misc/debuggers/imgui.natvis
+* scripts/nanoem.nativs
+
+また QtCreator を利用している場合は ``scripts/qtcreator/helper.py`` があるので https://doc.qt.io/qtcreator/creator-debugging-helpers.html の ``Extra Debugging Helpers`` に該当パスを指定することによりデバッグ時に表示を可視化できます。
+
 .. _2712B38B-9A84-43A2-B903-FB390383054C:
 
 よろずのおはなし
