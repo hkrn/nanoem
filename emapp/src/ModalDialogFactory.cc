@@ -171,6 +171,7 @@ LoadingModelConfirmDialog::~LoadingModelConfirmDialog() NANOEM_DECL_NOEXCEPT
 {
     if (m_model) {
         Project *project = m_model->project();
+        project->removeModel(m_model);
         project->destroyModel(m_model);
         m_model = nullptr;
     }
@@ -218,6 +219,7 @@ LoadingModelConfirmDialog::onAccepted(Project *project)
         m_model->setVisible(true);
     }
     else {
+        project->removeModel(m_model);
         project->destroyModel(m_model);
     }
     m_model = nullptr;
@@ -333,6 +335,7 @@ LoadingArchivedModelConfirmDialog::~LoadingArchivedModelConfirmDialog() NANOEM_D
 {
     if (m_model) {
         Project *project = m_model->project();
+        project->removeModel(m_model);
         project->destroyModel(m_model);
         m_model = nullptr;
         if (m_callback.m_callback) {

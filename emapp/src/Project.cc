@@ -1845,6 +1845,7 @@ Project::newModel(Error &error)
                     scope.commit(error);
                 }
                 else {
+                    removeModel(model);
                     destroyModel(model);
                     scope.rollback(error);
                 }
@@ -1934,11 +1935,13 @@ Project::convertAccessoryToModel(Accessory *accessory, Error &error)
                     progress.complete();
                 }
                 else {
+                    removeModel(model);
                     destroyModel(model);
                     scope.rollback(error);
                 }
             }
             else {
+                removeModel(model);
                 destroyModel(model);
             }
         }
@@ -4273,6 +4276,7 @@ Project::destroyEffect(Effect *effect)
                     }
                 }
             }
+            cancelRenderOffscreenRenderTarget(effect);
             destroyDetachedEffect(effect);
         }
     }

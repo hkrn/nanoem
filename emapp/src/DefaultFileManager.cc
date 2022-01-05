@@ -955,6 +955,7 @@ DefaultFileManager::loadModel(
             }
         }
         if (!succeeded) {
+            project->removeModel(model);
             project->destroyModel(model);
         }
     }
@@ -971,6 +972,7 @@ DefaultFileManager::loadModel(
             }
         }
         if (!succeeded) {
+            project->removeAccessory(accessory);
             project->destroyAccessory(accessory);
         }
         progress.complete();
@@ -1227,6 +1229,7 @@ DefaultFileManager::loadModelFromArchive(
             canDestroyFileReader = false;
         }
         else {
+            project->removeModel(model);
             project->destroyModel(model);
         }
     }
