@@ -274,6 +274,7 @@ Archive::loadAccessory(const String &entryPath, Error &error)
         m_progress->increment();
     }
     else {
+        m_project->removeAccessory(accessory);
         m_project->destroyAccessory(accessory);
         continuable = false;
     }
@@ -321,6 +322,7 @@ Archive::loadModel(const String &entryPath, Error &error)
         m_progress->increment();
     }
     else {
+        m_project->removeModel(model);
         m_project->destroyModel(model);
     }
     return continuable;
