@@ -778,8 +778,12 @@ DisableModelEditingCommand::execute(Project *project)
          it != end; ++it) {
         const ModelParameterDialog::SavedState::ModelState &state = it->second;
         Model *model = it->first;
-        model->setActiveBone(state.m_activeBone);
-        model->setActiveMorph(state.m_activeMorph);
+        if (const nanoem_model_bone_t *activeBonePtr = model->findBone(state.m_activeBoneName)) {
+            model->setActiveBone(activeBonePtr);
+        }
+        if (const nanoem_model_morph_t *activeMorphPtr = model->findMorph(state.m_activeMorphName)) {
+            model->setActiveMorph(activeMorphPtr);
+        }
         saveLastModel(model, state, error);
         if (Motion *motion = project->resolveMotion(model)) {
             motion->load(state.m_motionData, 0, error);
@@ -795,6 +799,7 @@ DisableModelEditingCommand::execute(Project *project)
     activeModel->restoreBindPose(m_state->m_bindPose);
     project->restoreState(m_state->m_state, true);
     project->destroyState(m_state->m_state);
+    project->rebuildAllTracks();
     project->setEditingMode(m_state->m_lastEditingMode);
     project->setModelEditingEnabled(false);
     saveCurrentModel(activeModel, error);
@@ -7553,8 +7558,12 @@ ModelParameterDialog::setActiveModel(Model *model, Project *project)
             if (!error.hasReason() &&
                 motion->save(state.m_motionData, model, NANOEM_MUTABLE_MOTION_KEYFRAME_TYPE_ALL, error)) {
                 motion->clearAllKeyframes();
-                state.m_activeBone = model->activeBone();
-                state.m_activeMorph = model->activeMorph();
+                if (const model::Bone *activeBone = model::Bone::cast(model->activeBone())) {
+                    state.m_activeBoneName = activeBone->name();
+                }
+                if (const model::Morph *activeMorph = model::Morph::cast(model->activeMorph())) {
+                    state.m_activeMorphName = activeMorph->name();
+                }
                 StringUtils::formatDateTimeLocal(state.m_datetime, sizeof(state.m_datetime), "%Y%m%d_%H%M%S");
                 m_savedState->m_modelStates.insert(tinystl::make_pair(model, state));
             }

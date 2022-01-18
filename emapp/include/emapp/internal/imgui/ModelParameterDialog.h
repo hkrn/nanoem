@@ -22,8 +22,8 @@ class ModelParameterDialog : public BaseNonModalDialogWindow {
 public:
     struct SavedState {
         struct ModelState {
-            const nanoem_model_bone_t *m_activeBone;
-            const nanoem_model_morph_t *m_activeMorph;
+            String m_activeBoneName;
+            String m_activeMorphName;
             ByteArray m_modelData;
             ByteArray m_motionData;
             char m_datetime[32];
