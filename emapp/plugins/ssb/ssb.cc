@@ -1212,13 +1212,13 @@ SemiStandardBonePlugin::serializeUIComponentList()
     nanoem__application__plugin__uiwindow__pack(&window, m_windowLayoutData.data());
     {
         delete[] globalComponents[0]->child_window->components;
-        delete globalComponents[0]->child_window->id;
+        delete[] globalComponents[0]->child_window->id;
         delete globalComponents[0]->child_window;
         delete globalComponents[0];
         delete globalComponents[1]->same_line;
         delete globalComponents[1];
         delete[] globalComponents[2]->child_window->components;
-        delete globalComponents[2]->child_window->id;
+        delete[] globalComponents[2]->child_window->id;
         delete globalComponents[2]->child_window;
         delete globalComponents[2];
     }
@@ -1253,7 +1253,7 @@ SemiStandardBonePlugin::destroyUIComponent(Nanoem__Application__Plugin__UICompon
         for (size_t i = 0, numItems = value->child_window->n_components; i < numItems; i++) {
             destroyUIComponent(value->child_window->components[i]);
         }
-        delete value->child_window->id;
+        delete[] value->child_window->id;
         delete value->child_window;
         break;
     }
