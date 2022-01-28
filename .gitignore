@@ -1,4 +1,5 @@
 # build artifact
+/compile_commands.json
 /**/out
 
 # document

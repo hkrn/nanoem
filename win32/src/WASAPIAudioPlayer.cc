@@ -30,6 +30,9 @@ WASAPIAudioPlayer::WASAPIAudioPlayer(IEventPublisher *eventPublisher)
     : m_eventPublisher(eventPublisher)
     , m_audioSessionEventsHandler(this)
     , m_notificationClient(this)
+    , m_offset(0)
+    , m_numProceededPackets(0)
+    , m_requestState(kRequestStateNone)
 {
     Error error;
     m_eventHandle = CreateEventW(nullptr, false, false, L"WASAPIAudioPlayer::m_eventHandle");

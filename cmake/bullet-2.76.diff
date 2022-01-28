@@ -1,3 +1,15 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 2e793166c..044879568 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1,4 +1,7 @@
+ cmake_minimum_required(VERSION 2.4)
++if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
++  set(CMAKE_CXX_STANDARD 11)
++endif()
+ 
+ 
+ #this line has to appear before 'PROJECT' in order to be able to disable incremental linking
 diff --git a/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp b/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp
 index 4e1048823..eb97abf59 100644
 --- a/src/BulletDynamics/ConstraintSolver/btSequentialImpulseConstraintSolver.cpp
@@ -30,7 +42,7 @@ index 4e1048823..eb97abf59 100644
  							{
  								frictionConstraint2.m_appliedImpulse = 0.f;
 diff --git a/src/BulletMultiThreaded/MiniCL.cpp b/src/BulletMultiThreaded/MiniCL.cpp
-index 537da5c26..774c5d84e 100644
+index 537da5c26..7eb99080f 100644
 --- a/src/BulletMultiThreaded/MiniCL.cpp
 +++ b/src/BulletMultiThreaded/MiniCL.cpp
 @@ -262,7 +262,7 @@ static void* localBufMalloc(int size)
@@ -42,18 +54,32 @@ index 537da5c26..774c5d84e 100644
  		sLocalBufUsed = 0;
  	}
  	void* ret = spLocalBufCurr;
-diff --git a/src/BulletSoftBody/CMakeLists.txt b/src/BulletSoftBody/CMakeLists.txt
-index 6074dbace..26fac9215 100644
---- a/src/BulletSoftBody/CMakeLists.txt
-+++ b/src/BulletSoftBody/CMakeLists.txt
-@@ -29,6 +29,7 @@ SET(BulletSoftBody_HDRS
- ADD_LIBRARY(BulletSoftBody  ${BulletSoftBody_SRCS} ${BulletSoftBody_HDRS})
- SET_TARGET_PROPERTIES(BulletSoftBody PROPERTIES VERSION ${BULLET_VERSION})
- SET_TARGET_PROPERTIES(BulletSoftBody PROPERTIES SOVERSION ${BULLET_VERSION})
-+SET_PROPERTY(SOURCE btSoftBodyHelpers.cpp APPEND PROPERTY COMPILE_FLAGS "-std=c++03")
- IF (BUILD_SHARED_LIBS)
- 	TARGET_LINK_LIBRARIES(BulletSoftBody BulletDynamics)
- ENDIF (BUILD_SHARED_LIBS)
+diff --git a/src/BulletSoftBody/btSoftBodyHelpers.cpp b/src/BulletSoftBody/btSoftBodyHelpers.cpp
+index 516485bf4..f4c98b4e8 100644
+--- a/src/BulletSoftBody/btSoftBodyHelpers.cpp
++++ b/src/BulletSoftBody/btSoftBodyHelpers.cpp
+@@ -285,7 +285,7 @@ void			btSoftBodyHelpers::Draw(	btSoftBody* psb,
+ 				add(hres.m_OutputVertices,center);
+ 				for(j=0;j<(int)hres.mNumFaces;++j)
+ 				{
+-					const int idx[]={hres.m_Indices[j*3+0],hres.m_Indices[j*3+1],hres.m_Indices[j*3+2]};
++					const int idx[]={static_cast<int>(hres.m_Indices[j*3+0]),static_cast<int>(hres.m_Indices[j*3+1]),static_cast<int>(hres.m_Indices[j*3+2])};
+ 					idraw->drawTriangle(hres.m_OutputVertices[idx[0]],
+ 						hres.m_OutputVertices[idx[1]],
+ 						hres.m_OutputVertices[idx[2]],
+@@ -875,9 +875,9 @@ btSoftBody*		btSoftBodyHelpers::CreateFromConvexHull(btSoftBodyWorldInfo& worldI
+ 		&hres.m_OutputVertices[0],0);
+ 	for(int i=0;i<(int)hres.mNumFaces;++i)
+ 	{
+-		const int idx[]={	hres.m_Indices[i*3+0],
+-			hres.m_Indices[i*3+1],
+-			hres.m_Indices[i*3+2]};
++		const int idx[]={	static_cast<int>(hres.m_Indices[i*3+0]),
++			static_cast<int>(hres.m_Indices[i*3+1]),
++			static_cast<int>(hres.m_Indices[i*3+2])};
+ 		if(idx[0]<idx[1]) psb->appendLink(	idx[0],idx[1]);
+ 		if(idx[1]<idx[2]) psb->appendLink(	idx[1],idx[2]);
+ 		if(idx[2]<idx[0]) psb->appendLink(	idx[2],idx[0]);
 diff --git a/src/BulletSoftBody/btSoftBodyInternals.h b/src/BulletSoftBody/btSoftBodyInternals.h
 index 2cb7744cb..af6bae059 100644
 --- a/src/BulletSoftBody/btSoftBodyInternals.h
@@ -68,20 +94,8 @@ index 2cb7744cb..af6bae059 100644
  }
  //
  template <typename T>
-diff --git a/src/LinearMath/CMakeLists.txt b/src/LinearMath/CMakeLists.txt
-index faec5ebee..830c9b64c 100644
---- a/src/LinearMath/CMakeLists.txt
-+++ b/src/LinearMath/CMakeLists.txt
-@@ -40,6 +40,7 @@ SET(LinearMath_HDRS
- ADD_LIBRARY(LinearMath ${LinearMath_SRCS} ${LinearMath_HDRS})
- SET_TARGET_PROPERTIES(LinearMath PROPERTIES VERSION ${BULLET_VERSION})
- SET_TARGET_PROPERTIES(LinearMath PROPERTIES SOVERSION ${BULLET_VERSION})
-+SET_PROPERTY(SOURCE btSerializer.cpp APPEND PROPERTY COMPILE_FLAGS "-std=c++03")
- 
- IF (INSTALL_LIBS)
- 	IF (NOT INTERNAL_CREATE_DISTRIBUTABLE_MSVC_PROJECTFILES)
 diff --git a/src/LinearMath/btScalar.h b/src/LinearMath/btScalar.h
-index 9f6ceb3e0..c7e6d8865 100644
+index 9f6ceb3e0..523a0a299 100644
 --- a/src/LinearMath/btScalar.h
 +++ b/src/LinearMath/btScalar.h
 @@ -69,7 +69,7 @@ inline int	btGetVersion()
@@ -89,7 +103,26 @@ index 9f6ceb3e0..c7e6d8865 100644
  		#else
  
 -#if (defined (_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && (!defined (BT_USE_DOUBLE_PRECISION))
-+#if (defined (_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && !(defined(_M_ARM) || defined(_M_ARM64)) && (!defined (BT_USE_DOUBLE_PRECISION))
++#if (defined (_WIN32) && (_MSC_VER) && _MSC_VER >= 1400) && !(defined(__clang__) || defined(_M_ARM) || defined(_M_ARM64)) && (!defined (BT_USE_DOUBLE_PRECISION))
  			#define BT_USE_SSE
  			#include <emmintrin.h>
  #endif
+diff --git a/src/LinearMath/btSerializer.cpp b/src/LinearMath/btSerializer.cpp
+index dc28b6c14..7ea759fb2 100644
+--- a/src/LinearMath/btSerializer.cpp
++++ b/src/LinearMath/btSerializer.cpp
+@@ -1,4 +1,4 @@
+-unsigned char sBulletDNAstr64[]= {
++signed char sBulletDNAstr64[]= {
+ 83,68,78,65,78,65,77,69,-81,0,0,0,109,95,115,105,122,101,0,109,
+ 95,99,97,112,97,99,105,116,121,0,42,109,95,100,97,116,97,0,109,95,
+ 99,111,108,108,105,115,105,111,110,83,104,97,112,101,115,0,109,95,99,111,
+@@ -284,7 +284,7 @@ unsigned char sBulletDNAstr64[]= {
+ };
+ int sBulletDNAlen64= sizeof(sBulletDNAstr64);
+ 
+-unsigned char sBulletDNAstr[]= {
++signed char sBulletDNAstr[]= {
+ 83,68,78,65,78,65,77,69,-81,0,0,0,109,95,115,105,122,101,0,109,
+ 95,99,97,112,97,99,105,116,121,0,42,109,95,100,97,116,97,0,109,95,
+ 99,111,108,108,105,115,105,111,110,83,104,97,112,101,115,0,109,95,99,111,
