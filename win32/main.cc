@@ -107,7 +107,12 @@ int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
     BX_UNUSED_3(hPrevInstance, lpCmdLine, nCmdShow);
-    return runMain(hInstance, 0, 0);
+    char *argv[64], interm[1024], buffer[1024];
+    int argc = 0, actual = WideCharToMultiByte(CP_UTF8, 0, lpCmdLine, -1, interm, sizeof(interm), nullptr, nullptr);
+    interm[actual] = 0;
+    uint32_t size = static_cast<uint32_t>(actual);
+    bx::tokenizeCommandLine(interm, buffer, size, argc, argv, BX_COUNTOF(argv));
+    return runMain(hInstance, argc, argv);
 }
 #else
 int WINAPI

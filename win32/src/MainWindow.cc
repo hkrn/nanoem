@@ -85,10 +85,10 @@ MainWindow::MainWindow(const bx::CommandLine *cmd, const Preference *preference,
     windowClass.style = CS_HREDRAW | CS_VREDRAW;
     windowClass.lpfnWndProc = &handleWindowProc;
     windowClass.hInstance = hInstance;
-    windowClass.hIcon = LoadIcon(nullptr, IDI_APPLICATION);
-    windowClass.hCursor = LoadCursor(nullptr, IDC_ARROW);
+    windowClass.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
+    windowClass.hCursor = LoadCursorW(nullptr, IDC_ARROW);
     windowClass.lpszClassName = Win32ThreadedApplicationService::kRegisterClassName;
-    windowClass.hIconSm = LoadIcon(nullptr, IDI_APPLICATION);
+    windowClass.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
     if (RegisterClassExW(&windowClass) != 0) {
         static ACCEL accelerators[] = { { FVIRTKEY | FCONTROL, 'N',
                                             ApplicationMenuBuilder::kMenuItemTypeFileNewProject },
@@ -415,7 +415,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     LRESULT result = S_OK;
     switch (msg) {
     case WM_CREATE: {
-        LPCREATESTRUCT lpcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
+        LPCREATESTRUCTW lpcs = reinterpret_cast<LPCREATESTRUCTW>(lparam);
         if (auto self = static_cast<MainWindow *>(lpcs->lpCreateParams)) {
             Error error;
             if (!self->handleWindowCreate(hwnd, error)) {
@@ -437,7 +437,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_MBUTTONDOWN:
     case WM_RBUTTONDOWN:
     case WM_XBUTTONDOWN: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             const Vector2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseDown(hwnd, coord, convertCursorType(msg, wparam));
         }
@@ -447,93 +447,93 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_MBUTTONUP:
     case WM_RBUTTONUP:
     case WM_XBUTTONUP: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             const Vector2 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseUp(hwnd, coord, convertCursorType(msg, wparam));
         }
         break;
     }
     case WM_MOUSEMOVE: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             const Vector2SI32 coord(GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam));
             self->handleMouseMove(hwnd, coord, convertCursorType(msg, wparam));
         }
         break;
     }
     case WM_MOUSEWHEEL: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             const Vector2SI32 delta(0, int16_t(HIWORD(wparam)) / WHEEL_DELTA);
             self->handleMouseWheel(hwnd, delta);
         }
         break;
     }
     case WM_KEYDOWN: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->m_client->sendKeyPressMessage(static_cast<nanoem_u32_t>(translateKey(lparam)));
         }
         break;
     }
     case WM_KEYUP: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->m_client->sendKeyReleaseMessage(static_cast<nanoem_u32_t>(translateKey(lparam)));
         }
         break;
     }
     case WM_CHAR:
     case WM_UNICHAR: {
-        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         if (self && wparam >= 32) {
             self->m_client->sendUnicodeInputMessage(static_cast<nanoem_u32_t>(wparam));
         }
         break;
     }
     case WM_ACTIVATE: {
-        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         if (self) {
         }
         break;
     }
     case WM_SIZE: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->handleWindowResize(hwnd, wparam);
         }
         break;
     }
     case WM_MOVE: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->m_service->requestViewportWindowMove(hwnd);
         }
         break;
     }
     case WM_SIZING: {
-        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         if (self && self->m_initialized && self->m_renderable) {
             self->resizeWindow();
         }
         break;
     }
     case WM_WINDOWPOSCHANGED: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->handleWindowPositionChange(hwnd);
         }
         break;
     }
     case WM_GETMINMAXINFO: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             LPMINMAXINFO info = reinterpret_cast<LPMINMAXINFO>(lparam);
             self->handleWindowConstraint(hwnd, info);
         }
         break;
     }
     case WM_DROPFILES: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             HDROP drop = reinterpret_cast<HDROP>(wparam);
             self->handleWindowDropFile(hwnd, drop);
         }
         break;
     }
     case WM_DPICHANGED: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             auto rect = reinterpret_cast<const RECT *>(lparam);
             const LONG width = rect->right - rect->left, height = rect->bottom - rect->top;
             const nanoem_f32_t devicePixelRatio = LOWORD(wparam) / Win32ThreadedApplicationService::kStandardDPIValue,
@@ -548,14 +548,14 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
     }
     case WM_DISPLAYCHANGE: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->updateDisplayFrequency();
             self->m_service->requestUpdatingAllMonitors();
         }
         break;
     }
     case WM_SETFOCUS: {
-        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         if (self && self->m_initialized && !self->m_renderable) {
             self->setFocus();
             self->m_renderable = true;
@@ -563,7 +563,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
     }
     case WM_KILLFOCUS: {
-        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         if (self && self->m_initialized && self->m_renderable) {
             self->killFocus();
             self->m_renderable = false;
@@ -571,7 +571,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
     }
     case WM_POWERBROADCAST: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             if (const POWERBROADCAST_SETTING *settings = reinterpret_cast<POWERBROADCAST_SETTING *>(lparam)) {
                 self->updatePreferredFPS(settings);
             }
@@ -579,7 +579,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
     }
     case WM_COMMAND: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             const uint32_t menuID = LOWORD(wparam);
             ApplicationMenuBuilder::MenuItemType menuType = static_cast<ApplicationMenuBuilder::MenuItemType>(menuID);
             self->handleMenuItem(hwnd, menuType);
@@ -797,13 +797,13 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
     }
 #endif /* IMGUI_HAS_VIEWPORT */
     case WM_CLOSE: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->handleWindowClose(hwnd);
         }
         break;
     }
     case WM_DESTROY: {
-        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+        if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
             self->handleWindowDestroy(hwnd);
         }
         break;
@@ -812,7 +812,7 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         result = DefWindowProcW(hwnd, msg, wparam, lparam);
         break;
     }
-    if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA))) {
+    if (auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
         if (IProgressDialog *dialog = self->m_progressDialog.first) {
             if (dialog->HasUserCancelled()) {
                 Progress::requestCancel();
@@ -1788,7 +1788,7 @@ MainWindow::handleMenuItem(HWND hwnd, ApplicationMenuBuilder::MenuItemType menuT
         break;
     }
     case ApplicationMenuBuilder::kMenuItemTypeFileExit: {
-        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+        auto self = reinterpret_cast<MainWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
         CloseWindow(self->m_windowHandle);
         break;
     }
