@@ -1,6 +1,8 @@
 option(NANOEM_ENABLE_UPLOAD_PDB "Enable uploading debug symbols to sentry.io" OFF)
 option(NANOEM_ENABLE_RENDERDOC_WIN32 "Enable renderdoc integration" OFF)
-set(CMAKE_EXE_LINKER_FLAGS "/LARGEADDRESSAWARE")
+if(MSVC)
+  set(CMAKE_EXE_LINKER_FLAGS "/LARGEADDRESSAWARE")
+endif()
 
 # version
 include(${PROJECT_SOURCE_DIR}/cmake/GetGitRevisionDescription.cmake)

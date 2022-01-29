@@ -101,9 +101,9 @@ private:
     Clock m_clock;
     ByteArray m_resampledAudioSamples;
     WAVEFORMATEX m_nativeOutputDescription = {};
-    std::atomic<uint64_t> m_offset = 0;
-    std::atomic<uint64_t> m_numProceededPackets = 0;
-    std::atomic<RequestState> m_requestState = kRequestStateNone;
+    std::atomic<uint64_t> m_offset;
+    std::atomic<uint64_t> m_numProceededPackets;
+    std::atomic<RequestState> m_requestState;
     uint32_t m_numBufferPackets = 0;
     volatile bool m_running = true;
 };

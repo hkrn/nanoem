@@ -12,7 +12,8 @@ function(rewrite_cmake_cache_for_win32 _build_path)
   if(WIN32)
     file(STRINGS ${_build_path}/CMakeCache.txt input_cmake_cache NEWLINE_CONSUME)
     # quote input_cmake_cache to prevent trailing semicolons
-    string(REPLACE "/MD" "/MT" output_cmake_cache "${input_cmake_cache}")
+    string(REPLACE "/MD" "/MT" interm_cmake_cache "${input_cmake_cache}")
+    string(REPLACE "-D_DLL" "" output_cmake_cache "${interm_cmake_cache}")
     file(WRITE ${_build_path}/CMakeCache.txt ${output_cmake_cache})
     execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path} ${CMAKE_COMMAND} ${_source_path})
   endif()
@@ -465,7 +466,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
         set(_ffmpeg_built_options2 ${_ffmpeg_build_options})
         list(APPEND _ffmpeg_built_options2 "--prefix=\"${_interm_path}/install-root\"")
         string(JOIN ";" _full_build_options ${_ffmpeg_built_options2})
-        execute_process(COMMAND 
+        execute_process(COMMAND
           ${CMAKE_COMMAND} -E env
             CFLAGS=${_build_flags}
             CXXFLAGS=${_build_flags}

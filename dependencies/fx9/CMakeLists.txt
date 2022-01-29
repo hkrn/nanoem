@@ -4,6 +4,12 @@ cmake_minimum_required(VERSION 3.5)
 set(CMAKE_C_STANDARD 99)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+if(WIN32 AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  set(fx9_cxx_standard 14)
+else()
+  set(fx9_cxx_standard 11)
+endif()
+
 if(MSVC)
   if(BUILD_SHARED_LIBS)
     set(building_library_flag "/MD")
@@ -59,12 +65,12 @@ mark_as_advanced(GLFW_LIBRARY_DEBUG GLFW_LIBRARY_RELEASE GLFW_INCLUDE_DIR)
 #mtlpp
 if(APPLE)
   add_library(mtlpp ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/mtlpp/mtlpp.mm)
-  set_property(TARGET mtlpp PROPERTY CXX_STANDARD 11)
+  set_property(TARGET mtlpp PROPERTY CXX_STANDARD ${fx9_cxx_standard})
 endif()
 
 if(GLFW_LIBRARY_RELEASE AND GLFW_INCLUDE_DIR)
   add_executable(fx9_runner ${CMAKE_CURRENT_SOURCE_DIR}/main.cc)
-  set_property(TARGET fx9_runner PROPERTY CXX_STANDARD 11)
+  set_property(TARGET fx9_runner PROPERTY CXX_STANDARD ${fx9_cxx_standard})
   set_property(TARGET fx9_runner APPEND PROPERTY COMPILE_DEFINITIONS $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS=1>)
   set_property(TARGET fx9_runner APPEND PROPERTY
                INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -102,7 +108,7 @@ function(create_sokol_program name def)
   else()
     add_executable(${name} ${CMAKE_CURRENT_SOURCE_DIR}/sokol.cc)
   endif()
-  set_property(TARGET ${name} PROPERTY CXX_STANDARD 11)
+  set_property(TARGET ${name} PROPERTY CXX_STANDARD ${fx9_cxx_standard})
   set_property(TARGET ${name} APPEND PROPERTY COMPILE_DEFINITIONS ${def})
   set_property(TARGET ${name} APPEND PROPERTY
                INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
@@ -142,7 +148,7 @@ endif()
 if(FALSE)
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/test FX9_TEST_SOURCES)
 add_executable(fx9_test ${FX9_TEST_SOURCES})
-set_property(TARGET fx9_test APPEND PROPERTY CXX_STANDARD 11)
+set_property(TARGET fx9_test APPEND PROPERTY CXX_STANDARD ${fx9_cxx_standard})
 set_property(TARGET fx9_test APPEND PROPERTY
     INCLUDE_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty

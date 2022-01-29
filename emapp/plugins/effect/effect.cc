@@ -4,6 +4,7 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
+#define NOMINMAX
 #include "emapp/sdk/Effect.h"
 #include "fx9/Compiler.h"
 
