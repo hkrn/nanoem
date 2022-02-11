@@ -20,8 +20,8 @@ namespace nanoem {
 namespace internal {
 namespace {
 
-#include "emapp/private/shaders/model_skinning_tf_vs_glsl_es3.h"
 #include "emapp/private/shaders/model_skinning_tf_fs_glsl_es3.h"
+#include "emapp/private/shaders/model_skinning_tf_vs_glsl_es3.h"
 
 #define APIENTRYP APIENTRY *
 
@@ -454,7 +454,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::execute(int bufferIndex)
     glUseProgram(0);
 }
 
-nanoem_rsize_t 
+nanoem_rsize_t
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::alignBufferSize(nanoem_rsize_t value) NANOEM_DECL_NOEXCEPT
 {
     const nanoem_rsize_t logicalSize = value / sizeof(bx::simd128_t);
@@ -497,7 +497,8 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeBufferObject(nan
 }
 
 void
-OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeTextureObject(nanoem_rsize_t size, GLuint &object, Vector2SI32 &s)
+OpenGLTransformFeedbackSkinDeformerFactory::Deformer::initializeTextureObject(
+    nanoem_rsize_t size, GLuint &object, Vector2SI32 &s)
 {
     if (!object) {
         const int stride = static_cast<int>(glm::ceil(glm::sqrt(size / sizeof(bx::simd128_t) * 1.0f)));
@@ -684,7 +685,8 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createVertexBuffer()
             m_numMaxMorphItems = glm::max(m_numMaxMorphItems, it->size());
         }
     }
-    const nanoem_rsize_t bufferSize = glm::max(numVertices * m_numMaxMorphItems, nanoem_rsize_t(1)) * sizeof(bx::simd128_t);
+    const nanoem_rsize_t bufferSize =
+        glm::max(numVertices * m_numMaxMorphItems, nanoem_rsize_t(1)) * sizeof(bx::simd128_t);
     nanoem_rsize_t offset = 0;
     ByteArray vertexBufferData(bufferSize);
     reserveBufferWithAlignedSize(vertexBufferData);
@@ -728,7 +730,8 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::createSdefBuffer()
 }
 
 void
-OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t object, nanoem_u32_t type, const char *suffix)
+OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(
+    nanoem_u32_t object, nanoem_u32_t type, const char *suffix)
 {
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
     char label[Inline::kMarkerStringLength];

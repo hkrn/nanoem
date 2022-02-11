@@ -18,7 +18,7 @@ BaseNonModalDialogWindow::calcExpandedImageSize(int width, int height, nanoem_f3
 {
     const ImGuiStyle &style = ImGui::GetStyle();
     const nanoem_f32_t avail = ImGui::GetContentRegionAvail().x - (style.IndentSpacing + style.FramePadding.x),
-        inverseAspectRatio = (height * 1.0f) / (width * 1.0f);
+                       inverseAspectRatio = (height * 1.0f) / (width * 1.0f);
     ImVec2 size;
     if (width > avail) {
         size = height > avail ? ImVec2(avail * scaleFactor, avail * inverseAspectRatio * scaleFactor)

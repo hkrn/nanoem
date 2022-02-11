@@ -165,7 +165,8 @@ BlitPass::setupShaderDescription(sg_shader_desc &desc)
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
 #else
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D,
+            SG_SAMPLERTYPE_FLOAT };
 #endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     else if (backend == SG_BACKEND_GLES3) {
@@ -174,7 +175,8 @@ BlitPass::setupShaderDescription(sg_shader_desc &desc)
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
 #else
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D,
+            SG_SAMPLERTYPE_FLOAT };
 #endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     desc.vs.entry = "nanoemVSMain";

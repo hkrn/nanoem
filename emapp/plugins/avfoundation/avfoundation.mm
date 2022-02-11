@@ -206,8 +206,8 @@ struct AVFoundationEncoder {
                         [writer addInput:audioInput];
                     }
                 } @catch (NSException *exception) {
-                    NSDictionary *userInfo =
-                        [[NSDictionary alloc] initWithObjectsAndKeys:exception.reason, NSLocalizedFailureReasonErrorKey, nil];
+                    NSDictionary *userInfo = [[NSDictionary alloc]
+                        initWithObjectsAndKeys:exception.reason, NSLocalizedFailureReasonErrorKey, nil];
                     error = [[NSError alloc] initWithDomain:NSCocoaErrorDomain code:0 userInfo:userInfo];
                 }
             }

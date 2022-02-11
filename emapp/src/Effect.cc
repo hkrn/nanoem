@@ -5587,8 +5587,8 @@ Effect::parseImagePayload(const ByteArray &bytes, const ImageResourceParameter &
         createImageResource(data.ptr, data.size, newParameter);
         ImageLoader::releaseDecodedImageWithSTB(&decodedImagePtr);
     }
-    else if (bimg::ImageContainer *container = bimg::imageParse(
-            g_bimg_allocator, bytes.data(), Inline::saturateInt32U(bytes.size()), bimg::TextureFormat::Count, &err)) {
+    else if (bimg::ImageContainer *container = bimg::imageParse(g_bimg_allocator, bytes.data(),
+                 Inline::saturateInt32U(bytes.size()), bimg::TextureFormat::Count, &err)) {
         createImageFromContainer(parameter, container);
         bimg::imageFree(container);
     }
@@ -5723,7 +5723,8 @@ Effect::createImageFromContainer(const ImageResourceParameter &parameter, bimg::
 }
 
 void
-Effect::setNormalizedColorImageContainer(const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container)
+Effect::setNormalizedColorImageContainer(
+    const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container)
 {
     ImageDescriptionMap::const_iterator it = m_imageDescriptions.find(name);
     if (it != m_imageDescriptions.end()) {
