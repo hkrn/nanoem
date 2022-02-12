@@ -98,7 +98,8 @@ struct BatchUpdateMatrixBufferRunner {
     execute(nanoem_rsize_t numBones)
     {
         bx::float4x4_t *matrices = reinterpret_cast<bx::float4x4_t *>(m_matricesBuffer->data());
-        nanoem_parameter_assert(m_matricesBuffer->size() >= numBones * sizeof(*matrices), "must be bigger than capacity");
+        nanoem_parameter_assert(
+            m_matricesBuffer->size() >= numBones * sizeof(*matrices), "must be bigger than capacity");
 #if defined(NANOEM_ENABLE_TBB)
         tbb::parallel_for(tbb::blocked_range<nanoem_rsize_t>(0, numBones),
             [this, matrices](const tbb::blocked_range<nanoem_rsize_t> &range) {
@@ -248,7 +249,7 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::Deformer(OpenGLComputeShaderSk
     , m_argumentBufferObject(0)
     , m_numMaxMorphItems(0)
 {
-    m_buffer = { SG_INVALID_ID }; 
+    m_buffer = { SG_INVALID_ID };
     Inline::clearZeroMemory(m_outputBufferObjects);
 }
 
@@ -498,7 +499,8 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createVertexBuffer()
             switch (nanoemModelMorphGetType(morphPtr)) {
             case NANOEM_MODEL_MORPH_TYPE_VERTEX: {
                 nanoem_rsize_t numItems;
-                nanoem_model_morph_vertex_t *const *items = nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
+                nanoem_model_morph_vertex_t *const *items =
+                    nanoemModelMorphGetAllVertexMorphObjects(morphPtr, &numItems);
                 for (nanoem_rsize_t j = 0; j < numItems; j++) {
                     const nanoem_model_morph_vertex_t *itemPtr = items[j];
                     const nanoem_model_vertex_t *vertexPtr = nanoemModelMorphVertexGetVertexObject(itemPtr);
@@ -518,7 +520,8 @@ OpenGLComputeShaderSkinDeformerFactory::Deformer::createVertexBuffer()
                 break;
             }
         }
-        for (tinystl::vector<MorphPairList, TinySTLAllocator>::const_iterator it = vertex2morphs.begin(), end = vertex2morphs.end();
+        for (tinystl::vector<MorphPairList, TinySTLAllocator>::const_iterator it = vertex2morphs.begin(),
+                                                                              end = vertex2morphs.end();
              it != end; ++it) {
             m_numMaxMorphItems = glm::max(m_numMaxMorphItems, it->size());
         }
