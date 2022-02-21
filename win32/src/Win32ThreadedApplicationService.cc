@@ -690,8 +690,8 @@ Win32ThreadedApplicationService::handleInitializeApplication()
     ThreadedApplicationService::handleInitializeApplication();
     setupNewProject();
     HWND window = (HWND) m_nativeView;
-    ImGuiIO &io = ImGui::GetIO();
 #if defined(IMGUI_HAS_VIEWPORT)
+    ImGuiIO &io = ImGui::GetIO();
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
     ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
     platformIO.Platform_CreateWindow = [](ImGuiViewport *viewport) {
@@ -950,7 +950,7 @@ Win32ThreadedApplicationService::handleInitializeApplication()
     }
     updateAllMonitors();
 #else
-    io.ImeWindowHandle = window;
+    ImGui::GetMainViewport()->PlatformHandleRaw = window;
 #endif /* IMGUI_HAS_VIEWPORT */
 }
 
