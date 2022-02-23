@@ -1330,26 +1330,7 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
     io.ConfigWindowsMoveFromTitleBarOnly = true;
     io.FontGlobalScale = windowDevicePixelRatio;
     io.DisplayFramebufferScale = ImVec2(windowDevicePixelRatio, windowDevicePixelRatio);
-    io.KeyMap[ImGuiKey_Tab] = BaseApplicationService::kKeyType_TAB;
-    io.KeyMap[ImGuiKey_LeftArrow] = BaseApplicationService::kKeyType_LEFT;
-    io.KeyMap[ImGuiKey_RightArrow] = BaseApplicationService::kKeyType_RIGHT;
-    io.KeyMap[ImGuiKey_UpArrow] = BaseApplicationService::kKeyType_UP;
-    io.KeyMap[ImGuiKey_DownArrow] = BaseApplicationService::kKeyType_DOWN;
-    io.KeyMap[ImGuiKey_PageUp] = BaseApplicationService::kKeyType_PAGE_UP;
-    io.KeyMap[ImGuiKey_PageDown] = BaseApplicationService::kKeyType_PAGE_DOWN;
-    io.KeyMap[ImGuiKey_Home] = BaseApplicationService::kKeyType_HOME;
-    io.KeyMap[ImGuiKey_End] = BaseApplicationService::kKeyType_END;
-    io.KeyMap[ImGuiKey_Delete] = BaseApplicationService::kKeyType_DELETE;
-    io.KeyMap[ImGuiKey_Backspace] = BaseApplicationService::kKeyType_BACKSPACE;
-    io.KeyMap[ImGuiKey_Space] = BaseApplicationService::kKeyType_SPACE;
-    io.KeyMap[ImGuiKey_Enter] = BaseApplicationService::kKeyType_ENTER;
-    io.KeyMap[ImGuiKey_Escape] = BaseApplicationService::kKeyType_ESCAPE;
-    io.KeyMap[ImGuiKey_A] = BaseApplicationService::kKeyType_A;
-    io.KeyMap[ImGuiKey_C] = BaseApplicationService::kKeyType_C;
-    io.KeyMap[ImGuiKey_V] = BaseApplicationService::kKeyType_V;
-    io.KeyMap[ImGuiKey_X] = BaseApplicationService::kKeyType_X;
-    io.KeyMap[ImGuiKey_Y] = BaseApplicationService::kKeyType_Y;
-    io.KeyMap[ImGuiKey_Z] = BaseApplicationService::kKeyType_Z;
+    io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
     ImGui::StyleColorsDark(&m_style);
     m_style.AntiAliasedFill = m_style.AntiAliasedLines = viewportDevicePixelRatio > 1.0f;
     ImGui::GetStyle() = m_style;
@@ -1579,14 +1560,14 @@ void
 ImGuiWindow::setKeyPressed(BaseApplicationService::KeyType key)
 {
     ImGuiIO &io = ImGui::GetIO();
-    io.KeysDown[key] = true;
+    io.AddKeyEvent(mapKey(key), true);
 }
 
 void
 ImGuiWindow::setKeyReleased(BaseApplicationService::KeyType key)
 {
     ImGuiIO &io = ImGui::GetIO();
-    io.KeysDown[key] = false;
+    io.AddKeyEvent(mapKey(key), false);
 }
 
 void
@@ -2034,6 +2015,191 @@ ImGuiWindow::setSGXDebbugerEnabled(bool value)
         m_debugger = nullptr;
         sg_imgui_discard(debugger);
         nanoem_delete(debugger);
+    }
+}
+
+ImGuiKey
+ImGuiWindow::mapKey(BaseApplicationService::KeyType key) NANOEM_DECL_NOEXCEPT
+{
+    switch (key) {
+    case BaseApplicationService::kKeyType_SPACE:
+        return ImGuiKey_Space;
+    case BaseApplicationService::kKeyType_APOSTROPHE:
+        return ImGuiKey_Apostrophe;
+    case BaseApplicationService::kKeyType_COMMA:
+        return ImGuiKey_Comma;
+    case BaseApplicationService::kKeyType_MINUS:
+        return ImGuiKey_Minus;
+    case BaseApplicationService::kKeyType_PERIOD:
+        return ImGuiKey_Period;
+    case BaseApplicationService::kKeyType_SLASH:
+        return ImGuiKey_Slash;
+    case BaseApplicationService::kKeyType_0:
+        return ImGuiKey_0;
+    case BaseApplicationService::kKeyType_1:
+        return ImGuiKey_1;
+    case BaseApplicationService::kKeyType_2:
+        return ImGuiKey_2;
+    case BaseApplicationService::kKeyType_3:
+        return ImGuiKey_3;
+    case BaseApplicationService::kKeyType_4:
+        return ImGuiKey_4;
+    case BaseApplicationService::kKeyType_5:
+        return ImGuiKey_5;
+    case BaseApplicationService::kKeyType_6:
+        return ImGuiKey_6;
+    case BaseApplicationService::kKeyType_7:
+        return ImGuiKey_7;
+    case BaseApplicationService::kKeyType_8:
+        return ImGuiKey_8;
+    case BaseApplicationService::kKeyType_9:
+        return ImGuiKey_9;
+    case BaseApplicationService::kKeyType_SEMICOLON:
+        return ImGuiKey_Semicolon;
+    case BaseApplicationService::kKeyType_EQUAL:
+        return ImGuiKey_Equal;
+    case BaseApplicationService::kKeyType_A:
+        return ImGuiKey_A;
+    case BaseApplicationService::kKeyType_B:
+        return ImGuiKey_B;
+    case BaseApplicationService::kKeyType_C:
+        return ImGuiKey_C;
+    case BaseApplicationService::kKeyType_D:
+        return ImGuiKey_D;
+    case BaseApplicationService::kKeyType_E:
+        return ImGuiKey_E;
+    case BaseApplicationService::kKeyType_F:
+        return ImGuiKey_F;
+    case BaseApplicationService::kKeyType_G:
+        return ImGuiKey_G;
+    case BaseApplicationService::kKeyType_H:
+        return ImGuiKey_H;
+    case BaseApplicationService::kKeyType_I:
+        return ImGuiKey_I;
+    case BaseApplicationService::kKeyType_J:
+        return ImGuiKey_J;
+    case BaseApplicationService::kKeyType_K:
+        return ImGuiKey_K;
+    case BaseApplicationService::kKeyType_L:
+        return ImGuiKey_L;
+    case BaseApplicationService::kKeyType_M:
+        return ImGuiKey_M;
+    case BaseApplicationService::kKeyType_N:
+        return ImGuiKey_N;
+    case BaseApplicationService::kKeyType_O:
+        return ImGuiKey_O;
+    case BaseApplicationService::kKeyType_P:
+        return ImGuiKey_P;
+    case BaseApplicationService::kKeyType_Q:
+        return ImGuiKey_Q;
+    case BaseApplicationService::kKeyType_R:
+        return ImGuiKey_R;
+    case BaseApplicationService::kKeyType_S:
+        return ImGuiKey_S;
+    case BaseApplicationService::kKeyType_T:
+        return ImGuiKey_T;
+    case BaseApplicationService::kKeyType_U:
+        return ImGuiKey_U;
+    case BaseApplicationService::kKeyType_V:
+        return ImGuiKey_V;
+    case BaseApplicationService::kKeyType_W:
+        return ImGuiKey_W;
+    case BaseApplicationService::kKeyType_X:
+        return ImGuiKey_X;
+    case BaseApplicationService::kKeyType_Y:
+        return ImGuiKey_Y;
+    case BaseApplicationService::kKeyType_Z:
+        return ImGuiKey_Z;
+    case BaseApplicationService::kKeyType_LEFT_BRACKET:
+        return ImGuiKey_LeftBracket;
+    case BaseApplicationService::kKeyType_BACKSLASH:
+        return ImGuiKey_Backslash;
+    case BaseApplicationService::kKeyType_RIGHT_BRACKET:
+        return ImGuiKey_RightBracket;
+    case BaseApplicationService::kKeyType_GRAVE_ACCENT:
+        return ImGuiKey_GraveAccent;
+    case BaseApplicationService::kKeyType_ESCAPE:
+        return ImGuiKey_Escape;
+    case BaseApplicationService::kKeyType_ENTER:
+        return ImGuiKey_Enter;
+    case BaseApplicationService::kKeyType_TAB:
+        return ImGuiKey_Tab;
+    case BaseApplicationService::kKeyType_BACKSPACE:
+        return ImGuiKey_Backspace;
+    case BaseApplicationService::kKeyType_INSERT:
+        return ImGuiKey_Insert;
+    case BaseApplicationService::kKeyType_DELETE:
+        return ImGuiKey_Delete;
+    case BaseApplicationService::kKeyType_RIGHT:
+        return ImGuiKey_RightArrow;
+    case BaseApplicationService::kKeyType_LEFT:
+        return ImGuiKey_LeftArrow;
+    case BaseApplicationService::kKeyType_DOWN:
+        return ImGuiKey_DownArrow;
+    case BaseApplicationService::kKeyType_UP:
+        return ImGuiKey_UpArrow;
+    case BaseApplicationService::kKeyType_PAGE_UP:
+        return ImGuiKey_PageUp;
+    case BaseApplicationService::kKeyType_PAGE_DOWN:
+        return ImGuiKey_PageDown;
+    case BaseApplicationService::kKeyType_HOME:
+        return ImGuiKey_Home;
+    case BaseApplicationService::kKeyType_END:
+        return ImGuiKey_End;
+    case BaseApplicationService::kKeyType_CAPS_LOCK:
+        return ImGuiKey_CapsLock;
+    case BaseApplicationService::kKeyType_SCROLL_LOCK:
+        return ImGuiKey_ScrollLock;
+    case BaseApplicationService::kKeyType_NUM_LOCK:
+        return ImGuiKey_NumLock;
+    case BaseApplicationService::kKeyType_PRINT_SCREEN:
+        return ImGuiKey_PrintScreen;
+    case BaseApplicationService::kKeyType_PAUSE:
+        return ImGuiKey_Pause;
+    case BaseApplicationService::kKeyType_F1:
+        return ImGuiKey_F1;
+    case BaseApplicationService::kKeyType_F2:
+        return ImGuiKey_F2;
+    case BaseApplicationService::kKeyType_F3:
+        return ImGuiKey_F3;
+    case BaseApplicationService::kKeyType_F4:
+        return ImGuiKey_F4;
+    case BaseApplicationService::kKeyType_F5:
+        return ImGuiKey_F5;
+    case BaseApplicationService::kKeyType_F6:
+        return ImGuiKey_F6;
+    case BaseApplicationService::kKeyType_F7:
+        return ImGuiKey_F7;
+    case BaseApplicationService::kKeyType_F8:
+        return ImGuiKey_F8;
+    case BaseApplicationService::kKeyType_F9:
+        return ImGuiKey_F9;
+    case BaseApplicationService::kKeyType_F10:
+        return ImGuiKey_F10;
+    case BaseApplicationService::kKeyType_F11:
+        return ImGuiKey_F11;
+    case BaseApplicationService::kKeyType_F12:
+        return ImGuiKey_F12;
+    case BaseApplicationService::kKeyType_LEFT_SHIFT:
+        return ImGuiKey_LeftShift;
+    case BaseApplicationService::kKeyType_LEFT_CONTROL:
+        return ImGuiKey_LeftCtrl;
+    case BaseApplicationService::kKeyType_LEFT_ALT:
+        return ImGuiKey_LeftAlt;
+    case BaseApplicationService::kKeyType_LEFT_SUPER:
+        return ImGuiKey_LeftSuper;
+    case BaseApplicationService::kKeyType_RIGHT_SHIFT:
+        return ImGuiKey_RightShift;
+    case BaseApplicationService::kKeyType_RIGHT_CONTROL:
+        return ImGuiKey_RightCtrl;
+    case BaseApplicationService::kKeyType_RIGHT_ALT:
+        return ImGuiKey_RightAlt;
+    case BaseApplicationService::kKeyType_RIGHT_SUPER:
+        return ImGuiKey_RightSuper;
+    case BaseApplicationService::kKeyType_MENU:
+        return ImGuiKey_Menu;
+    default:
+        return ImGuiKey_None;
     }
 }
 
@@ -5182,34 +5348,31 @@ ImGuiWindow::setupDeviceInput(Project *project)
 {
     ImGuiIO &io = ImGui::GetIO();
     const Vector2SI32 delta(project->lastScrollDelta());
-    io.MouseWheelH = static_cast<nanoem_f32_t>(delta.x);
-    io.MouseWheel = static_cast<nanoem_f32_t>(delta.y);
+    io.AddMouseWheelEvent(static_cast<nanoem_f32_t>(delta.x), static_cast<nanoem_f32_t>(delta.y));
     io.DeltaTime = static_cast<nanoem_f32_t>(stm_sec(stm_laptime(&m_elapsedTime)));
 #if defined(IMGUI_HAS_VIEWPORT)
     if (EnumUtils::isEnabledT<ImGuiConfigFlags>(io.ConfigFlags, ImGuiConfigFlags_ViewportsEnable)) {
-        io.MousePos.x = m_screenCursor.m_x;
-        io.MousePos.y = m_screenCursor.m_y;
-        io.MouseDown[0] = m_screenCursor.m_pressed[Project::kCursorTypeMouseLeft];
-        io.MouseDown[1] = m_screenCursor.m_pressed[Project::kCursorTypeMouseRight];
-        io.MouseDown[2] = m_screenCursor.m_pressed[Project::kCursorTypeMouseMiddle];
+        io.AddMousePosEvent(m_screenCursor.m_x, m_screenCursor.m_y);
+        io.AddMouseButtonEvent(0, m_screenCursor.m_pressed[Project::kCursorTypeMouseLeft]);
+        io.AddMouseButtonEvent(1, m_screenCursor.m_pressed[Project::kCursorTypeMouseRight]);
+        io.AddMouseButtonEvent(2, m_screenCursor.m_pressed[Project::kCursorTypeMouseMiddle]);
         const Project::CursorModifierType modifiers = m_screenCursor.m_modifiers;
-        io.KeyAlt = EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeAlt);
-        io.KeyCtrl = EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeControl);
-        io.KeyShift = EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeShift);
+        io.AddKeyEvent(ImGuiKey_ModAlt, EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeAlt));
+        io.AddKeyEvent(ImGuiKey_ModCtrl,EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeControl));
+        io.AddKeyEvent(ImGuiKey_ModShift, EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeShift));
     }
     else
 #endif /* IMGUI_HAS_VIEWPORT */
     {
         const Vector2SI32 offset(project->deviceScaleMovingCursorPosition());
-        io.MousePos.x = static_cast<nanoem_f32_t>(offset.x);
-        io.MousePos.y = static_cast<nanoem_f32_t>(offset.y);
-        io.MouseDown[0] = project->isCursorPressed(Project::kCursorTypeMouseLeft);
-        io.MouseDown[1] = project->isCursorPressed(Project::kCursorTypeMouseRight);
-        io.MouseDown[2] = project->isCursorPressed(Project::kCursorTypeMouseMiddle);
+        io.AddMousePosEvent(static_cast<nanoem_f32_t>(offset.x), static_cast<nanoem_f32_t>(offset.y));
+        io.AddMouseButtonEvent(0, project->isCursorPressed(Project::kCursorTypeMouseLeft));
+        io.AddMouseButtonEvent(1, project->isCursorPressed(Project::kCursorTypeMouseRight));
+        io.AddMouseButtonEvent(2, project->isCursorPressed(Project::kCursorTypeMouseMiddle));
         const nanoem_u32_t modifiers = project->cursorModifiers();
-        io.KeyAlt = EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeAlt);
-        io.KeyCtrl = EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeControl);
-        io.KeyShift = EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeShift);
+        io.AddKeyEvent(ImGuiKey_ModAlt, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeAlt));
+        io.AddKeyEvent(ImGuiKey_ModCtrl, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeControl));
+        io.AddKeyEvent(ImGuiKey_ModShift, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeShift));
     }
 }
 
@@ -5457,10 +5620,17 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
         pb.applyPipeline(pipeline);
         pb.applyUniformBlock(
             SG_SHADERSTAGE_VS, &uniformBlockWithTransparentColor, sizeof(uniformBlockWithTransparentColor));
-        int offset = 0;
+        bindingsRef.fs_images[0].id = m_atlasImage.id;
+        nanoem_u32_t savedTextureID = m_atlasImage.id, vertexBufferOffset = 0, indexBufferOffset = 0;
         for (int i = 0, numCmdLists = drawData->CmdListsCount; i < numCmdLists; i++) {
             const ImDrawList *cmdList = drawData->CmdLists[i];
-            SG_PUSH_GROUPF("ImGuiWindow::renderDrawList(numCmdLists=%d, index=%d)", numCmdLists, i);
+            SG_PUSH_GROUPF(
+                "ImGuiWindow::renderDrawList(numCmdLists=%d, index=%d vertexBufferOffset=%d, indexBufferOffset=%d)",
+                numCmdLists, i, vertexBufferOffset, indexBufferOffset);
+            bindingsRef.index_buffer_offset = Inline::saturateInt32(indexBufferOffset);
+            bindingsRef.vertex_buffer_offsets[0] = Inline::saturateInt32(vertexBufferOffset);
+            pb.applyBindings(bindingsRef);
+            nanoem_u32_t savedVertexOffset = 0;
             for (ImVector<ImDrawCmd>::const_iterator it = cmdList->CmdBuffer.begin(), end = cmdList->CmdBuffer.end();
                  it != end; ++it) {
                 const ImDrawCmd &command = *it;
@@ -5468,7 +5638,8 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
                     command.UserCallback(cmdList, &command);
                 }
                 else {
-                    SG_PUSH_GROUPF("ImGuiWindow::renderDrawList(offset=%d, numIndices=%d)", offset, command.ElemCount);
+                    SG_PUSH_GROUPF("ImGuiWindow::renderDrawList(indexOffset=%d, numIndices=%d, vertexOffset=%d)",
+                        command.IdxOffset, command.ElemCount, command.VtxOffset);
                     const int sx = static_cast<int>(command.ClipRect.x - displayPos.x),
                               sy = static_cast<int>(command.ClipRect.y - displayPos.y),
                               sw = static_cast<int>(command.ClipRect.z - sx - displayPos.x),
@@ -5484,13 +5655,22 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
                         pb.applyUniformBlock(SG_SHADERSTAGE_FS, &uniformBlockWithTransparentColor,
                             sizeof(uniformBlockWithTransparentColor));
                     }
-                    bindingsRef.fs_images[0] = sg::is_valid(image) ? image : m_atlasImage;
-                    pb.applyBindings(bindingsRef);
-                    pb.draw(offset, command.ElemCount);
+                    if (savedTextureID != image.id || savedVertexOffset != command.VtxOffset) {
+                        savedTextureID = image.id;
+                        savedVertexOffset = command.VtxOffset;
+                        bindingsRef.fs_images[0] = sg::is_valid(image) ? image : m_atlasImage;
+                        bindingsRef.vertex_buffer_offsets[0] =
+                            vertexBufferOffset + savedVertexOffset * sizeof(ImGuiWindow::VertexUnit);
+                        pb.applyBindings(bindingsRef);
+                    }
+                    pb.draw(Inline::saturateInt32(command.IdxOffset), Inline::saturateInt32(command.ElemCount));
                     SG_POP_GROUP();
                 }
-                offset += command.ElemCount;
             }
+            vertexBufferOffset +=
+                Inline::saturateInt32U(size_t(cmdList->VtxBuffer.Size) * sizeof(ImGuiWindow::VertexUnit));
+            indexBufferOffset +=
+                Inline::saturateInt32U(size_t(cmdList->IdxBuffer.Size) * sizeof(cmdList->IdxBuffer[0]));
             SG_POP_GROUP();
         }
     }
@@ -5541,10 +5721,12 @@ ImGuiWindow::Buffer::update(const ImDrawData *drawData, sg_bindings &bindingsRef
             unit.m_color = glm::make_vec4(reinterpret_cast<const nanoem_u8_t *>(&item.col));
         }
         const ImDrawIdx *sourceIndices = &drawList->IdxBuffer.front();
-        for (int j = 0, numIndices = drawList->IdxBuffer.size(); j < numIndices; j++) {
-            m_indexDataPtr[offsetIndex++] = sourceIndices[j] + offsetVertex;
+        int numIndices = drawList->IdxBuffer.size();
+        for (int j = 0; j < numIndices; j++) {
+            m_indexDataPtr[offsetIndex + j] = sourceIndices[j];
         }
         offsetVertex += numVertices;
+        offsetIndex += numIndices;
     }
     unmap();
     bindingsRef.vertex_buffers[0] = m_vertexHandle;

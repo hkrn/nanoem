@@ -319,6 +319,7 @@ private:
         kRhombusReactionMaxEnum
     };
 
+    static ImGuiKey mapKey(BaseApplicationService::KeyType key) NANOEM_DECL_NOEXCEPT;
     static Vector4 createViewportImageRect(
         const Project *project, const Vector4 &viewportLayoutRect) NANOEM_DECL_NOEXCEPT;
     static const char *selectBoneInterpolationType(

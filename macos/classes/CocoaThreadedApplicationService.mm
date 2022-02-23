@@ -1221,6 +1221,13 @@ CocoaThreadedApplicationService::handleInitializeApplication()
     };
 #if defined(IMGUI_HAS_VIEWPORT)
     io.BackendFlags |= ImGuiBackendFlags_PlatformHasViewports;
+    io.SetPlatformImeDataFn = [](ImGuiViewport *viewport, ImGuiPlatformImeData *data) {
+        const ImGuiIO &io = ImGui::GetIO();
+        const nanoem_f32_t fx = data->InputPos.x * (1.0f / io.DisplayFramebufferScale.x),
+                           fy = data->InputPos.y * (1.0f / io.DisplayFramebufferScale.y) + data->InputLineHeight;
+        auto self = static_cast<CocoaThreadedApplicationService *>(viewport->PlatformHandleRaw);
+        self->m_textInputOrigin = Vector2SI32(fx, fy);
+    };
     ImGuiPlatformIO &platformIO = ImGui::GetPlatformIO();
     platformIO.Platform_CreateWindow = [](ImGuiViewport *viewport) {
         __block ViewportWindow *userData = IM_NEW(ViewportWindow);
@@ -1333,19 +1340,6 @@ CocoaThreadedApplicationService::handleInitializeApplication()
         auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
         BX_UNUSED_1(userData);
     };
-    platformIO.Platform_SetImeInputPos = [](ImGuiViewport *viewport, ImVec2 pos) {
-        auto userData = static_cast<ViewportWindow *>(viewport->PlatformUserData);
-        __block const ImVec2 localPos(pos);
-        userData->runBlockOnMainQueue(^(ViewportWindow *userData) {
-            auto self = static_cast<CocoaThreadedApplicationService *>(viewport->PlatformHandle);
-            const NSWindow *window = userData->m_window;
-            const ImFont *font = ImGui::GetIO().Fonts->Fonts[0];
-            const nanoem_f32_t invertDevicePixelRatio = 1.0f / window.backingScaleFactor,
-                               x = localPos.x * invertDevicePixelRatio,
-                               y = localPos.y * invertDevicePixelRatio + font->FontSize;
-            self->m_textInputOrigin = Vector2SI32(x, window.screen.frame.size.height - y);
-        });
-    };
     ImGuiViewport *main = ImGui::GetMainViewport();
     NSView *view = (__bridge NSView *) m_nativeView;
     main->PlatformHandle = this;
@@ -1404,12 +1398,12 @@ CocoaThreadedApplicationService::handleInitializeApplication()
     }
     updateAllMonitors();
 #else /* IMGUI_HAS_VIEWPORT */
-    io.ImeWindowHandle = this;
-    io.ImeSetInputScreenPosFn = [](int x, int y) {
+    ImGui::GetMainViewport()->PlatformHandleRaw = this;
+    io.SetPlatformImeDataFn = [](ImGuiViewport *viewport, ImGuiPlatformImeData *data) {
         const ImGuiIO &io = ImGui::GetIO();
-        const nanoem_f32_t fx = x * (1.0f / io.DisplayFramebufferScale.x),
-                           fy = y * (1.0f / io.DisplayFramebufferScale.y) + io.Fonts->Fonts[0]->FontSize;
-        auto self = static_cast<CocoaThreadedApplicationService *>(io.ImeWindowHandle);
+        const nanoem_f32_t fx = data->InputPos.x * (1.0f / io.DisplayFramebufferScale.x),
+                           fy = data->InputPos.y * (1.0f / io.DisplayFramebufferScale.y) + data->InputLineHeight;
+        auto self = static_cast<CocoaThreadedApplicationService *>(viewport->PlatformHandleRaw);
         self->m_textInputOrigin = Vector2SI32(fx, fy);
     };
 #endif /* IMGUI_HAS_VIEWPORT */
