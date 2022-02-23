@@ -602,7 +602,13 @@ Project::DrawQueue::flush(Project *project)
     bx::HashMurmur2A hasher;
     for (PassCommandBufferList::const_iterator it = m_commandBuffers.begin(), end = m_commandBuffers.end(); it != end;
          ++it) {
-        drawPass(it, project, hasher);
+        const sg_pass pass = it->m_handle;
+        if (sg::query_pass_state(pass) == SG_RESOURCESTATE_VALID) {
+            drawPass(it, project, hasher);
+        }
+        else {
+            SG_INSERT_MARKERF("[WARN] The pass \"%s\" (%d) was skipped", project->findRenderPassName(pass), pass.id);
+        }
         nanoem_delete(it->m_items);
     }
     m_commandBuffers.clear();
