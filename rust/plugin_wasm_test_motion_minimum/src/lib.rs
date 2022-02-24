@@ -7,7 +7,7 @@
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::os::raw::c_void;
-use std::{collections::HashMap, ffi::CStr, ptr::null_mut};
+use std::{collections::HashMap, ptr::null_mut};
 
 #[allow(non_camel_case_types)]
 pub type nanoem_application_plugin_status_t = i32;

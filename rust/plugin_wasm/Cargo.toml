@@ -6,13 +6,13 @@ edition = "2018"
 license = "MPL-2.0"
 
 [dependencies]
-anyhow = "1.0"
+anyhow = "1"
 atty = "0.2"
 env_logger = "0.9"
 log = "0.4"
-wasmer = "2.0"
-wasmer-wasi = "2.0"
-walkdir = "2.0"
+wasmer = "2"
+wasmer-wasi = "2"
+walkdir = "2"
 
 [dev-dependencies]
 serde = "1.0"
@@ -20,6 +20,10 @@ serde_derive = "1.0"
 serde_json = "1.0"
 maplit = "1.0"
 rand = "0.8"
+plugin_wasm_test_model_full = { path = "../plugin_wasm_test_model_full" }
+plugin_wasm_test_motion_full = { path = "../plugin_wasm_test_motion_full" }
+plugin_wasm_test_model_minimum = { path = "../plugin_wasm_test_model_minimum" }
+plugin_wasm_test_motion_minimum = { path = "../plugin_wasm_test_motion_minimum" }
 
 [lib]
 path = "src/lib.rs"
