@@ -397,14 +397,8 @@ fn get_recovery_suggestion() -> Result<()> {
     flush_plugin_output(&mut env)?;
     let result = controller.recovery_suggestion();
     assert!(result.is_ok());
-    assert_eq!("Recovery Suggestion", result?);
-    assert_eq!(
-        vec![PluginOutput {
-            function: "nanoemApplicationPluginModelIOGetRecoverySuggestion".to_owned(),
-            ..Default::default()
-        },],
-        read_plugin_output(&mut env)?
-    );
+    assert_eq!("", result?);
+    assert!(read_plugin_output(&mut env)?.is_empty());
     controller.destroy();
     controller.terminate();
     Ok(())
