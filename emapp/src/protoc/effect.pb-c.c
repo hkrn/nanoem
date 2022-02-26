@@ -2248,7 +2248,7 @@ const ProtobufCMessageDescriptor fx9__effect__parameter__descriptor =
   (ProtobufCMessageInit) fx9__effect__parameter__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors[7] =
+static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors[8] =
 {
   {
     "name",
@@ -2334,6 +2334,18 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "sval_utf8",
+    8,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_STRING,
+    offsetof(Fx9__Effect__Annotation, value_case),
+    offsetof(Fx9__Effect__Annotation, sval_utf8),
+    NULL,
+    NULL,
+    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned fx9__effect__annotation__field_indices_by_name[] = {
   1,   /* field[1] = bval */
@@ -2343,11 +2355,12 @@ static const unsigned fx9__effect__annotation__field_indices_by_name[] = {
   5,   /* field[5] = ival4 */
   0,   /* field[0] = name */
   4,   /* field[4] = sval */
+  7,   /* field[7] = sval_utf8 */
 };
 static const ProtobufCIntRange fx9__effect__annotation__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 7 }
+  { 0, 8 }
 };
 const ProtobufCMessageDescriptor fx9__effect__annotation__descriptor =
 {
@@ -2357,7 +2370,7 @@ const ProtobufCMessageDescriptor fx9__effect__annotation__descriptor =
   "Fx9__Effect__Annotation",
   "fx9.effect",
   sizeof(Fx9__Effect__Annotation),
-  7,
+  8,
   fx9__effect__annotation__field_descriptors,
   fx9__effect__annotation__field_indices_by_name,
   1,  fx9__effect__annotation__number_ranges,

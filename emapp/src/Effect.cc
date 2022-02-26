@@ -125,8 +125,8 @@ struct AttributeUsage {
 
 class PrivateEffectUtils NANOEM_DECL_SEALED : private NonCopyable {
 public:
-    static void parseAnnotations(
-        Fx9__Effect__Annotation *const *annotationsPtr, size_t numAnnotations, AnnotationMap &annotations);
+    static void parseAnnotations(Fx9__Effect__Annotation *const *annotationsPtr, size_t numAnnotations,
+        nanoem_unicode_string_factory_t *factory, AnnotationMap &annotations);
     static nanoem_u32_t offsetParameterType(const Fx9__Effect__Parameter *parameter) NANOEM_DECL_NOEXCEPT;
     static ParameterType determineParameterType(const Fx9__Effect__Parameter *parameter) NANOEM_DECL_NOEXCEPT;
     static String concatPrefix(const char *const name, const char *const prefix);
@@ -169,8 +169,8 @@ public:
 };
 
 void
-PrivateEffectUtils::parseAnnotations(
-    Fx9__Effect__Annotation *const *annotationsPtr, size_t numAnnotations, AnnotationMap &annotations)
+PrivateEffectUtils::parseAnnotations(Fx9__Effect__Annotation *const *annotationsPtr, size_t numAnnotations,
+    nanoem_unicode_string_factory_t *factory, AnnotationMap &annotations)
 {
     annotations.clear();
     for (size_t i = 0; i < numAnnotations; i++) {
@@ -204,7 +204,14 @@ PrivateEffectUtils::parseAnnotations(
             break;
         }
         case FX9__EFFECT__ANNOTATION__VALUE_SVAL: {
-            value.m_string = annotation->sval;
+            const char *sval = annotation->sval;
+            StringUtils::getUtf8String(
+                sval, StringUtils::length(sval), NANOEM_CODEC_TYPE_SJIS, factory, value.m_string);
+            annotations.insert(tinystl::make_pair(name, value));
+            break;
+        }
+        case FX9__EFFECT__ANNOTATION__VALUE_SVAL_UTF8: {
+            value.m_string = annotation->sval_utf8;
             annotations.insert(tinystl::make_pair(name, value));
             break;
         }
@@ -1638,13 +1645,14 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
             }
         }
         if (!error.hasReason()) {
+            nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
             AnnotationMap techniqueAnnotations, passAnnotations;
             StringMap shaderOutputVariables;
             bool needsBehaviorCompatibility = false;
             for (size_t i = 0; i < numTechniques; i++) {
                 const Fx9__Effect__Technique *techniquePtr = effect->techniques[i];
                 PrivateEffectUtils::parseAnnotations(
-                    techniquePtr->annotations, techniquePtr->n_annotations, techniqueAnnotations);
+                    techniquePtr->annotations, techniquePtr->n_annotations, factory, techniqueAnnotations);
                 passes.clear();
                 const size_t numPasses = techniquePtr->n_passes;
                 for (size_t j = 0; j < numPasses; j++) {
@@ -1860,7 +1868,7 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         PrivateEffectUtils::fillShaderImageDescriptions(
                             "ps", shaderDescription.fs.images, pixelShaderFallbackImageNames);
                         PrivateEffectUtils::parseAnnotations(
-                            passPtr->annotations, passPtr->n_annotations, passAnnotations);
+                            passPtr->annotations, passPtr->n_annotations, factory, passAnnotations);
                         char label[Inline::kMarkerStringLength];
                         StringUtils::format(label, sizeof(label), "Effects/%s/%s/%s", nameConstString(),
                             techniquePtr->name, passPtr->name);
@@ -1896,6 +1904,7 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
             m_needsBehaviorCompatibility = needsBehaviorCompatibility;
         }
         if (!error.hasReason()) {
+            nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
             const size_t numParameters = effect->n_parameters;
             for (size_t i = 0; i < numParameters; i++) {
                 const Fx9__Effect__Parameter *parameterPtr = effect->parameters[i];
@@ -1905,7 +1914,7 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                 parameter.m_shared = (parameterPtr->flags & TypedSemanticParameter::kShared) != 0;
                 memcpy(parameter.m_value.data(), parameterPtr->value.data, parameterPtr->value.len);
                 PrivateEffectUtils::parseAnnotations(
-                    parameterPtr->annotations, parameterPtr->n_annotations, parameter.m_annotations);
+                    parameterPtr->annotations, parameterPtr->n_annotations, factory, parameter.m_annotations);
                 m_parameters.insert(tinystl::make_pair(parameter.m_name, parameter));
             }
             StringSet includePathSet;
@@ -4087,14 +4096,10 @@ Effect::handleControlObjectSemantic(Effect *self, const TypedSemanticParameter &
     const AnnotationMap &annotations = parameter.m_annotations;
     AnnotationMap::const_iterator it = annotations.findAnnotation(kNameKeyLiteral);
     if (it != annotations.end()) {
-        String targetName, targetItem;
-        nanoem_unicode_string_factory_t *factory = self->project()->unicodeStringFactory();
-        StringUtils::getUtf8String(it->second.m_string, NANOEM_CODEC_TYPE_SJIS, factory, targetName);
-        ControlObjectTarget target(targetName, parameter.m_type);
+        ControlObjectTarget target(it->second.m_string, parameter.m_type);
         AnnotationMap::const_iterator it2 = annotations.findAnnotation(kItemKeyLiteral);
         if (it2 != parameter.m_annotations.end()) {
-            StringUtils::getUtf8String(it2->second.m_string, NANOEM_CODEC_TYPE_SJIS, factory, targetItem);
-            target.m_item = targetItem;
+            target.m_item = it2->second.m_string;
         }
         const String &parameterName = parameter.m_name;
         self->m_controlObjectTargets.insert(tinystl::make_pair(parameterName, target));
@@ -4265,11 +4270,8 @@ Effect::handleOffscreenRenderTargetSemantic(
             OffscreenRenderTargetOption option(parameter.m_name, description, clearColor, clearDepth);
             it = annotations.findAnnotation(kDefaultEffectKeyLiteral);
             if (it != annotations.end()) {
-                String value;
-                nanoem_unicode_string_factory_t *factory = project->unicodeStringFactory();
-                StringUtils::getUtf8String(it->second.m_string, NANOEM_CODEC_TYPE_SJIS, factory, value);
                 MutableString newValueString;
-                StringUtils::copyString(value, newValueString);
+                StringUtils::copyString(it->second.m_string, newValueString);
                 char *ptr = newValueString.data();
                 while (char *p = StringUtils::indexOf(ptr, ';')) {
                     *p = '\0';
@@ -4620,9 +4622,8 @@ void
 Effect::createImageResourceFromArchive(const String &name, const TypedSemanticParameter &parameter,
     const Archiver *archiver, Progress &progress, Error &error)
 {
-    String utf8Name, filename;
-    StringUtils::getUtf8String(name, NANOEM_CODEC_TYPE_SJIS, m_project->unicodeStringFactory(), utf8Name);
-    FileUtils::canonicalizePathSeparator(utf8Name.c_str(), filename);
+    String filename;
+    FileUtils::canonicalizePathSeparator(name.c_str(), filename);
     const URI &imageURI = Project::resolveArchiveURI(fileURI(), filename);
     if (archiver && Project::isArchiveURI(imageURI)) {
         const URI &resolvedURI = m_project->resolveFileURI(imageURI);
