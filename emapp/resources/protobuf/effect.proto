@@ -188,6 +188,7 @@ message Annotation {
     string sval = 5;
     Vector4i ival4 = 6;
     Vector4f fval4 = 7;
+    string sval_utf8 = 8;
   }
 };
 

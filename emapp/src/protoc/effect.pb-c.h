@@ -345,7 +345,8 @@ typedef enum {
   FX9__EFFECT__ANNOTATION__VALUE_IVAL = 4,
   FX9__EFFECT__ANNOTATION__VALUE_SVAL = 5,
   FX9__EFFECT__ANNOTATION__VALUE_IVAL4 = 6,
-  FX9__EFFECT__ANNOTATION__VALUE_FVAL4 = 7
+  FX9__EFFECT__ANNOTATION__VALUE_FVAL4 = 7,
+  FX9__EFFECT__ANNOTATION__VALUE_SVAL_UTF8 = 8
     PROTOBUF_C__FORCE_ENUM_TO_BE_INT_SIZE(FX9__EFFECT__ANNOTATION__VALUE__CASE)
 } Fx9__Effect__Annotation__ValueCase;
 
@@ -361,6 +362,7 @@ struct  Fx9__Effect__Annotation
     char *sval;
     Fx9__Effect__Vector4i *ival4;
     Fx9__Effect__Vector4f *fval4;
+    char *sval_utf8;
   };
 };
 #define FX9__EFFECT__ANNOTATION__INIT \
