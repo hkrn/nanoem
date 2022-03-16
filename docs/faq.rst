@@ -3,11 +3,14 @@
 ==========================================
 
 .. note::
-  エフェクトに関する質問は :doc:`faq_effect` で
+  エフェクトに関する質問は「:doc:`faq_effect`」を参照
 
-nanoem を使う際において聞かれそうなこととその回答の一覧です。問題が起きて困ってる場合は :doc:`trouble_shooting` を参照。
+nanoem を使う際において聞かれそうなこととその回答の一覧です。問題が起きた場合の対処については「:doc:`trouble_shooting`」にまとめています。
 
-ここに書かれてることが含まれてない場合は「`マシュマロ <https://marshmallow-qa.com/shimacpyon>`_」を投げるか Twitter で `#nanoem <https://twitter.com/search?q=#nanoem>`_ または `#nanoem互助会 <https://twitter.com/search?q=#nanoem互助会>`_ タグをつけてツイートすると誰かが答えてくれるかもしれません。
+ここに書かれてることが含まれてない場合は「:ref:`37420267-8E5A-41EA-A159-FFF490DF1D8D`」を参照して質問を投げてください。
+
+.. caution::
+   Twitter で `#nanoem <https://twitter.com/search?q=#nanoem>`_ または `#nanoem互助会 <https://twitter.com/search?q=#nanoem互助会>`_ タグをつけてツイートする方法もありますが、こちらは開発者本人からの回答は行わないためご注意ください。
 
 MikuMikuDance の違いはなんですか？
 =======================================================
