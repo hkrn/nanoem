@@ -1,0 +1,10 @@
+docs: docs/**/*
+emapp:
+- emapp/**/*
+- glfw/**/*
+- macos/**/*
+- sandbox/**/*
+- sapp/**/*
+- win32/**/*
+github: .github/**/*
+nanoem: nanoem/**/*
