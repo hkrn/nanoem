@@ -35,7 +35,7 @@ impl nanoem_application_plugin_model_io_t {
         let path = Path::new(path.to_str()?);
         let store = Store::default();
         let mut env = WasiState::new("nanoem").finalize()?;
-        let controller = ModelIOPluginController::new(path, &store, &mut env)?;
+        let controller = ModelIOPluginController::from_path(path, &store, &mut env)?;
         controller.initialize()?;
         Ok(Self {
             controller,

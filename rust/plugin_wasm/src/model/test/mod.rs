@@ -4,16 +4,20 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use std::{collections::HashMap, env::current_dir};
+use std::{
+    collections::{HashMap, HashSet},
+    env::current_dir,
+};
 
 use anyhow::Result;
+use pretty_assertions::assert_eq;
 use rand::{thread_rng, Rng};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use wasmer::Store;
 use wasmer_wasi::{Pipe, WasiEnv, WasiState};
 
-use super::plugin::ModelIOPluginController;
+use super::plugin::{ModelIOPlugin, ModelIOPluginController};
 
 #[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 struct PluginOutput {
@@ -60,7 +64,46 @@ fn read_plugin_output(env: &mut WasiEnv) -> Result<Vec<PluginOutput>> {
 fn inner_create_controller(path: &str, env: &mut WasiEnv) -> Result<ModelIOPluginController> {
     let path = current_dir()?.parent().unwrap().join(path);
     let store = Store::default();
-    ModelIOPluginController::new(&path, &store, env)
+    let bytes = std::fs::read(path)?;
+    let plugin = ModelIOPlugin::new(&bytes, &store, env)?;
+    Ok(ModelIOPluginController::new(vec![plugin]))
+}
+
+#[test]
+fn from_path() -> Result<()> {
+    let ty = if cfg!(debug_assertions) {
+        "debug"
+    } else {
+        "release"
+    };
+    let path = current_dir()?
+        .parent()
+        .unwrap()
+        .join(format!("target/wasm32-wasi/{}/deps", ty));
+    let store = Store::default();
+    let mut env = create_wasi_env()?;
+    let mut controller = ModelIOPluginController::from_path(&path, &store, &mut env)?;
+    let mut names = vec![];
+    for plugin in controller.all_plugins_mut() {
+        plugin.create()?;
+        names.push(plugin.name()?);
+    }
+    let mut names = names
+        .iter()
+        .cloned()
+        .collect::<HashSet<_>>()
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+    names.sort();
+    assert_eq!(
+        vec![
+            "plugin_wasm_test_model_full",
+            "plugin_wasm_test_model_minimum",
+        ],
+        names
+    );
+    Ok(())
 }
 
 mod full;

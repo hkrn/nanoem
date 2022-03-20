@@ -1,11 +1,13 @@
 [workspace]
 members = [
     "plugin_wasm",
-    "protobuf"
-]
-exclude = [
     "plugin_wasm_test_model_full",
     "plugin_wasm_test_motion_full",
     "plugin_wasm_test_model_minimum",
-    "plugin_wasm_test_motion_minimum"
+    "plugin_wasm_test_motion_minimum",
+    "protobuf",
+]
+default-members = [
+    "plugin_wasm",
+    "protobuf",
 ]

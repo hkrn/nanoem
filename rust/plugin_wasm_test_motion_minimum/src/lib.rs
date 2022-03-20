@@ -90,7 +90,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
         })
         .unwrap()
     );
-    b"plugin_wasm_test_motion_full\0" as *const u8 as *const i8
+    b"plugin_wasm_test_motion_minimum\0" as *const u8 as *const i8
 }
 
 /// # Safety
@@ -108,7 +108,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
         })
         .unwrap()
     );
-    b"This is plugin_wasm_test_motion_full\0" as *const u8 as *const i8
+    b"This is plugin_wasm_test_motion_minimum\0" as *const u8 as *const i8
 }
 
 /// # Safety

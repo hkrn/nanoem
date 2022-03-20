@@ -4,8 +4,9 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use maplit::hashmap;
+use pretty_assertions::assert_eq;
 use serde_json::json;
 use wasmer_wasi::WasiEnv;
 
@@ -19,7 +20,19 @@ use crate::motion::{
 use super::inner_create_controller;
 
 fn create_controller(env: &mut WasiEnv) -> Result<MotionIOPluginController> {
-    inner_create_controller("plugin_wasm_test_motion_minimum/target/wasm32-wasi/release/deps/plugin_wasm_test_motion_minimum.wasm", env)
+    let package = "plugin_wasm_test_motion_minimum";
+    let (ty, flag) = if cfg!(debug_assertions) {
+        ("debug", "")
+    } else {
+        ("release", " --release")
+    };
+    inner_create_controller(&format!("target/wasm32-wasi/{}/{}.wasm", ty, package), env)
+        .with_context(|| {
+            format!(
+                "try build with \"cargo build --package {} --target wasm32-wasi{}\"",
+                package, flag
+            )
+        })
 }
 
 #[test]
@@ -59,7 +72,7 @@ fn create() -> Result<()> {
     );
     assert_eq!(1, controller.count_all_functions());
     assert_eq!(
-        "plugin_wasm_test_motion_full: function0 (1.2.3)",
+        "plugin_wasm_test_motion_minimum: function0 (1.2.3)",
         controller.function_name(0)?.to_str()?
     );
     controller.destroy();

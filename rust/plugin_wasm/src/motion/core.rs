@@ -35,7 +35,7 @@ impl nanoem_application_plugin_motion_io_t {
         let path = Path::new(path.to_str()?);
         let store = Store::default();
         let mut env = WasiState::new("nanoem").finalize()?;
-        let controller = MotionIOPluginController::new(path, &store, &mut env)?;
+        let controller = MotionIOPluginController::from_path(path, &store, &mut env)?;
         controller.initialize()?;
         Ok(Self {
             controller,
