@@ -344,7 +344,15 @@ pub struct MotionIOPluginController {
 }
 
 impl MotionIOPluginController {
-    pub fn new(path: &Path, store: &Store, env: &mut WasiEnv) -> Result<Self> {
+    pub fn new(plugins: Vec<MotionIOPlugin>) -> Self {
+        let function_indices = vec![];
+        Self {
+            plugins,
+            function_indices,
+            plugin_index: None,
+        }
+    }
+    pub fn from_path(path: &Path, store: &Store, env: &mut WasiEnv) -> Result<Self> {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
@@ -363,12 +371,7 @@ impl MotionIOPluginController {
                 }
             }
         }
-        let function_indices = vec![];
-        Ok(Self {
-            plugins,
-            function_indices,
-            plugin_index: None,
-        })
+        Ok(Self::new(plugins))
     }
     pub fn initialize(&self) -> Result<()> {
         self.plugins
@@ -499,6 +502,10 @@ impl MotionIOPluginController {
     }
     pub fn terminate(&self) {
         self.plugins.iter().for_each(|plugin| plugin.terminate())
+    }
+    #[allow(unused)]
+    pub(in super) fn all_plugins_mut(&mut self) -> &mut [MotionIOPlugin] {
+        &mut self.plugins
     }
     fn current_plugin(&self) -> Result<&MotionIOPlugin> {
         if let Some(plugin_index) = self.plugin_index {

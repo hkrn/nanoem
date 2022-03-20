@@ -4,8 +4,9 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use anyhow::Result;
+use anyhow::{Context, Result};
 use maplit::hashmap;
+use pretty_assertions::assert_eq;
 use serde_json::json;
 use wasmer_wasi::WasiEnv;
 
@@ -18,7 +19,19 @@ use crate::motion::{
 };
 
 fn create_controller(env: &mut WasiEnv) -> Result<MotionIOPluginController> {
-    inner_create_controller("plugin_wasm_test_motion_full/target/wasm32-wasi/release/deps/plugin_wasm_test_motion_full.wasm", env)
+    let package = "plugin_wasm_test_motion_full";
+    let (ty, flag) = if cfg!(debug_assertions) {
+        ("debug", "")
+    } else {
+        ("release", " --release")
+    };
+    inner_create_controller(&format!("target/wasm32-wasi/{}/{}.wasm", ty, package), env)
+        .with_context(|| {
+            format!(
+                "try build with \"cargo build --package {} --target wasm32-wasi{}\"",
+                package, flag
+            )
+        })
 }
 
 #[test]
