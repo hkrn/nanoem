@@ -8,3 +8,4 @@ emapp:
 - win32/**/*
 github: .github/**/*
 nanoem: nanoem/**/*
+rust: rust/**/*
