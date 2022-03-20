@@ -6,7 +6,7 @@
 
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::os::raw::c_void;
+use std::os::raw::{c_void, c_char};
 use std::{collections::HashMap, ffi::CStr, ptr::null_mut};
 
 #[allow(non_camel_case_types)]
@@ -714,7 +714,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let mut arguments = HashMap::new();
-    let id_str = CStr::from_ptr(id);
+    let id_str = CStr::from_ptr(id as *const c_char);
     let data_slice = std::slice::from_raw_parts(data, length as usize);
     arguments.insert("id".to_owned(), json!(id_str.to_str().unwrap_or_default()));
     arguments.insert("data".to_owned(), json!(data_slice));

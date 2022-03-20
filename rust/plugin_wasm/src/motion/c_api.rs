@@ -11,6 +11,7 @@ use super::super::PLUGIN_MOTION_IO_ABI_VERSION;
 use super::core::nanoem_application_plugin_motion_io_t;
 
 use std::ffi::CStr;
+use std::os::raw::c_char;
 use std::ptr::{null, null_mut};
 
 /// # Safety
@@ -45,7 +46,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreate(
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreateWithLocation(
     path: *const i8,
 ) -> *mut nanoem_application_plugin_motion_io_t {
-    let path = CStr::from_ptr(path);
+    let path = CStr::from_ptr(path as *const c_char);
     if let Ok(mut instance) = nanoem_application_plugin_motion_io_t::new(path) {
         let result = instance.create();
         if result.is_ok() {
@@ -172,7 +173,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedBoneK
             } else {
                 &[]
             };
-            match instance.set_all_named_selected_bone_keyframes(CStr::from_ptr(name), slice) {
+            match instance.set_all_named_selected_bone_keyframes(CStr::from_ptr(name as *const c_char), slice) {
                 Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                 Err(value) => instance.assign_failure_reason(value),
             }
@@ -200,7 +201,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedMorph
             } else {
                 &[]
             };
-            match instance.set_all_named_selected_morph_keyframes(CStr::from_ptr(name), slice) {
+            match instance.set_all_named_selected_morph_keyframes(CStr::from_ptr(name as *const c_char), slice) {
                 Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                 Err(value) => instance.assign_failure_reason(value),
             }
@@ -645,7 +646,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIComponentLayoutData
 ) {
     let status = match nanoem_application_plugin_motion_io_t::get_mut(plugin) {
         Some(instance) => {
-            let id = CStr::from_ptr(id);
+            let id = CStr::from_ptr(id as *const c_char);
             let slice = std::slice::from_raw_parts(data, length as usize);
             let mut reload = false;
             match instance.set_component_layout(id, slice, &mut reload) {

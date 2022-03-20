@@ -11,6 +11,7 @@ use super::super::PLUGIN_MODEL_IO_ABI_VERSION;
 use super::core::nanoem_application_plugin_model_io_t;
 
 use std::ffi::CStr;
+use std::os::raw::c_char;
 use std::ptr::{null, null_mut};
 
 /// # Safety
@@ -45,7 +46,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreate(
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
     path: *const i8,
 ) -> *mut nanoem_application_plugin_model_io_t {
-    let path = CStr::from_ptr(path);
+    let path = CStr::from_ptr(path as *const c_char);
     if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new(path) {
         let result = instance.create();
         if result.is_ok() {
@@ -670,7 +671,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
 ) {
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
-            let id = CStr::from_ptr(id);
+            let id = CStr::from_ptr(id as *const c_char);
             let data = std::slice::from_raw_parts(data, length as usize);
             let mut reload = false;
             match instance.set_component_layout(id, data, &mut reload) {
