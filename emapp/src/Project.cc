@@ -485,6 +485,7 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
         EnumStringifyUtils::toString(pa.colors[0].action), EnumStringifyUtils::toString(pa.depth.action),
         EnumStringifyUtils::toString(pa.stencil.action), pass->m_batch ? "true" : "false");
     nanoem_u32_t lastDrawPassHash = 0;
+    bool pipelineApplied = false;
     hasher.begin();
     for (CommandBuffer::const_iterator it2 = pass->m_items->begin() + 1, end2 = pass->m_items->end(); it2 != end2;
          ++it2) {
@@ -502,9 +503,13 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
                 project->findRenderPassName(pass->m_handle), it2 - pass->m_items->begin(),
                 project->findRenderPipelineName(item.u.m_pb.m_pipeline));
 #endif /* NANOEM_ENABLE_DEBUG_LABEL */
-            sg::apply_pipeline(item.u.m_pb.m_pipeline);
-            sg::apply_bindings(&item.u.m_pb.m_bindings);
-            hasher.add(item.u.m_pb);
+            const sg_pipeline pipeline = item.u.m_pb.m_pipeline;
+            if (sg::query_pipeline_state(pipeline) == SG_RESOURCESTATE_VALID) {
+                sg::apply_pipeline(pipeline);
+                sg::apply_bindings(&item.u.m_pb.m_bindings);
+                hasher.add(item.u.m_pb);
+                pipelineApplied = true;
+            }
             break;
         }
         case kCommandTypeApplyViewport: {
@@ -555,9 +560,10 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
             hasher.add(item.u.m_draw);
             nanoem_u32_t drawPassHash = hasher.end();
             hasher.begin();
-            if (lastDrawPassHash != drawPassHash) {
+            if (pipelineApplied && lastDrawPassHash != drawPassHash) {
                 sg::draw(item.u.m_draw.m_offset, item.u.m_draw.m_count, 1);
                 lastDrawPassHash = drawPassHash;
+                pipelineApplied = false;
             }
             break;
         }
