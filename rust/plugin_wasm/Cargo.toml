@@ -15,17 +15,14 @@ wasmer-wasi = "2"
 walkdir = "2"
 
 [dev-dependencies]
-serde = "1.0"
-serde_derive = "1.0"
-serde_json = "1.0"
-maplit = "1.0"
+serde = "1"
+serde_derive = "1"
+serde_json = "1"
+maplit = "1"
 rand = "0.8"
 pretty_assertions = "1.2"
 
 [lib]
 path = "src/lib.rs"
-crate-type = [ "cdylib" ]
+crate-type = ["cdylib"]
 
-[profile.release]
-lto = true
-codegen-units = 1
