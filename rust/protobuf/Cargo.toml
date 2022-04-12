@@ -4,13 +4,14 @@ version = "0.1.0"
 authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
 edition = "2018"
 build = "build.rs"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
-bytes = { version = "0.4" }
-prost = { version = "0.5" }
+bytes = "1"
+prost = "0.9"
 
 [build-dependencies]
-prost-build = { version = "0.5" }
+prost-build = "0.9"
 
 [lib]
 name = "nanoem_protobuf"

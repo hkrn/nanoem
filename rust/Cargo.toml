@@ -7,7 +7,9 @@ members = [
     "plugin_wasm_test_motion_minimum",
     "protobuf",
 ]
-default-members = [
-    "plugin_wasm",
-    "protobuf",
-]
+default-members = ["plugin_wasm", "protobuf"]
+
+[profile.release]
+lto = true
+codegen-units = 1
+strip = "debuginfo"

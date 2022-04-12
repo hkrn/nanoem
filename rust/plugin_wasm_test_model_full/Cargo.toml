@@ -3,6 +3,7 @@ name = "plugin_wasm_test_model_full"
 version = "0.1.0"
 authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
 edition = "2018"
+license = "MIT OR Apache-2.0"
 
 [lib]
 path = "src/lib.rs"
