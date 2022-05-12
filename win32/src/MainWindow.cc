@@ -10,10 +10,18 @@
 #include <Psapi.h>
 #include <ShlObj.h>
 #include <VersionHelpers.h>
-#include <shellapi.h>
-#ifdef NANOEM_GA_TRACKING_ID
-#include <winhttp.h>
-#endif /* NANOEM_GA_TRACKING_ID */
+#include <windowsx.h>
+
+/* IDXGIFactory6 */
+#include <dxgi1_6.h>
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
+#include <dxgidebug.h>
+#endif /* SOKOL_DEBUG */
+
+#include <d3d11.h>
+#if defined(NANOEM_ENABLE_D3D11ON12)
+#include <d3d11on12.h>
+#endif /* NANOEM_ENABLE_D3D11ON12 */
 
 #include "COMInline.h"
 #include "Dialog.h"
@@ -27,13 +35,6 @@
 
 #include "imgui/imgui.h"
 #include "sokol/sokol_time.h"
-
-/* IDXGIFactory6 */
-#include <dxgi1_6.h>
-
-#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
-#include <dxgidebug.h>
-#endif
 
 namespace nanoem {
 namespace win32 {
@@ -1867,34 +1868,55 @@ MainWindow::setupDirectXRenderer(HWND windowHandle, int width, int height, bool 
     sample.Count = 1;
     sample.Quality = 0;
     m_swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    UINT flags = 0;
-#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
-    flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
-    ID3D11DeviceContext *context = nullptr;
-    ID3D11Device *device = nullptr;
-    IDXGISwapChain *swapChain = nullptr;
-    D3D_FEATURE_LEVEL actualFeatureLevel;
-    static const D3D_DRIVER_TYPE driverTypes[] = {
-        D3D_DRIVER_TYPE_HARDWARE,
-        D3D_DRIVER_TYPE_WARP,
-    };
     static const D3D_FEATURE_LEVEL expectedFeatureLevels[] = {
         D3D_FEATURE_LEVEL_11_0,
         D3D_FEATURE_LEVEL_10_1,
         D3D_FEATURE_LEVEL_10_0,
         D3D_FEATURE_LEVEL_9_3,
     };
-    UINT numExpectedFeatureLevels = sizeof(expectedFeatureLevels) / sizeof(expectedFeatureLevels[0]);
+    const UINT numExpectedFeatureLevels = sizeof(expectedFeatureLevels) / sizeof(expectedFeatureLevels[0]);
+    ID3D11DeviceContext *context = nullptr;
+    ID3D11Device *device = nullptr;
+    IDXGISwapChain *swapChain = nullptr;
+    D3D_FEATURE_LEVEL actualFeatureLevel;
     HRESULT rc = 0;
     bool result = false;
-    for (size_t i = 0; i < BX_COUNTOF(driverTypes); i++) {
-        rc = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, expectedFeatureLevels,
-            numExpectedFeatureLevels, D3D11_SDK_VERSION, &m_swapChainDesc, &swapChain, &device, &actualFeatureLevel,
-            &context);
-        if (!FAILED(rc)) {
-            result = true;
-            break;
+    UINT flags = 0;
+#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
+    flags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif /* SOKOL_DEBUG */
+#if defined(NANOEM_ENABLE_D3D11ON12)
+    {
+        IDXGIFactory *factory = nullptr;
+        CreateDXGIFactory2(0, IID_PPV_ARGS(&factory));
+        IDXGIAdapter *adapter = nullptr;
+        factory->EnumAdapters(0, &adapter);
+        D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_device12));
+        adapter->Release();
+        D3D12_COMMAND_QUEUE_DESC desc = {};
+        desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        m_device12->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_commandQueue));
+        rc = D3D11On12CreateDevice(m_device12, flags, expectedFeatureLevels, numExpectedFeatureLevels,
+            reinterpret_cast<IUnknown **>(&m_commandQueue), 1, 0, &device, &context, &actualFeatureLevel);
+        factory->CreateSwapChain(device, &m_swapChainDesc, &swapChain);
+        factory->Release();
+        result = !FAILED(rc);
+    }
+#endif /* NANOEM_ENABLE_D3D11ON12 */
+    if (!result) {
+        static const D3D_DRIVER_TYPE driverTypes[] = {
+            D3D_DRIVER_TYPE_HARDWARE,
+            D3D_DRIVER_TYPE_WARP,
+        };
+        for (size_t i = 0; i < BX_COUNTOF(driverTypes); i++) {
+            rc = D3D11CreateDeviceAndSwapChain(nullptr, driverTypes[i], nullptr, flags, expectedFeatureLevels,
+                numExpectedFeatureLevels, D3D11_SDK_VERSION, &m_swapChainDesc, &swapChain, &device, &actualFeatureLevel,
+                &context);
+            if (!FAILED(rc)) {
+                result = true;
+                break;
+            }
         }
     }
     if (result) {
@@ -1940,9 +1962,9 @@ MainWindow::setupDirectXRenderer(HWND windowHandle, int width, int height, bool 
         device->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kDeviceLabel), kDeviceLabel);
         static const wchar_t kDeviceContextLabel[] = L"ID3D11DeviceContext";
         context->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kDeviceContextLabel), kDeviceContextLabel);
-#endif
+#endif /* SOKOL_DEBUG */
         ID3D10Multithread *threaded;
-        if (SUCCEEDED(context->QueryInterface(IID_PPV_ARGS(&threaded)))) {
+        if (!FAILED(context->QueryInterface(IID_PPV_ARGS(&threaded)))) {
             threaded->SetMultithreadProtected(TRUE);
             threaded->Release();
         }
@@ -2045,7 +2067,7 @@ MainWindow::setupOpenGLRenderer(HWND windowHandle, Error &error)
     m_service->setNativeDevice(m_device);
     m_service->setNativeView(windowHandle);
     return true;
-#else
+#else /* NANOEM_WIN32_HAS_OPENGL */
     BX_UNUSED_1(windowHandle);
     return false;
 #endif /* NANOEM_WIN32_HAS_OPENGL */
@@ -2061,6 +2083,10 @@ MainWindow::destroyRenderer()
         context->Release();
         device->Release();
         swapChain->Release();
+#if defined(NANOEM_ENABLE_D3D11ON12)
+        COMInline::safeRelease(m_commandQueue);
+        COMInline::safeRelease(m_device12);
+#endif /* NANOEM_ENABLE_D3D11ON12 */
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
         if (sizeof(void *) == 8) {
             typedef HRESULT(WINAPI * pfn_DXGIGetDebugInterface)(const IID, void **);
@@ -2073,7 +2099,7 @@ MainWindow::destroyRenderer()
                 debugger->Release();
             }
         }
-#endif
+#endif /* SOKOL_DEBUG */
     }
 #if defined(NANOEM_WIN32_HAS_OPENGL)
     else {
@@ -2204,7 +2230,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
             const char *sentryDSN = nullptr;
 #if defined(NANOEM_SENTRY_DSN)
             sentryDSN = NANOEM_SENTRY_DSN;
-#endif
+#endif /* NANOEM_SENTRY_DSN */
             JSON_Object *pending = json_object(self->m_service->applicationPendingChangeConfiguration());
             const ApplicationPreference *pref = self->m_preference->applicationPreference();
             if (pref->isCrashReportEnabled()) {
