@@ -6,6 +6,10 @@
 
 #include "Win32ThreadedApplicationService.h"
 
+#include <ShlObj.h>
+#include <d3d11.h>
+#include <dxgi.h>
+
 #include "COMInline.h"
 #include "D3D11BackgroundDrawer.h"
 #include "D3D11SkinDeformerFactory.h"
@@ -31,10 +35,6 @@
 #if defined(NANOEM_ENABLE_RENDERDOC)
 #include "renderdoc_app.h"
 #endif /* NANOEM_ENABLE_RENDERDOC */
-
-#include <ShlObj.h>
-#include <d3d11.h>
-#include <dxgi.h>
 
 namespace nanoem {
 namespace win32 {

@@ -9,10 +9,8 @@
 #define NANOEM_EMAPP_WIN32_MAINWINDOW_H_
 
 #include <Windows.h>
-#include <d3d11.h>
-#include <dxgi.h>
 #include <shellapi.h>
-#include <windowsx.h>
+#include <dxgi.h>
 
 #include "Win32ApplicationMenuBuilder.h"
 #include "emapp/BaseApplicationService.h"
@@ -21,6 +19,8 @@
 #include "bx/os.h"
 
 struct IProgressDialog;
+struct ID3D12CommandQueue;
+struct ID3D12Device;
 
 namespace bx {
 class CommandLine;
@@ -175,6 +175,8 @@ private:
     void *m_device = nullptr;
     DXGI_SWAP_CHAIN_DESC m_swapChainDesc;
     IDXGISwapChain *m_swapChain = nullptr;
+    ID3D12Device *m_device12 = nullptr;
+    ID3D12CommandQueue *m_commandQueue = nullptr;
     tinystl::pair<IProgressDialog *, int> m_progressDialog =
         tinystl::make_pair(static_cast<IProgressDialog *>(nullptr), 0);
     HACCEL m_accelerators = nullptr;

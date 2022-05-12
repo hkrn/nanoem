@@ -6,13 +6,13 @@
 
 #include "Dialog.h"
 
-#include "emapp/FileUtils.h"
-#include "emapp/StringUtils.h"
-#include "emapp/private/CommonInclude.h"
-
 #define STRICT_TYPED_ITEMIDS
 #include <ShObjIdl.h>
 #include <Shlwapi.h>
+
+#include "emapp/FileUtils.h"
+#include "emapp/StringUtils.h"
+#include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace win32 {

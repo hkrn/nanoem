@@ -12,7 +12,6 @@
 
 #include <atomic>
 
-#include <audioclient.h>
 #include <audiopolicy.h>
 #include <mmdeviceapi.h>
 
