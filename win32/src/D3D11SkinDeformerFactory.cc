@@ -6,6 +6,8 @@
 
 #include "D3D11SkinDeformerFactory.h"
 
+#include <d3d11.h>
+
 #include "COMInline.h"
 #include "Win32ThreadedApplicationService.h"
 
@@ -18,8 +20,6 @@
 #if defined(NANOEM_ENABLE_TBB)
 #include "tbb/tbb.h"
 #endif /* NANOEM_ENABLE_TBB */
-
-#include <d3d11.h>
 
 namespace nanoem {
 namespace win32 {

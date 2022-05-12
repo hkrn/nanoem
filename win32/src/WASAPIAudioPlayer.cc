@@ -6,16 +6,16 @@
 
 #include "WASAPIAudioPlayer.h"
 
+#include <Mferror.h>
+#include <mfapi.h>
+#include <mftransform.h>
+#include <wmcodecdsp.h>
+
 #include "COMInline.h"
 #include "emapp/Constants.h"
 #include "emapp/Error.h"
 #include "emapp/IEventPublisher.h"
 #include "emapp/private/CommonInclude.h"
-
-#include <Mferror.h>
-#include <mfapi.h>
-#include <mftransform.h>
-#include <wmcodecdsp.h>
 
 namespace nanoem {
 namespace win32 {

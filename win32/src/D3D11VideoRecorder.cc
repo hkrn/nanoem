@@ -7,14 +7,6 @@
 #include "D3D11VideoRecorder.h"
 #if WINVER >= _WIN32_WINNT_WIN7
 
-#include "COMInline.h"
-#include "emapp/Error.h"
-#include "emapp/IAudioPlayer.h"
-#include "emapp/Project.h"
-#include "emapp/StringUtils.h"
-#include "emapp/internal/BlitPass.h"
-#include "emapp/private/CommonInclude.h"
-
 #include <d3d11.h>
 #include <dxgi.h>
 #include <evr.h>
@@ -22,6 +14,14 @@
 #include <mfidl.h>
 #include <mfreadwrite.h>
 #include <stdio.h>
+
+#include "COMInline.h"
+#include "emapp/Error.h"
+#include "emapp/IAudioPlayer.h"
+#include "emapp/Project.h"
+#include "emapp/StringUtils.h"
+#include "emapp/internal/BlitPass.h"
+#include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace win32 {
