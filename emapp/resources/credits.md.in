@@ -2,8 +2,6 @@
 
 This software uses below libraries.
 
-  - [bimg](https://github.com/bkaradzic/bimg/)
-    - [BSDL](https://github.com/bkaradzic/bimg/blob/@BIMG_REVISION@/LICENSE)
   - [Bullet Physics](http://bulletphysics.org)
     - [zlib](https://github.com/bulletphysics/bullet3/blob/@BULLET_REVISION@/LICENSE)
   - [bx](https://github.com/bkaradzic/bx/)

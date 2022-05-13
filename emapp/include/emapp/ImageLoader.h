@@ -10,27 +10,31 @@
 
 #include "emapp/IImageView.h"
 
-#include "bimg/bimg.h"
-
 namespace nanoem {
 
 class Error;
 class IDrawable;
-class IFileReader;
+class IReader;
+class ISeekableReader;
 class Project;
 class URI;
 
-enum {
-    APNG_DISPOSE_OP_NONE = 0,
-    APNG_DISPOSE_OP_BACKGROUND,
-    APNG_DISPOSE_OP_PREVIOUS,
-};
-enum {
-    APNG_BLEND_OP_SOURCE = 0,
-    APNG_BLEND_OP_OVER,
-};
+namespace image {
 
-struct APNGImage {
+class APNG {
+public:
+    APNG();
+    ~APNG() NANOEM_DECL_NOEXCEPT;
+
+    bool decode(ISeekableReader *reader, Error &error);
+    void composite(Error &error);
+    nanoem_rsize_t findNearestOffset(nanoem_f32_t seconds) const NANOEM_DECL_NOEXCEPT;
+
+    const ByteArray *compositedFrameImage(nanoem_rsize_t offset) const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t width() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t height() const NANOEM_DECL_NOEXCEPT;
+
+private:
 #pragma pack(push)
 #pragma pack(1)
     struct Header {
@@ -66,24 +70,32 @@ struct APNGImage {
     };
     typedef tinystl::vector<Frame *, TinySTLAllocator> FrameSequenceList;
 
-    ~APNGImage();
-    nanoem_rsize_t seek(nanoem_f32_t seconds) const;
+    enum DisposeOp {
+        kDisposeOpNone = 0,
+        kDisposeOpBackground,
+        kDisposeOpPrevious,
+    };
+    enum BlendOp {
+        kBlendOpSource = 0,
+        kBlendOpOver,
+    };
 
     Header m_header;
     AnimationControl m_control;
     FrameSequenceList m_frames;
 };
 
+} /* namespace image */
+
 class Image NANOEM_DECL_SEALED : public IImageView, private NonCopyable {
 public:
     Image();
-    ~Image();
+    ~Image() NANOEM_DECL_NOEXCEPT;
 
     void create();
     void destroy();
     void setOriginData(const nanoem_u8_t *data, nanoem_rsize_t size);
     void setMipmapData(nanoem_rsize_t index, const nanoem_u8_t *data, nanoem_rsize_t size);
-    void resizeMipmapData(nanoem_rsize_t value);
     void setLabel(const String &value);
 
     sg_image handle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -104,7 +116,7 @@ private:
     sg_image m_handle;
     sg_image_desc m_description;
     ByteArray m_originData;
-    ByteArrayList m_mipmapData;
+    ByteArray m_mipmapData[SG_MAX_MIPMAPS];
     bool m_fileExist;
 };
 
@@ -117,11 +129,7 @@ public:
         kFlagsFallbackBlackOpaque = 0x8,
     };
 
-    static sg_pixel_format resolvePixelFormat(
-        const bimg::ImageContainer *container, nanoem_u32_t &bytesPerPixel) NANOEM_DECL_NOEXCEPT;
-    static bool generateMipmapImages(
-        const bimg::ImageContainer *container, bool flip, ByteArrayList &mipmapPayloads, sg_image_desc &descRef);
-    static APNGImage *decodeAnimatedPNG(IFileReader *reader, Error &error);
+    static image::APNG *decodeAPNG(ISeekableReader *reader, Error &error);
     static void copyImageDescrption(const sg_image_desc &desc, Image *image);
     static bool validateImageSize(const String &name, const sg_image_desc &desc, Error &error);
     static bool isScreenBMP(const char *path) NANOEM_DECL_NOEXCEPT;
@@ -131,11 +139,11 @@ public:
     static void fill1x1TransparentPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t height, nanoem_u32_t bpp);
     static bool decodeImageWithSTB(
-        const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr);
+        const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error);
     static void releaseDecodedImageWithSTB(nanoem_u8_t **decodedImagePtr);
 
     ImageLoader(const Project *project);
-    ~ImageLoader();
+    ~ImageLoader() NANOEM_DECL_NOEXCEPT;
 
     IImageView *load(const URI &fileURI, IDrawable *drawable, sg_wrap wrap, nanoem_u32_t flags, Error &error);
     IImageView *decode(const ByteArray &bytes, const String &filename, IDrawable *drawable, sg_wrap wrap,
@@ -165,18 +173,7 @@ private:
             , m_flags(flags)
         {
         }
-        ImmutableImageContainer(const String &name, const bimg::ImageContainer *containerPtr, sg_wrap wrap,
-            int anisotropy, nanoem_u32_t flags)
-            : m_name(name)
-            , m_dataPtr(static_cast<const nanoem_u8_t *>(containerPtr->m_data))
-            , m_dataSize(containerPtr->m_size)
-            , m_size(containerPtr->m_width, containerPtr->m_height)
-            , m_wrap(wrap)
-            , m_anisotropy(anisotropy)
-            , m_flags(flags)
-        {
-        }
-        ~ImmutableImageContainer()
+        ~ImmutableImageContainer() NANOEM_DECL_NOEXCEPT
         {
         }
         const String m_name;
@@ -187,14 +184,8 @@ private:
         const int m_anisotropy;
         const nanoem_u32_t m_flags;
     };
-    static IImageView *decodeImageContainer(
-        const ImmutableImageContainer &textureData, IDrawable *drawable, Error &error);
-    static void generateMipmapImagesRGBA32F(const bimg::ImageContainer *container, int numMips, bool flip,
-        ByteArrayList &mipmapPayloads, sg_image_desc &descRef);
-    static void generateMipmapImagesRGBA8(const bimg::ImageContainer *container, int numMips, bool flip,
-        ByteArrayList &mipmapPayloads, sg_image_desc &descRef);
-    static void ensureRGBA8ImageData(const bimg::ImageContainer *decodedImageContainer, bool needsRGBA8Conversion,
-        ByteArray &decodedRGBA8, sg_image_desc &desc);
+
+    IImageView *decodeImageContainer(const ImmutableImageContainer &container, IDrawable *drawable, Error &error);
 
     const Project *m_project;
 };

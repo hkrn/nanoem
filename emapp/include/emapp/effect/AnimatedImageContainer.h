@@ -12,14 +12,16 @@
 
 namespace nanoem {
 
-struct APNGImage;
+namespace image {
+class APNG;
+} /* namespace image */
 
 namespace effect {
 
 class AnimatedImageContainer NANOEM_DECL_SEALED {
 public:
     AnimatedImageContainer(
-        const String &name, const String &seekVariable, APNGImage *image, nanoem_f32_t offset, nanoem_f32_t speed);
+        const String &name, const String &seekVariable, image::APNG *image, nanoem_f32_t offset, nanoem_f32_t speed);
     ~AnimatedImageContainer() NANOEM_DECL_NOEXCEPT;
 
     void create();
@@ -35,7 +37,7 @@ public:
 private:
     const String m_name;
     const String m_seekVariable;
-    APNGImage *m_data;
+    image::APNG *m_data;
     sg_image m_colorImage;
     sg_image_desc m_colorImageDescription;
     nanoem_f32_t m_offset;

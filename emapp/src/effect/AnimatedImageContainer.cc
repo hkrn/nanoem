@@ -13,7 +13,7 @@ namespace nanoem {
 namespace effect {
 
 AnimatedImageContainer::AnimatedImageContainer(
-    const String &name, const String &seekVariable, APNGImage *image, nanoem_f32_t offset, nanoem_f32_t speed)
+    const String &name, const String &seekVariable, image::APNG *image, nanoem_f32_t offset, nanoem_f32_t speed)
     : m_name(name)
     , m_seekVariable(seekVariable)
     , m_data(image)
@@ -33,8 +33,8 @@ void
 AnimatedImageContainer::create()
 {
     if (!sg::is_valid(m_colorImage)) {
-        m_colorImageDescription.width = m_data->m_header.m_width;
-        m_colorImageDescription.height = m_data->m_header.m_height;
+        m_colorImageDescription.width = m_data->width();
+        m_colorImageDescription.height = m_data->height();
         m_colorImageDescription.type = SG_IMAGETYPE_2D;
         m_colorImageDescription.usage = SG_USAGE_STREAM;
         m_colorImageDescription.wrap_u = m_colorImageDescription.wrap_v = SG_WRAP_REPEAT;
@@ -51,15 +51,16 @@ void
 AnimatedImageContainer::update(nanoem_f32_t seconds)
 {
     if (m_dirty) {
-        const nanoem_rsize_t index = m_data->seek(seconds);
+        const nanoem_rsize_t index = m_data->findNearestOffset(seconds);
         sg_image_data content;
         Inline::clearZeroMemory(content);
-        const ByteArray &composition = m_data->m_frames[index]->m_composition;
-        sg_range &c = content.subimage[0][0];
-        c.ptr = composition.data();
-        c.size = composition.size();
-        sg::update_image(m_colorImage, &content);
-        m_dirty = false;
+        if (const ByteArray *composition = m_data->compositedFrameImage(index)) {
+            sg_range &c = content.subimage[0][0];
+            c.ptr = composition->data();
+            c.size = composition->size();
+            sg::update_image(m_colorImage, &content);
+            m_dirty = false;
+        }
     }
 }
 

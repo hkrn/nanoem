@@ -24,8 +24,6 @@
 
 #include "nanoem/ext/parson/parson.h"
 
-#include "bimg/bimg.h"
-
 struct Nanoem__Application__Command;
 
 struct undo_command_t;

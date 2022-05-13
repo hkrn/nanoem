@@ -53,8 +53,6 @@ pfn_D3DCompile g_D3DCompile = nullptr;
 #include "./effect/EffectCommon.inl"
 #include "./protoc/effect.pb-c.h"
 
-#include "bimg/bimg.h"
-#include "bimg/decode.h"
 #include "bx/hash.h"
 #include "glm/gtc/noise.hpp"
 
@@ -132,8 +130,6 @@ public:
     static String concatPrefix(const char *const name, const char *const prefix);
     static void fillFallbackImage(
         sg_image *images, const nanoem_u8_t imageCount, const sg_image &fallbackImage) NANOEM_DECL_NOEXCEPT;
-    static bool convertImageRGBA8(
-        bimg::ImageContainer *&container, sg_pixel_format &pixelFormat, nanoem_u32_t &bytesPerPixel);
     static int sortRenderStateAscent(const void *left, const void *right) NANOEM_DECL_NOEXCEPT;
 
     template <typename TShader, typename TSymbol, typename TUniform, typename TAttribute>
@@ -422,22 +418,6 @@ PrivateEffectUtils::fillFallbackImage(
             sd = fallbackImage;
         }
     }
-}
-
-bool
-PrivateEffectUtils::convertImageRGBA8(
-    bimg::ImageContainer *&container, sg_pixel_format &pixelFormat, nanoem_u32_t &bytesPerPixel)
-{
-    bool result = false;
-    if (bimg::ImageContainer *newContainer =
-            bimg::imageConvert(g_bimg_allocator, bimg::TextureFormat::RGBA8, *container, false)) {
-        bimg::imageFree(container);
-        container = newContainer;
-        pixelFormat = SG_PIXELFORMAT_RGBA8;
-        bytesPerPixel = 4;
-        result = true;
-    }
-    return result;
 }
 
 int
@@ -4200,10 +4180,10 @@ Effect::handleAnimatedTextureSemantic(Effect *self, const TypedSemanticParameter
             String filename;
             FileUtils::canonicalizePathSeparator(it->second.m_string.c_str(), filename);
             const URI &fileURI = Project::resolveArchiveURI(self->fileURI(), filename);
-            APNGImage *animation = nullptr;
+            image::APNG *animation = nullptr;
             FileReaderScope scope(self->m_project->translator());
             if (scope.open(fileURI, error)) {
-                animation = ImageLoader::decodeAnimatedPNG(scope.reader(), error);
+                animation = ImageLoader::decodeAPNG(scope.reader(), error);
             }
             if (animation) {
                 const String &name = parameter.m_name;
@@ -4634,7 +4614,7 @@ Effect::createImageResourceFromArchive(const String &name, const TypedSemanticPa
         }
         else if (archiver->findEntry(resolvedURI.fragment(), entry, error) && archiver->extract(entry, bytes, error)) {
             const ImageResourceParameter resourceParameter(createImageResourceParameter(parameter, imageURI, filename));
-            parseImagePayload(bytes, resourceParameter, error);
+            decodeImageData(bytes, resourceParameter, error);
         }
     }
     else if (FileUtils::exists(imageURI)) {
@@ -4648,7 +4628,7 @@ Effect::createImageResourceFromArchive(const String &name, const TypedSemanticPa
             if (!error.hasReason()) {
                 const ImageResourceParameter resourceParameter(
                     createImageResourceParameter(parameter, imageURI, filename));
-                parseImagePayload(bytes, resourceParameter, error);
+                decodeImageData(bytes, resourceParameter, error);
             }
         }
     }
@@ -5099,13 +5079,12 @@ Effect::setTextureValues(const SemanticImageMap &images, effect::Pass *passPtr)
                                 break;
                             }
                         }
-                        bimg::TextureInfo info;
-                        bimg::imageGetSize(&info, size.x, size.y, 1, false, false, 1, bimg::TextureFormat::RGBA32F);
+                        const nanoem_rsize_t imageDataSize = size.x * size.y * 4 * sizeof(nanoem_f32_t);
                         sb = &m_imageStagingBuffers[target];
-                        sb->m_content.resize(info.storageSize);
+                        sb->m_content.resize(imageDataSize);
                         sg_buffer_desc bd;
                         Inline::clearZeroMemory(bd);
-                        bd.size = info.storageSize;
+                        bd.size = imageDataSize;
                         bd.usage = SG_USAGE_STREAM;
                         char label[Inline::kMarkerStringLength];
                         if (Inline::isDebugLabelEnabled()) {
@@ -5150,15 +5129,14 @@ Effect::setTextureValues(const NamedRenderTargetColorImageContainerMap &containe
                         sb = &it4->second;
                     }
                     else {
-                        bimg::TextureInfo info;
                         const sg_image_desc &desc = container->colorImageDescription();
                         const Vector2UI16 size(desc.width, desc.height);
-                        bimg::imageGetSize(&info, size.x, size.y, 1, false, false, 1, bimg::TextureFormat::RGBA32F);
+                        const nanoem_rsize_t imageDataSize = size.x * size.y * 4 * sizeof(nanoem_f32_t);
                         sb = &m_imageStagingBuffers[target];
-                        sb->m_content.resize(info.storageSize);
+                        sb->m_content.resize(imageDataSize);
                         sg_buffer_desc bd;
                         Inline::clearZeroMemory(bd);
-                        bd.size = info.storageSize;
+                        bd.size = imageDataSize;
                         bd.usage = SG_USAGE_STREAM;
                         char label[Inline::kMarkerStringLength];
                         if (Inline::isDebugLabelEnabled()) {
@@ -5206,15 +5184,14 @@ Effect::setTextureValues(const OffscreenRenderTargetImageContainerMap &container
                         sb = &it4->second;
                     }
                     else {
-                        bimg::TextureInfo info;
                         const sg_image_desc &desc = container->colorImageDescription();
                         const Vector2UI16 size(desc.width, desc.height);
-                        bimg::imageGetSize(&info, size.x, size.y, 1, false, false, 1, bimg::TextureFormat::RGBA32F);
+                        const nanoem_rsize_t imageDataSize = size.x * size.y * 4 * sizeof(nanoem_f32_t);
                         sb = &m_imageStagingBuffers[target];
-                        sb->m_content.resize(info.storageSize);
+                        sb->m_content.resize(imageDataSize);
                         sg_buffer_desc bd;
                         Inline::clearZeroMemory(bd);
-                        bd.size = info.storageSize;
+                        bd.size = imageDataSize;
                         bd.usage = SG_USAGE_STREAM;
                         char label[Inline::kMarkerStringLength];
                         if (Inline::isDebugLabelEnabled()) {
@@ -5573,13 +5550,12 @@ Effect::findOffscreenOwnerObject(const IDrawable *ownerDrawable, const Project *
 }
 
 void
-Effect::parseImagePayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
+Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
 {
-    bx::Error err;
     sg_image_desc desc;
     nanoem_u8_t *decodedImagePtr = nullptr;
     Inline::clearZeroMemory(desc);
-    if (ImageLoader::decodeImageWithSTB(bytes.data(), bytes.size(), desc, &decodedImagePtr)) {
+    if (ImageLoader::decodeImageWithSTB(bytes.data(), bytes.size(), desc, &decodedImagePtr, error)) {
         const sg_range &data = desc.data.subimage[0][0];
         ImageResourceParameter newParameter(parameter);
         newParameter.m_desc.width = desc.width;
@@ -5588,21 +5564,17 @@ Effect::parseImagePayload(const ByteArray &bytes, const ImageResourceParameter &
         createImageResource(data.ptr, data.size, newParameter);
         ImageLoader::releaseDecodedImageWithSTB(&decodedImagePtr);
     }
-    else if (bimg::ImageContainer *container = bimg::imageParse(g_bimg_allocator, bytes.data(),
-                 Inline::saturateInt32U(bytes.size()), bimg::TextureFormat::Count, &err)) {
-        createImageFromContainer(parameter, container);
-        bimg::imageFree(container);
-    }
     else if (StringUtils::equalsIgnoreCase(parameter.m_fileURI.pathExtension().c_str(), "pfm")) {
-        parsePortableFloatMapPayload(bytes, parameter, error);
+        decodePortableFloatMapData(bytes, parameter, error);
     }
     else {
+        error = Error();
         createImageResource(bytes.data(), bytes.size(), parameter);
     }
 }
 
 void
-Effect::parsePortableFloatMapPayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
+Effect::decodePortableFloatMapData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
 {
     nanoem_f32_t byteOrderIndicator;
     int offset;
@@ -5613,26 +5585,20 @@ Effect::parsePortableFloatMapPayload(const ByteArray &bytes, const ImageResource
     if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "PF\n%u %u\n%f\n%n", &width, &height,
             &byteOrderIndicator, &offset) == 3) {
         const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
-                             actualSize = bytes.size() - offset;
-        if (channelSize * 3 == actualSize) {
+                             actualDataSize = bytes.size() - offset;
+        if (channelSize * 3 == actualDataSize) {
+            ByteArray bytes(channelSize * 4);
             descRef.pixel_format = SG_PIXELFORMAT_RGBA32F;
-            if (bimg::ImageContainer *container = bimg::imageAlloc(
-                    g_bimg_allocator, bimg::TextureFormat::RGBA32F, width, height, 1, 1, false, false)) {
-                const nanoem_f32_t *source = reinterpret_cast<const nanoem_f32_t *>(bytes.data() + offset);
-                nanoem_f32_t *dest = reinterpret_cast<nanoem_f32_t *>(container->m_data);
-                for (size_t i = 0, size = channelSize / sizeof(nanoem_f32_t); i < size; i++) {
-                    const nanoem_rsize_t sourceOffset = i * 3, destOffset = i * 4;
-                    dest[destOffset + 0] = source[sourceOffset + 0];
-                    dest[destOffset + 1] = source[sourceOffset + 1];
-                    dest[destOffset + 2] = source[sourceOffset + 2];
-                    dest[destOffset + 3] = 1.0f;
-                }
-                createImageFromContainer(newParameter, container);
-                bimg::imageFree(container);
+            const nanoem_f32_t *source = reinterpret_cast<const nanoem_f32_t *>(bytes.data() + offset);
+            nanoem_f32_t *dest = reinterpret_cast<nanoem_f32_t *>(bytes.data());
+            for (size_t i = 0, size = channelSize / sizeof(nanoem_f32_t); i < size; i++) {
+                const nanoem_rsize_t sourceOffset = i * 3, destOffset = i * 4;
+                dest[destOffset + 0] = source[sourceOffset + 0];
+                dest[destOffset + 1] = source[sourceOffset + 1];
+                dest[destOffset + 2] = source[sourceOffset + 2];
+                dest[destOffset + 3] = 1.0f;
             }
-            else {
-                error = Error("Cannot allocate to parse PFM image data", nullptr, Error::kDomainTypeApplication);
-            }
+            createImageResource(bytes.data(), bytes.size(), newParameter);
         }
         else {
             error = Error("Invalid size of PFM image data", nullptr, Error::kDomainTypeApplication);
@@ -5641,86 +5607,15 @@ Effect::parsePortableFloatMapPayload(const ByteArray &bytes, const ImageResource
     else if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "Pf\n%u %u\n%f\n%n", &width, &height,
                  &byteOrderIndicator, &offset) == 3) {
         const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
-                             actualSize = bytes.size() - offset;
-        if (channelSize == actualSize) {
+                             actualDataSize = bytes.size() - offset;
+        if (channelSize == actualDataSize) {
             descRef.pixel_format = SG_PIXELFORMAT_R32F;
-            if (bimg::ImageContainer *container =
-                    bimg::imageAlloc(g_bimg_allocator, bimg::TextureFormat::R32F, width, height, 1, 1, false, false)) {
-                memcpy(container->m_data, bytes.data() + offset, actualSize);
-                createImageFromContainer(newParameter, container);
-                bimg::imageFree(container);
-            }
-            else {
-                error = Error("Cannot allocate to parse PFM image data", 0, Error::kDomainTypeApplication);
-            }
+            createImageResource(bytes.data() + offset, actualDataSize, newParameter);
         }
         else {
             error = Error("Invalid size of PFM image data", 0, Error::kDomainTypeApplication);
         }
     }
-}
-
-void
-Effect::createImageFromContainer(const ImageResourceParameter &parameter, bimg::ImageContainer *&container)
-{
-    ImageResourceParameter newParameter(parameter);
-    sg_image_desc &newParamImageDescriptionRef = newParameter.m_desc;
-    nanoem_u32_t bytesPerPixel;
-    if (container->m_cubeMap) {
-        newParamImageDescriptionRef.type = SG_IMAGETYPE_CUBE;
-        sg_pixel_format actualPixelFormat = ImageLoader::resolvePixelFormat(container, bytesPerPixel);
-        if (newParamImageDescriptionRef.pixel_format != actualPixelFormat) {
-            newParamImageDescriptionRef.pixel_format = actualPixelFormat;
-        }
-    }
-    else if (container->m_depth > 1) {
-        newParamImageDescriptionRef.type = SG_IMAGETYPE_3D;
-        sg_pixel_format actualPixelFormat = ImageLoader::resolvePixelFormat(container, bytesPerPixel);
-        if (newParamImageDescriptionRef.pixel_format != actualPixelFormat) {
-            newParamImageDescriptionRef.pixel_format = actualPixelFormat;
-        }
-    }
-    else {
-        newParamImageDescriptionRef.type = SG_IMAGETYPE_2D;
-        if (newParamImageDescriptionRef.num_mipmaps > 1) {
-            nanoem_f32_t widthf = static_cast<nanoem_f32_t>(newParamImageDescriptionRef.width),
-                         heightf = static_cast<nanoem_f32_t>(newParamImageDescriptionRef.height);
-            const int numMipmaps = int(glm::log2(glm::max(widthf, heightf)));
-            newParamImageDescriptionRef.num_mipmaps = container->m_numMips > 1
-                ? glm::min(Inline::saturateInt32(container->m_numMips), numMipmaps)
-                : numMipmaps;
-        }
-        else {
-            switch (container->m_format) {
-            case bimg::TextureFormat::RGB5A1:
-            case bimg::TextureFormat::R5G6B5:
-            case bimg::TextureFormat::RGB8:
-            case bimg::TextureFormat::BGRA8: {
-                PrivateEffectUtils::convertImageRGBA8(
-                    container, newParamImageDescriptionRef.pixel_format, bytesPerPixel);
-                break;
-            }
-            default:
-                newParamImageDescriptionRef.pixel_format = ImageLoader::resolvePixelFormat(container, bytesPerPixel);
-                break;
-            }
-        }
-    }
-    newParamImageDescriptionRef.width = Inline::saturateInt32(container->m_width);
-    newParamImageDescriptionRef.height = Inline::saturateInt32(container->m_height);
-    newParamImageDescriptionRef.num_slices = Inline::saturateInt32(container->m_depth);
-    char label[Inline::kMarkerStringLength];
-    if (Inline::isDebugLabelEnabled()) {
-        StringUtils::format(label, sizeof(label), "Effects/%s/%s", nameConstString(), parameter.m_filename.c_str());
-        newParamImageDescriptionRef.label = label;
-    }
-    const bool flip = !sg::query_features().origin_top_left;
-    sg_range &content = newParamImageDescriptionRef.data.subimage[0][0];
-    content.ptr = container->m_data;
-    content.size = container->m_size;
-    ByteArrayList mipmapPayloads;
-    ImageLoader::generateMipmapImages(container, flip, mipmapPayloads, newParamImageDescriptionRef);
-    registerImageResource(sg::make_image(&newParamImageDescriptionRef), newParameter);
 }
 
 void

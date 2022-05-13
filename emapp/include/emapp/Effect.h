@@ -17,8 +17,6 @@
 #include "emapp/effect/RenderTargetDepthStencilImageContainer.h"
 #include "emapp/effect/Technique.h"
 
-#include "bimg/bimg.h"
-
 namespace nanoem {
 
 class AccessoryProgramBundle;
@@ -397,9 +395,8 @@ private:
     void destroyAllStagingBuffers(StagingBufferMap &buffers);
     tinystl::pair<const Model *, const Accessory *> findOffscreenOwnerObject(
         const IDrawable *ownerDrawable, const Project *project) const NANOEM_DECL_NOEXCEPT;
-    void parseImagePayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
-    void parsePortableFloatMapPayload(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
-    void createImageFromContainer(const ImageResourceParameter &parameter, bimg::ImageContainer *&container);
+    void decodeImageData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
+    void decodePortableFloatMapData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
     void setNormalizedColorImageContainer(
         const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container);
     void resetPassDescription();

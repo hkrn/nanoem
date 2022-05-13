@@ -54,7 +54,7 @@ function(nanoem_emapp_link_executable item)
   get_property(_compile_definitions_embundle TARGET embundle PROPERTY COMPILE_DEFINITIONS)
   set_property(TARGET ${item} emapp APPEND PROPERTY COMPILE_DEFINITIONS ${_compile_definitions_embundle})
   get_property(_link_libraries TARGET nanoem PROPERTY LINK_LIBRARIES)
-  target_link_libraries(${item} emapp embundle emarb lz4 bx bimg nanoem ${_link_libraries})
+  target_link_libraries(${item} emapp embundle emarb lz4 bx nanoem ${_link_libraries})
   target_link_libraries(${item} optimized ${MINIZIP_LIBRARY_RELEASE}
                                 optimized ${ZLIB_LIBRARY_RELEASE}
                                 debug ${MINIZIP_LIBRARY_DEBUG}
@@ -235,42 +235,6 @@ function(nanoem_emapp_find_bx)
   endif()
 endfunction()
 
-function(nanoem_emapp_find_bimg)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/src BIMG_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/astc BIMG_ASTC_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/astc-codec/src/decoder BIMG_ASTC_CODEC_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/etc2 BIMG_ETC2_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/iqa/source BIMG_IQA_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/libsquish BIMG_LIBSQUISH_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/pvrtc BIMG_PVRTC_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/nvtt/bc6h/ BIMG_NVTT_BC6H_SOURCES)
-  aux_source_directory(${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/nvtt/bc7/ BIMG_NVTT_BC7_SOURCES)
-  add_library(bimg STATIC ${BIMG_SOURCES} ${BIMG_IQA_SOURCES} ${BIMG_PVRTC_SOURCES} ${BIMG_NVTT_BC6H_SOURCES}
-                          ${BIMG_NVTT_BC7_SOURCES} ${BIMG_ETC2_SOURCES} ${BIMG_LIBSQUISH_SOURCES}
-                          ${BIMG_ASTC_SOURCES} ${BIMG_ASTC_CODEC_SOURCES}
-                          ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/etc1/etc1.cpp
-                          ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/edtaa3/edtaa3func.cpp
-                          ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/tinyexr/deps/miniz/miniz.c
-                          ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/nvtt/nvtt.cpp
-                          ${PROJECT_SOURCE_DIR}/dependencies/bimg/3rdparty/nvtt/nvmath/fitting.cpp)
-  nanoem_cmake_enable_lto(bimg)
-  find_path(BIMG_INCLUDE_DIR bimg/bimg.h PATH_SUFFIXES include PATHS ${PROJECT_SOURCE_DIR}/dependencies/bimg NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-  find_path(BIMG_THIRDPARTY_INCLUDE_DIR stb/stb_image.h PATH_SUFFIXES 3rdparty PATHS ${PROJECT_SOURCE_DIR}/dependencies/bimg NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
-  mark_as_advanced(BIMG_INCLUDE_DIR BIMG_THIRDPARTY_INCLUDE_DIR)
-  set_property(TARGET bimg PROPERTY FOLDER dependencies)
-  target_include_directories(bimg PRIVATE
-                            ${BX_COMPAT_INCLUDE_PATH}
-                            ${BX_INCLUDE_DIR}
-                            ${BX_THIRDPARTY_INCLUDE_DIR}
-                            ${BIMG_INCLUDE_DIR}
-                            ${BIMG_THIRDPARTY_INCLUDE_DIR}
-                            ${BIMG_THIRDPARTY_INCLUDE_DIR}/nvtt
-                            ${BIMG_THIRDPARTY_INCLUDE_DIR}/tinyexr/deps/miniz
-                            ${BIMG_THIRDPARTY_INCLUDE_DIR}/iqa/include
-                            ${BIMG_THIRDPARTY_INCLUDE_DIR}/astc-codec
-                            ${BIMG_THIRDPARTY_INCLUDE_DIR}/astc-codec/include)
-endfunction()
-
 function(nanoem_emapp_find_minizip)
   nanoem_cmake_get_install_path("minizip" MINIZIP_BASE_PATH MINIZIP_INSTALL_PATH_DEBUG MINIZIP_INSTALL_PATH_RELEASE)
   find_path(MINIZIP_INCLUDE_DIR NAMES mz.h PATH_SUFFIXES include PATHS ${MINIZIP_INSTALL_PATH_RELEASE} NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
@@ -318,7 +282,6 @@ function(get_git_dependency_revision _location _output)
     set(${_output} ${CMAKE_MATCH_1} PARENT_SCOPE)
   endif()
 endfunction()
-get_git_dependency_revision(bimg BIMG_REVISION)
 get_git_dependency_revision(bullet3 BULLET_REVISION)
 get_git_dependency_revision(bx BX_REVISION)
 get_git_dependency_revision(debug-draw DEBUG_DRAW_REVISION)
@@ -341,7 +304,6 @@ get_git_dependency_revision(zlib ZLIB_REVISION)
 nanoem_cmake_find_glm()
 nanoem_cmake_find_zlib()
 nanoem_emapp_find_bx()
-nanoem_emapp_find_bimg()
 nanoem_emapp_find_minizip()
 nanoem_emapp_find_nanomsg()
 nanoem_emapp_find_mimalloc()

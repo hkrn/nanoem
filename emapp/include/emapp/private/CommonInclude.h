@@ -95,7 +95,6 @@ namespace nanoem {
 
 class Model;
 extern bx::AllocatorI *g_bgfx_allocator;
-extern bx::AllocatorI *g_bimg_allocator;
 extern bx::AllocatorI *g_emapp_allocator;
 extern bx::AllocatorI *g_tinystl_allocator;
 extern ProtobufCAllocator *g_protobufc_allocator;
