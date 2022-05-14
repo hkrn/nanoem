@@ -6574,7 +6574,9 @@ Project::cancelRenderOffscreenRenderTarget(Effect *ownerEffect)
             for (DrawQueue::PassCommandBufferList::iterator it3 = buffers.begin(), end3 = buffers.end(); it3 != end3;
                  ++it3) {
                 if (it3->m_handle.id == pass.id) {
+                    DrawQueue::CommandBuffer *items = it3->m_items;
                     it3 = buffers.erase(it3);
+                    nanoem_delete(items);
                     EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
                 }
             }
