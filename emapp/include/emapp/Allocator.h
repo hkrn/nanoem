@@ -45,7 +45,6 @@ private:
     };
     typedef tinystl::unordered_map<void *, AllocateLocation, AllocateLocation> AllocateLocationMap;
 
-    static Allocator g_instance_for_bimg;
     static Allocator g_instance_for_debugdraw;
     static Allocator g_instance_for_emapp;
     static Allocator g_instance_for_imgui;

@@ -369,6 +369,7 @@ PMM::Context::EffectMap::compileEffect(
                 }
                 if (!succeeded) {
                     m_project->destroyEffect(innerEffect);
+                    effect = nullptr;
                 }
             }
         }

@@ -40,7 +40,6 @@
 
 namespace nanoem {
 
-bx::AllocatorI *g_bimg_allocator = nullptr;
 bx::AllocatorI *g_dd_allocator = nullptr;
 bx::AllocatorI *g_emapp_allocator = nullptr;
 bx::AllocatorI *g_par_allocator = nullptr;
@@ -108,7 +107,6 @@ Allocator::AllocateLocation::AllocateLocation(const String &l, size_t s, const S
 void
 Allocator::initialize()
 {
-    g_bimg_allocator = &g_instance_for_bimg;
     g_dd_allocator = &g_instance_for_debugdraw;
     g_emapp_allocator = &g_instance_for_emapp;
     g_par_allocator = &g_instance_for_par;
@@ -427,7 +425,6 @@ Allocator::realloc(void *ptr, size_t size, size_t align, const char *file, nanoe
     }
 }
 
-Allocator Allocator::g_instance_for_bimg("bimg");
 Allocator Allocator::g_instance_for_debugdraw("debugdraw");
 Allocator Allocator::g_instance_for_emapp("emapp");
 Allocator Allocator::g_instance_for_imgui("ImGui");

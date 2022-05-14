@@ -1000,9 +1000,7 @@ CapturingPassState::setOutputImageSize(const Vector2UI16 &value)
 {
     m_outputImageDescription.width = value.x;
     m_outputImageDescription.height = value.y;
-    bimg::TextureInfo info;
-    m_frameImageData.resize(
-        bimg::imageGetSize(&info, value.x, value.y, 1, false, false, 1, bimg::TextureFormat::BGRA8));
+    m_frameImageData.resize(value.x * value.y * 4 * sizeof(nanoem_u8_t));
     sg_buffer_desc desc;
     Inline::clearZeroMemory(desc);
     desc.size = m_frameImageData.size();

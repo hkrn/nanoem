@@ -6,11 +6,11 @@
 
 #include "emapp/ResourceBundle.h"
 
+#include "emapp/Error.h"
 #include "emapp/ImageLoader.h"
 #include "emapp/Project.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "bimg/decode.h"
 #include "glm/gtc/type_ptr.hpp"
 
 namespace {
@@ -33,31 +33,29 @@ loadSharedTexture(const nanoem_u8_t *data, size_t size, int index, Image *&image
 {
     nanoem_parameter_assert(data, "must not be NULL");
     nanoem_parameter_assert(size > 0, "must not be NULL");
-    bx::Error err;
-    if (bimg::ImageContainer *container =
-            bimg::imageParse(g_bimg_allocator, data, nanoem_u32_t(size), bimg::TextureFormat::RGBA8, &err)) {
+    Error error;
+    sg_image_desc desc;
+    nanoem_u8_t *decodedImageDataPtr = nullptr;
+    Inline::clearZeroMemory(desc);
+    if (ImageLoader::decodeImageWithSTB(data, size, desc, &decodedImageDataPtr, error)) {
         String filename;
         bx::stringPrintf(filename, "@nanoem/SharedToonTexture/%d", index);
-        sg_image_desc desc;
-        Inline::clearZeroMemory(desc);
-        desc.width = container->m_width;
-        desc.height = container->m_height;
         desc.mag_filter = desc.min_filter = SG_FILTER_NEAREST;
         desc.wrap_u = desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-        const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(container->m_data);
-        nanoem_rsize_t dataSize = container->m_size;
-        bytes.assign(dataPtr, dataPtr + dataSize);
         desc.num_mipmaps = 1;
         imageRef->setFilename(filename);
         imageRef->setDescription(desc);
         if (Inline::isDebugLabelEnabled()) {
             imageRef->setLabel(imageRef->filenameConstString());
         }
-        imageRef->setOriginData(bytes.data(), dataSize);
+        const sg_range &range = desc.data.subimage[0][0];
+        const nanoem_u8_t *ptr = static_cast<const nanoem_u8_t *>(range.ptr);
+        bytes.assign(ptr, ptr + range.size);
+        imageRef->setOriginData(ptr, range.size);
         imageRef->setFileExist(true);
         imageRef->create();
         SG_LABEL_IMAGE(imageRef->handle(), filename.c_str());
-        bimg::imageFree(container);
+        ImageLoader::releaseDecodedImageWithSTB(&decodedImageDataPtr);
     }
 }
 
@@ -66,15 +64,15 @@ loadSharedColor(const nanoem_u8_t *data, size_t size)
 {
     nanoem_parameter_assert(data, "must not be NULL");
     nanoem_parameter_assert(size > 0, "must not be NULL");
+    Error error;
     Vector4 color(0);
-    bx::Error err;
-    if (bimg::ImageContainer *container =
-            bimg::imageParse(g_bimg_allocator, data, nanoem_u32_t(size), bimg::TextureFormat::RGBA8, &err)) {
-        const nanoem_u8_t *ptr = static_cast<const nanoem_u8_t *>(container->m_data);
-        /* fetch left-bottom corner pixel */
-        const nanoem_rsize_t offset = nanoem_rsize_t(container->m_height - 1) * container->m_width * 4;
-        color = glm::make_vec4(ptr + offset);
-        bimg::imageFree(container);
+    sg_image_desc desc;
+    nanoem_u8_t *decodedImageDataPtr = nullptr;
+    if (ImageLoader::decodeImageWithSTB(data, size, desc, &decodedImageDataPtr, error)) {
+        const nanoem_rsize_t offset = nanoem_rsize_t(desc.height - 1) * desc.width * 4;
+        const sg_range &range = desc.data.subimage[0][0];
+        color = glm::make_vec4(static_cast<const nanoem_u8_t *>(range.ptr) + offset);
+        ImageLoader::releaseDecodedImageWithSTB(&decodedImageDataPtr);
     }
     return color;
 }
