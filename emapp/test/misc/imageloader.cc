@@ -15,6 +15,107 @@
 using namespace nanoem;
 using namespace test;
 
+namespace {
+
+static bool
+loadAPNG(const char *filename, Error &error)
+{
+    FileReaderScope scope(nullptr);
+    bool loaded = false;
+    error = Error();
+    if (scope.open(URI::createFromFilePath(filename), error)) {
+        auto apng = ImageLoader::decodeAPNG(scope.reader(), error);
+        loaded = apng != nullptr;
+        nanoem_delete(apng);
+    }
+    return loaded && !error.hasReason();
+}
+
+} /* namespace anonymous */
+
+// based on https://philip.html5.org/tests/apng/tests.html
+TEST_CASE("imageloader_apng", "[emapp][misc]")
+{
+    Error error;
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/000.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/001.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/002.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/003.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/004.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/005.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/006.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/007.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/008.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/009.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/010.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/011.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/012.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/013.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/014.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/015.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/016.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/017.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/018.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/019.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/020.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/021.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/022.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/023.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/024.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/025.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/026.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/027.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/028.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/029.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/030.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/031.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/032.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/033.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/034.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/035.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/036.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/037.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/038.png", error));
+    // Invalid APNG images
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/039.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/040.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/041.png", error));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/042.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Frame count (1 != 0) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/043.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Empty image sequence"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/044.png", error));
+    CHECK_THAT(
+        error.reasonConstString(), Catch::Equals("APNG: CRC chunk checksum (fcTL: 0x1000000 != 0x0) not matched"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/045.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Empty animation control"));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/046.png", error));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/047.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Frame count (1 != 2) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/048.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Frame count (3 != 2) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/049.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Frame count (4 != 2) doesn't match"));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/050.png", error));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/051.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (0 != 1) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/052.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (3 != 4) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/053.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (3 != 2) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/054.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (4 != 3) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/055.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (3 != 4) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/056.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (3 != 4) doesn't match"));
+    CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/057.png", error));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Incorrect sequence number (1 != 0) doesn't match"));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/058.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/059.png", error));
+    CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/060.png", error));
+}
+
 #if defined(NANOEM_TEST_DXTEXMEDIA_PATH)
 
 namespace {
