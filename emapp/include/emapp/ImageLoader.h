@@ -85,6 +85,64 @@ private:
     FrameSequenceList m_frames;
 };
 
+class DDS {
+public:
+    static const nanoem_u32_t kSignature;
+
+    DDS();
+    ~DDS() NANOEM_DECL_NOEXCEPT;
+
+    bool decode(IReader *reader, Error &error);
+    void setImageDescription(sg_image_desc &desc) const NANOEM_DECL_NOEXCEPT;
+
+    const ByteArray *imageData(nanoem_rsize_t face, nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT;
+    sg_pixel_format format() const NANOEM_DECL_NOEXCEPT;
+    sg_image_type type() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t width() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t height() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t depth() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t mipmapCount() const NANOEM_DECL_NOEXCEPT;
+
+private:
+#pragma pack(push)
+#pragma pack(1)
+    struct PixelFormat {
+        nanoem_u32_t m_size;
+        nanoem_u32_t m_flags;
+        nanoem_u32_t m_fourCC;
+        nanoem_u32_t m_colorBitCount;
+        nanoem_u32_t m_redBitMask;
+        nanoem_u32_t m_greenBitMask;
+        nanoem_u32_t m_blueBitMask;
+        nanoem_u32_t m_alphaBitMask;
+        bool testMask(nanoem_u32_t r, nanoem_u32_t g, nanoem_u32_t b, nanoem_u32_t a) const NANOEM_DECL_NOEXCEPT;
+    };
+    struct Header {
+        nanoem_u32_t m_size;
+        nanoem_u32_t m_flags;
+        nanoem_u32_t m_height;
+        nanoem_u32_t m_width;
+        nanoem_u32_t m_stride;
+        nanoem_u32_t m_depth;
+        nanoem_u32_t m_mipmapCount;
+        nanoem_u32_t m_reversed[11];
+        PixelFormat  m_pixelFormat;
+        nanoem_u32_t m_caps[4];
+        nanoem_u32_t m_reserved2;
+    };
+#pragma pack(pop)
+
+    static sg_pixel_format findPixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT;
+    static void getBCImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t blockSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT;
+    static void getRawImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t pixelSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT;
+    void getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t &numBytes) const NANOEM_DECL_NOEXCEPT;
+    bool decodeImage(IReader *reader, nanoem_rsize_t numBytes, ByteArray &bytes, Error &error);
+
+    Header m_header;
+    ByteArray m_images[SG_CUBEFACE_NUM][SG_MAX_MIPMAPS];
+    sg_pixel_format m_format;
+};
+
 } /* namespace image */
 
 class Image NANOEM_DECL_SEALED : public IImageView, private NonCopyable {
@@ -130,6 +188,7 @@ public:
     };
 
     static image::APNG *decodeAPNG(ISeekableReader *reader, Error &error);
+    static image::DDS *decodeDDS(IReader *reader, Error &error);
     static void copyImageDescrption(const sg_image_desc &desc, Image *image);
     static bool validateImageSize(const String &name, const sg_image_desc &desc, Error &error);
     static bool isScreenBMP(const char *path) NANOEM_DECL_NOEXCEPT;

@@ -5555,6 +5555,7 @@ Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &pa
     sg_image_desc desc;
     nanoem_u8_t *decodedImagePtr = nullptr;
     Inline::clearZeroMemory(desc);
+    const URI &fileURI = parameter.m_fileURI;
     if (ImageLoader::decodeImageWithSTB(bytes.data(), bytes.size(), desc, &decodedImagePtr, error)) {
         const sg_range &data = desc.data.subimage[0][0];
         ImageResourceParameter newParameter(parameter);
@@ -5564,8 +5565,26 @@ Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &pa
         createImageResource(data.ptr, data.size, newParameter);
         ImageLoader::releaseDecodedImageWithSTB(&decodedImagePtr);
     }
-    else if (StringUtils::equalsIgnoreCase(parameter.m_fileURI.pathExtension().c_str(), "pfm")) {
+    else if (StringUtils::equalsIgnoreCase(fileURI.pathExtension().c_str(), "pfm")) {
         decodePortableFloatMapData(bytes, parameter, error);
+    }
+    else if (StringUtils::equalsIgnoreCase(fileURI.pathExtension().c_str(), "dds")) {
+        MemoryReader reader(&bytes);
+        nanoem_u32_t signature;
+        FileUtils::readTyped(&reader, signature, error);
+        if (signature == image::DDS::kSignature) {
+            reader.seek(0, ISeekable::kSeekTypeBegin, error);
+            error = Error();
+            if (image::DDS *dds = ImageLoader::decodeDDS(&reader, error)) {
+                dds->setImageDescription(desc);
+                sg_image image = sg::make_image(&desc);
+                nanoem_delete(dds);
+                nanoem_assert(sg::query_image_state(image) == SG_RESOURCESTATE_VALID, "image must be valid");
+                if (sg::is_valid(image)) {
+                    registerImageResource(image, parameter);
+                }
+            }
+        }
     }
     else {
         error = Error();
