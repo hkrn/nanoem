@@ -360,7 +360,9 @@ Error::Error(const char *reason, const char *recoverySuggestion, DomainType doma
       m_code(0)
 {
     StringUtils::copyString(m_reason, reason, sizeof(m_reason));
-    StringUtils::copyString(m_recoverySuggestion, recoverySuggestion, sizeof(m_recoverySuggestion));
+    if (recoverySuggestion) {
+        StringUtils::copyString(m_recoverySuggestion, recoverySuggestion, sizeof(m_recoverySuggestion));
+    }
 }
 
 Error::Error(const Error &value) NANOEM_DECL_NOEXCEPT
