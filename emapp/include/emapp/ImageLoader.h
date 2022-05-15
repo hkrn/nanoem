@@ -154,6 +154,25 @@ private:
     sg_pixel_format m_format;
 };
 
+class PFM {
+public:
+    PFM();
+    ~PFM() NANOEM_DECL_NOEXCEPT;
+
+    bool decode(const ByteArray &bytes, Error &error);
+    void setImageDescription(sg_image_desc &desc) const NANOEM_DECL_NOEXCEPT;
+
+    sg_pixel_format format() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t width() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u32_t height() const NANOEM_DECL_NOEXCEPT;
+
+private:
+    ByteArray m_image;
+    sg_pixel_format m_format;
+    nanoem_u32_t m_width;
+    nanoem_u32_t m_height;
+};
+
 } /* namespace image */
 
 class Image NANOEM_DECL_SEALED : public IImageView, private NonCopyable {
@@ -200,6 +219,7 @@ public:
 
     static image::APNG *decodeAPNG(ISeekableReader *reader, Error &error);
     static image::DDS *decodeDDS(IReader *reader, Error &error);
+    static image::PFM *decodePFM(const ByteArray &bytes, Error &error);
     static void copyImageDescrption(const sg_image_desc &desc, Image *image);
     static bool validateImageSize(const String &name, const sg_image_desc &desc, Error &error);
     static bool isScreenBMP(const char *path) NANOEM_DECL_NOEXCEPT;
