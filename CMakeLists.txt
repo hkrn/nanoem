@@ -321,6 +321,11 @@ function(nanoem_build_test)
                              NANOEM_TEST_FIXTURE_PATH="${TEST_FIXTURES_DESTINATION}"
                              NANOEM_TEST_OUTPUT_PATH="${TEST_OUTPUT_DESTINATION}"
                              $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS=1>)
+  # git clone https://github.com/walbourn/directxtexmedia emapp/test/directxtexmedia
+  set(_directx_tex_media_directory "${emapp_test_path}/directxtexmedia")
+  if(EXISTS ${_directx_tex_media_directory})
+    target_compile_definitions(nanoem_test PRIVATE NANOEM_TEST_DXTEXMEDIA_PATH="${_directx_tex_media_directory}")
+  endif()
   target_include_directories(nanoem_test PRIVATE ${PROJECT_SOURCE_DIR}/dependencies/catch2/single_include)
   add_custom_command(TARGET  nanoem_test POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E make_directory ${TEST_FIXTURES_DESTINATION}

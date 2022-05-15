@@ -126,19 +126,30 @@ private:
         nanoem_u32_t m_depth;
         nanoem_u32_t m_mipmapCount;
         nanoem_u32_t m_reversed[11];
-        PixelFormat  m_pixelFormat;
+        PixelFormat m_pixelFormat;
         nanoem_u32_t m_caps[4];
         nanoem_u32_t m_reserved2;
     };
+    struct ExtendedHeader {
+        nanoem_u32_t m_dxgiFormat;
+        nanoem_u32_t m_resourceDimension;
+        nanoem_u32_t m_miscFlags;
+        nanoem_u32_t m_arraySize;
+        nanoem_u32_t m_miscFlags2;
+    };
 #pragma pack(pop)
 
-    static sg_pixel_format findPixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT;
-    static void getBCImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t blockSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT;
-    static void getRawImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t pixelSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT;
+    static sg_pixel_format findPixelFormat(const PixelFormat &value, const ExtendedHeader &extend) NANOEM_DECL_NOEXCEPT;
+    static void getBCImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t blockSize,
+        nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT;
+    static void getRawImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t pixelSize,
+        nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT;
     void getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t &numBytes) const NANOEM_DECL_NOEXCEPT;
-    bool decodeImage(IReader *reader, nanoem_rsize_t numBytes, ByteArray &bytes, Error &error);
+    bool decodeImage(IReader *reader, nanoem_u32_t faceIndex, nanoem_u32_t mipmapIndex, nanoem_u32_t width,
+        nanoem_u32_t height, nanoem_rsize_t numBytes, ByteArray &bytes, Error &error);
 
     Header m_header;
+    ExtendedHeader m_extendedHeader;
     ByteArray m_images[SG_CUBEFACE_NUM][SG_MAX_MIPMAPS];
     sg_pixel_format m_format;
 };
@@ -197,8 +208,8 @@ public:
     static void fill1x1BlackPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void fill1x1TransparentPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t height, nanoem_u32_t bpp);
-    static bool decodeImageWithSTB(
-        const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error);
+    static bool decodeImageWithSTB(const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc,
+        nanoem_u8_t **decodedImagePtr, Error &error);
     static void releaseDecodedImageWithSTB(nanoem_u8_t **decodedImagePtr);
 
     ImageLoader(const Project *project);

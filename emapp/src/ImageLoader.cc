@@ -49,6 +49,7 @@ static const nanoem_u32_t kPNGChunkTypeAnimationControl = nanoem_fourcc('a', 'c'
 static const nanoem_u32_t kPNGChunkTypeFrameControl = nanoem_fourcc('f', 'c', 'T', 'L');
 static const nanoem_u32_t kPNGChunkTypeFrameData = nanoem_fourcc('f', 'd', 'A', 'T');
 
+static const nanoem_u32_t kDDSImageSizeHardLimit = 0x4000; /* 16384 */
 static const nanoem_u32_t kDDSHeaderFlagTypeMipmap = 0x20000;
 static const nanoem_u32_t kDDSHeaderFlagTypeVolume = 0x800000;
 static const nanoem_u32_t kDDSFormatFlagTypeRGB = 0x40;
@@ -60,9 +61,8 @@ static const nanoem_u32_t kDDSCapsCubeMapPositiveY = 0x1200;
 static const nanoem_u32_t kDDSCapsCubeMapNegativeY = 0x2200;
 static const nanoem_u32_t kDDSCapsCubeMapPositiveZ = 0x4200;
 static const nanoem_u32_t kDDSCapsCubeMapNegativeZ = 0x8200;
-static const nanoem_u32_t kDDSCapsCubeMapAllFaces = kDDSCapsCubeMapPositiveX
-        | kDDSCapsCubeMapNegativeX | kDDSCapsCubeMapPositiveY | kDDSCapsCubeMapNegativeY
-        | kDDSCapsCubeMapPositiveZ | kDDSCapsCubeMapNegativeZ;
+static const nanoem_u32_t kDDSCapsCubeMapAllFaces = kDDSCapsCubeMapPositiveX | kDDSCapsCubeMapNegativeX |
+    kDDSCapsCubeMapPositiveY | kDDSCapsCubeMapNegativeY | kDDSCapsCubeMapPositiveZ | kDDSCapsCubeMapNegativeZ;
 
 struct CRC {
     CRC()
@@ -96,6 +96,56 @@ struct CRC {
         return checksum(chunkType, &data, sizeof(data));
     }
     nanoem_u32_t m_table[256];
+};
+
+/* https://docs.microsoft.com/en-us/windows/win32/api/dxgiformat/ne-dxgiformat-dxgi_format */
+enum DXGI_FORMAT {
+    DXGI_FORMAT_R32G32B32A32_FLOAT = 2,
+    DXGI_FORMAT_R16G16B16A16_FLOAT = 10,
+    DXGI_FORMAT_R16G16B16A16_UNORM = 11,
+    DXGI_FORMAT_R16G16B16A16_SNORM = 13,
+    DXGI_FORMAT_R32G32_FLOAT = 16,
+    DXGI_FORMAT_R10G10B10A2_UNORM = 24,
+    DXGI_FORMAT_R8G8B8A8_UNORM = 28,
+    DXGI_FORMAT_R8G8B8A8_UNORM_SRGB = 29,
+    DXGI_FORMAT_R8G8B8A8_SNORM = 31,
+    DXGI_FORMAT_R16G16_FLOAT = 34,
+    DXGI_FORMAT_R16G16_UNORM = 35,
+    DXGI_FORMAT_R16G16_SNORM = 37,
+    DXGI_FORMAT_R32_FLOAT = 41,
+    DXGI_FORMAT_R8G8_UNORM = 49,
+    DXGI_FORMAT_R8G8_SNORM = 51,
+    DXGI_FORMAT_R16_FLOAT = 54,
+    DXGI_FORMAT_R16_UNORM = 56,
+    DXGI_FORMAT_R16_SNORM = 58,
+    DXGI_FORMAT_R8_UNORM = 61,
+    DXGI_FORMAT_R8_SNORM = 63,
+    DXGI_FORMAT_A8_UNORM = 65,
+    DXGI_FORMAT_BC1_UNORM = 71,
+    DXGI_FORMAT_BC1_UNORM_SRGB = 72,
+    DXGI_FORMAT_BC2_UNORM = 74,
+    DXGI_FORMAT_BC2_UNORM_SRGB = 75,
+    DXGI_FORMAT_BC3_UNORM = 77,
+    DXGI_FORMAT_BC3_UNORM_SRGB = 78,
+    DXGI_FORMAT_BC4_UNORM = 80,
+    DXGI_FORMAT_BC4_SNORM = 81,
+    DXGI_FORMAT_BC5_UNORM = 83,
+    DXGI_FORMAT_BC5_SNORM = 84,
+    DXGI_FORMAT_B5G6R5_UNORM = 85,
+    DXGI_FORMAT_B5G5R5A1_UNORM = 86,
+    DXGI_FORMAT_B8G8R8A8_UNORM = 87,
+    DXGI_FORMAT_B8G8R8X8_UNORM = 88,
+    DXGI_FORMAT_B8G8R8A8_UNORM_SRGB = 91,
+    DXGI_FORMAT_B8G8R8X8_UNORM_SRGB = 93,
+    DXGI_FORMAT_FORCE_UINT = 0xffffffff
+};
+
+/* https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_resource_dimension */
+enum D3D11_RESOURCE_DIMENSION { D3D11_RESOURCE_DIMENSION_TEXTURE2D = 3, D3D11_RESOURCE_DIMENSION_TEXTURE3D = 4 };
+
+/* https://docs.microsoft.com/en-us/windows/win32/api/d3d11/ne-d3d11-d3d11_resource_misc_flag */
+enum D3D11_RESOURCE_MISC_FLAG {
+    D3D11_RESOURCE_MISC_TEXTURECUBE = 0x4L,
 };
 
 } /* namespace anonymous */
@@ -192,7 +242,8 @@ image::APNG::decode(ISeekableReader *reader, Error &error)
             nanoem_u32_t sequenceNumber;
             if (chunkLength >= sizeof(sequenceNumber)) {
                 dataChunk.resize(chunkLength);
-                if (FileUtils::read(reader, dataChunk.data(), chunkLength, error) != Inline::saturateInt32(chunkLength)) {
+                if (FileUtils::read(reader, dataChunk.data(), chunkLength, error) !=
+                    Inline::saturateInt32(chunkLength)) {
                     loop = false;
                     break;
                 }
@@ -269,9 +320,7 @@ image::APNG::composite(Error &error)
     MemoryWriter writer(&buffer);
     const nanoem_u32_t width = m_header.m_width, height = m_header.m_height;
     compositionImageData.resize(nanoem_rsize_t(4) * width * height);
-    for (APNG::FrameSequenceList::const_iterator it = m_frames.begin(),
-                                                      end = m_frames.end();
-         it != end; ++it) {
+    for (APNG::FrameSequenceList::const_iterator it = m_frames.begin(), end = m_frames.end(); it != end; ++it) {
         APNG::Frame *frame = *it;
         const APNG::FrameControl &frameControl = frame->m_control;
         switch (frameControl.m_disposeOp) {
@@ -305,8 +354,7 @@ image::APNG::composite(Error &error)
             FileUtils::writeTyped(&writer, bx::toBigEndian(Inline::saturateInt32U(bytes.size())), error);
             FileUtils::writeTyped(&writer, kPNGChunkTypeImageData, error);
             FileUtils::write(&writer, bytes, error);
-            FileUtils::writeTyped(
-                &writer, crc.checksum(kPNGChunkTypeImageData, bytes.data(), bytes.size()), error);
+            FileUtils::writeTyped(&writer, crc.checksum(kPNGChunkTypeImageData, bytes.data(), bytes.size()), error);
             FileUtils::writeTyped(&writer, 0, error);
             FileUtils::writeTyped(&writer, kPNGChunkTypeImageEnd, error);
             FileUtils::writeTyped(&writer, crc.checksum(kPNGChunkTypeImageEnd, nullptr, 0), error);
@@ -404,6 +452,8 @@ const nanoem_u32_t image::DDS::kSignature = nanoem_fourcc('D', 'D', 'S', ' ');
 image::DDS::DDS()
     : m_format(SG_PIXELFORMAT_NONE)
 {
+    Inline::clearZeroMemory(m_header);
+    Inline::clearZeroMemory(m_extendedHeader);
 }
 
 image::DDS::~DDS() NANOEM_DECL_NOEXCEPT
@@ -417,55 +467,76 @@ image::DDS::decode(IReader *reader, Error &error)
         return false;
     }
     if (m_header.m_size != Inline::saturateInt32U(sizeof(m_header)) ||
-            m_header.m_pixelFormat.m_size != Inline::saturateInt32U(sizeof(m_header.m_pixelFormat))) {
-        error = Error("DDS: Unmatched header/format size", "", Error::kDomainTypeApplication);
+        m_header.m_pixelFormat.m_size != Inline::saturateInt32U(sizeof(m_header.m_pixelFormat))) {
+        error = Error("DDS: Unmatched header or format size", 0, Error::kDomainTypeApplication);
         return false;
     }
-    if (EnumUtils::isEnabled(kDDSFormatFlagTypeFourCC, m_header.m_pixelFormat.m_flags)
-            && m_header.m_pixelFormat.m_fourCC == nanoem_fourcc('D', 'X', '1', '0')) {
-        error = Error("DDS: DX10 extended format is not supported", "", Error::kDomainTypeApplication);
+    if (m_header.m_width == 0 || m_header.m_height == 0) {
+        error = Error("DDS: Empty width or height found", 0, Error::kDomainTypeApplication);
         return false;
     }
-    const sg_pixel_format format = findPixelFormat(m_header.m_pixelFormat);
+    if (m_header.m_width > kDDSImageSizeHardLimit || m_header.m_height > kDDSImageSizeHardLimit) {
+        error = Error("DDS: Exceeded hardlimit size of image", 0, Error::kDomainTypeApplication);
+        return false;
+    }
+    if (EnumUtils::isEnabled(kDDSFormatFlagTypeFourCC, m_header.m_pixelFormat.m_flags) &&
+        m_header.m_pixelFormat.m_fourCC == nanoem_fourcc('D', 'X', '1', '0')) {
+        if (FileUtils::readTyped(reader, m_extendedHeader, error) != Inline::saturateInt32(sizeof(m_extendedHeader))) {
+            return false;
+        }
+    }
+    const sg_pixel_format format = findPixelFormat(m_header.m_pixelFormat, m_extendedHeader);
     if (format != SG_PIXELFORMAT_NONE) {
         m_format = format;
     }
     else {
-        error = Error("DDS: Unsupported texture format", "", Error::kDomainTypeApplication);
+        const PixelFormat &pf = m_header.m_pixelFormat;
+        char message[Error::kMaxReasonLength];
+        StringUtils::format(message, sizeof(message),
+            "DDS: Unsupported texture format: DXGI=%d colorBits=%u fourCC=%c%c%c%c:%u", m_extendedHeader.m_dxgiFormat,
+            pf.m_colorBitCount, pf.m_fourCC & 0xff, (pf.m_fourCC >> 8) & 0xff, (pf.m_fourCC >> 16) & 0xff,
+            (pf.m_fourCC >> 24) & 0xff, pf.m_fourCC);
+        error = Error(message, 0, Error::kDomainTypeApplication);
         return false;
     }
-    const nanoem_u32_t numMipmaps = glm::clamp(m_header.m_mipmapCount, 1u, nanoem_u32_t(SG_MAX_MIPMAPS)),
-            numDepths = glm::clamp(m_header.m_depth, 1u, nanoem_u32_t(SG_MAX_TEXTUREARRAY_LAYERS));
+    const nanoem_u32_t numMipmaps = EnumUtils::isEnabled(kDDSHeaderFlagTypeMipmap, m_header.m_flags)
+        ? glm::clamp(m_header.m_mipmapCount, 1u, nanoem_u32_t(SG_MAX_MIPMAPS))
+        : 1u,
+                       numDepths = glm::clamp(m_header.m_depth, 1u, nanoem_u32_t(SG_MAX_TEXTUREARRAY_LAYERS));
     nanoem_rsize_t numBytes = 0;
-    nanoem_u32_t w = width(), h = height();
+    nanoem_u32_t mipmapWidth, mipmapHeight;
     m_header.m_mipmapCount = numMipmaps;
     m_header.m_depth = numDepths;
     switch (type()) {
     case SG_IMAGETYPE_CUBE: {
-        for (nanoem_rsize_t i = 0; i < numMipmaps; i++) {
-            for (nanoem_rsize_t j = 0; i < numDepths; j++) {
+        for (nanoem_rsize_t i = 0; i < SG_CUBEFACE_NUM; i++) {
+            mipmapWidth = width();
+            mipmapHeight = height();
+            for (nanoem_rsize_t j = 0; j < numMipmaps; j++) {
                 ByteArray &image = m_images[i][j];
-                getImageSize(w, h, numBytes);
-                if (!decodeImage(reader, numBytes, image, error)) {
+                getImageSize(mipmapWidth, mipmapHeight, numBytes);
+                if (!decodeImage(reader, i, j, mipmapWidth, mipmapHeight, numBytes, image, error)) {
                     i = SG_MAX_MIPMAPS;
                     break;
                 }
+                mipmapWidth = glm::max(mipmapWidth >> 1, 1u);
+                mipmapHeight = glm::max(mipmapHeight >> 1, 1u);
             }
-            w = glm::max(w >> 1, 1u);
-            h = glm::max(h >> 1, 1u);
         }
         break;
     }
     case SG_IMAGETYPE_3D:
     case SG_IMAGETYPE_2D: {
+        mipmapWidth = width();
+        mipmapHeight = height();
         for (nanoem_rsize_t i = 0; i < numMipmaps; i++) {
             ByteArray &image = m_images[0][i];
-            getImageSize(w, h, numBytes);
-            if (!decodeImage(reader, numBytes, image, error)) {
+            getImageSize(mipmapWidth, mipmapHeight, numBytes);
+            if (!decodeImage(reader, 0, i, mipmapWidth, mipmapHeight, numBytes, image, error)) {
                 break;
             }
-            w = glm::max(w >> 1, 1u);
-            h = glm::max(h >> 1, 1u);
+            mipmapWidth = glm::max(mipmapWidth >> 1, 1u);
+            mipmapHeight = glm::max(mipmapHeight >> 1, 1u);
         }
         break;
     }
@@ -483,6 +554,7 @@ image::DDS::setImageDescription(sg_image_desc &desc) const NANOEM_DECL_NOEXCEPT
     desc.num_slices = depth();
     desc.num_mipmaps = mipmapCount();
     desc.pixel_format = format();
+    desc.type = type();
     for (nanoem_rsize_t i = 0; i < SG_CUBEFACE_NUM; i++) {
         for (nanoem_rsize_t j = 0; j < SG_MAX_MIPMAPS; j++) {
             const ByteArray *bytes = imageData(i, j);
@@ -515,7 +587,16 @@ sg_image_type
 image::DDS::type() const NANOEM_DECL_NOEXCEPT
 {
     sg_image_type type = SG_IMAGETYPE_2D;
-    if (EnumUtils::isEnabled(kDDSHeaderFlagTypeVolume, m_header.m_flags)) {
+    if (m_extendedHeader.m_resourceDimension != 0) {
+        if (m_extendedHeader.m_resourceDimension == D3D11_RESOURCE_DIMENSION_TEXTURE3D) {
+            type = SG_IMAGETYPE_3D;
+        }
+        else if (m_extendedHeader.m_resourceDimension == D3D11_RESOURCE_DIMENSION_TEXTURE2D &&
+            EnumUtils::isEnabled(D3D11_RESOURCE_MISC_TEXTURECUBE, m_extendedHeader.m_miscFlags)) {
+            type = SG_IMAGETYPE_CUBE;
+        }
+    }
+    else if (EnumUtils::isEnabled(kDDSHeaderFlagTypeVolume, m_header.m_flags)) {
         type = SG_IMAGETYPE_3D;
     }
     else if (EnumUtils::isEnabled(kDDSCapsCubeMapAllFaces, m_header.m_caps[1])) {
@@ -549,30 +630,143 @@ image::DDS::mipmapCount() const NANOEM_DECL_NOEXCEPT
 }
 
 bool
-image::DDS::PixelFormat::testMask(nanoem_u32_t r, nanoem_u32_t g, nanoem_u32_t b, nanoem_u32_t a) const NANOEM_DECL_NOEXCEPT
+image::DDS::PixelFormat::testMask(
+    nanoem_u32_t r, nanoem_u32_t g, nanoem_u32_t b, nanoem_u32_t a) const NANOEM_DECL_NOEXCEPT
 {
     return m_redBitMask == r && m_greenBitMask == g && m_blueBitMask == b && m_alphaBitMask == a;
 }
 
 sg_pixel_format
-image::DDS::findPixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT
+image::DDS::findPixelFormat(const PixelFormat &value, const ExtendedHeader &extend) NANOEM_DECL_NOEXCEPT
 {
     sg_pixel_format format = SG_PIXELFORMAT_NONE;
-    if (EnumUtils::isEnabled(kDDSFormatFlagTypeRGB, value.m_flags)) {
+    if (extend.m_dxgiFormat != 0) {
+        switch (extend.m_dxgiFormat) {
+        case DXGI_FORMAT_R8G8B8A8_UNORM:
+        case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB: {
+            format = SG_PIXELFORMAT_RGBA8;
+            break;
+        }
+        case DXGI_FORMAT_R8G8B8A8_SNORM: {
+            format = SG_PIXELFORMAT_RGBA8SN;
+            break;
+        }
+        case DXGI_FORMAT_B8G8R8A8_UNORM:
+        case DXGI_FORMAT_B8G8R8A8_UNORM_SRGB: {
+            format = SG_PIXELFORMAT_BGRA8;
+            break;
+        }
+        case DXGI_FORMAT_R10G10B10A2_UNORM: {
+            format = SG_PIXELFORMAT_RGB10A2;
+            break;
+        }
+        case DXGI_FORMAT_R32G32B32A32_FLOAT: {
+            format = SG_PIXELFORMAT_RGBA32F;
+            break;
+        }
+        case DXGI_FORMAT_R16G16B16A16_FLOAT: {
+            format = SG_PIXELFORMAT_RGBA16F;
+            break;
+        }
+        case DXGI_FORMAT_R16G16B16A16_UNORM: {
+            format = SG_PIXELFORMAT_RGBA16;
+            break;
+        }
+        case DXGI_FORMAT_R16G16B16A16_SNORM: {
+            format = SG_PIXELFORMAT_RGBA16SN;
+            break;
+        }
+        case DXGI_FORMAT_R32G32_FLOAT: {
+            format = SG_PIXELFORMAT_RG32F;
+            break;
+        }
+        case DXGI_FORMAT_R16G16_FLOAT: {
+            format = SG_PIXELFORMAT_RG16F;
+            break;
+        }
+        case DXGI_FORMAT_R16G16_UNORM: {
+            format = SG_PIXELFORMAT_RG16;
+            break;
+        }
+        case DXGI_FORMAT_R16G16_SNORM: {
+            format = SG_PIXELFORMAT_RG16SN;
+            break;
+        }
+        case DXGI_FORMAT_R8G8_UNORM: {
+            format = SG_PIXELFORMAT_RG8;
+            break;
+        }
+        case DXGI_FORMAT_R8G8_SNORM: {
+            format = SG_PIXELFORMAT_RG8SN;
+            break;
+        }
+        case DXGI_FORMAT_R32_FLOAT: {
+            format = SG_PIXELFORMAT_R32F;
+            break;
+        }
+        case DXGI_FORMAT_R16_FLOAT: {
+            format = SG_PIXELFORMAT_R16F;
+            break;
+        }
+        case DXGI_FORMAT_R8_UNORM:
+        case DXGI_FORMAT_A8_UNORM: {
+            format = SG_PIXELFORMAT_R8;
+            break;
+        }
+        case DXGI_FORMAT_R8_SNORM: {
+            format = SG_PIXELFORMAT_R8SN;
+            break;
+        }
+        case DXGI_FORMAT_BC1_UNORM:
+        case DXGI_FORMAT_BC1_UNORM_SRGB: {
+            format = SG_PIXELFORMAT_BC1_RGBA;
+            break;
+        }
+        case DXGI_FORMAT_BC2_UNORM:
+        case DXGI_FORMAT_BC2_UNORM_SRGB: {
+            format = SG_PIXELFORMAT_BC2_RGBA;
+            break;
+        }
+        case DXGI_FORMAT_BC3_UNORM:
+        case DXGI_FORMAT_BC3_UNORM_SRGB: {
+            format = SG_PIXELFORMAT_BC3_RGBA;
+            break;
+        }
+        case DXGI_FORMAT_BC4_UNORM: {
+            format = SG_PIXELFORMAT_BC4_R;
+            break;
+        }
+        case DXGI_FORMAT_BC4_SNORM: {
+            format = SG_PIXELFORMAT_BC4_RSN;
+            break;
+        }
+        case DXGI_FORMAT_BC5_UNORM: {
+            format = SG_PIXELFORMAT_BC5_RG;
+            break;
+        }
+        case DXGI_FORMAT_BC5_SNORM: {
+            format = SG_PIXELFORMAT_BC5_RGSN;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    else if (EnumUtils::isEnabled(kDDSFormatFlagTypeRGB, value.m_flags)) {
         switch (value.m_colorBitCount) {
         case 32: {
             if (value.testMask(0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000)) {
                 format = SG_PIXELFORMAT_RGBA8;
             }
-            else if (value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)
-                     || value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0)) {
+            else if (value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000) ||
+                value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0)) {
                 format = SG_PIXELFORMAT_BGRA8;
             }
             else if (value.testMask(0x3ff00000, 0x000ffc00, 0x000003ff, 0xc0000000)) {
                 format = SG_PIXELFORMAT_RGB10A2;
             }
-            else if (value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)
-                     || value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0)) {
+            else if (value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000) ||
+                value.testMask(0x00ff0000, 0x0000ff00, 0x000000ff, 0)) {
                 format = SG_PIXELFORMAT_RG16;
             }
             else if (value.testMask(0xffffffff, 0, 0, 0)) {
@@ -689,7 +883,8 @@ image::DDS::findPixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT
 }
 
 void
-image::DDS::getBCImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t blockSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT
+image::DDS::getBCImageSize(
+    nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t blockSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT
 {
     static const nanoem_rsize_t kMinimumBlockSize = 1u;
     nanoem_rsize_t numBlocksWidth = 0, numBlocksHeight = 0;
@@ -704,7 +899,8 @@ image::DDS::getBCImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize
 }
 
 void
-image::DDS::getRawImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t pixelSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT
+image::DDS::getRawImageSize(
+    nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t pixelSize, nanoem_rsize_t &numBytes) NANOEM_DECL_NOEXCEPT
 {
     const nanoem_rsize_t rowBytes = width * pixelSize, numRows = height;
     numBytes = rowBytes * numRows;
@@ -714,7 +910,9 @@ void
 image::DDS::getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t &numBytes) const NANOEM_DECL_NOEXCEPT
 {
     switch (m_format) {
-    case SG_PIXELFORMAT_RGBA8: {
+    case SG_PIXELFORMAT_RGBA8:
+    case SG_PIXELFORMAT_BGRA8:
+    case SG_PIXELFORMAT_RGBA8SN: {
         if (m_header.m_pixelFormat.m_colorBitCount == 24) {
             getRawImageSize(width, height, 3, numBytes);
         }
@@ -723,11 +921,15 @@ image::DDS::getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t
         }
         break;
     }
-    case SG_PIXELFORMAT_R16: {
+    case SG_PIXELFORMAT_R16:
+    case SG_PIXELFORMAT_R16SN:
+    case SG_PIXELFORMAT_RG8:
+    case SG_PIXELFORMAT_RG8SN: {
         getRawImageSize(width, height, 2, numBytes);
         break;
     }
-    case SG_PIXELFORMAT_R8: {
+    case SG_PIXELFORMAT_R8:
+    case SG_PIXELFORMAT_R8SN: {
         getRawImageSize(width, height, 1, numBytes);
         break;
     }
@@ -744,11 +946,11 @@ image::DDS::getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t
         break;
     }
     case SG_PIXELFORMAT_BC4_R: {
-        getBCImageSize(width, height, 16, numBytes);
+        getBCImageSize(width, height, 8, numBytes);
         break;
     }
     case SG_PIXELFORMAT_BC4_RSN: {
-        getBCImageSize(width, height, 16, numBytes);
+        getBCImageSize(width, height, 8, numBytes);
         break;
     }
     case SG_PIXELFORMAT_BC5_RG: {
@@ -759,32 +961,28 @@ image::DDS::getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t
         getBCImageSize(width, height, 16, numBytes);
         break;
     }
-    case SG_PIXELFORMAT_RGBA16: {
+    case SG_PIXELFORMAT_RGBA32F: {
+        getRawImageSize(width, height, 16, numBytes);
+        break;
+    }
+    case SG_PIXELFORMAT_RGBA16:
+    case SG_PIXELFORMAT_RGBA16SN: {
         getRawImageSize(width, height, 8, numBytes);
+        break;
+    }
+    case SG_PIXELFORMAT_RG32F:
+    case SG_PIXELFORMAT_RGBA16F: {
+        getRawImageSize(width, height, 8, numBytes);
+        break;
+    }
+    case SG_PIXELFORMAT_R32F:
+    case SG_PIXELFORMAT_RG16F:
+    case SG_PIXELFORMAT_RGB10A2: {
+        getRawImageSize(width, height, 4, numBytes);
         break;
     }
     case SG_PIXELFORMAT_R16F: {
-        getRawImageSize(width, height, 4, numBytes);
-        break;
-    }
-    case SG_PIXELFORMAT_RG16F: {
-        getRawImageSize(width, height, 8, numBytes);
-        break;
-    }
-    case SG_PIXELFORMAT_RGBA16F: {
-        getRawImageSize(width, height, 16, numBytes);
-        break;
-    }
-    case SG_PIXELFORMAT_R32F: {
-        getRawImageSize(width, height, 4, numBytes);
-        break;
-    }
-    case SG_PIXELFORMAT_RG32F: {
-        getRawImageSize(width, height, 16, numBytes);
-        break;
-    }
-    case SG_PIXELFORMAT_RGBA32F: {
-        getRawImageSize(width, height, 32, numBytes);
+        getRawImageSize(width, height, 2, numBytes);
         break;
     }
     default:
@@ -793,14 +991,22 @@ image::DDS::getImageSize(nanoem_u32_t width, nanoem_u32_t height, nanoem_rsize_t
 }
 
 bool
-image::DDS::decodeImage(IReader *reader, nanoem_rsize_t numBytes, ByteArray &bytes, Error &error)
+image::DDS::decodeImage(IReader *reader, nanoem_u32_t faceIndex, nanoem_u32_t mipmapIndex, nanoem_u32_t width,
+    nanoem_u32_t height, nanoem_rsize_t numBytes, ByteArray &bytes, Error &error)
 {
+    const int intNumBytes = Inline::saturateInt32(numBytes);
     bytes.resize(numBytes);
-    if (reader->read(bytes.data(), numBytes, error) != Inline::saturateInt32(numBytes)) {
-        error = Error("DDS: Unexpected data EOF", "", Error::kDomainTypeApplication);
+    int readSize = reader->read(bytes.data(), intNumBytes, error);
+    if (readSize != intNumBytes) {
+        char message[Error::kMaxReasonLength];
+        StringUtils::format(message, sizeof(message),
+            "DDS: Unexpected data EOF (faceIndex=%u, mipmapIndex=%u, width=%u, height=%u, type=%d, format=%u, "
+            "expected=%d, actual=%d)",
+            faceIndex, mipmapIndex, width, height, type(), m_format, intNumBytes, readSize);
+        error = Error(message, 0, Error::kDomainTypeApplication);
     }
     if (m_format == SG_PIXELFORMAT_RGBA8 && m_header.m_pixelFormat.m_colorBitCount == 24) {
-        const nanoem_rsize_t numPixels = width() * height();
+        const nanoem_rsize_t numPixels = width * height;
         ByteArray newPixels(numPixels * 4);
         for (nanoem_rsize_t i = 0; i < numPixels; i++) {
             const nanoem_u8_t *source = bytes.data() + i * 3;
@@ -1083,7 +1289,8 @@ ImageLoader::flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t hei
 }
 
 bool
-ImageLoader::decodeImageWithSTB(const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error)
+ImageLoader::decodeImageWithSTB(
+    const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error)
 {
     int width, height, components;
     bool result = false;
@@ -1170,8 +1377,8 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         imageView = drawable->uploadImage(container.m_name, desc);
         releaseDecodedImageWithSTB(&decodedImagePtr);
     }
-    else if (container.m_dataSize >= sizeof(image::DDS::kSignature)
-             && *reinterpret_cast<const nanoem_u32_t *>(container.m_dataPtr) == image::DDS::kSignature) {
+    else if (container.m_dataSize >= sizeof(image::DDS::kSignature) &&
+        *reinterpret_cast<const nanoem_u32_t *>(container.m_dataPtr) == image::DDS::kSignature) {
         const ByteArray bytes(container.m_dataPtr, container.m_dataPtr + container.m_dataSize);
         MemoryReader reader(&bytes);
         Error innerError;
