@@ -152,6 +152,8 @@ enum D3D11_RESOURCE_MISC_FLAG {
 
 image::APNG::APNG()
 {
+    Inline::clearZeroMemory(m_header);
+    Inline::clearZeroMemory(m_control);
 }
 
 image::APNG::~APNG() NANOEM_DECL_NOEXCEPT
@@ -166,20 +168,21 @@ image::APNG::~APNG() NANOEM_DECL_NOEXCEPT
 bool
 image::APNG::decode(ISeekableReader *reader, Error &error)
 {
+    char message[Error::kMaxReasonLength];
     ByteArray dataChunk;
     CRC crc;
     APNG::Frame *frame = nullptr;
     nanoem_u32_t expectedSequenceNumber = 0;
     nanoem_f32_t seconds = 0;
-    bool loop = true;
+    bool hasAnimationControl = false, hasImageData = false, loop = true;
     while (loop && !error.hasReason()) {
         nanoem_u32_t chunkLength, chunkType, chunkCRC, checksum = 0;
-        if (FileUtils::readTyped(reader, chunkLength, error) != Inline::saturateInt32(chunkLength)) {
+        if (FileUtils::readTyped(reader, chunkLength, error) != Inline::saturateInt32(sizeof(chunkLength))) {
             loop = false;
             break;
         }
         chunkLength = bx::toBigEndian(chunkLength);
-        if (FileUtils::readTyped(reader, chunkType, error) != Inline::saturateInt32(chunkType)) {
+        if (FileUtils::readTyped(reader, chunkType, error) != Inline::saturateInt32(sizeof(chunkType))) {
             loop = false;
             break;
         }
@@ -192,49 +195,62 @@ image::APNG::decode(ISeekableReader *reader, Error &error)
             checksum = crc.checksumTyped(chunkType, m_control);
             m_control.m_numFrames = bx::toBigEndian(m_control.m_numFrames);
             m_control.m_numPlayCount = bx::toBigEndian(m_control.m_numPlayCount);
+            if (m_control.m_numFrames >= 0x80000000u) {
+                m_control.m_numFrames -= 0x80000000u;
+            }
+            hasAnimationControl = true;
             break;
         }
         case kPNGChunkTypeFrameControl: {
             if (frame) {
                 if (frame->m_sequences.empty()) {
-                    error = Error("APNG: Empty image sequence", nullptr, Error::kDomainTypeApplication);
-                }
-                else {
-                    m_frames.push_back(frame);
-                }
-            }
-            if (!error.hasReason()) {
-                APNG::FrameControl &frameControl = frame->m_control;
-                if (FileUtils::readTyped(reader, frameControl, error) != Inline::saturateInt32(sizeof(frameControl))) {
+                    error = Error("APNG: Empty image sequence", 0, Error::kDomainTypeApplication);
                     loop = false;
                     break;
                 }
-                checksum = crc.checksumTyped(chunkType, frameControl);
-                frame = nanoem_new(APNG::Frame);
-                frameControl.m_sequenceNumber = bx::toBigEndian(frameControl.m_sequenceNumber);
-                frameControl.m_width = bx::toBigEndian(frameControl.m_width);
-                frameControl.m_height = bx::toBigEndian(frameControl.m_height);
-                frameControl.m_xoffset = bx::toBigEndian(frameControl.m_xoffset);
-                frameControl.m_yoffset = bx::toBigEndian(frameControl.m_yoffset);
-                frameControl.m_delayDen = bx::toBigEndian(frameControl.m_delayDen);
-                frameControl.m_delayNum = bx::toBigEndian(frameControl.m_delayNum);
-                if (frameControl.m_delayDen == 0) {
-                    frameControl.m_delayDen = 100;
+                else {
+                    m_frames.push_back(frame);
+                    frame = nullptr;
                 }
-                if (expectedSequenceNumber != frameControl.m_sequenceNumber) {
-                    nanoem_delete_safe(frame);
-                    error = Error("APNG: Invalid sequence number", nullptr, Error::kDomainTypeApplication);
-                }
-                else if (frameControl.m_width == 0 || frameControl.m_height == 0 ||
-                    !(frameControl.m_xoffset + frameControl.m_width <= m_header.m_width) ||
-                    !(frameControl.m_yoffset + frameControl.m_height <= m_header.m_height)) {
-                    nanoem_delete_safe(frame);
-                    error = Error("APNG: Invalid frame rectangle", nullptr, Error::kDomainTypeApplication);
-                }
-                frame->m_seconds = seconds;
-                seconds += frameControl.m_delayNum / nanoem_f32_t(frameControl.m_delayDen);
-                expectedSequenceNumber++;
             }
+            frame = nanoem_new(APNG::Frame);
+            APNG::FrameControl &frameControl = frame->m_control;
+            if (FileUtils::readTyped(reader, frameControl, error) != Inline::saturateInt32(sizeof(frameControl))) {
+                nanoem_delete_safe(frame);
+                loop = false;
+                break;
+            }
+            checksum = crc.checksumTyped(chunkType, frameControl);
+            frameControl.m_sequenceNumber = bx::toBigEndian(frameControl.m_sequenceNumber);
+            frameControl.m_width = bx::toBigEndian(frameControl.m_width);
+            frameControl.m_height = bx::toBigEndian(frameControl.m_height);
+            frameControl.m_xoffset = bx::toBigEndian(frameControl.m_xoffset);
+            frameControl.m_yoffset = bx::toBigEndian(frameControl.m_yoffset);
+            frameControl.m_delayDen = bx::toBigEndian(frameControl.m_delayDen);
+            frameControl.m_delayNum = bx::toBigEndian(frameControl.m_delayNum);
+            if (frameControl.m_delayDen == 0) {
+                frameControl.m_delayDen = 100;
+            }
+            if (expectedSequenceNumber != frameControl.m_sequenceNumber) {
+                StringUtils::format(message, sizeof(message),
+                    "APNG: Incorrect sequence number (%u != %u) doesn't match", expectedSequenceNumber,
+                    frameControl.m_sequenceNumber);
+                error = Error(message, 0, Error::kDomainTypeApplication);
+                nanoem_delete_safe(frame);
+                loop = false;
+                break;
+            }
+            else if (frameControl.m_width == 0 || frameControl.m_height == 0 ||
+                !(frameControl.m_xoffset + frameControl.m_width <= m_header.m_width) ||
+                !(frameControl.m_yoffset + frameControl.m_height <= m_header.m_height)) {
+                error = Error("APNG: Invalid frame rectangle", 0, Error::kDomainTypeApplication);
+                nanoem_delete_safe(frame);
+                loop = false;
+                break;
+            }
+            frame->m_seconds = seconds;
+            seconds += frameControl.m_delayNum / nanoem_f32_t(frameControl.m_delayDen);
+            expectedSequenceNumber++;
             break;
         }
         case kPNGChunkTypeFrameData: {
@@ -250,7 +266,10 @@ image::APNG::decode(ISeekableReader *reader, Error &error)
                 checksum = crc.checksum(chunkType, dataChunk.data(), chunkLength);
                 sequenceNumber = bx::toBigEndian(*reinterpret_cast<const nanoem_u32_t *>(dataChunk.data()));
                 if (expectedSequenceNumber != sequenceNumber) {
-                    error = Error("APNG: Incorrect sequence number", nullptr, Error::kDomainTypeApplication);
+                    StringUtils::format(message, sizeof(message),
+                        "APNG: Incorrect sequence number (%u != %u) doesn't match", expectedSequenceNumber,
+                        sequenceNumber);
+                    error = Error(message, 0, Error::kDomainTypeApplication);
                 }
                 else if (frame) {
                     dataChunk.erase(dataChunk.begin(), dataChunk.begin() + sizeof(sequenceNumber));
@@ -270,15 +289,17 @@ image::APNG::decode(ISeekableReader *reader, Error &error)
             if (frame) {
                 frame->m_sequences.push_back(dataChunk);
             }
+            hasImageData = true;
             break;
         }
         case kPNGChunkTypeImageEnd: {
             if (frame) {
                 if (frame->m_sequences.empty()) {
-                    error = Error("APNG: Empty image sequence", nullptr, Error::kDomainTypeApplication);
+                    error = Error("APNG: Empty image sequence", 0, Error::kDomainTypeApplication);
                 }
                 else {
                     m_frames.push_back(frame);
+                    frame = nullptr;
                 }
             }
             checksum = crc.checksum(chunkType, nullptr, 0);
@@ -296,17 +317,36 @@ image::APNG::decode(ISeekableReader *reader, Error &error)
             break;
         }
         default:
-            reader->seek(chunkLength, IFileReader::kSeekTypeCurrent, error);
+            /* skip and ignore the unknown chunk */
+            dataChunk.resize(chunkLength);
+            if (reader->read(dataChunk.data(), chunkLength, error) != Inline::saturateInt32(chunkLength)) {
+                loop = false;
+                break;
+            }
+            checksum = crc.checksum(chunkType, dataChunk.data(), chunkLength);
             break;
         }
         FileUtils::readTyped(reader, chunkCRC, error);
         if (chunkCRC != checksum) {
-            error = Error("APNG: CRC checksum not matched", nullptr, Error::kDomainTypeApplication);
+            StringUtils::format(message, sizeof(message),
+                "APNG: CRC chunk checksum (%c%c%c%c: 0x%x != 0x%x) not matched", chunkType & 0xff,
+                chunkType >> 8 & 0xff, chunkType >> 16 & 0xff, chunkType >> 24 & 0xff, chunkCRC, checksum);
+            error = Error(message, 0, Error::kDomainTypeApplication);
             loop = false;
+            break;
         }
     }
-    if (!error.hasReason() && m_control.m_numFrames != m_frames.size()) {
-        error = Error("APNG: Frame count doesn't equal", nullptr, Error::kDomainTypeApplication);
+    nanoem_delete(frame);
+    const nanoem_u32_t numFrames = Inline::saturateInt32U(m_frames.size());
+    if (!error.hasReason() && hasAnimationControl) {
+        if (!hasImageData && m_control.m_numFrames == 0) {
+            error = Error("APNG: Empty animation control", 0, Error::kDomainTypeApplication);
+        }
+        else if (m_control.m_numFrames != numFrames) {
+            StringUtils::format(message, sizeof(message), "APNG: Frame count (%u != %u) doesn't match",
+                m_control.m_numFrames, numFrames);
+            error = Error(message, 0, Error::kDomainTypeApplication);
+        }
     }
     return !error.hasReason();
 }
@@ -360,10 +400,10 @@ image::APNG::composite(Error &error)
             FileUtils::writeTyped(&writer, crc.checksum(kPNGChunkTypeImageEnd, nullptr, 0), error);
             Error err;
             sg_image_desc desc;
-            nanoem_u8_t *imageDataPtr = nullptr;
-            if (ImageLoader::decodeImageWithSTB(buffer.data(), buffer.size(), desc, &imageDataPtr, err)) {
+            nanoem_u8_t *decodedImageDataPtr = nullptr;
+            if (ImageLoader::decodeImageWithSTB(buffer.data(), buffer.size(), desc, &decodedImageDataPtr, err)) {
                 if (frameControl.m_blendOp == APNG::kBlendOpSource) {
-                    const nanoem_u32_t *imageDataPtr = static_cast<const nanoem_u32_t *>(imageDataPtr);
+                    const nanoem_u32_t *imageDataPtr = reinterpret_cast<const nanoem_u32_t *>(decodedImageDataPtr);
                     nanoem_u32_t *compositionImageDataPtr =
                                      reinterpret_cast<nanoem_u32_t *>(compositionImageData.data()),
                                  xoffset = frameControl.m_xoffset, yoffset = frameControl.m_yoffset;
@@ -377,7 +417,7 @@ image::APNG::composite(Error &error)
                 }
                 else if (frameControl.m_blendOp == APNG::kBlendOpOver) {
                     const nanoem_u32_t xoffset = frameControl.m_xoffset, yoffset = frameControl.m_yoffset;
-                    const nanoem_u8_t *imageDataPtr = static_cast<const nanoem_u8_t *>(imageDataPtr);
+                    const nanoem_u8_t *imageDataPtr = static_cast<const nanoem_u8_t *>(decodedImageDataPtr);
                     nanoem_u8_t *compositionImageDataPtr = compositionImageData.data();
                     // nanoem_u32_t i0, i1;
                     for (nanoem_u32_t y = 0, h = frameControl.m_height; y < h; y++) {
@@ -399,7 +439,7 @@ image::APNG::composite(Error &error)
                         }
                     }
                 }
-                ImageLoader::releaseDecodedImageWithSTB(&imageDataPtr);
+                ImageLoader::releaseDecodedImageWithSTB(&decodedImageDataPtr);
             }
             numFrames++;
         }
