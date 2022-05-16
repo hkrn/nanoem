@@ -15,6 +15,9 @@
 #include "emapp/URI.h"
 #include "emapp/private/CommonInclude.h"
 
+/* for sscanf */
+#include <stdio.h>
+
 #include "bx/file.h"
 
 extern "C" {
@@ -1061,6 +1064,106 @@ image::DDS::decodeImage(IReader *reader, nanoem_u32_t faceIndex, nanoem_u32_t mi
     return !error.hasReason();
 }
 
+image::PFM::PFM()
+    : m_format(SG_PIXELFORMAT_NONE)
+    , m_width(0)
+    , m_height(0)
+{
+}
+
+image::PFM::~PFM() NANOEM_DECL_NOEXCEPT
+{
+}
+
+bool
+image::PFM::decode(const ByteArray &bytes, Error &error)
+{
+    char message[Error::kMaxReasonLength];
+    nanoem_u32_t width, height;
+    nanoem_f32_t byteOrderIndicator;
+    int offset;
+    if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "PF\n%u %u\n%f\n%n", &width, &height,
+            &byteOrderIndicator, &offset) == 3 &&
+        width > 0 && height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
+        const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
+                             actualDataSize = bytes.size() - offset;
+        if (channelSize * 3 == actualDataSize) {
+            m_image.resize(channelSize * 4);
+            const nanoem_f32_t *source = reinterpret_cast<const nanoem_f32_t *>(bytes.data() + offset);
+            nanoem_f32_t *dest = reinterpret_cast<nanoem_f32_t *>(m_image.data());
+            for (size_t i = 0, size = channelSize / sizeof(nanoem_f32_t); i < size; i++) {
+                const nanoem_rsize_t sourceOffset = i * 3, destOffset = i * 4;
+                dest[destOffset + 0] = source[sourceOffset + 0];
+                dest[destOffset + 1] = source[sourceOffset + 1];
+                dest[destOffset + 2] = source[sourceOffset + 2];
+                dest[destOffset + 3] = 1.0f;
+            }
+            m_format = SG_PIXELFORMAT_RGBA32F;
+            m_width = width;
+            m_height = height;
+        }
+        else {
+            StringUtils::format(message, sizeof(message), "PFM: Invalid size of RGB32F image data (%ux%u: %lu != %lu)",
+                width, height, channelSize * 3, actualDataSize);
+            error = Error(message, 0, Error::kDomainTypeApplication);
+        }
+    }
+    else if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "Pf\n%u %u\n%f\n%n", &width, &height,
+                 &byteOrderIndicator, &offset) == 3 &&
+        width > 0 && height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
+        const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
+                             actualDataSize = bytes.size() - offset;
+        if (channelSize == actualDataSize) {
+            const nanoem_u8_t *dataPtr = bytes.data() + offset;
+            m_image.assign(dataPtr, dataPtr + actualDataSize);
+            m_format = SG_PIXELFORMAT_R32F;
+            m_width = width;
+            m_height = height;
+        }
+        else {
+            StringUtils::format(message, sizeof(message), "PFM: Invalid size of R32F image data (%ux%u: %lu != %lu)",
+                width, height, channelSize, actualDataSize);
+            error = Error(message, 0, Error::kDomainTypeApplication);
+        }
+    }
+    else {
+        StringUtils::format(
+            message, sizeof(message), "PFM: Invalid header data (%ux%u: offset=%u)", width, height, offset);
+        error = Error(message, 0, Error::kDomainTypeApplication);
+    }
+    return !error.hasReason();
+}
+
+void
+image::PFM::setImageDescription(sg_image_desc &desc) const NANOEM_DECL_NOEXCEPT
+{
+    desc.type = SG_IMAGETYPE_2D;
+    desc.width = width();
+    desc.height = height();
+    desc.pixel_format = format();
+    sg_range &content = desc.data.subimage[0][0];
+    content.ptr = m_image.data();
+    content.size = m_image.size();
+}
+
+sg_pixel_format
+image::PFM::format() const NANOEM_DECL_NOEXCEPT
+{
+    return m_format;
+}
+
+nanoem_u32_t
+image::PFM::width() const NANOEM_DECL_NOEXCEPT
+{
+    return m_width;
+}
+
+nanoem_u32_t
+image::PFM::height() const NANOEM_DECL_NOEXCEPT
+{
+    return m_height;
+}
+
 Image::Image()
     : m_fileExist(false)
 {
@@ -1208,6 +1311,17 @@ ImageLoader::decodeDDS(IReader *reader, Error &error)
         if (!image->decode(reader, error)) {
             nanoem_delete_safe(image);
         }
+    }
+    return image;
+}
+
+image::PFM *
+ImageLoader::decodePFM(const ByteArray &bytes, Error &error)
+{
+    image::PFM *image = nullptr;
+    image = nanoem_new(image::PFM);
+    if (!image->decode(bytes, error)) {
+        nanoem_delete_safe(image);
     }
     return image;
 }

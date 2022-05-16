@@ -6,9 +6,6 @@
 
 #include "emapp/Effect.h"
 
-/* for sscanf */
-#include <stdio.h>
-
 #if BX_PLATFORM_WINDOWS
 #include <d3d11shader.h>
 #include <d3dcommon.h>
@@ -5565,9 +5562,6 @@ Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &pa
         createImageResource(data.ptr, data.size, newParameter);
         ImageLoader::releaseDecodedImageWithSTB(&decodedImagePtr);
     }
-    else if (StringUtils::equalsIgnoreCase(fileURI.pathExtension().c_str(), "pfm")) {
-        decodePortableFloatMapData(bytes, parameter, error);
-    }
     else if (StringUtils::equalsIgnoreCase(fileURI.pathExtension().c_str(), "dds")) {
         MemoryReader reader(&bytes);
         nanoem_u32_t signature;
@@ -5586,54 +5580,20 @@ Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &pa
             }
         }
     }
+    else if (StringUtils::equalsIgnoreCase(fileURI.pathExtension().c_str(), "pfm")) {
+        if (image::PFM *pfm = ImageLoader::decodePFM(bytes, error)) {
+            pfm->setImageDescription(desc);
+            sg_image image = sg::make_image(&desc);
+            nanoem_delete(pfm);
+            nanoem_assert(sg::query_image_state(image) == SG_RESOURCESTATE_VALID, "image must be valid");
+            if (sg::is_valid(image)) {
+                registerImageResource(image, parameter);
+            }
+        }
+    }
     else {
         error = Error();
         createImageResource(bytes.data(), bytes.size(), parameter);
-    }
-}
-
-void
-Effect::decodePortableFloatMapData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
-{
-    nanoem_f32_t byteOrderIndicator;
-    int offset;
-    nanoem_u32_t width, height;
-    ImageResourceParameter newParameter(parameter);
-    sg_image_desc &descRef = newParameter.m_desc;
-    descRef.type = SG_IMAGETYPE_2D;
-    if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "PF\n%u %u\n%f\n%n", &width, &height,
-            &byteOrderIndicator, &offset) == 3) {
-        const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
-                             actualDataSize = bytes.size() - offset;
-        if (channelSize * 3 == actualDataSize) {
-            ByteArray bytes(channelSize * 4);
-            descRef.pixel_format = SG_PIXELFORMAT_RGBA32F;
-            const nanoem_f32_t *source = reinterpret_cast<const nanoem_f32_t *>(bytes.data() + offset);
-            nanoem_f32_t *dest = reinterpret_cast<nanoem_f32_t *>(bytes.data());
-            for (size_t i = 0, size = channelSize / sizeof(nanoem_f32_t); i < size; i++) {
-                const nanoem_rsize_t sourceOffset = i * 3, destOffset = i * 4;
-                dest[destOffset + 0] = source[sourceOffset + 0];
-                dest[destOffset + 1] = source[sourceOffset + 1];
-                dest[destOffset + 2] = source[sourceOffset + 2];
-                dest[destOffset + 3] = 1.0f;
-            }
-            createImageResource(bytes.data(), bytes.size(), newParameter);
-        }
-        else {
-            error = Error("Invalid size of PFM image data", nullptr, Error::kDomainTypeApplication);
-        }
-    }
-    else if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "Pf\n%u %u\n%f\n%n", &width, &height,
-                 &byteOrderIndicator, &offset) == 3) {
-        const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
-                             actualDataSize = bytes.size() - offset;
-        if (channelSize == actualDataSize) {
-            descRef.pixel_format = SG_PIXELFORMAT_R32F;
-            createImageResource(bytes.data() + offset, actualDataSize, newParameter);
-        }
-        else {
-            error = Error("Invalid size of PFM image data", 0, Error::kDomainTypeApplication);
-        }
     }
 }
 

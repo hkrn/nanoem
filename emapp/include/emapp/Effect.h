@@ -396,7 +396,6 @@ private:
     tinystl::pair<const Model *, const Accessory *> findOffscreenOwnerObject(
         const IDrawable *ownerDrawable, const Project *project) const NANOEM_DECL_NOEXCEPT;
     void decodeImageData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
-    void decodePortableFloatMapData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error);
     void setNormalizedColorImageContainer(
         const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container);
     void resetPassDescription();
