@@ -545,7 +545,7 @@ nanoemModelGetBoneGetDepth(const nanoem_model_bone_t *bone, const nanoem_model_b
     const nanoem_model_bone_t *p = nanoemModelBoneGetParentBoneObject(bone);
     int i = 0;
     if (p) {
-        while (p) {
+        while (p && i < PMD_BONE_MAX_DEPTH) {
             i++;
             *parent = p = nanoemModelBoneGetParentBoneObject(p);
         }
@@ -4762,7 +4762,7 @@ nanoemModelSoftBodyAnchorGetRigidBodyObject(const nanoem_model_soft_body_anchor_
     if (nanoem_is_not_null(anchor)) {
         parent_soft_body = nanoemModelSoftBodyAnchorGetParentSoftBody(anchor);
         parent_model = nanoemModelSoftBodyGetParentModel(parent_soft_body);
-        body = nanoemModelGetOneRigidBodyObject(0, anchor->rigid_body_index);
+        body = nanoemModelGetOneRigidBodyObject(parent_model, anchor->rigid_body_index);
     }
     return body;
 }
@@ -4776,7 +4776,7 @@ nanoemModelSoftBodyAnchorGetVertexObject(const nanoem_model_soft_body_anchor_t *
     if (nanoem_is_not_null(anchor)) {
         parent_soft_body = nanoemModelSoftBodyAnchorGetParentSoftBody(anchor);
         parent_model = nanoemModelSoftBodyGetParentModel(parent_soft_body);
-        vertex = nanoemModelGetOneVertexObject(0, anchor->rigid_body_index);
+        vertex = nanoemModelGetOneVertexObject(parent_model, anchor->rigid_body_index);
     }
     return vertex;
 }
@@ -5878,6 +5878,7 @@ nanoemMotionModelKeyframeParseVMD(nanoem_motion_model_keyframe_t *keyframe, nano
                             nanoemUtilDestroyString(name, factory);
                         }
                         if (ret < 0) {
+                            nanoem_free(state);
                             keyframe->num_constraint_states = i;
                             break;
                         }
