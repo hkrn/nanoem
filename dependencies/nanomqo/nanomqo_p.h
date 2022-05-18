@@ -269,6 +269,20 @@ nanomqoBufferGetChar(const nanomqo_buffer_t *buffer)
     return nanomqo_likely(buffer->offset < buffer->length) ? *(buffer->data + buffer->offset) : nanomqo_eos;
 }
 
+NANOMQO_DECL_INLINE static void
+nanomqoBufferAdvanceChar(nanomqo_buffer_t *buffer)
+{
+    buffer->offset++;
+    buffer->columns++;
+}
+
+NANOMQO_DECL_INLINE static nanomqo_uint8_t
+nanomqoBufferReadNextChar(nanomqo_buffer_t *buffer)
+{
+    nanomqoBufferAdvanceChar(buffer);
+    return nanomqoBufferGetChar(buffer);
+}
+
 NANOMQO_DECL_INLINE static nanomqo_bool_t
 nanomqoBufferTestString(const nanomqo_buffer_t *buffer, const char *const text)
 {
@@ -283,9 +297,7 @@ nanomqoBufferSkipSpaces(nanomqo_buffer_t *buffer)
 {
     nanomqo_uint8_t c = nanomqoBufferGetChar(buffer);
     while (c != nanomqo_eos && isspace(c)) {
-        buffer->offset++;
-        buffer->columns++;
-        c = nanomqoBufferGetChar(buffer);
+        c = nanomqoBufferReadNextChar(buffer);
     }
 }
 
@@ -294,7 +306,7 @@ nanomqoBufferSkipLine(nanomqo_buffer_t *buffer)
 {
     nanomqo_uint8_t c1 = nanomqoBufferGetChar(buffer), c2;
     while (c1 != nanomqo_eos) {
-        buffer->offset++;
+        nanomqoBufferAdvanceChar(buffer);
         if (c1 == '\n') {
             buffer->rows++;
             buffer->columns = 0;
@@ -302,7 +314,7 @@ nanomqoBufferSkipLine(nanomqo_buffer_t *buffer)
         }
         c2 = nanomqoBufferGetChar(buffer);
         if (c1 == '\r' && c2 == '\n') {
-            buffer->offset++;
+            nanomqoBufferAdvanceChar(buffer);
             buffer->rows++;
             buffer->columns = 0;
             break;
@@ -317,8 +329,7 @@ nanomqoBufferSkipUntilEndChunk(nanomqo_buffer_t *buffer)
     nanomqo_uint8_t c1 = nanomqoBufferGetChar(buffer), c2;
     int depth = 0;
     while (c1 != nanomqo_eos && depth >= 0) {
-        buffer->offset++;
-        buffer->columns++;
+        nanomqoBufferAdvanceChar(buffer);
         if (c1 == '{') {
             buffer->depth++;
             depth++;
