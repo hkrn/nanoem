@@ -16,39 +16,40 @@ function(nanoem_emapp_build_emarb_credits)
   endif()
 endfunction()
 
-function(nanoem_emapp_build_emarb)
-  add_library(emarb STATIC ${CMAKE_CURRENT_SOURCE_DIR}/toon.cc
-                           ${CMAKE_CURRENT_SOURCE_DIR}/font.cc
-                           ${CMAKE_CURRENT_SOURCE_DIR}/translation.cc
-                           ${CMAKE_CURRENT_SOURCE_DIR}/credits.cc)
+function(nanoem_emapp_build_emarb suffix)
+  set(_emarb_name "emarb${suffix}")
+  add_library(${_emarb_name} STATIC ${PROJECT_SOURCE_DIR}/emapp/resources/toon.cc
+                                    ${PROJECT_SOURCE_DIR}/emapp/resources/font.cc
+                                    ${PROJECT_SOURCE_DIR}/emapp/resources/translation.cc
+                                   ${PROJECT_SOURCE_DIR}/emapp/resources/credits.cc)
   nanoem_cmake_enable_lto(emarb)
-  set_property(TARGET emarb PROPERTY FOLDER nanoem)
-  target_compile_definitions(emarb PRIVATE
+  set_property(TARGET ${_emarb_name} PROPERTY FOLDER nanoem)
+  target_compile_definitions(${_emarb_name} PRIVATE
                              __STDC_LIMIT_MACROS
                              __STDC_CONSTANT_MACROS
                              __STDC_FORMAT_MACROS)
-  target_include_directories(emarb PRIVATE
+  target_include_directories(${_emarb_name} PRIVATE
                             ${PROJECT_BINARY_DIR}/emapp/resources/include
-                            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+                            ${PROJECT_SOURCE_DIR}/emapp/include
+                            ${PROJECT_SOURCE_DIR}/dependencies
                             ${BX_COMPAT_INCLUDE_PATH}
                             ${BX_INCLUDE_DIR}
                             ${BX_THIRDPARTY_INCLUDE_DIR}
                             ${BIMG_INCLUDE_DIR}
-                            ${GLM_INCLUDE_DIR}
-                            ${PROJECT_SOURCE_DIR}/dependencies)
-  add_dependencies(emarb emarb_fonts)
-  add_dependencies(emarb emarb_translations)
+                            ${GLM_INCLUDE_DIR})
+  add_dependencies(${_emarb_name} emarb_fonts)
+  add_dependencies(${_emarb_name} emarb_translations)
   if(TARGET emarb_credits)
-    add_dependencies(emarb emarb_credits)
+    add_dependencies(${_emarb_name} emarb_credits)
   endif()
   if(TARGET emarb_protoc)
-    add_dependencies(emarb emarb_protoc)
+    add_dependencies(${_emarb_name} emarb_protoc)
   endif()
   if(TARGET emarb_shader)
-    add_dependencies(emarb emarb_shader)
+    add_dependencies(${_emarb_name} emarb_shader)
   endif()
   if(TARGET emarb_toon)
-    add_dependencies(emarb emarb_toon)
+    add_dependencies(${_emarb_name} emarb_toon)
   endif()
 endfunction()
 
@@ -64,4 +65,3 @@ add_subdirectory(shaders)
 add_subdirectory(toons)
 add_subdirectory(translations)
 nanoem_emapp_build_emarb_credits()
-nanoem_emapp_build_emarb()

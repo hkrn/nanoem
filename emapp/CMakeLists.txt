@@ -114,42 +114,39 @@ function(nanoem_emapp_link_executable item)
   message(STATUS "[emapp] setup linkage of \"${item}\"")
 endfunction()
 
-function(nanoem_emapp_organize_executables executables)
-  # force building (emapp) as static library
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src EMAPP_CORE_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/command EMAPP_NS_COMMAND_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/effect EMAPP_NS_EFFECT_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/model EMAPP_NS_MODEL_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/internal EMAPP_NS_INTERNAL_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/internal/imgui EMAPP_NS_INTERNAL_IMGUI_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/internal/project EMAPP_NS_INTERNAL_PROJECT_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/plugin EMAPP_NS_PLUGIN_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/src/protoc EMAPP_PROTOC_SOURCES)
-  aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/include EMAPP_CORE_HEADERS)
-  add_library(emapp_protoc STATIC ${EMAPP_PROTOC_SOURCES})
-  nanoem_cmake_enable_lto(emapp_protoc)
-  set_property(TARGET emapp_protoc PROPERTY FOLDER nanoem/resources)
-  target_include_directories(emapp_protoc PRIVATE ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c)
-  add_library(emapp STATIC ${EMAPP_CORE_SOURCES} ${EMAPP_NS_COMMAND_SOURCES} ${EMAPP_NS_EFFECT_SOURCES}
-                           ${EMAPP_NS_INTERNAL_SOURCES} ${EMAPP_NS_INTERNAL_IMGUI_SOURCES} ${EMAPP_NS_INTERNAL_PROJECT_SOURCES} ${EMAPP_NS_MODEL_SOURCES}
-                           ${EMAPP_NS_PLUGIN_SOURCES} ${EMAPP_CORE_HEADERS})
-  nanoem_cmake_enable_lto(emapp)
-  add_dependencies(emapp emarb)
-  target_link_libraries(emapp emapp_protoc)
+function(nanoem_emapp_build_emapp suffix)
+  set(_emapp_name "emapp${suffix}")
+  set(_emapp_protoc_name "emapp_protoc${suffix}")
+  set(_emarb_name "emarb${suffix}")
+  set(_embundle_name "embundle${suffix}")
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/protoc EMAPP_PROTOC_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src EMAPP_CORE_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/command EMAPP_NS_COMMAND_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/effect EMAPP_NS_EFFECT_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/model EMAPP_NS_MODEL_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/internal EMAPP_NS_INTERNAL_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/internal/imgui EMAPP_NS_INTERNAL_IMGUI_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/internal/project EMAPP_NS_INTERNAL_PROJECT_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/src/plugin EMAPP_NS_PLUGIN_SOURCES)
+  aux_source_directory(${PROJECT_SOURCE_DIR}/emapp/include EMAPP_CORE_HEADERS)
+  add_library(${_emapp_protoc_name} STATIC ${EMAPP_PROTOC_SOURCES})
+  nanoem_cmake_enable_lto(${_emapp_protoc_name})
+  set_property(TARGET ${_emapp_protoc_name} PROPERTY FOLDER nanoem/resources)
+  target_include_directories(${_emapp_protoc_name} PRIVATE ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c)
+  add_library(${_emapp_name} STATIC ${EMAPP_CORE_SOURCES} ${EMAPP_NS_COMMAND_SOURCES} ${EMAPP_NS_EFFECT_SOURCES}
+                                    ${EMAPP_NS_INTERNAL_SOURCES} ${EMAPP_NS_INTERNAL_IMGUI_SOURCES} ${EMAPP_NS_INTERNAL_PROJECT_SOURCES} ${EMAPP_NS_MODEL_SOURCES}
+                                    ${EMAPP_NS_PLUGIN_SOURCES} ${EMAPP_CORE_HEADERS})
+  nanoem_cmake_enable_lto(${_emapp_name})
+  add_dependencies(${_emapp_name} emarb)
+  target_link_libraries(${_emapp_name} ${_emapp_protoc_name})
   if(WIN32)
-    target_link_libraries(emapp ws2_32 mswsock advapi32 crypt32)
+    target_link_libraries(${_emapp_name} ws2_32 mswsock advapi32 crypt32)
   endif()
-  set_property(TARGET emapp PROPERTY FOLDER nanoem)
-  # lz4
-  set(LZ4_SUBMODULE_PATH "${PROJECT_SOURCE_DIR}/dependencies/lz4")
-  add_library(lz4 STATIC ${LZ4_SUBMODULE_PATH}/lib/lz4.c
-                         ${LZ4_SUBMODULE_PATH}/lib/lz4frame.c
-                         ${LZ4_SUBMODULE_PATH}/lib/lz4hc.c
-                         ${LZ4_SUBMODULE_PATH}/lib/xxhash.c)
+  set_property(TARGET ${_emapp_name} PROPERTY FOLDER nanoem)
   set_property(TARGET lz4 PROPERTY FOLDER dependencies)
   get_property(_compile_definition_nanoem TARGET nanoem PROPERTY COMPILE_DEFINITIONS)
-  get_property(_compile_definition_embundle TARGET embundle PROPERTY COMPILE_DEFINITIONS)
-  target_compile_definitions(emapp PRIVATE
+  get_property(_compile_definition_embundle TARGET ${_embundle_name} PROPERTY COMPILE_DEFINITIONS)
+  target_compile_definitions(${_emapp_name} PRIVATE
                BX_CONFIG_ALLOCATOR_CRT=0
                BX_CONFIG_ALLOCATOR_DEBUG=$<BOOL:${NANOEM_ENABLE_DEBUG_ALLOCATOR}>
                $<$<BOOL:${NANOEM_ENABLE_SDEF}>:NANOEM_ENABLE_SDEF>
@@ -160,19 +157,19 @@ function(nanoem_emapp_organize_executables executables)
                $<$<BOOL:${NANOEM_ENABLE_SOFTBODY}>:NANOEM_ENABLE_SOFTBODY>
                ${_compile_definition_nanoem}
                ${_compile_definition_embundle})
-  set_property(TARGET emapp emarb embundle APPEND PROPERTY COMPILE_DEFINITIONS
+  set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
                IMGUI_DISABLE_OBSOLETE_FUNCTIONS
                IMGUI_DISABLE_INCLUDE_IMCONFIG_H)
   if(NANOEM_ENABLE_IMGUI_INDEX32)
-    set_property(TARGET emapp emarb embundle APPEND PROPERTY COMPILE_DEFINITIONS
+    set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
                  $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL>
                  IMGUI_USER_CONFIG="emapp/private/imgui/config.h")
   endif()
   if(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
-    set_property(TARGET emapp embundle APPEND PROPERTY COMPILE_DEFINITIONS NANOEM_ENABLE_IMGUI_FILE_DIALOG)
+    set_property(TARGET ${_emapp_name} embundle APPEND PROPERTY COMPILE_DEFINITIONS NANOEM_ENABLE_IMGUI_FILE_DIALOG)
   endif()
   get_property(_include_directories TARGET nanoem PROPERTY INCLUDE_DIRECTORIES)
-  target_include_directories(emapp PRIVATE
+  target_include_directories(${_emapp_name} PRIVATE
                              ${BX_COMPAT_INCLUDE_PATH}
                              ${BX_INCLUDE_DIR}
                              ${BIMG_INCLUDE_DIR}
@@ -181,34 +178,39 @@ function(nanoem_emapp_organize_executables executables)
                              ${PROJECT_SOURCE_DIR}/dependencies/imgui
                              ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c
                              ${PROJECT_SOURCE_DIR}/emapp/bundle
+                             ${PROJECT_SOURCE_DIR}/emapp/include
+                             ${PROJECT_SOURCE_DIR}/emapp/resources
+                             ${PROJECT_SOURCE_DIR}/emapp/plugins/include
                              ${PROJECT_BINARY_DIR}/emapp/resources/include
-                             ${CMAKE_CURRENT_SOURCE_DIR}/include
-                             ${CMAKE_CURRENT_SOURCE_DIR}/resources
-                             ${CMAKE_CURRENT_SOURCE_DIR}/plugins/include
                              ${GLM_INCLUDE_DIR}
                              ${ZLIB_INCLUDE_DIR}
                              ${_include_directories})
   if(NANOEM_ENABLE_MIMALLOC)
-    target_link_libraries(emapp optimized ${MIMALLOC_LIBRARY_RELEASE}
-                                debug ${MIMALLOC_LIBRARY_DEBUG})
-    target_include_directories(emapp PRIVATE ${MIMALLOC_INCLUDE_DIR})
-    target_compile_definitions(emapp PRIVATE NANOEM_ENABLE_MIMALLOC)
+    target_link_libraries(${_emapp_name} optimized ${MIMALLOC_LIBRARY_RELEASE} debug ${MIMALLOC_LIBRARY_DEBUG})
+    target_include_directories(${_emapp_name} PRIVATE ${MIMALLOC_INCLUDE_DIR})
+    target_compile_definitions(${_emapp_name} PRIVATE NANOEM_ENABLE_MIMALLOC)
   endif()
   if(NANOEM_ENABLE_TBB)
     nanoem_emapp_find_tbb()
-    target_compile_definitions(emapp PRIVATE NANOEM_ENABLE_TBB __TBB_NO_IMPLICIT_LINKAGE=1)
-    target_include_directories(emapp PRIVATE ${TBB_INCLUDE_DIR})
+    target_compile_definitions(${_emapp_name} PRIVATE NANOEM_ENABLE_TBB __TBB_NO_IMPLICIT_LINKAGE=1)
+    target_include_directories(${_emapp_name} PRIVATE ${TBB_INCLUDE_DIR})
     message(STATUS "[emapp] TBB is enabled")
   endif()
   if(NANOEM_ENABLE_NANOMSG)
-    target_compile_definitions(emapp PRIVATE NANOEM_ENABLE_NANOMSG)
-    target_include_directories(emapp PRIVATE ${NANOMSG_INCLUDE_DIR})
+    target_compile_definitions(${_emapp_name} PRIVATE NANOEM_ENABLE_NANOMSG)
+    target_include_directories(${_emapp_name} PRIVATE ${NANOMSG_INCLUDE_DIR})
   endif()
   if(EMSCRIPTEN)
-    target_link_libraries(emapp sokol_gles3)
+    target_link_libraries(${_emapp_name} sokol_gles3)
   endif()
   # ${PROJECT_NAME} for bullet
   # set_property(TARGET ${PROJECT_NAME} emapp APPEND PROPERTY COMPILE_DEFINITIONS GLM_FORCE_RADIANS)
+endfunction()
+
+function(nanoem_emapp_organize_executables executables)
+  nanoem_emapp_build_embundle("")
+  nanoem_emapp_build_emarb("")
+  nanoem_emapp_build_emapp("")
   set(${executables} ${_executables} PARENT_SCOPE)
 endfunction()
 
@@ -307,6 +309,14 @@ nanoem_emapp_find_bx()
 nanoem_emapp_find_minizip()
 nanoem_emapp_find_nanomsg()
 nanoem_emapp_find_mimalloc()
+
+# lz4
+set(LZ4_SUBMODULE_PATH "${PROJECT_SOURCE_DIR}/dependencies/lz4")
+add_library(lz4 STATIC ${LZ4_SUBMODULE_PATH}/lib/lz4.c
+                       ${LZ4_SUBMODULE_PATH}/lib/lz4frame.c
+                       ${LZ4_SUBMODULE_PATH}/lib/lz4hc.c
+                       ${LZ4_SUBMODULE_PATH}/lib/xxhash.c)
+
 add_subdirectory(bundle)
 add_subdirectory(resources)
 
@@ -314,3 +324,7 @@ nanoem_emapp_organize_executables(NANOEM_EXECUTABLES)
 foreach(item ${NANOEM_EXECUTABLES})
   nanoem_emapp_link_executable(${item})
 endforeach()
+
+if(OFF)
+  add_subdirectory(fuzz)
+endif()
