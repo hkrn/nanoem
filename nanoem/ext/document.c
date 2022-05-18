@@ -4450,7 +4450,6 @@ nanoemMutableDocumentModelUpdateAllBoneKeyframeObjects(nanoem_mutable_document_m
 void APIENTRY
 nanoemMutableDocumentModelAddBoneKeyframeObject(nanoem_mutable_document_model_t *model, nanoem_mutable_document_model_bone_keyframe_t *keyframe, const nanoem_unicode_string_t *name,  nanoem_frame_index_t frame_index, nanoem_status_t *status)
 {
-    nanoem_unicode_string_factory_t *factory;
     nanoem_document_model_bone_keyframe_t *origin_keyframe, **keyframes, *initial_keyframe;
     nanoem_document_model_t *origin_model;
     nanoem_document_keyframe_compare_result_t previous, next;
@@ -4459,7 +4458,6 @@ nanoemMutableDocumentModelAddBoneKeyframeObject(nanoem_mutable_document_model_t 
     if (nanoem_is_not_null(model) && nanoem_is_not_null(keyframe) && nanoem_is_not_null(name)) {
         origin_model = model->origin;
         origin_keyframe = keyframe->origin;
-        factory = nanoemDocumentModelGetParentDocument(origin_model)->factory;
         bone_index = nanoemMutableDocumentModelResolveBoneId(model, name);
         nanoemDocumentKeyframeCompareResultReset(&previous);
         nanoemDocumentKeyframeCompareResultReset(&next);
@@ -4694,7 +4692,6 @@ nanoemMutableDocumentModelUpdateAllMorphKeyframeObjects(nanoem_mutable_document_
 void APIENTRY
 nanoemMutableDocumentModelAddMorphKeyframeObject(nanoem_mutable_document_model_t *model, nanoem_mutable_document_model_morph_keyframe_t *keyframe, const nanoem_unicode_string_t *name, nanoem_frame_index_t frame_index, nanoem_status_t *status)
 {
-    nanoem_unicode_string_factory_t *factory;
     nanoem_document_model_morph_keyframe_t *origin_keyframe, **keyframes, *initial_keyframe;
     nanoem_document_model_t *origin_model;
     nanoem_document_keyframe_compare_result_t previous, next;
@@ -4703,7 +4700,6 @@ nanoemMutableDocumentModelAddMorphKeyframeObject(nanoem_mutable_document_model_t
     if (nanoem_is_not_null(model) && nanoem_is_not_null(keyframe)) {
         origin_model = model->origin;
         origin_keyframe = keyframe->origin;
-        factory = nanoemDocumentModelGetParentDocument(origin_model)->factory;
         morph_index = nanoemMutableDocumentModelResolveMorphId(model, name);
         nanoemDocumentKeyframeCompareResultReset(&previous);
         nanoemDocumentKeyframeCompareResultReset(&next);
