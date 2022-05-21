@@ -172,7 +172,7 @@ if(BUILD_SHARED_LIBS)
 endif()
 
 if(NANOEM_ENABLE_FUZZER)
-  set(FUZZ_COMPILE_OPTIONS -fsanitize=fuzzer,address -fno-omit-frame-pointer -fsanitize-coverage=trace-pc-guard)
+  set(FUZZ_COMPILE_OPTIONS -fsanitize=fuzzer,address)
   set(FUZZ_LINK_FLAGS -fsanitize=fuzzer,address)
   add_library(nanoem_fuzz ${CMAKE_CURRENT_SOURCE_DIR}/nanoem.c
                           ${CMAKE_CURRENT_BINARY_DIR}/version.c
