@@ -37,7 +37,7 @@ loadSharedTexture(const nanoem_u8_t *data, size_t size, int index, Image *&image
     sg_image_desc desc;
     nanoem_u8_t *decodedImageDataPtr = nullptr;
     Inline::clearZeroMemory(desc);
-    if (ImageLoader::decodeImageWithSTB(data, size, desc, &decodedImageDataPtr, error)) {
+    if (ImageLoader::decodeImageWithSTB(data, size, "", desc, &decodedImageDataPtr, error)) {
         String filename;
         bx::stringPrintf(filename, "@nanoem/SharedToonTexture/%d", index);
         desc.mag_filter = desc.min_filter = SG_FILTER_NEAREST;
@@ -68,7 +68,7 @@ loadSharedColor(const nanoem_u8_t *data, size_t size)
     Vector4 color(0);
     sg_image_desc desc;
     nanoem_u8_t *decodedImageDataPtr = nullptr;
-    if (ImageLoader::decodeImageWithSTB(data, size, desc, &decodedImageDataPtr, error)) {
+    if (ImageLoader::decodeImageWithSTB(data, size, "", desc, &decodedImageDataPtr, error)) {
         const nanoem_rsize_t offset = nanoem_rsize_t(desc.height - 1) * desc.width * 4;
         const sg_range &range = desc.data.subimage[0][0];
         color = glm::make_vec4(static_cast<const nanoem_u8_t *>(range.ptr) + offset);

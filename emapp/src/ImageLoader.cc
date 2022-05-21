@@ -52,7 +52,8 @@ static const nanoem_u32_t kPNGChunkTypeAnimationControl = nanoem_fourcc('a', 'c'
 static const nanoem_u32_t kPNGChunkTypeFrameControl = nanoem_fourcc('f', 'c', 'T', 'L');
 static const nanoem_u32_t kPNGChunkTypeFrameData = nanoem_fourcc('f', 'd', 'A', 'T');
 
-static const nanoem_u32_t kDDSImageSizeHardLimit = 0x4000; /* 16384 */
+static const nanoem_u32_t kDDSImageSizeHardLimit = 16384;
+static const nanoem_u32_t kDDSImageDepthHardLimit = 2048;
 static const nanoem_u32_t kDDSHeaderFlagTypeMipmap = 0x20000;
 static const nanoem_u32_t kDDSHeaderFlagTypeVolume = 0x800000;
 static const nanoem_u32_t kDDSFormatFlagTypeRGB = 0x40;
@@ -404,7 +405,9 @@ image::APNG::composite(Error &error)
             Error err;
             sg_image_desc desc;
             nanoem_u8_t *decodedImageDataPtr = nullptr;
-            if (ImageLoader::decodeImageWithSTB(buffer.data(), buffer.size(), desc, &decodedImageDataPtr, err)) {
+            Inline::clearZeroMemory(desc);
+            if (ImageLoader::decodeImageWithSTB(buffer.data(), buffer.size(), "", desc, &decodedImageDataPtr, err)) {
+                desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
                 if (frameControl.m_blendOp == APNG::kBlendOpSource) {
                     const nanoem_u32_t *imageDataPtr = reinterpret_cast<const nanoem_u32_t *>(decodedImageDataPtr);
                     nanoem_u32_t *compositionImageDataPtr =
@@ -519,7 +522,11 @@ image::DDS::decode(IReader *reader, Error &error)
         return false;
     }
     if (m_header.m_width > kDDSImageSizeHardLimit || m_header.m_height > kDDSImageSizeHardLimit) {
-        error = Error("DDS: Exceeded hardlimit size of image", 0, Error::kDomainTypeApplication);
+        error = Error("DDS: Exceeded hard limit size of image", 0, Error::kDomainTypeApplication);
+        return false;
+    }
+    if (m_header.m_depth > kDDSImageDepthHardLimit) {
+        error = Error("DDS: Exceeded hard limit depth of image", 0, Error::kDomainTypeApplication);
         return false;
     }
     if (EnumUtils::isEnabled(kDDSFormatFlagTypeFourCC, m_header.m_pixelFormat.m_flags) &&
@@ -1344,7 +1351,7 @@ ImageLoader::copyImageDescrption(const sg_image_desc &desc, Image *image)
 }
 
 bool
-ImageLoader::validateImageSize(const String &name, const sg_image_desc &desc, Error &error)
+ImageLoader::validateImageSize(const sg_image_desc &desc, const char *name, Error &error)
 {
     const sg_limits limits = sg::query_limits();
     const int width = Inline::roundInt32(desc.width), height = Inline::roundInt32(desc.height),
@@ -1353,30 +1360,30 @@ ImageLoader::validateImageSize(const String &name, const sg_image_desc &desc, Er
     Error localError;
     if (desc.type == SG_IMAGETYPE_CUBE && limits.max_image_size_cube > 0 &&
         (width >= limits.max_image_size_cube || height >= limits.max_image_size_cube)) {
-        StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%d) > (%dx%d)", name.c_str(),
+        StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%d) > (%dx%d)", name,
             desc.width, desc.height, limits.max_image_size_cube, limits.max_image_size_cube);
         StringUtils::format(recoverySuggestion, sizeof(recoverySuggestion),
-            "Resize the texture %s equal or less than (%dx%d)", name.c_str(), limits.max_image_size_cube,
+            "Resize the texture %s equal or less than (%dx%d)", name, limits.max_image_size_cube,
             limits.max_image_size_cube);
         localError = Error(message, recoverySuggestion, Error::kDomainTypeApplication);
     }
     else if (desc.type == SG_IMAGETYPE_3D && limits.max_image_size_3d > 0 &&
         (width >= limits.max_image_size_3d || height >= limits.max_image_size_3d ||
             depth >= limits.max_image_size_3d)) {
-        StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%dx%d) > (%dx%dx%d)",
-            name.c_str(), desc.width, desc.height, desc.num_slices, limits.max_image_size_3d, limits.max_image_size_3d,
+        StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%dx%d) > (%dx%dx%d)", name,
+            desc.width, desc.height, desc.num_slices, limits.max_image_size_3d, limits.max_image_size_3d,
             limits.max_image_size_3d);
         StringUtils::format(recoverySuggestion, sizeof(recoverySuggestion),
-            "Resize the texture %s equal or less than (%dx%dx%d)", name.c_str(), limits.max_image_size_3d,
+            "Resize the texture %s equal or less than (%dx%dx%d)", name, limits.max_image_size_3d,
             limits.max_image_size_3d, limits.max_image_size_3d);
         localError = Error(message, recoverySuggestion, Error::kDomainTypeApplication);
     }
     else if (limits.max_image_size_2d > 0 &&
         (width >= limits.max_image_size_2d || height >= limits.max_image_size_2d)) {
-        StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%d) > (%dx%d)", name.c_str(),
+        StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%d) > (%dx%d)", name,
             desc.width, desc.height, limits.max_image_size_2d, limits.max_image_size_2d);
         StringUtils::format(recoverySuggestion, sizeof(recoverySuggestion),
-            "Resize the texture %s equal or less than (%dx%d)", name.c_str(), limits.max_image_size_2d,
+            "Resize the texture %s equal or less than (%dx%d)", name, limits.max_image_size_2d,
             limits.max_image_size_2d);
         localError = Error(message, recoverySuggestion, Error::kDomainTypeApplication);
     }
@@ -1443,23 +1450,28 @@ ImageLoader::flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t hei
 }
 
 bool
-ImageLoader::decodeImageWithSTB(
-    const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error)
+ImageLoader::decodeImageWithSTB(const nanoem_u8_t *dataPtr, const size_t dataSize, const char *name,
+    sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error)
 {
-    int width, height, components;
+    int width, height, components, size = Inline::saturateInt32(dataSize);
     bool result = false;
-    if (stbi_uc *data =
-            stbi_load_from_memory(dataPtr, Inline::saturateInt32(dataSize), &width, &height, &components, 4)) {
+    if (stbi_info_from_memory(dataPtr, size, &width, &height, &components)) {
         desc.width = width;
         desc.height = height;
-        desc.pixel_format = SG_PIXELFORMAT_RGBA8;
-        desc.min_filter = SG_FILTER_LINEAR;
-        desc.mag_filter = SG_FILTER_LINEAR;
-        sg_range &content = desc.data.subimage[0][0];
-        content.ptr = data;
-        content.size = nanoem_rsize_t(4) * width * height;
-        *decodedImagePtr = data;
-        result = true;
+        desc.type = SG_IMAGETYPE_2D;
+        if (validateImageSize(desc, name, error)) {
+            if (stbi_uc *data = stbi_load_from_memory(dataPtr, size, &width, &height, &components, 4)) {
+                desc.pixel_format = SG_PIXELFORMAT_RGBA8;
+                sg_range &content = desc.data.subimage[0][0];
+                content.ptr = data;
+                content.size = nanoem_rsize_t(4) * width * height;
+                *decodedImagePtr = data;
+                result = true;
+            }
+            else {
+                error = Error(stbi_failure_reason(), 0, Error::kDomainTypeApplication);
+            }
+        }
     }
     else {
         error = Error(stbi_failure_reason(), 0, Error::kDomainTypeApplication);
@@ -1525,7 +1537,9 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
     IImageView *imageView = nullptr;
     nanoem_u8_t *decodedImagePtr = nullptr;
     Inline::clearZeroMemory(desc);
-    if (decodeImageWithSTB(container.m_dataPtr, container.m_dataSize, desc, &decodedImagePtr, error)) {
+    if (decodeImageWithSTB(
+            container.m_dataPtr, container.m_dataSize, container.m_name.c_str(), desc, &decodedImagePtr, error)) {
+        desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
         desc.max_anisotropy = container.m_anisotropy;
         desc.wrap_u = desc.wrap_v = container.m_wrap;
         imageView = drawable->uploadImage(container.m_name, desc);
@@ -1538,6 +1552,7 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         Error innerError;
         if (image::DDS *dds = decodeDDS(&reader, innerError)) {
             dds->setImageDescription(desc);
+            desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
             desc.max_anisotropy = container.m_anisotropy;
             desc.wrap_u = desc.wrap_v = container.m_wrap;
             imageView = drawable->uploadImage(container.m_name, desc);
