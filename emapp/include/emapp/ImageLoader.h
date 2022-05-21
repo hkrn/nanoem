@@ -221,15 +221,15 @@ public:
     static image::DDS *decodeDDS(IReader *reader, Error &error);
     static image::PFM *decodePFM(const ByteArray &bytes, Error &error);
     static void copyImageDescrption(const sg_image_desc &desc, Image *image);
-    static bool validateImageSize(const String &name, const sg_image_desc &desc, Error &error);
+    static bool validateImageSize(const sg_image_desc &desc, const char *name, Error &error);
     static bool isScreenBMP(const char *path) NANOEM_DECL_NOEXCEPT;
     static void fill1x1PixelImage(const nanoem_u32_t *pixel, sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void fill1x1WhitePixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void fill1x1BlackPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void fill1x1TransparentPixelImage(sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;
     static void flipImage(nanoem_u8_t *source, nanoem_u32_t width, nanoem_u32_t height, nanoem_u32_t bpp);
-    static bool decodeImageWithSTB(const nanoem_u8_t *dataPtr, const size_t dataSize, sg_image_desc &desc,
-        nanoem_u8_t **decodedImagePtr, Error &error);
+    static bool decodeImageWithSTB(const nanoem_u8_t *dataPtr, const size_t dataSize, const char *name,
+        sg_image_desc &desc, nanoem_u8_t **decodedImagePtr, Error &error);
     static void releaseDecodedImageWithSTB(nanoem_u8_t **decodedImagePtr);
 
     ImageLoader(const Project *project);
