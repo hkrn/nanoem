@@ -8,7 +8,7 @@
 static void
 dump(const char *symbol, const unsigned char *bytes, size_t size, size_t inflated_size, int as_string)
 {
-    size_t i;
+    size_t i, new_size = 0;
     int column = 0;
     unsigned char byte;
     if (inflated_size > 0) {
@@ -16,12 +16,27 @@ dump(const char *symbol, const unsigned char *bytes, size_t size, size_t inflate
         fprintf(stdout, "static const unsigned int %s_deflated_size = %" PRIu32 ";\n", symbol, size);
     }
     else {
-        fprintf(stdout, "static const unsigned int %s_size = %" PRIu32 ";\n", symbol, size + (as_string ? 1 : 0));
+        if (as_string) {
+            for (i = 0; i < size; i++) {
+                byte = bytes[i];
+                if (byte != '\r') {
+                    new_size++;
+                }
+            }
+            new_size += 1;
+        }
+        else {
+            new_size = size;
+        }
+        fprintf(stdout, "static const unsigned int %s_size = %" PRIu32 ";\n", symbol, new_size);
     }
     fprintf(stdout, "static const unsigned char %s_data[] =\n{", symbol);
     for (i = 0; i < size; i++) {
         byte = bytes[i];
-        if ((column++ % 10) == 0) {
+        if (as_string && byte == '\r') {
+            continue;
+        }
+        else if ((column++ % 10) == 0) {
             fprintf(stdout, "\n    0x%02x, ", byte);
         }
         else {
@@ -59,7 +74,7 @@ binary_to_c(const char *filename, const char *symbol, int as_string)
 }
 
 static int
-binary_to_c_compressed(const char *filename, const char *symbol, int as_string)
+binary_to_c_compressed(const char *filename, const char *symbol)
 {
     char *input_bytes, *output_bytes;
     size_t input_size, output_size, capacity;
@@ -76,7 +91,7 @@ binary_to_c_compressed(const char *filename, const char *symbol, int as_string)
         fclose(fp);
         output_size = LZ4_compress_HC(input_bytes, output_bytes, input_size, capacity, LZ4HC_CLEVEL_MAX);
         free(input_bytes);
-        dump(symbol, (unsigned char *) output_bytes, output_size, input_size, as_string);
+        dump(symbol, (unsigned char *) output_bytes, output_size, input_size, 0);
         free(output_bytes);
         exit_code = 0;
     }
@@ -114,7 +129,7 @@ main(int argc, char *argv[])
         }
     }
     if (compressed && input && symbol) {
-        exit_code = binary_to_c_compressed(input, symbol, as_string);
+        exit_code = binary_to_c_compressed(input, symbol);
     }
     else if (input && symbol) {
         exit_code = binary_to_c(input, symbol, as_string);
