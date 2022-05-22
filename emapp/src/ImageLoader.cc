@@ -45,6 +45,7 @@ namespace nanoem {
 namespace {
 
 static const nanoem_u64_t kPNGSignature = 0x0a1a0a0d474e5089;
+static const nanoem_u32_t kPNGImageSizeHardLimit = 16384;
 static const nanoem_u32_t kPNGChunkTypeImageData = nanoem_fourcc('I', 'D', 'A', 'T');
 static const nanoem_u32_t kPNGChunkTypeImageHeader = nanoem_fourcc('I', 'H', 'D', 'R');
 static const nanoem_u32_t kPNGChunkTypeImageEnd = nanoem_fourcc('I', 'E', 'N', 'D');
@@ -154,6 +155,24 @@ enum D3D11_RESOURCE_MISC_FLAG {
 
 } /* namespace anonymous */
 
+struct image::APNG::State {
+    ByteArray m_dataChunk;
+    CRC m_crc;
+    APNG::Frame *m_frame;
+    nanoem_u32_t m_expectedSequenceNumber;
+    nanoem_f32_t m_seconds;
+    State()
+        : m_frame(nullptr)
+        , m_expectedSequenceNumber(0)
+        , m_seconds(0)
+    {
+    }
+    ~State()
+    {
+        nanoem_delete(m_frame);
+    }
+};
+
 image::APNG::APNG()
 {
     Inline::clearZeroMemory(m_header);
@@ -172,162 +191,69 @@ image::APNG::~APNG() NANOEM_DECL_NOEXCEPT
 bool
 image::APNG::decode(ISeekableReader *reader, Error &error)
 {
+    State state;
     char message[Error::kMaxReasonLength];
-    ByteArray dataChunk;
-    CRC crc;
-    APNG::Frame *frame = nullptr;
-    nanoem_u32_t expectedSequenceNumber = 0;
-    nanoem_f32_t seconds = 0;
     bool hasAnimationControl = false, hasImageData = false, loop = true;
     while (loop && !error.hasReason()) {
         nanoem_u32_t chunkLength, chunkType, chunkCRC, checksum = 0;
         if (FileUtils::readTyped(reader, chunkLength, error) != Inline::saturateInt32(sizeof(chunkLength))) {
+            error = Error("APNG: Corrupted chunk length", 0, Error::kDomainTypeApplication);
             loop = false;
             break;
         }
         chunkLength = bx::toBigEndian(chunkLength);
+        if (chunkLength > Inline::saturateInt32U(reader->size())) {
+            StringUtils::format(
+                message, sizeof(message), "Too large chunk to read (%u > %lu)", chunkLength, reader->size());
+            error = Error(message, 0, Error::kDomainTypeApplication);
+            loop = false;
+            break;
+        }
         if (FileUtils::readTyped(reader, chunkType, error) != Inline::saturateInt32(sizeof(chunkType))) {
+            error = Error("APNG: Corrupted chunk type", 0, Error::kDomainTypeApplication);
             loop = false;
             break;
         }
         switch (chunkType) {
         case kPNGChunkTypeAnimationControl: {
-            if (FileUtils::readTyped(reader, m_control, error) != Inline::saturateInt32(sizeof(m_control))) {
-                loop = false;
-                break;
-            }
-            checksum = crc.checksumTyped(chunkType, m_control);
-            m_control.m_numFrames = bx::toBigEndian(m_control.m_numFrames);
-            m_control.m_numPlayCount = bx::toBigEndian(m_control.m_numPlayCount);
-            if (m_control.m_numFrames >= 0x80000000u) {
-                m_control.m_numFrames -= 0x80000000u;
-            }
+            checksum = decodeAnimationControl(reader, state, error);
             hasAnimationControl = true;
             break;
         }
         case kPNGChunkTypeFrameControl: {
-            if (frame) {
-                if (frame->m_sequences.empty()) {
-                    error = Error("APNG: Empty image sequence", 0, Error::kDomainTypeApplication);
-                    loop = false;
-                    break;
-                }
-                else {
-                    m_frames.push_back(frame);
-                    frame = nullptr;
-                }
-            }
-            frame = nanoem_new(APNG::Frame);
-            APNG::FrameControl &frameControl = frame->m_control;
-            if (FileUtils::readTyped(reader, frameControl, error) != Inline::saturateInt32(sizeof(frameControl))) {
-                nanoem_delete_safe(frame);
-                loop = false;
-                break;
-            }
-            checksum = crc.checksumTyped(chunkType, frameControl);
-            frameControl.m_sequenceNumber = bx::toBigEndian(frameControl.m_sequenceNumber);
-            frameControl.m_width = bx::toBigEndian(frameControl.m_width);
-            frameControl.m_height = bx::toBigEndian(frameControl.m_height);
-            frameControl.m_xoffset = bx::toBigEndian(frameControl.m_xoffset);
-            frameControl.m_yoffset = bx::toBigEndian(frameControl.m_yoffset);
-            frameControl.m_delayDen = bx::toBigEndian(frameControl.m_delayDen);
-            frameControl.m_delayNum = bx::toBigEndian(frameControl.m_delayNum);
-            if (frameControl.m_delayDen == 0) {
-                frameControl.m_delayDen = 100;
-            }
-            if (expectedSequenceNumber != frameControl.m_sequenceNumber) {
-                StringUtils::format(message, sizeof(message),
-                    "APNG: Incorrect sequence number (%u != %u) doesn't match", expectedSequenceNumber,
-                    frameControl.m_sequenceNumber);
-                error = Error(message, 0, Error::kDomainTypeApplication);
-                nanoem_delete_safe(frame);
-                loop = false;
-                break;
-            }
-            else if (frameControl.m_width == 0 || frameControl.m_height == 0 ||
-                !(frameControl.m_xoffset + frameControl.m_width <= m_header.m_width) ||
-                !(frameControl.m_yoffset + frameControl.m_height <= m_header.m_height)) {
-                error = Error("APNG: Invalid frame rectangle", 0, Error::kDomainTypeApplication);
-                nanoem_delete_safe(frame);
-                loop = false;
-                break;
-            }
-            frame->m_seconds = seconds;
-            seconds += frameControl.m_delayNum / nanoem_f32_t(frameControl.m_delayDen);
-            expectedSequenceNumber++;
+            checksum = decodeFrameControl(reader, state, error);
             break;
         }
         case kPNGChunkTypeFrameData: {
-            dataChunk.clear();
-            nanoem_u32_t sequenceNumber;
-            if (chunkLength >= sizeof(sequenceNumber)) {
-                dataChunk.resize(chunkLength);
-                if (FileUtils::read(reader, dataChunk.data(), chunkLength, error) !=
-                    Inline::saturateInt32(chunkLength)) {
-                    loop = false;
-                    break;
-                }
-                checksum = crc.checksum(chunkType, dataChunk.data(), chunkLength);
-                sequenceNumber = bx::toBigEndian(*reinterpret_cast<const nanoem_u32_t *>(dataChunk.data()));
-                if (expectedSequenceNumber != sequenceNumber) {
-                    StringUtils::format(message, sizeof(message),
-                        "APNG: Incorrect sequence number (%u != %u) doesn't match", expectedSequenceNumber,
-                        sequenceNumber);
-                    error = Error(message, 0, Error::kDomainTypeApplication);
-                }
-                else if (frame) {
-                    dataChunk.erase(dataChunk.begin(), dataChunk.begin() + sizeof(sequenceNumber));
-                    frame->m_sequences.push_back(dataChunk);
-                }
-            }
-            expectedSequenceNumber++;
+            checksum = decodeFrameData(reader, chunkLength, state, error);
             break;
         }
         case kPNGChunkTypeImageData: {
-            dataChunk.resize(chunkLength);
-            if (FileUtils::read(reader, dataChunk.data(), chunkLength, error) != Inline::saturateInt32(chunkLength)) {
-                loop = false;
-                break;
-            }
-            checksum = crc.checksum(chunkType, dataChunk.data(), chunkLength);
-            if (frame) {
-                frame->m_sequences.push_back(dataChunk);
-            }
+            checksum = decodeImageData(reader, chunkLength, state, error);
             hasImageData = true;
             break;
         }
         case kPNGChunkTypeImageEnd: {
-            if (frame) {
-                if (frame->m_sequences.empty()) {
-                    error = Error("APNG: Empty image sequence", 0, Error::kDomainTypeApplication);
-                }
-                else {
-                    m_frames.push_back(frame);
-                    frame = nullptr;
-                }
-            }
-            checksum = crc.checksum(chunkType, nullptr, 0);
+            checksum = decodeImageEnd(state, error);
             loop = false;
             break;
         }
         case kPNGChunkTypeImageHeader: {
-            if (FileUtils::readTyped(reader, m_header, error) != Inline::saturateInt32(sizeof(m_header))) {
-                loop = false;
-                break;
-            }
-            checksum = crc.checksumTyped(chunkType, m_header);
-            m_header.m_width = bx::toBigEndian(m_header.m_width);
-            m_header.m_height = bx::toBigEndian(m_header.m_height);
+            checksum = decodeImageHeader(reader, state, error);
             break;
         }
         default:
             /* skip and ignore the unknown chunk */
-            dataChunk.resize(chunkLength);
-            if (reader->read(dataChunk.data(), chunkLength, error) != Inline::saturateInt32(chunkLength)) {
+            state.m_dataChunk.resize(chunkLength);
+            if (reader->read(state.m_dataChunk.data(), chunkLength, error) != Inline::saturateInt32(chunkLength)) {
                 loop = false;
                 break;
             }
-            checksum = crc.checksum(chunkType, dataChunk.data(), chunkLength);
+            checksum = state.m_crc.checksum(chunkType, state.m_dataChunk.data(), chunkLength);
+            break;
+        }
+        if (checksum == 0) {
+            loop = false;
             break;
         }
         FileUtils::readTyped(reader, chunkCRC, error);
@@ -340,7 +266,6 @@ image::APNG::decode(ISeekableReader *reader, Error &error)
             break;
         }
     }
-    nanoem_delete(frame);
     const nanoem_u32_t numFrames = Inline::saturateInt32U(m_frames.size());
     if (!error.hasReason() && hasAnimationControl) {
         if (!hasImageData && m_control.m_numFrames == 0) {
@@ -491,6 +416,154 @@ nanoem_u32_t
 image::APNG::height() const NANOEM_DECL_NOEXCEPT
 {
     return m_header.m_height;
+}
+
+nanoem_u32_t
+image::APNG::decodeAnimationControl(ISeekableReader *reader, State &state, Error &error)
+{
+    if (FileUtils::readTyped(reader, m_control, error) != Inline::saturateInt32(sizeof(m_control))) {
+        return 0;
+    }
+    nanoem_u32_t checksum = state.m_crc.checksumTyped(kPNGChunkTypeAnimationControl, m_control);
+    m_control.m_numFrames = bx::toBigEndian(m_control.m_numFrames);
+    m_control.m_numPlayCount = bx::toBigEndian(m_control.m_numPlayCount);
+    if (m_control.m_numFrames >= 0x80000000u) {
+        m_control.m_numFrames -= 0x80000000u;
+    }
+    return checksum;
+}
+
+nanoem_u32_t
+image::APNG::decodeFrameControl(ISeekableReader *reader, State &state, Error &error)
+{
+    char message[Error::kMaxReasonLength];
+    if (state.m_frame) {
+        if (state.m_frame->m_sequences.empty()) {
+            error = Error("APNG: Empty image sequence", 0, Error::kDomainTypeApplication);
+            return 0;
+        }
+        else {
+            m_frames.push_back(state.m_frame);
+            state.m_frame = nullptr;
+        }
+    }
+    state.m_frame = nanoem_new(APNG::Frame);
+    APNG::FrameControl &frameControl = state.m_frame->m_control;
+    if (FileUtils::readTyped(reader, frameControl, error) != Inline::saturateInt32(sizeof(frameControl))) {
+        error = Error("APNG: Corrupted frame control", 0, Error::kDomainTypeApplication);
+        nanoem_delete_safe(state.m_frame);
+        return 0;
+    }
+    nanoem_u32_t checksum = state.m_crc.checksumTyped(kPNGChunkTypeFrameControl, frameControl);
+    frameControl.m_sequenceNumber = bx::toBigEndian(frameControl.m_sequenceNumber);
+    frameControl.m_width = bx::toBigEndian(frameControl.m_width);
+    frameControl.m_height = bx::toBigEndian(frameControl.m_height);
+    frameControl.m_xoffset = bx::toBigEndian(frameControl.m_xoffset);
+    frameControl.m_yoffset = bx::toBigEndian(frameControl.m_yoffset);
+    frameControl.m_delayDen = bx::toBigEndian(frameControl.m_delayDen);
+    frameControl.m_delayNum = bx::toBigEndian(frameControl.m_delayNum);
+    if (frameControl.m_delayDen == 0) {
+        frameControl.m_delayDen = 100;
+    }
+    if (state.m_expectedSequenceNumber != frameControl.m_sequenceNumber) {
+        StringUtils::format(message, sizeof(message), "APNG: Incorrect sequence number (%u != %u) doesn't match",
+            state.m_expectedSequenceNumber, frameControl.m_sequenceNumber);
+        error = Error(message, 0, Error::kDomainTypeApplication);
+        nanoem_delete_safe(state.m_frame);
+        return 0;
+    }
+    else if (frameControl.m_width == 0 || frameControl.m_height == 0 ||
+        !(frameControl.m_xoffset + frameControl.m_width <= m_header.m_width) ||
+        !(frameControl.m_yoffset + frameControl.m_height <= m_header.m_height)) {
+        error = Error("APNG: Invalid frame rectangle", 0, Error::kDomainTypeApplication);
+        nanoem_delete_safe(state.m_frame);
+        return 0;
+    }
+    state.m_frame->m_seconds = state.m_seconds;
+    state.m_seconds += frameControl.m_delayNum / nanoem_f32_t(frameControl.m_delayDen);
+    state.m_expectedSequenceNumber++;
+    return checksum;
+}
+
+nanoem_u32_t
+image::APNG::decodeFrameData(ISeekableReader *reader, nanoem_u32_t chunkLength, State &state, Error &error)
+{
+    char message[Error::kMaxReasonLength];
+    state.m_dataChunk.clear();
+    nanoem_u32_t sequenceNumber, checksum = 0;
+    if (chunkLength >= sizeof(sequenceNumber)) {
+        state.m_dataChunk.resize(chunkLength);
+        if (FileUtils::read(reader, state.m_dataChunk.data(), chunkLength, error) !=
+            Inline::saturateInt32(chunkLength)) {
+            error = Error("APNG: Corrupted frame data", 0, Error::kDomainTypeApplication);
+            return 0;
+        }
+        checksum = state.m_crc.checksum(kPNGChunkTypeFrameData, state.m_dataChunk.data(), chunkLength);
+        sequenceNumber = bx::toBigEndian(*reinterpret_cast<const nanoem_u32_t *>(state.m_dataChunk.data()));
+        if (state.m_expectedSequenceNumber != sequenceNumber) {
+            StringUtils::format(message, sizeof(message), "APNG: Incorrect sequence number (%u != %u) doesn't match",
+                state.m_expectedSequenceNumber, sequenceNumber);
+            error = Error(message, 0, Error::kDomainTypeApplication);
+        }
+        else if (state.m_frame) {
+            state.m_dataChunk.erase(state.m_dataChunk.begin(), state.m_dataChunk.begin() + sizeof(sequenceNumber));
+            state.m_frame->m_sequences.push_back(state.m_dataChunk);
+        }
+    }
+    state.m_expectedSequenceNumber++;
+    return checksum;
+}
+
+nanoem_u32_t
+image::APNG::decodeImageData(ISeekableReader *reader, nanoem_u32_t chunkLength, State &state, Error &error)
+{
+    state.m_dataChunk.resize(chunkLength);
+    if (FileUtils::read(reader, state.m_dataChunk.data(), chunkLength, error) != Inline::saturateInt32(chunkLength)) {
+        error = Error("APNG: Corrupted image data", 0, Error::kDomainTypeApplication);
+        return 0;
+    }
+    nanoem_u32_t checksum = state.m_crc.checksum(kPNGChunkTypeImageData, state.m_dataChunk.data(), chunkLength);
+    if (state.m_frame) {
+        state.m_frame->m_sequences.push_back(state.m_dataChunk);
+    }
+    return checksum;
+}
+
+nanoem_u32_t
+image::APNG::decodeImageEnd(State &state, Error &error)
+{
+    if (state.m_frame) {
+        if (state.m_frame->m_sequences.empty()) {
+            error = Error("APNG: Empty image sequence", 0, Error::kDomainTypeApplication);
+            return 0;
+        }
+        else {
+            m_frames.push_back(state.m_frame);
+            state.m_frame = nullptr;
+        }
+    }
+    return state.m_crc.checksum(kPNGChunkTypeImageEnd, nullptr, 0);
+}
+
+nanoem_u32_t
+image::APNG::decodeImageHeader(ISeekableReader *reader, State &state, Error &error)
+{
+    if (FileUtils::readTyped(reader, m_header, error) != Inline::saturateInt32(sizeof(m_header))) {
+        error = Error("APNG: Corrupted image header", 0, Error::kDomainTypeApplication);
+        return 0;
+    }
+    nanoem_u32_t checksum = state.m_crc.checksumTyped(kPNGChunkTypeImageHeader, m_header);
+    m_header.m_width = bx::toBigEndian(m_header.m_width);
+    m_header.m_height = bx::toBigEndian(m_header.m_height);
+    if (m_header.m_width == 0 || m_header.m_height == 0) {
+        error = Error("APNG: Empty width or height found", 0, Error::kDomainTypeApplication);
+        return 0;
+    }
+    if (m_header.m_width > kPNGImageSizeHardLimit || m_header.m_height > kPNGImageSizeHardLimit) {
+        error = Error("APNG: Exceeded hard limit size of image", 0, Error::kDomainTypeApplication);
+        return 0;
+    }
+    return checksum;
 }
 
 const nanoem_u32_t image::DDS::kSignature = nanoem_fourcc('D', 'D', 'S', ' ');
@@ -1092,8 +1165,8 @@ image::PFM::decode(const ByteArray &bytes, Error &error)
     int offset;
     ::memcpy(header, bytes.data(), length);
     header[length] = 0;
-    if (::sscanf(header, "PF\n%u %u\n%f\n%n", &width, &height, &byteOrderIndicator, &offset) == 3 &&
-        width > 0 && height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
+    if (::sscanf(header, "PF\n%u %u\n%f\n%n", &width, &height, &byteOrderIndicator, &offset) == 3 && width > 0 &&
+        height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
         const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
                              actualDataSize = bytes.size() - offset;
         if (channelSize * 3 == actualDataSize) {
@@ -1117,8 +1190,8 @@ image::PFM::decode(const ByteArray &bytes, Error &error)
             error = Error(message, 0, Error::kDomainTypeApplication);
         }
     }
-    else if (::sscanf(header, "Pf\n%u %u\n%f\n%n", &width, &height, &byteOrderIndicator, &offset) == 3 &&
-        width > 0 && height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
+    else if (::sscanf(header, "Pf\n%u %u\n%f\n%n", &width, &height, &byteOrderIndicator, &offset) == 3 && width > 0 &&
+        height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
         const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
                              actualDataSize = bytes.size() - offset;
         if (channelSize == actualDataSize) {
@@ -1354,11 +1427,20 @@ ImageLoader::copyImageDescrption(const sg_image_desc &desc, Image *image)
 bool
 ImageLoader::validateImageSize(const sg_image_desc &desc, const char *name, Error &error)
 {
-    const sg_limits limits = sg::query_limits();
     const int width = Inline::roundInt32(desc.width), height = Inline::roundInt32(desc.height),
               depth = Inline::roundInt32(desc.num_slices);
     char message[Error::kMaxReasonLength], recoverySuggestion[Error::kMaxRecoverySuggestionLength];
     Error localError;
+    sg_limits limits;
+    if (sg::query_limits) {
+        limits = sg::query_limits();
+    }
+    else {
+        Inline::clearZeroMemory(limits);
+        limits.max_image_size_2d = 16384;
+        limits.max_image_size_3d = 2048;
+        limits.max_image_size_cube = 2048;
+    }
     if (desc.type == SG_IMAGETYPE_CUBE && limits.max_image_size_cube > 0 &&
         (width >= limits.max_image_size_cube || height >= limits.max_image_size_cube)) {
         StringUtils::format(message, sizeof(message), "The texture %s exceeds limit (%dx%d) > (%dx%d)", name,
