@@ -1085,12 +1085,14 @@ image::PFM::~PFM() NANOEM_DECL_NOEXCEPT
 bool
 image::PFM::decode(const ByteArray &bytes, Error &error)
 {
-    char message[Error::kMaxReasonLength];
+    char header[128], message[Error::kMaxReasonLength];
+    nanoem_rsize_t length = glm::min(bytes.size(), sizeof(header) - 1);
     nanoem_u32_t width, height;
     nanoem_f32_t byteOrderIndicator;
     int offset;
-    if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "PF\n%u %u\n%f\n%n", &width, &height,
-            &byteOrderIndicator, &offset) == 3 &&
+    ::memcpy(header, bytes.data(), length);
+    header[length] = 0;
+    if (::sscanf(header, "PF\n%u %u\n%f\n%n", &width, &height, &byteOrderIndicator, &offset) == 3 &&
         width > 0 && height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
         const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
                              actualDataSize = bytes.size() - offset;
@@ -1115,8 +1117,7 @@ image::PFM::decode(const ByteArray &bytes, Error &error)
             error = Error(message, 0, Error::kDomainTypeApplication);
         }
     }
-    else if (::sscanf(reinterpret_cast<const char *>(bytes.data()), "Pf\n%u %u\n%f\n%n", &width, &height,
-                 &byteOrderIndicator, &offset) == 3 &&
+    else if (::sscanf(header, "Pf\n%u %u\n%f\n%n", &width, &height, &byteOrderIndicator, &offset) == 3 &&
         width > 0 && height > 0 && bytes.size() >= Inline::roundInt32(offset)) {
         const nanoem_rsize_t channelSize = static_cast<nanoem_rsize_t>(width) * height * sizeof(nanoem_f32_t),
                              actualDataSize = bytes.size() - offset;
