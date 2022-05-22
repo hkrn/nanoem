@@ -98,7 +98,7 @@ nanodxmFree(void *ptr, const char *filename, int line)
 #define nanodxm_realloc(ptr, size) nanodxmRealloc((ptr), (size), NULL, 0)
 #define nanodxm_calloc(length, size) nanodxmCalloc((length), (size), NULL, 0)
 #define nanodxm_free(ptr) nanodxmFree((ptr), NULL, 0)
-#endif
+#endif /* NANODXM_ENABLE_DEBUG_ALLOCATOR */
 
 #define NANODXM_CHECK_CLOSE_BRACE(ptr, err) \
     for (;;) {                              \
@@ -326,36 +326,69 @@ nanodxmBufferEndChunk(nanodxm_buffer_t *buffer, nanodxm_parser_state_t *state)
 }
 
 NANODXM_DECL_INLINE static void
+nanodxmBufferReadStackString(nanodxm_buffer_t *buffer, char *stack, nanodxm_rsize_t size)
+{
+    nanodxm_rsize_t len;
+    size -= 1;
+    if (nanodxmBufferCanReadLength(buffer, size)) {
+        memcpy(stack, nanodxmBufferGetDataPtr(buffer), size);
+        stack[size] = 0;
+    }
+    else if (buffer->length > buffer->offset) {
+        len = buffer->length - buffer->offset;
+        memcpy(stack, nanodxmBufferGetDataPtr(buffer), len);
+    }
+    else {
+        stack[0] = 0;
+    }
+}
+
+NANODXM_DECL_INLINE static void
 nanodxmBufferExtractInt(nanodxm_buffer_t *buffer, int *value)
 {
-    char *ptr, *end;
+    char stack[16], *ptr, *end;
     nanodxmBufferSkipSpaces(buffer);
-    ptr = (char *) nanodxmBufferGetDataPtr(buffer);
-    *value = strtol(ptr, &end, 10);
-    buffer->offset += end - ptr;
-    nanodxmBufferSkipSpaces(buffer);
+    if ((ptr = (char *) nanodxmBufferGetDataPtr(buffer)) != NULL) {
+        nanodxmBufferReadStackString(buffer, stack, sizeof(stack));
+        *value = strtol(stack, &end, 10);
+        buffer->offset += end - ptr;
+        nanodxmBufferSkipSpaces(buffer);
+    }
+    else {
+        *value = 0;
+    }
 }
 
 NANODXM_DECL_INLINE static void
 nanodxmBufferExtractSize(nanodxm_buffer_t *buffer, nanodxm_rsize_t *value)
 {
-    char *ptr, *end;
+    char stack[16], *ptr, *end;
     nanodxmBufferSkipSpaces(buffer);
-    ptr = (char *) nanodxmBufferGetDataPtr(buffer);
-    *value = (nanodxm_rsize_t) strtol(ptr, &end, 10);
-    buffer->offset += end - ptr;
-    nanodxmBufferSkipSpaces(buffer);
+    if ((ptr = (char *) nanodxmBufferGetDataPtr(buffer)) != NULL) {
+        nanodxmBufferReadStackString(buffer, stack, sizeof(stack));
+        *value = (nanodxm_rsize_t) strtol(ptr, &end, 10);
+        buffer->offset += end - ptr;
+        nanodxmBufferSkipSpaces(buffer);
+    }
+    else {
+        *value = 0;
+    }
 }
 
 NANODXM_DECL_INLINE static void
 nanodxmBufferExtractFloat(nanodxm_buffer_t *buffer, float *value)
 {
-    char *ptr, *end;
+    char stack[16], *ptr, *end;
     nanodxmBufferSkipSpaces(buffer);
-    ptr = (char *) nanodxmBufferGetDataPtr(buffer);
-    *value = (float) strtod(ptr, &end);
-    buffer->offset += end - ptr;
-    nanodxmBufferSkipSpaces(buffer);
+    if ((ptr = (char *) nanodxmBufferGetDataPtr(buffer)) != NULL) {
+        nanodxmBufferReadStackString(buffer, stack, sizeof(stack));
+        *value = (float) strtod(stack, &end);
+        buffer->offset += end - ptr;
+        nanodxmBufferSkipSpaces(buffer);
+    }
+    else {
+        *value = 0;
+    }
 }
 
 #endif /* NANODXM_PRIVATE_H_ */

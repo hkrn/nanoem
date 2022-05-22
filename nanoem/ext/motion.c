@@ -99,7 +99,7 @@ nanoemMotionReadAnnotationsNMD(kh_annotation_t **annotations_ptr, Nanoem__Motion
     kh_annotation_t *annotations;
     khiter_t it;
     size_t i;
-    char *ptr;
+    char *key_ptr, *value_ptr;
     int ret;
     if (num_annotation_messages > 0) {
         if (*annotations_ptr) {
@@ -111,16 +111,18 @@ nanoemMotionReadAnnotationsNMD(kh_annotation_t **annotations_ptr, Nanoem__Motion
         if (nanoem_is_not_null(annotations)) {
             for (i = 0; i < num_annotation_messages; i++) {
                 annotation_message = annotation_messages[i];
-                it = kh_put_annotation(annotations, nanoemUtilCloneString(annotation_message->name, status), &ret);
+                key_ptr = nanoemUtilCloneString(annotation_message->name, status);
+                it = kh_put_annotation(annotations, key_ptr, &ret);
                 if (ret > 0) {
                     kh_value(annotations, it) = nanoemUtilCloneString(annotation_message->value, status);
                 }
                 else if (ret == 0) {
-                    ptr = kh_value(annotations, it);
+                    value_ptr = kh_value(annotations, it);
                     kh_value(annotations, it) = nanoemUtilCloneString(annotation_message->value, status);
-                    nanoem_free(ptr);
+                    nanoem_free(value_ptr);
                 }
                 else {
+                    nanoem_free(key_ptr);
                     break;
                 }
             }

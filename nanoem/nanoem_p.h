@@ -1116,21 +1116,25 @@ nanoemAnnotationSet(kh_annotation_t **annotations_ptr, const char *key, const ch
 {
     kh_annotation_t *annotations;
     khiter_t it;
-    char *ptr;
+    char *key_ptr, *value_ptr;
     if (*annotations_ptr) {
         annotations = *annotations_ptr;
     }
     else {
         annotations = *annotations_ptr = kh_init_annotation();
     }
-    it = kh_put_annotation(annotations, nanoemUtilCloneString(key, status), ret);
+    key_ptr = nanoemUtilCloneString(key, status);
+    it = kh_put_annotation(annotations, key_ptr, ret);
     if (*ret > 0) {
         kh_value(annotations, it) = nanoemUtilCloneString(value, status);
     }
     else if (*ret == 0) {
-        ptr = kh_value(annotations, it);
+        value_ptr = kh_value(annotations, it);
         kh_value(annotations, it) = nanoemUtilCloneString(value, status);
-        nanoem_free(ptr);
+        nanoem_free(value_ptr);
+    }
+    else {
+        nanoem_free(key_ptr);
     }
 }
 

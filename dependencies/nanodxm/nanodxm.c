@@ -114,6 +114,9 @@ nanodxmMaterialCreate(void)
     nanodxm_material_t *material;
     material = (nanodxm_material_t *) nanodxm_calloc(1, sizeof(*material));
     if (nanodxm_is_not_null(material)) {
+        material->diffuse = __nanodxm_color_white;
+        material->emissive.a = 1.0f;
+        material->specular.a = 1.0f;
     }
     return material;
 }
@@ -271,15 +274,17 @@ nanodxmDocumentParseMeshNormals(nanodxm_document_t *document, nanodxm_buffer_t *
         face = &document->normal_faces[i];
         nanodxmBufferExtractSize(buffer, &face->num_indices);
         nanodxmBufferSkipSeparator(buffer);
-        face->indices = (int *) nanodxm_calloc(face->num_indices, sizeof(*face->indices));
-        if (nanodxm_is_not_null(face->indices)) {
-            for (j = 0; j < face->num_indices; j++) {
-                nanodxmBufferExtractInt(buffer, &face->indices[j]);
-                nanodxmBufferSkipSeparator(buffer);
+        if (face->num_indices > 0) {
+            face->indices = (int *) nanodxm_calloc(face->num_indices, sizeof(*face->indices));
+            if (nanodxm_is_not_null(face->indices)) {
+                for (j = 0; j < face->num_indices; j++) {
+                    nanodxmBufferExtractInt(buffer, &face->indices[j]);
+                    nanodxmBufferSkipSeparator(buffer);
+                }
             }
-        }
-        else {
-            face->num_indices = 0;
+            else {
+                face->num_indices = 0;
+            }
         }
     }
     nanodxmBufferSkipSpaces(buffer);
@@ -318,6 +323,7 @@ nanodxmDocumentParseMeshVertexColors(nanodxm_document_t *document, nanodxm_buffe
     state->depth++;
     if (document->vertex_colors) {
         nanodxm_free(document->vertex_colors);
+        document->vertex_colors = NULL;
     }
     document->vertex_colors = (nanodxm_color_t *) nanodxm_calloc(document->num_vertex_colors, sizeof(*document->vertex_colors));
     length = document->num_vertex_colors;
@@ -347,7 +353,7 @@ nanodxmDocumentParseMesh(nanodxm_document_t *document, nanodxm_buffer_t *buffer,
     nanodxmBufferExtractSize(buffer, &document->num_vertices);
     nanodxmBufferSkipSeparator(buffer);
     state->depth++;
-    if (document->vertices) {
+    if (!nanodxm_is_null(document->vertices)) {
         nanodxm_free(document->vertices);
     }
     document->vertices = (nanodxm_vector3_t *) nanodxm_calloc(document->num_vertices, sizeof(*document->vertices));
@@ -362,7 +368,7 @@ nanodxmDocumentParseMesh(nanodxm_document_t *document, nanodxm_buffer_t *buffer,
         nanodxmBufferSkipSeparator(buffer);
     }
     nanodxmBufferSkipSpaces(buffer);
-    if (document->vertices) {
+    if (!nanodxm_is_null(document->vertex_faces)) {
         length = document->num_vertex_faces;
         for (i = 0; i < length; i++) {
             nanodxm_free(document->vertex_faces[length - i - 1].indices);
@@ -377,15 +383,17 @@ nanodxmDocumentParseMesh(nanodxm_document_t *document, nanodxm_buffer_t *buffer,
         face = &document->vertex_faces[i];
         nanodxmBufferExtractSize(buffer, &face->num_indices);
         nanodxmBufferSkipSeparator(buffer);
-        face->indices = (int *) nanodxm_calloc(face->num_indices, sizeof(*face->indices));
-        if (nanodxm_is_not_null(face->indices)) {
-            for (j = 0; j < face->num_indices; j++) {
-                nanodxmBufferExtractInt(buffer, &face->indices[j]);
-                nanodxmBufferSkipSeparator(buffer);
+        if (face->num_indices > 0) {
+            face->indices = (int *) nanodxm_calloc(face->num_indices, sizeof(*face->indices));
+            if (nanodxm_is_not_null(face->indices)) {
+                for (j = 0; j < face->num_indices; j++) {
+                    nanodxmBufferExtractInt(buffer, &face->indices[j]);
+                    nanodxmBufferSkipSeparator(buffer);
+                }
             }
-        }
-        else {
-            face->num_indices = 0;
+            else {
+                face->num_indices = 0;
+            }
         }
     }
     nanodxmBufferSkipSpaces(buffer);
@@ -412,7 +420,6 @@ nanodxmDocumentParseMaterial(nanodxm_document_t *document, nanodxm_buffer_t *buf
         nanodxmBufferExtractFloat(buffer, &material->shininess);
         nanodxmBufferSkipSeparator(buffer);
         /* specular */
-        material->specular.a = 1.0f;
         nanodxmBufferExtractFloat(buffer, &material->specular.r);
         nanodxmBufferSkipSeparator(buffer);
         nanodxmBufferExtractFloat(buffer, &material->specular.g);
@@ -420,7 +427,6 @@ nanodxmDocumentParseMaterial(nanodxm_document_t *document, nanodxm_buffer_t *buf
         nanodxmBufferExtractFloat(buffer, &material->specular.b);
         nanodxmBufferSkipSeparator(buffer);
         /* emissive */
-        material->emissive.a = 1.0f;
         nanodxmBufferExtractFloat(buffer, &material->emissive.r);
         nanodxmBufferSkipSeparator(buffer);
         nanodxmBufferExtractFloat(buffer, &material->emissive.g);
@@ -629,7 +635,6 @@ nanodxmDocumentParseASCII(nanodxm_document_t *document, nanodxm_buffer_t *buffer
     }
     if (kv_size(document->materials) == 0) {
         material = nanodxmMaterialCreate();
-        material->diffuse = __nanodxm_color_white;
         kv_push(nanodxm_material_t *, document->materials, material);
     }
     return NANODXM_STATUS_SUCCESS;
@@ -816,7 +821,7 @@ nanodxmDocumentDestroy(nanodxm_document_t *document)
     if (nanodxm_is_not_null(document)) {
         length = kv_size(document->materials);
         for (i = 0; i < length; i++) {
-            nanodxmMaterialDestroy(kv_A(document->materials, i));
+            nanodxmMaterialDestroy(kv_A(document->materials, length - i - 1));
         }
         kv_destroy(document->materials);
         if (nanodxm_is_not_null(document->vertices)) {
@@ -844,7 +849,7 @@ nanodxmDocumentDestroy(nanodxm_document_t *document)
         if (nanodxm_is_not_null(document->vertex_faces)) {
             length = document->num_vertex_faces;
             for (i = 0; i < length; i++) {
-                nanodxm_free(document->vertex_faces[length- i - 1].indices);
+                nanodxm_free(document->vertex_faces[length - i - 1].indices);
             }
             nanodxm_free(document->vertex_faces);
         }
