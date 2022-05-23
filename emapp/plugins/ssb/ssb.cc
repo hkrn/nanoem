@@ -1818,11 +1818,9 @@ SemiStandardBonePlugin::opaque()
     return nanoemMutableModelGetOriginObject(m_mutableModel);
 }
 
-struct nanoem_wasm_plugin_model_io_t : SemiStandardBonePlugin {
-};
+struct nanoem_wasm_plugin_model_io_t : SemiStandardBonePlugin { };
 
-struct nanoem_application_plugin_model_io_t : SemiStandardBonePlugin {
-};
+struct nanoem_application_plugin_model_io_t : SemiStandardBonePlugin { };
 
 } /* namespace anonymous */
 

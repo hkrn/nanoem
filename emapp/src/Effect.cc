@@ -5553,7 +5553,8 @@ Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &pa
     nanoem_u8_t *decodedImagePtr = nullptr;
     Inline::clearZeroMemory(desc);
     const URI &fileURI = parameter.m_fileURI;
-    if (ImageLoader::decodeImageWithSTB(bytes.data(), bytes.size(), parameter.m_filename.c_str(), desc, &decodedImagePtr, error)) {
+    if (ImageLoader::decodeImageWithSTB(
+            bytes.data(), bytes.size(), parameter.m_filename.c_str(), desc, &decodedImagePtr, error)) {
         desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
         const sg_range &data = desc.data.subimage[0][0];
         ImageResourceParameter newParameter(parameter);

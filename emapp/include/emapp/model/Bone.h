@@ -118,8 +118,7 @@ public:
     void setLinearInterpolation(nanoem_motion_bone_keyframe_interpolation_type_t index, bool value);
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
     BX_ALIGN_DECL_16(struct) Matrices
     {
         bx::float4x4_t m_worldTransform;

@@ -830,11 +830,9 @@ struct AVFoundationDecoder {
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_decoder_t : AVFoundationDecoder {
-};
+struct nanoem_application_plugin_decoder_t : AVFoundationDecoder { };
 
-struct nanoem_application_plugin_encoder_t : AVFoundationEncoder {
-};
+struct nanoem_application_plugin_encoder_t : AVFoundationEncoder { };
 
 nanoem_u32_t
 nanoemApplicationPluginEncoderGetABIVersion()

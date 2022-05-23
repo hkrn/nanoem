@@ -34,8 +34,7 @@ public:
     virtual nanoem_rsize_t size() = 0;
 };
 
-class ISeekableReader : public IReader, public ISeekable {
-};
+class ISeekableReader : public IReader, public ISeekable { };
 
 class IFileReader : public ISeekableReader {
 public:
@@ -52,8 +51,7 @@ public:
     virtual nanoem_i32_t write(const void *data, nanoem_i32_t size, Error &error) = 0;
 };
 
-class ISeekableWriter : public IWriter, public ISeekable {
-};
+class ISeekableWriter : public IWriter, public ISeekable { };
 
 class IFileWriter : public ISeekableWriter {
 public:

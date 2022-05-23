@@ -9,8 +9,8 @@
 #define NANOEM_EMAPP_WIN32_MAINWINDOW_H_
 
 #include <Windows.h>
-#include <shellapi.h>
 #include <dxgi.h>
+#include <shellapi.h>
 
 #include "Win32ApplicationMenuBuilder.h"
 #include "emapp/BaseApplicationService.h"

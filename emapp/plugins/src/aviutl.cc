@@ -1722,11 +1722,9 @@ struct AviUtlInputPluginDecoder {
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_encoder_t : AviUtlOutputPluginEncoder {
-};
+struct nanoem_application_plugin_encoder_t : AviUtlOutputPluginEncoder { };
 
-struct nanoem_application_plugin_decoder_t : AviUtlInputPluginDecoder {
-};
+struct nanoem_application_plugin_decoder_t : AviUtlInputPluginDecoder { };
 
 nanoem_u32_t APIENTRY
 nanoemApplicationPluginEncoderGetABIVersion()

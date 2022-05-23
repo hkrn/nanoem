@@ -908,11 +908,9 @@ struct FFmpegDecoder {
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_encoder_t : FFmpegEncoder {
-};
+struct nanoem_application_plugin_encoder_t : FFmpegEncoder { };
 
-struct nanoem_application_plugin_decoder_t : FFmpegDecoder {
-};
+struct nanoem_application_plugin_decoder_t : FFmpegDecoder { };
 
 nanoem_u32_t
 nanoemApplicationPluginEncoderGetABIVersion()

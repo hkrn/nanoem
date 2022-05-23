@@ -72,8 +72,7 @@ public:
     void setEnabled(bool value);
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
     static void destroy(void *opaque, nanoem_model_object_t *constraint) NANOEM_DECL_NOEXCEPT;
     Constraint(const PlaceHolder &holder) NANOEM_DECL_NOEXCEPT;
 

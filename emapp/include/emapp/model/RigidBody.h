@@ -89,8 +89,7 @@ public:
     const par_shapes_mesh_s *sharedShapeMesh(const nanoem_model_rigid_body_t *body);
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
     static void destroy(void *opaque, nanoem_model_object_t *object) NANOEM_DECL_NOEXCEPT;
     RigidBody(const PlaceHolder &holder) NANOEM_DECL_NOEXCEPT;
 
