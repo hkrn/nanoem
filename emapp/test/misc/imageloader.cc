@@ -85,8 +85,7 @@ TEST_CASE("imageloader_apng", "[emapp][misc]")
     CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/043.png", error));
     CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Empty image sequence"));
     CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/044.png", error));
-    CHECK_THAT(
-        error.reasonConstString(), Catch::Equals("APNG: CRC chunk checksum (fcTL: 0x1000000 != 0x0) not matched"));
+    CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Empty image sequence"));
     CHECK_FALSE(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/045.png", error));
     CHECK_THAT(error.reasonConstString(), Catch::Equals("APNG: Empty animation control"));
     CHECK(loadAPNG(NANOEM_TEST_FIXTURE_PATH "/apngs/046.png", error));

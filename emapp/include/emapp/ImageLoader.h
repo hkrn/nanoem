@@ -35,6 +35,7 @@ public:
     nanoem_u32_t height() const NANOEM_DECL_NOEXCEPT;
 
 private:
+    struct State;
 #pragma pack(push)
 #pragma pack(1)
     struct Header {
@@ -79,6 +80,13 @@ private:
         kBlendOpSource = 0,
         kBlendOpOver,
     };
+
+    nanoem_u32_t decodeAnimationControl(ISeekableReader *reader, State &state, Error &error);
+    nanoem_u32_t decodeFrameControl(ISeekableReader *reader, State &state, Error &error);
+    nanoem_u32_t decodeFrameData(ISeekableReader *reader, nanoem_u32_t chunkLength, State &state, Error &error);
+    nanoem_u32_t decodeImageData(ISeekableReader *reader, nanoem_u32_t chunkLength, State &state, Error &error);
+    nanoem_u32_t decodeImageEnd(State &state, Error &error);
+    nanoem_u32_t decodeImageHeader(ISeekableReader *reader, State &state, Error &error);
 
     Header m_header;
     AnimationControl m_control;
