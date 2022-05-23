@@ -52,8 +52,7 @@ public:
     void setForcedWeight(nanoem_f32_t value);
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
     static void destroy(void *opaque, nanoem_model_object_t *morph) NANOEM_DECL_NOEXCEPT;
     static void synchronizeWeight(const Motion *motion, nanoem_frame_index_t frameIndex,
         const nanoem_unicode_string_t *name, nanoem_f32_t &weight);

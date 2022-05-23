@@ -60,8 +60,7 @@ public:
     void setEditingMasked(bool value);
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
 
     static void destroy(void *opaque, nanoem_model_object_t *object) NANOEM_DECL_NOEXCEPT;
     SoftBody(const PlaceHolder &holder) NANOEM_DECL_NOEXCEPT;

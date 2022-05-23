@@ -5357,9 +5357,12 @@ ImGuiWindow::setupDeviceInput(Project *project)
         io.AddMouseButtonEvent(1, m_screenCursor.m_pressed[Project::kCursorTypeMouseRight]);
         io.AddMouseButtonEvent(2, m_screenCursor.m_pressed[Project::kCursorTypeMouseMiddle]);
         const Project::CursorModifierType modifiers = m_screenCursor.m_modifiers;
-        io.AddKeyEvent(ImGuiKey_ModAlt, EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeAlt));
-        io.AddKeyEvent(ImGuiKey_ModCtrl,EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeControl));
-        io.AddKeyEvent(ImGuiKey_ModShift, EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeShift));
+        io.AddKeyEvent(ImGuiKey_ModAlt,
+            EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeAlt));
+        io.AddKeyEvent(ImGuiKey_ModCtrl,
+            EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeControl));
+        io.AddKeyEvent(ImGuiKey_ModShift,
+            EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeShift));
     }
     else
 #endif /* IMGUI_HAS_VIEWPORT */

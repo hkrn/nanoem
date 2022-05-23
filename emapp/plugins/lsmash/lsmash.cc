@@ -576,8 +576,7 @@ struct LSmashEncoder {
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_encoder_t : LSmashEncoder {
-};
+struct nanoem_application_plugin_encoder_t : LSmashEncoder { };
 
 nanoem_u32_t APIENTRY
 nanoemApplicationPluginEncoderGetABIVersion()

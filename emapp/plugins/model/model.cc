@@ -420,8 +420,7 @@ private:
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_model_io_t : ModelIOPlugin {
-};
+struct nanoem_application_plugin_model_io_t : ModelIOPlugin { };
 
 nanoem_u32_t APIENTRY
 nanoemApplicationPluginModelIOGetABIVersion()

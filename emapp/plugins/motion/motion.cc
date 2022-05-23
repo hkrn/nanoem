@@ -319,8 +319,7 @@ private:
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_motion_io_t : MotionIOPlugin {
-};
+struct nanoem_application_plugin_motion_io_t : MotionIOPlugin { };
 
 nanoem_u32_t APIENTRY
 nanoemApplicationPluginMotionIOGetABIVersion()

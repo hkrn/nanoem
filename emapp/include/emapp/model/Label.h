@@ -41,8 +41,7 @@ public:
     const char *canonicalNameConstString() const NANOEM_DECL_NOEXCEPT;
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
     static void destroy(void *opaque, nanoem_model_object_t *morph) NANOEM_DECL_NOEXCEPT;
     Label(const PlaceHolder &holder) NANOEM_DECL_NOEXCEPT;
 

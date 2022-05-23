@@ -53,8 +53,7 @@ public:
     void disable();
 
 private:
-    struct PlaceHolder {
-    };
+    struct PlaceHolder { };
     static void destroy(void *opaque, nanoem_model_object_t *joint) NANOEM_DECL_NOEXCEPT;
     Joint(const PlaceHolder &holder) NANOEM_DECL_NOEXCEPT;
 

@@ -1547,8 +1547,7 @@ private:
 
 class BatchChangeAllSoftBodyObjectsCommand NANOEM_DECL_SEALED : public BaseUndoCommand {
 public:
-    struct Parameter {
-    };
+    struct Parameter { };
     typedef tinystl::vector<nanoem_model_soft_body_t *, TinySTLAllocator> List;
 
     static undo_command_t *create(Model *activeModel, const List &objects, const Parameter &parameter);

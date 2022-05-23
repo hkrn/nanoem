@@ -244,8 +244,7 @@ struct EffectCompiler {
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_effect_compiler_t : EffectCompiler {
-};
+struct nanoem_application_plugin_effect_compiler_t : EffectCompiler { };
 
 nanoem_u32_t APIENTRY
 nanoemApplicationPluginEffectCompilerGetABIVersion()

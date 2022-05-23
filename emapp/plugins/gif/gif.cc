@@ -218,8 +218,7 @@ struct GIFEncoder {
 
 } /* namespace anonymous */
 
-struct nanoem_application_plugin_encoder_t : GIFEncoder {
-};
+struct nanoem_application_plugin_encoder_t : GIFEncoder { };
 
 nanoem_u32_t APIENTRY
 nanoemApplicationPluginEncoderGetABIVersion()
