@@ -7,7 +7,7 @@
 use std::{ffi::CString, mem::size_of, path::Path, slice};
 
 use anyhow::Result;
-use log::warn;
+use tracing::warn;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
 use wasmer_wasi::WasiEnv;
@@ -504,7 +504,7 @@ impl MotionIOPluginController {
         self.plugins.iter().for_each(|plugin| plugin.terminate())
     }
     #[allow(unused)]
-    pub(in super) fn all_plugins_mut(&mut self) -> &mut [MotionIOPlugin] {
+    pub(super) fn all_plugins_mut(&mut self) -> &mut [MotionIOPlugin] {
         &mut self.plugins
     }
     fn current_plugin(&self) -> Result<&MotionIOPlugin> {

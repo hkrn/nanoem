@@ -8,7 +8,7 @@ use core::slice;
 use std::mem::size_of;
 
 use anyhow::Result;
-use log::{debug, warn};
+use tracing::{debug, warn};
 use wasmer::{Array, Instance, Memory, NativeFunc, WasmPtr};
 
 pub(crate) const PLUGIN_MODEL_IO_ABI_VERSION: u32 = 2 << 16;
@@ -108,7 +108,7 @@ fn inner_set_data_internal(
 
 pub(crate) fn initialize_env_logger() {
     if atty::is(atty::Stream::Stderr) {
-        env_logger::try_init().unwrap_or_default();
+        tracing_subscriber::fmt::try_init().unwrap_or_default();
     }
 }
 

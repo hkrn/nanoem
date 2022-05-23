@@ -7,7 +7,7 @@
 use std::{ffi::CString, path::Path};
 
 use anyhow::Result;
-use log::warn;
+use tracing::warn;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
 use wasmer_wasi::WasiEnv;
