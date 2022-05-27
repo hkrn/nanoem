@@ -1117,29 +1117,36 @@ bool
 image::DDS::decodeImage(IReader *reader, nanoem_u32_t faceIndex, nanoem_u32_t mipmapIndex, nanoem_u32_t width,
     nanoem_u32_t height, nanoem_rsize_t numBytes, ByteArray &bytes, Error &error)
 {
-    const int intNumBytes = Inline::saturateInt32(numBytes);
-    bytes.resize(numBytes);
-    int readSize = reader->read(bytes.data(), intNumBytes, error);
-    if (readSize != intNumBytes) {
-        char message[Error::kMaxReasonLength];
-        StringUtils::format(message, sizeof(message),
-            "DDS: Unexpected data EOF (faceIndex=%u, mipmapIndex=%u, width=%u, height=%u, type=%d, format=%u, "
-            "expected=%d, actual=%d)",
-            faceIndex, mipmapIndex, width, height, type(), m_format, intNumBytes, readSize);
-        error = Error(message, 0, Error::kDomainTypeApplication);
-    }
-    if (m_format == SG_PIXELFORMAT_RGBA8 && m_header.m_pixelFormat.m_colorBitCount == 24) {
-        const nanoem_rsize_t numPixels = width * height;
-        ByteArray newPixels(numPixels * 4);
-        for (nanoem_rsize_t i = 0; i < numPixels; i++) {
-            const nanoem_u8_t *source = bytes.data() + i * 3;
-            nanoem_u8_t *dest = newPixels.data() + i * 4;
-            dest[0] = source[0];
-            dest[1] = source[1];
-            dest[2] = source[2];
-            dest[3] = 0xff;
+    char message[Error::kMaxReasonLength];
+    if (numBytes <= reader->size()) {
+        const int intNumBytes = Inline::saturateInt32(numBytes);
+        bytes.resize(numBytes);
+        int readSize = reader->read(bytes.data(), intNumBytes, error);
+        if (readSize != intNumBytes) {
+            StringUtils::format(message, sizeof(message),
+                "DDS: Unexpected data EOF (faceIndex=%u, mipmapIndex=%u, width=%u, height=%u, type=%d, format=%u, "
+                "expected=%d, actual=%d)",
+                faceIndex, mipmapIndex, width, height, type(), m_format, intNumBytes, readSize);
+            error = Error(message, 0, Error::kDomainTypeApplication);
         }
-        bytes = newPixels;
+        if (m_format == SG_PIXELFORMAT_RGBA8 && m_header.m_pixelFormat.m_colorBitCount == 24) {
+            const nanoem_rsize_t numPixels = width * height;
+            ByteArray newPixels(numPixels * 4);
+            for (nanoem_rsize_t i = 0; i < numPixels; i++) {
+                const nanoem_u8_t *source = bytes.data() + i * 3;
+                nanoem_u8_t *dest = newPixels.data() + i * 4;
+                dest[0] = source[0];
+                dest[1] = source[1];
+                dest[2] = source[2];
+                dest[3] = 0xff;
+            }
+            bytes = newPixels;
+        }
+    }
+    else {
+        StringUtils::format(
+            message, sizeof(message), "DDS: Too large image data to read (%lu < %lu)", numBytes, reader->size());
+        error = Error(message, 0, Error::kDomainTypeApplication);
     }
     return !error.hasReason();
 }
