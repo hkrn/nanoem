@@ -8,7 +8,8 @@ function(nanoem_emapp_build_emarb_credits)
     add_custom_command(OUTPUT ${output_path}
                        COMMAND ${CMAKE_COMMAND} ARGS -E copy ${CMAKE_CURRENT_SOURCE_DIR}/credits.md ${intermediate_path}
                        COMMAND $<TARGET_FILE:emarb_bin2c> ARGS --input=${intermediate_path} --symbol=credits_md > ${output_path}
-                       MAIN_DEPENDENCY ${input_path})
+                       MAIN_DEPENDENCY ${input_path}
+                       VERBATIM)
     add_custom_target(emarb_credits SOURCES ${output_path} "${CMAKE_CURRENT_SOURCE_DIR}/credits.md.in")
     set_property(TARGET emarb_credits PROPERTY FOLDER nanoem/resources)
     add_dependencies(emarb_credits emarb_bin2c)
