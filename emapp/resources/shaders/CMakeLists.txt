@@ -34,13 +34,15 @@ function(nanoem_emapp_shader_compile_vertex_shaders_fxc _source _include_path _i
                        /I${_include_path}
                        /Fo ${intermediate_dxbc_vs_filename}
                        ${source}
-                     MAIN_DEPENDENCY ${_source})
+                     MAIN_DEPENDENCY ${_source}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_dxbc_vs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_dxbc_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_dxbc
                        > ${output_dxbc_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_dxbc_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_dxbc_vs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_dxbc_vs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -55,13 +57,15 @@ function(nanoem_emapp_shader_compile_pixel_shaders_fxc _source _include_path _in
                        /I ${_include_path}
                        /Fo ${intermediate_dxbc_ps_filename}
                        ${source}
-                     MAIN_DEPENDENCY ${_source})
+                     MAIN_DEPENDENCY ${_source}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_dxbc_ps_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_dxbc_ps_filename}
                        --symbol=g_nanoem_${source_without_extension}_ps_dxbc
                        > ${output_dxbc_ps_filename}
-                     MAIN_DEPENDENCY ${intermediate_dxbc_ps_filename})
+                     MAIN_DEPENDENCY ${intermediate_dxbc_ps_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_dxbc_ps_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -76,13 +80,15 @@ function(nanoem_emapp_shader_compile_compute_shaders_fxc _source _include_path _
                        /I ${_include_path}
                        /Fo ${intermediate_dxbc_cs_filename}
                        ${source}
-                     MAIN_DEPENDENCY ${_source})
+                     MAIN_DEPENDENCY ${_source}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_dxbc_cs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_dxbc_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_ps_dxbc
                        > ${output_dxbc_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_dxbc_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_dxbc_cs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_dxbc_cs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -102,7 +108,8 @@ function(nanoem_emapp_shader_compile_vertex_shader_spirv _source _include_path _
                          -Os --strip-debug
                          ${intermediate_spirv_vs_filename}
                          -o ${intermediate_spirv_vs_filename}
-                       MAIN_DEPENDENCY ${_source})
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
   else()
     add_custom_command(OUTPUT ${intermediate_spirv_vs_filename}
                        COMMAND ${GLSLANG_PATH} ARGS
@@ -110,14 +117,16 @@ function(nanoem_emapp_shader_compile_vertex_shader_spirv _source _include_path _
                          ${glslang_vertex_shader_options}
                          -o ${intermediate_spirv_vs_filename}
                          ${source}
-                       MAIN_DEPENDENCY ${_source})
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
   endif()
   add_custom_command(OUTPUT ${output_spirv_vs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_spirv_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_spirv
                        > ${output_spirv_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_spirv_vs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -146,13 +155,15 @@ function(nanoem_emapp_shader_compile_vertex_shader_glsl_core33 _source _intermed
                        --rename-interface-variable out 4 v_eye
                        --rename-interface-variable out 5 v_shadow0
                        ${intermediate_spirv_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_glsl_vs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_glsl_core33
                        --as-string=true > ${output_glsl_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_glsl_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_glsl_vs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_vs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -181,13 +192,15 @@ function(nanoem_emapp_shader_compile_vertex_shader_glsl_es3 _source _intermediat
                        --rename-interface-variable out 4 v_eye
                        --rename-interface-variable out 5 v_shadow0
                        ${intermediate_spirv_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_glsl_vs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_glsl_es3
                        --as-string=true > ${output_glsl_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_glsl_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_glsl_vs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_vs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -203,31 +216,36 @@ function(nanoem_emapp_shader_compile_vertex_shader_msl _source _intermediate_pat
                        --output ${intermediate_msl_vs_filename}
                        --msl-version 10000
                        ${intermediate_spirv_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_vs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_vs_filename}.air
                      COMMAND ${XCRUN_PATH} ARGS
                        metal ${xcrun_metal_macos_options}
                        -o ${intermediate_msl_vs_filename}.air
                        ${intermediate_msl_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename})
+                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_vs_filename}.ar
                      COMMAND ${XCRUN_PATH} ARGS
                        metal-ar r
                        ${intermediate_msl_vs_filename}.ar
                        ${intermediate_msl_vs_filename}.air
-                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.air)
+                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.air
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_vs_filename}.lib
                      COMMAND ${XCRUN_PATH} ARGS
                        metallib
                        -o ${intermediate_msl_vs_filename}.lib
                        ${intermediate_msl_vs_filename}.ar
-                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.ar)
+                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.ar
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_msl_vs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_msl_vs_filename}.lib
                        --symbol=g_nanoem_${source_without_extension}_vs_msl_macos
                        > ${output_msl_vs_filename}
-                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.lib)
+                     MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.lib
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_msl_vs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -247,7 +265,8 @@ function(nanoem_emapp_shader_compile_pixel_shader_spirv _source _include_path _i
                          -Os --strip-debug
                          ${intermediate_spirv_fs_filename}
                          -o ${intermediate_spirv_fs_filename}
-                       MAIN_DEPENDENCY ${_source})
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
   else()
     add_custom_command(OUTPUT ${intermediate_spirv_fs_filename}
                        COMMAND ${GLSLANG_PATH} ARGS
@@ -255,14 +274,16 @@ function(nanoem_emapp_shader_compile_pixel_shader_spirv _source _include_path _i
                          ${glslang_pixel_shader_options}
                          -o ${intermediate_spirv_fs_filename}
                          ${source}
-                       MAIN_DEPENDENCY ${_source})
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
   endif()
   add_custom_command(OUTPUT ${output_spirv_fs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_spirv_fs_filename}
                        --symbol=g_nanoem_${source_without_extension}_fs_spirv
                        > ${output_spirv_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_spirv_fs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -283,13 +304,15 @@ function(nanoem_emapp_shader_compile_pixel_shader_glsl_core33 _source _intermedi
                        --rename-interface-variable in 4 v_eye
                        --rename-interface-variable in 5 v_shadow0
                        ${intermediate_spirv_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_glsl_fs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_fs_filename}
                        --symbol=g_nanoem_${source_without_extension}_fs_glsl_core33
                        --as-string=true > ${output_glsl_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_glsl_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_glsl_fs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_fs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -310,13 +333,15 @@ function(nanoem_emapp_shader_compile_pixel_shader_glsl_es3 _source _intermediate
                        --rename-interface-variable in 4 v_eye
                        --rename-interface-variable in 5 v_shadow0
                        ${intermediate_spirv_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_glsl_fs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_fs_filename}
                        --symbol=g_nanoem_${source_without_extension}_fs_glsl_es3
                        --as-string=true > ${output_glsl_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_glsl_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_glsl_fs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_fs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -332,31 +357,36 @@ function(nanoem_emapp_shader_compile_pixel_shader_msl _source _intermediate_path
                        --output ${intermediate_msl_fs_filename}
                        --msl-version 10000
                        ${intermediate_spirv_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_fs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_fs_filename}.air
                      COMMAND ${XCRUN_PATH} ARGS
                        metal ${xcrun_metal_macos_options}
                        -o ${intermediate_msl_fs_filename}.air
                        ${intermediate_msl_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename})
+                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_fs_filename}.ar
                      COMMAND ${XCRUN_PATH} ARGS
                        metal-ar r
                        ${intermediate_msl_fs_filename}.ar
                        ${intermediate_msl_fs_filename}.air
-                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.air)
+                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.air
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_fs_filename}.lib
                      COMMAND ${XCRUN_PATH} ARGS
                        metallib
                        -o ${intermediate_msl_fs_filename}.lib
                        ${intermediate_msl_fs_filename}.ar
-                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.ar)
+                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.ar
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_msl_fs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_msl_fs_filename}.lib
                        --symbol=g_nanoem_${source_without_extension}_fs_msl_macos
                        > ${output_msl_fs_filename}
-                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.lib)
+                     MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.lib
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_msl_fs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -377,7 +407,8 @@ function(nanoem_emapp_shader_compile_compute_shader_spirv _source _include_path 
                          -Os --strip-debug
                          ${intermediate_spirv_cs_filename}
                          -o ${intermediate_spirv_cs_filename}
-                       MAIN_DEPENDENCY ${_source})
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
   else()
     add_custom_command(OUTPUT ${intermediate_spirv_cs_filename}
                        COMMAND ${GLSLANG_PATH} ARGS
@@ -386,14 +417,16 @@ function(nanoem_emapp_shader_compile_compute_shader_spirv _source _include_path 
                          ${glslang_compute_shader_options}
                          -o ${intermediate_spirv_cs_filename}
                          ${source}
-                       MAIN_DEPENDENCY ${_source})
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
   endif()
   add_custom_command(OUTPUT ${output_spirv_cs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_spirv_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_cs_spirv
                        > ${output_spirv_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_spirv_cs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -408,13 +441,15 @@ function(nanoem_emapp_shader_compile_compute_shader_glsl_core43 _source _interme
                        ${spirv_cross_glsl_core43_options}
                        --output ${intermediate_glsl_cs_filename}
                        ${intermediate_spirv_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_glsl_cs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_cs_glsl_core43
                        --as-string=true > ${output_glsl_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_glsl_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_glsl_cs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_cs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -429,13 +464,15 @@ function(nanoem_emapp_shader_compile_compute_shader_glsl_es31 _source _intermedi
                        ${spirv_cross_glsl_es31_options}
                        --output ${intermediate_glsl_cs_filename}
                        ${intermediate_spirv_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_glsl_cs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_cs_glsl_es31
                        --as-string=true > ${output_glsl_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_glsl_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_glsl_cs_filename}
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_cs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -452,31 +489,36 @@ function(nanoem_emapp_shader_compile_compute_shader_msl _source _intermediate_pa
                        --msl-version 20000
                        --msl-argument-buffers
                        ${intermediate_spirv_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_spirv_cs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_cs_filename}.air
                      COMMAND ${XCRUN_PATH} ARGS
                        metal ${xcrun_metal_macos_options}
                        -o ${intermediate_msl_cs_filename}.air
                        ${intermediate_msl_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename})
+                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_cs_filename}.ar
                      COMMAND ${XCRUN_PATH} ARGS
                        metal-ar r
                        ${intermediate_msl_cs_filename}.ar
                        ${intermediate_msl_cs_filename}.air
-                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.air)
+                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.air
+                     VERBATIM)
   add_custom_command(OUTPUT ${intermediate_msl_cs_filename}.lib
                      COMMAND ${XCRUN_PATH} ARGS
                        metallib
                        -o ${intermediate_msl_cs_filename}.lib
                        ${intermediate_msl_cs_filename}.ar
-                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.ar)
+                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.ar
+                     VERBATIM)
   add_custom_command(OUTPUT ${output_msl_cs_filename}
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_msl_cs_filename}.lib
                        --symbol=g_nanoem_${source_without_extension}_cs_msl_macos
                        > ${output_msl_cs_filename}
-                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.lib)
+                     MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.lib
+                     VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_msl_cs_filename}" PARENT_SCOPE)
 endfunction()
 
@@ -548,7 +590,8 @@ function(nanoem_emapp_shader_compile_all_shaders)
       endforeach()
       file(GENERATE OUTPUT ${intermediate_path_prefix}/copy.cmake CONTENT ${content})
       add_custom_command(TARGET emarb_shader
-                         POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -P ${intermediate_path_prefix}/copy.cmake)
+                         POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -P ${intermediate_path_prefix}/copy.cmake
+                         VERBATIM)
     endif()
   endif()
   message(STATUS "[emapp/resources] setup emarb shaders")

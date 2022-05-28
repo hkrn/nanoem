@@ -11,7 +11,8 @@ function(nanoem_emapp_build_emarb_toon)
                        COMMAND ${CMAKE_COMMAND} -E env ASAN_OPTIONS="detect_leaks=0"
                                $<TARGET_FILE:emarb_bin2c> --input=${intermediate_path_prefix}/${_filename} --symbol=${_name} --compressed=false
                                > ${output_path_prefix}/${_name}.h
-                       MAIN_DEPENDENCY ${_item})
+                       MAIN_DEPENDENCY ${_item}
+                       VERBATIM)
     list(APPEND _sources ${output_path_prefix}/${_name}.h)
   endforeach()
   add_custom_target(emarb_toon DEPENDS ${_sources})

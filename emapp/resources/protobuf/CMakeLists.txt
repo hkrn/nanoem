@@ -22,7 +22,8 @@ function(nanoem_emapp_build_emarb_protoc)
                          COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${intermediate_source_path} ${output_source_path}
                          COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${intermediate_header_path} ${output_header_path}
                          WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                         MAIN_DEPENDENCY ${item})
+                         MAIN_DEPENDENCY ${item}
+                         VERBATIM)
       list(APPEND generated_sources ${intermediate_source_path})
       list(APPEND generated_sources ${intermediate_header_path})
     endforeach()

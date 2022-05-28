@@ -86,7 +86,8 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/fx9/Syntax.c
                            $<TARGET_FILE:fx9_lemon> -T${FX9_PATH}/lemon/lempar.c
                            -q ${CMAKE_CURRENT_BINARY_DIR}/fx9/Syntax.y
                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-                   MAIN_DEPENDENCY ${FX9_PATH}/src/Syntax.y)
+                   MAIN_DEPENDENCY ${FX9_PATH}/src/Syntax.y
+                   VERBATIM)
 add_custom_target(fx9_gen_parser SOURCES ${CMAKE_CURRENT_BINARY_DIR}/fx9/Syntax.c)
 add_dependencies(fx9_gen_parser fx9_lemon)
 set_property(TARGET fx9_gen_parser PROPERTY FOLDER dependencies/effect)

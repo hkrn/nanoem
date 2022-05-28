@@ -45,13 +45,15 @@ else()
     add_custom_command(OUTPUT ${touch_file}
                        COMMAND ${CMAKE_COMMAND} -E touch ${touch_file}
                        COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/main.cc
-                       DEPENDS ${_item})
+                       DEPENDS ${_item}
+                       VERBATIM)
     add_custom_target(${_item}_touch_sapp DEPENDS ${touch_file})
     set_property(TARGET ${_item}_touch_sapp PROPERTY FOLDER plugins/touch)
     add_dependencies(${NANOEM_EXECUTABLE_NAME} ${_item}_touch_sapp)
     add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
                        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins"
-                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${_item}>" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/$<TARGET_FILE_NAME:${_item}>")
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${_item}>" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/$<TARGET_FILE_NAME:${_item}>"
+                       VERBATIM)
   endforeach()
 endif()
 
@@ -60,7 +62,8 @@ if(WIN32 AND TARGET plugin_ffmpeg)
   foreach(_item ${_libraries})
     get_filename_component(_filename ${${_item}} NAME)
     add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD DEPENDS plugin_ffmpeg
-                       COMMAND ${CMAKE_COMMAND} -E copy "${${_item}}" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/${_filename}")
+                       COMMAND ${CMAKE_COMMAND} -E copy "${${_item}}" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/${_filename}"
+                       VERBATIM)
   endforeach()
 endif()
 

@@ -31,13 +31,15 @@ foreach(_item ${_plugins})
   add_custom_command(OUTPUT ${touch_file}
                      COMMAND ${CMAKE_COMMAND} -E touch ${touch_file}
                      COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/main.cc
-                     DEPENDS ${_item})
+                     DEPENDS ${_item}
+                     VERBATIM)
   add_custom_target(${_item}_touch_glfw_st DEPENDS ${touch_file})
   set_property(TARGET ${_item}_touch_glfw_st PROPERTY FOLDER plugins/touch)
   add_dependencies(${NANOEM_EXECUTABLE_NAME} ${_item}_touch_glfw_st)
   add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
                      COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins"
-                     COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${_item}>" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/$<TARGET_FILE_NAME:${_item}>")
+                     COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${_item}>" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/$<TARGET_FILE_NAME:${_item}>"
+                     VERBATIM)
 endforeach()
 
 if(TARGET plugin_ffmpeg)
@@ -47,7 +49,8 @@ if(TARGET plugin_ffmpeg)
     if(NOT TARGET ${_item})
       get_filename_component(_directory ${_item} DIRECTORY)
       add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD DEPENDS plugin_ffmpeg
-                         COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${_item}" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/${_filename}")
+                         COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${_item}" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/${_filename}"
+                         VERBATIM)
       list(APPEND LIBRARY_PATHS ${_directory})
       install(FILES "${_item}" DESTINATION plugins)
     endif()
