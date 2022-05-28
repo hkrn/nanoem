@@ -8,13 +8,13 @@
 macOS 版
 -------------------------------------------------------
 
-.. caution::
-  - CPU を最大限に使う（悪く言えば酷使する）特性のため MacBook 系列上で使うとバッテリー駆動の場合はバッテリーが急激に減り、かつファンがうるさく鳴ります
-  - `macOS 10.13.4 から外付け GPU に対応 <https://support.apple.com/ja-jp/HT208544>`_ していますが nanoem では動作未確認です
+.. important::
+   35.0 以降から Apple Silicon 版のみとし Intel Mac 版は廃止予定です
 
 - macOS 10.13 以上かつ 64bit 環境 (31.0 から Apple Silicon 対応) [#f1]_
 
   - `Metal が動作する環境 <https://support.apple.com/ja-jp/HT205073>`_ を確認してください
+  - `macOS 10.13.4 から外付け GPU に対応 <https://support.apple.com/ja-jp/HT208544>`_ していますが nanoem では動作未確認です
   - 10.12 以下であっても 10.9 以上であれば動かせますが主にハードウェア的な問題で満足に動かせない可能性が高いためサポート対象外とさせていただきます
 
 - 1280x800 以上の画面
@@ -34,8 +34,8 @@ Windows 版
 Linux 版
 -------------------------------------------------------
 
-.. note::
-   現状は `ソースからビルド <https://github.com/hkrn/nanoem/>`_ のみに限られます
+.. caution::
+   リリースの配布物に含まれません。そのため `ソースコードからのビルド <https://github.com/hkrn/nanoem/>`_ のみに限られます
 
 - 64bit 環境
 - OpenGL 3.3 以上または OpenGL ES 3.0 以上
