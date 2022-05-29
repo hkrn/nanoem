@@ -107,9 +107,7 @@ fn inner_set_data_internal(
 }
 
 pub(crate) fn initialize_env_logger() {
-    if atty::is(atty::Stream::Stderr) {
-        tracing_subscriber::fmt::try_init().unwrap_or_default();
-    }
+    tracing_subscriber::fmt::try_init().unwrap_or_default();
 }
 
 pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
