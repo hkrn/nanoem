@@ -40,7 +40,7 @@ function(nanoem_emapp_shader_compile_vertex_shaders_fxc _source _include_path _i
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_dxbc_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_dxbc
-                       > ${output_dxbc_vs_filename}
+                       --output=${output_dxbc_vs_filename}
                      MAIN_DEPENDENCY ${intermediate_dxbc_vs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_dxbc_vs_filename}" PARENT_SCOPE)
@@ -63,7 +63,7 @@ function(nanoem_emapp_shader_compile_pixel_shaders_fxc _source _include_path _in
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_dxbc_ps_filename}
                        --symbol=g_nanoem_${source_without_extension}_ps_dxbc
-                       > ${output_dxbc_ps_filename}
+                       --output=${output_dxbc_ps_filename}
                      MAIN_DEPENDENCY ${intermediate_dxbc_ps_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_dxbc_ps_filename}" PARENT_SCOPE)
@@ -86,7 +86,7 @@ function(nanoem_emapp_shader_compile_compute_shaders_fxc _source _include_path _
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_dxbc_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_ps_dxbc
-                       > ${output_dxbc_cs_filename}
+                       --output=${output_dxbc_cs_filename}
                      MAIN_DEPENDENCY ${intermediate_dxbc_cs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_dxbc_cs_filename}" PARENT_SCOPE)
@@ -124,7 +124,7 @@ function(nanoem_emapp_shader_compile_vertex_shader_spirv _source _include_path _
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_spirv_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_spirv
-                       > ${output_spirv_vs_filename}
+                       --output=${output_spirv_vs_filename}
                      MAIN_DEPENDENCY ${intermediate_spirv_vs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_spirv_vs_filename}" PARENT_SCOPE)
@@ -161,7 +161,8 @@ function(nanoem_emapp_shader_compile_vertex_shader_glsl_core33 _source _intermed
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_glsl_core33
-                       --as-string=true > ${output_glsl_vs_filename}
+                       --as-string=true
+                       --output=${output_glsl_vs_filename}
                      MAIN_DEPENDENCY ${intermediate_glsl_vs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_vs_filename}" PARENT_SCOPE)
@@ -198,7 +199,8 @@ function(nanoem_emapp_shader_compile_vertex_shader_glsl_es3 _source _intermediat
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_vs_filename}
                        --symbol=g_nanoem_${source_without_extension}_vs_glsl_es3
-                       --as-string=true > ${output_glsl_vs_filename}
+                       --as-string=true
+                       --output=${output_glsl_vs_filename}
                      MAIN_DEPENDENCY ${intermediate_glsl_vs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_vs_filename}" PARENT_SCOPE)
@@ -243,7 +245,7 @@ function(nanoem_emapp_shader_compile_vertex_shader_msl _source _intermediate_pat
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_msl_vs_filename}.lib
                        --symbol=g_nanoem_${source_without_extension}_vs_msl_macos
-                       > ${output_msl_vs_filename}
+                       --output=${output_msl_vs_filename}
                      MAIN_DEPENDENCY ${intermediate_msl_vs_filename}.lib
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_msl_vs_filename}" PARENT_SCOPE)
@@ -281,7 +283,7 @@ function(nanoem_emapp_shader_compile_pixel_shader_spirv _source _include_path _i
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_spirv_fs_filename}
                        --symbol=g_nanoem_${source_without_extension}_fs_spirv
-                       > ${output_spirv_fs_filename}
+                       --output=${output_spirv_fs_filename}
                      MAIN_DEPENDENCY ${intermediate_spirv_fs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_spirv_fs_filename}" PARENT_SCOPE)
@@ -310,7 +312,8 @@ function(nanoem_emapp_shader_compile_pixel_shader_glsl_core33 _source _intermedi
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_fs_filename}
                        --symbol=g_nanoem_${source_without_extension}_fs_glsl_core33
-                       --as-string=true > ${output_glsl_fs_filename}
+                       --as-string=true
+                       --output=${output_glsl_fs_filename}
                      MAIN_DEPENDENCY ${intermediate_glsl_fs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_fs_filename}" PARENT_SCOPE)
@@ -339,7 +342,8 @@ function(nanoem_emapp_shader_compile_pixel_shader_glsl_es3 _source _intermediate
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_fs_filename}
                        --symbol=g_nanoem_${source_without_extension}_fs_glsl_es3
-                       --as-string=true > ${output_glsl_fs_filename}
+                       --as-string=true
+                       --output=${output_glsl_fs_filename}
                      MAIN_DEPENDENCY ${intermediate_glsl_fs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_fs_filename}" PARENT_SCOPE)
@@ -384,7 +388,7 @@ function(nanoem_emapp_shader_compile_pixel_shader_msl _source _intermediate_path
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_msl_fs_filename}.lib
                        --symbol=g_nanoem_${source_without_extension}_fs_msl_macos
-                       > ${output_msl_fs_filename}
+                       --output=${output_msl_fs_filename}
                      MAIN_DEPENDENCY ${intermediate_msl_fs_filename}.lib
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_msl_fs_filename}" PARENT_SCOPE)
@@ -424,7 +428,7 @@ function(nanoem_emapp_shader_compile_compute_shader_spirv _source _include_path 
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_spirv_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_cs_spirv
-                       > ${output_spirv_cs_filename}
+                       --output=${output_spirv_cs_filename}
                      MAIN_DEPENDENCY ${intermediate_spirv_cs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_spirv_cs_filename}" PARENT_SCOPE)
@@ -447,7 +451,8 @@ function(nanoem_emapp_shader_compile_compute_shader_glsl_core43 _source _interme
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_cs_glsl_core43
-                       --as-string=true > ${output_glsl_cs_filename}
+                       --as-string=true
+                       --output=${output_glsl_cs_filename}
                      MAIN_DEPENDENCY ${intermediate_glsl_cs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_cs_filename}" PARENT_SCOPE)
@@ -470,7 +475,8 @@ function(nanoem_emapp_shader_compile_compute_shader_glsl_es31 _source _intermedi
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_glsl_cs_filename}
                        --symbol=g_nanoem_${source_without_extension}_cs_glsl_es31
-                       --as-string=true > ${output_glsl_cs_filename}
+                       --as-string=true
+                       --output=${output_glsl_cs_filename}
                      MAIN_DEPENDENCY ${intermediate_glsl_cs_filename}
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_cs_filename}" PARENT_SCOPE)
@@ -516,7 +522,7 @@ function(nanoem_emapp_shader_compile_compute_shader_msl _source _intermediate_pa
                      COMMAND $<TARGET_FILE:emarb_bin2c> ARGS
                        --input=${intermediate_msl_cs_filename}.lib
                        --symbol=g_nanoem_${source_without_extension}_cs_msl_macos
-                       > ${output_msl_cs_filename}
+                       --output=${output_msl_cs_filename}
                      MAIN_DEPENDENCY ${intermediate_msl_cs_filename}.lib
                      VERBATIM)
   set(${_generated_sources} "${${_generated_sources}};${output_msl_cs_filename}" PARENT_SCOPE)
