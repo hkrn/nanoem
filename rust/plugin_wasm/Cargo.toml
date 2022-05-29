@@ -7,7 +7,6 @@ license = "MPL-2.0"
 
 [dependencies]
 anyhow = "1"
-atty = "0.2"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 wasmer = "2"
