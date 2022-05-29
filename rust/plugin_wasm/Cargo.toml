@@ -8,8 +8,8 @@ license = "MPL-2.0"
 [dependencies]
 anyhow = "1"
 atty = "0.2"
-env_logger = "0.9"
-log = "0.4"
+tracing = "0.1"
+tracing-subscriber = "0.3"
 wasmer = "2"
 wasmer-wasi = "2"
 walkdir = "2"
@@ -25,4 +25,3 @@ pretty_assertions = "1.2"
 [lib]
 path = "src/lib.rs"
 crate-type = ["cdylib"]
-
