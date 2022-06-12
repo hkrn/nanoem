@@ -211,8 +211,8 @@ nanoemMutableMotionEffectParameterSetValue(nanoem_mutable_motion_effect_paramete
  *
  * All children of the opaque effect parameter object are cloned and added to the destination \b new_parameter
  *
- * \param new_parameter
- * \param parameter The opaque effect parameter object
+ * \param new_parameter The destination opaque effect parameter object
+ * \param parameter The source opaque effect parameter object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -311,8 +311,8 @@ nanoemMutableMotionOutsideParentSetSubjectBoneName(nanoem_mutable_motion_outside
  *
  * All children of the opaque motion outside parent object are cloned and added to the destination \b new_op
  *
- * \param new_op
- * \param op The opaque outside parent object
+ * \param new_op The destination opaque outside parent object
+ * \param op The source opaque outside parent object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -449,8 +449,8 @@ nanoemMutableMotionAccessoryKeyframeSetOutsideParent(nanoem_mutable_motion_acces
  *
  * All children of the opaque motion accessory keyframe object are cloned and added to the destination \b new_keyframe
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -579,8 +579,8 @@ nanoemMutableMotionBoneKeyframeSetPhysicsSimulationEnabled(nanoem_mutable_motion
 /**
  * \brief Copy contents of the given opaque motion bone keyframe object
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionBoneKeyframeCopy(nanoem_mutable_motion_bone_keyframe_t *new_keyframe, const nanoem_motion_bone_keyframe_t *keyframe);
@@ -725,8 +725,8 @@ nanoemMutableMotionCameraKeyframeSetStageIndex(nanoem_mutable_motion_camera_keyf
 /**
  * \brief Copy contents of the given opaque motion camera keyframe object
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionCameraKeyframeCopy(nanoem_mutable_motion_camera_keyframe_t *new_keyframe, const nanoem_motion_camera_keyframe_t *keyframe);
@@ -815,8 +815,8 @@ nanoemMutableMotionLightKeyframeSetDirection(nanoem_mutable_motion_light_keyfram
 /**
  * \brief Copy contents of the given opaque motion light keyframe object
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionLightKeyframeCopy(nanoem_mutable_motion_light_keyframe_t *new_keyframe, const nanoem_motion_light_keyframe_t *keyframe);
@@ -933,8 +933,8 @@ nanoemMutableMotionModelKeyframeSetPhysicsSimulationEnabled(nanoem_mutable_motio
  *
  * All children of the opaque motion model keyframe object are cloned and added to the destination \b new_keyframe
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  * \param[in,out] status \b NANOEM_STATUS_SUCCESS is set if succeeded, otherwise sets the others
  */
 NANOEM_DECL_API void APIENTRY
@@ -1152,8 +1152,8 @@ nanoemMutableMotionMorphKeyframeSetWeight(nanoem_mutable_motion_morph_keyframe_t
 /**
  * \brief Copy contents of the given opaque motion morph keyframe object
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionMorphKeyframeCopy(nanoem_mutable_motion_morph_keyframe_t *new_keyframe, const nanoem_motion_morph_keyframe_t *keyframe);
@@ -1240,8 +1240,8 @@ nanoemMutableMotionSelfShadowKeyframeSetMode(nanoem_mutable_motion_self_shadow_k
 /**
  * \brief Copy contents of the given opaque motion self shadow keyframe object
  *
- * \param new_keyframe
- * \param keyframe The opaque motion keyframe object
+ * \param new_keyframe The destination opaque motion keyframe object
+ * \param keyframe The source opaque motion keyframe object
  */
 NANOEM_DECL_API void APIENTRY
 nanoemMutableMotionSelfShadowKeyframeCopy(nanoem_mutable_motion_self_shadow_keyframe_t *new_keyframe, const nanoem_motion_self_shadow_keyframe_t *keyframe);

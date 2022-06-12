@@ -1566,7 +1566,7 @@ nanoemModelConstraintGetNumIterations(const nanoem_model_constraint_t *constrain
 /**
  * \brief Get all constraint joints from the given opaque model constraint object
  *
- * \param constraint The opaque model constraint objects
+ * \param constraints The opaque model constraint objects
  * \param[out] num_joints Number of all joints in the object
  */
 NANOEM_DECL_API nanoem_model_constraint_joint_t *const *APIENTRY
@@ -2176,7 +2176,7 @@ nanoemModelLabelGetAllItemObjects(const nanoem_model_label_t *label, nanoem_rsiz
 /**
  * \brief Get the type from the given opaque model label item object
  *
- * \param label The opaque model label object_item
+ * \param label_item The opaque model label object_item
  */
 NANOEM_DECL_API nanoem_model_label_item_type_t APIENTRY
 nanoemModelLabelItemGetType(const nanoem_model_label_item_t *label_item);
@@ -2186,7 +2186,7 @@ nanoemModelLabelItemGetType(const nanoem_model_label_item_t *label_item);
  *
  * The function returns valid only ::nanoemModelLabelItemGetType is \b NANOEM_MODEL_LABEL_ITEM_TYPE_BONE
  *
- * \param label The opaque model label object_item
+ * \param label_item The opaque model label object_item
  */
 NANOEM_DECL_API const nanoem_model_bone_t *APIENTRY
 nanoemModelLabelItemGetBoneObject(const nanoem_model_label_item_t *label_item);
@@ -2196,7 +2196,7 @@ nanoemModelLabelItemGetBoneObject(const nanoem_model_label_item_t *label_item);
  *
  * The function returns valid only ::nanoemModelLabelItemGetType is \b NANOEM_MODEL_LABEL_ITEM_TYPE_MORPH
  *
- * \param label The opaque model label object_item
+ * \param label_item The opaque model label object_item
  */
 NANOEM_DECL_API const nanoem_model_morph_t *APIENTRY
 nanoemModelLabelItemGetMorphObject(const nanoem_model_label_item_t *label_item);
@@ -2408,7 +2408,7 @@ NANOEM_DECL_ENUM(nanoem_i32_t, nanoem_model_joint_type_t){
 /**
  * \brief Get the model joint name corresponding language type
  *
- * \param joint The opaque model joint objects
+ * \param joints The opaque model joint objects
  * \param language The language to get
  */
 NANOEM_DECL_API const nanoem_unicode_string_t *APIENTRY
@@ -2880,7 +2880,7 @@ nanoemModelSoftBodyIsRandomizeConstraintsNeeded(const nanoem_model_soft_body_t *
 /**
  * \brief Get the opaque model soft body object from the given opaque model soft body anchor object
  *
- * \param soft_body The opaque model soft body object
+ * \param anchor The opaque model soft body object
  */
 NANOEM_DECL_API const nanoem_model_rigid_body_t *APIENTRY
 nanoemModelSoftBodyAnchorGetRigidBodyObject(const nanoem_model_soft_body_anchor_t *anchor);
@@ -4396,7 +4396,7 @@ nanoemUserDataGetOpaqueData(const nanoem_user_data_t *user_data);
  * \brief Set the user defined opaque data to the given opaque user data object
  *
  * \param user_data The opaque user data object
- * \param op The opaque motion outside parent objectaque
+ * \param opaque The opaque motion outside parent objectaque
  */
 NANOEM_DECL_API void APIENTRY
 nanoemUserDataSetOpaqueData(nanoem_user_data_t *user_data, void *opaque);
