@@ -936,46 +936,10 @@ DefaultFileManager::loadModel(
         }
     }
     else if (Model::isLoadableExtension(fileURI)) {
-        Model *model = project->createModel();
-        if (loadModel(fileURI, model, error)) {
-            const ModalDialogFactory::AddingModelDialogCallback callback(handleAddingModelDialog, this);
-            if (type == kDialogTypeLoadModelFile) {
-                IModalDialog *dialog =
-                    ModalDialogFactory::createLoadingModelConfirmDialog(m_applicationPtr, model, callback);
-                dialog->onAccepted(project);
-                succeeded = !dialog->isCancelled();
-                nanoem_delete(dialog);
-            }
-            else {
-                m_applicationPtr->addModalDialog(
-                    ModalDialogFactory::createLoadingModelConfirmDialog(m_applicationPtr, model, callback));
-                /* force adding confirm saving project dialog */
-                project->globalCamera()->setDirty(true);
-                succeeded = true;
-            }
-        }
-        if (!succeeded) {
-            project->removeModel(model);
-            project->destroyModel(model);
-        }
+        succeeded = m_applicationPtr->hasModalDialog() ? true : internalLoadModel(fileURI, type, project, error);
     }
     else if (Accessory::isLoadableExtension(fileURI)) {
-        Accessory *accessory = project->createAccessory();
-        Progress progress(project, 0);
-        if (loadAccessory(fileURI, accessory, progress, error)) {
-            project->loadAttachedDrawableEffect(accessory, progress, error);
-            succeeded = !error.isCancelled() && !error.hasReason();
-            if (succeeded) {
-                accessory->setName(fileURI.lastPathComponent());
-                project->addAccessory(accessory);
-                project->setActiveAccessory(accessory);
-            }
-        }
-        if (!succeeded) {
-            project->removeAccessory(accessory);
-            project->destroyAccessory(accessory);
-        }
-        progress.complete();
+        succeeded = internalLoadAccessory(fileURI, project, error);
     }
     else if (fileURI.pathExtension() == String("vac")) {
         VACData data(project->unicodeStringFactory());
@@ -985,7 +949,7 @@ DefaultFileManager::loadModel(
             newAccessoryPath.append(data.m_filename.c_str());
             Accessory *accessory = project->createAccessory();
             Progress progress(project, 0);
-            if (loadAccessory(URI::createFromFilePath(newAccessoryPath), accessory, progress, error)) {
+            if (internalLoadAccessoryFromFile(URI::createFromFilePath(newAccessoryPath), accessory, progress, error)) {
                 project->loadAttachedDrawableEffect(accessory, progress, error);
                 succeeded = !error.isCancelled() && !error.hasReason();
                 if (succeeded) {
@@ -1009,48 +973,6 @@ DefaultFileManager::loadModel(
         String reason("Unsupported loading model type: ");
         reason.append(fileURI.absolutePathConstString());
         error = Error(reason.c_str(), nullptr, Error::kDomainTypeApplication);
-    }
-    return succeeded;
-}
-
-bool
-DefaultFileManager::loadModel(const URI &fileURI, Model *model, Error &error)
-{
-    nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
-    nanoem_parameter_assert(model, "must NOT be nullptr");
-    FileReaderScope scope(&m_translator);
-    bool succeeded = false;
-    if (scope.open(fileURI, error)) {
-        ByteArray bytes;
-        FileUtils::read(scope, bytes, error);
-        if (!error.hasReason() && model->load(bytes, error)) {
-            model->setFileURI(fileURI);
-            succeeded = true;
-        }
-    }
-    return succeeded;
-}
-
-bool
-DefaultFileManager::loadAccessory(const URI &fileURI, Accessory *accessory, Progress &progress, Error &error)
-{
-    nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
-    nanoem_parameter_assert(accessory, "must not be nullptr");
-    FileReaderScope scope(&m_translator);
-    bool succeeded = false;
-    progress.tryLoadingItem(fileURI);
-    if (scope.open(fileURI, error)) {
-        ByteArray bytes;
-        FileUtils::read(scope, bytes, error);
-        if (!error.hasReason() && accessory->load(bytes, error)) {
-            accessory->setFileURI(fileURI);
-            accessory->upload();
-            accessory->loadAllImages(progress, error);
-            succeeded = !error.isCancelled();
-            if (succeeded) {
-                accessory->writeLoadCommandMessage(error);
-            }
-        }
     }
     return succeeded;
 }
@@ -1200,6 +1122,100 @@ bool
 DefaultFileManager::loadEffectSource(const URI &fileURI, Project *project, Error &error)
 {
     return internalLoadEffectSourceFile(setEffectCallback, fileURI, project, error);
+}
+
+bool
+DefaultFileManager::internalLoadAccessory(const URI &fileURI, Project *project, Error &error)
+{
+    Accessory *accessory = project->createAccessory();
+    Progress progress(project, 0);
+    bool succeeded = false;
+    if (internalLoadAccessoryFromFile(fileURI, accessory, progress, error)) {
+        project->loadAttachedDrawableEffect(accessory, progress, error);
+        succeeded = !error.isCancelled() && !error.hasReason();
+        if (succeeded) {
+            accessory->setName(fileURI.lastPathComponent());
+            project->addAccessory(accessory);
+            project->setActiveAccessory(accessory);
+        }
+    }
+    if (!succeeded) {
+        project->removeAccessory(accessory);
+        project->destroyAccessory(accessory);
+    }
+    progress.complete();
+    return succeeded;
+}
+
+bool
+DefaultFileManager::internalLoadModel(const URI &fileURI, DialogType type, Project *project, Error &error)
+{
+    Model *model = project->createModel();
+    bool succeeded = false;
+    if (internalLoadModelFromFile(fileURI, model, error)) {
+        const ModalDialogFactory::AddingModelDialogCallback callback(handleAddingModelDialog, this);
+        if (type == kDialogTypeLoadModelFile) {
+            IModalDialog *dialog =
+                ModalDialogFactory::createLoadingModelConfirmDialog(m_applicationPtr, model, callback);
+            dialog->onAccepted(project);
+            succeeded = !dialog->isCancelled();
+            nanoem_delete(dialog);
+        }
+        else {
+            m_applicationPtr->addModalDialog(
+                ModalDialogFactory::createLoadingModelConfirmDialog(m_applicationPtr, model, callback));
+            /* force adding confirm saving project dialog */
+            project->globalCamera()->setDirty(true);
+            succeeded = true;
+        }
+    }
+    if (!succeeded) {
+        project->removeModel(model);
+        project->destroyModel(model);
+    }
+    return succeeded;
+}
+
+bool
+DefaultFileManager::internalLoadAccessoryFromFile(const URI &fileURI, Accessory *accessory, Progress &progress, Error &error)
+{
+    nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
+    nanoem_parameter_assert(accessory, "must not be nullptr");
+    FileReaderScope scope(&m_translator);
+    bool succeeded = false;
+    progress.tryLoadingItem(fileURI);
+    if (scope.open(fileURI, error)) {
+        ByteArray bytes;
+        FileUtils::read(scope, bytes, error);
+        if (!error.hasReason() && accessory->load(bytes, error)) {
+            accessory->setFileURI(fileURI);
+            accessory->upload();
+            accessory->loadAllImages(progress, error);
+            succeeded = !error.isCancelled();
+            if (succeeded) {
+                accessory->writeLoadCommandMessage(error);
+            }
+        }
+    }
+    return succeeded;
+}
+
+bool
+DefaultFileManager::internalLoadModelFromFile(const URI &fileURI, Model *model, Error &error)
+{
+    nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
+    nanoem_parameter_assert(model, "must NOT be nullptr");
+    FileReaderScope scope(&m_translator);
+    bool succeeded = false;
+    if (scope.open(fileURI, error)) {
+        ByteArray bytes;
+        FileUtils::read(scope, bytes, error);
+        if (!error.hasReason() && model->load(bytes, error)) {
+            model->setFileURI(fileURI);
+            succeeded = true;
+        }
+    }
+    return succeeded;
 }
 
 bool
