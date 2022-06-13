@@ -5379,13 +5379,10 @@ void
 Effect::destroyAllRenderTargetColorImages(NamedRenderTargetColorImageContainerMap &containers)
 {
     SG_PUSH_GROUPF("Effect::destroyAllRenderTargetColorImages(size=%d)", containers.size());
-    sg_image invalid = { SG_INVALID_ID };
     for (NamedRenderTargetColorImageContainerMap::iterator it = containers.begin(), end = containers.end(); it != end;
          ++it) {
-        RenderTargetColorImageContainer *container = it->second,
-                                        *sharedContainer =
-                                            m_project->findSharedRenderTargetImageContainer(it->first, this);
-        container->destroy(this, sharedContainer ? sharedContainer->colorImageHandle() : invalid);
+        RenderTargetColorImageContainer *container = it->second;
+        container->destroy(this);
         nanoem_delete(container);
     }
     containers.clear();
@@ -5413,10 +5410,8 @@ Effect::destroyAllOffscreenRenderTargetImages(OffscreenRenderTargetImageContaine
     sg_image invalid = { SG_INVALID_ID };
     for (OffscreenRenderTargetImageContainerMap::iterator it = containers.begin(), end = containers.end(); it != end;
          ++it) {
-        const RenderTargetColorImageContainer *sharedContainer =
-            m_project->findSharedRenderTargetImageContainer(it->first, this);
         OffscreenRenderTargetImageContainer *container = it->second;
-        container->destroy(this, sharedContainer ? sharedContainer->colorImageHandle() : invalid);
+        container->destroy(this);
         nanoem_delete(container);
     }
     containers.clear();

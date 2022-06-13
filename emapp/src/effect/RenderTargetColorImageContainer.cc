@@ -159,26 +159,14 @@ void
 RenderTargetColorImageContainer::destroy(Effect *effect) NANOEM_DECL_NOEXCEPT
 {
     SG_PUSH_GROUPF("effect::RenderTargetColorImageContainer::destroy(name=%s)", m_name.c_str());
-    effect->removeImageLabel(m_colorImage);
-    sg::destroy_image(m_colorImage);
+    if (!m_sharedTexture) {
+        effect->removeImageLabel(m_colorImage);
+        sg::destroy_image(m_colorImage);
+    }
     m_colorImage = { SG_INVALID_ID };
     if (m_mipmapGenerator) {
         m_mipmapGenerator->destroy(effect);
         nanoem_delete_safe(m_mipmapGenerator);
-    }
-    SG_POP_GROUP();
-}
-
-void
-RenderTargetColorImageContainer::destroy(Effect *effect, sg_image sharedTexture) NANOEM_DECL_NOEXCEPT
-{
-    SG_PUSH_GROUPF("effect::RenderTargetColorImageContainer::destroy(name=%s, sharedTexture=%d)", m_name.c_str(),
-        sharedTexture.id);
-    const bool shared = sg::is_valid(sharedTexture);
-    effect->removeImageLabel(shared ? sharedTexture : m_colorImage);
-    sg::destroy_image(shared ? sharedTexture : m_colorImage);
-    if (!shared) {
-        m_colorImage = { SG_INVALID_ID };
     }
     SG_POP_GROUP();
 }

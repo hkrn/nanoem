@@ -6431,6 +6431,7 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
                     cond.m_hidden = cond.m_none = false;
                     newConditions.push_back(cond);
                     m_allOffscreenRenderTargetEffectSets[ownerEffect].insert(targetEffect);
+                    m_loadedEffectSet.insert(targetEffect);
                 }
                 else {
                     bool hitCache = enableSourceCache && findSourceEffectCache(resolvedURI, output, error);
@@ -6447,6 +6448,7 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
                                           URI::lastPathComponent(filename))
                                     : filename);
                             m_allOffscreenRenderTargetEffectSets[ownerEffect].insert(targetEffect);
+                            m_loadedEffectSet.insert(targetEffect);
                             if (enableSourceCache && !hitCache) {
                                 setSourceEffectCache(resolvedURI, output, error);
                             }
@@ -6472,6 +6474,7 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
                     if (loadOffscreenRenderTargetEffectFromByteArray(
                             targetEffect, fileURI, condition, bytes, newConditions, progress, error)) {
                         m_allOffscreenRenderTargetEffectSets[ownerEffect].insert(targetEffect);
+                        m_loadedEffectSet.insert(targetEffect);
                     }
                     else {
                         destroyDetachedEffect(targetEffect);
@@ -6529,6 +6532,7 @@ Project::loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerE
     }
     if (loaded) {
         m_allOffscreenRenderTargetEffectSets[ownerEffect].insert(targetEffect);
+        m_loadedEffectSet.insert(targetEffect);
     }
     else {
         destroyDetachedEffect(targetEffect);
