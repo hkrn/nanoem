@@ -1525,7 +1525,7 @@ DraggingMoveCameraLookAtState::onPress(const Vector3SI32 &logicalScaleCursorPosi
     BX_UNUSED_1(error);
     if (Project *project = m_stateControllerPtr->currentProject()) {
         m_lastDraggingState =
-            nanoem_new(internal::CameraLookAtState(project, project->globalCamera(), logicalScaleCursorPosition));
+            nanoem_new(internal::CameraLookAtState(project, project->activeCamera(), logicalScaleCursorPosition));
         m_scaleFactor = m_lastDraggingState->scaleFactor();
     }
 }
