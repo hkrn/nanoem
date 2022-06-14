@@ -27,7 +27,6 @@ public:
         sg_pixel_format format);
     void resizeWithScale(Effect *effect, const Vector2UI16 &size);
     void destroy(Effect *effect) NANOEM_DECL_NOEXCEPT;
-    void destroy(Effect *effect, sg_image sharedTexture) NANOEM_DECL_NOEXCEPT;
 
     const sg_image_desc &depthStencilImageDescription() const NANOEM_DECL_NOEXCEPT;
     sg_image depthStencilImageHandle() const NANOEM_DECL_NOEXCEPT;

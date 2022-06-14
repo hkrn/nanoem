@@ -133,20 +133,6 @@ OffscreenRenderTargetImageContainer::destroy(Effect *effect) NANOEM_DECL_NOEXCEP
     SG_POP_GROUP();
 }
 
-void
-OffscreenRenderTargetImageContainer::destroy(Effect *effect, sg_image sharedTexture) NANOEM_DECL_NOEXCEPT
-{
-    SG_PUSH_GROUPF("effect::OffscreenRenderTargetImageContainer::destroy(name=%s, sharedTexture=%d)", nameConstString(),
-        sharedTexture.id);
-    RenderTargetColorImageContainer::destroy(effect, sharedTexture);
-    destroyAllImages(effect, m_depthStencilMipmapImages);
-    m_depthStencilMipmapImages.clear();
-    effect->removeImageLabel(m_depthStencilImage);
-    sg::destroy_image(m_depthStencilImage);
-    m_depthStencilImage = { SG_INVALID_ID };
-    SG_POP_GROUP();
-}
-
 const sg_image_desc &
 OffscreenRenderTargetImageContainer::depthStencilImageDescription() const NANOEM_DECL_NOEXCEPT
 {

@@ -41,7 +41,6 @@ public:
     void setColorImageHandle(sg_image value);
     void setScaleFactor(const Vector2 &value);
     void destroy(Effect *effect) NANOEM_DECL_NOEXCEPT;
-    void destroy(Effect *effect, sg_image sharedTexture) NANOEM_DECL_NOEXCEPT;
 
     RenderTargetMipmapGenerator *mipmapGenerator();
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;
