@@ -92,14 +92,15 @@ private:
     bool internalLoadEffectSourceFile(LoadEffectCallback callback, const URI &fileURI, Project *project, Error &error);
     bool loadPlainText(const URI &fileURI, Project *project, Error &error);
     bool loadModel(const URI &fileURI, nanoem_u16_t handle, DialogType type, Project *project, Error &error);
-    bool loadModel(const URI &fileURI, Model *model, Error &error);
-    bool loadAccessory(const URI &fileURI, Accessory *accessory, Progress &progress, Error &error);
     bool loadCameraMotion(const URI &fileURI, Project *project, Error &error);
     bool loadLightMotion(const URI &fileURI, Project *project, Error &error);
     bool loadModelMotion(const URI &fileURI, Project *project, Error &error);
     bool loadMotion(const URI &fileURI, Motion *motion, nanoem_frame_index_t offset, Error &error);
     bool loadEffectSource(const URI &fileURI, Project *project, Error &error);
-    bool saveMotionToFile(const URI &fileURI, Motion *motion, Error &error);
+    bool internalLoadAccessory(const URI &fileURI, Project *project, Error &error);
+    bool internalLoadModel(const URI &fileURI, DialogType type, Project *project, Error &error);
+    bool internalLoadAccessoryFromFile(const URI &fileURI, Accessory *accessory, Progress &progress, Error &error);
+    bool internalLoadModelFromFile(const URI &fileURI, Model *model, Error &error);
     bool loadModelFromArchive(IFileReader *reader, const URI &fileURI, DialogType type, Project *project, Error &error);
     bool saveProject(const URI &fileURI, Project *project, Error &error);
     bool saveModel(const URI &fileURI, Project *project, Error &error);
