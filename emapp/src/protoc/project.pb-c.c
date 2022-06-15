@@ -1187,7 +1187,7 @@ const ProtobufCMessageDescriptor nanoem__project__video__descriptor =
   (ProtobufCMessageInit) nanoem__project__video__init,
   NULL,NULL,NULL    /* reserved[123] */
 };
-static const ProtobufCFieldDescriptor nanoem__project__physic_simulation__field_descriptors[10] =
+static const ProtobufCFieldDescriptor nanoem__project__physic_simulation__field_descriptors[11] =
 {
   {
     "annotations",
@@ -1262,24 +1262,24 @@ static const ProtobufCFieldDescriptor nanoem__project__physic_simulation__field_
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "noise",
+    "random_seed_f32",
     7,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_FLOAT,
-    offsetof(Nanoem__Project__PhysicSimulation, has_noise),
-    offsetof(Nanoem__Project__PhysicSimulation, noise),
+    offsetof(Nanoem__Project__PhysicSimulation, has_random_seed_f32),
+    offsetof(Nanoem__Project__PhysicSimulation, random_seed_f32),
     NULL,
     NULL,
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
-    "is_noise_enabled",
+    "is_fixed_random_seed_enabled",
     8,
     PROTOBUF_C_LABEL_OPTIONAL,
     PROTOBUF_C_TYPE_BOOL,
-    offsetof(Nanoem__Project__PhysicSimulation, has_is_noise_enabled),
-    offsetof(Nanoem__Project__PhysicSimulation, is_noise_enabled),
+    offsetof(Nanoem__Project__PhysicSimulation, has_is_fixed_random_seed_enabled),
+    offsetof(Nanoem__Project__PhysicSimulation, is_fixed_random_seed_enabled),
     NULL,
     NULL,
     0,             /* flags */
@@ -1309,6 +1309,18 @@ static const ProtobufCFieldDescriptor nanoem__project__physic_simulation__field_
     0,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
+  {
+    "random_seed_u32",
+    11,
+    PROTOBUF_C_LABEL_OPTIONAL,
+    PROTOBUF_C_TYPE_UINT32,
+    offsetof(Nanoem__Project__PhysicSimulation, has_random_seed_u32),
+    offsetof(Nanoem__Project__PhysicSimulation, random_seed_u32),
+    NULL,
+    NULL,
+    0,             /* flags */
+    0,NULL,NULL    /* reserved1,reserved2, etc */
+  },
 };
 static const unsigned nanoem__project__physic_simulation__field_indices_by_name[] = {
   4,   /* field[4] = acceleration */
@@ -1316,16 +1328,17 @@ static const unsigned nanoem__project__physic_simulation__field_indices_by_name[
   2,   /* field[2] = debug */
   5,   /* field[5] = direction */
   1,   /* field[1] = enabled */
+  7,   /* field[7] = is_fixed_random_seed_enabled */
   8,   /* field[8] = is_ground_enabled */
-  7,   /* field[7] = is_noise_enabled */
   9,   /* field[9] = mode */
-  6,   /* field[6] = noise */
+  6,   /* field[6] = random_seed_f32 */
+  10,   /* field[10] = random_seed_u32 */
   3,   /* field[3] = time_step_factor */
 };
 static const ProtobufCIntRange nanoem__project__physic_simulation__number_ranges[1 + 1] =
 {
   { 1, 0 },
-  { 0, 10 }
+  { 0, 11 }
 };
 const ProtobufCMessageDescriptor nanoem__project__physic_simulation__descriptor =
 {
@@ -1335,7 +1348,7 @@ const ProtobufCMessageDescriptor nanoem__project__physic_simulation__descriptor 
   "Nanoem__Project__PhysicSimulation",
   "nanoem.project",
   sizeof(Nanoem__Project__PhysicSimulation),
-  10,
+  11,
   nanoem__project__physic_simulation__field_descriptors,
   nanoem__project__physic_simulation__field_indices_by_name,
   1,  nanoem__project__physic_simulation__number_ranges,

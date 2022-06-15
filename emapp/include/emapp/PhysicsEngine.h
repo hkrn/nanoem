@@ -125,10 +125,10 @@ public:
     void setDirection(const Vector3 &value);
     nanoem_f32_t acceleration() const NANOEM_DECL_NOEXCEPT;
     void setAcceleration(nanoem_f32_t value);
-    nanoem_f32_t noise() const NANOEM_DECL_NOEXCEPT;
-    void setNoise(nanoem_f32_t value);
-    bool isNoiseEnabled() const NANOEM_DECL_NOEXCEPT;
-    void setNoiseEnabled(bool value);
+    nanoem_u32_t randomSeed() const NANOEM_DECL_NOEXCEPT;
+    void setRandomSeed(nanoem_u32_t value);
+    bool isFixedRandomSeedEnabled() const NANOEM_DECL_NOEXCEPT;
+    void setFixedRandomSeedEnabled(bool value);
     void apply();
 
     const nanoem_f32_t *gravity() const NANOEM_DECL_NOEXCEPT;

@@ -800,11 +800,11 @@ Native::Context::loadPhysicsSimulation(const Nanoem__Project__PhysicSimulation *
     if (const Nanoem__Common__Vector3 *direction = value->direction) {
         engine->setDirection(toVector3(direction));
     }
-    if (value->has_is_noise_enabled) {
-        engine->setNoiseEnabled(value->is_noise_enabled != 0);
+    if (value->has_is_fixed_random_seed_enabled) {
+        engine->setFixedRandomSeedEnabled(value->is_fixed_random_seed_enabled != 0);
     }
-    if (value->has_noise) {
-        engine->setNoise(value->noise);
+    if (value->has_random_seed_u32) {
+        engine->setRandomSeed(value->random_seed_u32);
     }
     if (value->has_is_ground_enabled) {
         engine->setGroundEnabled(value->is_ground_enabled != 0);
@@ -1542,10 +1542,10 @@ Native::Context::savePhysicsSimulation()
     ps->has_acceleration = 1;
     ps->acceleration = engine->acceleration();
     ps->direction = newVector3(engine->direction());
-    ps->has_is_noise_enabled = 1;
-    ps->is_noise_enabled = engine->isNoiseEnabled();
-    ps->has_noise = 1;
-    ps->noise = engine->noise();
+    ps->has_is_fixed_random_seed_enabled = 1;
+    ps->is_fixed_random_seed_enabled = engine->isFixedRandomSeedEnabled();
+    ps->has_random_seed_u32 = 1;
+    ps->random_seed_u32 = engine->randomSeed();
     ps->has_is_ground_enabled = 1;
     ps->is_ground_enabled = engine->isGroundEnabled();
     ps->mode = engine->simulationMode();

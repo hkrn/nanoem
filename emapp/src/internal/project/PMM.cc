@@ -1689,8 +1689,8 @@ PMM::Context::saveGravity(nanoem_mutable_document_t *document, nanoem_status_t *
     nanoem_mutable_document_gravity_t *go = nanoemMutableDocumentGravityCreate(document, status);
     nanoemMutableDocumentGravitySetAcceleration(go, engine->acceleration());
     nanoemMutableDocumentGravitySetDirection(go, glm::value_ptr(glm::vec4(engine->direction(), 0)));
-    nanoemMutableDocumentGravitySetNoise(go, engine->noise());
-    nanoemMutableDocumentGravitySetNoiseEnabled(go, engine->isNoiseEnabled());
+    nanoemMutableDocumentGravitySetNoise(go, engine->randomSeed());
+    nanoemMutableDocumentGravitySetNoiseEnabled(go, engine->isFixedRandomSeedEnabled());
     nanoemMutableDocumentSetGravityObject(document, go);
     nanoemMutableDocumentGravityDestroy(go);
 }

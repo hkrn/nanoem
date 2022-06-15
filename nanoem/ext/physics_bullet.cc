@@ -286,8 +286,10 @@ struct nanoem_physics_world_t {
         m_worldInfo->m_dispatcher = m_dispatcher;
         m_worldInfo->m_sparsesdf.Initialize();
         m_fixedTimeStep = 1.0f / 60.0f;
+        m_randomSeed = 0;
         m_maxSubSteps = INT_MAX;
         m_active = nanoem_false;
+        m_fixedRandomSeedEnabled = nanoem_false;
         setGroundEnable(nanoem_true);
     }
     int
@@ -303,6 +305,11 @@ struct nanoem_physics_world_t {
             m_worldInfo->m_sparsesdf.GarbageCollect();
         }
         return num_steps;
+    }
+    void
+    applyRandomSeed()
+    {
+        m_solver->setRandSeed(m_randomSeed);
     }
     void
     reset()
@@ -332,6 +339,9 @@ struct nanoem_physics_world_t {
         m_world->getConstraintSolver()->reset();
         m_world->clearForces();
         m_worldInfo->m_sparsesdf.Reset();
+        if (m_fixedRandomSeedEnabled) {
+            applyRandomSeed();
+        }
     }
     void
     setGravity(const nanoem_f32_t *value)
@@ -412,8 +422,10 @@ struct nanoem_physics_world_t {
     btVector3 *m_gravityFactor;
     Debugger *m_debugger;
     nanoem_f32_t m_fixedTimeStep;
+    nanoem_u32_t m_randomSeed;
     nanoem_bool_t m_active;
     nanoem_bool_t m_groundEnabled;
+    nanoem_bool_t m_fixedRandomSeedEnabled;
     int m_maxSubSteps;
 };
 
@@ -1134,6 +1146,14 @@ nanoemPhysicsWorldStepSimulation(nanoem_physics_world_t *world, nanoem_f32_t del
 }
 
 void APIENTRY
+nanoemPhysicsWorldApplyRandomSeed(nanoem_physics_world_t *world)
+{
+    if (nanoem_is_not_null(world)) {
+        world->applyRandomSeed();
+    }
+}
+
+void APIENTRY
 nanoemPhysicsWorldReset(nanoem_physics_world_t *world)
 {
     if (nanoem_is_not_null(world)) {
@@ -1169,6 +1189,20 @@ nanoemPhysicsWorldSetGravityFactor(nanoem_physics_world_t *world, const nanoem_f
     }
 }
 
+nanoem_u32_t APIENTRY
+nanoemPhysicsWorldGetRandomSeed(const nanoem_physics_world_t *world)
+{
+    return nanoem_is_not_null(world) ? world->m_randomSeed : 0;
+}
+
+void APIENTRY
+nanoemPhysicsWorldSetRandomSeed(nanoem_physics_world_t *world, nanoem_u32_t value)
+{
+    if (nanoem_is_not_null(world)) {
+        world->m_randomSeed = value;
+    }
+}
+
 nanoem_bool_t APIENTRY
 nanoemPhysicsWorldIsActive(const nanoem_physics_world_t *world)
 {
@@ -1181,6 +1215,21 @@ nanoemPhysicsWorldSetActive(nanoem_physics_world_t *world, nanoem_bool_t value)
     if (nanoem_is_not_null(world)) {
         nanoemPhysicsWorldReset(world);
         world->m_active = value;
+    }
+}
+
+nanoem_bool_t APIENTRY
+nanoemPhysicsWorldIsFixedRandomSeedEnabled(const nanoem_physics_world_t *world)
+{
+    return nanoem_is_not_null(world) ? world->m_fixedRandomSeedEnabled : nanoem_false;
+}
+
+void APIENTRY
+nanoemPhysicsWorldSetFixedRandomSeedEnabled(nanoem_physics_world_t *world, nanoem_bool_t value)
+{
+    if (nanoem_is_not_null(world)) {
+        world->m_fixedRandomSeedEnabled = value;
+        nanoemPhysicsWorldReset(world);
     }
 }
 
@@ -1605,12 +1654,22 @@ nanoemPhysicsWorldAddRigidBody(nanoem_physics_world_t * /* world */, nanoem_phys
 }
 
 void APIENTRY
+nanoemPhysicsWorldAddSoftBody(nanoem_physics_world_t * /* world */, nanoem_physics_soft_body_t * /* soft_body */)
+{
+}
+
+void APIENTRY
 nanoemPhysicsWorldAddJoint(nanoem_physics_world_t * /* world */, nanoem_physics_joint_t * /* joint */)
 {
 }
 
 void APIENTRY
 nanoemPhysicsWorldRemoveRigidBody(nanoem_physics_world_t * /* world */, nanoem_physics_rigid_body_t * /* rigid_body */)
+{
+}
+
+void APIENTRY
+nanoemPhysicsWorldRemoveSoftBody(nanoem_physics_world_t * /* world */, nanoem_physics_soft_body_t * /* soft_body */)
 {
 }
 
@@ -1628,6 +1687,11 @@ int APIENTRY
 nanoemPhysicsWorldStepSimulation(nanoem_physics_world_t * /* world */, nanoem_f32_t /* delta */)
 {
     return 0;
+}
+
+void APIENTRY
+nanoemPhysicsWorldApplyRandomSeed(nanoem_physics_world_t * /* world */)
+{
 }
 
 void APIENTRY
@@ -1659,6 +1723,17 @@ nanoemPhysicsWorldSetGravityFactor(nanoem_physics_world_t * /* world */, const n
 {
 }
 
+nanoem_u32_t APIENTRY
+nanoemPhysicsWorldGetRandomSeed(const nanoem_physics_world_t * /* world */)
+{
+    return 0;
+}
+
+void APIENTRY
+nanoemPhysicsWorldSetRandomSeed(nanoem_physics_world_t * /* world */, nanoem_u32_t /* value */)
+{
+}
+
 nanoem_bool_t APIENTRY
 nanoemPhysicsWorldIsActive(const nanoem_physics_world_t * /* world */)
 {
@@ -1667,6 +1742,17 @@ nanoemPhysicsWorldIsActive(const nanoem_physics_world_t * /* world */)
 
 void APIENTRY
 nanoemPhysicsWorldSetActive(nanoem_physics_world_t * /* world */, nanoem_bool_t /* value */)
+{
+}
+
+nanoem_bool_t APIENTRY
+nanoemPhysicsWorldIsFixedRandomSeedEnabled(const nanoem_physics_world_t * /* world */)
+{
+    return 0;
+}
+
+void APIENTRY
+nanoemPhysicsWorldSetFixedRandomSeedEnabled(nanoem_physics_world_t * /* world */, nanoem_bool_t /* value */)
 {
 }
 
@@ -1873,6 +1959,60 @@ nanoemPhysicsDebugGeometryGetColor(const nanoem_physics_debug_geometry_t * /* ge
 {
     static const nanoem_f32_t null_color[] = { 0, 0, 0, 0 };
     return null_color;
+}
+
+nanoem_physics_soft_body_t *APIENTRY
+nanoemPhysicsSoftBodyCreate(const nanoem_model_soft_body_t * /* value */, nanoem_physics_world_t * /* world */, nanoem_status_t * /* status */)
+{
+    return NULL;
+}
+
+int APIENTRY
+nanoemPhysicsSoftBodyGetNumVertexObjects(const nanoem_physics_soft_body_t * /* soft_body */)
+{
+    return 0;
+}
+
+const nanoem_model_vertex_t * APIENTRY
+nanoemPhysicsSoftBodyGetVertexObject(const nanoem_physics_soft_body_t * /* soft_body */, int /* offset */)
+{
+    return NULL;
+}
+
+void APIENTRY
+nanoemPhysicsSoftBodyGetVertexPosition(const nanoem_physics_soft_body_t * /* soft_body */, int /* offset */, nanoem_f32_t * /* value */)
+{
+}
+
+void APIENTRY
+nanoemPhysicsSoftBodyGetVertexNormal(const nanoem_physics_soft_body_t * /* soft_body */, int /* offset */, nanoem_f32_t * /* value */)
+{
+}
+
+void APIENTRY
+nanoemPhysicsSoftBodySetVertexPosition(nanoem_physics_soft_body_t * /* soft_body */, int /* offset */, const nanoem_f32_t * /* value */)
+{
+}
+
+void APIENTRY
+nanoemPhysicsSoftBodySetVertexNormal(nanoem_physics_soft_body_t * /* soft_body */, int /* offset */, const nanoem_f32_t * /* value */)
+{
+}
+
+nanoem_bool_t APIENTRY
+nanoemPhysicsSoftBodyIsVisualizeEnabled(const nanoem_physics_soft_body_t * /* soft_body */)
+{
+    return 0;
+}
+
+void APIENTRY
+nanoemPhysicsSoftBodySetVisualizeEnabled(nanoem_physics_soft_body_t * /* soft_body */, nanoem_bool_t /* value */)
+{
+}
+
+void APIENTRY
+nanoemPhysicsSoftBodyDestroy(nanoem_physics_soft_body_t * /* soft_body */)
+{
 }
 
 #endif /* NANOEM_ENABLE_BULLET */

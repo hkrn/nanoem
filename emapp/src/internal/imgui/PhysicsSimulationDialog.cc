@@ -18,16 +18,16 @@ PhysicsEngineDialog::PhysicsEngineDialog(Project *project, BaseApplicationServic
     : BaseNonModalDialogWindow(applicationPtr)
     , m_direction(0)
     , m_acceleration(0)
-    , m_noise(0)
+    , m_randomSeed(0)
     , m_timeStepFactor(0)
-    , m_enableNoise(false)
+    , m_fixedRandomSeedEnabled(false)
 {
     const PhysicsEngine *engine = project->physicsEngine();
     m_direction = engine->direction();
     m_acceleration = engine->acceleration();
-    m_noise = engine->noise();
+    m_randomSeed = engine->randomSeed();
     m_timeStepFactor = project->timeStepFactor();
-    m_enableNoise = engine->isNoiseEnabled();
+    m_fixedRandomSeedEnabled = engine->isFixedRandomSeedEnabled();
 }
 
 bool
@@ -52,17 +52,16 @@ PhysicsEngineDialog::draw(Project *project)
         if (ImGui::DragFloat("##time-step-factor", &timeStepFactor, 0.05f, 0.01f, 2.0f)) {
             project->setTimeStepFactor(timeStepFactor);
         }
-#if 0
-        ImGui::TextUnformatted(tr("nanoem.gui.window.project.physics-engine.noise"));
-        bool enableNoise = engine->isNoiseEnabled();
-        if (ImGui::Checkbox(tr("nanoem.gui.window.project.physics-engine.noise.enabled"), &enableNoise)) {
-            engine->setNoiseEnabled(enableNoise);
+        addSeparator();
+        bool isRandomSeedEnabled = engine->isFixedRandomSeedEnabled();
+        if (ImGui::Checkbox(tr("nanoem.gui.window.project.physics-engine.random-seed.enabled"), &isRandomSeedEnabled)) {
+            engine->setFixedRandomSeedEnabled(isRandomSeedEnabled);
         }
-        nanoem_f32_t noise = engine->noise();
-        if (ImGui::DragFloat("##noise", &noise)) {
-            engine->setNoise(noise);
+        ImGui::TextUnformatted(tr("nanoem.gui.window.project.physics-engine.random-seed"));
+        nanoem_f32_t randomSeed = engine->randomSeed();
+        if (ImGui::DragScalar("##random-seed", ImGuiDataType_U32, &randomSeed)) {
+            engine->setRandomSeed(randomSeed);
         }
-#endif
         addSeparator();
         switch (layoutCommonButtons(&visible)) {
         case kResponseTypeOK: {
@@ -73,8 +72,8 @@ PhysicsEngineDialog::draw(Project *project)
             project->setTimeStepFactor(m_timeStepFactor);
             engine->setDirection(m_direction);
             engine->setAcceleration(m_acceleration);
-            engine->setNoise(m_noise);
-            engine->setNoiseEnabled(m_enableNoise);
+            engine->setRandomSeed(m_randomSeed);
+            engine->setFixedRandomSeedEnabled(m_fixedRandomSeedEnabled);
             engine->apply();
             break;
         }

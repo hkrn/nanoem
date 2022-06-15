@@ -217,8 +217,8 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             project->setPhysicsSimulationEngineDebugFlags(1 | 2 | 4 | 16 | 64);
             project->physicsEngine()->setAcceleration(0.42f);
             project->physicsEngine()->setDirection(glm::normalize(Vector3(0.1, 0.2, 0.3)));
-            project->physicsEngine()->setNoise(0.6);
-            project->physicsEngine()->setNoiseEnabled(true);
+            project->physicsEngine()->setRandomSeed(42);
+            project->physicsEngine()->setFixedRandomSeedEnabled(true);
             project->physicsEngine()->setGroundEnabled(false);
         });
         LoadBlock(scope, bytes, [](Project *newProject) {
@@ -226,8 +226,8 @@ TEST_CASE("project_save_and_load_binary_should_success", "[emapp][project]")
             CHECK(newProject->physicsEngine()->debugGeometryFlags() == (1 | 2 | 4 | 16 | 64));
             CHECK(newProject->physicsEngine()->acceleration() == 0.42f);
             CHECK_THAT(newProject->physicsEngine()->direction(), Equals(glm::normalize(Vector3(0.1, 0.2, 0.3))));
-            CHECK(newProject->physicsEngine()->noise() == 0.6f);
-            CHECK(newProject->physicsEngine()->isNoiseEnabled());
+            CHECK(newProject->physicsEngine()->randomSeed() == 42);
+            CHECK(newProject->physicsEngine()->isFixedRandomSeedEnabled());
             CHECK_FALSE(newProject->physicsEngine()->isGroundEnabled());
         });
     }

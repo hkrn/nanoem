@@ -117,18 +117,20 @@ struct  Nanoem__Project__PhysicSimulation
   protobuf_c_boolean has_acceleration;
   float acceleration;
   Nanoem__Common__Vector3 *direction;
-  protobuf_c_boolean has_noise;
-  float noise;
-  protobuf_c_boolean has_is_noise_enabled;
-  protobuf_c_boolean is_noise_enabled;
+  protobuf_c_boolean has_random_seed_f32;
+  float random_seed_f32;
+  protobuf_c_boolean has_is_fixed_random_seed_enabled;
+  protobuf_c_boolean is_fixed_random_seed_enabled;
   protobuf_c_boolean has_is_ground_enabled;
   protobuf_c_boolean is_ground_enabled;
   protobuf_c_boolean has_mode;
   int32_t mode;
+  protobuf_c_boolean has_random_seed_u32;
+  uint32_t random_seed_u32;
 };
 #define NANOEM__PROJECT__PHYSIC_SIMULATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__physic_simulation__descriptor) \
-    , 0,NULL, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
+    , 0,NULL, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Project__ProjectiveShadow

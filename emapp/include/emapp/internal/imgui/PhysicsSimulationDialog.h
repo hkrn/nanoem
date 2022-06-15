@@ -22,9 +22,9 @@ struct PhysicsEngineDialog : BaseNonModalDialogWindow {
 
     Vector3 m_direction;
     nanoem_f32_t m_acceleration;
-    nanoem_f32_t m_noise;
+    nanoem_f32_t m_randomSeed;
     nanoem_f32_t m_timeStepFactor;
-    bool m_enableNoise;
+    bool m_fixedRandomSeedEnabled;
 };
 
 } /* namespace imgui */

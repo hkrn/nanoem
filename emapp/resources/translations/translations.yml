@@ -918,14 +918,14 @@
   phrase:
     en_US: Time Step Factor
     ja_JP: 時間ステップ係数
-- key: nanoem.gui.window.project.physics-engine.noise
+- key: nanoem.gui.window.project.physics-engine.random-seed
   phrase:
-    en_US: Noise Factor
-    ja_JP: ノイズ係数
-- key: nanoem.gui.window.project.physics-engine.noise.enabled
+    en_US: Random Seed Value
+    ja_JP: ランダムシード値
+- key: nanoem.gui.window.project.physics-engine.random-seed.enabled
   phrase:
-    en_US: Add Noise
-    ja_JP: ノイズを付加する
+    en_US: Make Random Seed Fixed
+    ja_JP: ランダムシードを固定する
 - key: nanoem.gui.window.preference.tab.global
   phrase:
     en_US: Global

@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -229,9 +229,9 @@ $nanoem.gui.viewport.parameter.camera	カメラ4
 .nanoem.gui.window.project.physics-engine.title物理演算B
 5nanoem.gui.window.project.physics-engine.acceleration	加速度<
 2nanoem.gui.window.project.physics-engine.direction方向U
-9nanoem.gui.window.project.physics-engine.time-step-factor時間ステップ係数A
-.nanoem.gui.window.project.physics-engine.noiseノイズ係数R
-6nanoem.gui.window.project.physics-engine.noise.enabledノイズを付加する7
+9nanoem.gui.window.project.physics-engine.time-step-factor時間ステップ係数P
+4nanoem.gui.window.project.physics-engine.random-seedランダムシード値d
+<nanoem.gui.window.project.physics-engine.random-seed.enabled$ランダムシードを固定する7
 'nanoem.gui.window.preference.tab.global全体設定D
 (nanoem.gui.window.preference.tab.projectプロジェクト設定5
 "nanoem.gui.window.model.edge.titleエッジ設定2
@@ -1179,7 +1179,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -1415,9 +1415,9 @@ Initialize5
 .nanoem.gui.window.project.physics-engine.titlePhysics SimulationE
 5nanoem.gui.window.project.physics-engine.accelerationAcceleration?
 2nanoem.gui.window.project.physics-engine.direction	DirectionM
-9nanoem.gui.window.project.physics-engine.time-step-factorTime Step Factor>
-.nanoem.gui.window.project.physics-engine.noiseNoise FactorC
-6nanoem.gui.window.project.physics-engine.noise.enabled	Add Noise1
+9nanoem.gui.window.project.physics-engine.time-step-factorTime Step FactorI
+4nanoem.gui.window.project.physics-engine.random-seedRandom Seed ValueV
+<nanoem.gui.window.project.physics-engine.random-seed.enabledMake Random Seed Fixed1
 'nanoem.gui.window.preference.tab.globalGlobal3
 (nanoem.gui.window.preference.tab.projectProject8
 "nanoem.gui.window.model.edge.titleEdge Configuration+

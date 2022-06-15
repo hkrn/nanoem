@@ -130,6 +130,17 @@ NANOEM_DECL_API int APIENTRY
 nanoemPhysicsWorldStepSimulation(nanoem_physics_world_t *world, nanoem_f32_t delta);
 
 /**
+ * \brief Apply random seed value immediately to the opaque physics world object
+ *
+ * \param world The opaque physics world object
+ * \param delta The delta seconds to step simulation
+ * \remark Do nothing when ::nanoemPhysicsWorldIsAvailable is \b false
+ */
+NANOEM_DECL_API void APIENTRY
+nanoemPhysicsWorldApplyRandomSeed(nanoem_physics_world_t *world);
+
+
+/**
  * \brief Reset all physics objects in the opaque physics world object
  *
  * \param world The opaque physics world object
@@ -179,6 +190,25 @@ NANOEM_DECL_API void APIENTRY
 nanoemPhysicsWorldSetGravityFactor(nanoem_physics_world_t *world, const nanoem_f32_t *value);
 
 /**
+ * \brief Get the random seed value from the given opaque physics world object
+ *
+ * \param world The opaque physics world object
+ * \remark alway returns \b 0 when ::nanoemPhysicsWorldIsAvailable is \b false
+ */
+NANOEM_DECL_API nanoem_u32_t APIENTRY
+nanoemPhysicsWorldGetRandomSeed(const nanoem_physics_world_t *world);
+
+/**
+ * \brief Set the random seed value to the given opaque physics world object
+ *
+ * \param world The opaque physics world object
+ * \param value The value to set
+ * \remark Do nothing when ::nanoemPhysicsWorldIsAvailable is \b false
+ */
+NANOEM_DECL_API void APIENTRY
+nanoemPhysicsWorldSetRandomSeed(nanoem_physics_world_t *world, nanoem_u32_t value);
+
+/**
  * \brief Get whether the world is active from the given opaque physics world object
  *
  * \param world The opaque physics world object
@@ -196,6 +226,25 @@ nanoemPhysicsWorldIsActive(const nanoem_physics_world_t *world);
  */
 NANOEM_DECL_API void APIENTRY
 nanoemPhysicsWorldSetActive(nanoem_physics_world_t *world, nanoem_bool_t value);
+
+/**
+ * \brief Get whether the world always resets with random seed value from the given opaque physics world object
+ *
+ * \param world The opaque physics world object
+ * \remark alway returns \b false when ::nanoemPhysicsWorldIsAvailable is \b false
+ */
+NANOEM_DECL_API nanoem_bool_t APIENTRY
+nanoemPhysicsWorldIsFixedRandomSeedEnabled(const nanoem_physics_world_t *world);
+
+/**
+ * \brief Set whether the world always resets with random seed value to the given opaque physics world object
+ *
+ * \param world The opaque physics world object
+ * \param value The value to set
+ * \remark Do nothing when ::nanoemPhysicsWorldIsAvailable is \b false
+ */
+NANOEM_DECL_API void APIENTRY
+nanoemPhysicsWorldSetFixedRandomSeedEnabled(nanoem_physics_world_t *world, nanoem_bool_t value);
 
 /**
  * \brief Set the deactivation time threshold to the given opaque physics world object

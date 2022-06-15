@@ -41,10 +41,11 @@ message PhysicSimulation {
   optional float time_step_factor = 4;
   optional float acceleration = 5;
   optional nanoem.common.Vector3 direction = 6;
-  optional float noise = 7;
-  optional bool is_noise_enabled = 8;
+  optional float random_seed_f32 = 7;
+  optional bool is_fixed_random_seed_enabled = 8;
   optional bool is_ground_enabled = 9;
   optional int32 mode = 10;
+  optional uint32 random_seed_u32 = 11;
 };
 
 message ProjectiveShadow {

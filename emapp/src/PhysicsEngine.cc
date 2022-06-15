@@ -29,14 +29,19 @@ struct PhysicsEngine::PrivateContext {
         nanoem_physics_world_t *world, nanoem_physics_joint_t *joint);
     typedef void(APIENTRY *PFN_nanoemPhysicsWorldSetPreferredFPS)(nanoem_physics_world_t *world, int value);
     typedef int(APIENTRY *PFN_nanoemPhysicsWorldStepSimulation)(nanoem_physics_world_t *world, nanoem_f32_t delta);
+    typedef void(APIENTRY *PFN_nanoemPhysicsWorldApplyRandomSeed)(nanoem_physics_world_t *world);
     typedef void(APIENTRY *PFN_nanoemPhysicsWorldReset)(nanoem_physics_world_t *world);
     typedef const nanoem_f32_t *(APIENTRY *PFN_nanoemPhysicsWorldGetGravity)(const nanoem_physics_world_t *world);
     typedef void(APIENTRY *PFN_nanoemPhysicsWorldSetGravity)(nanoem_physics_world_t *world, const nanoem_f32_t *value);
     typedef const nanoem_f32_t *(APIENTRY *PFN_nanoemPhysicsWorldGetGravityFactor)(const nanoem_physics_world_t *world);
     typedef void(APIENTRY *PFN_nanoemPhysicsWorldSetGravityFactor)(
         nanoem_physics_world_t *world, const nanoem_f32_t *value);
+    typedef nanoem_u32_t (APIENTRY *PFN_nanoemPhysicsWorldGetRandomSeed)(const nanoem_physics_world_t *world);
+    typedef void (APIENTRY *PFN_nanoemPhysicsWorldSetRandomSeed)(nanoem_physics_world_t *world, nanoem_u32_t value);
     typedef nanoem_bool_t(APIENTRY *PFN_nanoemPhysicsWorldIsActive)(const nanoem_physics_world_t *world);
     typedef void(APIENTRY *PFN_nanoemPhysicsWorldSetActive)(nanoem_physics_world_t *world, nanoem_bool_t value);
+    typedef nanoem_bool_t (APIENTRY *PFN_nanoemPhysicsWorldIsFixedRandomSeedEnabled)(const nanoem_physics_world_t *world);
+    typedef void(APIENTRY *PFN_nanoemPhysicsWorldSetFixedRandomSeedEnabled)(nanoem_physics_world_t *world, nanoem_bool_t value);
     typedef void(APIENTRY *PFN_nanoemPhysicsWorldSetDeactivationTimeThreshold)(
         nanoem_physics_world_t *world, nanoem_f32_t value);
     typedef nanoem_bool_t(APIENTRY *PFN_nanoemPhysicsWorldIsGroundEnabled)(const nanoem_physics_world_t *world);
@@ -124,8 +129,6 @@ struct PhysicsEngine::PrivateContext {
         , m_mode(PhysicsEngine::kSimulationModeDisable)
         , m_direction(-Constants::kUnitY)
         , m_acceleration(9.8f)
-        , m_noiseValue(0)
-        , m_noiseEnabled(false)
         , worldIsAvailable(nullptr)
         , worldCreate(nullptr)
         , worldAddRigidBody(nullptr)
@@ -134,13 +137,18 @@ struct PhysicsEngine::PrivateContext {
         , worldRemoveJoint(nullptr)
         , worldSetPreferredFPS(nullptr)
         , worldStepSimulation(nullptr)
+        , worldApplyRandomSeed(nullptr)
         , worldReset(nullptr)
         , worldGetGravity(nullptr)
         , worldSetGravity(nullptr)
         , worldGetGravityFactor(nullptr)
         , worldSetGravityFactor(nullptr)
+        , worldGetRandomSeed(nullptr)
+        , worldSetRandomSeed(nullptr)
         , worldIsActive(nullptr)
         , worldSetActive(nullptr)
+        , worldIsFixedRandomSeedEnabled(nullptr)
+        , worldSetFixedRandomSeedEnabled(nullptr)
         , worldSetDeactivationTimeThreshold(nullptr)
         , worldIsGroundEnabled(nullptr)
         , worldSetGroundEnabled(nullptr)
@@ -209,14 +217,19 @@ struct PhysicsEngine::PrivateContext {
             resolveSymbol(opaque, "nanoemPhysicsWorldRemoveJoint", worldRemoveJoint, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldSetPreferredFPS", worldSetPreferredFPS, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldStepSimulation", worldStepSimulation, valid);
+            resolveSymbol(opaque, "nanoemPhysicsWorldApplyRandomSeed", worldApplyRandomSeed, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldReset", worldReset, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldGetGravity", worldGetGravity, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldSetGravity", worldSetGravity, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldGetGravityFactor", worldGetGravityFactor, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldSetGravityFactor", worldSetGravityFactor, valid);
+            resolveSymbol(opaque, "nanoemPhysicsWorldGetRandomSeed", worldGetRandomSeed, valid);
+            resolveSymbol(opaque, "nanoemPhysicsWorldSetRandomSeed", worldSetRandomSeed, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldDestroy", worldDestroy, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldIsActive", worldIsActive, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldSetActive", worldSetActive, valid);
+            resolveSymbol(opaque, "nanoemPhysicsWorldIsFixedRandomSeedEnabled", worldIsFixedRandomSeedEnabled, valid);
+            resolveSymbol(opaque, "nanoemPhysicsWorldSetFixedRandomSeedEnabled", worldSetFixedRandomSeedEnabled, valud);
             resolveSymbol(
                 opaque, "nanoemPhysicsWorldSetDeactivationTimeThreshold", worldSetDeactivationTimeThreshold, valid);
             resolveSymbol(opaque, "nanoemPhysicsWorldIsGroundEnabled", worldIsGroundEnabled, valid);
@@ -271,14 +284,19 @@ struct PhysicsEngine::PrivateContext {
         worldRemoveJoint = nanoemPhysicsWorldRemoveJoint;
         worldSetPreferredFPS = nanoemPhysicsWorldSetPreferredFPS;
         worldStepSimulation = nanoemPhysicsWorldStepSimulation;
+        worldApplyRandomSeed = nanoemPhysicsWorldApplyRandomSeed;
         worldReset = nanoemPhysicsWorldReset;
         worldGetGravity = nanoemPhysicsWorldGetGravity;
         worldSetGravity = nanoemPhysicsWorldSetGravity;
         worldGetGravityFactor = nanoemPhysicsWorldGetGravityFactor;
         worldSetGravityFactor = nanoemPhysicsWorldSetGravityFactor;
+        worldGetRandomSeed = nanoemPhysicsWorldGetRandomSeed;
+        worldSetRandomSeed = nanoemPhysicsWorldSetRandomSeed;
         worldDestroy = nanoemPhysicsWorldDestroy;
         worldIsActive = nanoemPhysicsWorldIsActive;
         worldSetActive = nanoemPhysicsWorldSetActive;
+        worldIsFixedRandomSeedEnabled = nanoemPhysicsWorldIsFixedRandomSeedEnabled;
+        worldSetFixedRandomSeedEnabled = nanoemPhysicsWorldSetFixedRandomSeedEnabled;
         worldSetDeactivationTimeThreshold = nanoemPhysicsWorldSetDeactivationTimeThreshold;
         worldIsGroundEnabled = nanoemPhysicsWorldIsGroundEnabled;
         worldSetGroundEnabled = nanoemPhysicsWorldSetGroundEnabled;
@@ -334,8 +352,6 @@ struct PhysicsEngine::PrivateContext {
     PhysicsEngine::SimulationModeType m_mode;
     Vector3 m_direction;
     nanoem_f32_t m_acceleration;
-    nanoem_f32_t m_noiseValue;
-    bool m_noiseEnabled;
 
     PFN_nanoemPhysicsWorldIsAvailable worldIsAvailable;
     PFN_nanoemPhysicsWorldCreate worldCreate;
@@ -345,13 +361,18 @@ struct PhysicsEngine::PrivateContext {
     PFN_nanoemPhysicsWorldRemoveJoint worldRemoveJoint;
     PFN_nanoemPhysicsWorldSetPreferredFPS worldSetPreferredFPS;
     PFN_nanoemPhysicsWorldStepSimulation worldStepSimulation;
+    PFN_nanoemPhysicsWorldApplyRandomSeed worldApplyRandomSeed;
     PFN_nanoemPhysicsWorldReset worldReset;
     PFN_nanoemPhysicsWorldGetGravity worldGetGravity;
     PFN_nanoemPhysicsWorldSetGravity worldSetGravity;
     PFN_nanoemPhysicsWorldGetGravityFactor worldGetGravityFactor;
     PFN_nanoemPhysicsWorldSetGravityFactor worldSetGravityFactor;
+    PFN_nanoemPhysicsWorldGetRandomSeed worldGetRandomSeed;
+    PFN_nanoemPhysicsWorldSetRandomSeed worldSetRandomSeed;
     PFN_nanoemPhysicsWorldIsActive worldIsActive;
     PFN_nanoemPhysicsWorldSetActive worldSetActive;
+    PFN_nanoemPhysicsWorldIsFixedRandomSeedEnabled worldIsFixedRandomSeedEnabled;
+    PFN_nanoemPhysicsWorldSetFixedRandomSeedEnabled worldSetFixedRandomSeedEnabled;
     PFN_nanoemPhysicsWorldSetDeactivationTimeThreshold worldSetDeactivationTimeThreshold;
     PFN_nanoemPhysicsWorldIsGroundEnabled worldIsGroundEnabled;
     PFN_nanoemPhysicsWorldSetGroundEnabled worldSetGroundEnabled;
@@ -689,34 +710,37 @@ PhysicsEngine::setAcceleration(nanoem_f32_t value)
     m_context->m_acceleration = value;
 }
 
-nanoem_f32_t
-PhysicsEngine::noise() const NANOEM_DECL_NOEXCEPT
+nanoem_u32_t
+PhysicsEngine::randomSeed() const NANOEM_DECL_NOEXCEPT
 {
-    return m_context->m_noiseValue;
+    return m_context->worldGetRandomSeed(m_context->m_opaque);
 }
 
 void
-PhysicsEngine::setNoise(nanoem_f32_t value)
+PhysicsEngine::setRandomSeed(nanoem_u32_t value)
 {
-    m_context->m_noiseValue = value;
+    m_context->worldSetRandomSeed(m_context->m_opaque, value);
 }
 
 bool
-PhysicsEngine::isNoiseEnabled() const NANOEM_DECL_NOEXCEPT
+PhysicsEngine::isFixedRandomSeedEnabled() const NANOEM_DECL_NOEXCEPT
 {
-    return m_context->m_noiseEnabled;
+    return m_context->worldIsFixedRandomSeedEnabled(m_context->m_opaque);
 }
 
 void
-PhysicsEngine::setNoiseEnabled(bool value)
+PhysicsEngine::setFixedRandomSeedEnabled(bool value)
 {
-    m_context->m_noiseEnabled = value;
+    m_context->worldSetFixedRandomSeedEnabled(m_context->m_opaque, value);
 }
 
 void
 PhysicsEngine::apply()
 {
     setGravity(glm::value_ptr(m_context->m_direction * m_context->m_acceleration));
+    if (isFixedRandomSeedEnabled()) {
+        m_context->worldApplyRandomSeed(m_context->m_opaque);
+    }
 }
 
 const nanoem_f32_t *
