@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 bytes = "1"
-prost = "0.9"
+prost = "0.10"
 
 [build-dependencies]
 prost-build = "0.10"
