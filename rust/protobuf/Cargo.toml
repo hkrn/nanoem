@@ -11,7 +11,7 @@ bytes = "1"
 prost = "0.9"
 
 [build-dependencies]
-prost-build = "0.9"
+prost-build = "0.10"
 
 [lib]
 name = "nanoem_protobuf"
