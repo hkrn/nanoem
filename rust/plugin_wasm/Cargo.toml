@@ -7,7 +7,7 @@ license = "MPL-2.0"
 
 [dependencies]
 anyhow = "1"
-tracing = "0.1"
+tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
 wasmer = "2"
 wasmer-wasi = "2"
