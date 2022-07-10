@@ -360,7 +360,10 @@ impl MotionIOPluginController {
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
                 match MotionIOPlugin::new(&bytes, store, env) {
-                    Ok(plugin) => plugins.push(plugin),
+                    Ok(plugin) => {
+                        plugins.push(plugin);
+                        tracing::debug!(filename = filename.unwrap(), "Loaded motion WASM plugin");
+                    }
                     Err(err) => {
                         warn!(
                             "Cannot load motion WASM plugin {}: {}",
