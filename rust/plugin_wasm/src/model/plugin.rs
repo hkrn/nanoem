@@ -7,7 +7,6 @@
 use std::{ffi::CString, path::Path};
 
 use anyhow::Result;
-use tracing::warn;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
 use wasmer_wasi::WasiEnv;
@@ -325,12 +324,15 @@ impl ModelIOPluginController {
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
                 match ModelIOPlugin::new(&bytes, store, env) {
-                    Ok(plugin) => plugins.push(plugin),
+                    Ok(plugin) => {
+                        plugins.push(plugin);
+                        tracing::debug!(filename = filename.unwrap(), "Loaded model WASM plugin");
+                    }
                     Err(err) => {
-                        warn!(
-                            "Cannot load model WASM plugin {}: {}",
-                            filename.unwrap(),
-                            err
+                        tracing::warn!(
+                            filename = filename.unwrap(),
+                            error = %err,
+                            "Cannot load model WASM plugin",
                         )
                     }
                 }

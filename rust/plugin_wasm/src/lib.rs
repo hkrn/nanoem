@@ -8,7 +8,6 @@ use core::slice;
 use std::mem::size_of;
 
 use anyhow::Result;
-use tracing::{debug, warn};
 use wasmer::{Array, Instance, Memory, NativeFunc, WasmPtr};
 
 pub(crate) const PLUGIN_MODEL_IO_ABI_VERSION: u32 = 2 << 16;
@@ -45,9 +44,9 @@ pub(crate) type SizePtr = WasmPtr<u32>;
 pub(crate) type StatusPtr = WasmPtr<i32>;
 
 fn notify_export_function_error(name: &str) {
-    debug!(
-        "{} cannot be called due to not found or signature unmatched",
-        name
+    tracing::warn!(
+        name = name,
+        "Cannot be called due to not found or signature unmatched"
     );
 }
 
@@ -119,6 +118,7 @@ pub(crate) fn allocate_byte_array(instance: &Instance, data_size: u32) -> Result
         .exports
         .get_native_function::<u32, ByteArray>(MALLOC_FN)?;
     let data_ptr = malloc_func.call(data_size)?;
+    tracing::debug!(size = data_size, "Allocated byte array");
     Ok(data_ptr)
 }
 
@@ -131,6 +131,7 @@ pub(crate) fn allocate_byte_array_with_data(instance: &Instance, data: &[u8]) ->
     for (offset, byte) in data.iter().enumerate() {
         cell[offset].set(*byte);
     }
+    tracing::debug!(size = data_size, "Allocated byte array with data");
     Ok(data_ptr)
 }
 
@@ -160,6 +161,7 @@ pub(crate) fn release_byte_array(instance: &Instance, ptr: ByteArray) -> Result<
         .get_native_function::<ByteArray, ()>(FREE_FN)
         .unwrap();
     free_func.call(ptr)?;
+    tracing::debug!("Released byte array");
     Ok(())
 }
 
@@ -188,6 +190,7 @@ pub(crate) fn release_status_ptr(instance: &Instance, ptr: StatusPtr) -> Result<
 pub(crate) fn inner_initialize_function(instance: &Instance, name: &str) -> Result<()> {
     if let Ok(initialize) = instance.exports.get_native_function::<(), ()>(name) {
         initialize.call()?;
+        tracing::debug!(name = name, "Called initialization");
     } else {
         notify_export_function_error(name);
     }
@@ -198,14 +201,19 @@ pub(crate) fn inner_create_opaque(instance: &Instance, name: &str) -> Result<Opa
     let create = instance
         .exports
         .get_native_function::<(), OpaquePtr>(name)?;
-    Ok(create.call()?)
+    let opaque = create.call()?;
+    tracing::debug!(name = name, opaque = ?opaque, "Called creating opaque");
+    Ok(opaque)
 }
 
 pub(crate) fn inner_destroy_opaque(instance: &Instance, opaque: &Option<OpaquePtr>, name: &str) {
     if let Some(opaque) = opaque {
         if let Ok(destroy) = instance.exports.get_native_function::<OpaquePtr, ()>(name) {
-            if let Err(err) = destroy.call(*opaque) {
-                warn!("runtime error at calling {}: {}", name, err);
+            match destroy.call(*opaque) {
+                Ok(_) => tracing::debug!(name = name, opaque = ?opaque, "Called destroying opaque"),
+                Err(err) => {
+                    tracing::warn!(name = name, opaque = ?opaque, error = %err, "Catched runtime error")
+                }
             }
         }
     }
@@ -214,6 +222,7 @@ pub(crate) fn inner_destroy_opaque(instance: &Instance, opaque: &Option<OpaquePt
 pub(crate) fn inner_terminate_function(instance: &Instance, name: &str) {
     if let Ok(terminate) = instance.exports.get_native_function::<(), ()>(name) {
         terminate.call().unwrap();
+        tracing::debug!(name = name, "Called termination");
     } else {
         notify_export_function_error(name);
     }
@@ -230,11 +239,19 @@ pub(crate) fn inner_get_string(
             .get_native_function::<OpaquePtr, ByteArray>(name)
         {
             let memory = inner_memory(instance);
-            Ok(get_string
+            let value = get_string
                 .call(*opaque)?
                 .get_utf8_string_with_nul(memory)
-                .unwrap_or_default())
+                .unwrap_or_default();
+            tracing::debug!(
+                name = name,
+                opaque = ?opaque,
+                value = value,
+                "Called getting string value"
+            );
+            Ok(value)
         } else {
+            notify_export_function_error(name);
             Ok(Default::default())
         }
     } else {
@@ -262,6 +279,12 @@ pub(crate) fn inner_get_data(
                 get_data_body,
                 &mut output_data,
             )?;
+            tracing::debug!(
+                name = body_func_name,
+                opaque = ?opaque,
+                size = output_data.len(),
+                "Called getting data"
+            );
         }
         Ok(output_data)
     } else {
@@ -280,6 +303,7 @@ pub(crate) fn inner_set_data<T>(
         let len = data.len() * component_size;
         let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
         inner_set_data_internal(instance, opaque, data, component_size, name)?;
+        tracing::debug!(name = name, opaque = ?opaque, size = len, "Called setting data");
     }
     Ok(())
 }
@@ -295,6 +319,7 @@ pub(crate) fn inner_set_language(
             .exports
             .get_native_function::<(OpaquePtr, i32), ()>(name)?;
         set_language.call(*opaque, value)?;
+        tracing::debug!(name = name, opaque = ?opaque, value = value, "Called setting language");
     }
     Ok(())
 }
@@ -308,7 +333,9 @@ pub(crate) fn inner_count_all_functions(
         let count_all_functions = instance
             .exports
             .get_native_function::<OpaquePtr, i32>(name)?;
-        Ok(count_all_functions.call(*opaque)?)
+        let count = count_all_functions.call(*opaque)?;
+        tracing::debug!(name = name, opaque = ?opaque, count = count, "Called counting all functions");
+        Ok(count)
     } else {
         Ok(0)
     }
@@ -325,11 +352,18 @@ pub(crate) fn inner_get_function_name(
             .exports
             .get_native_function::<(OpaquePtr, i32), ByteArray>(name)?;
         let memory = inner_memory(instance);
-        let name = get_function_name
+        let function_name = get_function_name
             .call(*opaque, index)?
             .get_utf8_string_with_nul(memory)
             .unwrap_or_default();
-        Ok(name)
+        tracing::debug!(
+            name = name,
+            opaque = ?opaque,
+            index = index,
+            function = function_name,
+            "Called getting function name"
+        );
+        Ok(function_name)
     } else {
         Ok(Default::default())
     }
@@ -347,6 +381,7 @@ pub(crate) fn inner_set_function(
             .exports
             .get_native_function::<(OpaquePtr, i32, StatusPtr), ()>(name)?;
         set_function.call(*opaque, index, status_ptr)?;
+        tracing::debug!(name = name, opaque = ?opaque, index = index, "Called setting function");
         release_status_ptr(instance, status_ptr)?;
     }
     Ok(())
@@ -363,6 +398,7 @@ pub(crate) fn inner_execute(
             .exports
             .get_native_function::<(OpaquePtr, StatusPtr), ()>(name)?;
         execute.call(*opaque, status_ptr)?;
+        tracing::debug!(name = name, opaque = ?opaque, "Called executing function");
         release_status_ptr(instance, status_ptr)?;
     }
     Ok(())
@@ -381,6 +417,7 @@ pub(crate) fn inner_load_ui_window(
             let status_ptr = allocate_status_ptr(instance)?;
             load_ui_window_layout.call(*opaque, status_ptr)?;
             release_status_ptr(instance, status_ptr)?;
+            tracing::debug!(name = name, opaque = ?opaque, "Called loading UI window");
         }
     }
     Ok(())
@@ -417,6 +454,7 @@ pub(crate) fn inner_set_ui_component_layout(
                 status_ptr,
             )?;
             *reload = false;
+            tracing::debug!(name = name, opaque = ?opaque, "Called setting UI component layout");
             release_byte_array(instance, id_ptr)?;
             release_byte_array(instance, data_ptr)?;
             release_size_ptr(instance, reload_layout_ptr)?;
