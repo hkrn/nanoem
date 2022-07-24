@@ -3358,10 +3358,10 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_GET_BACKGROUND_IMAGE_TEXTURE_HANDLE: {
+        /* for backward compatibility only, do nothing in fact */
         if (nanoem_likely(project)) {
             Nanoem__Application__GetBackgroundImageTextureHandleResponseEvent base =
                 NANOEM__APPLICATION__GET_BACKGROUND_IMAGE_TEXTURE_HANDLE_RESPONSE_EVENT__INIT;
-            base.handle = project->backgroundImageHandle().id;
             Nanoem__Application__Event event = NANOEM__APPLICATION__EVENT__INIT;
             event.type_case = NANOEM__APPLICATION__EVENT__TYPE_GET_BACKGROUND_IMAGE_TEXTURE_HANDLE;
             event.get_background_image_texture_handle = &base;

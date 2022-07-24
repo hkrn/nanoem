@@ -321,8 +321,7 @@ public:
     int findTransformOrderIndex(const Model *model) const NANOEM_DECL_NOEXCEPT;
     UUID generateUUID(const void *ptr) const NANOEM_DECL_NOEXCEPT;
 
-    sg_image backgroundImageHandle();
-    bool hasBackgroundImageHandle() const NANOEM_DECL_NOEXCEPT;
+    bool hasBackgroundVideo() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 windowSize() const NANOEM_DECL_NOEXCEPT;
     void resizeWindowSize(const Vector2UI16 &value);
     void resizeUniformedViewportLayout(const Vector4UI16 &value);
@@ -964,7 +963,6 @@ private:
     Pass m_viewportPrimaryPass;
     Pass m_viewportSecondaryPass;
     Pass m_context2DPass;
-    tinystl::pair<sg_image, Vector2UI16> m_backgroundImage;
     FPSUnit m_preferredMotionFPS;
     nanoem_u32_t m_editingFPS;
     nanoem_motion_bone_keyframe_interpolation_type_t m_boneInterpolationType;

@@ -1276,7 +1276,6 @@ Project::Project(const Injector &injector)
     const bool topLeft = sg::query_features().origin_top_left;
     Inline::clearZeroMemory(m_logicalScaleCursorPositions);
     m_fallbackImage = { SG_INVALID_ID };
-    m_backgroundImage.first = { SG_INVALID_ID };
     m_currentRenderPass = m_currentOffscreenRenderPass = m_lastDrawnRenderPass = m_originOffscreenRenderPass =
         m_scriptExternalRenderPass = { SG_INVALID_ID };
     m_camera = nanoem_new(PerspectiveCamera(this));
@@ -1443,7 +1442,6 @@ Project::destroy() NANOEM_DECL_NOEXCEPT
         m_sharedImageBlitter->destroy();
     }
     sg::destroy_image(m_fallbackImage);
-    sg::destroy_image(m_backgroundImage.first);
     m_objectHandleAllocator->free(0);
     bx::destroyHandleAlloc(g_emapp_allocator, m_objectHandleAllocator);
     m_objectHandleAllocator = nullptr;
@@ -2230,27 +2228,10 @@ Project::generateUUID(const void *ptr) const NANOEM_DECL_NOEXCEPT
     return UUID::create(rng);
 }
 
-sg_image
-Project::backgroundImageHandle()
-{
-    if (!hasBackgroundImageHandle()) {
-        sg_image_desc desc;
-        Inline::clearZeroMemory(desc);
-        desc.min_filter = desc.mag_filter = SG_FILTER_NEAREST;
-        if (Inline::isDebugLabelEnabled()) {
-            desc.label = "@nanoem/BackgroundImage";
-        }
-        m_backgroundImage.first = sg::make_image(&desc);
-        nanoem_assert(
-            sg::query_image_state(m_backgroundImage.first) == SG_RESOURCESTATE_VALID, "color image must be valid");
-    }
-    return m_backgroundImage.first;
-}
-
 bool
-Project::hasBackgroundImageHandle() const NANOEM_DECL_NOEXCEPT
+Project::hasBackgroundVideo() const NANOEM_DECL_NOEXCEPT
 {
-    return sg::is_valid(m_backgroundImage.first);
+    return m_backgroundVideoRenderer != nullptr && !m_backgroundVideoRenderer->fileURI().isEmpty();
 }
 
 Vector2UI16

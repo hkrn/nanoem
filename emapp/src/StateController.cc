@@ -240,7 +240,7 @@ bool
 BaseDraggingObjectState::isBackgroundVideoOperation(
     const Vector3SI32 &logicalScaleCursorPosition, const Project *project) NANOEM_DECL_NOEXCEPT
 {
-    return project->hasBackgroundImageHandle() &&
+    return project->hasBackgroundVideo() &&
         EnumUtils::isEnabledT<int>(Project::kCursorModifierTypeShift, logicalScaleCursorPosition.z);
 }
 
