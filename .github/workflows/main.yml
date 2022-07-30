@@ -63,7 +63,6 @@ jobs:
             -DNANOEM_INSTALL_FFMPEG_PLUGIN=ON \
             -DNANOEM_INSTALL_GIF_PLUGIN=OFF \
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON \
-            -DNANOEM_TARGET_ARCHITECTURE=x86_64 \
             -DNANOEM_TARGET_COMPILER=clang \
             -GNinja \
             ../..
@@ -73,7 +72,7 @@ jobs:
           cd ${{ github.workspace }}/out/core
           ctest
   build-macos:
-    runs-on: macos-11
+    runs-on: macos-latest
     env:
       FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
       NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
@@ -113,7 +112,6 @@ jobs:
             -DNANOEM_INSTALL_FFMPEG_PLUGIN=ON \
             -DNANOEM_INSTALL_GIF_PLUGIN=OFF \
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON \
-            -DNANOEM_TARGET_ARCHITECTURE=x86_64 \
             -DNANOEM_TARGET_COMPILER=clang \
             -GNinja \
             ../..
@@ -156,7 +154,6 @@ jobs:
             -DNANOEM_INSTALL_FFMPEG_PLUGIN=OFF `
             -DNANOEM_INSTALL_GIF_PLUGIN=OFF `
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON `
-            -DNANOEM_TARGET_ARCHITECTURE=x86_64 `
             -DNANOEM_TARGET_COMPILER=vs2017 `
             -G"Visual Studio 17 2022" `
             -Tv141 `
