@@ -183,9 +183,6 @@ sokol_main(int argc, char *argv[])
         delete state;
         Allocator::destroy();
     };
-    const Vector2UI16 size(BaseApplicationService::minimumRequiredWindowSize());
-    desc.width = size.x;
-    desc.height = size.y;
     desc.window_title = "nanoem";
     desc.html5_canvas_resize = true;
     desc.html5_premultiplied_alpha = true;
