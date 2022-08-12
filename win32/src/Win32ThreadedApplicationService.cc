@@ -596,6 +596,7 @@ Win32ThreadedApplicationService::createSkinDeformerFactory()
                 factory = nanoem_new(D3D11SkinDeformerFactory(device, context));
             }
         }
+#if defined(NANOEM_WIN32_HAS_OPENGL)
         else if (backend == SG_BACKEND_GLCORE33 || backend == SG_BACKEND_GLES3) {
             if (wglGetProcAddress("glDispatchCompute")) {
                 factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(
@@ -608,6 +609,7 @@ Win32ThreadedApplicationService::createSkinDeformerFactory()
                         wglGetProcAddress)));
             }
         }
+#endif /* NANOEM_WIN32_HAS_OPENGL */
     }
     return factory;
 }

@@ -226,9 +226,11 @@ ApplicationService::createSkinDeformerFactory()
         case SG_BACKEND_GLCORE33:
         case SG_BACKEND_GLES3: {
 #if defined(_WIN32)
+#if defined(NANOEM_WIN32_HAS_OPENGL)
             factory = nanoem_new(internal::OpenGLComputeShaderSkinDeformerFactory(
                 reinterpret_cast<internal ::OpenGLComputeShaderSkinDeformerFactory::PFN_GetProcAddress>(
                     wglGetProcAddress)));
+#endif /* NANOEM_WIN32_HAS_OPENGL */
 #else
             if (void *handle = bx::dlopen("libGL.so")) {
                 using PFN_glXGetProcAddress = internal::OpenGLComputeShaderSkinDeformerFactory::PFN_GetProcAddress;
