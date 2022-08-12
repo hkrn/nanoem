@@ -420,16 +420,17 @@ MainWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         if (auto self = static_cast<MainWindow *>(lpcs->lpCreateParams)) {
             Error error;
             if (!self->handleWindowCreate(hwnd, error)) {
-                char buffer[256];
-                StringUtils::format(buffer, sizeof(buffer),
-                    "Failed to initialize nanoem due to failure of setup DirectX/OpenGL: %s",
-                    error.reasonConstString());
-                MessageBoxA(hwnd, buffer, "nanoem", MB_ICONERROR);
-                DestroyAcceleratorTable(self->m_accelerators);
-                DestroyMenu(self->m_menuHandle);
                 self->m_running = false;
                 self->m_client->sendTerminateMessage();
                 result = -1;
+                wchar_t buffer[256];
+                MutableWideString ws;
+                StringUtils::getWideCharString(error.reasonConstString(), ws);
+                _snwprintf_s(buffer, BX_COUNTOF(buffer),
+                    L"Failed to initialize nanoem due to failure of setup DirectX/OpenGL: %s", ws.data());
+                MessageBoxW(hwnd, buffer, L"nanoem", MB_ICONERROR);
+                DestroyAcceleratorTable(self->m_accelerators);
+                DestroyMenu(self->m_menuHandle);
             }
         }
         break;
