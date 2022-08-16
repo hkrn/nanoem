@@ -21,7 +21,7 @@ const MALLOC_FN: &str = "nanoemApplicationPluginAllocateMemoryWASM";
 const FREE_FN: &str = "nanoemApplicationPluginReleaseMemoryWASM";
 
 #[allow(dead_code, non_camel_case_types)]
-#[derive(Copy, Clone, Debug, Hash, PartialEq, PartialOrd)]
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq, PartialOrd)]
 #[repr(i32)]
 pub enum nanoem_application_plugin_status_t {
     ERROR_REFER_REASON = -3,
