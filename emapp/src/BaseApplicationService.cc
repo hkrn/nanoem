@@ -5342,14 +5342,13 @@ BaseApplicationService::drawDefaultPass()
     Project *project = m_stateController->currentProject();
     if (m_initialized && project) {
         const bool active = project->isActive();
-        bool resetAllPasses = false;
         if (active) {
             OPTICK_FRAME(__PRETTY_FUNCTION__);
             beginDrawContext();
             draw(project);
             sg::commit();
             presentDefaultPass(project);
-            resetAllPasses = project->resetAllPasses();
+            project->resetAllPasses();
             if (m_stateController->globalFrameIndex() % 2 == 0) {
                 postEmptyApplicationEvent();
             }

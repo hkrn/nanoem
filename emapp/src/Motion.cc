@@ -1799,7 +1799,6 @@ Motion::selectAllModelObjectKeyframes(const Model *model)
         nanoem_motion_bone_keyframe_t *const *keyframes = nanoemMotionGetAllBoneKeyframeObjects(data(), &numKeyframes);
         for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
             const nanoem_motion_bone_keyframe_t *keyframe = keyframes[i];
-            const nanoem_motion_keyframe_object_t *ko = nanoemMotionBoneKeyframeGetKeyframeObject(keyframe);
             const nanoem_unicode_string_t *name = nanoemMotionBoneKeyframeGetName(keyframe);
             if (model->containsBone(name)) {
                 m_selection->add(keyframe);
@@ -1812,7 +1811,6 @@ Motion::selectAllModelObjectKeyframes(const Model *model)
             nanoemMotionGetAllMorphKeyframeObjects(data(), &numKeyframes);
         for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
             const nanoem_motion_morph_keyframe_t *keyframe = keyframes[i];
-            const nanoem_motion_keyframe_object_t *ko = nanoemMotionMorphKeyframeGetKeyframeObject(keyframe);
             const nanoem_unicode_string_t *name = nanoemMotionMorphKeyframeGetName(keyframe);
             if (model->containsMorph(name)) {
                 m_selection->add(keyframe);

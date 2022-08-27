@@ -1177,7 +1177,8 @@ DefaultFileManager::internalLoadModel(const URI &fileURI, DialogType type, Proje
 }
 
 bool
-DefaultFileManager::internalLoadAccessoryFromFile(const URI &fileURI, Accessory *accessory, Progress &progress, Error &error)
+DefaultFileManager::internalLoadAccessoryFromFile(
+    const URI &fileURI, Accessory *accessory, Progress &progress, Error &error)
 {
     nanoem_parameter_assert(!fileURI.isEmpty(), "must NOT be empty");
     nanoem_parameter_assert(accessory, "must not be nullptr");
