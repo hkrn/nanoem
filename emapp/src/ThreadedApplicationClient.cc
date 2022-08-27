@@ -9,12 +9,9 @@
 #if defined(NANOEM_ENABLE_NANOMSG)
 
 #include "./protoc/application.pb-c.h"
-#include "emapp/StringUtils.h"
 #include "emapp/ThreadedApplicationService.h"
-#include "emapp/private/CommonInclude.h"
 
-#include "bx/handlealloc.h"
-#include "protobuf-c/protobuf-c.h"
+#include "bx/debug.h"
 #include "sokol/sokol_time.h"
 
 #define NN_STATIC_LIB
