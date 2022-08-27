@@ -15,7 +15,7 @@
 namespace nanoem {
 namespace {
 
-class CommandMessageUtil NANOEM_DECL_SEALED : private NonCopyable  {
+class CommandMessageUtil NANOEM_DECL_SEALED : private NonCopyable {
 public:
     static inline void
     setVector(const Vector3 &v, Nanoem__Common__Vector3 *&s)
@@ -142,7 +142,8 @@ public:
         }
     }
     static inline void
-    setOutsideParent(const nanoem_model_bone_t *bonePtr, const StringPair &parent, const Project *project, Nanoem__Application__OutsideParent *&op)
+    setOutsideParent(const nanoem_model_bone_t *bonePtr, const StringPair &parent, const Project *project,
+        Nanoem__Application__OutsideParent *&op)
     {
         op = nanoem_new(Nanoem__Application__OutsideParent);
         nanoem__application__outside_parent__init(op);

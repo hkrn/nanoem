@@ -2691,36 +2691,6 @@ ModelParameterDialog::layoutMaterialToonImage(const IImageView *image, const Str
     }
 }
 
-typedef tinystl::unordered_map<const nanoem_model_bone_t *, model::Bone::Set, TinySTLAllocator> BoneTree;
-static void
-constructTree(const BoneTree &boneTree, const nanoem_model_bone_t *parentBonePtr)
-{
-    BoneTree::const_iterator it = boneTree.find(parentBonePtr);
-    if (it != boneTree.end()) {
-        const model::Bone::Set *boneSet = &it->second;
-        if (const model::Bone *parentBone = model::Bone::cast(parentBonePtr)) {
-            if (ImGui::TreeNode(parentBonePtr, "%s", parentBone->nameConstString())) {
-                const model::Bone::Set *boneSet = &it->second;
-                for (model::Bone::Set::const_iterator it2 = boneSet->begin(), end2 = boneSet->end(); it2 != end2;
-                     ++it2) {
-                    const nanoem_model_bone_t *bonePtr = *it2;
-                    constructTree(boneTree, bonePtr);
-                }
-                ImGui::TreePop();
-            }
-        }
-        else {
-            for (model::Bone::Set::const_iterator it2 = boneSet->begin(), end2 = boneSet->end(); it2 != end2; ++it2) {
-                const nanoem_model_bone_t *bonePtr = *it2;
-                constructTree(boneTree, bonePtr);
-            }
-        }
-    }
-    else if (const model::Bone *parentBone = model::Bone::cast(parentBonePtr)) {
-        ImGui::Selectable(parentBone->nameConstString());
-    }
-}
-
 void
 ModelParameterDialog::layoutAllBones(Project *project)
 {

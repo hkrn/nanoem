@@ -5407,7 +5407,6 @@ void
 Effect::destroyAllOffscreenRenderTargetImages(OffscreenRenderTargetImageContainerMap &containers)
 {
     SG_PUSH_GROUPF("Effect::destroyAllOffscreenRenderTargetImages(size=%d)", containers.size());
-    sg_image invalid = { SG_INVALID_ID };
     for (OffscreenRenderTargetImageContainerMap::iterator it = containers.begin(), end = containers.end(); it != end;
          ++it) {
         OffscreenRenderTargetImageContainer *container = it->second;

@@ -372,7 +372,6 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::Deformer(
     , m_morphWeightTextureSize(0)
     , m_numMaxMorphItems(0)
 {
-    sg_buffer m_buffer = { SG_INVALID_ID };
     Inline::clearZeroMemory(m_outputBufferObjects);
 }
 
@@ -390,7 +389,6 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::~Deformer()
 sg_buffer
 OpenGLTransformFeedbackSkinDeformerFactory::Deformer::create(const sg_buffer_desc &desc, int bufferIndex)
 {
-    int size = Inline::saturateInt32(desc.data.size);
     if (m_inputBufferObject == 0) {
         createInputBuffer(desc);
     }
@@ -739,7 +737,7 @@ OpenGLTransformFeedbackSkinDeformerFactory::Deformer::setDebugLabel(
     StringUtils::format(label, sizeof(label), "Models/%s/TransformFeedback/%s", name, suffix);
     glObjectLabel(type, object, -1, label);
 #else
-    BX_UNUSED_2(object, suffix);
+    BX_UNUSED_3(object, type, suffix);
 #endif /* SOKOL_DEBUG */
 }
 
