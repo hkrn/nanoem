@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build-linux:
@@ -38,14 +38,15 @@ jobs:
       - name: checkout ICU
         run: git clone https://github.com/unicode-org/icu.git dependencies/icu
       - name: build all dependencies of nanoem
-        run:
-          cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
+        run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
+          NANOEM_ENABLE_BUILD_FFMPEG: 1
+          NANOEM_ENABLE_BUILD_GLFW: 1
+          NANOEM_ENABLE_BUILD_ICU4C: 1
+          NANOEM_ENABLE_BUILD_TBB: 1
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
-          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
-          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ github.workspace }}/out/core
@@ -86,17 +87,16 @@ jobs:
       - name: checkout ICU
         run: git clone https://github.com/unicode-org/icu.git dependencies/icu
       - name: setup prerequisite packages
-        run:
-          brew install ninja
+        run: brew install ninja
       - name: build all dependencies of nanoem
-        run:
-          cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
+        run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
-          NANOEM_DISABLE_BUILD_MIMALLOC: 1
-          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
-          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
+          NANOEM_ENABLE_BUILD_FFMPEG: 1
+          NANOEM_ENABLE_BUILD_ICU4C: 1
+          NANOEM_ENABLE_BUILD_MIMALLOC: 1
+          NANOEM_ENABLE_BUILD_TBB: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ github.workspace }}/out/core
@@ -138,8 +138,8 @@ jobs:
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: vs2017
           NANOEM_TARGET_TOOLSET: v141
-          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
-          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
+          NANOEM_ENABLE_BUILD_MIMALLOC: 1
+          NANOEM_ENABLE_BUILD_TBB: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ github.workspace }}/out/core
