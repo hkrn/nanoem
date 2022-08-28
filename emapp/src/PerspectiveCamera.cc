@@ -499,12 +499,6 @@ PerspectiveCamera::setFovRadians(nanoem_f32_t value)
 }
 
 Vector4U8
-PerspectiveCamera::automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT
-{
-    return m_automaticBezierControlPoint;
-}
-
-Vector4U8
 PerspectiveCamera::bezierControlPoints(
     nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT
 {

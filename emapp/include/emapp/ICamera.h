@@ -65,7 +65,6 @@ public:
     virtual void setFov(int value) = 0;
     virtual nanoem_f32_t fovRadians() const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setFovRadians(nanoem_f32_t value) = 0;
-    virtual Vector4U8 automaticBezierControlPoint() const NANOEM_DECL_NOEXCEPT = 0;
     virtual Vector4U8 bezierControlPoints(
         nanoem_motion_camera_keyframe_interpolation_type_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual void setBezierControlPoints(
