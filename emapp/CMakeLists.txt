@@ -257,7 +257,6 @@ function(nanoem_emapp_find_nanomsg)
   endif()
 endfunction()
 
-# mimalloc
 function(nanoem_emapp_find_mimalloc)
   set(MIMALLOC_VERSION "1.7")
   nanoem_cmake_get_install_path("mimalloc" MIMALLOC_BASE_PATH MIMALLOC_INSTALL_PATH_DEBUG MIMALLOC_INSTALL_PATH_RELEASE)

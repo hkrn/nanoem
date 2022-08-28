@@ -67,22 +67,20 @@ endfunction()
 
 function(compile_libsoundio _cmake_build_type _generator _toolset_option _arch_option _triple_path)
   set(_source_path ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/libsoundio)
-  if(EXISTS ${_source_path})
-    set(_build_path ${base_build_path}/libsoundio/out/${_triple_path})
-    file(MAKE_DIRECTORY ${_build_path})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
-                                             ${CMAKE_COMMAND}
-                                             ${global_cmake_flags}
-                                             -DCMAKE_BUILD_TYPE=${_cmake_build_type}
-                                             -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
-                                             -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
-                                             -DBUILD_DYNAMIC_LIBS=OFF
-                                             -DBUILD_EXAMPLE_PROGRAMS=OFF
-                                             -DBUILD_TESTS=OFF
-                                             -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
-    rewrite_cmake_cache(${_build_path})
-    execute_build(${_build_path})
-  endif()
+  set(_build_path ${base_build_path}/libsoundio/out/${_triple_path})
+  file(MAKE_DIRECTORY ${_build_path})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
+                                           ${CMAKE_COMMAND}
+                                           ${global_cmake_flags}
+                                           -DCMAKE_BUILD_TYPE=${_cmake_build_type}
+                                           -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
+                                           -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DBUILD_DYNAMIC_LIBS=OFF
+                                           -DBUILD_EXAMPLE_PROGRAMS=OFF
+                                           -DBUILD_TESTS=OFF
+                                           -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
+  rewrite_cmake_cache(${_build_path})
+  execute_build(${_build_path})
 endfunction()
 
 function(compile_minizip _cmake_build_type _generator _toolset_option _arch_option _triple_path)
@@ -245,45 +243,41 @@ endfunction()
 
 function(compile_yamlcpp _cmake_build_type _generator _toolset_option _arch_option _triple_path)
   set(_source_path ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/yaml-cpp)
-  if(EXISTS ${_source_path})
-    set(_build_path ${base_build_path}/yaml-cpp/out/${_triple_path})
-    file(MAKE_DIRECTORY ${_build_path})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
-                                             ${CMAKE_COMMAND}
-                                             ${global_cmake_flags}
-                                             -DAPPLE_UNIVERSAL_BIN=OFF
-                                             -DBUILD_SHARED_LIBS=OFF
-                                             -DBUILD_TESTING=OFF
-                                             -DYAML_CPP_BUILD_CONTRIB=OFF
-                                             -DYAML_CPP_BUILD_TESTS=OFF
-                                             -DYAML_CPP_BUILD_TOOLS=OFF
-                                             -DYAML_MSVC_SHARED_RT=OFF
-                                             -DCMAKE_BUILD_TYPE=${_cmake_build_type}
-                                             -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
-                                             -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
-                                             -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
-    execute_build(${_build_path})
-  endif()
+  set(_build_path ${base_build_path}/yaml-cpp/out/${_triple_path})
+  file(MAKE_DIRECTORY ${_build_path})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
+                                           ${CMAKE_COMMAND}
+                                           ${global_cmake_flags}
+                                           -DAPPLE_UNIVERSAL_BIN=OFF
+                                           -DBUILD_SHARED_LIBS=OFF
+                                           -DBUILD_TESTING=OFF
+                                           -DYAML_CPP_BUILD_CONTRIB=OFF
+                                           -DYAML_CPP_BUILD_TESTS=OFF
+                                           -DYAML_CPP_BUILD_TOOLS=OFF
+                                           -DYAML_MSVC_SHARED_RT=OFF
+                                           -DCMAKE_BUILD_TYPE=${_cmake_build_type}
+                                           -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
+                                           -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
+  execute_build(${_build_path})
 endfunction()
 
 function(compile_glfw _cmake_build_type _generator _toolset_option _arch_option _triple_path)
   set(_source_path ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glfw)
-  if(EXISTS ${_source_path})
-    set(_build_path ${base_build_path}/glfw/out/${_triple_path})
-    file(MAKE_DIRECTORY ${_build_path})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
-                                             ${CMAKE_COMMAND}
-                                             ${global_cmake_flags}
-                                             -DCMAKE_BUILD_TYPE=${_cmake_build_type}
-                                             -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
-                                             -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
-                                             -DGLFW_BUILD_DOCS=OFF
-                                             -DGLFW_BUILD_EXAMPLES=OFF
-                                             -DGLFW_BUILD_TESTS=OFF
-                                             -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
-    rewrite_cmake_cache(${_build_path})
-    execute_build(${_build_path})
-  endif()
+  set(_build_path ${base_build_path}/glfw/out/${_triple_path})
+  file(MAKE_DIRECTORY ${_build_path})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
+                                           ${CMAKE_COMMAND}
+                                           ${global_cmake_flags}
+                                           -DCMAKE_BUILD_TYPE=${_cmake_build_type}
+                                           -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
+                                           -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DGLFW_BUILD_DOCS=OFF
+                                           -DGLFW_BUILD_EXAMPLES=OFF
+                                           -DGLFW_BUILD_TESTS=OFF
+                                           -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
+  rewrite_cmake_cache(${_build_path})
+  execute_build(${_build_path})
 endfunction()
 
 function(compile_mimalloc _cmake_build_type _generator _toolset_option _arch_option _triple_path)
@@ -402,100 +396,98 @@ endfunction()
 
 function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_option _triple_path)
   set(_source_path ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/ffmpeg)
-  if(EXISTS ${_source_path})
-    set(_build_path ${base_build_path}/ffmpeg/out/${_triple_path})
-    set(_branch_name "n4.2.4")
-    list(APPEND _ffmpeg_build_options "--disable-debug")
-    list(APPEND _ffmpeg_build_options "--disable-asm")
-    list(APPEND _ffmpeg_build_options "--disable-static")
-    list(APPEND _ffmpeg_build_options "--disable-doc")
-    list(APPEND _ffmpeg_build_options "--disable-htmlpages")
-    list(APPEND _ffmpeg_build_options "--disable-manpages")
-    list(APPEND _ffmpeg_build_options "--disable-podpages")
-    list(APPEND _ffmpeg_build_options "--disable-txtpages")
-    list(APPEND _ffmpeg_build_options "--disable-bzlib")
-    list(APPEND _ffmpeg_build_options "--disable-iconv")
-    list(APPEND _ffmpeg_build_options "--disable-lzo")
-    list(APPEND _ffmpeg_build_options "--disable-sdl2")
-    list(APPEND _ffmpeg_build_options "--disable-network")
-    list(APPEND _ffmpeg_build_options "--disable-schannel")
-    list(APPEND _ffmpeg_build_options "--disable-symver")
-    list(APPEND _ffmpeg_build_options "--disable-xlib")
-    list(APPEND _ffmpeg_build_options "--disable-zlib")
-    list(APPEND _ffmpeg_build_options "--disable-securetransport")
-    list(APPEND _ffmpeg_build_options "--disable-avdevice")
-    list(APPEND _ffmpeg_build_options "--disable-avfilter")
-    list(APPEND _ffmpeg_build_options "--disable-postproc")
-    list(APPEND _ffmpeg_build_options "--disable-demuxers")
-    list(APPEND _ffmpeg_build_options "--disable-muxers")
-    list(APPEND _ffmpeg_build_options "--disable-decoders")
-    list(APPEND _ffmpeg_build_options "--disable-encoders")
-    list(APPEND _ffmpeg_build_options "--disable-bsfs")
-    list(APPEND _ffmpeg_build_options "--disable-parsers")
-    list(APPEND _ffmpeg_build_options "--disable-programs")
-    list(APPEND _ffmpeg_build_options "--disable-hwaccels")
-    list(APPEND _ffmpeg_build_options "--disable-filters")
-    list(APPEND _ffmpeg_build_options "--disable-devices")
-    list(APPEND _ffmpeg_build_options "--disable-protocols")
-    list(APPEND _ffmpeg_build_options "--enable-shared")
-    list(APPEND _ffmpeg_build_options "--enable-rpath")
-    list(APPEND _ffmpeg_build_options "--enable-small")
-    list(APPEND _ffmpeg_build_options "--enable-swresample")
-    list(APPEND _ffmpeg_build_options "--enable-swscale")
-    list(APPEND _ffmpeg_build_options "--enable-demuxer=avi,matroska")
-    list(APPEND _ffmpeg_build_options "--enable-muxer=avi,matroska")
-    list(APPEND _ffmpeg_build_options "--enable-decoder=flac,hq_hqa,hqx,pcm_s16le,rawvideo,utvideo")
-    list(APPEND _ffmpeg_build_options "--enable-encoder=flac,pcm_s16le,rawvideo,utvideo")
-    list(APPEND _ffmpeg_build_options "--enable-protocol=file")
-    list(APPEND _ffmpeg_build_options "--enable-cross-compile")
-    execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_branch_name} WORKING_DIRECTORY ${_source_path})
-    if(APPLE)
-      if("${_arch}" STREQUAL "ub")
-        set(_macos_archs "arm64;x86_64")
-      else()
-        set(_macos_archs "${_arch}")
-      endif()
-      foreach(_item ${_macos_archs})
-        set(_build_flags "-arch ${_item} -mmacosx-version-min=10.9")
-        if(DEFINED ENV{NANOEM_MACOS_SYSROOT})
-          set(_macos_sysroot $ENV{NANOEM_MACOS_SYSROOT})
-          set(_build_flags "-isysroot ${_macos_sysroot}")
-        endif()
-        set(_interm_path "${_build_path}/interm/${_item}")
-        file(MAKE_DIRECTORY ${_interm_path})
-        set(_ffmpeg_built_options2 ${_ffmpeg_build_options})
-        list(APPEND _ffmpeg_built_options2 "--prefix=\"${_interm_path}/install-root\"")
-        string(JOIN ";" _full_build_options ${_ffmpeg_built_options2})
-        execute_process(COMMAND
-          ${CMAKE_COMMAND} -E env
-            CFLAGS=${_build_flags}
-            CXXFLAGS=${_build_flags}
-            LDFLAGS=${_build_flags}
-          ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_interm_path})
-        execute_process(COMMAND make install WORKING_DIRECTORY ${_interm_path})
-      endforeach()
-      if("${_arch}" STREQUAL "ub")
-        set(_interm_arm64_path ${_build_path}/interm/arm64/install-root)
-        set(_interm_x86_64_path ${_build_path}/interm/x86_64/install-root)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/include ${_build_path}/install-root/include)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/share ${_build_path}/install-root/share)
-        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${_build_path}/install-root/lib)
-        file(GLOB _libraries ${_interm_arm64_path}/lib/lib*.dylib)
-        foreach(_item ${_libraries})
-          get_filename_component(_filename ${_item} NAME)
-          execute_process(COMMAND lipo -create -output
-            "${_build_path}/install-root/lib/${_filename}"
-            "${_interm_arm64_path}/lib/${_filename}"
-            "${_interm_x86_64_path}/lib/${_filename}")
-        endforeach()
-      endif()
+  set(_build_path ${base_build_path}/ffmpeg/out/${_triple_path})
+  set(_branch_name "n4.2.4")
+  list(APPEND _ffmpeg_build_options "--disable-debug")
+  list(APPEND _ffmpeg_build_options "--disable-asm")
+  list(APPEND _ffmpeg_build_options "--disable-static")
+  list(APPEND _ffmpeg_build_options "--disable-doc")
+  list(APPEND _ffmpeg_build_options "--disable-htmlpages")
+  list(APPEND _ffmpeg_build_options "--disable-manpages")
+  list(APPEND _ffmpeg_build_options "--disable-podpages")
+  list(APPEND _ffmpeg_build_options "--disable-txtpages")
+  list(APPEND _ffmpeg_build_options "--disable-bzlib")
+  list(APPEND _ffmpeg_build_options "--disable-iconv")
+  list(APPEND _ffmpeg_build_options "--disable-lzo")
+  list(APPEND _ffmpeg_build_options "--disable-sdl2")
+  list(APPEND _ffmpeg_build_options "--disable-network")
+  list(APPEND _ffmpeg_build_options "--disable-schannel")
+  list(APPEND _ffmpeg_build_options "--disable-symver")
+  list(APPEND _ffmpeg_build_options "--disable-xlib")
+  list(APPEND _ffmpeg_build_options "--disable-zlib")
+  list(APPEND _ffmpeg_build_options "--disable-securetransport")
+  list(APPEND _ffmpeg_build_options "--disable-avdevice")
+  list(APPEND _ffmpeg_build_options "--disable-avfilter")
+  list(APPEND _ffmpeg_build_options "--disable-postproc")
+  list(APPEND _ffmpeg_build_options "--disable-demuxers")
+  list(APPEND _ffmpeg_build_options "--disable-muxers")
+  list(APPEND _ffmpeg_build_options "--disable-decoders")
+  list(APPEND _ffmpeg_build_options "--disable-encoders")
+  list(APPEND _ffmpeg_build_options "--disable-bsfs")
+  list(APPEND _ffmpeg_build_options "--disable-parsers")
+  list(APPEND _ffmpeg_build_options "--disable-programs")
+  list(APPEND _ffmpeg_build_options "--disable-hwaccels")
+  list(APPEND _ffmpeg_build_options "--disable-filters")
+  list(APPEND _ffmpeg_build_options "--disable-devices")
+  list(APPEND _ffmpeg_build_options "--disable-protocols")
+  list(APPEND _ffmpeg_build_options "--enable-shared")
+  list(APPEND _ffmpeg_build_options "--enable-rpath")
+  list(APPEND _ffmpeg_build_options "--enable-small")
+  list(APPEND _ffmpeg_build_options "--enable-swresample")
+  list(APPEND _ffmpeg_build_options "--enable-swscale")
+  list(APPEND _ffmpeg_build_options "--enable-demuxer=avi,matroska")
+  list(APPEND _ffmpeg_build_options "--enable-muxer=avi,matroska")
+  list(APPEND _ffmpeg_build_options "--enable-decoder=flac,hq_hqa,hqx,pcm_s16le,rawvideo,utvideo")
+  list(APPEND _ffmpeg_build_options "--enable-encoder=flac,pcm_s16le,rawvideo,utvideo")
+  list(APPEND _ffmpeg_build_options "--enable-protocol=file")
+  list(APPEND _ffmpeg_build_options "--enable-cross-compile")
+  execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_branch_name} WORKING_DIRECTORY ${_source_path})
+  if(APPLE)
+    if("${_arch}" STREQUAL "ub")
+    set(_macos_archs "arm64;x86_64")
     else()
-      file(MAKE_DIRECTORY ${_build_path})
-      list(APPEND _ffmpeg_build_options "--prefix=\"${_build_path}/install-root\"")
-      string(JOIN ";" _full_build_options ${_ffmpeg_build_options})
-      execute_process(COMMAND ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_build_path})
-      execute_process(COMMAND make install WORKING_DIRECTORY ${_build_path})
+    set(_macos_archs "${_arch}")
     endif()
+    foreach(_item ${_macos_archs})
+    set(_build_flags "-arch ${_item} -mmacosx-version-min=10.9")
+    if(DEFINED ENV{NANOEM_MACOS_SYSROOT})
+      set(_macos_sysroot $ENV{NANOEM_MACOS_SYSROOT})
+      set(_build_flags "-isysroot ${_macos_sysroot}")
+    endif()
+    set(_interm_path "${_build_path}/interm/${_item}")
+    file(MAKE_DIRECTORY ${_interm_path})
+    set(_ffmpeg_built_options2 ${_ffmpeg_build_options})
+    list(APPEND _ffmpeg_built_options2 "--prefix=\"${_interm_path}/install-root\"")
+    string(JOIN ";" _full_build_options ${_ffmpeg_built_options2})
+    execute_process(COMMAND
+      ${CMAKE_COMMAND} -E env
+      CFLAGS=${_build_flags}
+      CXXFLAGS=${_build_flags}
+      LDFLAGS=${_build_flags}
+      ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_interm_path})
+    execute_process(COMMAND make install WORKING_DIRECTORY ${_interm_path})
+    endforeach()
+    if("${_arch}" STREQUAL "ub")
+    set(_interm_arm64_path ${_build_path}/interm/arm64/install-root)
+    set(_interm_x86_64_path ${_build_path}/interm/x86_64/install-root)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/include ${_build_path}/install-root/include)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/share ${_build_path}/install-root/share)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${_build_path}/install-root/lib)
+    file(GLOB _libraries ${_interm_arm64_path}/lib/lib*.dylib)
+    foreach(_item ${_libraries})
+      get_filename_component(_filename ${_item} NAME)
+      execute_process(COMMAND lipo -create -output
+      "${_build_path}/install-root/lib/${_filename}"
+      "${_interm_arm64_path}/lib/${_filename}"
+      "${_interm_x86_64_path}/lib/${_filename}")
+    endforeach()
+    endif()
+  else()
+    file(MAKE_DIRECTORY ${_build_path})
+    list(APPEND _ffmpeg_build_options "--prefix=\"${_build_path}/install-root\"")
+    string(JOIN ";" _full_build_options ${_ffmpeg_build_options})
+    execute_process(COMMAND ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_build_path})
+    execute_process(COMMAND make install WORKING_DIRECTORY ${_build_path})
   endif()
 endfunction()
 
@@ -552,37 +544,37 @@ function(compile_all_repositories _generator _toolset_option _compiler _arch _co
   compile_minizip(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   compile_bullet(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   compile_glslang(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
+  compile_spirv_cross(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_NANOMSG})
     compile_nanomsg(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_TBB})
-    compile_tbb(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
-  endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_GLFW})
-    compile_glfw(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
-  endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_MIMALLOC})
-    compile_mimalloc(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
-  endif()
-  compile_spirv_cross(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
-  # due to compiler error, disable compiling spirv-tools on CI (CircleCI)
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_SPIRV_TOOLS})
-    compile_spirv_tools(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
-  endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_ICU4C})
+  # optional dependencies
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_ICU4C})
     compile_icu4c(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_SENTRY_NATIVE})
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_TBB})
+    compile_tbb(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
+  endif()
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_MIMALLOC})
+    compile_mimalloc(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
+  endif()
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_SPIRV_TOOLS})
+    compile_spirv_tools(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
+  endif()
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_SENTRY_NATIVE})
     compile_sentry_native(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_LIBSOUNDIO})
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_LIBSOUNDIO})
     compile_libsoundio(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_YAMLCPP})
-    compile_yamlcpp(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_GLFW})
+    compile_glfw(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
-  if(NOT DEFINED ENV{NANOEM_DISABLE_BUILD_FFMPEG})
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_FFMPEG})
     compile_ffmpeg(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
+  endif()
+  if(DEFINED ENV{NANOEM_ENABLE_BUILD_YAMLCPP})
+    compile_yamlcpp(${_cmake_build_type} ${_generator} ${_toolset_option} ${_arch_option} ${_triple_path})
   endif()
   if("${_arch}" STREQUAL "ub")
     file(GLOB _libraries ${base_build_path}/*)
