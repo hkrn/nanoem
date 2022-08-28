@@ -89,6 +89,7 @@ AddCameraKeyframeCommand::toKeyframeList(
 {
     CameraKeyframeList newKeyframes;
     const Motion::FrameIndexList &newFrameIndices = motion ? frameIndices : Motion::FrameIndexList();
+    const bool enableBezierCurveAdjustment = camera->project()->isBezierCurveAjustmentEnabled();
     for (Motion::FrameIndexList::const_iterator it = newFrameIndices.begin(), end = newFrameIndices.end(); it != end;
          ++it) {
         const nanoem_frame_index_t &frameIndex = *it;
@@ -99,16 +100,40 @@ AddCameraKeyframeCommand::toKeyframeList(
             keyframe.m_updated = true;
         }
         else {
-            nanoem_motion_camera_keyframe_t *prev = nullptr;
-            nanoemMotionSearchClosestCameraKeyframes(motion->data(), frameIndex, &prev, nullptr);
+            nanoem_motion_camera_keyframe_t *prev = nullptr, *next = nullptr;
+            nanoemMotionSearchClosestCameraKeyframes(motion->data(), frameIndex, &prev, &next);
             if (prev) {
-                keyframe.m_bezierCurveOverrideTargetFrameIndex =
+                const nanoem_frame_index_t prevKeyframeIndex =
                     nanoemMotionKeyframeObjectGetFrameIndex(nanoemMotionCameraKeyframeGetKeyframeObject(prev));
+                nanoem_frame_index_t nextKeyframeIndex = Motion::kMaxFrameIndex;
+                if (next) {
+                    nextKeyframeIndex =
+                        nanoemMotionKeyframeObjectGetFrameIndex(nanoemMotionCameraKeyframeGetKeyframeObject(next));
+                }
+                keyframe.m_bezierCurveOverrideTargetFrameIndex = prevKeyframeIndex;
                 BezierControlPointParameterLookAtOnlyPair &p2 = keyframe.m_lookAtParameters;
+                CameraKeyframe::State &newState = keyframe.m_state.first;
                 for (int i = 0; i < int(BX_COUNTOF(p2.first.m_value)); i++) {
-                    p2.first.m_value[i] = camera->automaticBezierControlPoint();
-                    p2.second.m_value[i] = glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(
-                        prev, nanoem_motion_camera_keyframe_interpolation_type_t(i)));
+                    nanoem_motion_camera_keyframe_interpolation_type_t type =
+                        nanoem_motion_camera_keyframe_interpolation_type_t(i);
+                    const Vector4U8 prevKeyframeInterpolationParameter(
+                        glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(prev, type)));
+                    if (enableBezierCurveAdjustment && nextKeyframeIndex != Motion::kMaxFrameIndex && nextKeyframeIndex > prevKeyframeIndex) {
+                        const nanoem_frame_index_t interval = nextKeyframeIndex - prevKeyframeIndex;
+                        const Vector2 c0(prevKeyframeInterpolationParameter.x, prevKeyframeInterpolationParameter.y),
+                            c1(prevKeyframeInterpolationParameter.z, prevKeyframeInterpolationParameter.w);
+                        const BezierCurve bezierCurve(c0, c1, interval);
+                        BezierCurve::Pair pair(
+                            bezierCurve.split(nanoem_f32_t((frameIndex - prevKeyframeIndex) / nanoem_f64_t(interval))));
+                        p2.first.m_value[i] = pair.first->toParameters();
+                        newState.m_parameter.m_value[i] = pair.second->toParameters();
+                        nanoem_delete(pair.first);
+                        nanoem_delete(pair.second);
+                    }
+                    else {
+                        p2.first.m_value[i] = prevKeyframeInterpolationParameter;
+                    }
+                    p2.second.m_value[i] = prevKeyframeInterpolationParameter;
                 }
             }
             keyframe.m_selected = true;
