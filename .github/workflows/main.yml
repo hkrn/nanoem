@@ -43,7 +43,6 @@ jobs:
           NANOEM_ENABLE_BUILD_FFMPEG: 1
           NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
-          NANOEM_ENABLE_BUILD_TBB: 1
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
@@ -96,7 +95,6 @@ jobs:
           NANOEM_ENABLE_BUILD_FFMPEG: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_TBB: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ github.workspace }}/out/core
@@ -139,7 +137,6 @@ jobs:
           NANOEM_TARGET_COMPILER: vs2017
           NANOEM_TARGET_TOOLSET: v141
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_TBB: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ github.workspace }}/out/core

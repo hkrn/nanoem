@@ -56,16 +56,16 @@ cd sapp && ./nanoem
 
 |Name|Description|
 |---|---|
-|`NANOEM_TARGET_ARCHITECTURES`|Target architectures to build. The default value is `x86_64` (non macOS) or `ub` (macOS).|
+|`NANOEM_TARGET_ARCHITECTURES`|Target architectures to build. The default value is `x86_64` (non macOS) or `ub` (means Universal Binary, macOS).|
 |`NANOEM_TARGET_CONFIGURATIONS`|Target configurations for cmake. The default value is `debug;release`.|
 |`NANOEM_TARGET_MACOS_VERSION`|Target macOS version. Same as [CMAKE_OSX_DEPLOYMENT_TARGET](https://cmake.org/cmake/help/latest/variable/CMAKE_OSX_DEPLOYMENT_TARGET.html).|
 |`NANOEM_TARGET_GENERATOR`|Target generator for cmake. The option will pass as `cmake -G ${NANOEM_TARGET_GENERATOR}`|
 |`NANOEM_TARGET_COMPILER`|Target compiler for cmake.|
 |`NANOEM_TARGET_TOOLSET`|Target toolset for cmake. The option will pass as `cmake -T {NANOEM_TARGET_TOOLSET}`|
-|`NANOEM_MAKE_PROGRAM`|Make program to use for cmake.  Same as [CMAKE_MAKE_PROGRAM](https://cmake.org/cmake/help/latest/variable/CMAKE_MAKE_PROGRAM.html).|
-|`NANOEM_DISABLE_BUILD_NANOMSG`|Disable building `nanomsg`|
+|`NANOEM_MAKE_PROGRAM`|Make program to use for cmake. Same as [CMAKE_MAKE_PROGRAM](https://cmake.org/cmake/help/latest/variable/CMAKE_MAKE_PROGRAM.html).|
+|`NANOEM_DISABLE_BUILD_NANOMSG`|Disable building [nanomsg](https://nanomsg.org/).|
+|`NANOEM_DISABLE_BUILD_TBB`|Disable building [Threading Building Blocks](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html).|
 |`NANOEM_ENABLE_BUILD_ICU4C`|Enable building [ICU](https://github.com/unicode-org/icu/). You must run following command `git clone https://github.com/unicode-org/icu/ dependencies/icu` before enabling the option.|
-|`NANOEM_ENABLE_BUILD_TBB`|Enable building [Threading Building Blocks](https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb.html).|
 |`NANOEM_ENABLE_BUILD_MIMALLOC`|Enable building [mimalloc](https://github.com/microsoft/mimalloc).|
 |`NANOEM_ENABLE_BUILD_SPIRV_TOOLS`|Enable building [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools).|
 |`NANOEM_ENABLE_BUILD_SENTRY_NATIVE`|Enable building [Sentry C/C++ SDK](https://github.com/getsentry/sentry-native).|
