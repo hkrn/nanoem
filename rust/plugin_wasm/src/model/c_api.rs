@@ -65,7 +65,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLanguage(
     plugin: *mut nanoem_application_plugin_model_io_t,
     value: i32,
 ) {
-    if let Some(instance) = nanoem_application_plugin_model_io_t::get(plugin) {
+    if let Some(instance) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
         instance.set_language(value).unwrap_or_default();
     }
 }
@@ -559,7 +559,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelDataSize(
     plugin: *mut nanoem_application_plugin_model_io_t,
     length: *mut u32,
 ) {
-    if let Some(instance) = nanoem_application_plugin_model_io_t::get(plugin) {
+    if let Some(instance) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
         if !length.is_null() {
             *length = instance.output_slice().len() as u32
         }
@@ -576,7 +576,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelData(
     length: u32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
-    let status = match nanoem_application_plugin_model_io_t::get(plugin) {
+    let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
                 let slice = instance.output_slice();
@@ -621,7 +621,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutDataSize
     plugin: *mut nanoem_application_plugin_model_io_t,
     length: *mut u32,
 ) {
-    if let Some(instance) = nanoem_application_plugin_model_io_t::get(plugin) {
+    if let Some(instance) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
         if !length.is_null() {
             *length = instance.window_layout_data_slice().len() as u32
         }
@@ -638,7 +638,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutData(
     length: u32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
-    let status = match nanoem_application_plugin_model_io_t::get(plugin) {
+    let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
                 let slice = instance.window_layout_data_slice();

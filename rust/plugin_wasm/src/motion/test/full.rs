@@ -8,36 +8,33 @@ use anyhow::{Context, Result};
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use wasmer_wasi::WasiEnv;
 
 use crate::motion::{
     plugin::MotionIOPluginController,
     test::{
-        create_random_data, create_wasi_env, flush_plugin_output, inner_create_controller,
-        read_plugin_output, PluginOutput,
+        create_random_data, flush_plugin_output, inner_create_controller, read_plugin_output,
+        PluginOutput,
     },
 };
 
-fn create_controller(env: &mut WasiEnv) -> Result<MotionIOPluginController> {
+use super::build_type_and_flags;
+
+fn create_controller() -> Result<MotionIOPluginController> {
     let package = "plugin_wasm_test_motion_full";
-    let (ty, flag) = if cfg!(debug_assertions) {
-        ("debug", "")
-    } else {
-        ("release", " --release")
-    };
-    inner_create_controller(&format!("target/wasm32-wasi/{}/{}.wasm", ty, package), env)
-        .with_context(|| {
+    let (ty, flag) = build_type_and_flags();
+    inner_create_controller(&format!("target/wasm32-wasi/{}/{}.wasm", ty, package)).with_context(
+        || {
             format!(
                 "try build with \"cargo build --package {} --target wasm32-wasi{}\"",
                 package, flag
             )
-        })
+        },
+    )
 }
 
 #[test]
 fn create() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let result = create_controller(&mut env);
+    let result = create_controller();
     assert!(result.is_ok());
     let mut controller = result?;
     assert!(controller.initialize().is_ok());
@@ -53,11 +50,15 @@ fn create() -> Result<()> {
                 ..Default::default()
             },
             PluginOutput {
-                function: "nanoemApplicationPluginMotionIOCountAllFunctions".to_owned(),
+                function: "nanoemApplicationPluginMotionIOGetName".to_owned(),
                 ..Default::default()
             },
             PluginOutput {
-                function: "nanoemApplicationPluginMotionIOGetName".to_owned(),
+                function: "nanoemApplicationPluginMotionIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginMotionIOCountAllFunctions".to_owned(),
                 ..Default::default()
             },
             PluginOutput {
@@ -67,16 +68,22 @@ fn create() -> Result<()> {
                 })
             },
             PluginOutput {
-                function: "nanoemApplicationPluginMotionIOGetVersion".to_owned(),
-                ..Default::default()
-            }
+                function: "nanoemApplicationPluginMotionIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
         ],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
-    assert_eq!(1, controller.count_all_functions());
+    assert_eq!(2, controller.count_all_functions());
     assert_eq!(
         "plugin_wasm_test_motion_full: function0 (1.2.3)",
         controller.function_name(0)?.to_str()?
+    );
+    assert_eq!(
+        "plugin_wasm_test_motion_full: function0 (1.2.3)",
+        controller.function_name(1)?.to_str()?
     );
     controller.destroy();
     controller.terminate();
@@ -91,19 +98,18 @@ fn create() -> Result<()> {
                 ..Default::default()
             },
         ],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     Ok(())
 }
 
 #[test]
 fn set_language() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_language(0).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -112,7 +118,7 @@ fn set_language() -> Result<()> {
                 "value".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -121,13 +127,12 @@ fn set_language() -> Result<()> {
 
 #[test]
 fn execute() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_input_model_data(&data).is_ok());
     assert!(controller.set_input_motion_data(&data).is_ok());
     assert!(controller.execute().is_ok());
@@ -173,7 +178,7 @@ fn execute() -> Result<()> {
                 })
             },
         ],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -182,13 +187,12 @@ fn execute() -> Result<()> {
 
 #[test]
 fn set_all_selected_accessory_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller
         .set_all_selected_accessory_keyframes(data)
         .is_ok());
@@ -201,7 +205,7 @@ fn set_all_selected_accessory_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -210,13 +214,12 @@ fn set_all_selected_accessory_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_camera_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_all_selected_camera_keyframes(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -227,7 +230,7 @@ fn set_all_selected_camera_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -236,13 +239,12 @@ fn set_all_selected_camera_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_light_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_all_selected_light_keyframes(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -253,7 +255,7 @@ fn set_all_selected_light_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -262,13 +264,12 @@ fn set_all_selected_light_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_model_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_all_selected_model_keyframes(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -279,7 +280,7 @@ fn set_all_selected_model_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -288,13 +289,12 @@ fn set_all_selected_model_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_self_shadow_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller
         .set_all_selected_self_shadow_keyframes(data)
         .is_ok());
@@ -307,7 +307,7 @@ fn set_all_selected_self_shadow_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -316,13 +316,12 @@ fn set_all_selected_self_shadow_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_named_selected_bone_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller
         .set_all_named_selected_bone_keyframes("bone", data)
         .is_ok());
@@ -336,7 +335,7 @@ fn set_all_named_selected_bone_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -345,13 +344,12 @@ fn set_all_named_selected_bone_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_named_selected_morph_keyframes() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller
         .set_all_named_selected_morph_keyframes("morph", data)
         .is_ok());
@@ -365,7 +363,7 @@ fn set_all_named_selected_morph_keyframes() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -374,13 +372,12 @@ fn set_all_named_selected_morph_keyframes() -> Result<()> {
 
 #[test]
 fn set_audio_description() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_audio_description(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -391,7 +388,7 @@ fn set_audio_description() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -400,13 +397,12 @@ fn set_audio_description() -> Result<()> {
 
 #[test]
 fn set_audio_data() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_audio_data(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -417,7 +413,7 @@ fn set_audio_data() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -426,13 +422,12 @@ fn set_audio_data() -> Result<()> {
 
 #[test]
 fn set_camera_description() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_camera_description(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -443,7 +438,7 @@ fn set_camera_description() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -452,13 +447,12 @@ fn set_camera_description() -> Result<()> {
 
 #[test]
 fn set_light_description() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.set_light_description(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -469,7 +463,7 @@ fn set_light_description() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -478,13 +472,12 @@ fn set_light_description() -> Result<()> {
 
 #[test]
 fn ui_window() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    flush_plugin_output(&mut controller)?;
     assert!(controller.load_ui_window_layout().is_ok());
     let output = controller.get_ui_window_layout();
     assert!(output.is_ok());
@@ -525,7 +518,7 @@ fn ui_window() -> Result<()> {
                 })
             },
         ],
-        read_plugin_output(&mut env)?
+        read_plugin_output(&mut controller)?
     );
     controller.destroy();
     controller.terminate();
@@ -534,22 +527,16 @@ fn ui_window() -> Result<()> {
 
 #[test]
 fn get_failure_reason() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     controller.initialize()?;
     controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    controller.set_function(1)?;
+    controller.execute().unwrap_or_default();
+    flush_plugin_output(&mut controller)?;
     let result = controller.failure_reason();
-    assert!(result.is_ok());
-    assert_eq!("Failure Reason", result?);
-    assert_eq!(
-        vec![PluginOutput {
-            function: "nanoemApplicationPluginMotionIOGetFailureReason".to_owned(),
-            ..Default::default()
-        },],
-        read_plugin_output(&mut env)?
-    );
+    assert!(result.is_some());
+    assert_eq!("Failure Reason", result.unwrap());
+    assert!(read_plugin_output(&mut controller)?.is_empty());
     controller.destroy();
     controller.terminate();
     Ok(())
@@ -557,22 +544,16 @@ fn get_failure_reason() -> Result<()> {
 
 #[test]
 fn get_recovery_suggestion() -> Result<()> {
-    let mut env = create_wasi_env()?;
-    let mut controller = create_controller(&mut env)?;
+    let mut controller = create_controller()?;
     controller.initialize()?;
     controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut env)?;
+    controller.set_function(1)?;
+    controller.execute().unwrap_or_default();
+    flush_plugin_output(&mut controller)?;
     let result = controller.recovery_suggestion();
-    assert!(result.is_ok());
-    assert_eq!("Recovery Suggestion", result?);
-    assert_eq!(
-        vec![PluginOutput {
-            function: "nanoemApplicationPluginMotionIOGetRecoverySuggestion".to_owned(),
-            ..Default::default()
-        },],
-        read_plugin_output(&mut env)?
-    );
+    assert!(result.is_some());
+    assert_eq!("Recovery Suggestion", result.unwrap());
+    assert!(read_plugin_output(&mut controller)?.is_empty());
     controller.destroy();
     controller.terminate();
     Ok(())

@@ -9,7 +9,10 @@ members = [
 ]
 default-members = ["plugin_wasm", "protobuf"]
 
-[profile.release]
+[profile.release-lto]
+inherits = "release"
 lto = true
+strip = true
 codegen-units = 1
-strip = "debuginfo"
+opt-level = "s"
+panic = "abort"

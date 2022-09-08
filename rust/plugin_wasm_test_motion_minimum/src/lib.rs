@@ -6,14 +6,27 @@
 
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::collections::HashMap;
 use std::os::raw::c_void;
-use std::{collections::HashMap, ptr::null_mut};
 
 #[allow(non_camel_case_types)]
 pub type nanoem_application_plugin_status_t = i32;
 
 #[allow(non_camel_case_types)]
-pub struct nanoem_application_plugin_motion_io_t {}
+#[derive(Default)]
+pub struct nanoem_application_plugin_motion_io_t {
+    function_index: i32,
+}
+
+impl nanoem_application_plugin_motion_io_t {
+    pub(self) unsafe fn get_mut(plugin: *mut Self) -> Option<&'static mut Self> {
+        if !plugin.is_null() {
+            Some(&mut (*plugin))
+        } else {
+            None
+        }
+    }
+}
 
 macro_rules! function {
     () => {{
@@ -52,7 +65,8 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreate(
         })
         .unwrap()
     );
-    null_mut()
+    let plugin = Box::new(nanoem_application_plugin_motion_io_t::default());
+    std::mem::transmute(plugin)
 }
 
 /// # Safety
@@ -144,7 +158,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCountAllFunctions(
         })
         .unwrap()
     );
-    1
+    2
 }
 
 /// # Safety
@@ -173,13 +187,16 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetFunction(
-    _plugin: *mut nanoem_application_plugin_motion_io_t,
+    plugin: *mut nanoem_application_plugin_motion_io_t,
     index: i32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let mut arguments = HashMap::new();
     arguments.insert("index".to_owned(), json!(index));
     arguments.insert("status".to_owned(), json!(*status_ptr));
+    if let Some(plugin) = nanoem_application_plugin_motion_io_t::get_mut(plugin) {
+        plugin.function_index = index;
+    }
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -220,10 +237,15 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetInputMotionData(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOExecute(
-    _plugin: *mut nanoem_application_plugin_motion_io_t,
+    plugin: *mut nanoem_application_plugin_motion_io_t,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let mut arguments = HashMap::new();
+    if let Some(plugin) = nanoem_application_plugin_motion_io_t::get_mut(plugin) {
+        if plugin.function_index == 1 {
+            *status_ptr = -1;
+        }
+    }
     arguments.insert("status".to_owned(), json!(*status_ptr));
     println!(
         "{}",
@@ -303,7 +325,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIODestroy(
-    _plugin: *mut nanoem_application_plugin_motion_io_t,
+    plugin: *mut nanoem_application_plugin_motion_io_t,
 ) {
     println!(
         "{}",
@@ -312,7 +334,10 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIODestroy(
             ..Default::default()
         })
         .unwrap()
-    )
+    );
+    if !plugin.is_null() {
+        let _: Box<nanoem_application_plugin_motion_io_t> = std::mem::transmute(plugin);
+    }
 }
 
 /// # Safety

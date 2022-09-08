@@ -5,8 +5,6 @@
 */
 
 use anyhow::Result;
-use wasmer::Store;
-use wasmer_wasi::WasiState;
 
 use crate::nanoem_application_plugin_status_t;
 
@@ -19,7 +17,6 @@ use std::ptr::null;
 #[allow(non_camel_case_types)]
 pub struct nanoem_application_plugin_motion_io_t {
     controller: MotionIOPluginController,
-    reason: Option<String>,
 }
 
 impl Drop for nanoem_application_plugin_motion_io_t {
@@ -33,14 +30,9 @@ impl Drop for nanoem_application_plugin_motion_io_t {
 impl nanoem_application_plugin_motion_io_t {
     pub fn new(path: &CStr) -> Result<Self> {
         let path = Path::new(path.to_str()?);
-        let store = Store::default();
-        let mut env = WasiState::new("nanoem").finalize()?;
-        let controller = MotionIOPluginController::from_path(path, &store, &mut env)?;
+        let mut controller = MotionIOPluginController::from_path(path)?;
         controller.initialize()?;
-        Ok(Self {
-            controller,
-            reason: None,
-        })
+        Ok(Self { controller })
     }
     pub(crate) unsafe fn get(plugin: *const Self) -> Option<&'static Self> {
         if !plugin.is_null() {
@@ -78,7 +70,7 @@ impl nanoem_application_plugin_motion_io_t {
             null()
         }
     }
-    pub fn set_language(&self, value: i32) -> Result<()> {
+    pub fn set_language(&mut self, value: i32) -> Result<()> {
         self.controller.set_language(value)
     }
     pub fn set_function(&mut self, value: i32) -> Result<()> {
@@ -116,65 +108,56 @@ impl nanoem_application_plugin_motion_io_t {
         self.controller
             .set_all_selected_self_shadow_keyframes(value)
     }
-    pub fn set_audio_description(&self, data: &[u8]) -> Result<()> {
+    pub fn set_audio_description(&mut self, data: &[u8]) -> Result<()> {
         self.controller.set_audio_description(data)
     }
-    pub fn set_camera_description(&self, data: &[u8]) -> Result<()> {
+    pub fn set_camera_description(&mut self, data: &[u8]) -> Result<()> {
         self.controller.set_camera_description(data)
     }
-    pub fn set_light_description(&self, data: &[u8]) -> Result<()> {
+    pub fn set_light_description(&mut self, data: &[u8]) -> Result<()> {
         self.controller.set_light_description(data)
     }
-    pub fn set_audio_data(&self, data: &[u8]) -> Result<()> {
+    pub fn set_audio_data(&mut self, data: &[u8]) -> Result<()> {
         self.controller.set_audio_data(data)
     }
-    pub fn set_input_model_data(&self, data: &[u8]) -> Result<()> {
+    pub fn set_input_model_data(&mut self, data: &[u8]) -> Result<()> {
         self.controller.set_input_model_data(data)
     }
-    pub fn set_input_motion_data(&self, data: &[u8]) -> Result<()> {
+    pub fn set_input_motion_data(&mut self, data: &[u8]) -> Result<()> {
         self.controller.set_input_motion_data(data)
     }
-    pub fn execute(&self) -> Result<()> {
+    pub fn execute(&mut self) -> Result<()> {
         self.controller.execute()
     }
-    pub fn output_slice(&self) -> Vec<u8> {
+    pub fn output_slice(&mut self) -> Vec<u8> {
         self.controller.get_output_data().unwrap_or_default()
     }
-    pub fn load_window_layout(&self) -> Result<()> {
+    pub fn load_window_layout(&mut self) -> Result<()> {
         self.controller.load_ui_window_layout()
     }
-    pub fn set_component_layout(&self, id: &CStr, data: &[u8], reload: &mut bool) -> Result<()> {
+    pub fn set_component_layout(
+        &mut self,
+        id: &CStr,
+        data: &[u8],
+        reload: &mut bool,
+    ) -> Result<()> {
         self.controller
             .set_ui_component_layout(id.to_str()?, data, reload)
     }
-    pub fn window_layout_data_slice(&self) -> Vec<u8> {
+    pub fn window_layout_data_slice(&mut self) -> Vec<u8> {
         self.controller.get_ui_window_layout().unwrap_or_default()
     }
     pub fn failure_reason(&self) -> Option<String> {
-        if self.reason.is_some() {
-            self.reason.clone()
-        } else {
-            let reason = self.controller.failure_reason().unwrap();
-            if !reason.is_empty() {
-                Some(reason)
-            } else {
-                None
-            }
-        }
+        self.controller.failure_reason()
     }
     pub fn recovery_suggestion(&self) -> Option<String> {
-        let suggestion = self.controller.recovery_suggestion().unwrap();
-        if !suggestion.is_empty() {
-            Some(suggestion)
-        } else {
-            None
-        }
+        self.controller.recovery_suggestion()
     }
     pub fn assign_failure_reason(
         &mut self,
         value: anyhow::Error,
     ) -> nanoem_application_plugin_status_t {
-        self.reason = Some(value.to_string());
+        self.controller.assign_failure_reason(value);
         nanoem_application_plugin_status_t::ERROR_REFER_REASON
     }
 }

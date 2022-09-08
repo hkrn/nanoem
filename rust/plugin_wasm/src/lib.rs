@@ -8,7 +8,7 @@ use core::slice;
 use std::mem::size_of;
 
 use anyhow::Result;
-use wasmer::{Array, Instance, Memory, NativeFunc, WasmPtr};
+use wasmer::{Instance, Memory, Store, TypedFunction, WasmPtr};
 
 pub(crate) const PLUGIN_MODEL_IO_ABI_VERSION: u32 = 2 << 16;
 pub(crate) const PLUGIN_MOTION_IO_ABI_VERSION: u32 = 2 << 16;
@@ -38,8 +38,8 @@ impl nanoem_application_plugin_status_t {
     }
 }
 
-pub(crate) type ByteArray = WasmPtr<u8, Array>;
-pub(crate) type OpaquePtr = WasmPtr<()>;
+pub(crate) type ByteArray = WasmPtr<u8>;
+pub(crate) type OpaquePtr = WasmPtr<u8>;
 pub(crate) type SizePtr = WasmPtr<u32>;
 pub(crate) type StatusPtr = WasmPtr<i32>;
 
@@ -53,24 +53,29 @@ fn notify_export_function_error(name: &str) {
 fn inner_get_data_internal(
     instance: &Instance,
     opaque: &OpaquePtr,
-    get_data_size: NativeFunc<(OpaquePtr, SizePtr), ()>,
-    get_data_body: NativeFunc<(OpaquePtr, ByteArray, u32, StatusPtr), ()>,
+    get_data_size: TypedFunction<(OpaquePtr, SizePtr), ()>,
+    get_data_body: TypedFunction<(OpaquePtr, ByteArray, u32, StatusPtr), ()>,
     output_data: &mut Vec<u8>,
+    store: &mut Store,
 ) -> Result<()> {
-    let data_size_ptr = allocate_size_ptr(instance)?;
-    get_data_size.call(*opaque, data_size_ptr)?;
-    let data_size = data_size_ptr.deref(inner_memory(instance)).unwrap().get();
-    let bytes = allocate_byte_array(instance, data_size)?;
-    let status_ptr = allocate_status_ptr(instance)?;
-    get_data_body.call(*opaque, bytes, data_size, status_ptr)?;
-    let cell = bytes.deref(inner_memory(instance), 0, data_size).unwrap();
+    let data_size_ptr = allocate_size_ptr(instance, store)?;
+    get_data_size.call(store, *opaque, data_size_ptr)?;
+    let data_size = data_size_ptr
+        .deref(&inner_memory(instance).view(store))
+        .read()?;
+    let bytes = allocate_byte_array(instance, data_size, store)?;
+    let status_ptr = allocate_status_ptr(instance, store)?;
+    get_data_body.call(store, *opaque, bytes, data_size, status_ptr)?;
+    let cell = bytes.deref(&inner_memory(instance).view(store)).as_ptr32();
     output_data.resize(data_size as usize, 0);
-    for byte in cell {
-        output_data.push(byte.get());
+    let view = inner_memory(instance).view(store);
+    let slice = cell.slice(&view, data_size)?;
+    for byte in slice.iter() {
+        output_data.push(byte.read()?);
     }
-    release_byte_array(instance, bytes)?;
-    release_size_ptr(instance, data_size_ptr)?;
-    release_status_ptr(instance, status_ptr)?;
+    release_byte_array(instance, bytes, store)?;
+    release_size_ptr(instance, data_size_ptr, store)?;
+    release_status_ptr(instance, status_ptr, store)?;
     Ok(())
 }
 
@@ -80,14 +85,16 @@ fn inner_set_data_internal(
     data: &[u8],
     component_size: usize,
     name: &str,
+    store: &mut Store,
 ) -> Result<()> {
     if let Ok(set_input_model_data) = instance
         .exports
-        .get_native_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(name)
+        .get_typed_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(store, name)
     {
-        let data_ptr = allocate_byte_array_with_data(instance, data)?;
-        let status_ptr = allocate_status_ptr(instance)?;
+        let data_ptr = allocate_byte_array_with_data(instance, data, store)?;
+        let status_ptr = allocate_status_ptr(instance, store)?;
         set_input_model_data.call(
+            store,
             *opaque,
             data_ptr,
             if component_size > 1 {
@@ -97,8 +104,8 @@ fn inner_set_data_internal(
             },
             status_ptr,
         )?;
-        release_byte_array(instance, data_ptr)?;
-        release_status_ptr(instance, status_ptr)?;
+        release_byte_array(instance, data_ptr, store)?;
+        release_status_ptr(instance, status_ptr, store)?;
     } else {
         notify_export_function_error(name);
     }
@@ -113,83 +120,100 @@ pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
     instance.exports.get_memory("memory").unwrap()
 }
 
-pub(crate) fn allocate_byte_array(instance: &Instance, data_size: u32) -> Result<ByteArray> {
+pub(crate) fn allocate_byte_array(
+    instance: &Instance,
+    data_size: u32,
+    store: &mut Store,
+) -> Result<ByteArray> {
     let malloc_func = instance
         .exports
-        .get_native_function::<u32, ByteArray>(MALLOC_FN)?;
-    let data_ptr = malloc_func.call(data_size)?;
+        .get_typed_function::<u32, ByteArray>(store, MALLOC_FN)?;
+    let data_ptr = malloc_func.call(store, data_size)?;
     tracing::debug!(size = data_size, "Allocated byte array");
     Ok(data_ptr)
 }
 
-pub(crate) fn allocate_byte_array_with_data(instance: &Instance, data: &[u8]) -> Result<ByteArray> {
+pub(crate) fn allocate_byte_array_with_data(
+    instance: &Instance,
+    data: &[u8],
+    store: &mut Store,
+) -> Result<ByteArray> {
     let data_size = data.len() as u32;
-    let data_ptr = allocate_byte_array(instance, data_size)?;
-    let cell = data_ptr
-        .deref(inner_memory(instance), 0, data_size)
-        .unwrap();
+    let data_ptr = allocate_byte_array(instance, data_size, store)?;
+    let view = inner_memory(instance).view(store);
+    let cell = data_ptr.deref(&view);
+    let ptr = cell.as_ptr32();
     for (offset, byte) in data.iter().enumerate() {
-        cell[offset].set(*byte);
+        ptr.add_offset(offset as u32)?.write(&view, *byte)?;
     }
     tracing::debug!(size = data_size, "Allocated byte array with data");
     Ok(data_ptr)
 }
 
-pub(crate) fn allocate_status_ptr(instance: &Instance) -> Result<StatusPtr> {
-    let memory = inner_memory(instance);
+pub(crate) fn allocate_status_ptr(instance: &Instance, store: &mut Store) -> Result<StatusPtr> {
     let malloc_func = instance
         .exports
-        .get_native_function::<u32, StatusPtr>(MALLOC_FN)?;
-    let data_ptr = malloc_func.call(size_of::<u32>() as u32)?;
-    data_ptr.deref(memory).unwrap().set(0);
+        .get_typed_function::<u32, StatusPtr>(store, MALLOC_FN)?;
+    let data_ptr = malloc_func.call(store, size_of::<u32>() as u32)?;
+    let view = inner_memory(instance).view(store);
+    data_ptr.deref(&view).write(0)?;
     Ok(data_ptr)
 }
 
-pub(crate) fn allocate_size_ptr(instance: &Instance) -> Result<SizePtr> {
+pub(crate) fn allocate_size_ptr(instance: &Instance, store: &mut Store) -> Result<SizePtr> {
     let memory = inner_memory(instance);
     let malloc_func = instance
         .exports
-        .get_native_function::<u32, SizePtr>(MALLOC_FN)?;
-    let size_ptr = malloc_func.call(size_of::<u32>() as u32)?;
-    size_ptr.deref(memory).unwrap().set(0);
+        .get_typed_function::<u32, SizePtr>(store, MALLOC_FN)?;
+    let size_ptr = malloc_func.call(store, size_of::<u32>() as u32)?;
+    let view = memory.view(store);
+    size_ptr.deref(&view).write(0)?;
     Ok(size_ptr)
 }
 
-pub(crate) fn release_byte_array(instance: &Instance, ptr: ByteArray) -> Result<()> {
+pub(crate) fn release_byte_array(
+    instance: &Instance,
+    ptr: ByteArray,
+    store: &mut Store,
+) -> Result<()> {
     let free_func = instance
         .exports
-        .get_native_function::<ByteArray, ()>(FREE_FN)
+        .get_typed_function::<ByteArray, ()>(store, FREE_FN)
         .unwrap();
-    free_func.call(ptr)?;
+    free_func.call(store, ptr)?;
     tracing::debug!("Released byte array");
     Ok(())
 }
 
-pub(crate) fn release_size_ptr(instance: &Instance, ptr: SizePtr) -> Result<()> {
+pub(crate) fn release_size_ptr(instance: &Instance, ptr: SizePtr, store: &mut Store) -> Result<()> {
     let free_func = instance
         .exports
-        .get_native_function::<SizePtr, ()>(FREE_FN)
+        .get_typed_function::<SizePtr, ()>(store, FREE_FN)
         .unwrap();
-    free_func.call(ptr)?;
+    free_func.call(store, ptr)?;
     Ok(())
 }
 
-pub(crate) fn release_status_ptr(instance: &Instance, ptr: StatusPtr) -> Result<()> {
+pub(crate) fn release_status_ptr(
+    instance: &Instance,
+    ptr: StatusPtr,
+    store: &mut Store,
+) -> Result<()> {
     let free_func = instance
         .exports
-        .get_native_function::<StatusPtr, ()>(FREE_FN)
+        .get_typed_function::<StatusPtr, ()>(store, FREE_FN)
         .unwrap();
-    let status = ptr.deref(inner_memory(instance)).unwrap().get();
-    free_func.call(ptr)?;
-    if status != 0 {
-        return Err(anyhow::anyhow!("code={}", status));
-    }
+    free_func.call(store, ptr)?;
     Ok(())
 }
 
-pub(crate) fn inner_initialize_function(instance: &Instance, name: &str) -> Result<()> {
-    if let Ok(initialize) = instance.exports.get_native_function::<(), ()>(name) {
-        initialize.call()?;
+pub(crate) fn inner_initialize_function(
+    instance: &Instance,
+    name: &str,
+    store: &mut Store,
+) -> Result<()> {
+    if let Ok(initialize) = instance.exports.get_typed_function::<(), ()>(store, name) {
+        initialize.call(store)?;
         tracing::debug!(name = name, "Called initialization");
     } else {
         notify_export_function_error(name);
@@ -197,19 +221,31 @@ pub(crate) fn inner_initialize_function(instance: &Instance, name: &str) -> Resu
     Ok(())
 }
 
-pub(crate) fn inner_create_opaque(instance: &Instance, name: &str) -> Result<OpaquePtr> {
+pub(crate) fn inner_create_opaque(
+    instance: &Instance,
+    name: &str,
+    store: &mut Store,
+) -> Result<OpaquePtr> {
     let create = instance
         .exports
-        .get_native_function::<(), OpaquePtr>(name)?;
-    let opaque = create.call()?;
+        .get_typed_function::<(), OpaquePtr>(store, name)?;
+    let opaque = create.call(store)?;
     tracing::debug!(name = name, opaque = ?opaque, "Called creating opaque");
     Ok(opaque)
 }
 
-pub(crate) fn inner_destroy_opaque(instance: &Instance, opaque: &Option<OpaquePtr>, name: &str) {
+pub(crate) fn inner_destroy_opaque(
+    instance: &Instance,
+    opaque: &Option<OpaquePtr>,
+    name: &str,
+    store: &mut Store,
+) {
     if let Some(opaque) = opaque {
-        if let Ok(destroy) = instance.exports.get_native_function::<OpaquePtr, ()>(name) {
-            match destroy.call(*opaque) {
+        if let Ok(destroy) = instance
+            .exports
+            .get_typed_function::<OpaquePtr, ()>(store, name)
+        {
+            match destroy.call(store, *opaque) {
                 Ok(_) => tracing::debug!(name = name, opaque = ?opaque, "Called destroying opaque"),
                 Err(err) => {
                     tracing::warn!(name = name, opaque = ?opaque, error = %err, "Catched runtime error")
@@ -219,9 +255,9 @@ pub(crate) fn inner_destroy_opaque(instance: &Instance, opaque: &Option<OpaquePt
     }
 }
 
-pub(crate) fn inner_terminate_function(instance: &Instance, name: &str) {
-    if let Ok(terminate) = instance.exports.get_native_function::<(), ()>(name) {
-        terminate.call().unwrap();
+pub(crate) fn inner_terminate_function(instance: &Instance, name: &str, store: &mut Store) {
+    if let Ok(terminate) = instance.exports.get_typed_function::<(), ()>(store, name) {
+        terminate.call(store).unwrap();
         tracing::debug!(name = name, "Called termination");
     } else {
         notify_export_function_error(name);
@@ -232,16 +268,17 @@ pub(crate) fn inner_get_string(
     instance: &Instance,
     opaque: &Option<OpaquePtr>,
     name: &str,
+    store: &mut Store,
 ) -> Result<String> {
     if let Some(opaque) = opaque {
         if let Ok(get_string) = instance
             .exports
-            .get_native_function::<OpaquePtr, ByteArray>(name)
+            .get_typed_function::<OpaquePtr, ByteArray>(store, name)
         {
             let memory = inner_memory(instance);
             let value = get_string
-                .call(*opaque)?
-                .get_utf8_string_with_nul(memory)
+                .call(store, *opaque)?
+                .read_utf8_string_with_nul(&memory.view(store))
                 .unwrap_or_default();
             tracing::debug!(
                 name = name,
@@ -264,10 +301,11 @@ pub(crate) fn inner_get_data(
     opaque: &Option<OpaquePtr>,
     body_func_name: &str,
     size_func_name: &str,
+    store: &mut Store,
 ) -> Result<Vec<u8>> {
     if let Some(opaque) = opaque {
-        let get_data_size = instance.exports.get_native_function(size_func_name);
-        let get_data_body = instance.exports.get_native_function(body_func_name);
+        let get_data_size = instance.exports.get_typed_function(store, size_func_name);
+        let get_data_body = instance.exports.get_typed_function(store, body_func_name);
         let mut output_data = Vec::new();
         if get_data_size.is_ok() && get_data_body.is_ok() {
             let get_data_size = get_data_size?;
@@ -278,6 +316,7 @@ pub(crate) fn inner_get_data(
                 get_data_size,
                 get_data_body,
                 &mut output_data,
+                store,
             )?;
             tracing::debug!(
                 name = body_func_name,
@@ -297,12 +336,13 @@ pub(crate) fn inner_set_data<T>(
     opaque: &Option<OpaquePtr>,
     data: &[T],
     name: &str,
+    store: &mut Store,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
         let component_size = size_of::<T>();
         let len = data.len() * component_size;
         let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
-        inner_set_data_internal(instance, opaque, data, component_size, name)?;
+        inner_set_data_internal(instance, opaque, data, component_size, name, store)?;
         tracing::debug!(name = name, opaque = ?opaque, size = len, "Called setting data");
     }
     Ok(())
@@ -313,12 +353,13 @@ pub(crate) fn inner_set_language(
     opaque: &Option<OpaquePtr>,
     value: i32,
     name: &str,
+    store: &mut Store,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
         let set_language = instance
             .exports
-            .get_native_function::<(OpaquePtr, i32), ()>(name)?;
-        set_language.call(*opaque, value)?;
+            .get_typed_function::<(OpaquePtr, i32), ()>(store, name)?;
+        set_language.call(store, *opaque, value)?;
         tracing::debug!(name = name, opaque = ?opaque, value = value, "Called setting language");
     }
     Ok(())
@@ -328,12 +369,13 @@ pub(crate) fn inner_count_all_functions(
     instance: &Instance,
     opaque: &Option<OpaquePtr>,
     name: &str,
+    store: &mut Store,
 ) -> Result<i32> {
     if let Some(opaque) = opaque {
         let count_all_functions = instance
             .exports
-            .get_native_function::<OpaquePtr, i32>(name)?;
-        let count = count_all_functions.call(*opaque)?;
+            .get_typed_function::<OpaquePtr, i32>(store, name)?;
+        let count = count_all_functions.call(store, *opaque)?;
         tracing::debug!(name = name, opaque = ?opaque, count = count, "Called counting all functions");
         Ok(count)
     } else {
@@ -346,15 +388,16 @@ pub(crate) fn inner_get_function_name(
     opaque: &Option<OpaquePtr>,
     index: i32,
     name: &str,
+    store: &mut Store,
 ) -> Result<String> {
     if let Some(opaque) = opaque {
         let get_function_name = instance
             .exports
-            .get_native_function::<(OpaquePtr, i32), ByteArray>(name)?;
+            .get_typed_function::<(OpaquePtr, i32), ByteArray>(store, name)?;
         let memory = inner_memory(instance);
         let function_name = get_function_name
-            .call(*opaque, index)?
-            .get_utf8_string_with_nul(memory)
+            .call(store, *opaque, index)?
+            .read_utf8_string_with_nul(&memory.view(store))
             .unwrap_or_default();
         tracing::debug!(
             name = name,
@@ -374,53 +417,70 @@ pub(crate) fn inner_set_function(
     opaque: &Option<OpaquePtr>,
     index: i32,
     name: &str,
-) -> Result<()> {
-    if let Some(opaque) = opaque {
-        let status_ptr = allocate_status_ptr(instance)?;
+    store: &mut Store,
+) -> Result<i32> {
+    let result = if let Some(opaque) = opaque {
+        let status_ptr = allocate_status_ptr(instance, store)?;
         let set_function = instance
             .exports
-            .get_native_function::<(OpaquePtr, i32, StatusPtr), ()>(name)?;
-        set_function.call(*opaque, index, status_ptr)?;
+            .get_typed_function::<(OpaquePtr, i32, StatusPtr), ()>(store, name)?;
+        set_function.call(store, *opaque, index, status_ptr)?;
+        let result = status_ptr.read(&inner_memory(instance).view(store))?;
         tracing::debug!(name = name, opaque = ?opaque, index = index, "Called setting function");
-        release_status_ptr(instance, status_ptr)?;
-    }
-    Ok(())
+        release_status_ptr(instance, status_ptr, store)?;
+        result
+    } else {
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+    };
+    Ok(result)
 }
 
 pub(crate) fn inner_execute(
     instance: &Instance,
     opaque: &Option<OpaquePtr>,
     name: &str,
-) -> Result<()> {
-    if let Some(opaque) = opaque {
-        let status_ptr = allocate_status_ptr(instance)?;
+    store: &mut Store,
+) -> Result<i32> {
+    let result = if let Some(opaque) = opaque {
+        let status_ptr = allocate_status_ptr(instance, store)?;
         let execute = instance
             .exports
-            .get_native_function::<(OpaquePtr, StatusPtr), ()>(name)?;
-        execute.call(*opaque, status_ptr)?;
+            .get_typed_function::<(OpaquePtr, StatusPtr), ()>(store, name)?;
+        execute.call(store, *opaque, status_ptr)?;
+        let result = status_ptr.read(&inner_memory(instance).view(store))?;
         tracing::debug!(name = name, opaque = ?opaque, "Called executing function");
-        release_status_ptr(instance, status_ptr)?;
-    }
-    Ok(())
+        release_status_ptr(instance, status_ptr, store)?;
+        result
+    } else {
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+    };
+    Ok(result)
 }
 
 pub(crate) fn inner_load_ui_window(
     instance: &Instance,
     opaque: &Option<OpaquePtr>,
     name: &str,
-) -> Result<()> {
-    if let Some(opaque) = opaque {
+    store: &mut Store,
+) -> Result<i32> {
+    let result = if let Some(opaque) = opaque {
         if let Ok(load_ui_window_layout) = instance
             .exports
-            .get_native_function::<(OpaquePtr, StatusPtr), ()>(name)
+            .get_typed_function::<(OpaquePtr, StatusPtr), ()>(store, name)
         {
-            let status_ptr = allocate_status_ptr(instance)?;
-            load_ui_window_layout.call(*opaque, status_ptr)?;
-            release_status_ptr(instance, status_ptr)?;
+            let status_ptr = allocate_status_ptr(instance, store)?;
+            load_ui_window_layout.call(store, *opaque, status_ptr)?;
+            let result = status_ptr.read(&inner_memory(instance).view(store))?;
             tracing::debug!(name = name, opaque = ?opaque, "Called loading UI window");
+            release_status_ptr(instance, status_ptr, store)?;
+            result
+        } else {
+            nanoem_application_plugin_status_t::SUCCESS as i32
         }
-    }
-    Ok(())
+    } else {
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+    };
+    Ok(result)
 }
 
 pub(crate) fn inner_set_ui_component_layout(
@@ -430,22 +490,24 @@ pub(crate) fn inner_set_ui_component_layout(
     data: &[u8],
     name: &str,
     reload: &mut bool,
-) -> Result<()> {
-    if let Some(opaque) = opaque {
-        if let Ok(set_ui_component_layout) = instance.exports.get_native_function::<(
+    store: &mut Store,
+) -> Result<i32> {
+    let result = if let Some(opaque) = opaque {
+        if let Ok(set_ui_component_layout) = instance.exports.get_typed_function::<(
             OpaquePtr,
             ByteArray,
             ByteArray,
             u32,
             SizePtr,
             StatusPtr,
-        ), ()>(name)
+        ), ()>(store, name)
         {
-            let id_ptr = allocate_byte_array_with_data(instance, id.as_bytes())?;
-            let data_ptr = allocate_byte_array_with_data(instance, data)?;
-            let reload_layout_ptr = allocate_size_ptr(instance)?;
-            let status_ptr = allocate_status_ptr(instance)?;
+            let id_ptr = allocate_byte_array_with_data(instance, id.as_bytes(), store)?;
+            let data_ptr = allocate_byte_array_with_data(instance, data, store)?;
+            let reload_layout_ptr = allocate_size_ptr(instance, store)?;
+            let status_ptr = allocate_status_ptr(instance, store)?;
             set_ui_component_layout.call(
+                store,
                 *opaque,
                 id_ptr,
                 data_ptr,
@@ -454,16 +516,21 @@ pub(crate) fn inner_set_ui_component_layout(
                 status_ptr,
             )?;
             *reload = false;
+            let result = status_ptr.read(&inner_memory(instance).view(store))?;
             tracing::debug!(name = name, opaque = ?opaque, "Called setting UI component layout");
-            release_byte_array(instance, id_ptr)?;
-            release_byte_array(instance, data_ptr)?;
-            release_size_ptr(instance, reload_layout_ptr)?;
-            release_status_ptr(instance, status_ptr)?;
+            release_byte_array(instance, id_ptr, store)?;
+            release_byte_array(instance, data_ptr, store)?;
+            release_size_ptr(instance, reload_layout_ptr, store)?;
+            release_status_ptr(instance, status_ptr, store)?;
+            result
         } else {
             notify_export_function_error(name);
+            nanoem_application_plugin_status_t::SUCCESS as i32
         }
-    }
-    Ok(())
+    } else {
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+    };
+    Ok(result)
 }
 
 mod model;
