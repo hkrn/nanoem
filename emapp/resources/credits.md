@@ -55,7 +55,7 @@ This software uses below libraries.
   - [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross/)
     - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Cross/blob/9acb9ec31f5a8ef80ea6b994bb77be787b08d3d1/LICENSE)
   - [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools/)
-    - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Tools/blob/4c2f34a504817cc96d3e8b0435265a743cb2038a/LICENSE)
+    - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Tools/blob/409e1167951de8d7ab9334773885fa656bc898d5/LICENSE)
   - [STB](https://github.com/nothings/stb/)
     - [PD/MIT](https://github.com/nothings/stb/blob/af1a5bc352164740c1cc1354942b1c6b72eacb8a/README.md#whats-the-license)
   - [TBB](https://github.com/wjakob/tbb/)
