@@ -18,6 +18,7 @@
 /* ImGuiFileDialog */
 #if defined(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
 #define USE_IMGUI_TABLES
+#define USE_BOOKMARK
 #define createDirButtonString u8"\uf067"
 #define okButtonString u8"\uf00c OK"
 #define cancelButtonString u8"\uf00d Cancel"
