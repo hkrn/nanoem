@@ -20,11 +20,11 @@
 #endif
 
 /* GLSLang */
-#include "hlsl/hlslAttributes.h"
-#include "hlsl/hlslParseHelper.h"
-#include "hlsl/hlslParseables.h"
-#include "hlsl/hlslScanContext.h"
-#include "hlsl/hlslTokenStream.h"
+#include "glslang/HLSL/hlslAttributes.h"
+#include "glslang/HLSL/hlslParseHelper.h"
+#include "glslang/HLSL/hlslParseables.h"
+#include "glslang/HLSL/hlslScanContext.h"
+#include "glslang/HLSL/hlslTokenStream.h"
 
 using namespace glslang;
 

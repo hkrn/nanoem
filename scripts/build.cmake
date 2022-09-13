@@ -222,9 +222,10 @@ function(compile_spirv_tools _cmake_build_type _generator _toolset_option _arch_
   set(_build_path ${base_build_path}/spirv-tools/out/${_triple_path})
   file(MAKE_DIRECTORY ${_build_path})
   # checkout spirv-headers
-  set(_branch_name "1.5.4.raytracing.fixed")
-  execute_process(COMMAND ${GIT_EXECUTABLE} clone --branch ${_branch_name} https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers WORKING_DIRECTORY ${_source_path})
-  execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_branch_name} WORKING_DIRECTORY ${_source_path}/external/spirv-headers)
+  set(_branch "master")
+  set(_revision "87d5b782bec60822aa878941e6b13c0a9a954c9b")
+  execute_process(COMMAND ${GIT_EXECUTABLE} clone --branch ${_branch} https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers WORKING_DIRECTORY ${_source_path})
+  execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_revision} WORKING_DIRECTORY ${_source_path}/external/spirv-headers)
   execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
                                            ${CMAKE_COMMAND}
                                            ${global_cmake_flags}

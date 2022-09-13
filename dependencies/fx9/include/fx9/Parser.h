@@ -10,9 +10,9 @@
 
 /* GLSLang */
 #define ENABLE_HLSL
-#include "hlsl/hlslParseHelper.h"
-#include "hlsl/hlslParseables.h"
-#include "hlsl/hlslScanContext.h"
+#include "glslang/HLSL/hlslParseHelper.h"
+#include "glslang/HLSL/hlslParseables.h"
+#include "glslang/HLSL/hlslScanContext.h"
 
 namespace fx9 {
 

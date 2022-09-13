@@ -20,12 +20,12 @@
 #include <regex>
 
 /* GLSLang */
-#include "OGLCompilersDLL/InitializeDll.h"
-#include "SPIRV/GlslangToSpv.h"
-#include "SPIRV/Logger.h"
-#include "SPIRV/disassemble.h"
 #include "glslang/MachineIndependent/ScanContext.h"
 #include "glslang/MachineIndependent/preprocessor/PpContext.h"
+#include "glslang/Public/ShaderLang.h"
+#include "glslang/SPIRV/GlslangToSpv.h"
+#include "glslang/SPIRV/Logger.h"
+#include "glslang/SPIRV/disassemble.h"
 
 /* SPIRV-Cross */
 #include "spirv_cross/spirv_cross.hpp"
@@ -145,6 +145,7 @@ getDefaultResourceLimit(TBuiltInResource &resources)
         /* .maxTaskWorkGroupSizeY_NV = */ 1,
         /* .maxTaskWorkGroupSizeZ_NV = */ 1,
         /* .maxMeshViewCountNV = */ 4,
+        /* .maxDualSourceDrawBuffersEXT = */ 1,
 
         /* .limits = */
         {
@@ -1557,15 +1558,13 @@ Compiler::SPIRVPassShader::translate(const InstructionList & /* vertexShaderInst
 void
 Compiler::initialize()
 {
-    ShInitialize();
-    InitThread();
+    glslang::InitializeProcess();
 }
 
 void
 Compiler::terminate()
 {
-    DetachThread();
-    ShFinalize();
+    glslang::FinalizeProcess();
 }
 
 Compiler::Compiler(EProfile profile, EShMessages messages)
