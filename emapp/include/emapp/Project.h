@@ -37,6 +37,7 @@ namespace nanoem {
 
 class Accessory;
 class AccessoryProgramBundle;
+class Archiver;
 class DirectionalLight;
 class Effect;
 class Grid;
@@ -398,6 +399,8 @@ public:
     void attachActiveEffect(IDrawable *drawable, Effect *effect, Progress &progress, Error &error);
     void attachActiveEffect(IDrawable *drawable, Effect *effect, const IncludeEffectSourceMap &includeEffectSources,
         Progress &progress, Error &error);
+    void attachActiveEffect(IDrawable *drawable, Effect *effect, Archiver *archiver,
+        const IncludeEffectSourceMap &includeEffectSources, Progress &progress, Error &error);
     void attachEffectToSelectedDrawable(Effect *effect, Error &error);
     void attachModelMaterialEffect(model::Material *material, Effect *effect);
     void setOffscreenPassiveRenderTargetEffect(const String &name, IDrawable *drawable, Effect *targetEffect);
@@ -607,8 +610,9 @@ public:
     void resetCurrentRenderPass();
     void setScriptExternalRenderPass(sg_pass value, const Vector4 &clearColor, nanoem_f32_t clearDepth);
     void resetScriptExternalRenderPass();
-    void createAllOffscreenRenderTargets(Effect *ownerEffect, const IncludeEffectSourceMap &includeEffectSources,
-        bool enableEffectPlugin, bool enableSourceCache, Progress &progress, Error &error);
+    void createAllOffscreenRenderTargets(Effect *ownerEffect, const Archiver *archiver,
+        const IncludeEffectSourceMap &includeEffectSources, bool enableEffectPlugin, bool enableSourceCache,
+        Progress &progress, Error &error);
     void attachDrawableOffscreenEffects(IDrawable *drawable);
     void releaseAllOffscreenRenderTarget(Effect *ownerEffect);
     void getAllOffscreenRenderTargetEffects(const IEffect *ownerEffect, LoadedEffectSet &allRenderTargetEffects) const;
@@ -818,21 +822,21 @@ private:
     void addEffectOrderSet(IDrawable *drawable);
     void addEffectOrderSet(IDrawable *drawable, IEffect::ScriptOrderType order);
     void removeEffectOrderSet(IDrawable *drawable);
-    void internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect,
+    void internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect, const Archiver *archiver,
         const IncludeEffectSourceMap &includeEffectSources, bool enableEffectPlugin, bool enableSourceCache,
         Progress &progress, Error &error);
     void applyAllOffscreenRenderTargetEffectsToDrawable(IDrawable *drawable);
     void applyAllDrawablesToOffscreenRenderTargetEffect(IDrawable *ownerDrawable, Effect *ownerEffect);
     void applyDrawableToOffscreenRenderTargetEffect(IDrawable *drawable, Effect *ownerEffect);
-    void loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffectSourceMap &includeEffectSources,
-        const StringPair &condition, bool enableEffectPlugin, bool enableSourceCache,
-        OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error);
-    bool loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerEffect,
+    void loadOffscreenRenderTargetEffect(Effect *ownerEffect, const Archiver *archiver,
+        const IncludeEffectSourceMap &includeEffectSources, const StringPair &condition, bool enableEffectPlugin,
+        bool enableSourceCache, OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error);
+    bool loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerEffect, const Archiver *archiver,
         const IncludeEffectSourceMap &includeEffectSources, const StringPair &condition, bool enableEffectPlugin,
         OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error);
-    bool loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const URI &fileURI,
-        const StringPair &condition, const ByteArray &bytes, OffscreenRenderTargetConditionList &newConditionsoid,
-        Progress &progress, Error &error);
+    bool loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const Archiver *archiver,
+        const URI &fileURI, const StringPair &condition, const ByteArray &bytes,
+        OffscreenRenderTargetConditionList &newConditionsoid, Progress &progress, Error &error);
     void cancelRenderOffscreenRenderTarget(Effect *ownerEffect);
 
     void internalPasteAllSelectedKeyframes(Model *model, nanoem_frame_index_t frameIndex, bool symmetric, Error &error);

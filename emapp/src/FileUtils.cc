@@ -390,8 +390,7 @@ PosixFileReader::size()
 {
     nanoem_rsize_t result = 0;
     struct stat st;
-    ::fstat(m_fd, &st);
-    if (S_ISREG(st.st_mode)) {
+    if (::fstat(m_fd, &st) == 0 && S_ISREG(st.st_mode)) {
         result = st.st_size;
     }
     return result;

@@ -519,7 +519,8 @@ Archive::loadEffectFromSource(
                 if (effect->load(outputBinary, *m_progress, error)) {
                     effect->setFileURI(URI::createFromFilePath(fileURI.absolutePath(), effectPath));
                     if (effect->upload(effect::kAttachmentTypeNone, m_archiver, *m_progress, error)) {
-                        m_project->attachActiveEffect(drawable, effect, includeEffectSources, *m_progress, error);
+                        m_project->attachActiveEffect(
+                            drawable, effect, m_archiver, includeEffectSources, *m_progress, error);
                         continuable = !error.hasReason();
                     }
                 }

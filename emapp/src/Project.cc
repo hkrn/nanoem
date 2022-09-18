@@ -3194,7 +3194,7 @@ void
 Project::attachActiveEffect(IDrawable *drawable, Effect *effect, Progress &progress, Error &error)
 {
     internalSetDrawableActiveEffect(
-        drawable, effect, IncludeEffectSourceMap(), true, isCompiledEffectCacheEnabled(), progress, error);
+        drawable, effect, nullptr, IncludeEffectSourceMap(), true, isCompiledEffectCacheEnabled(), progress, error);
     addEffectOrderSet(drawable, effect->scriptOrder());
 }
 
@@ -3202,7 +3202,14 @@ void
 Project::attachActiveEffect(IDrawable *drawable, Effect *effect, const IncludeEffectSourceMap &includeEffectSources,
     Progress &progress, Error &error)
 {
-    internalSetDrawableActiveEffect(drawable, effect, includeEffectSources, isEffectPluginEnabled(),
+    attachActiveEffect(drawable, effect, nullptr, includeEffectSources, progress, error);
+}
+
+void
+Project::attachActiveEffect(IDrawable *drawable, Effect *effect, Archiver *archiver,
+    const IncludeEffectSourceMap &includeEffectSources, Progress &progress, Error &error)
+{
+    internalSetDrawableActiveEffect(drawable, effect, archiver, includeEffectSources, isEffectPluginEnabled(),
         isCompiledEffectCacheEnabled(), progress, error);
     addEffectOrderSet(drawable, effect->scriptOrder());
 }
@@ -5137,8 +5144,9 @@ Project::resetScriptExternalRenderPass()
 }
 
 void
-Project::createAllOffscreenRenderTargets(Effect *ownerEffect, const IncludeEffectSourceMap &includeEffectSources,
-    bool enableEffectPlugin, bool enableSourceCache, Progress &progress, Error &error)
+Project::createAllOffscreenRenderTargets(Effect *ownerEffect, const Archiver *archiver,
+    const IncludeEffectSourceMap &includeEffectSources, bool enableEffectPlugin, bool enableSourceCache,
+    Progress &progress, Error &error)
 {
     static const String kHideLiteral = "hide";
     static const String kNoneLiteral = "none";
@@ -5169,8 +5177,8 @@ Project::createAllOffscreenRenderTargets(Effect *ownerEffect, const IncludeEffec
                 newConditions.push_back(cond);
             }
             else {
-                loadOffscreenRenderTargetEffect(ownerEffect, includeEffectSources, condition, enableEffectPlugin,
-                    enableSourceCache, newConditions, progress, error);
+                loadOffscreenRenderTargetEffect(ownerEffect, archiver, includeEffectSources, condition,
+                    enableEffectPlugin, enableSourceCache, newConditions, progress, error);
             }
         }
         namedOffscreenRenderTargets.insert(tinystl::make_pair(option->m_name, newConditions));
@@ -6369,7 +6377,7 @@ Project::removeEffectOrderSet(IDrawable *drawable)
 }
 
 void
-Project::internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect,
+Project::internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect, const Archiver *archiver,
     const IncludeEffectSourceMap &includeEffectSources, bool enableEffectPlugin, bool enableSourceCache,
     Progress &progress, Error &error)
 {
@@ -6379,19 +6387,19 @@ Project::internalSetDrawableActiveEffect(IDrawable *drawable, Effect *effect,
         m_dependsOnScriptExternal.push_back(drawable);
     }
     createAllOffscreenRenderTargets(
-        effect, includeEffectSources, enableEffectPlugin, enableSourceCache, progress, error);
+        effect, archiver, includeEffectSources, enableEffectPlugin, enableSourceCache, progress, error);
     applyDrawableToOffscreenRenderTargetEffect(drawable, effect);
     /* register all drawables with the offscreen render target effect before loading the offscreen effect */
     applyAllDrawablesToOffscreenRenderTargetEffect(drawable, effect);
 }
 
 void
-Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffectSourceMap &includeEffectSources,
-    const StringPair &condition, bool enableEffectPlugin, bool enableSourceCache,
-    OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error)
+Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const Archiver *archiver,
+    const IncludeEffectSourceMap &includeEffectSources, const StringPair &condition, bool enableEffectPlugin,
+    bool enableSourceCache, OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error)
 {
-    if (!loadOffscreenRenderTargetEffectFromEffectSourceMap(
-            ownerEffect, includeEffectSources, condition, enableEffectPlugin, newConditions, progress, error) &&
+    if (!loadOffscreenRenderTargetEffectFromEffectSourceMap(ownerEffect, archiver, includeEffectSources, condition,
+            enableEffectPlugin, newConditions, progress, error) &&
         !error.hasReason()) {
         URI sourceURI;
         ByteArray output;
@@ -6420,8 +6428,8 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
                         Effect::compileFromSource(
                             resolvedURI, m_fileManager, isMipmapEnabled(), output, progress, error)) {
                         targetEffect = createEffect();
-                        if (loadOffscreenRenderTargetEffectFromByteArray(
-                                targetEffect, resolvedURI, condition, output, newConditions, progress, error)) {
+                        if (loadOffscreenRenderTargetEffectFromByteArray(targetEffect, archiver, resolvedURI, condition,
+                                output, newConditions, progress, error)) {
                             bool hasRelativePrefix = StringUtils::equals(filename.c_str(), "./", 2) ||
                                 StringUtils::equals(filename.c_str(), "../", 3);
                             targetEffect->setFilename(hasRelativePrefix
@@ -6453,7 +6461,7 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
                     FileUtils::read(scope, bytes, error);
                     Effect *targetEffect = createEffect();
                     if (loadOffscreenRenderTargetEffectFromByteArray(
-                            targetEffect, fileURI, condition, bytes, newConditions, progress, error)) {
+                            targetEffect, archiver, fileURI, condition, bytes, newConditions, progress, error)) {
                         m_allOffscreenRenderTargetEffectSets[ownerEffect].insert(targetEffect);
                         m_loadedEffectSet.insert(targetEffect);
                     }
@@ -6467,7 +6475,7 @@ Project::loadOffscreenRenderTargetEffect(Effect *ownerEffect, const IncludeEffec
 }
 
 bool
-Project::loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerEffect,
+Project::loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerEffect, const Archiver *archiver,
     const IncludeEffectSourceMap &includeEffectSources, const StringPair &condition, bool enableEffectPlugin,
     OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error)
 {
@@ -6494,7 +6502,7 @@ Project::loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerE
                     targetEffect = createEffect();
                     const URI &targetEffectFileURI = resolveArchiveURI(fileURI, filename);
                     loaded = loadOffscreenRenderTargetEffectFromByteArray(
-                        targetEffect, targetEffectFileURI, condition, output, newConditions, progress, error);
+                        targetEffect, archiver, targetEffectFileURI, condition, output, newConditions, progress, error);
                 }
             }
         }
@@ -6508,7 +6516,7 @@ Project::loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerE
             const URI &targetEffectFileURI = resolveArchiveURI(fileURI, effectBinaryFilename);
             targetEffect = createEffect();
             loaded = loadOffscreenRenderTargetEffectFromByteArray(
-                targetEffect, targetEffectFileURI, condition, it2->second, newConditions, progress, error);
+                targetEffect, archiver, targetEffectFileURI, condition, it2->second, newConditions, progress, error);
         }
     }
     if (loaded) {
@@ -6522,15 +6530,15 @@ Project::loadOffscreenRenderTargetEffectFromEffectSourceMap(const Effect *ownerE
 }
 
 bool
-Project::loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const URI &fileURI,
-    const StringPair &condition, const ByteArray &bytes, OffscreenRenderTargetConditionList &newConditions,
-    Progress &progress, Error &error)
+Project::loadOffscreenRenderTargetEffectFromByteArray(Effect *targetEffect, const Archiver *archiver,
+    const URI &fileURI, const StringPair &condition, const ByteArray &bytes,
+    OffscreenRenderTargetConditionList &newConditions, Progress &progress, Error &error)
 {
     bool result = false;
     targetEffect->setName(URI::lastPathComponent(condition.second));
     if (targetEffect->load(bytes, progress, error)) {
         targetEffect->setFileURI(fileURI);
-        if (targetEffect->upload(effect::kAttachmentTypeOffscreenPassive, progress, error)) {
+        if (targetEffect->upload(effect::kAttachmentTypeOffscreenPassive, archiver, progress, error)) {
             OffscreenRenderTargetCondition cond;
             cond.m_pattern = condition.first;
             cond.m_passiveEffect = targetEffect;
@@ -7192,8 +7200,8 @@ Project::loadAttachedDrawableEffect(IDrawable *drawable, bool enableSourceCache,
     Effect *effect = findEffect(fileURI);
     bool enableEffectPlugin = isEffectPluginEnabled(), succeeded = false;
     if (effect) {
-        internalSetDrawableActiveEffect(drawable, effect, Project::IncludeEffectSourceMap(), enableEffectPlugin,
-            enableSourceCache, progress, error);
+        internalSetDrawableActiveEffect(drawable, effect, nullptr, Project::IncludeEffectSourceMap(),
+            enableEffectPlugin, enableSourceCache, progress, error);
         succeeded = !error.isCancelled();
     }
     else {
@@ -7212,8 +7220,8 @@ Project::loadAttachedDrawableEffect(IDrawable *drawable, bool enableSourceCache,
         }
         if (succeeded) {
             effect->setFileURI(sourceURI);
-            internalSetDrawableActiveEffect(drawable, effect, Project::IncludeEffectSourceMap(), enableEffectPlugin,
-                enableSourceCache, progress, error);
+            internalSetDrawableActiveEffect(drawable, effect, nullptr, Project::IncludeEffectSourceMap(),
+                enableEffectPlugin, enableSourceCache, progress, error);
         }
         else {
             destroyDetachedEffect(effect);
