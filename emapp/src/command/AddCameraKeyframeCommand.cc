@@ -118,7 +118,8 @@ AddCameraKeyframeCommand::toKeyframeList(
                         nanoem_motion_camera_keyframe_interpolation_type_t(i);
                     const Vector4U8 prevKeyframeInterpolationParameter(
                         glm::make_vec4(nanoemMotionCameraKeyframeGetInterpolation(prev, type)));
-                    if (enableBezierCurveAdjustment && nextKeyframeIndex != Motion::kMaxFrameIndex && nextKeyframeIndex > prevKeyframeIndex) {
+                    if (enableBezierCurveAdjustment && nextKeyframeIndex != Motion::kMaxFrameIndex &&
+                        nextKeyframeIndex > prevKeyframeIndex) {
                         const nanoem_frame_index_t interval = nextKeyframeIndex - prevKeyframeIndex;
                         const Vector2 c0(prevKeyframeInterpolationParameter.x, prevKeyframeInterpolationParameter.y),
                             c1(prevKeyframeInterpolationParameter.z, prevKeyframeInterpolationParameter.w);
