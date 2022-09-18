@@ -6,14 +6,20 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  FFMPEG_VERSION_TAG: n4.4.1
+  FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+  GLFW_VERSION_TAG: 3.3.8
+  ICU_VERSION_TAG: release-57-2
+  NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+  NANOEM_BUILD_ARTIFACT_DIRECTORY: ${{ github.workspace }}/out/core
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
     env:
       CC: clang-6.0
       CXX: clang++-6.0
-      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
-      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -32,31 +38,33 @@ jobs:
             libxi-dev \
             libxcursor-dev
       - name: checkout ffmpeg
-        run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
+        run: git clone --depth=1 --branch=${{ env.FFMPEG_VERSION_TAG }} https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: checkout glfw
-        run: git clone https://github.com/glfw/glfw.git dependencies/glfw
+        run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
       - name: checkout ICU
-        run: git clone https://github.com/unicode-org/icu.git dependencies/icu
+        run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
       - name: build all dependencies of nanoem
         run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
           NANOEM_ENABLE_BUILD_FFMPEG: 1
           NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
+          NANOEM_ENABLE_BUILD_MIMALLOC: 1
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
       - name: build nanoem itself
         run: |
-          mkdir -p ${{ github.workspace }}/out/core
-          cd ${{ github.workspace }}/out/core
+          mkdir -p ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           cmake \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/out/core/install-root \
+            -DCMAKE_INSTALL_PREFIX=${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/install-root \
             -DFX9_ENABLE_OPTIMIZER=OFF \
             -DNANOEM_ENABLE_BULLET=ON \
             -DNANOEM_ENABLE_GLFW=ON \
             -DNANOEM_ENABLE_ICU=ON \
             -DNANOEM_ENABLE_IMGUI_FILE_DIALOG=ON \
+            -DNANOEM_ENABLE_MIMALLOC=ON \
             -DNANOEM_ENABLE_NMD=ON \
             -DNANOEM_ENABLE_TEST=ON \
             -DNANOEM_INSTALL_EFFECT_PLUGIN=ON \
@@ -69,22 +77,19 @@ jobs:
           cmake --build . --config release
       - name: test nanoem's unit tests
         run: |
-          cd ${{ github.workspace }}/out/core
+          cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
   build-macos:
     runs-on: macos-latest
-    env:
-      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
-      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
     steps:
       - name: checkout
         uses: actions/checkout@v2
         with:
           submodules: recursive
       - name: checkout ffmpeg
-        run: git clone https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
+        run: git clone --depth=1 --branch=${{ env.FFMPEG_VERSION_TAG }} https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: checkout ICU
-        run: git clone https://github.com/unicode-org/icu.git dependencies/icu
+        run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
       - name: setup prerequisite packages
         run: brew install ninja
       - name: build all dependencies of nanoem
@@ -97,13 +102,14 @@ jobs:
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
       - name: build nanoem itself
         run: |
-          mkdir -p ${{ github.workspace }}/out/core
-          cd ${{ github.workspace }}/out/core
+          mkdir -p ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           cmake \
-            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/out/core/install-root \
+            -DCMAKE_INSTALL_PREFIX=${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/install-root \
             -DFX9_ENABLE_OPTIMIZER=OFF \
             -DNANOEM_ENABLE_BULLET=ON \
             -DNANOEM_ENABLE_ICU=ON \
+            -DNANOEM_ENABLE_MIMALLOC=ON \
             -DNANOEM_ENABLE_NMD=ON \
             -DNANOEM_ENABLE_TEST=ON \
             -DNANOEM_INSTALL_EFFECT_PLUGIN=ON \
@@ -116,13 +122,10 @@ jobs:
           cmake --build . --config release
       - name: test nanoem's unit tests
         run: |
-          cd ${{ github.workspace }}/out/core
+          cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
   build-windows:
     runs-on: windows-2022
-    env:
-      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
-      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -139,12 +142,13 @@ jobs:
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
       - name: build nanoem itself
         run: |
-          mkdir -p ${{ github.workspace }}/out/core
-          cd ${{ github.workspace }}/out/core
+          mkdir -p ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           cmake `
-            -DCMAKE_INSTALL_PREFIX="${{ github.workspace }}\out\core\install-root" `
+            -DCMAKE_INSTALL_PREFIX="${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/install-root" `
             -DFX9_ENABLE_OPTIMIZER=OFF `
             -DNANOEM_ENABLE_BULLET=ON `
+            -DNANOEM_ENABLE_MIMALLOC=ON `
             -DNANOEM_ENABLE_NMD=ON `
             -DNANOEM_ENABLE_TEST=ON `
             -DNANOEM_INSTALL_EFFECT_PLUGIN=ON `
@@ -158,7 +162,7 @@ jobs:
           cmake --build . --config release
       - name: test nanoem's unit tests
         run: |
-          cd ${{ github.workspace }}/out/core
+          cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
   codeql:
     if: ${{ false }}
