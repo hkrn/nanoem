@@ -309,38 +309,36 @@ endfunction()
 
 function(compile_sentry_native _cmake_build_type _generator _toolset_option _arch_option _triple_path)
   set(_source_path ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/sentry-native)
-  if(EXISTS ${_source_path})
-    set(_build_path ${base_build_path}/sentry-native/out/${_triple_path})
-    file(MAKE_DIRECTORY ${_build_path})
-    # force using vs2017 due to compilation failure
-    set(_global_cmake_flags "${global_cmake_flags}")
-    if(WIN32)
-      set(_transport "winhttp")
-    elseif(APPLE)
-      set(_transport "none")
-    else()
-      set(_transport "curl")
-    endif()
-    if(WIN32 AND "${_toolset_option}" STREQUAL "-Tv140")
-      set(_toolset_option "-Tv141")
-    endif()
-    set(_zlib_build_path ${base_build_path}/zlib/out/${_triple_path})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
-                                             ${CMAKE_COMMAND}
-                                             ${_global_cmake_flags}
-                                             -DCMAKE_BUILD_TYPE=${_cmake_build_type}
-                                             -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
-                                             -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
-                                             -DCRASHPAD_ZLIB_SYSTEM_DEFAULT=OFF
-                                             -DSENTRY_BUILD_EXAMPLES=OFF
-                                             -DSENTRY_BUILD_TESTS=OFF
-                                             -DSENTRY_TRANSPORT=${_transport}
-                                             -DZLIB_ROOT=${base_build_path}/zlib/out/${_triple_path}/install-root
-                                             -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
-    rewrite_cmake_cache(${_build_path})
-    rewrite_ninja_ub_workaround(${_build_path})
-    execute_build(${_build_path})
+  set(_build_path ${base_build_path}/sentry-native/out/${_triple_path})
+  file(MAKE_DIRECTORY ${_build_path})
+  # force using vs2017 due to compilation failure
+  set(_global_cmake_flags "${global_cmake_flags}")
+  if(WIN32)
+    set(_transport "winhttp")
+  elseif(APPLE)
+    set(_transport "none")
+  else()
+    set(_transport "curl")
   endif()
+  if(WIN32 AND "${_toolset_option}" STREQUAL "-Tv140")
+    set(_toolset_option "-Tv141")
+  endif()
+  set(_zlib_build_path ${base_build_path}/zlib/out/${_triple_path})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
+                                           ${CMAKE_COMMAND}
+                                           ${_global_cmake_flags}
+                                           -DCMAKE_BUILD_TYPE=${_cmake_build_type}
+                                           -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
+                                           -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DCRASHPAD_ZLIB_SYSTEM_DEFAULT=OFF
+                                           -DSENTRY_BUILD_EXAMPLES=OFF
+                                           -DSENTRY_BUILD_TESTS=OFF
+                                           -DSENTRY_TRANSPORT=${_transport}
+                                           -DZLIB_ROOT=${base_build_path}/zlib/out/${_triple_path}/install-root
+                                           -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
+  rewrite_cmake_cache(${_build_path})
+  rewrite_ninja_ub_workaround(${_build_path})
+  execute_build(${_build_path})
 endfunction()
 
 function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option _triple_path)
@@ -451,38 +449,38 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
     set(_macos_archs "${_arch}")
     endif()
     foreach(_item ${_macos_archs})
-    set(_build_flags "-arch ${_item} -mmacosx-version-min=10.9")
-    if(DEFINED ENV{NANOEM_MACOS_SYSROOT})
-      set(_macos_sysroot $ENV{NANOEM_MACOS_SYSROOT})
-      set(_build_flags "-isysroot ${_macos_sysroot}")
-    endif()
-    set(_interm_path "${_build_path}/interm/${_item}")
-    file(MAKE_DIRECTORY ${_interm_path})
-    set(_ffmpeg_built_options2 ${_ffmpeg_build_options})
-    list(APPEND _ffmpeg_built_options2 "--prefix=\"${_interm_path}/install-root\"")
-    string(JOIN ";" _full_build_options ${_ffmpeg_built_options2})
-    execute_process(COMMAND
-      ${CMAKE_COMMAND} -E env
-      CFLAGS=${_build_flags}
-      CXXFLAGS=${_build_flags}
-      LDFLAGS=${_build_flags}
-      ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_interm_path})
-    execute_process(COMMAND make install WORKING_DIRECTORY ${_interm_path})
+      set(_build_flags "-arch ${_item} -mmacosx-version-min=10.9")
+      if(DEFINED ENV{NANOEM_MACOS_SYSROOT})
+        set(_macos_sysroot $ENV{NANOEM_MACOS_SYSROOT})
+        set(_build_flags "-isysroot ${_macos_sysroot}")
+      endif()
+      set(_interm_path "${_build_path}/interm/${_item}")
+      file(MAKE_DIRECTORY ${_interm_path})
+      set(_ffmpeg_built_options2 ${_ffmpeg_build_options})
+      list(APPEND _ffmpeg_built_options2 "--prefix=\"${_interm_path}/install-root\"")
+      string(JOIN ";" _full_build_options ${_ffmpeg_built_options2})
+      execute_process(COMMAND
+        ${CMAKE_COMMAND} -E env
+        CFLAGS=${_build_flags}
+        CXXFLAGS=${_build_flags}
+        LDFLAGS=${_build_flags}
+        ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_interm_path})
+      execute_process(COMMAND make install WORKING_DIRECTORY ${_interm_path})
     endforeach()
     if("${_arch}" STREQUAL "ub")
-    set(_interm_arm64_path ${_build_path}/interm/arm64/install-root)
-    set(_interm_x86_64_path ${_build_path}/interm/x86_64/install-root)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/include ${_build_path}/install-root/include)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/share ${_build_path}/install-root/share)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${_build_path}/install-root/lib)
-    file(GLOB _libraries ${_interm_arm64_path}/lib/lib*.dylib)
-    foreach(_item ${_libraries})
-      get_filename_component(_filename ${_item} NAME)
-      execute_process(COMMAND lipo -create -output
-      "${_build_path}/install-root/lib/${_filename}"
-      "${_interm_arm64_path}/lib/${_filename}"
-      "${_interm_x86_64_path}/lib/${_filename}")
-    endforeach()
+      set(_interm_arm64_path ${_build_path}/interm/arm64/install-root)
+      set(_interm_x86_64_path ${_build_path}/interm/x86_64/install-root)
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/include ${_build_path}/install-root/include)
+      execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${_interm_arm64_path}/share ${_build_path}/install-root/share)
+      execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${_build_path}/install-root/lib)
+      file(GLOB _libraries ${_interm_arm64_path}/lib/lib*.dylib)
+      foreach(_item ${_libraries})
+        get_filename_component(_filename ${_item} NAME)
+        execute_process(COMMAND lipo -create -output
+          "${_build_path}/install-root/lib/${_filename}"
+          "${_interm_arm64_path}/lib/${_filename}"
+          "${_interm_x86_64_path}/lib/${_filename}")
+      endforeach()
     endif()
   else()
     file(MAKE_DIRECTORY ${_build_path})
