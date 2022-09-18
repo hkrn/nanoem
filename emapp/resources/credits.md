@@ -37,7 +37,7 @@ This software uses below libraries.
   - [lz4](https://github.com/lz4/lz4/)
     - [BSDL](https://github.com/lz4/lz4/blob/fdf2ef5809ca875c454510610764d9125ef2ebbd/lib/LICENSE)
   - [mimalloc](https://github.com/microsoft/mimalloc)
-    - [MIT](https://github.com/microsoft/mimalloc/blob/92ead2d88061dde1264800b389b744ac1b79cf39/LICENSE)
+    - [MIT](https://github.com/microsoft/mimalloc/blob/f2712f4a8f038a7fb4df2790f4c3b7e3ed9e219b/LICENSE)
   - [minizip](https://github.com/nmoinvaz/minizip/)
     - [zlib](https://github.com/nmoinvaz/minizip/blob/2aa369c468aa1d931c52ff7dc3da962b71a94118/LICENSE)
   - [nanomsg](https://github.com/nanomsg/nanomsg/)

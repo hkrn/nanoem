@@ -283,27 +283,28 @@ endfunction()
 
 function(compile_mimalloc _cmake_build_type _generator _toolset_option _arch_option _triple_path)
   set(_source_path ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/mimalloc)
-  if(EXISTS ${_source_path} AND NOT WIN32)
-    set(_build_path ${base_build_path}/mimalloc/out/${_triple_path})
-    file(MAKE_DIRECTORY ${_build_path})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
-                                             ${CMAKE_COMMAND}
-                                             ${global_cmake_flags}
-                                             -DCMAKE_BUILD_TYPE=${_cmake_build_type}
-                                             -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
-                                             -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
-                                             -DMI_BUILD_TESTS=OFF
-                                             -DMI_DEBUG_FULL=OFF
-                                             -DMI_INTERPOSE=OFF
-                                             -DMI_LOCAL_DYNAMIC_TLS=OFF
-                                             -DMI_OVERRIDE=OFF
-                                             -DMI_SECURE=OFF
-                                             -DMI_SEE_ASM=OFF
-                                             -DMI_USE_CXX=OFF
-                                             -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
-    rewrite_cmake_cache(${_build_path})
-    execute_build(${_build_path})
-  endif()
+  set(_build_path ${base_build_path}/mimalloc/out/${_triple_path})
+  file(MAKE_DIRECTORY ${_build_path})
+  execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
+                                           ${CMAKE_COMMAND}
+                                           ${global_cmake_flags}
+                                           -DCMAKE_BUILD_TYPE=${_cmake_build_type}
+                                           -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
+                                           -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DMI_BUILD_OBJECT=OFF
+                                           -DMI_BUILD_SHARED=OFF
+                                           -DMI_BUILD_STATIC=ON
+                                           -DMI_BUILD_TESTS=OFF
+                                           -DMI_DEBUG_FULL=OFF
+                                           -DMI_INTERPOSE=OFF
+                                           -DMI_LOCAL_DYNAMIC_TLS=OFF
+                                           -DMI_OVERRIDE=OFF
+                                           -DMI_SECURE=OFF
+                                           -DMI_SEE_ASM=OFF
+                                           -DMI_USE_CXX=ON
+                                           -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
+  rewrite_cmake_cache(${_build_path})
+  execute_build(${_build_path})
 endfunction()
 
 function(compile_sentry_native _cmake_build_type _generator _toolset_option _arch_option _triple_path)
