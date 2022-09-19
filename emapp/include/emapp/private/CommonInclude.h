@@ -21,6 +21,37 @@
 #include <sstream>
 #endif /* NDEBUG */
 
+/* spdlog */
+#if NANOEM_ENABLE_LOGGING
+#include "spdlog/spdlog.h"
+#define EMLOG_TRACE(format, ...)                                                                                       \
+    do {                                                                                                               \
+        spdlog::get("emapp")->trace((format), __VA_ARGS__);                                                            \
+    } while (0)
+#define EMLOG_DEBUG(format, ...)                                                                                       \
+    do {                                                                                                               \
+        spdlog::get("emapp")->debug((format), __VA_ARGS__);                                                            \
+    } while (0)
+#define EMLOG_INFO(format, ...)                                                                                        \
+    do {                                                                                                               \
+        spdlog::get("emapp")->info((format), __VA_ARGS__);                                                             \
+    } while (0)
+#define EMLOG_WARN(format, ...)                                                                                        \
+    do {                                                                                                               \
+        spdlog::get("emapp")->warn((format), __VA_ARGS__);                                                             \
+    } while (0)
+#define EMLOG_ERROR(format, ...)                                                                                       \
+    do {                                                                                                               \
+        spdlog::get("emapp")->error((format), __VA_ARGS__);                                                            \
+    } while (0)
+#else
+#define EMLOG_TRACE(format, ...) BX_UNUSED_1(format)
+#define EMLOG_DEBUG(format, ...) BX_UNUSED_1(format)
+#define EMLOG_INFO(format, ...) BX_UNUSED_1(format)
+#define EMLOG_WARN(format, ...) BX_UNUSED_1(format)
+#define EMLOG_ERROR(format, ...) BX_UNUSED_1(format)
+#endif /* NANOEM_ENABLE_LOGGING */
+
 #if BX_PLATFORM_OSX
 #include <mach/mach.h> /* for Inline::isDebuggerPresent */
 #endif /* BX_PLATFORM_OSX */
@@ -185,11 +216,9 @@ public:
     resolveSymbol(void *handle, const char *name, T &func, bool &valid)
     {
         resolveSymbol(handle, name, func);
-#ifndef NDEBUG
         if (nanoem_is_null(func)) {
-            fprintf(stderr, "Symbol \"%s\" of %p is not found\n", name, handle);
+            EMLOG_DEBUG("Symbol is not found: name={} handle={}", name, handle);
         }
-#endif
         valid &= nanoem_is_not_null(func);
     }
     static inline bool

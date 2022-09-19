@@ -12,7 +12,6 @@
 #include "emapp/ApplicationPreference.h"
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/CommandRegistrator.h"
-#include "emapp/DebugUtils.h"
 #include "emapp/DefaultFileManager.h"
 #include "emapp/Effect.h"
 #include "emapp/EnumUtils.h"
@@ -1662,6 +1661,7 @@ BaseApplicationService::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f
 {
     m_window = nanoem_new(internal::ImGuiWindow(this));
     m_window->initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
+    EMLOG_INFO("{}", "Initialized an application service");
 }
 
 void
@@ -1674,6 +1674,7 @@ BaseApplicationService::destroy()
     m_sharedResourceRepository.destroy();
     m_window->destroy();
     SG_POP_GROUP();
+    EMLOG_INFO("{}", "Destroyed an application service");
 }
 
 Project *
@@ -1722,6 +1723,8 @@ BaseApplicationService::createProject(const Vector2UI16 &logicalPixelWindowSize,
         sentry_value_set_by_key(breadcrumb, "data", data);
         sentry_add_breadcrumb(breadcrumb);
     }
+    EMLOG_INFO("Created a project: ptr={} width={} height={}", static_cast<const void *>(project),
+        devicePixelWindowSize.x, devicePixelWindowSize.y);
     return project;
 }
 
@@ -1738,6 +1741,7 @@ BaseApplicationService::destroyProject(Project *project)
         }
         project->destroy();
         nanoem_delete(project);
+        EMLOG_INFO("Destroyed a project: ptr={}", static_cast<const void *>(project));
     }
 }
 
@@ -2787,6 +2791,7 @@ BaseApplicationService::saveAsFile(const URI &fileURI, Project *project, IFileMa
             m_defaultFileManager->cancelQueryFileDialog(project);
             result = true;
         }
+        EMLOG_INFO("Saved a project: fileURI={}", fileURI.absolutePathConstString());
     }
     return result;
 }
@@ -4733,7 +4738,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
             }
             else if (Model *model = project->findModelByHandle(c->handle)) {
             }
-            DebugUtils::markUnimplemented("NANOEM__APPLICATION__COMMAND__TYPE_SET_DRAWABLE_ORDER_INDEX");
+            EMLOG_DEBUG("{} is not implemented", "NANOEM__APPLICATION__COMMAND__TYPE_SET_DRAWABLE_ORDER_INDEX");
         }
         break;
     }
@@ -4750,8 +4755,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             const Nanoem__Application__SetModelShadowEnabledCommand *c = command->set_model_shadow_enabled;
             if (Model *model = project->findModelByHandle(c->model_handle)) {
-                DebugUtils::markUnimplemented(
-                    "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_SHADOW_ENABLED not implemented");
+                EMLOG_DEBUG("{} not implemented", "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_SHADOW_ENABLED");
             }
         }
         break;
@@ -4769,8 +4773,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         if (nanoem_likely(project)) {
             const Nanoem__Application__SetModelTransformOrderIndexCommand *c = command->set_model_transform_order_index;
             if (Model *model = project->findModelByHandle(c->model_handle)) {
-                DebugUtils::markUnimplemented(
-                    "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_TRANSFORM_ORDER_INDEX not implemented");
+                EMLOG_DEBUG("{} not implemented", "NANOEM__APPLICATION__COMMAND__TYPE_SET_MODEL_TRANSFORM_ORDER_INDEX");
             }
         }
         break;
@@ -5669,6 +5672,7 @@ BaseApplicationService::releaseSGXMemory(void *opaque, void *ptr, const char *fi
 void
 BaseApplicationService::handleSGXMessage(void *opaque, const char *message, const char *file, int line)
 {
+    BX_UNUSED_2(file, line);
     BaseApplicationService *self = static_cast<BaseApplicationService *>(opaque);
     uint32_t key = bx::hash<bx::HashMurmur2A>(message);
     HandledSGXMessageSet::const_iterator it = self->m_handledSGXMessages.find(key);
@@ -5678,11 +5682,7 @@ BaseApplicationService::handleSGXMessage(void *opaque, const char *message, cons
             sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("error"));
             sentry_add_breadcrumb(breadcrumb);
         }
-#if defined(NANOEM_ENABLE_DEBUG_LABEL)
-        DebugUtils::print("[%s:%d] %s", file, line, message);
-#else
-        BX_UNUSED_2(file, line);
-#endif
+        EMLOG_DEBUG("[{}:{}] {}", file, line, message);
         self->m_handledSGXMessages.insert(key);
     }
     SG_INSERT_MARKER(message);

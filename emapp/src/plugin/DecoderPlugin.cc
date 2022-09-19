@@ -63,8 +63,9 @@ DecoderPlugin::load(const URI &fileURI)
     bool succeeded = m_handle != nullptr;
     if (!succeeded) {
         bool valid = true;
-        if (void *handle = bx::dlopen(fileURI.absolutePath().c_str())) {
+        if (void *handle = bx::dlopen(fileURI.absolutePathConstString())) {
             PFN_nanoemApplicationPluginDecoderGetABIVersion _decoderGetABIVersion = nullptr;
+            EMLOG_DEBUG("Loading decoder plugin path={} handle={}", fileURI.absolutePathConstString(), handle);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginDecoderGetABIVersion", _decoderGetABIVersion, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginDecoderInitialize", _decoderInitialize, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginDecoderCreate", _decoderCreate, valid);

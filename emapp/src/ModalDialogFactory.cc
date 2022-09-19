@@ -217,6 +217,7 @@ LoadingModelConfirmDialog::onAccepted(Project *project)
         project->setActiveModel(m_model);
         m_model->writeLoadCommandMessage(error);
         m_model->setVisible(true);
+        EMLOG_INFO("Loaded a model: name={} handle={}", m_model->canonicalNameConstString(), m_model->handle());
     }
     else {
         project->removeModel(m_model);

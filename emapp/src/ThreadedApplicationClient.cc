@@ -10,6 +10,7 @@
 
 #include "./protoc/application.pb-c.h"
 #include "emapp/ThreadedApplicationService.h"
+#include "emapp/private/CommonInclude.h"
 
 #include "bx/debug.h"
 #include "sokol/sokol_time.h"
@@ -123,7 +124,7 @@ ThreadedApplicationClient::sendCommandMessage(const Nanoem__Application__Command
 void
 ThreadedApplicationClient::handleSocketError(const char *prefix)
 {
-    bx::debugPrintf("%s: %s\n", prefix, nn_strerror(nn_errno()));
+    EMLOG_ERROR("{}: {}\n", prefix, nn_strerror(nn_errno()));
 }
 
 } /* namespace nanoem */
