@@ -70,8 +70,9 @@ MotionIOPlugin::load(const URI &fileURI)
     bool succeeded = m_handle != nullptr;
     if (!succeeded) {
         bool valid = true;
-        if (void *handle = bx::dlopen(fileURI.absolutePath().c_str())) {
+        if (void *handle = bx::dlopen(fileURI.absolutePathConstString())) {
             PFN_nanoemApplicationPluginMotionIOGetABIVersion _motionIOGetABIVersion = nullptr;
+            EMLOG_DEBUG("Loading motion I/O plugin path={} handle={}", fileURI.absolutePathConstString(), handle);
             Inline::resolveSymbol(
                 handle, "nanoemApplicationPluginMotionIOGetABIVersion", _motionIOGetABIVersion, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginMotionIOInitialize", _motionIOInitialize, valid);

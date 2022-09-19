@@ -474,7 +474,7 @@ PosixFileWriter::~PosixFileWriter() NANOEM_DECL_NOEXCEPT
 {
     Error error;
     if (!m_done && !m_append) {
-        bx::debugPrintf("forgot to call commit/rollback: fd=%d, path=%s", m_fd, m_fileURI.absolutePathConstString());
+        EMLOG_ERROR("forgot to call commit/rollback: fd={}, path={}", m_fd, m_fileURI.absolutePathConstString());
         rollback(error);
     }
 }

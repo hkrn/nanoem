@@ -9,9 +9,10 @@
 #include "GLFWApplicationService.h"
 
 #include "emapp/ApplicationPreference.h"
-#include "emapp/DebugUtils.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/Project.h"
+#include "emapp/StringUtils.h"
+#include "emapp/private/CommonInclude.h"
 
 #include "GL/gl3w.h"
 #include "GLFW/glfw3.h"
@@ -170,7 +171,7 @@ MainWindow::processMessage()
 void
 MainWindow::handleErrorCallback(int code, const char *message)
 {
-    DebugUtils::print("GLFW_ERROR(0x%x): %s", code, message);
+    EMLOG_ERROR("Captured glfw error: code={} message={}", code, message);
 }
 
 void

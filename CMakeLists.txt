@@ -21,6 +21,7 @@ option(NANOEM_ENABLE_DEBUG_LABEL "Enable building nanoem with debug labels." OFF
 option(NANOEM_ENABLE_GLFW "Enable GLFW based application option." OFF)
 option(NANOEM_ENABLE_IMGUI_INDEX32 "Enable building ImGui with 32bit indices support" ON)
 option(NANOEM_ENABLE_IMGUI_FILE_DIALOG "Enable building ImGuiFileDialog (https://github.com/aiekick/ImGuiFileDialog) option" OFF)
+option(NANOEM_ENABLE_LOGGING "Enable logging with spdlog." OFF)
 option(NANOEM_ENABLE_LTO "Enable Link Time Optimization when clang is used." OFF)
 option(NANOEM_ENABLE_MIMALLOC "Enable mimalloc as allocator" OFF)
 option(NANOEM_ENABLE_MSAN "Enable clang/gcc MSan (memory sanitizer) option." OFF)

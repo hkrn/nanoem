@@ -985,6 +985,7 @@ DefaultFileManager::loadCameraMotion(const URI &fileURI, Project *project, Error
     if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
         if (isCameraLightMotion(motion)) {
             motion->writeLoadCameraCommandMessage(fileURI, error);
+            EMLOG_INFO("Loaded a camera motion: handle={}", motion->handle());
             succeeded = !error.hasReason();
         }
         else {
@@ -1009,6 +1010,7 @@ DefaultFileManager::loadLightMotion(const URI &fileURI, Project *project, Error 
     if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
         if (isCameraLightMotion(motion)) {
             motion->writeLoadLightCommandMessage(fileURI, error);
+            EMLOG_INFO("Loaded a light motion: handle={}", motion->handle());
             succeeded = !error.hasReason();
         }
         else {
@@ -1034,6 +1036,8 @@ DefaultFileManager::loadModelMotion(const URI &fileURI, Project *project, Error 
             Motion *motion = project->createMotion(), *lastMotionPtr = motion;
             if (loadMotion(fileURI, motion, project->currentLocalFrameIndex(), error)) {
                 if (!isCameraLightMotion(motion)) {
+                    EMLOG_INFO("Loaded a model motion: model={} handle={}", model->canonicalNameConstString(),
+                        motion->handle());
                     motion->writeLoadModelCommandMessage(model->handle(), fileURI, error);
                     succeeded = !error.hasReason();
                 }
@@ -1195,6 +1199,8 @@ DefaultFileManager::internalLoadAccessoryFromFile(
             succeeded = !error.isCancelled();
             if (succeeded) {
                 accessory->writeLoadCommandMessage(error);
+                EMLOG_INFO("Loaded an accessory: name={} handle={}", accessory->canonicalNameConstString(),
+                    accessory->handle());
             }
         }
     }

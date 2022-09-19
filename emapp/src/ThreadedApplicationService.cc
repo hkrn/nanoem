@@ -212,16 +212,16 @@ CancelPublisherWorker::connect()
     if (m_streamSocket == -1) {
         m_streamSocket = nn_socket(AF_SP, NN_SUB);
         if (m_streamSocket == -1) {
-            bx::debugPrintf("nn_socket: %s", nn_strerror(nn_errno()));
+            EMLOG_ERROR("nn_socket: {}", nn_strerror(nn_errno()));
             close();
         }
         m_streamEndpoint = nn_bind(m_streamSocket, Progress::kStreamURI);
         if (m_streamEndpoint == -1) {
-            bx::debugPrintf("nn_bind: %s", nn_strerror(nn_errno()));
+            EMLOG_ERROR("nn_bind: {}", nn_strerror(nn_errno()));
             close();
         }
         if (nn_setsockopt(m_streamSocket, NN_SUB, NN_SUB_SUBSCRIBE, "", 0) < 0) {
-            bx::debugPrintf("nn_setsockopt: %s", nn_strerror(nn_errno()));
+            EMLOG_ERROR("nn_setsockopt: {}", nn_strerror(nn_errno()));
             close();
         }
     }
@@ -234,7 +234,7 @@ CancelPublisherWorker::dispatch()
     int rc = nn_recv(m_streamSocket, &value, sizeof(value), 0);
     bool result = true;
     if (rc < 0) {
-        bx::debugPrintf("nn_recvmsg: %s", nn_strerror(nn_errno()));
+        EMLOG_ERROR("nn_recvmsg: {}", nn_strerror(nn_errno()));
         result = false;
     }
     else if (value == Progress::kCancelToken) {
@@ -649,8 +649,8 @@ ThreadedApplicationService::receiveAllCommandMessages(int &exitCode)
 void
 ThreadedApplicationService::handleSocketError(const char *prefix)
 {
-    int err = nn_errno();
-    bx::debugPrintf("%s -> %d: %s\n", prefix, err, nn_strerror(err));
+    BX_UNUSED_1(prefix);
+    EMLOG_ERROR("%s -> %d: %s\n", prefix, nn_errno(), nn_strerror(nn_errno()));
 }
 
 void

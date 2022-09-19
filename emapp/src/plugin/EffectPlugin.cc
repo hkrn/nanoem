@@ -64,8 +64,9 @@ EffectPlugin::load(const URI &fileURI)
     bool succeeded = m_handle != nullptr;
     if (!succeeded) {
         bool valid = true;
-        if (void *handle = bx::dlopen(fileURI.absolutePath().c_str())) {
+        if (void *handle = bx::dlopen(fileURI.absolutePathConstString())) {
             PFN_nanoemApplicationPluginEffectCompilerGetABIVersion _effectCompilerGetABIVersion = nullptr;
+            EMLOG_DEBUG("Loading effect plugin path={} handle={}", fileURI.absolutePathConstString(), handle);
             Inline::resolveSymbol(
                 handle, "nanoemApplicationPluginEffectCompilerGetABIVersion", _effectCompilerGetABIVersion, valid);
             Inline::resolveSymbol(

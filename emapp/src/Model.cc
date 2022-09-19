@@ -2987,7 +2987,7 @@ Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bo
                 }
             }
         }
-        BX_TRACE("The image is allocated: name=%s ID=%d", filename.c_str(), image->handle().id);
+        EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->handle().id);
     }
     SG_POP_GROUP();
     return image;

@@ -6,7 +6,6 @@
 
 #include "emapp/ResourceBundle.h"
 
-#include "emapp/private/CommonInclude.h"
 #include "imgui/imgui.h"
 #include "lz4/lib/lz4.h"
 

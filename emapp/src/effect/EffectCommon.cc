@@ -8,7 +8,6 @@
 
 #include "emapp/Accessory.h"
 #include "emapp/Constants.h"
-#include "emapp/DebugUtils.h"
 #include "emapp/Effect.h"
 #include "emapp/ImageLoader.h"
 #include "emapp/Project.h"
@@ -1646,9 +1645,7 @@ Logger::add(const char *message, int length)
         container.m_time = stm_now();
         container.m_body = String(message, length);
         m_containers.insert(tinystl::make_pair(key, container));
-#if defined(NANOEM_ENABLE_DEBUG_LABEL)
-        DebugUtils::print("[INFO] %s", message);
-#endif
+        EMLOG_INFO("{}", message);
     }
     SG_INSERT_MARKERF("[INFO] %s", message);
 }

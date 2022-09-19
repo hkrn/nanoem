@@ -26,10 +26,6 @@
 #include "emapp/model/Validator.h"
 #include "emapp/private/CommonInclude.h"
 
-#if defined(NANOEM_ENABLE_DEBUG_LABEL)
-#include "emapp/DebugUtils.h"
-#endif /* NANOEM_ENABLE_DEBUG_LABEL */
-
 extern "C" {
 #include "tinyobjloader-c/tinyobj_loader_c.h"
 }
@@ -735,8 +731,9 @@ DisableModelEditingCommand::saveLastModel(
         }
     }
 #else
-    DebugUtils::print("DisableModelEditingCommand::saveLastModel(path=%s)", filePath.c_str());
-#endif
+    BX_UNUSED_1(error);
+    EMLOG_INFO("DisableModelEditingCommand::saveLastModel(path=%s)", filePath.c_str());
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
 }
 
 void
@@ -753,9 +750,10 @@ DisableModelEditingCommand::saveCurrentModel(const Model *activeModel, Error &er
         }
     }
 #else
-    DebugUtils::print(
-        "DisableModelEditingCommand::saveCurrentModel(path=%s)", activeModel->fileURI().absolutePathConstString());
-#endif
+    BX_UNUSED_1(error);
+    EMLOG_INFO(
+        "DisableModelEditingCommand::saveCurrentModel(path={})", activeModel->fileURI().absolutePathConstString());
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
 }
 
 DisableModelEditingCommand::DisableModelEditingCommand(ModelParameterDialog::SavedState *state)

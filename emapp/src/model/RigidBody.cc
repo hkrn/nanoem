@@ -17,8 +17,6 @@
 #include "glm/gtc/matrix_inverse.hpp"
 #include "par/par_shapes.h"
 
-#include "emapp/DebugUtils.h"
-
 namespace nanoem {
 namespace model {
 namespace {

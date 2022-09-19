@@ -16,6 +16,10 @@
 #include "emapp/emapp.h"
 
 #include "CocoaThreadedApplicationService.h"
+#if defined(NANOEM_ENABLE_LOGGING)
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#endif
 
 using namespace nanoem;
 
@@ -34,6 +38,10 @@ main(int argc, char *argv[])
     }
     Allocator::initialize();
     ThreadedApplicationService::setup();
+#if defined(NANOEM_ENABLE_LOGGING)
+    spdlog::cfg::load_env_levels();
+    spdlog::stdout_color_mt("emapp");
+#endif /* NANOEM_ENABLE_LOGGING */
     @autoreleasepool {
         JSON_Value *config = json_value_init_object();
         NSLocale *locale = [NSLocale currentLocale];

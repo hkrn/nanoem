@@ -76,8 +76,9 @@ ModelIOPlugin::load(const URI &fileURI)
     bool succeeded = m_handle != nullptr;
     if (!succeeded) {
         bool valid = true;
-        if (void *handle = bx::dlopen(fileURI.absolutePath().c_str())) {
+        if (void *handle = bx::dlopen(fileURI.absolutePathConstString())) {
             PFN_nanoemApplicationPluginModelIOGetABIVersion _modelIOGetABIVersion = nullptr;
+            EMLOG_DEBUG("Loading model I/O plugin path={} handle={}", fileURI.absolutePathConstString(), handle);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOGetABIVersion", _modelIOGetABIVersion, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOInitialize", _modelIOInitialize, valid);
             Inline::resolveSymbol(handle, "nanoemApplicationPluginModelIOCreate", _modelIOCreate, valid);

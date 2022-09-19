@@ -36,19 +36,19 @@ Progress::requestCancel()
 #if defined(NANOEM_ENABLE_NANOMSG)
     int socket = nn_socket(AF_SP, NN_PUB);
     if (socket == -1) {
-        bx::debugPrintf("nn_socket: %s", nn_strerror(nn_errno()));
+        EMLOG_ERROR("nn_socket: %s", nn_strerror(nn_errno()));
     }
     if (nn_connect(socket, kStreamURI) < 0) {
-        bx::debugPrintf("nn_connect: %s", nn_strerror(nn_errno()));
+        EMLOG_ERROR("nn_connect: %s", nn_strerror(nn_errno()));
     }
     nanoem_u32_t value = kCancelToken;
     int sent = nn_send(socket, &value, sizeof(value), 0);
     if (sent < 0) {
-        bx::debugPrintf("nn_send: %s", nn_strerror(nn_errno()));
+        EMLOG_ERROR("nn_send: %s", nn_strerror(nn_errno()));
     }
     bx::sleep(100);
     nn_close(socket);
-#endif
+#endif /* NANOEM_ENABLE_NANOMSG */
 }
 
 Progress::Progress(Project *project, nanoem_u32_t total)

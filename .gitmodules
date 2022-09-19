@@ -73,3 +73,6 @@
 [submodule "dependencies/whereami"]
 	path = dependencies/whereami
 	url = https://github.com/gpakosz/whereami
+[submodule "dependencies/spdlog"]
+	path = dependencies/spdlog
+	url = https://github.com/gabime/spdlog

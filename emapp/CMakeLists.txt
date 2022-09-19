@@ -32,7 +32,8 @@ function(nanoem_emapp_link_executable item)
                              BX_CONFIG_ALLOCATOR_DEBUG=$<BOOL:${NANOEM_ENABLE_DEBUG_ALLOCATOR}>)
   set_property(TARGET ${item} emapp APPEND PROPERTY COMPILE_DEFINITIONS
                $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS=1>
-               $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL=1>
+               $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL>
+               $<$<BOOL:${NANOEM_ENABLE_LOGGING}>:NANOEM_ENABLE_LOGGING>
                $<$<BOOL:${SOKOL_ENABLE_DEBUG}>:SOKOL_DEBUG=1>
                __STDC_LIMIT_MACROS
                __STDC_CONSTANT_MACROS
@@ -40,6 +41,7 @@ function(nanoem_emapp_link_executable item)
   target_include_directories(${item} PRIVATE
                              ${PROJECT_SOURCE_DIR}/dependencies
                              ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c
+                             ${PROJECT_SOURCE_DIR}/dependencies/spdlog/include
                              ${PROJECT_SOURCE_DIR}/emapp/include
                              ${PROJECT_SOURCE_DIR}/emapp/resources
                              ${BX_COMPAT_INCLUDE_PATH}
@@ -155,6 +157,7 @@ function(nanoem_emapp_build_emapp suffix)
                $<$<BOOL:${NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN}>:NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN>
                $<$<BOOL:${NANOEM_ENABLE_BLENDOP_MINMAX}>:NANOEM_ENABLE_BLENDOP_MINMAX>
                $<$<BOOL:${NANOEM_ENABLE_SOFTBODY}>:NANOEM_ENABLE_SOFTBODY>
+               $<$<BOOL:${NANOEM_ENABLE_LOGGING}>:NANOEM_ENABLE_LOGGING>
                ${_compile_definition_nanoem}
                ${_compile_definition_embundle})
   set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
@@ -177,6 +180,7 @@ function(nanoem_emapp_build_emapp suffix)
                              ${PROJECT_SOURCE_DIR}/dependencies
                              ${PROJECT_SOURCE_DIR}/dependencies/imgui
                              ${PROJECT_SOURCE_DIR}/dependencies/protobuf-c
+                             ${PROJECT_SOURCE_DIR}/dependencies/spdlog/include
                              ${PROJECT_SOURCE_DIR}/emapp/bundle
                              ${PROJECT_SOURCE_DIR}/emapp/include
                              ${PROJECT_SOURCE_DIR}/emapp/resources
@@ -185,6 +189,7 @@ function(nanoem_emapp_build_emapp suffix)
                              ${GLM_INCLUDE_DIR}
                              ${ZLIB_INCLUDE_DIR}
                              ${_include_directories})
+  target_include_directories(${_emarb_name} PRIVATE ${PROJECT_SOURCE_DIR}/dependencies/spdlog/include)
   if(NANOEM_ENABLE_MIMALLOC)
     target_link_libraries(${_emapp_name} optimized ${MIMALLOC_LIBRARY_RELEASE} debug ${MIMALLOC_LIBRARY_DEBUG})
     target_include_directories(${_emapp_name} PRIVATE ${MIMALLOC_INCLUDE_DIR})
@@ -305,6 +310,7 @@ get_git_submodule_revision(minizip MINIZIP_REVISION)
 get_git_submodule_revision(nanomsg NANOMSG_REVISION)
 get_git_submodule_revision(par PAR_REVISION)
 get_git_submodule_revision(protobuf-c PROTOBUF_C_REVISION)
+get_git_submodule_revision(spdlog SPDLOG_REVISION)
 get_git_submodule_revision(sokol SOKOL_REVISION)
 get_git_submodule_revision(sentry-native SENTRY_NATIVE_REVISION)
 get_git_submodule_revision(spirv-cross SPIRV_CROSS_REVISION)
