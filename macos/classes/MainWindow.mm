@@ -576,6 +576,7 @@ MainWindow::processMessage(NSApplication *app)
 {
     @autoreleasepool {
         m_client->receiveAllEventMessages();
+        /* flush and send all NSEvent objects */
         while (NSEvent *event = [app nextEventMatchingMask:NSEventMaskAny
                                                  untilDate:[NSDate distantPast]
                                                     inMode:NSDefaultRunLoopMode
@@ -583,13 +584,14 @@ MainWindow::processMessage(NSApplication *app)
             [app sendEvent:event];
             m_client->receiveAllEventMessages();
         }
-        [app updateWindows];
         if (m_runningWindow) {
-            NSEvent *event = [app nextEventMatchingMask:NSEventMaskAny
-                                              untilDate:[NSDate dateWithTimeIntervalSinceNow:1]
-                                                 inMode:NSDefaultRunLoopMode
-                                                dequeue:YES];
-            [app sendEvent:event];
+            /* poll a NSEvent event for one second */
+            if (NSEvent *event = [app nextEventMatchingMask:NSEventMaskAny
+                                                  untilDate:[NSDate dateWithTimeIntervalSinceNow:1]
+                                                     inMode:NSDefaultRunLoopMode
+                                                    dequeue:YES]) {
+                [app sendEvent:event];
+            }
             m_client->receiveAllEventMessages();
         }
     }
