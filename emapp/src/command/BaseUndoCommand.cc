@@ -119,8 +119,12 @@ BaseUndoCommand::onUndo(const undo_command_t *command)
     Error error;
     IUndoCommand *commandPtr = static_cast<IUndoCommand *>(undoCommandGetOpaqueData(command));
     commandPtr->undo(error);
-    if (error.hasReason()) {
+    if (!error.hasReason()) {
+        EMLOG_DEBUG("Performing undo command succeeded: name={}", commandPtr->name());
+    }
+    else {
         error.notify(commandPtr->currentProject()->eventPublisher());
+        EMLOG_WARN("Performing undo command failed: name={}", commandPtr->name());
     }
 }
 
@@ -130,8 +134,12 @@ BaseUndoCommand::onRedo(const undo_command_t *command)
     Error error;
     IUndoCommand *commandPtr = static_cast<IUndoCommand *>(undoCommandGetOpaqueData(command));
     commandPtr->redo(error);
-    if (error.hasReason()) {
+    if (!error.hasReason()) {
+        EMLOG_DEBUG("Performing redo command succeeded: name={}", commandPtr->name());
+    }
+    else {
         error.notify(commandPtr->currentProject()->eventPublisher());
+        EMLOG_WARN("Performing redo command failed: name={}", commandPtr->name());
     }
 }
 
@@ -149,8 +157,12 @@ BaseUndoCommand::onPersistUndo(const undo_command_t *command)
     Nanoem__Application__Command action = NANOEM__APPLICATION__COMMAND__INIT;
     writeCommandMessage(&undo, NANOEM__APPLICATION__COMMAND__TYPE_UNDO, &action);
     project->writeRedoMessage(&action, error);
-    if (error.hasReason()) {
+    if (!error.hasReason()) {
+        EMLOG_DEBUG("Persist undo command succeeded: name={}", commandPtr->name());
+    }
+    else {
         error.notify(project->eventPublisher());
+        EMLOG_WARN("Persist undo command failed: name={}", commandPtr->name());
     }
     return 1;
 }
@@ -165,8 +177,12 @@ BaseUndoCommand::onPersistRedo(const undo_command_t *command)
     Project *project = commandPtr->m_project;
     project->writeRedoMessage(&action, error);
     commandPtr->release(&action);
-    if (error.hasReason()) {
+    if (!error.hasReason()) {
+        EMLOG_DEBUG("Persist redo command succeeded: name={}", commandPtr->name());
+    }
+    else {
         error.notify(project->eventPublisher());
+        EMLOG_WARN("Persist redo command failed: name={}", commandPtr->name());
     }
     return 1;
 }
@@ -174,8 +190,10 @@ BaseUndoCommand::onPersistRedo(const undo_command_t *command)
 void
 BaseUndoCommand::onDestroy(const undo_command_t *command)
 {
-    IUndoCommand *commandPtr = static_cast<IUndoCommand *>(undoCommandGetOpaqueData(command));
-    nanoem_delete(commandPtr);
+    if (IUndoCommand *commandPtr = static_cast<IUndoCommand *>(undoCommandGetOpaqueData(command))) {
+        EMLOG_DEBUG("Destroying undo command: name={}", commandPtr->name());
+        nanoem_delete(commandPtr);
+    }
 }
 
 } /* namespace command */

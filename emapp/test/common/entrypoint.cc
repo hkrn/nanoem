@@ -13,6 +13,11 @@
 
 #include "bx/os.h"
 
+#if defined(NANOEM_ENABLE_LOGGING)
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#endif /* NANOEM_ENABLE_LOGGING */
+
 using namespace nanoem;
 
 extern "C" int
@@ -20,6 +25,11 @@ nanoemTestSuiteRun(int argc, char *argv[])
 {
     Allocator::initialize();
     ThreadedApplicationService::setup();
+#if defined(NANOEM_ENABLE_LOGGING)
+    spdlog::set_level(spdlog::level::off);
+    spdlog::stdout_color_mt("emapp");
+    spdlog::cfg::load_env_levels();
+#endif /* NANOEM_ENABLE_LOGGING */
     void *dllHandle = sg::openSharedLibrary(
 #ifdef CMAKE_INTDIR
         NANOEM_TEST_FIXTURE_PATH "/../../../emapp/bundle/sokol/" CMAKE_INTDIR "/sokol_noop." BX_DL_EXT

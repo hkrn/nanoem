@@ -287,8 +287,6 @@ static const nanoem_u32_t kTimeBasedAudioSourceDefaultSampleRate = 1440;
 
 } /* namespace anonymous */
 
-#include "sha256.h"
-
 const char *const Project::kRedoLogFileExtension = "redo";
 const char *const Project::kArchivedNativeFormatFileExtension = "nma";
 const char *const Project::kFileSystemBasedNativeFormatFileExtension = "nmm";

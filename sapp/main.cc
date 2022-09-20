@@ -12,6 +12,11 @@
 #include "bx/commandline.h"
 #include "whereami.h"
 
+#if defined(NANOEM_ENABLE_LOGGING)
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#endif /* NANOEM_ENABLE_LOGGING */
+
 using namespace nanoem;
 
 namespace {
@@ -98,6 +103,10 @@ sapp_desc
 sokol_main(int argc, char *argv[])
 {
     Allocator::initialize();
+#if defined(NANOEM_ENABLE_LOGGING)
+    spdlog::stdout_color_mt("emapp");
+    spdlog::cfg::load_env_levels();
+#endif /* NANOEM_ENABLE_LOGGING */
     auto state = new ApplicationState(argc, argv);
     sapp_desc desc = {};
     desc.user_data = state;

@@ -17,9 +17,10 @@
 
 #include "CocoaThreadedApplicationService.h"
 #if defined(NANOEM_ENABLE_LOGGING)
+#include "spdlog/async.h"
 #include "spdlog/cfg/env.h"
 #include "spdlog/sinks/stdout_color_sinks.h"
-#endif
+#endif /* NANOEM_ENABLE_LOGGING */
 
 using namespace nanoem;
 
@@ -38,10 +39,6 @@ main(int argc, char *argv[])
     }
     Allocator::initialize();
     ThreadedApplicationService::setup();
-#if defined(NANOEM_ENABLE_LOGGING)
-    spdlog::cfg::load_env_levels();
-    spdlog::stdout_color_mt("emapp");
-#endif /* NANOEM_ENABLE_LOGGING */
     @autoreleasepool {
         JSON_Value *config = json_value_init_object();
         NSLocale *locale = [NSLocale currentLocale];
@@ -86,11 +83,20 @@ main(int argc, char *argv[])
                 json_object_dotset_string(root, "project.locale", command.findOption("locale"));
             }
             macos::CocoaThreadedApplicationService service(config);
+            macos::Preference preference([NSUserDefaults standardUserDefaults], &service, config);
             ThreadedApplicationClient client;
             service.start();
             client.connect();
+#if defined(NANOEM_ENABLE_LOGGING)
+            spdlog::init_thread_pool(1024, 1);
+            tinystl::vector<spdlog::sink_ptr, TinySTLAllocator> sinks;
+            sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+            auto logger = std::make_shared<spdlog::async_logger>(
+                "emapp", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+            spdlog::register_logger(logger);
+            spdlog::cfg::load_env_levels();
+#endif /* NANOEM_ENABLE_LOGGING */
             {
-                macos::Preference preference([NSUserDefaults standardUserDefaults], &service, config);
                 NSWindow *nativeWindow = macos::CocoaThreadedApplicationService::createMainWindow();
                 macos::MainWindow *window =
                     new macos::MainWindow(&command, &service, &client, nativeWindow, &preference);
