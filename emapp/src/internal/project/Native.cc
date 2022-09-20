@@ -30,9 +30,6 @@
 #include "bx/handlealloc.h"
 
 namespace nanoem {
-
-#include "sha256.h"
-
 namespace internal {
 namespace project {
 

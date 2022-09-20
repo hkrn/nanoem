@@ -16,6 +16,11 @@
 #include "bx/os.h"
 #include "whereami.h"
 
+#if defined(NANOEM_ENABLE_LOGGING)
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+#endif /* NANOEM_ENABLE_LOGGING */
+
 #include <dirent.h>
 #if defined(_WIN32)
 #include <objbase.h>
@@ -28,6 +33,10 @@ runMain(int argc, const char *const *argv)
 {
     glfwInit();
     Allocator::initialize();
+#if defined(NANOEM_ENABLE_LOGGING)
+    spdlog::stdout_color_mt("emapp");
+    spdlog::cfg::load_env_levels();
+#endif /* NANOEM_ENABLE_LOGGING */
     BaseApplicationService::setup();
     {
         char localeBuffer[32] = { 0 };

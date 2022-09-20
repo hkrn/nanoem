@@ -23,6 +23,8 @@
 
 /* spdlog */
 #if NANOEM_ENABLE_LOGGING
+#define SPDLOG_DISABLE_DEFAULT_LOGGER
+#define SPDLOG_NO_EXCEPTIONS
 #include "spdlog/spdlog.h"
 #define EMLOG_TRACE(format, ...)                                                                                       \
     do {                                                                                                               \
@@ -115,6 +117,8 @@ typedef struct ProtobufCAllocator ProtobufCAllocator;
 #define OPTICK_FRAME(name) (void) 0
 #endif /* NANOEM_ENABLE_DEBUG_LABEL */
 
+#define SHA256_BLOCK_SIZE 32
+
 NANOEM_DECL_API nanoem_unicode_string_factory_t *APIENTRY nanoemUnicodeStringFactoryCreateEXT(nanoem_status_t *status);
 NANOEM_DECL_API void APIENTRY nanoemUnicodeStringFactoryDestroyEXT(nanoem_unicode_string_factory_t *factory);
 NANOEM_DECL_API void APIENTRY nanoemUnicodeStringFactoryToUtf8OnStackEXT(nanoem_unicode_string_factory_t *factory,
@@ -129,6 +133,16 @@ extern bx::AllocatorI *g_bgfx_allocator;
 extern bx::AllocatorI *g_emapp_allocator;
 extern bx::AllocatorI *g_tinystl_allocator;
 extern ProtobufCAllocator *g_protobufc_allocator;
+
+typedef struct {
+    nanoem_u8_t data[64];
+    nanoem_u32_t datalen;
+    nanoem_u64_t bitlen;
+    nanoem_u32_t state[8];
+} SHA256_CTX;
+void sha256_init(SHA256_CTX *ctx);
+void sha256_update(SHA256_CTX *ctx, const nanoem_u8_t data[], nanoem_rsize_t len);
+void sha256_final(SHA256_CTX *ctx, nanoem_u8_t hash[]);
 
 } /* namespace nanoem */
 

@@ -45,9 +45,6 @@
 #endif /* BX_PLATFORM_WINDOWS */
 
 namespace nanoem {
-
-#include "sha256.h"
-
 namespace {
 
 struct VACData {
