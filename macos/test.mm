@@ -9,14 +9,18 @@
 #import <MetalKit/MetalKit.h>
 #import <QuartzCore/CVDisplayLink.h>
 
-#include "bx/commandline.h"
-#include "emapp/Allocator.h"
 #include "emapp/emapp.h"
+
+#include "emapp/Allocator.h"
 #include "emapp/integration/LoadPMMExecutor.h"
+#include "nanoem/ext/document.h"
 
 #include "CocoaThreadedApplicationService.h"
 
-#include "nanoem/ext/document.h"
+#include "bx/commandline.h"
+#include "spdlog/async.h"
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 using namespace nanoem;
 
@@ -82,14 +86,15 @@ TestWindow::TestWindow(const bx::CommandLine *cmd, ThreadedApplicationService *s
 TestWindow::~TestWindow()
 {
     delete m_runner;
+    m_runner = nullptr;
 }
 
 void
 TestWindow::initialize()
 {
     CFStringRef reason = CFSTR("nanoem_test");
-    IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep, kIOPMAssertionLevelOn, reason, &m_displayKey);
-    IOPMAssertionCreateWithName(kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn, reason, &m_idleKey);
+    IOPMAssertionCreateWithName(kIOPMAssertPreventUserIdleDisplaySleep, kIOPMAssertionLevelOn, reason, &m_displayKey);
+    IOPMAssertionCreateWithName(kIOPMAssertPreventUserIdleSystemSleep, kIOPMAssertionLevelOn, reason, &m_idleKey);
     const CGSize &frameSize = m_nativeWindow.contentView.frame.size;
     const glm::u16vec2 logicalWindowSize(frameSize.width, frameSize.height);
     float dpr = m_nativeWindow.backingScaleFactor;
@@ -136,6 +141,7 @@ TestWindow::initialize()
     ThreadedApplicationClient::InitializeMessageDescription desc(logicalWindowSize, pixelFormat, dpr, sokolPath);
     desc.m_viewportDevicePixelRatio = 1.0f;
     m_client->sendInitializeMessage(desc);
+    EMLOG_INFO("Initialized an application: runner={}", static_cast<const void *>(m_runner));
 }
 
 void
@@ -152,7 +158,6 @@ TestWindow::processMessage(NSApplication *app)
                                                dequeue:YES]) {
         [app sendEvent:event];
     }
-    [app updateWindows];
 }
 
 bool
@@ -188,6 +193,7 @@ TestWindow::terminate()
     m_client->sendTerminateMessage();
     IOPMAssertionRelease(m_displayKey);
     IOPMAssertionRelease(m_idleKey);
+    EMLOG_INFO("Terminated an application: runner={}", static_cast<const void *>(m_runner));
 }
 
 test::IExecutor *
@@ -198,14 +204,17 @@ TestWindow::createExecutor(const bx::CommandLine *cmd, ThreadedApplicationServic
     if (cmd->hasArg("models")) {
         const URI &fileURI = URI::createFromFilePath(cmd->findOption("models"));
         executor = new test::LoadAllModelsExecutor(fileURI, cmd, service, client);
+        EMLOG_INFO("Created loading model executor: {}", fileURI.absolutePathConstString());
     }
     else if (cmd->hasArg("effects")) {
         const URI &fileURI = URI::createFromFilePath(cmd->findOption("effects"));
         executor = new test::LoadAllEffectsExecutor(fileURI, cmd, service, client);
+        EMLOG_INFO("Created loading effect executor: {}", fileURI.absolutePathConstString());
     }
     else {
         const URI &fileURI = generateFileURI(cmd->hasArg("archive"));
         executor = new test::LoadPMMExecutor(fileURI, cmd, service, client, eventLock);
+        EMLOG_INFO("Created loading PMM executor: {}", fileURI.absolutePathConstString());
     }
     return executor;
 }
@@ -252,6 +261,7 @@ TestWindow::registerAllPrerequisiteEventListeners()
             BX_UNUSED(self, duration, localFrameIndexTo, localFrameIndexFrom);
         },
         this, false);
+    EMLOG_INFO("Registered all event listeners: runner={}", static_cast<const void *>(m_runner));
 }
 
 void
@@ -271,6 +281,7 @@ void
 TestWindow::quit()
 {
     m_client->sendDestroyMessage();
+    EMLOG_INFO("Started quitting an application: runner={}", static_cast<const void *>(m_runner));
 }
 
 } /* namespace anonymous */
@@ -394,6 +405,13 @@ main(int argc, char *argv[])
             ThreadedApplicationClient client;
             service.start();
             client.connect();
+            spdlog::init_thread_pool(1024, 1);
+            tinystl::vector<spdlog::sink_ptr, TinySTLAllocator> sinks;
+            sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+            auto logger = std::make_shared<spdlog::async_logger>(
+                "emapp", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+            spdlog::register_logger(logger);
+            spdlog::cfg::load_env_levels();
             {
                 NSWindow *nativeWindow = macos::CocoaThreadedApplicationService::createMainWindow();
                 TestWindow window(&cmd, &service, &client, nativeWindow);

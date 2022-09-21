@@ -11,7 +11,11 @@
 #include "nanoem/ext/document.h"
 #include "sokol/sokol_time.h"
 
-#include <glm/gtc/type_ptr.hpp>
+#include "glm/gtc/type_ptr.hpp"
+#include "spdlog/spdlog.h"
+
+/* force using logging with NANOEM_ENABLE_LOGGING */
+#include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace test {
@@ -151,6 +155,9 @@ LoadPMMExecutor::run()
         nanoemDocumentDestroy(document);
         nanoemBufferDestroy(buffer);
     }
+    else {
+        EMLOG_WARN("Cannot load PMM file: {}", path);
+    }
     {
         bx::MutexScope scope(*m_eventLock);
         BX_UNUSED_1(scope);
@@ -166,7 +173,7 @@ LoadPMMExecutor::registerEventHandlers()
         [](void *userData, nanoem_u16_t handle, const char *name) {
             LoadPMMExecutor *self = static_cast<LoadPMMExecutor *>(userData);
             if (self->m_accessory2HandleMap.insert(tinystl::make_pair(String(name), handle)).second) {
-                bx::debugPrintf("%s is already registered\n", name);
+                EMLOG_INFO("{} is already registered", name);
             }
             self->m_loadAccessorySema.first.post();
         },
@@ -175,7 +182,7 @@ LoadPMMExecutor::registerEventHandlers()
         [](void *userData, nanoem_u16_t handle, const char *name) {
             LoadPMMExecutor *self = static_cast<LoadPMMExecutor *>(userData);
             if (self->m_model2HandleMap.insert(tinystl::make_pair(String(name), handle)).second) {
-                bx::debugPrintf("%s is already registered\n", name);
+                EMLOG_INFO("{} is already registered", name);
             }
             self->m_loadModelSema.first.post();
         },
@@ -206,10 +213,19 @@ LoadPMMExecutor::resolveFilePath(const nanoem_unicode_string_t *path, const Stri
     if (FileUtils::exists(canonicalizedPath.c_str())) {
         fileURI = URI::createFromFilePath(canonicalizedPath);
     }
-    else if (bx::strCmp(canonicalizedPath.c_str(), kUserFileNeedleType2, sizeof(kUserFileNeedleType2) - 1) == 0) {
+    if (fileURI.isEmpty()) {
+        if (const char *needle = m_commandLine->findOption("pmm-needle")) {
+            const bx::StringView view(bx::strFind(canonicalizedPath.c_str(), needle));
+            if (!view.isEmpty()) {
+                fileURI = concatFileURI(documentPathPrefix, view.getTerm());
+            }
+        }
+    }
+    if (fileURI.isEmpty() &&
+        bx::strCmp(canonicalizedPath.c_str(), kUserFileNeedleType2, sizeof(kUserFileNeedleType2) - 1) == 0) {
         fileURI = concatFileURI(documentPathPrefix, canonicalizedPath.c_str() + sizeof(kUserFileNeedleType2) - 1);
     }
-    else {
+    if (fileURI.isEmpty()) {
         const bx::StringView view(bx::strFind(canonicalizedPath.c_str(), kUserFileNeedleType1));
         if (!view.isEmpty()) {
             fileURI = concatFileURI(documentPathPrefix, view.getTerm());
@@ -264,6 +280,9 @@ LoadPMMExecutor::sendDocument(const nanoem_document_t *document, const String &d
             m_loadAccessorySema.first.wait();
             sendAllAccessoryKeyframes(accessory);
         }
+        else {
+            EMLOG_WARN("Cannot load accessory and will be skipped: {}", fileURI.absolutePathConstString());
+        }
     }
     sendAllCameraKeyframes(document);
     sendAllLightKeyframes(document);
@@ -293,6 +312,9 @@ LoadPMMExecutor::sendDocument(const nanoem_document_t *document, const String &d
             sendAllModelKeyframes(model);
             sendAllMorphKeyframes(model);
         }
+        else {
+            EMLOG_WARN("Cannot load model and will be skipped: {}", fileURI.absolutePathConstString());
+        }
     }
     sendAllOutsideParents(document);
     if (const nanoem_unicode_string_t *path = nanoemDocumentGetAudioPath(document)) {
@@ -302,6 +324,9 @@ LoadPMMExecutor::sendDocument(const nanoem_document_t *document, const String &d
             BX_UNUSED_1(scope);
             m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenAudioFile);
         }
+        else {
+            EMLOG_WARN("Cannot load audio and will be skipped: {}", fileURI.absolutePathConstString());
+        }
     }
     if (const nanoem_unicode_string_t *path = nanoemDocumentGetBackgroundVideoPath(document)) {
         const URI &fileURI = resolveFilePath(path, doucmentPathPrefix);
@@ -309,6 +334,9 @@ LoadPMMExecutor::sendDocument(const nanoem_document_t *document, const String &d
             bx::MutexScope scope(*m_eventLock);
             BX_UNUSED_1(scope);
             m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenVideoFile);
+        }
+        else {
+            EMLOG_WARN("Cannot load background video and will be skipped: {}", fileURI.absolutePathConstString());
         }
     }
     else if (const nanoem_unicode_string_t *path = nanoemDocumentGetBackgroundImagePath(document)) {
@@ -318,6 +346,9 @@ LoadPMMExecutor::sendDocument(const nanoem_document_t *document, const String &d
             BX_UNUSED_1(scope);
             m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeOpenVideoFile);
         }
+        else {
+            EMLOG_WARN("Cannot load background image and will be skipped: {}", fileURI.absolutePathConstString());
+        }
     }
     {
         bx::MutexScope scope(*m_eventLock);
@@ -325,6 +356,7 @@ LoadPMMExecutor::sendDocument(const nanoem_document_t *document, const String &d
         m_client->sendMenuActionMessage(ApplicationMenuBuilder::kMenuItemTypeProjectPhysicsSimulationEnableAnytime);
     }
     sendSaveAction();
+    EMLOG_INFO("All operations are marked as completed: path={}", m_fileURI.absolutePathConstString());
 }
 
 void
@@ -334,6 +366,7 @@ LoadPMMExecutor::sendAllCameraKeyframes(const nanoem_document_t *document)
     const nanoem_document_camera_t *camera = nanoemDocumentGetCameraObject(document);
     nanoem_document_camera_keyframe_t *const *keyframes =
         nanoemDocumentCameraGetAllCameraKeyframeObjects(camera, &numKeyframes);
+    int currentPercent = 0, lastPercent = 0;
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_document_camera_keyframe_t *keyframe = keyframes[i];
         const nanoem_document_base_keyframe_t *base = nanoemDocumentCameraKeyframeGetBaseKeyframeObject(keyframe);
@@ -361,8 +394,14 @@ LoadPMMExecutor::sendAllCameraKeyframes(const nanoem_document_t *document)
         m_client->sendSetCameraKeyframeInterpolationMessage(values);
         m_client->sendRegisterCameraKeyframeMessage();
         sendUndoAction();
+        currentPercent = int((i / nanoem_f64_t(numKeyframes)) * 100.0);
+        if (lastPercent != currentPercent) {
+            EMLOG_INFO("Registering camera keyframes: progress={}% i={} keyframes={}", currentPercent, i, numKeyframes);
+            lastPercent = currentPercent;
+        }
     }
     sendSaveAction();
+    EMLOG_INFO("Complete registering all camera keyframes: keyframes={}", numKeyframes);
 }
 
 void
@@ -372,6 +411,7 @@ LoadPMMExecutor::sendAllLightKeyframes(const nanoem_document_t *document)
     const nanoem_document_light_t *light = nanoemDocumentGetLightObject(document);
     nanoem_document_light_keyframe_t *const *keyframes =
         nanoemDocumentLightGetAllLightKeyframeObjects(light, &numKeyframes);
+    int currentPercent = 0, lastPercent = 0;
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_document_light_keyframe_t *keyframe = keyframes[i];
         const nanoem_document_base_keyframe_t *base = nanoemDocumentLightKeyframeGetBaseKeyframeObject(keyframe);
@@ -381,8 +421,14 @@ LoadPMMExecutor::sendAllLightKeyframes(const nanoem_document_t *document)
         m_client->sendSetLightDirectionMessage(glm::make_vec3(nanoemDocumentLightKeyframeGetDirection(keyframe)), true);
         m_client->sendRegisterLightKeyframeMessage();
         sendUndoAction();
+        currentPercent = int((i / nanoem_f64_t(numKeyframes)) * 100.0);
+        if (lastPercent != currentPercent) {
+            EMLOG_INFO("Registering light keyframes: progress={}% i={} keyframes={}", currentPercent, i, numKeyframes);
+            lastPercent = currentPercent;
+        }
     }
     sendSaveAction();
+    EMLOG_INFO("Complete registering all light keyframes: keyframes={}", numKeyframes);
 }
 
 void
@@ -392,6 +438,7 @@ LoadPMMExecutor::sendAllAccessoryKeyframes(const nanoem_document_accessory_t *ac
     nanoem_document_accessory_keyframe_t *const *keyframes =
         nanoemDocumentAccessoryGetAllAccessoryKeyframeObjects(accessory, &numKeyframes);
     String parentModelNameString, parentBoneNameString;
+    int currentPercent = 0, lastPercent = 0;
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_document_accessory_keyframe_t *keyframe = keyframes[i];
         const nanoem_document_base_keyframe_t *base = nanoemDocumentAccessoryKeyframeGetBaseKeyframeObject(keyframe);
@@ -412,10 +459,17 @@ LoadPMMExecutor::sendAllAccessoryKeyframes(const nanoem_document_accessory_t *ac
         m_client->sendSetAccessoryVisibleMessage(handle, nanoemDocumentAccessoryKeyframeIsVisible(keyframe) != 0);
         m_client->sendRegisterAccessoryKeyframeMessage(handle);
         sendUndoAction();
+        currentPercent = int((i / nanoem_f64_t(numKeyframes)) * 100.0);
+        if (lastPercent != currentPercent) {
+            EMLOG_INFO(
+                "Registering accessory keyframes: progress={}% i={} keyframes={}", currentPercent, i, numKeyframes);
+            lastPercent = currentPercent;
+        }
     }
     nanoem_u16_t handle = findAccessoryHandle(accessory);
     m_client->sendSetDrawableOrderIndexMessage(handle, nanoemDocumentAccessoryGetDrawOrderIndex(accessory));
     sendSaveAction();
+    EMLOG_INFO("Complete registering all accessory keyframes: keyframes={}", numKeyframes);
 }
 
 void
@@ -427,6 +481,7 @@ LoadPMMExecutor::sendAllBoneKeyframes(const nanoem_document_model_t *model)
     nanoem_unicode_string_factory_t *factory = m_service->projectHolder()->currentProject()->unicodeStringFactory();
     StringList nameList;
     String nameString;
+    int currentPercent = 0, lastPercent = 0;
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_document_model_bone_keyframe_t *keyframe = keyframes[i];
         const nanoem_document_base_keyframe_t *base = nanoemDocumentModelBoneKeyframeGetBaseKeyframeObject(keyframe);
@@ -459,8 +514,14 @@ LoadPMMExecutor::sendAllBoneKeyframes(const nanoem_document_model_t *model)
         m_client->sendSetModelBoneKeyframeInterpolationMessage(handle, values);
         m_client->sendRegisterAllSelectedBoneKeyframesMessage(handle, nameList);
         sendUndoAction();
+        currentPercent = int((i / nanoem_f64_t(numKeyframes)) * 100.0);
+        if (lastPercent != currentPercent) {
+            EMLOG_INFO("Registering bone keyframes: progress={}% i={} keyframes={}", currentPercent, i, numKeyframes);
+            lastPercent = currentPercent;
+        }
     }
     sendSaveAction();
+    EMLOG_INFO("Complete registering all bone keyframes: keyframes={}", numKeyframes);
 }
 
 void
@@ -470,6 +531,7 @@ LoadPMMExecutor::sendAllModelKeyframes(const nanoem_document_model_t *model)
     nanoem_document_model_keyframe_t *const *keyframes =
         nanoemDocumentModelGetAllModelKeyframeObjects(model, &numKeyframes);
     String boneNameString, parentBoneNameString, parentModelNameString;
+    int currentPercent = 0, lastPercent = 0;
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_document_model_keyframe_t *keyframe = keyframes[i];
         const nanoem_document_base_keyframe_t *base = nanoemDocumentModelKeyframeGetBaseKeyframeObject(keyframe);
@@ -482,11 +544,17 @@ LoadPMMExecutor::sendAllModelKeyframes(const nanoem_document_model_t *model)
         m_client->sendSetModelShadowMapEnabledMessage(handle, nanoemDocumentModelIsSelfShadowEnabled(model) != 0);
         m_client->sendRegisterModelKeyframeMessage(handle);
         sendUndoAction();
+        currentPercent = int((i / nanoem_f64_t(numKeyframes)) * 100.0);
+        if (lastPercent != currentPercent) {
+            EMLOG_INFO("Registering model keyframes: progress={}% i={} keyframes={}", currentPercent, i, numKeyframes);
+            lastPercent = currentPercent;
+        }
     }
     nanoem_u16_t handle = findModelHandle(model);
     m_client->sendSetDrawableOrderIndexMessage(handle, nanoemDocumentModelGetTransformOrderIndex(model));
     m_client->sendSetModelTransformOrderIndexMessage(handle, nanoemDocumentModelGetTransformOrderIndex(model));
     sendSaveAction();
+    EMLOG_INFO("Complete registering all model keyframes: keyframes={}", numKeyframes);
 }
 
 void
@@ -498,6 +566,7 @@ LoadPMMExecutor::sendAllMorphKeyframes(const nanoem_document_model_t *model)
     nanoem_unicode_string_factory_t *factory = m_service->projectHolder()->currentProject()->unicodeStringFactory();
     StringList nameList;
     String nameString;
+    int currentPercent = 0, lastPercent = 0;
     for (nanoem_rsize_t i = 0; i < numKeyframes; i++) {
         const nanoem_document_model_morph_keyframe_t *keyframe = keyframes[i];
         const nanoem_document_base_keyframe_t *base = nanoemDocumentModelMorphKeyframeGetBaseKeyframeObject(keyframe);
@@ -515,8 +584,14 @@ LoadPMMExecutor::sendAllMorphKeyframes(const nanoem_document_model_t *model)
         waitForAction(true);
         m_client->sendRegisterAllSelectedMorphKeyframesMessage(handle, nameList);
         sendUndoAction();
+        currentPercent = int((i / nanoem_f64_t(numKeyframes)) * 100.0);
+        if (lastPercent != currentPercent) {
+            EMLOG_INFO("Registering morph keyframes: progress={}% i={} keyframes={}", currentPercent, i, numKeyframes);
+            lastPercent = currentPercent;
+        }
     }
     sendSaveAction();
+    EMLOG_INFO("Complete registering all morph keyframes: keyframes={}", numKeyframes);
 }
 
 void
@@ -617,8 +692,8 @@ LoadPMMExecutor::sendSaveAction()
         m_client->addCompleteSavingFileEventListener(
             [](void *userData, const URI &fileURI, nanoem_u32_t type, nanoem_u64_t ticks) {
                 BX_UNUSED_1(type);
-                bx::debugPrintf(
-                    "saved = { filePath: \"%s\", seconds: %.2f }", fileURI.absolutePathConstString(), stm_sec(ticks));
+                fprintf(stderr, "saved = { filePath: \"%s\", seconds: %.2f }", fileURI.absolutePathConstString(),
+                    stm_sec(ticks));
                 auto self = static_cast<LoadPMMExecutor *>(userData);
                 self->m_savingProjectSema.post();
             },
@@ -639,13 +714,13 @@ LoadPMMExecutor::sendSaveAction()
     if (!m_commandLine->hasArg("disable-saving-project")) {
         m_client->addCompleteSavingFileEventListener(
             [](void *userData, const URI &fileURI, nanoem_u32_t type, nanoem_u64_t ticks) {
-                bx::debugPrintf(
-                    "saved = { filePath: \"%s\", seconds: %.2f }", fileURI.absolutePathConstString(), stm_sec(ticks));
+                fprintf(stderr, "saved = { filePath: \"%s\", seconds: %.2f }", fileURI.absolutePathConstString(),
+                    stm_sec(ticks));
                 BX_UNUSED_1(type);
                 auto self = static_cast<LoadPMMExecutor *>(userData);
                 self->m_client->addCompleteLoadingFileEventListener(
                     [](void *userData, const URI &fileURI, nanoem_u32_t type, nanoem_u64_t ticks) {
-                        bx::debugPrintf("loaded = { filePath: \"%s\", seconds: %.2f }",
+                        fprintf(stderr, "loaded = { filePath: \"%s\", seconds: %.2f }",
                             fileURI.absolutePathConstString(), stm_sec(ticks));
                         BX_UNUSED_1(type);
                         auto self = static_cast<LoadPMMExecutor *>(userData);
@@ -774,7 +849,7 @@ LoadAllEffectsExecutor::run()
             buffer[strcspn(buffer, "\r\n")] = 0;
             const URI &fileURI = URI::createFromFilePath(buffer);
             if (FileUtils::exists(fileURI)) {
-                fprintf(stderr, "PATH: %s\n", buffer);
+                EMLOG_DEBUG("PATH: {}", buffer);
                 m_client->sendMenuActionMessage(ApplicationMenuBuilder::kMenuItemTypeProjectEnableEffect);
                 m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeLoadModelFile);
                 m_loadingDrawableLock.wait();
@@ -783,6 +858,9 @@ LoadAllEffectsExecutor::run()
             }
         }
         fclose(fp);
+    }
+    else {
+        EMLOG_WARN("Cannot find {}", m_fileURI.absolutePathConstString());
     }
     m_client->sendDestroyMessage();
     return 0;
@@ -882,7 +960,7 @@ LoadAllModelsExecutor::run()
             buffer[strcspn(buffer, "\r\n")] = 0;
             const URI &fileURI = URI::createFromFilePath(buffer);
             if (FileUtils::exists(fileURI)) {
-                fprintf(stderr, "PATH: %s\n", buffer);
+                EMLOG_INFO("PATH: {}", buffer);
                 m_client->sendLoadFileMessage(fileURI, IFileManager::kDialogTypeLoadModelFile);
                 m_loadingDrawableLock.wait();
                 m_client->sendNewProjectMessage();
