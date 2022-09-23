@@ -162,6 +162,7 @@ LoadPMMExecutor::run()
         bx::MutexScope scope(*m_eventLock);
         BX_UNUSED_1(scope);
         m_client->sendDestroyMessage();
+        EMLOG_INFO("Destroy message has been sent: lock={}", static_cast<const void *>(m_eventLock));
     }
     return 0;
 }
