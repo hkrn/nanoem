@@ -49,11 +49,13 @@ endif()
 # integration
 option(NANOEM_ENABLE_TEST_RUNNER_WIN32 OFF)
 if(${NANOEM_ENABLE_TEST_RUNNER_WIN32})
-  add_executable(${NANOEM_EXECUTABLE_NAME}_test
+  set(_name ${NANOEM_EXECUTABLE_NAME}_test)
+  add_executable(${_name}
                  ${CMAKE_CURRENT_SOURCE_DIR}/test.cc ${WIN32_SOURCES})
-  target_include_directories(${NANOEM_EXECUTABLE_NAME}_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/emapp/resources/include)
-  target_link_libraries(${NANOEM_EXECUTABLE_NAME}_test ${win32_api_libraries})
-  nanoem_emapp_link_executable(${NANOEM_EXECUTABLE_NAME}_test)
+  target_compile_definitions(${_name} PRIVATE NANOEM_ENABLE_LOGGING _UNICODE)
+  target_include_directories(${_name} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include ${PROJECT_BINARY_DIR}/emapp/resources/include)
+  target_link_libraries(${_name} ${win32_api_libraries})
+  nanoem_emapp_link_executable(${_name})
 endif()
 
 # Sentry Native SDK
@@ -72,9 +74,10 @@ if(NANOEM_ENABLE_SENTRY_SDK)
   get_filename_component(SENTRY_CRASHPAD_DIR ${SENTRY_CRASHPAD_PATH} DIRECTORY)
   list(APPEND LIBRARY_PATHS ${SENTRY_CRASHPAD_DIR})
   if(${NANOEM_ENABLE_TEST_RUNNER_WIN32})
-    target_compile_definitions(${NANOEM_EXECUTABLE_NAME}_test PRIVATE NANOEM_HAS_SENTRY $<$<BOOL:${NANOEM_SENTRY_DSN}>:NANOEM_SENTRY_DSN="${NANOEM_SENTRY_DSN}">)
-    target_include_directories(${NANOEM_EXECUTABLE_NAME}_test PRIVATE ${SENTRY_INCLUDE_PATH})
-    target_link_libraries(${NANOEM_EXECUTABLE_NAME}_test ${SENTRY_CRASHPAD_PATH})
+    set(_name ${NANOEM_EXECUTABLE_NAME}_test)
+    target_compile_definitions(${_name} PRIVATE NANOEM_HAS_SENTRY $<$<BOOL:${NANOEM_SENTRY_DSN}>:NANOEM_SENTRY_DSN="${NANOEM_SENTRY_DSN}">)
+    target_include_directories(${_name} PRIVATE ${SENTRY_INCLUDE_PATH})
+    target_link_libraries(${_name} ${SENTRY_CRASHPAD_PATH})
   endif()
   add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
                      COMMAND ${CMAKE_COMMAND} ARGS -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins"
