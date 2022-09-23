@@ -1045,13 +1045,22 @@ Win32ThreadedApplicationService::createDefaultRenderTarget(const Vector2UI16 &de
     if (backend == SG_BACKEND_D3D11) {
         auto swapChain = (IDXGISwapChain *) m_nativeSwapChain;
         auto device = (ID3D11Device *) m_nativeDevice;
+        Vector2UI16 renderTargetSize(devicePixelWindowSize);
         if (!FAILED(swapChain->GetBuffer(0, IID_ID3D11Texture2D, (void **) &m_d3d11RenderTargetTexture))) {
             device->CreateRenderTargetView(m_d3d11RenderTargetTexture, nullptr, &m_d3d11RenderTargetView);
+            D3D11_TEXTURE2D_DESC desc;
+            m_d3d11RenderTargetTexture->GetDesc(&desc);
+            if (desc.Width != renderTargetSize.x || desc.Height != renderTargetSize.y) {
+                EMLOG_DEBUG("Adjust render target size: newWidth={} newHeight={} width={} height={}", desc.Width,
+                    desc.Height, renderTargetSize.x, renderTargetSize.y);
+                renderTargetSize.x = desc.Width;
+                renderTargetSize.y = desc.Height;
+            }
         }
         D3D11_TEXTURE2D_DESC td = {};
         auto swapChainDesc = (const DXGI_SWAP_CHAIN_DESC *) m_nativeSwapChainDescription;
-        td.Width = devicePixelWindowSize.x;
-        td.Height = devicePixelWindowSize.y;
+        td.Width = renderTargetSize.x;
+        td.Height = renderTargetSize.y;
         td.MipLevels = td.ArraySize = 1;
         td.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         td.SampleDesc = swapChainDesc->SampleDesc;
