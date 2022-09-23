@@ -1661,7 +1661,7 @@ BaseApplicationService::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f
 {
     m_window = nanoem_new(internal::ImGuiWindow(this));
     m_window->initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
-    EMLOG_INFO("{}", "Initialized an application service");
+    EMLOG_INFO("Initialized an application service: instance={}", static_cast<const void *>(this));
 }
 
 void
@@ -1674,7 +1674,7 @@ BaseApplicationService::destroy()
     m_sharedResourceRepository.destroy();
     m_window->destroy();
     SG_POP_GROUP();
-    EMLOG_INFO("{}", "Destroyed an application service");
+    EMLOG_INFO("Destroyed an application service: instance={}", static_cast<const void *>(this));
 }
 
 Project *
