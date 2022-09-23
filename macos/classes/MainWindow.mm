@@ -1763,7 +1763,13 @@ MainWindow::registerAllPrerequisiteEventListeners()
             }
             asl_log(asl, nullptr, ASL_LEVEL_ERR, "code=%d, reason=\"%s\", suggestion=\"%s\"", code, reason,
                 recoverySuggestion);
-            EMLOG_WARN("Received an error: code={} reason=\"{}\" suggestion=\"{}\"", code, reason, recoverySuggestion);
+            if (recoverySuggestion) {
+                EMLOG_ERROR(
+                    "Received an error: code={} reason=\"{}\" suggestion=\"{}\"", code, reason, recoverySuggestion);
+            }
+            else if (reason) {
+                EMLOG_ERROR("Received an error: code={} reason=\"{}\"", code, reason);
+            }
         },
         this, false);
     m_client->addDisableCursorEventListener(
