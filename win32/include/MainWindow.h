@@ -96,6 +96,9 @@ private:
     static void handleAddingWatchEffectSource(void *userData, nanoem_u16_t handle, const URI &fileURI);
     static void handleRemovingWatchEffectSource(void *userData, uint16_t handle, const char *name);
 
+    void handleInitializeEvent();
+    void handleDestroyEvent();
+    void handleTerminateEvent();
     bool handleWindowCreate(HWND hwnd, Error &error);
     void handleWindowResize(HWND hwnd, WPARAM type);
     void handleWindowPositionChange(HWND hwnd);
@@ -155,7 +158,6 @@ private:
     URIList cachedAggregateAllPlugins();
     const char *localizedString(const char *text) const;
     const wchar_t *localizedWideString(const char *text) const;
-    void writeErrorLog(int code, const char *reason, const char *recoverySuggestion);
     void loadProjectFromFile(const wchar_t *source);
     void destroyAllWatchEffectSources();
 
@@ -197,7 +199,7 @@ private:
     bool m_initialized = false;
     bool m_isFullScreen = false;
     bool m_renderable = true;
-    bool m_running = true;
+    volatile bool m_running = true;
 };
 
 } /* namespace win32 */

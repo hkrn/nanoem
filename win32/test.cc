@@ -11,12 +11,20 @@
 #include <dxgi.h>
 #include <mfapi.h>
 #include <objbase.h>
+#include <Pdh.h>
+#include <Psapi.h>
 #include <shellapi.h>
 #include <windowsx.h>
+#include <VersionHelpers.h>
 
 #include "bx/commandline.h"
 #include "emapp/Allocator.h"
-#include "emapp/emapp.h"
+
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#include "spdlog/async.h"
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/base_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
 
 #include "Win32ThreadedApplicationService.h"
 #include "emapp/integration/LoadPMMExecutor.h"
@@ -35,25 +43,31 @@ public:
     ~TestWindow();
 
     void initialize();
-    void terminate();
     void processMessage(MSG *msg);
     bool isRunning() const;
 
 private:
     static LRESULT CALLBACK handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+    static DWORD CALLBACK collectPerformanceMetricsPeriodically(void *userData);
     static test::IExecutor *createExecutor(ThreadedApplicationService *service, ThreadedApplicationClient *client,
         const bx::CommandLine *cmd, bx::Mutex *eventLock);
     static URI generateFileURI(bool archive);
     nanoem_f32_t invertedDevicePixelRatio() const;
     void setupDirectXRenderer(int width, int height);
     void setupOpenGLRenderer(int width, int height);
-    void destroyRenderer();
+    void handleInitializeEvent();
+    void handleDestroyEvent();
+    void handleTerminateEvent();
+    void handleWindowDestroy();
     void registerAllPrerequisiteEventListeners();
 
     const bx::CommandLine *m_command;
     ThreadedApplicationService *m_service = nullptr;
     ThreadedApplicationClient *m_client = nullptr;
+    HINSTANCE m_instanceHandle = nullptr;
     HWND m_windowHandle = nullptr;
+    HANDLE m_metricThreadHandle = nullptr;
+    HANDLE m_processHandle = nullptr;
     void *m_context = nullptr;
     void *m_device = nullptr;
     DXGI_SWAP_CHAIN_DESC m_swapChainDesc;
@@ -66,7 +80,7 @@ private:
     tinystl::pair<bool, bool> m_cursorHidden = tinystl::make_pair(false, false);
     Vector2UI32 m_logicalPixelSize;
     nanoem_f32_t m_devicePixelRatio = 1.0f;
-    bool m_running = true;
+    volatile bool m_running = true;
 };
 
 nanoem_f32_t
@@ -91,6 +105,7 @@ TestWindow::calculateDevicePixelRatio()
 TestWindow::TestWindow(ThreadedApplicationService *service, ThreadedApplicationClient *client, HINSTANCE hInstance,
     const bx::CommandLine *cmd, const Vector4UI32 &rect, nanoem_f32_t devicePixelRatio)
     : m_command(cmd)
+    , m_instanceHandle(hInstance)
     , m_service(service)
     , m_client(client)
     , m_runner(createExecutor(service, client, cmd, &m_eventLock))
@@ -123,39 +138,41 @@ TestWindow::~TestWindow()
 void
 TestWindow::initialize()
 {
+    wchar_t executablePath[MAX_PATH];
+    GetModuleFileNameW(GetInstanceModule(m_instanceHandle), executablePath, ARRAYSIZE(executablePath));
     RECT clientRect;
     GetClientRect(m_windowHandle, &clientRect);
     const int width = clientRect.right - clientRect.left, height = clientRect.bottom - clientRect.top;
     m_logicalPixelSize = glm::vec2(width, height) * invertedDevicePixelRatio();
+    String sokolPath;
+    if (const wchar_t *p = wcsrchr(executablePath, L'\\')) {
+        wchar_t innerSokolPath[MAX_PATH];
+        wcsncpy_s(innerSokolPath, ARRAYSIZE(innerSokolPath), executablePath, p - executablePath);
+        MutableString ms;
+        StringUtils::getMultiBytesString(innerSokolPath, ms);
+        FileUtils::canonicalizePathSeparator(ms);
+        sokolPath.append(ms.data());
+    }
 #ifdef CMAKE_INTDIR
-    String sokolPath("../../emapp/bundle/" CMAKE_INTDIR "/");
+    sokolPath.append("/../../emapp/bundle/sokol/" CMAKE_INTDIR "/");
 #else
-    String sokolPath("../emapp/bundle/");
+    sokolPath.append("/../emapp/bundle/sokol/");
 #endif
+    sg_pixel_format format;
     if (m_command->hasArg("opengl")) {
         setupOpenGLRenderer(width, height);
         sokolPath.append("sokol_glcore33.dll");
+        format = SG_PIXELFORMAT_RGBA8;
     }
     else {
         setupDirectXRenderer(width, height);
         sokolPath.append("sokol_d3d11.dll");
+        format = SG_PIXELFORMAT_BGRA8;
     }
     const ThreadedApplicationClient::InitializeMessageDescription desc(
-        m_logicalPixelSize, SG_PIXELFORMAT_RGBA8, m_devicePixelRatio, sokolPath);
+        m_logicalPixelSize, format, m_devicePixelRatio, sokolPath);
     m_client->sendInitializeMessage(desc);
-}
-
-void
-TestWindow::terminate()
-{
-    m_client->addCompleteTerminationEventListener(
-        [](void *userData) {
-            TestWindow *self = static_cast<TestWindow *>(userData);
-            self->destroyRenderer();
-            DestroyWindow(self->m_windowHandle);
-        },
-        this, true);
-    m_client->sendTerminateMessage();
+    EMLOG_INFO("{}", "Initialize message has been sent");
 }
 
 void
@@ -169,6 +186,9 @@ TestWindow::processMessage(MSG *msg)
     while (PeekMessageW(msg, nullptr, 0, 0, PM_REMOVE) != 0) {
         TranslateMessage(msg);
         DispatchMessageW(msg);
+    }
+    if (m_running) {
+        WaitMessage();
     }
 }
 
@@ -187,13 +207,13 @@ TestWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         LPCREATESTRUCT lpcs = reinterpret_cast<LPCREATESTRUCT>(lparam);
         TestWindow *window = static_cast<TestWindow *>(lpcs->lpCreateParams);
         window->registerAllPrerequisiteEventListeners();
-        SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+        SetWindowLongPtrW(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
         break;
     }
     case WM_DESTROY: {
-        TestWindow *window = reinterpret_cast<TestWindow *>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-        window->m_running = false;
-        PostQuitMessage(0);
+        if (TestWindow *window = reinterpret_cast<TestWindow *>(GetWindowLongPtrW(hwnd, GWLP_USERDATA))) {
+            window->handleWindowDestroy();
+        }
         break;
     }
     default:
@@ -201,6 +221,31 @@ TestWindow::handleWindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
         break;
     }
     return result;
+}
+
+DWORD CALLBACK
+TestWindow::collectPerformanceMetricsPeriodically(void *userData)
+{
+    auto self = static_cast<TestWindow *>(userData);
+    PROCESS_MEMORY_COUNTERS counters = {};
+    PDH_HQUERY query = nullptr;
+    PDH_HCOUNTER counter = nullptr;
+    PDH_FMT_COUNTERVALUE value = {};
+    GetProcessMemoryInfo(self->m_processHandle, &counters, sizeof(counters));
+    self->m_client->sendUpdatePerformanceMonitorMessage(nanoem_f32_t(value.doubleValue), counters.WorkingSetSize, 0);
+    PdhOpenQueryW(nullptr, 0, &query);
+    PdhAddCounterW(query, L"\\Process(nanoem_win32_test)\\% User Time", 0, &counter);
+    PdhCollectQueryData(query);
+    while (self->m_running) {
+        Sleep(1000);
+        PdhCollectQueryData(query);
+        PdhGetFormattedCounterValue(counter, PDH_FMT_DOUBLE, nullptr, &value);
+        GetProcessMemoryInfo(self->m_processHandle, &counters, sizeof(counters));
+        self->m_client->sendUpdatePerformanceMonitorMessage(
+            nanoem_f32_t(value.doubleValue), counters.WorkingSetSize, 0);
+    }
+    PdhCloseQuery(query);
+    return 0;
 }
 
 test::IExecutor *
@@ -239,6 +284,7 @@ TestWindow::generateFileURI(bool archive)
     wcscat_s(destinationPath, ARRAYSIZE(destinationPath), time);
     wcscat_s(destinationPath, ARRAYSIZE(destinationPath), archive ? L".nma" : L".nmm");
     StringUtils::getMultiBytesString(destinationPath, ms);
+    FileUtils::canonicalizePathSeparator(ms);
     return URI::createFromFilePath(ms.data());
 }
 
@@ -254,14 +300,15 @@ TestWindow::setupDirectXRenderer(int width, int height)
     DXGI_MODE_DESC &mode = m_swapChainDesc.BufferDesc;
     mode.Width = width;
     mode.Height = height;
-    mode.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    mode.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     DXGI_RATIONAL &refreshRate = mode.RefreshRate;
     refreshRate.Denominator = 1;
     refreshRate.Numerator = 60;
     m_swapChainDesc.OutputWindow = m_windowHandle;
     m_swapChainDesc.Windowed = true;
-    m_swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-    m_swapChainDesc.BufferCount = 1;
+    m_swapChainDesc.BufferCount = 2;
+    m_swapChainDesc.SwapEffect = IsWindows10OrGreater() ? DXGI_SWAP_EFFECT_FLIP_DISCARD : DXGI_SWAP_EFFECT_DISCARD;
+    m_swapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     DXGI_SAMPLE_DESC &sample = m_swapChainDesc.SampleDesc;
     sample.Count = 1;
     sample.Quality = 0;
@@ -288,6 +335,11 @@ TestWindow::setupDirectXRenderer(int width, int height)
             device->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kDeviceLabel), kDeviceLabel);
             static const wchar_t kDeviceContextLabel[] = L"ID3D11DeviceContext";
             context->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kDeviceContextLabel), kDeviceContextLabel);
+        }
+        ID3D10Multithread *threaded;
+        if (!FAILED(context->QueryInterface(IID_PPV_ARGS(&threaded)))) {
+            threaded->SetMultithreadProtected(TRUE);
+            threaded->Release();
         }
         m_service->setNativeContext(context);
         m_service->setNativeDevice(device);
@@ -345,7 +397,34 @@ TestWindow::setupOpenGLRenderer(int /* width */, int /* height */)
 }
 
 void
-TestWindow::destroyRenderer()
+TestWindow::handleInitializeEvent()
+{
+    DWORD processId = GetCurrentProcessId();
+    m_processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, processId);
+    if (m_processHandle != nullptr) {
+        m_metricThreadHandle = CreateThread(nullptr, 0, collectPerformanceMetricsPeriodically, this, 0, nullptr);
+    }
+    ShowWindow(m_windowHandle, SW_SHOW);
+    m_client->sendActivateMessage();
+    m_runner->start();
+    EMLOG_INFO("Initialization completed: processID={}", processId);
+}
+
+void
+TestWindow::handleDestroyEvent()
+{
+    m_client->addCompleteTerminationEventListener(
+        [](void *userData) {
+            TestWindow *self = static_cast<TestWindow *>(userData);
+            self->handleTerminateEvent();
+        },
+        this, true);
+    m_client->sendTerminateMessage();
+    EMLOG_INFO("{}", "Terminate message has been sent");
+}
+
+void
+TestWindow::handleTerminateEvent()
 {
     if (IDXGISwapChain *swapChain = m_swapChain) {
         ID3D11DeviceContext *context = static_cast<ID3D11DeviceContext *>(m_context);
@@ -361,6 +440,23 @@ TestWindow::destroyRenderer()
         wglDeleteContext(context);
         ReleaseDC(m_windowHandle, device);
     }
+    DestroyWindow(m_windowHandle);
+    EMLOG_INFO("Termination has been completed: window={}", static_cast<const void *>(m_windowHandle));
+}
+
+void
+TestWindow::handleWindowDestroy()
+{
+    m_running = false;
+    if (m_metricThreadHandle) {
+        WaitForSingleObject(m_metricThreadHandle, INFINITE);
+        CloseHandle(m_metricThreadHandle);
+        m_metricThreadHandle = nullptr;
+        CloseHandle(m_processHandle);
+        m_processHandle = nullptr;
+    }
+    PostQuitMessage(0);
+    EMLOG_INFO("{}", "Destroying window has been completed");
 }
 
 void
@@ -369,34 +465,56 @@ TestWindow::registerAllPrerequisiteEventListeners()
     m_client->addInitializationCompleteEventListener(
         [](void *userData) {
             TestWindow *self = static_cast<TestWindow *>(userData);
-            ShowWindow(self->m_windowHandle, SW_SHOW);
-            self->m_runner->start();
+            self->handleInitializeEvent();
         },
         this, true);
     m_client->addCompleteDestructionEventListener(
         [](void *userData) {
             TestWindow *self = static_cast<TestWindow *>(userData);
-            self->terminate();
-            bx::debugPrintf("addDestructionCompleteEventListener\n");
+            self->m_runner->finish();
+            self->handleDestroyEvent();
         },
         this, true);
     m_client->addCompleteLoadingFileEventListener(
         [](void *userData, const URI &fileURI, uint32_t type, uint64_t ticks) {
             TestWindow *self = static_cast<TestWindow *>(userData);
             BX_UNUSED_1(self);
-            bx::debugPrintf("addCompleteLoadingFileEventListener(%d):%s -> %.2f\n", type,
-                fileURI.absolutePath().c_str(), stm_sec(ticks));
+            EMLOG_INFO("Loading the file has been completed: type={} fileURI={} seconds={}", type,
+                fileURI.absolutePathConstString(), stm_sec(ticks));
         },
         this, false);
     m_client->addCompleteSavingFileEventListener(
         [](void *userData, const URI &fileURI, uint32_t type, uint64_t ticks) {
             TestWindow *self = static_cast<TestWindow *>(userData);
             BX_UNUSED_1(self);
-            bx::debugPrintf("addCompleteSavingFileEventListener(%d):%s -> %.2f\n", type, fileURI.absolutePath().c_str(),
-                stm_sec(ticks));
+            EMLOG_INFO("Saving the file has been completed: type={} fileURI={} seconds={}", type,
+                fileURI.absolutePathConstString(), stm_sec(ticks));
         },
         this, false);
 }
+
+template <typename Mutex> class OutputDebugStringSink : public spdlog::sinks::base_sink<Mutex> {
+public:
+    OutputDebugStringSink() = default;
+
+protected:
+    void
+    sink_it_(const spdlog::details::log_msg &msg) override
+    {
+        spdlog::memory_buf_t formatted;
+        base_sink<Mutex>::formatter_->format(msg, formatted);
+        formatted.push_back('\0');
+        spdlog::wmemory_buf_t buf;
+        spdlog::string_view_t view(formatted.data(), formatted.size());
+        spdlog::details::os::utf8_to_wstrbuf(view, buf);
+        OutputDebugStringW(buf.data());
+    }
+
+    void
+    flush_() override
+    {
+    }
+};
 
 static int
 runMain(HINSTANCE hInstance, int argc, const char *const *argv)
@@ -423,6 +541,16 @@ runMain(HINSTANCE hInstance, int argc, const char *const *argv)
         ThreadedApplicationClient client;
         service.start();
         client.connect();
+        {
+            spdlog::init_thread_pool(1024, 1);
+            tinystl::vector<spdlog::sink_ptr, TinySTLAllocator> sinks;
+            sinks.push_back(std::make_shared<OutputDebugStringSink<std::mutex>>());
+            sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+            auto logger = std::make_shared<spdlog::async_logger>(
+                "emapp", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+            spdlog::register_logger(logger);
+            spdlog::cfg::load_env_levels();
+        }
         const int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         const int screenHeight = GetSystemMetrics(SM_CYSCREEN);
         const nanoem_f32_t devicePixelRatio = TestWindow::calculateDevicePixelRatio();
@@ -434,8 +562,8 @@ runMain(HINSTANCE hInstance, int argc, const char *const *argv)
         while (window.isRunning()) {
             window.processMessage(&msg);
         }
-        window.terminate();
-        service.stop();
+        int result = service.stop();
+        EMLOG_INFO("Stopping application service thread has been completed: result={}", result);
     }
     json_value_free(config);
     MFShutdown();
@@ -443,7 +571,7 @@ runMain(HINSTANCE hInstance, int argc, const char *const *argv)
     SetThreadExecutionState(ES_CONTINUOUS);
     ThreadedApplicationService::terminate();
     Allocator::destroy();
-    return 0;
+    return static_cast<int>(msg.wParam);
 }
 
 #if !BX_CRT_MSVC
@@ -456,14 +584,19 @@ main(int argc, char *argv[])
 int WINAPI
 wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPWSTR lpCmdLine, int nCmdShow)
 {
-    BX_UNUSED_3(hPrevInstance, lpCmdLine, nCmdShow);
-    return runMain(hInstance, 0, 0);
+    BX_UNUSED_2(hPrevInstance, nCmdShow);
+    char *argv[64], interm[1024], buffer[1024];
+    int argc = 0, actual = WideCharToMultiByte(CP_UTF8, 0, lpCmdLine, -1, interm, sizeof(interm), nullptr, nullptr);
+    interm[actual] = 0;
+    uint32_t size = static_cast<uint32_t>(actual);
+    bx::tokenizeCommandLine(interm, buffer, size, argc, argv, BX_COUNTOF(argv));
+    return runMain(hInstance, argc, argv);
 }
 #else
 int WINAPI
 WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
-    BX_UNUSED_3(hPrevInstance, lpCmdLine, nCmdShow);
+    BX_UNUSED_2(hPrevInstance, nCmdShow);
     char *argv[64], buffer[1024];
     uint32_t size = BX_COUNTOF(buffer);
     int argc = 0;

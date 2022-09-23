@@ -1019,7 +1019,7 @@ Win32ThreadedApplicationService::presentDefaultPass(const Project * /* project *
             viewport->PlatformRequestResize = true;
         }
     }
-#endif
+#endif /* IMGUI_HAS_VIEWPORT */
     SG_POP_GROUP();
 }
 
@@ -1045,13 +1045,22 @@ Win32ThreadedApplicationService::createDefaultRenderTarget(const Vector2UI16 &de
     if (backend == SG_BACKEND_D3D11) {
         auto swapChain = (IDXGISwapChain *) m_nativeSwapChain;
         auto device = (ID3D11Device *) m_nativeDevice;
+        Vector2UI16 renderTargetSize(devicePixelWindowSize);
         if (!FAILED(swapChain->GetBuffer(0, IID_ID3D11Texture2D, (void **) &m_d3d11RenderTargetTexture))) {
             device->CreateRenderTargetView(m_d3d11RenderTargetTexture, nullptr, &m_d3d11RenderTargetView);
+            D3D11_TEXTURE2D_DESC desc;
+            m_d3d11RenderTargetTexture->GetDesc(&desc);
+            if (desc.Width != renderTargetSize.x || desc.Height != renderTargetSize.y) {
+                EMLOG_DEBUG("Adjust render target size: newWidth={} newHeight={} width={} height={}", desc.Width,
+                    desc.Height, renderTargetSize.x, renderTargetSize.y);
+                renderTargetSize.x = desc.Width;
+                renderTargetSize.y = desc.Height;
+            }
         }
         D3D11_TEXTURE2D_DESC td = {};
         auto swapChainDesc = (const DXGI_SWAP_CHAIN_DESC *) m_nativeSwapChainDescription;
-        td.Width = devicePixelWindowSize.x;
-        td.Height = devicePixelWindowSize.y;
+        td.Width = renderTargetSize.x;
+        td.Height = renderTargetSize.y;
         td.MipLevels = td.ArraySize = 1;
         td.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
         td.SampleDesc = swapChainDesc->SampleDesc;
@@ -1064,7 +1073,7 @@ Win32ThreadedApplicationService::createDefaultRenderTarget(const Vector2UI16 &de
         if (!FAILED(device->CreateTexture2D(&td, nullptr, &m_d3d11DepthStencilTexture))) {
             device->CreateDepthStencilView(m_d3d11DepthStencilTexture, nullptr, &m_d3d11DepthStencilView);
         }
-#if !defined(NDEBUG)
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
         static const wchar_t kRenderTargetTextureLabel[] = L"@nanoem/MainWindow/RenderTarget/Texture";
         m_d3d11RenderTargetTexture->SetPrivateData(
             WKPDID_D3DDebugObjectNameW, sizeof(kRenderTargetTextureLabel), kRenderTargetTextureLabel);
@@ -1077,7 +1086,7 @@ Win32ThreadedApplicationService::createDefaultRenderTarget(const Vector2UI16 &de
         static const wchar_t kDepthStencilViewLabel[] = L"@nanoem/MainWindow/DepthStencil/View";
         m_d3d11DepthStencilView->SetPrivateData(
             WKPDID_D3DDebugObjectNameW, sizeof(kDepthStencilViewLabel), kDepthStencilViewLabel);
-#endif
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
     }
 }
 

@@ -21,12 +21,44 @@
 #include "emapp/StringUtils.h"
 #include "emapp/ThreadedApplicationClient.h"
 
+#if defined(NANOEM_ENABLE_LOGGING)
+#define SPDLOG_WCHAR_TO_UTF8_SUPPORT
+#include "spdlog/async.h"
+#include "spdlog/cfg/env.h"
+#include "spdlog/sinks/base_sink.h"
+#include "spdlog/sinks/stdout_color_sinks.h"
+
+namespace {
+template <typename Mutex> class OutputDebugStringSink : public spdlog::sinks::base_sink<Mutex> {
+public:
+    OutputDebugStringSink() = default;
+
+protected:
+    void
+    sink_it_(const spdlog::details::log_msg &msg) override
+    {
+        spdlog::memory_buf_t formatted;
+        base_sink<Mutex>::formatter_->format(msg, formatted);
+        formatted.push_back('\0');
+        spdlog::wmemory_buf_t buf;
+        spdlog::string_view_t view(formatted.data(), formatted.size());
+        spdlog::details::os::utf8_to_wstrbuf(view, buf);
+        OutputDebugStringW(buf.data());
+    }
+
+    void
+    flush_() override {}
+};
+} /* anonymous */
+
+#endif /* NANOEM_ENABLE_LOGGING */
+
 using namespace nanoem;
 using namespace nanoem::win32;
 
 #if defined(__MINGW32__)
 #define _CrtSetDbgFlag(a)
-#endif
+#endif /* __MINGW32__ */
 
 namespace {
 
@@ -45,6 +77,16 @@ runApplication(HINSTANCE hInstance, int argc, const char *const *argv, const wch
         preference.load();
         service.start();
         client.connect();
+#if defined(NANOEM_ENABLE_LOGGING)
+        spdlog::init_thread_pool(1024, 1);
+        tinystl::vector<spdlog::sink_ptr, TinySTLAllocator> sinks;
+        sinks.push_back(std::make_shared<OutputDebugStringSink<std::mutex>>());
+        sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
+        auto logger = std::make_shared<spdlog::async_logger>(
+            "emapp", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
+        spdlog::register_logger(logger);
+        spdlog::cfg::load_env_levels();
+#endif /* NANOEM_ENABLE_LOGGING */        
         const int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         const int screenHeight = GetSystemMetrics(SM_CYSCREEN);
         const nanoem_f32_t devicePixelRatio = Win32ThreadedApplicationService::calculateDevicePixelRatio();
