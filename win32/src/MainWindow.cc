@@ -1312,6 +1312,167 @@ MainWindow::handleRemovingWatchEffectSource(void *userData, uint16_t handle, con
     }
 }
 
+void
+MainWindow::handleInitializeEvent()
+{
+    URIList plugins(cachedAggregateAllPlugins());
+    m_client->sendLoadAllModelPluginsMessage(plugins);
+    m_client->sendLoadAllMotionPluginsMessage(plugins);
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
+    if (m_commandLine->hasArg("bootstrap-project-from-clipboard") && IsClipboardFormatAvailable(CF_UNICODETEXT)) {
+        HANDLE clipboard = nullptr;
+        if (OpenClipboard(m_windowHandle) && (clipboard = GetClipboardData(CF_UNICODETEXT))) {
+            MutableWideString ws(GlobalSize(clipboard) + 1);
+            if (const wchar_t *source = static_cast<const wchar_t *>(GlobalLock(clipboard))) {
+                size_t length = wcslen(source);
+                if (length > 2) {
+                    wcsncpy(ws.data(), source + 1, length - 2);
+                    ws[length - 2] = 0;
+                    loadProjectFromFile(ws.data());
+                }
+                GlobalUnlock(clipboard);
+                CloseClipboard();
+            }
+        }
+    }
+    else if (m_commandLine->hasArg("bootstrap-project")) {
+        MutableWideString ws;
+        StringUtils::getWideCharString(m_commandLine->findOption("bootstrap-project"), ws, 932);
+        if (!ws.empty()) {
+            loadProjectFromFile(ws.data());
+        }
+    }
+    else if (m_commandLine->hasArg("recovery-from-latest")) {
+        String path(
+            json_object_dotget_string(json_object(m_service->applicationConfiguration()), "win32.redo.path")),
+            basePath(path);
+        basePath.append("/*");
+        MutableWideString wideBasePath;
+        StringUtils::getWideCharString(basePath.c_str(), wideBasePath);
+        WIN32_FIND_DATAW data;
+        HANDLE handle = FindFirstFileW(wideBasePath.data(), &data);
+        if (handle != INVALID_HANDLE_VALUE) {
+            URI fileURI;
+            String pathExtension(Project::kRedoLogFileExtension);
+            FILETIME latest = { 0, 0 };
+            do {
+                MutableString filename;
+                StringUtils::getMultiBytesString(data.cFileName, filename);
+                if (URI::pathExtension(filename.data()) == pathExtension &&
+                    CompareFileTime(&data.ftLastWriteTime, &latest) > 0) {
+                    String redoPath(path);
+                    redoPath.append("/");
+                    redoPath.append(filename.data());
+                    fileURI = URI::createFromFilePath(redoPath.c_str());
+                    latest = data.ftLastWriteTime;
+                }
+            } while (FindNextFileW(handle, &data));
+            FindClose(handle);
+            if (FileUtils::exists(fileURI)) {
+                m_client->sendRecoveryMessage(fileURI);
+            }
+        }
+    }
+    else if (m_commandLine->hasArg("recovery-from")) {
+        MutableWideString ws;
+        StringUtils::getWideCharString(m_commandLine->findOption("recovery-from"), ws, 932);
+        MutableString path;
+        StringUtils::getMultiBytesString(ws.data(), path);
+        FileUtils::canonicalizePathSeparator(path);
+        const URI &fileURI = URI::createFromFilePath(path.data());
+        if (FileUtils::exists(fileURI)) {
+            m_client->sendRecoveryMessage(fileURI);
+        }
+    }
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
+    DWORD processId = GetCurrentProcessId();
+    m_processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, processId);
+    if (m_processHandle != nullptr) {
+        m_metricThreadHandle = CreateThread(nullptr, 0, collectPerformanceMetricsPeriodically, this, 0, nullptr);
+    }
+    ImGui::GetIO().UserData = this;
+    const JSON_Object *config = json_object(m_service->applicationConfiguration());
+    MutableString redoFilePath;
+    StringUtils::getMultiBytesString(Win32ThreadedApplicationService::sharedRedoFilePath(), redoFilePath);
+    const char *sentryDSN = nullptr;
+#if defined(NANOEM_SENTRY_DSN)
+    sentryDSN = NANOEM_SENTRY_DSN;
+#endif /* NANOEM_SENTRY_DSN */
+    JSON_Object *pending = json_object(m_service->applicationPendingChangeConfiguration());
+    const ApplicationPreference *pref = m_preference->applicationPreference();
+    if (pref->isCrashReportEnabled()) {
+        MutableString redoFilePath;
+        StringUtils::getMultiBytesString(Win32ThreadedApplicationService::sharedRedoFilePath(), redoFilePath);
+        auto maskString = [](const char *value) {
+            wchar_t userProfilePath[MAX_PATH];
+            ExpandEnvironmentStringsW(L"%USERPROFILE%", userProfilePath, ARRAYSIZE(userProfilePath));
+            wchar_t *p = userProfilePath;
+            while ((p = wcschr(p, L'\\')) != nullptr) {
+                *p = L'/';
+            }
+            MutableString userProfileString;
+            StringUtils::getMultiBytesString(userProfilePath, userProfileString);
+            std::string maskedPathString(value, StringUtils::length(value));
+            size_t startPos = 0, len = userProfileString.size() - 1;
+            while ((startPos = maskedPathString.find(userProfileString.data(), startPos)) != std::string::npos) {
+                maskedPathString.replace(startPos, len, "{HOME}");
+                startPos += len;
+            }
+            return sentry_value_new_string(maskedPathString.c_str());
+        };
+        BaseApplicationService::SentryDescription desc;
+        desc.m_clientUUID = m_preference->uuidConstString();
+        desc.m_databaseDirectoryPath = json_object_dotget_string(config, "win32.sentry.database.path");
+        desc.m_deviceModelName = nullptr;
+        desc.m_dllFilePath = "sentry.dll";
+        desc.m_dsn = sentryDSN;
+        desc.m_handlerFilePath = json_object_dotget_string(config, "win32.sentry.handler.path");
+        desc.m_isModelEditingEnabled = pref->isModelEditingEnabled();
+        desc.m_localeName = json_object_dotget_string(config, "project.locale");
+        desc.m_maskString = maskString;
+        desc.m_rendererName = json_object_dotget_string(pending, "win32.renderer.name");
+        desc.m_transportSendEnvelope = nullptr;
+        desc.m_transportUserData = nullptr;
+        m_sentryDllHandle = BaseApplicationService::openSentryDll(desc);
+        if (m_sentryDllHandle) {
+            SYSTEMTIME time = {};
+            GetSystemTime(&time);
+            char timeString[32];
+            StringUtils::format(timeString, sizeof(timeString), "%04d-%02d-%02dT%02d:%02d:%02d", time.wYear,
+                time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
+            sentry_set_extra("initialized", sentry_value_new_string(timeString));
+        }
+    }
+    json_object_dotremove(pending, "win32.renderer.name");
+    m_initialized = true;
+    m_client->sendActivateMessage();
+    DrawMenuBar(m_windowHandle);
+    ShowWindow(m_windowHandle, SW_SHOWDEFAULT);
+    UpdateWindow(m_windowHandle);
+}
+
+void
+MainWindow::handleDestroyEvent()
+{
+    m_renderable = false;
+    m_client->addCompleteTerminationEventListener(
+        [](void *userData) {
+            auto self = static_cast<MainWindow *>(userData);
+            self->handleTerminateEvent();
+        },
+        this, true);
+    m_client->sendTerminateMessage();
+}
+
+void
+MainWindow::handleTerminateEvent()
+{
+    closeProgressDialog();
+    destroyRenderer();
+    DestroyMenu(m_menuHandle);
+    DestroyWindow(m_windowHandle);
+}
+
 bool
 MainWindow::handleWindowCreate(HWND hwnd, Error &error)
 {
@@ -1956,14 +2117,14 @@ MainWindow::setupDirectXRenderer(HWND windowHandle, int width, int height, bool 
         else {
             isLowPower = true;
         }
-#if defined(SOKOL_DEBUG) && SOKOL_DEBUG
+#if defined(NANOEM_ENABLE_DEBUG_LABEL)
         static const wchar_t kSwapChainLabel[] = L"IDXGISwapChain";
         swapChain->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kSwapChainLabel), kSwapChainLabel);
         static const wchar_t kDeviceLabel[] = L"ID3D11Device";
         device->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kDeviceLabel), kDeviceLabel);
         static const wchar_t kDeviceContextLabel[] = L"ID3D11DeviceContext";
         context->SetPrivateData(WKPDID_D3DDebugObjectNameW, sizeof(kDeviceContextLabel), kDeviceContextLabel);
-#endif /* SOKOL_DEBUG */
+#endif /* NANOEM_ENABLE_DEBUG_LABEL */
         ID3D10Multithread *threaded;
         if (!FAILED(context->QueryInterface(IID_PPV_ARGS(&threaded)))) {
             threaded->SetMultithreadProtected(TRUE);
@@ -2124,17 +2285,7 @@ MainWindow::destroyWindow()
     m_client->addCompleteDestructionEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
-            self->m_renderable = false;
-            self->m_client->addCompleteTerminationEventListener(
-                [](void *userData) {
-                    auto self = static_cast<MainWindow *>(userData);
-                    self->closeProgressDialog();
-                    self->destroyRenderer();
-                    DestroyMenu(self->m_menuHandle);
-                    DestroyWindow(self->m_windowHandle);
-                },
-                self, true);
-            self->m_client->sendTerminateMessage();
+            self->handleDestroyEvent();
         },
         this, true);
     m_client->sendDestroyMessage();
@@ -2146,144 +2297,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
     m_client->addInitializationCompleteEventListener(
         [](void *userData) {
             auto self = static_cast<MainWindow *>(userData);
-            const bx::CommandLine *cmd = self->m_commandLine;
-            HWND windowHandle = self->m_windowHandle;
-            URIList plugins(self->cachedAggregateAllPlugins());
-            self->m_client->sendLoadAllModelPluginsMessage(plugins);
-            self->m_client->sendLoadAllMotionPluginsMessage(plugins);
-#if defined(NANOEM_ENABLE_DEBUG_LABEL)
-            if (cmd->hasArg("bootstrap-project-from-clipboard") && IsClipboardFormatAvailable(CF_UNICODETEXT)) {
-                HANDLE clipboard = nullptr;
-                if (OpenClipboard(windowHandle) && (clipboard = GetClipboardData(CF_UNICODETEXT))) {
-                    MutableWideString ws(GlobalSize(clipboard) + 1);
-                    if (const wchar_t *source = static_cast<const wchar_t *>(GlobalLock(clipboard))) {
-                        size_t length = wcslen(source);
-                        if (length > 2) {
-                            wcsncpy(ws.data(), source + 1, length - 2);
-                            ws[length - 2] = 0;
-                            self->loadProjectFromFile(ws.data());
-                        }
-                        GlobalUnlock(clipboard);
-                        CloseClipboard();
-                    }
-                }
-            }
-            else if (cmd->hasArg("bootstrap-project")) {
-                MutableWideString ws;
-                StringUtils::getWideCharString(cmd->findOption("bootstrap-project"), ws, 932);
-                if (!ws.empty()) {
-                    self->loadProjectFromFile(ws.data());
-                }
-            }
-            else if (cmd->hasArg("recovery-from-latest")) {
-                String path(json_object_dotget_string(
-                    json_object(self->m_service->applicationConfiguration()), "win32.redo.path")),
-                    basePath(path);
-                basePath.append("/*");
-                MutableWideString wideBasePath;
-                StringUtils::getWideCharString(basePath.c_str(), wideBasePath);
-                WIN32_FIND_DATAW data;
-                HANDLE handle = FindFirstFileW(wideBasePath.data(), &data);
-                if (handle != INVALID_HANDLE_VALUE) {
-                    URI fileURI;
-                    String pathExtension(Project::kRedoLogFileExtension);
-                    FILETIME latest = { 0, 0 };
-                    do {
-                        MutableString filename;
-                        StringUtils::getMultiBytesString(data.cFileName, filename);
-                        if (URI::pathExtension(filename.data()) == pathExtension &&
-                            CompareFileTime(&data.ftLastWriteTime, &latest) > 0) {
-                            String redoPath(path);
-                            redoPath.append("/");
-                            redoPath.append(filename.data());
-                            fileURI = URI::createFromFilePath(redoPath.c_str());
-                            latest = data.ftLastWriteTime;
-                        }
-                    } while (FindNextFileW(handle, &data));
-                    FindClose(handle);
-                    if (FileUtils::exists(fileURI)) {
-                        self->m_client->sendRecoveryMessage(fileURI);
-                    }
-                }
-            }
-            else if (cmd->hasArg("recovery-from")) {
-                MutableWideString ws;
-                StringUtils::getWideCharString(cmd->findOption("recovery-from"), ws, 932);
-                MutableString path;
-                StringUtils::getMultiBytesString(ws.data(), path);
-                FileUtils::canonicalizePathSeparator(path);
-                const URI &fileURI = URI::createFromFilePath(path.data());
-                if (FileUtils::exists(fileURI)) {
-                    self->m_client->sendRecoveryMessage(fileURI);
-                }
-            }
-#endif /* NANOEM_ENABLE_DEBUG_LABEL */
-            DWORD processId = GetCurrentProcessId();
-            self->m_processHandle = OpenProcess(PROCESS_QUERY_INFORMATION, false, processId);
-            if (self->m_processHandle != nullptr) {
-                self->m_metricThreadHandle =
-                    CreateThread(nullptr, 0, collectPerformanceMetricsPeriodically, self, 0, nullptr);
-            }
-            ImGui::GetIO().UserData = self;
-            const JSON_Object *config = json_object(self->m_service->applicationConfiguration());
-            MutableString redoFilePath;
-            StringUtils::getMultiBytesString(Win32ThreadedApplicationService::sharedRedoFilePath(), redoFilePath);
-            const char *sentryDSN = nullptr;
-#if defined(NANOEM_SENTRY_DSN)
-            sentryDSN = NANOEM_SENTRY_DSN;
-#endif /* NANOEM_SENTRY_DSN */
-            JSON_Object *pending = json_object(self->m_service->applicationPendingChangeConfiguration());
-            const ApplicationPreference *pref = self->m_preference->applicationPreference();
-            if (pref->isCrashReportEnabled()) {
-                MutableString redoFilePath;
-                StringUtils::getMultiBytesString(Win32ThreadedApplicationService::sharedRedoFilePath(), redoFilePath);
-                auto maskString = [](const char *value) {
-                    wchar_t userProfilePath[MAX_PATH];
-                    ExpandEnvironmentStringsW(L"%USERPROFILE%", userProfilePath, ARRAYSIZE(userProfilePath));
-                    wchar_t *p = userProfilePath;
-                    while ((p = wcschr(p, L'\\')) != nullptr) {
-                        *p = L'/';
-                    }
-                    MutableString userProfileString;
-                    StringUtils::getMultiBytesString(userProfilePath, userProfileString);
-                    std::string maskedPathString(value, StringUtils::length(value));
-                    size_t startPos = 0, len = userProfileString.size() - 1;
-                    while (
-                        (startPos = maskedPathString.find(userProfileString.data(), startPos)) != std::string::npos) {
-                        maskedPathString.replace(startPos, len, "{HOME}");
-                        startPos += len;
-                    }
-                    return sentry_value_new_string(maskedPathString.c_str());
-                };
-                BaseApplicationService::SentryDescription desc;
-                desc.m_clientUUID = self->m_preference->uuidConstString();
-                desc.m_databaseDirectoryPath = json_object_dotget_string(config, "win32.sentry.database.path");
-                desc.m_deviceModelName = nullptr;
-                desc.m_dllFilePath = "sentry.dll";
-                desc.m_dsn = sentryDSN;
-                desc.m_handlerFilePath = json_object_dotget_string(config, "win32.sentry.handler.path");
-                desc.m_isModelEditingEnabled = pref->isModelEditingEnabled();
-                desc.m_localeName = json_object_dotget_string(config, "project.locale");
-                desc.m_maskString = maskString;
-                desc.m_rendererName = json_object_dotget_string(pending, "win32.renderer.name");
-                desc.m_transportSendEnvelope = nullptr;
-                desc.m_transportUserData = nullptr;
-                self->m_sentryDllHandle = BaseApplicationService::openSentryDll(desc);
-                if (self->m_sentryDllHandle) {
-                    SYSTEMTIME time = {};
-                    GetSystemTime(&time);
-                    char timeString[32];
-                    StringUtils::format(timeString, sizeof(timeString), "%04d-%02d-%02dT%02d:%02d:%02d", time.wYear,
-                        time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond);
-                    sentry_set_extra("initialized", sentry_value_new_string(timeString));
-                }
-            }
-            json_object_dotremove(pending, "win32.renderer.name");
-            self->m_initialized = true;
-            self->m_client->sendActivateMessage();
-            DrawMenuBar(windowHandle);
-            ShowWindow(windowHandle, SW_SHOWDEFAULT);
-            UpdateWindow(windowHandle);
+            self->handleInitializeEvent();
         },
         this, true);
     m_client->addDisableCursorEventListener(
@@ -2300,8 +2314,13 @@ MainWindow::registerAllPrerequisiteEventListeners()
         this, false);
     m_client->addErrorEventListener(
         [](void *userData, int code, const char *reason, const char *recoverySuggestion) {
-            auto self = static_cast<MainWindow *>(userData);
-            self->writeErrorLog(code, reason, recoverySuggestion);
+            BX_UNUSED_4(userData, code, reason, recoverySuggestion);
+            if (recoverySuggestion) {
+                EMLOG_ERROR("Received an error: code={} reason=\"{}\" suggestion=\"{}\"", code, reason, recoverySuggestion);
+            }
+            else if (reason) {
+                EMLOG_ERROR("Received an error: code={} reason=\"{}\"", code, reason);
+            }
         },
         this, false);
     m_client->addQueryOpenSingleFileDialogEventListener(
@@ -2723,22 +2742,6 @@ MainWindow::localizedWideString(const char *text) const
         it = m_localizedMessageCache.insert(tinystl::make_pair(text, s)).first;
     }
     return it->second.data();
-}
-
-void
-MainWindow::writeErrorLog(int code, const char *reason, const char *recoverySuggestion)
-{
-#ifndef NDEBUG
-    MutableWideString reasonString, recoverySuggestionString;
-    StringUtils::getWideCharString(reason, reasonString);
-    StringUtils::getWideCharString(recoverySuggestion, recoverySuggestionString);
-    wchar_t stackBuffer[1024];
-    swprintf(stackBuffer, ARRAYSIZE(stackBuffer), L"[ERROR] code=0x%x reason=\"%s\" suggestion=\"%s\"\n", code,
-        reasonString.data(), recoverySuggestionString.data());
-    OutputDebugStringW(stackBuffer);
-#else
-    BX_UNUSED_3(code, reason, recoverySuggestion);
-#endif
 }
 
 void
