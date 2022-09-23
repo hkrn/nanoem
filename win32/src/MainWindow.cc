@@ -836,7 +836,7 @@ MainWindow::collectPerformanceMetricsPeriodically(void *userData)
     GetProcessMemoryInfo(self->m_processHandle, &counters, sizeof(counters));
     self->m_client->sendUpdatePerformanceMonitorMessage(nanoem_f32_t(value.doubleValue), counters.WorkingSetSize, 0);
     PdhOpenQueryW(nullptr, 0, &query);
-    PdhAddCounterW(query, L"\\Processor(_Total)\\% Processor Time", 0, &counter);
+    PdhAddCounterW(query, L"\\Process(nanoem)\\% User Time", 0, &counter);
     PdhCollectQueryData(query);
     while (self->m_running) {
         Sleep(1000);
