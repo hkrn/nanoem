@@ -109,7 +109,7 @@ nanoemUnicodeStringFactoryFromStringICU(UConverter *converter, const nanoem_u8_t
     if (nanoem_is_not_null(s)) {
         s->data = (UChar *) nanoem_calloc(capacity, sizeof(*s->data), status);
         s->length = ucnv_toUChars(converter, s->data, capacity, (const char *) string, length, &code);
-        nanoem_status_ptr_assign(status, U_SUCCESS(code) == TRUE ? NANOEM_STATUS_SUCCESS : NANOEM_STATUS_ERROR_DECODE_UNICODE_STRING_FAILED);
+        nanoem_status_ptr_assign(status, U_SUCCESS(code) ? NANOEM_STATUS_SUCCESS : NANOEM_STATUS_ERROR_DECODE_UNICODE_STRING_FAILED);
     }
     return s;
 }
@@ -120,7 +120,7 @@ nanoemUnicodeStringFactoryToStringICU(UConverter *converter, const nanoem_unicod
     UErrorCode code = U_ZERO_ERROR;
     if (nanoem_is_not_null(buffer) && nanoem_is_not_null(s)) {
         *length = ucnv_fromUChars(converter, (char *) buffer, capacity, s->data, s->length, &code);
-        nanoem_status_ptr_assign(status, U_SUCCESS(code) == TRUE ? NANOEM_STATUS_SUCCESS : NANOEM_STATUS_ERROR_ENCODE_UNICODE_STRING_FAILED);
+        nanoem_status_ptr_assign(status, U_SUCCESS(code) ? NANOEM_STATUS_SUCCESS : NANOEM_STATUS_ERROR_ENCODE_UNICODE_STRING_FAILED);
     }
     else {
         nanoem_status_ptr_assign_null_object(status);
@@ -268,28 +268,34 @@ nanoem_unicode_string_factory_t *APIENTRY
 nanoemUnicodeStringFactoryCreateICU(nanoem_status_t *status)
 {
     nanoem_unicode_factory_opaque_data_icu_t *opaque;
-    nanoem_unicode_string_factory_t *factory;
+    nanoem_unicode_string_factory_t *factory = NULL;
     UErrorCode code = U_ZERO_ERROR;
     opaque = (nanoem_unicode_factory_opaque_data_icu_t *) nanoem_calloc(1, sizeof(*opaque), status);
     if (nanoem_is_not_null(opaque)) {
-        opaque->cp932 = ucnv_open("cp932", &code);
+        opaque->cp932 = ucnv_open("ibm-943_P15A-2003", &code);
         opaque->utf8 = ucnv_open("utf8", &code);
         opaque->utf16 = ucnv_open("utf16le", &code);
+        if (U_SUCCESS(code)) {
+            factory = nanoemUnicodeStringFactoryCreate(status);
+            nanoemUnicodeStringFactorySetGetCacheCallback(factory, nanoemUnicodeStringFactoryGetCacheCallbackICU);
+            nanoemUnicodeStringFactorySetSetCacheCallback(factory, nanoemUnicodeStringFactorySetCacheCallbackICU);
+            nanoemUnicodeStringFactorySetCompareCallback(factory, nanoemUnicodeStringFactoryCompareCallbackICU);
+            nanoemUnicodeStringFactorySetConvertFromCp932Callback(factory, nanoemUnicodeStringFactoryFromCp932CallbackICU);
+            nanoemUnicodeStringFactorySetConvertFromUtf8Callback(factory, nanoemUnicodeStringFactoryFromUtf8CallbackICU);
+            nanoemUnicodeStringFactorySetConvertFromUtf16Callback(factory, nanoemUnicodeStringFactoryFromUtf16CallbackICU);
+            nanoemUnicodeStringFactorySetConvertToCp932Callback(factory, nanoemUnicodeStringFactoryToCp932CallbackICU);
+            nanoemUnicodeStringFactorySetConvertToUtf8Callback(factory, nanoemUnicodeStringFactoryToUtf8CallbackICU);
+            nanoemUnicodeStringFactorySetConvertToUtf16Callback(factory, nanoemUnicodeStringFactoryToUtf16CallbackICU);
+            nanoemUnicodeStringFactorySetDestroyStringCallback(factory, nanoemUnicodeStringFactoryDestroyStringCallbackICU);
+            nanoemUnicodeStringFactorySetDestroyByteArrayCallback(factory, nanoemUnicodeStringFactoryDestroyByteArrayCallbackICU);
+            nanoemUnicodeStringFactorySetHashCallback(factory, nanoemUnicodeStringFactoryHashCallbackICU);
+            nanoemUnicodeStringFactorySetOpaqueData(factory, opaque);
+        }
+        else {
+            nanoem_free(opaque);
+            nanoem_status_ptr_assign_null_object(status);
+        }
     }
-    factory = nanoemUnicodeStringFactoryCreate(status);
-    nanoemUnicodeStringFactorySetGetCacheCallback(factory, nanoemUnicodeStringFactoryGetCacheCallbackICU);
-    nanoemUnicodeStringFactorySetSetCacheCallback(factory, nanoemUnicodeStringFactorySetCacheCallbackICU);
-    nanoemUnicodeStringFactorySetCompareCallback(factory, nanoemUnicodeStringFactoryCompareCallbackICU);
-    nanoemUnicodeStringFactorySetConvertFromCp932Callback(factory, nanoemUnicodeStringFactoryFromCp932CallbackICU);
-    nanoemUnicodeStringFactorySetConvertFromUtf8Callback(factory, nanoemUnicodeStringFactoryFromUtf8CallbackICU);
-    nanoemUnicodeStringFactorySetConvertFromUtf16Callback(factory, nanoemUnicodeStringFactoryFromUtf16CallbackICU);
-    nanoemUnicodeStringFactorySetConvertToCp932Callback(factory, nanoemUnicodeStringFactoryToCp932CallbackICU);
-    nanoemUnicodeStringFactorySetConvertToUtf8Callback(factory, nanoemUnicodeStringFactoryToUtf8CallbackICU);
-    nanoemUnicodeStringFactorySetConvertToUtf16Callback(factory, nanoemUnicodeStringFactoryToUtf16CallbackICU);
-    nanoemUnicodeStringFactorySetDestroyStringCallback(factory, nanoemUnicodeStringFactoryDestroyStringCallbackICU);
-    nanoemUnicodeStringFactorySetDestroyByteArrayCallback(factory, nanoemUnicodeStringFactoryDestroyByteArrayCallbackICU);
-    nanoemUnicodeStringFactorySetHashCallback(factory, nanoemUnicodeStringFactoryHashCallbackICU);
-    nanoemUnicodeStringFactorySetOpaqueData(factory, opaque);
     return factory;
 }
 

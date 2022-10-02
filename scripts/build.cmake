@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 
+include(ProcessorCount)
+ProcessorCount(numCPUs)
+if(NOT numCPUs EQUAL 0)
+  set(_make_flags -j${numCPUs})
+else()
+  set(_make_flags -j1)
+endif()
+
 function(rewrite_ninja_ub_workaround _build_path)
   if(EXISTS ${_build_path}/build.ninja)
     file(STRINGS ${_build_path}/build.ninja input_ninja NEWLINE_CONSUME)
@@ -296,12 +304,13 @@ function(compile_mimalloc _cmake_build_type _generator _toolset_option _arch_opt
                                            -DMI_BUILD_STATIC=ON
                                            -DMI_BUILD_TESTS=OFF
                                            -DMI_DEBUG_FULL=OFF
-                                           -DMI_INTERPOSE=OFF
+                                           -DMI_OSX_INTERPOSE=OFF
+                                           -DMI_OSX_ZONE=OFF
                                            -DMI_LOCAL_DYNAMIC_TLS=OFF
                                            -DMI_OVERRIDE=OFF
                                            -DMI_SECURE=OFF
                                            -DMI_SEE_ASM=OFF
-                                           -DMI_USE_CXX=ON
+                                           -DMI_USE_CXX=OFF
                                            -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
   rewrite_cmake_cache(${_build_path})
   execute_build(${_build_path})
@@ -346,10 +355,9 @@ function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option
   set(_source_path_icu4c ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/icu/icu4c)
   if(EXISTS ${_source_path} AND EXISTS ${_source_path_icu4c})
     set(_build_path ${base_build_path}/icu/out/${_triple_path})
-    set(_branch_name "release-57-2")
+    set(_branch_name "release-71-1")
     execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_branch_name} WORKING_DIRECTORY ${_source_path})
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/cmake/icudt57l.dat ${_source_path_icu4c}/source/data/in)
-    set(_build_flags "-DUCONFIG_NO_BREAK_ITERATION -DUCONFIG_NO_COLLATION -DUCONFIG_NO_FORMATTING -DUCONFIG_NO_TRANSLITERATION -DUCONFIG_NO_REGULAR_EXPRESSIONS")
+    set(_build_flags "-DUCONFIG_NO_BREAK_ITERATION=1 -DUCONFIG_NO_COLLATION=1 -DUCONFIG_NO_FORMATTING=1 -DUCONFIG_NO_TRANSLITERATION=1 -DUCONFIG_NO_REGULAR_EXPRESSIONS=1")
     if(APPLE)
       set(_macos_ver_min_flags "-mmacosx-version-min=10.9")
       set(_macos_arch_flags "-arch ${_arch}")
@@ -364,17 +372,29 @@ function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option
       endif()
       set(_build_flags "${_build_flags} ${_macos_ver_min_flags} ${_macos_arch_flags}")
     endif()
+    file(MAKE_DIRECTORY ${_build_path})
+    if(${_cmake_build_type} STREQUAL "Debug")
+      set(_build_flags "${_build_flags} -g -O0")
+      set(_configure_flags --enable-debug --enable-tracing)
+    else()
+      set(_build_flags "${_build_flags} -O2")
+      set(_configure_flags --enable-release)
+    endif()
     set(_cflags "${_build_flags} -std=c99")
     set(_cxxflags "${_build_flags} -std=c++11")
-    file(MAKE_DIRECTORY ${_build_path})
+    # see https://unicode-org.github.io/icu/userguide/icu_data/buildtool.html#icu-data-configuration-file for more details of ICU_DATA_FILTER_FILE
     execute_process(COMMAND
       ${CMAKE_COMMAND} -E env
         CFLAGS=${_cflags}
         CXXFLAGS=${_cxxflags}
+        ICU_DATA_FILTER_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/icu-data-filter.json
       ${_source_path_icu4c}/source/configure
         --prefix=${_build_path}/install-root
+        ${_configure_flags}
         --with-data-packaging=static
         --enable-static
+        --enable-tools
+        --disable-draft
         --disable-dyload
         --disable-shared
         --disable-extras
@@ -382,15 +402,10 @@ function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option
         --disable-layout
         --disable-layoutex
         --disable-tests
-        --enable-tools=yes
         --disable-samples
       WORKING_DIRECTORY ${_build_path})
     execute_process(COMMAND make clean WORKING_DIRECTORY ${_build_path})
-    execute_process(COMMAND
-      ${CMAKE_COMMAND} -E env
-        CFLAGS=${_cflags}
-        CXXFLAGS=${_cxxflags}
-      make install WORKING_DIRECTORY ${_build_path})
+    execute_process(COMMAND make install ${_make_flags} WORKING_DIRECTORY ${_build_path})
   endif()
 endfunction()
 
@@ -465,7 +480,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
         CXXFLAGS=${_build_flags}
         LDFLAGS=${_build_flags}
         ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_interm_path})
-      execute_process(COMMAND make install WORKING_DIRECTORY ${_interm_path})
+      execute_process(COMMAND make install ${_make_flags} WORKING_DIRECTORY ${_interm_path})
     endforeach()
     if("${_arch}" STREQUAL "ub")
       set(_interm_arm64_path ${_build_path}/interm/arm64/install-root)
@@ -487,7 +502,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
     list(APPEND _ffmpeg_build_options "--prefix=\"${_build_path}/install-root\"")
     string(JOIN ";" _full_build_options ${_ffmpeg_build_options})
     execute_process(COMMAND ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_build_path})
-    execute_process(COMMAND make install WORKING_DIRECTORY ${_build_path})
+    execute_process(COMMAND make install ${_make_flags} WORKING_DIRECTORY ${_build_path})
   endif()
 endfunction()
 
