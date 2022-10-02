@@ -1,5 +1,13 @@
 cmake_minimum_required(VERSION 3.5)
 
+include(ProcessorCount)
+ProcessorCount(numCPUs)
+if(NOT numCPUs EQUAL 0)
+  set(_make_flags -j${numCPUs})
+else()
+  set(_make_flags -j1)
+endif()
+
 function(rewrite_ninja_ub_workaround _build_path)
   if(EXISTS ${_build_path}/build.ninja)
     file(STRINGS ${_build_path}/build.ninja input_ninja NEWLINE_CONSUME)
@@ -397,11 +405,7 @@ function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option
         --disable-samples
       WORKING_DIRECTORY ${_build_path})
     execute_process(COMMAND make clean WORKING_DIRECTORY ${_build_path})
-    execute_process(COMMAND
-      ${CMAKE_COMMAND} -E env
-        CFLAGS=${_cflags}
-        CXXFLAGS=${_cxxflags}
-      make install WORKING_DIRECTORY ${_build_path})
+    execute_process(COMMAND make install ${_make_flags} WORKING_DIRECTORY ${_build_path})
   endif()
 endfunction()
 
@@ -476,7 +480,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
         CXXFLAGS=${_build_flags}
         LDFLAGS=${_build_flags}
         ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_interm_path})
-      execute_process(COMMAND make install WORKING_DIRECTORY ${_interm_path})
+      execute_process(COMMAND make install ${_make_flags} WORKING_DIRECTORY ${_interm_path})
     endforeach()
     if("${_arch}" STREQUAL "ub")
       set(_interm_arm64_path ${_build_path}/interm/arm64/install-root)
@@ -498,7 +502,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
     list(APPEND _ffmpeg_build_options "--prefix=\"${_build_path}/install-root\"")
     string(JOIN ";" _full_build_options ${_ffmpeg_build_options})
     execute_process(COMMAND ${_source_path}/configure ${_full_build_options} WORKING_DIRECTORY ${_build_path})
-    execute_process(COMMAND make install WORKING_DIRECTORY ${_build_path})
+    execute_process(COMMAND make install ${_make_flags} WORKING_DIRECTORY ${_build_path})
   endif()
 endfunction()
 
