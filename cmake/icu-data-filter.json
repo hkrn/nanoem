@@ -1,0 +1,11 @@
+{
+  "strategy": "additive",
+  "featureFilters": {
+    "conversion_mappings": {
+      "includelist": [
+        "ibm-943_P15A-2003"
+      ]
+    },
+    "cnvalias": "include"
+  }
+}

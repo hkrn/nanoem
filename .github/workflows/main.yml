@@ -10,7 +10,7 @@ env:
   FFMPEG_VERSION_TAG: n4.4.1
   FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
   GLFW_VERSION_TAG: 3.3.8
-  ICU_VERSION_TAG: release-57-2
+  ICU_VERSION_TAG: release-71-1
   NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
   NANOEM_BUILD_ARTIFACT_DIRECTORY: ${{ github.workspace }}/out/core
 

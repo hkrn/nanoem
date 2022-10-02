@@ -19,7 +19,7 @@ This software uses below libraries.
   - [glslang](https://github.com/KhronosGroup/glslang/)
     - [BSDL](https://www.khronos.org/opengles/sdk/tools/Reference-Compiler/)
   - [ICU](http://site.icu-project.org/)
-    - [ICUL](https://github.com/unicode-org/icu/blob/b7c2034642ce01ba6ffb9418f26234efb2549d08/icu4c/LICENSE)
+    - [ICUL](https://github.com/unicode-org/icu/blob/c205e7ee49a7086a28b9c275fcfdac9ca3dc815d/icu4c/LICENSE)
   - [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/docs/ini.md)
     - [PD/MIT](https://github.com/mattiasgustavsson/libs/blob/master/README.md)
   - [Dear ImGui](https://github.com/ocornut/imgui)
