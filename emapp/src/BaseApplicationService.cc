@@ -5682,7 +5682,12 @@ BaseApplicationService::handleSGXMessage(void *opaque, const char *message, cons
             sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("error"));
             sentry_add_breadcrumb(breadcrumb);
         }
-        EMLOG_DEBUG("[{}:{}] {}", file, line, message);
+        if (file) {
+            EMLOG_DEBUG("Captured SGX error: file={} line={} message=\"{}\"", file, line, message);
+        }
+        else if (message) {
+            EMLOG_DEBUG("Captured SGX error: message=\"{}\"", message);
+        }
         self->m_handledSGXMessages.insert(key);
     }
     SG_INSERT_MARKER(message);
