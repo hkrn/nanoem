@@ -7,6 +7,7 @@
 use std::{
     collections::{HashMap, HashSet},
     env::current_dir,
+    sync::Arc,
 };
 
 use anyhow::Result;
@@ -15,7 +16,7 @@ use rand::{thread_rng, Rng};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use wasmer::Store;
-use wasmer_wasi::{Pipe, WasiEnv, WasiState};
+use wasmer_wasi::{types::__WASI_STDOUT_FILENO, Pipe, WasiFunctionEnv, WasiState};
 
 use super::plugin::{MotionIOPlugin, MotionIOPluginController};
 
@@ -25,9 +26,17 @@ struct PluginOutput {
     arguments: Option<HashMap<String, Value>>,
 }
 
-fn create_wasi_env() -> Result<WasiEnv> {
+fn build_type_and_flags() -> (&'static str, &'static str) {
+    if cfg!(debug_assertions) {
+        ("debug", "")
+    } else {
+        ("release-lto", " --profile release-lto")
+    }
+}
+
+fn create_wasi_env(store: &mut Store) -> Result<WasiFunctionEnv> {
     let stdout = Box::new(Pipe::new());
-    Ok(WasiState::new("nanoem").stdout(stdout).finalize()?)
+    Ok(WasiState::new("nanoem").stdout(stdout).finalize(store)?)
 }
 
 fn create_random_data(size: usize) -> Vec<u8> {
@@ -40,17 +49,21 @@ fn create_random_data(size: usize) -> Vec<u8> {
     data
 }
 
-fn flush_plugin_output(env: &mut WasiEnv) -> Result<()> {
-    let mut state = env.state();
-    let stdout = state.fs.stdout_mut()?.as_mut().unwrap();
+fn flush_plugin_output(controller: &mut MotionIOPluginController) -> Result<()> {
+    let plugin = controller.all_plugins_mut().first_mut().unwrap();
+    let env = plugin.wasi_env();
+    let mut stdout = env.state().stdout()?;
+    let stdout = stdout.as_mut().unwrap();
     let mut v = vec![];
     stdout.read_to_end(&mut v)?;
     Ok(())
 }
 
-fn read_plugin_output(env: &mut WasiEnv) -> Result<Vec<PluginOutput>> {
-    let mut state = env.state();
-    let stdout = state.fs.stdout_mut()?.as_mut().unwrap();
+fn read_plugin_output(controller: &mut MotionIOPluginController) -> Result<Vec<PluginOutput>> {
+    let plugin = controller.all_plugins_mut().first_mut().unwrap();
+    let env = plugin.wasi_env();
+    let mut stdout = env.state().stdout()?;
+    let stdout = stdout.as_mut().unwrap();
     let mut s = String::new();
     stdout.read_to_string(&mut s)?;
     let mut data: Vec<_> = s.split('\n').collect();
@@ -61,30 +74,29 @@ fn read_plugin_output(env: &mut WasiEnv) -> Result<Vec<PluginOutput>> {
         .collect())
 }
 
-fn inner_create_controller(path: &str, env: &mut WasiEnv) -> Result<MotionIOPluginController> {
+fn inner_create_controller(path: &str) -> Result<MotionIOPluginController> {
     let path = current_dir()?.parent().unwrap().join(path);
-    let store = Store::default();
+    let mut store = Store::default();
+    let env = create_wasi_env(&mut store)?;
     let bytes = std::fs::read(path)?;
-    let plugin = MotionIOPlugin::new(&bytes, &store, env)?;
+    let plugin = MotionIOPlugin::new(&bytes, env, store)?;
     Ok(MotionIOPluginController::new(vec![plugin]))
 }
 
 #[test]
 fn from_path() -> Result<()> {
-    let ty = if cfg!(debug_assertions) {
-        "debug"
-    } else {
-        "release"
-    };
+    let (ty, _) = build_type_and_flags();
     let path = current_dir()?
         .parent()
         .unwrap()
         .join(format!("target/wasm32-wasi/{}/deps", ty));
-    let store = Store::default();
-    let mut env = create_wasi_env()?;
-    let mut controller = MotionIOPluginController::from_path(&path, &store, &mut env)?;
+    let mut controller = MotionIOPluginController::from_path(&path)?;
     let mut names = vec![];
     for plugin in controller.all_plugins_mut() {
+        let stdout = Box::new(Pipe::new());
+        let state = Arc::clone(&plugin.wasi_env().state);
+        let inodes = state.inodes.read().unwrap();
+        state.fs.swap_file(&inodes, __WASI_STDOUT_FILENO, stdout)?;
         plugin.create()?;
         names.push(plugin.name()?);
     }

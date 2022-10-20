@@ -6,14 +6,27 @@
 
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
-use std::os::raw::{c_void, c_char};
-use std::{collections::HashMap, ffi::CStr, ptr::null_mut};
+use std::os::raw::{c_char, c_void};
+use std::{collections::HashMap, ffi::CStr};
 
 #[allow(non_camel_case_types)]
 pub type nanoem_application_plugin_status_t = i32;
 
 #[allow(non_camel_case_types)]
-pub struct nanoem_application_plugin_model_io_t {}
+#[derive(Default)]
+pub struct nanoem_application_plugin_model_io_t {
+    function_index: i32,
+}
+
+impl nanoem_application_plugin_model_io_t {
+    pub(self) unsafe fn get_mut(plugin: *mut Self) -> Option<&'static mut Self> {
+        if !plugin.is_null() {
+            Some(&mut (*plugin))
+        } else {
+            None
+        }
+    }
+}
 
 macro_rules! function {
     () => {{
@@ -83,7 +96,8 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreate(
         })
         .unwrap()
     );
-    null_mut()
+    let plugin = Box::new(nanoem_application_plugin_model_io_t::default());
+    std::mem::transmute(plugin)
 }
 
 /// # Safety
@@ -175,7 +189,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCountAllFunctions(
         })
         .unwrap()
     );
-    1
+    2
 }
 
 /// # Safety
@@ -204,13 +218,16 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFunctionName(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetFunction(
-    _plugin: *mut nanoem_application_plugin_model_io_t,
+    plugin: *mut nanoem_application_plugin_model_io_t,
     index: i32,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let mut arguments = HashMap::new();
     arguments.insert("index".to_owned(), json!(index));
     arguments.insert("status".to_owned(), json!(*status_ptr));
+    if let Some(plugin) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
+        plugin.function_index = index;
+    }
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -576,10 +593,15 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputModelData(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOExecute(
-    _plugin: *mut nanoem_application_plugin_model_io_t,
+    plugin: *mut nanoem_application_plugin_model_io_t,
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let mut arguments = HashMap::new();
+    if let Some(plugin) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
+        if plugin.function_index == 1 {
+            *status_ptr = -1;
+        }
+    }
     arguments.insert("status".to_owned(), json!(*status_ptr));
     println!(
         "{}",
@@ -771,7 +793,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetRecoverySuggestion(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIODestroy(
-    _plugin: *mut nanoem_application_plugin_model_io_t,
+    plugin: *mut nanoem_application_plugin_model_io_t,
 ) {
     println!(
         "{}",
@@ -780,7 +802,10 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIODestroy(
             ..Default::default()
         })
         .unwrap()
-    )
+    );
+    if !plugin.is_null() {
+        let _: Box<nanoem_application_plugin_model_io_t> = std::mem::transmute(plugin);
+    }
 }
 
 /// # Safety
