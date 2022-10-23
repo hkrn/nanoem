@@ -34,25 +34,16 @@
 #include "nanomsg/nn.h"
 #include "nanomsg/pubsub.h"
 #if defined(NANOEM_ENABLE_TBB)
-#include "tbb/task.h"
+#include "tbb/task_group.h"
 #else /* NANOEM_ENABLE_TBB */
 #include <new>
 namespace tbb {
-struct task {
-    virtual ~task()
-    {
-    }
-    virtual task *execute() = 0;
-    static std::nothrow_t
-    allocate_root()
-    {
-        return std::nothrow;
-    }
+struct task_group {
+    template<typename F>
     static void
-    spawn(task &task)
+    run_and_wait(const F &task)
     {
-        task.execute();
-        delete &task;
+        task();
     }
 };
 } /* namespace tbb */
@@ -71,20 +62,20 @@ struct RecoveryCallbackArgument {
     ThreadedApplicationService *m_servicePtr;
 };
 
-struct RecoveryWorker : tbb::task {
+struct RecoveryWorker {
     static IModalDialog *cancel(void *userData, Project *project);
 
     RecoveryWorker(ThreadedApplicationService *service, Project *project, const URI &fileURI);
     ~RecoveryWorker() NANOEM_DECL_NOEXCEPT;
 
-    tbb::task *execute();
+    void operator()() const;
 
     ThreadedApplicationService *m_service;
     Project *m_project;
     IModalDialog *m_dialog;
     bx::Thread m_thread;
     URI m_fileURI;
-    bool m_cancelled;
+    volatile bool m_cancelled;
 };
 
 IModalDialog *
@@ -108,8 +99,8 @@ RecoveryWorker::~RecoveryWorker() NANOEM_DECL_NOEXCEPT
 {
 }
 
-tbb::task *
-RecoveryWorker::execute()
+void
+RecoveryWorker::operator()() const
 {
     FileReaderScope scope(nullptr);
     Error error;
@@ -120,7 +111,6 @@ RecoveryWorker::execute()
     if (!m_cancelled) {
         m_service->clearAllModalDialog();
     }
-    return nullptr;
 }
 
 class CancelPublisherWorker NANOEM_DECL_SEALED : public ICancelPublisher, private NonCopyable {
@@ -261,12 +251,12 @@ CancelPublisherWorker::close()
     }
 }
 
-class LoadingAllModelIOPluginsWorker NANOEM_DECL_SEALED : public tbb::task, private NonCopyable {
+class LoadingAllModelIOPluginsWorker NANOEM_DECL_SEALED : private NonCopyable {
 public:
     LoadingAllModelIOPluginsWorker(int language, const URIList &locations, ThreadedApplicationService *service);
     ~LoadingAllModelIOPluginsWorker() NANOEM_DECL_NOEXCEPT;
 
-    tbb::task *execute();
+    void operator()() const;
 
 private:
     const URIList m_locations;
@@ -286,20 +276,19 @@ LoadingAllModelIOPluginsWorker::~LoadingAllModelIOPluginsWorker() NANOEM_DECL_NO
 {
 }
 
-tbb::task *
-LoadingAllModelIOPluginsWorker::execute()
+void
+LoadingAllModelIOPluginsWorker::operator()() const
 {
     m_service->defaultFileManager()->initializeAllModelIOPlugins(m_locations);
     m_service->sendLoadingAllModelIOPluginsEventMessage(m_language);
-    return nullptr;
 }
 
-class LoadingAllMotionIOPluginsWorker NANOEM_DECL_SEALED : public tbb::task, private NonCopyable {
+class LoadingAllMotionIOPluginsWorker NANOEM_DECL_SEALED : private NonCopyable {
 public:
     LoadingAllMotionIOPluginsWorker(int language, const URIList &locations, ThreadedApplicationService *service);
     ~LoadingAllMotionIOPluginsWorker() NANOEM_DECL_NOEXCEPT;
 
-    tbb::task *execute();
+    void operator()() const;
 
 private:
     const URIList m_locations;
@@ -319,12 +308,11 @@ LoadingAllMotionIOPluginsWorker::~LoadingAllMotionIOPluginsWorker() NANOEM_DECL_
 {
 }
 
-tbb::task *
-LoadingAllMotionIOPluginsWorker::execute()
+void
+LoadingAllMotionIOPluginsWorker::operator()() const
 {
     m_service->defaultFileManager()->initializeAllMotionIOPlugins(m_locations);
     m_service->sendLoadingAllMotionIOPluginsEventMessage(m_language);
-    return nullptr;
 }
 
 } /* namespace anonymous */
@@ -550,11 +538,14 @@ ThreadedApplicationService::handleCommandMessage(Nanoem__Application__Command *c
             const Nanoem__Application__URI *uri = commandPtr->file_uris[i];
             fileURIs.push_back(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         }
-        int language = project ? project->castLanguage() : 0;
-        LoadingAllModelIOPluginsWorker *worker =
-            new (tbb::task::allocate_root()) LoadingAllModelIOPluginsWorker(language, fileURIs, this);
-        tbb::task::spawn(*worker);
-#endif
+        if (!fileURIs.empty()) {
+            nanoem_u64_t started = stm_now();
+            int language = project ? project->castLanguage() : 0;
+            tbb::task_group tg;
+            tg.run_and_wait(LoadingAllModelIOPluginsWorker(language, fileURIs, this));
+            EMLOG_INFO("All {} model I/O plugins area loaded in {} msecs", fileURIs.size(), stm_ms(stm_since(started)));
+        }
+#endif /* NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN */
         break;
     }
     case NANOEM__APPLICATION__COMMAND__TYPE_LOAD_ALL_MOTION_IO_PLUGINS: {
@@ -565,11 +556,14 @@ ThreadedApplicationService::handleCommandMessage(Nanoem__Application__Command *c
             const Nanoem__Application__URI *uri = commandPtr->file_uris[i];
             fileURIs.push_back(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         }
-        int language = project ? project->castLanguage() : 0;
-        LoadingAllMotionIOPluginsWorker *worker =
-            new (tbb::task::allocate_root()) LoadingAllMotionIOPluginsWorker(language, fileURIs, this);
-        tbb::task::spawn(*worker);
-#endif
+        if (!fileURIs.empty()) {
+            nanoem_u64_t started = stm_now();
+            int language = project ? project->castLanguage() : 0;
+            tbb::task_group tg;
+            tg.run_and_wait(LoadingAllMotionIOPluginsWorker(language, fileURIs, this));
+            EMLOG_DEBUG("All {} motion I/O plugins area loaded in {} msecs", fileURIs.size(), stm_ms(stm_since(started)));
+        }
+#endif /* NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN */
         break;
     }
     default:
@@ -684,14 +678,14 @@ ThreadedApplicationService::startRecoveryFromRedo(const URI &fileURI)
     const ITranslator *tr = translator();
     const String &title = tr->translate("nanoem.window.dialog.redo.progress.title");
     const String &message = tr->translate("nanoem.window.dialog.redo.progress.message");
-    RecoveryWorker *worker =
-        new (tbb::task::allocate_root()) RecoveryWorker(this, projectHolder()->currentProject(), fileURI);
-    worker->m_dialog = ModalDialogFactory::createProgressDialog(this, title, message, RecoveryWorker::cancel, worker);
-    tbb::task::spawn(*worker);
+    RecoveryWorker worker(this, projectHolder()->currentProject(), fileURI);
+    worker.m_dialog = ModalDialogFactory::createProgressDialog(this, title, message, RecoveryWorker::cancel, &worker);
+    tbb::task_group tg;
+    tg.run_and_wait(worker);
     IModalDialog *dialog = nullptr;
 #if defined(NANOEM_ENABLE_TBB)
-    dialog = worker->m_dialog;
-#endif
+    dialog = worker.m_dialog;
+#endif /* NANOEM_ENABLE_TBB */
     return dialog;
 }
 

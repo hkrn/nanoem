@@ -61,7 +61,7 @@ This software uses below libraries.
   - [STB](https://github.com/nothings/stb/)
     - [PD/MIT](https://github.com/nothings/stb/blob/af1a5bc352164740c1cc1354942b1c6b72eacb8a/README.md#whats-the-license)
   - [TBB](https://github.com/wjakob/tbb/)
-    - [Apache License 2.0](https://github.com/wjakob/tbb/blob/20357d83871e4cb93b2c724fe0c337cd999fd14f/LICENSE)
+    - [Apache License 2.0](https://github.com/wjakob/tbb/blob/3c91aea522427b3a0cd6022b2d3a142acaa8136d/LICENSE)
   - [zlib](https://github.com/madler/zlib/)
     - [zlib](https://github.com/madler/zlib/blob/cacf7f1d4e3d44d871b605da3b647f07d718623f/README)
 

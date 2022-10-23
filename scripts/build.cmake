@@ -71,6 +71,15 @@ function(compile_zlib _cmake_build_type _generator _toolset_option _arch_option 
                                            -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
   rewrite_cmake_cache(${_build_path})
   execute_build(${_build_path})
+  # delete dynamic librarires not to select shared library at linking
+  file(GLOB _files ${_build_path}/install-root/lib/libz*.dylib)
+  foreach(_item ${_files})
+    file(REMOVE ${_item})
+  endforeach()
+  file(GLOB _files ${_build_path}/install-rootl/lib/libz*.so)
+  foreach(_item ${_files})
+    file(REMOVE ${_item})
+  endforeach()
 endfunction()
 
 function(compile_libsoundio _cmake_build_type _generator _toolset_option _arch_option _triple_path)
@@ -193,9 +202,7 @@ function(compile_tbb _cmake_build_type _generator _toolset_option _arch_option _
   execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
                                            ${CMAKE_COMMAND}
                                            ${global_cmake_flags}
-                                           -DTBB_BUILD_SHARED=OFF
-                                           -DTBB_BUILD_STATIC=ON
-                                           -DTBB_BUILD_TESTS=OFF
+                                           -DTBB_TEST=OFF
                                            -DCMAKE_BUILD_TYPE=${_cmake_build_type}
                                            -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
                                            -DCMAKE_INSTALL_LIBDIR=lib

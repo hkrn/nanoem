@@ -28,7 +28,7 @@ public:
     ~Redo() NANOEM_DECL_NOEXCEPT;
 
     void loadAll(ISeekableReader *reader, BaseApplicationService *application, Error &error);
-    void loadAllAsync(ISeekableReader *reader, IModalDialog *dialog, bool *cancelled, Error &error);
+    void loadAllAsync(ISeekableReader *reader, IModalDialog *dialog, const volatile bool *cancelled, Error &error);
     bool save(IWriter *writer, nanoem_u32_t sequence, const Nanoem__Application__Command *command, Error &error);
 
 private:
@@ -37,7 +37,7 @@ private:
     void inflateChunk(const ByteArray &input, ByteArray &output);
     void sendCommandMessage(int commandStreamSocket, const ByteArray &inflated, nanoem_u16_t commandType,
         IWriter *writer, nanoem_u32_t sequence);
-    void waitEventMessage(int commandStreamSocket, int eventStreamSocket, bool *cancelled);
+    void waitEventMessage(int commandStreamSocket, int eventStreamSocket, const volatile bool *cancelled);
 
     ByteArray m_interm;
     Project *m_project;

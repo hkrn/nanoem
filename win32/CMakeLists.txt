@@ -122,12 +122,22 @@ if(TARGET emapp_peplugin)
                      COMMAND ${CMAKE_COMMAND} ARGS -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/Managed"
                      COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${PROJECT_SOURCE_DIR}/emapp/plugins/PEPlugin/bin/Release/netstandard2.1/PEPlugin.dll" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/Managed")
 endif()
+if(NANOEM_ENABLE_TBB)
+  nanoem_cmake_get_install_path("tbb" TBB_BASE_PATH TBB_INSTALL_PATH_DEBUG TBB_INSTALL_PATH_RELEASE)
+  find_path(TBB_DLL_PATH tbb12.dll PATH_SUFFIXES bin PATHS ${TBB_INSTALL_PATH_RELEASE} NO_DEFAULT_PATH NO_CMAKE_FIND_ROOT_PATH)
+  mark_as_advanced(TBB_DLL_PATH)
+  add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
+                     COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${TBB_DLL_PATH}/tbb12.dll" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/tbb12.dll")
+endif()
 
 # installation
 install(TARGETS ${NANOEM_EXECUTABLE_NAME} DESTINATION .)
 if(NANOEM_ENABLE_SENTRY_SDK)
   install(FILES ${SENTRY_CRASHPAD_DLL_PATH}/sentry.dll DESTINATION .)
   install(FILES ${SENTRY_CRASHPAD_HANDLER_PATH} DESTINATION plugins)
+endif()
+if(NANOEM_ENABLE_TBB)
+  install(FILES ${TBB_DLL_PATH}/tbb12.dll DESTINATION .)
 endif()
 install(CODE "
   set(NANOEM_ENABLE_SENTRY_SDK ${NANOEM_ENABLE_SENTRY_SDK})
