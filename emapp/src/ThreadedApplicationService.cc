@@ -38,21 +38,12 @@
 #else /* NANOEM_ENABLE_TBB */
 #include <new>
 namespace tbb {
-struct task {
-    virtual ~task()
-    {
-    }
-    virtual task *execute() = 0;
-    static std::nothrow_t
-    allocate_root()
-    {
-        return std::nothrow;
-    }
+struct task_group {
+    template<typename F>
     static void
-    spawn(task &task)
+    run_and_wait(const F &task)
     {
-        task.execute();
-        delete &task;
+        task();
     }
 };
 } /* namespace tbb */

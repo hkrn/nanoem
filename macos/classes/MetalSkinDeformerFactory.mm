@@ -62,14 +62,14 @@ struct BatchUpdateMatrixBufferRunner {
                     memcpy(&m_matrices[i], &m, sizeof(m_matrices[0]));
                 }
             });
-#else
+#else /* NANOEM_ENABLE_TBB */
         dispatch_apply_f(numBones, queue, this, [](void *data, size_t i) {
             auto self = static_cast<BatchUpdateMatrixBufferRunner *>(data);
             const model::Bone *bone = self->m_bones[i];
             const bx::float4x4_t m = bone->skinningTransformMatrix();
             memcpy(&self->m_matrices[i], &m, sizeof(self->m_matrices[0]));
         });
-#endif
+#endif /* NANOEM_ENABLE_TBB */
     }
     id<MTLBuffer> m_uberBuffer;
     model::Bone *const *m_bones;
@@ -107,13 +107,13 @@ struct BatchUpdateMorphWeightBufferRunner {
                     m_weights[i + 1] = morph->weight();
                 }
             });
-#else
-        dispatch_apply_f(numVertices, queue, this, [](void *data, size_t i) {
-            auto self = static_cast<BatchUpdateVertexBufferRunner *>(data);
-            const model::Morph *morph = m_morphs[i];
-            m_weights[i] = morph->weight();
+#else /* NANOEM_ENABLE_TBB */
+        dispatch_apply_f(numMorphs, queue, this, [](void *data, size_t i) {
+            auto self = static_cast<BatchUpdateMorphWeightBufferRunner *>(data);
+            const model::Morph *morph = self->m_morphs[i];
+            self->m_weights[i] = morph->weight();
         });
-#endif
+#endif /* NANOEM_ENABLE_TBB */
     }
     id<MTLBuffer> m_uberBuffer;
     model::Morph *const *m_morphs;
