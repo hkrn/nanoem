@@ -73,7 +73,7 @@ Redo::loadAll(ISeekableReader *reader, BaseApplicationService *application, Erro
 }
 
 void
-Redo::loadAllAsync(ISeekableReader *reader, IModalDialog *dialog, bool *cancelled, Error &error)
+Redo::loadAllAsync(ISeekableReader *reader, IModalDialog *dialog, const volatile bool *cancelled, Error &error)
 {
     int commandStreamSocket = nn_socket(AF_SP, NN_PUB);
     int eventStreamSocket = nn_socket(AF_SP, NN_SUB);
@@ -277,7 +277,7 @@ Redo::sendCommandMessage(int commandStreamSocket, const ByteArray &inflated, nan
 }
 
 void
-Redo::waitEventMessage(int commandStreamSocket, int eventStreamSocket, bool *cancelled)
+Redo::waitEventMessage(int commandStreamSocket, int eventStreamSocket, const volatile bool *cancelled)
 {
     Nanoem__Application__PingPongCommand base = NANOEM__APPLICATION__PING_PONG_COMMAND__INIT;
     Nanoem__Application__Command command = NANOEM__APPLICATION__COMMAND__INIT;

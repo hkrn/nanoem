@@ -61,9 +61,6 @@
 [submodule "dependencies/sentry-native"]
 	path = dependencies/sentry-native
 	url = https://github.com/getsentry/sentry-native.git
-[submodule "dependencies/tbb"]
-	path = dependencies/tbb
-	url = https://github.com/wjakob/tbb.git
 [submodule "dependencies/imguifiledialog"]
 	path = dependencies/imguifiledialog
 	url = https://github.com/aiekick/ImGuiFileDialog
@@ -76,3 +73,8 @@
 [submodule "dependencies/spdlog"]
 	path = dependencies/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "dependencies/tbb"]
+	path = dependencies/tbb
+	url = https://github.com/oneapi-src/oneTBB
+[submodule "tbb"]
+	url = https://github.com/oneapi-src/oneTBB
