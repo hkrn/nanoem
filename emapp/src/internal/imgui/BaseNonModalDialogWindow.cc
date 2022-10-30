@@ -41,10 +41,9 @@ void
 BaseNonModalDialogWindow::detectUpDown(bool &up, bool &down) NANOEM_DECL_NOEXCEPT
 {
     const ImGuiIO &io = ImGui::GetIO();
-    const int keyUpIndex = ImGui::GetKeyIndex(ImGuiKey_UpArrow), keyDownIndex = ImGui::GetKeyIndex(ImGuiKey_DownArrow);
     const bool focused = ImGui::IsWindowFocused();
-    up = focused && ImGui::GetKeyPressedAmount(keyUpIndex, io.KeyRepeatDelay, 0.02f) > 0,
-    down = focused && ImGui::GetKeyPressedAmount(keyDownIndex, io.KeyRepeatDelay, 0.02f) > 0;
+    up = focused && ImGui::GetKeyPressedAmount(ImGuiKey_UpArrow, io.KeyRepeatDelay, 0.02f) > 0,
+    down = focused && ImGui::GetKeyPressedAmount(ImGuiKey_DownArrow, io.KeyRepeatDelay, 0.02f) > 0;
 }
 
 void

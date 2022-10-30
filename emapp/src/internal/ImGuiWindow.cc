@@ -5357,11 +5357,11 @@ ImGuiWindow::setupDeviceInput(Project *project)
         io.AddMouseButtonEvent(1, m_screenCursor.m_pressed[Project::kCursorTypeMouseRight]);
         io.AddMouseButtonEvent(2, m_screenCursor.m_pressed[Project::kCursorTypeMouseMiddle]);
         const Project::CursorModifierType modifiers = m_screenCursor.m_modifiers;
-        io.AddKeyEvent(ImGuiKey_ModAlt,
+        io.AddKeyEvent(ImGuiMod_Alt,
             EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeAlt));
-        io.AddKeyEvent(ImGuiKey_ModCtrl,
+        io.AddKeyEvent(ImGuiMod_Ctrl,
             EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeControl));
-        io.AddKeyEvent(ImGuiKey_ModShift,
+        io.AddKeyEvent(ImGuiMod_Shift,
             EnumUtils::isEnabledT<Project::CursorModifierType>(modifiers, Project::kCursorModifierTypeShift));
     }
     else
@@ -5373,9 +5373,9 @@ ImGuiWindow::setupDeviceInput(Project *project)
         io.AddMouseButtonEvent(1, project->isCursorPressed(Project::kCursorTypeMouseRight));
         io.AddMouseButtonEvent(2, project->isCursorPressed(Project::kCursorTypeMouseMiddle));
         const nanoem_u32_t modifiers = project->cursorModifiers();
-        io.AddKeyEvent(ImGuiKey_ModAlt, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeAlt));
-        io.AddKeyEvent(ImGuiKey_ModCtrl, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeControl));
-        io.AddKeyEvent(ImGuiKey_ModShift, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeShift));
+        io.AddKeyEvent(ImGuiMod_Alt, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeAlt));
+        io.AddKeyEvent(ImGuiMod_Ctrl, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeControl));
+        io.AddKeyEvent(ImGuiMod_Shift, EnumUtils::isEnabled(modifiers, Project::kCursorModifierTypeShift));
     }
 }
 
@@ -5504,7 +5504,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
         ImGui::SameLine();
         if (EnumUtils::isEnabled(buttons, IModalDialog::kButtonTypeOk)) {
             if (handleButton("OK", buttonWidth, dialog->isButtonEnabled(IModalDialog::kButtonTypeOk)) ||
-                ImGui::IsKeyPressed(BaseApplicationService::kKeyType_ENTER)) {
+                ImGui::IsKeyPressed(ImGuiKey_Enter)) {
                 m_modalDialogPressedButton = IModalDialog::kButtonTypeOk;
                 ImGui::CloseCurrentPopup();
             }
@@ -5513,7 +5513,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
         if (EnumUtils::isEnabled(buttons, IModalDialog::kButtonTypeSave)) {
             if (handleTranslatedButton("nanoem.window.dialog.buttons.save", buttonWidth,
                     dialog->isButtonEnabled(IModalDialog::kButtonTypeSave)) ||
-                ImGui::IsKeyPressed(BaseApplicationService::kKeyType_ENTER)) {
+                ImGui::IsKeyPressed(ImGuiKey_Enter)) {
                 m_modalDialogPressedButton = IModalDialog::kButtonTypeSave;
                 ImGui::CloseCurrentPopup();
             }
@@ -5530,7 +5530,7 @@ ImGuiWindow::layoutModalDialogWindow(IModalDialog *dialog, Project *project, con
         if (EnumUtils::isEnabled(buttons, IModalDialog::kButtonTypeCancel)) {
             if (handleTranslatedButton("nanoem.window.dialog.buttons.cancel", buttonWidth,
                     dialog->isButtonEnabled(IModalDialog::kButtonTypeCancel)) ||
-                ImGui::IsKeyPressed(BaseApplicationService::kKeyType_ESCAPE)) {
+                ImGui::IsKeyPressed(ImGuiKey_Escape)) {
                 m_modalDialogPressedButton = IModalDialog::kButtonTypeCancel;
                 ImGui::CloseCurrentPopup();
             }

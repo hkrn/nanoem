@@ -162,6 +162,7 @@ function(nanoem_emapp_build_emapp suffix)
                ${_compile_definition_embundle})
   set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
                IMGUI_DISABLE_OBSOLETE_FUNCTIONS
+               IMGUI_DISABLE_OBSOLETE_KEYIO
                IMGUI_DISABLE_INCLUDE_IMCONFIG_H)
   if(NANOEM_ENABLE_IMGUI_INDEX32)
     set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
