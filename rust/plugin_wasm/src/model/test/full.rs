@@ -8,6 +8,7 @@ use anyhow::{Context, Result};
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
+use wasmer_wasi::WasiBidirectionalSharedPipePair;
 
 use crate::model::{
     plugin::ModelIOPluginController,
@@ -16,22 +17,24 @@ use crate::model::{
 
 use super::{build_type_and_flags, inner_create_controller};
 
-fn create_controller() -> Result<ModelIOPluginController> {
+fn create_controller(
+    pipe: &mut WasiBidirectionalSharedPipePair,
+) -> Result<ModelIOPluginController> {
     let package = "plugin_wasm_test_model_full";
     let (ty, flag) = build_type_and_flags();
-    inner_create_controller(&format!("target/wasm32-wasi/{}/{}.wasm", ty, package)).with_context(
-        || {
+    inner_create_controller(pipe, &format!("target/wasm32-wasi/{}/{}.wasm", ty, package))
+        .with_context(|| {
             format!(
                 "try build with \"cargo build --package {} --target wasm32-wasi{}\"",
                 package, flag
             )
-        },
-    )
+        })
 }
 
 #[test]
 fn create() -> Result<()> {
-    let result = create_controller();
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let result = create_controller(&mut pipe);
     assert!(result.is_ok());
     let mut controller = result?;
     assert!(controller.initialize().is_ok());
@@ -71,7 +74,7 @@ fn create() -> Result<()> {
                 })
             },
         ],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     assert_eq!(2, controller.count_all_functions());
     assert_eq!(
@@ -95,18 +98,19 @@ fn create() -> Result<()> {
                 ..Default::default()
             },
         ],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     Ok(())
 }
 
 #[test]
 fn set_language() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_language(0).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -115,7 +119,7 @@ fn set_language() -> Result<()> {
                 "value".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -124,12 +128,13 @@ fn set_language() -> Result<()> {
 
 #[test]
 fn execute() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_input_model_data(&data).is_ok());
     assert!(controller.execute().is_ok());
     let output = controller.get_output_data();
@@ -166,7 +171,7 @@ fn execute() -> Result<()> {
                 })
             },
         ],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -175,12 +180,13 @@ fn execute() -> Result<()> {
 
 #[test]
 fn set_all_selected_vertex_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_vertex_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -191,7 +197,7 @@ fn set_all_selected_vertex_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -200,12 +206,13 @@ fn set_all_selected_vertex_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_material_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_material_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -217,7 +224,7 @@ fn set_all_selected_material_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -226,12 +233,13 @@ fn set_all_selected_material_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_bone_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_bone_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -242,7 +250,7 @@ fn set_all_selected_bone_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -251,12 +259,13 @@ fn set_all_selected_bone_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_morph_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_morph_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -267,7 +276,7 @@ fn set_all_selected_morph_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -276,12 +285,13 @@ fn set_all_selected_morph_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_label_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_label_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -292,7 +302,7 @@ fn set_all_selected_label_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -301,12 +311,13 @@ fn set_all_selected_label_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_rigid_body_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_rigid_body_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -318,7 +329,7 @@ fn set_all_selected_rigid_body_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -327,12 +338,13 @@ fn set_all_selected_rigid_body_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_joint_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_joint_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -343,7 +355,7 @@ fn set_all_selected_joint_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -352,12 +364,13 @@ fn set_all_selected_joint_indices() -> Result<()> {
 
 #[test]
 fn set_all_selected_soft_body_indices() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, i32::MAX];
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_all_selected_soft_body_indices(data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -369,7 +382,7 @@ fn set_all_selected_soft_body_indices() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -378,12 +391,13 @@ fn set_all_selected_soft_body_indices() -> Result<()> {
 
 #[test]
 fn set_audio_description() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_audio_description(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -394,7 +408,7 @@ fn set_audio_description() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -403,12 +417,13 @@ fn set_audio_description() -> Result<()> {
 
 #[test]
 fn set_audio_data() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_audio_data(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -419,7 +434,7 @@ fn set_audio_data() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -428,12 +443,13 @@ fn set_audio_data() -> Result<()> {
 
 #[test]
 fn set_camera_description() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_camera_description(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -444,7 +460,7 @@ fn set_camera_description() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -453,12 +469,13 @@ fn set_camera_description() -> Result<()> {
 
 #[test]
 fn set_light_description() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.set_light_description(&data).is_ok());
     assert_eq!(
         vec![PluginOutput {
@@ -469,7 +486,7 @@ fn set_light_description() -> Result<()> {
                 "status".to_owned() => json!(0),
             })
         },],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -478,12 +495,13 @@ fn set_light_description() -> Result<()> {
 
 #[test]
 fn ui_window() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
     controller.create()?;
     controller.set_function(0)?;
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     assert!(controller.load_ui_window_layout().is_ok());
     let output = controller.get_ui_window_layout();
     assert!(output.is_ok());
@@ -524,7 +542,7 @@ fn ui_window() -> Result<()> {
                 })
             },
         ],
-        read_plugin_output(&mut controller)?
+        read_plugin_output(&mut pipe)?
     );
     controller.destroy();
     controller.terminate();
@@ -533,16 +551,17 @@ fn ui_window() -> Result<()> {
 
 #[test]
 fn get_failure_reason() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     controller.initialize()?;
     controller.create()?;
     controller.set_function(1)?;
     controller.execute().unwrap_or_default();
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     let result = controller.failure_reason();
     assert!(result.is_some());
     assert_eq!("Failure Reason", result.unwrap());
-    assert!(read_plugin_output(&mut controller)?.is_empty());
+    assert!(read_plugin_output(&mut pipe)?.is_empty());
     controller.destroy();
     controller.terminate();
     Ok(())
@@ -550,16 +569,17 @@ fn get_failure_reason() -> Result<()> {
 
 #[test]
 fn get_recovery_suggestion() -> Result<()> {
-    let mut controller = create_controller()?;
+    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut controller = create_controller(&mut pipe)?;
     controller.initialize()?;
     controller.create()?;
     controller.set_function(1)?;
     controller.execute().unwrap_or_default();
-    flush_plugin_output(&mut controller)?;
+    flush_plugin_output(&mut pipe)?;
     let result = controller.recovery_suggestion();
     assert!(result.is_some());
     assert_eq!("Recovery Suggestion", result.unwrap());
-    assert!(read_plugin_output(&mut controller)?.is_empty());
+    assert!(read_plugin_output(&mut pipe)?.is_empty());
     controller.destroy();
     controller.terminate();
     Ok(())
