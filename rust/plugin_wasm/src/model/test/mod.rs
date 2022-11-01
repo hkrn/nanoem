@@ -7,6 +7,7 @@
 use std::{
     collections::{HashMap, HashSet},
     env::current_dir,
+    io::Read,
     sync::Arc,
 };
 
@@ -16,7 +17,9 @@ use rand::{thread_rng, Rng};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use wasmer::Store;
-use wasmer_wasi::{types::__WASI_STDOUT_FILENO, Pipe, WasiFunctionEnv, WasiState};
+use wasmer_wasi::{
+    types::__WASI_STDOUT_FILENO, Pipe, WasiBidirectionalSharedPipePair, WasiFunctionEnv, WasiState,
+};
 
 use super::plugin::{ModelIOPlugin, ModelIOPluginController};
 
@@ -34,9 +37,13 @@ fn build_type_and_flags() -> (&'static str, &'static str) {
     }
 }
 
-fn create_wasi_env(store: &mut Store) -> Result<WasiFunctionEnv> {
-    let stdout = Box::new(Pipe::new());
-    Ok(WasiState::new("nanoem").stdout(stdout).finalize(store)?)
+fn create_wasi_env(
+    pipe: &mut WasiBidirectionalSharedPipePair,
+    store: &mut Store,
+) -> Result<WasiFunctionEnv> {
+    Ok(WasiState::new("nanoem")
+        .stdout(Box::new(pipe.clone()))
+        .finalize(store)?)
 }
 
 fn create_random_data(size: usize) -> Vec<u8> {
@@ -49,23 +56,15 @@ fn create_random_data(size: usize) -> Vec<u8> {
     data
 }
 
-fn flush_plugin_output(controller: &mut ModelIOPluginController) -> Result<()> {
-    let plugin = controller.all_plugins_mut().first_mut().unwrap();
-    let env = plugin.wasi_env();
-    let mut stdout = env.state().stdout()?;
-    let stdout = stdout.as_mut().unwrap();
+fn flush_plugin_output(pipe: &mut WasiBidirectionalSharedPipePair) -> Result<()> {
     let mut v = vec![];
-    stdout.read_to_end(&mut v)?;
+    pipe.read_to_end(&mut v)?;
     Ok(())
 }
 
-fn read_plugin_output(controller: &mut ModelIOPluginController) -> Result<Vec<PluginOutput>> {
-    let plugin = controller.all_plugins_mut().first_mut().unwrap();
-    let env = plugin.wasi_env();
-    let mut stdout = env.state().stdout()?;
-    let stdout = stdout.as_mut().unwrap();
+fn read_plugin_output(pipe: &mut WasiBidirectionalSharedPipePair) -> Result<Vec<PluginOutput>> {
     let mut s = String::new();
-    stdout.read_to_string(&mut s)?;
+    pipe.read_to_string(&mut s)?;
     let mut data: Vec<_> = s.split('\n').collect();
     data.pop();
     Ok(data
@@ -74,10 +73,14 @@ fn read_plugin_output(controller: &mut ModelIOPluginController) -> Result<Vec<Pl
         .collect())
 }
 
-fn inner_create_controller(path: &str) -> Result<ModelIOPluginController> {
+fn inner_create_controller(
+    pipe: &mut WasiBidirectionalSharedPipePair,
+    path: &str,
+) -> Result<ModelIOPluginController> {
     let path = current_dir()?.parent().unwrap().join(path);
+    tracing::info!(path = ?path);
     let mut store = Store::default();
-    let env = create_wasi_env(&mut store)?;
+    let env = create_wasi_env(pipe, &mut store)?;
     let bytes = std::fs::read(path)?;
     let plugin = ModelIOPlugin::new(&bytes, env, store)?;
     Ok(ModelIOPluginController::new(vec![plugin]))

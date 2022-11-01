@@ -9,8 +9,14 @@ license = "MPL-2.0"
 anyhow = "1"
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
-wasmer = { version = "3.0.0-beta", default-features = false, features = ["sys", "cranelift"] }
-wasmer-wasi = { version = "3.0.0-beta", default-features = false, features = ["sys", "mem-fs"] }
+wasmer = { version = "3.0.0-rc.1", default-features = false, features = [
+    "sys",
+    "cranelift",
+] }
+wasmer-wasi = { version = "3.0.0-rc.1", default-features = false, features = [
+    "sys",
+    "mem-fs",
+] }
 walkdir = "2"
 
 [dev-dependencies]
