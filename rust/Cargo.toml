@@ -8,7 +8,7 @@ members = [
     "plugin_wasm_test_motion_minimum",
     "protobuf",
 ]
-default-members = ["plugin_wasm", "protobuf"]
+default-members = ["plugin_wasm"]
 
 [profile.release-lto]
 inherits = "release"
