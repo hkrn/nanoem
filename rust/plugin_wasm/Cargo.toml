@@ -7,6 +7,7 @@ license = "MPL-2.0"
 
 [dependencies]
 anyhow = "1"
+nanoem-protobuf = { version = "0.1", path = "../protobuf" }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
 wasmer = { version = "3.0.0-rc.1", default-features = false, features = [
