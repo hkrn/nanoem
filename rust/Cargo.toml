@@ -1,4 +1,5 @@
 [workspace]
+resolver = "2"
 members = [
     "plugin_wasm",
     "plugin_wasm_test_model_full",
