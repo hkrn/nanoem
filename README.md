@@ -7,6 +7,10 @@ nanoem is an [MMD (MikuMikuDance)](https://sites.google.com/view/vpvp/) compatib
 - [All Releases](https://github.com/hkrn/nanoem/releases)
 - [Usage Manual](https://nanoem.readthedocs.io) (Japanese)
 
+## Screenshot
+
+![nanoem for macOS](docs/images/application/screen_v340_small.png)
+
 ## Background and Design Concept
 
 MikuMikuDance (a.k.a MMD) is created on Windows via DirectX9. As such, it's unavailable to run on non-Windows deployment unless you use a virtual machine or emulation layer such as Wine.
