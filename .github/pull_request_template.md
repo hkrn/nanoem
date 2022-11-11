@@ -1,7 +1,5 @@
 ## Summary
 
-## Details
-
 ### Note
 
 * All commits **must be [signed](https://docs.github.com/en/github/authenticating-to-github/signing-commits)** to be merged
