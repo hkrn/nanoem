@@ -25,6 +25,9 @@
 #if NANOEM_ENABLE_LOGGING
 #define SPDLOG_DISABLE_DEFAULT_LOGGER
 #define SPDLOG_NO_EXCEPTIONS
+#ifdef NDEBUG
+#define SPDLOG_NO_SOURCE_LOC
+#endif /* NDEBUG */
 #include "spdlog/spdlog.h"
 #define EMLOG_TRACE(format, ...)                                                                                       \
     do {                                                                                                               \
