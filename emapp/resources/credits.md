@@ -49,7 +49,7 @@ This software uses below libraries.
   - [protobuf-c](https://github.com/protobuf-c/protobuf-c/)
     - [BSDL](https://github.com/protobuf-c/protobuf-c/blob/f224ab2eeb648a818eb20687d7150a285442c907/LICENSE)
   - [spdlog](https://github.com/gabime/spdlog)
-    - [MIT](https://github.com/gabime/spdlog/blob/76fb40d95455f249bd70824ecfcae7a8f0930fa3/LICENSE)
+    - [MIT](https://github.com/gabime/spdlog/blob/ad0e89cbfb4d0c1ce4d097e134eb7be67baebb36/LICENSE)
   - [sentry-native](https://github.com/getsentry/sentry-native)
     - [MIT](https://github.com/getsentry/sentry-native/blob/ff5bfcf0eb2c47d03eb57a51bdf2e6ad4b8ece10/LICENSE)
   - [sokol](https://github.com/hkrn/sokol)
