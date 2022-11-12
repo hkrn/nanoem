@@ -7267,7 +7267,8 @@ Project::applyDrawableToOffscreenRenderTargetEffect(IDrawable *drawable, Effect 
                 const OffscreenRenderTargetCondition &condition = *it3;
                 matched = matchDrawableEffect(drawable, ownerEffect, condition.m_pattern);
                 if (matched) {
-                    if (!condition.m_hidden) {
+                    const bool enabled = !condition.m_hidden;
+                    if (enabled) {
                         if (!condition.m_none) {
                             setOffscreenPassiveRenderTargetEffect(ownerName, drawable, condition.m_passiveEffect);
                         }
@@ -7275,6 +7276,7 @@ Project::applyDrawableToOffscreenRenderTargetEffect(IDrawable *drawable, Effect 
                             drawable->setOffscreenDefaultRenderTargetEffect(ownerName);
                         }
                     }
+                    drawable->setOffscreenPassiveRenderTargetEffectEnabled(ownerName, enabled);
                     break;
                 }
             }
