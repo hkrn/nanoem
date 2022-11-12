@@ -711,7 +711,7 @@ Accessory::setOffscreenPassiveRenderTargetEffectEnabled(const String &ownerName,
             it->second.m_enabled = value;
         }
         else {
-            OffscreenPassiveRenderTargetEffect effect = { nullptr, true };
+            OffscreenPassiveRenderTargetEffect effect = { nullptr, value };
             m_offscreenPassiveRenderTargetEffects.insert(tinystl::make_pair(ownerName, effect));
         }
     }

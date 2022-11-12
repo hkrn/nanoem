@@ -213,38 +213,15 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
         const IEffect *activeEffect = drawable->activeEffect();
-        bool show = true;
-        for (StringPairList::const_iterator it2 = option.m_conditions.begin(), end2 = option.m_conditions.end();
-             it2 != end2; ++it2) {
-            const char *expr = it2->first.c_str();
-            const URI &fileURI = drawable->fileURI();
-            if (StringUtils::equals(expr, "self") && ownerEffect == activeEffect) {
-                show = !StringUtils::equals(it2->second.c_str(), "hide");
-                break;
-            }
-            else {
-                const String exprLC(StringUtils::toLowerCase(expr)),
-                    filename(fileURI.hasFragment() ? URI::lastPathComponent(fileURI.fragment())
-                                                   : fileURI.lastPathComponent()),
-                    filenameLC(StringUtils::toLowerCase(filename));
-                if (::wildcardcmp(exprLC.c_str(), filenameLC.c_str()) != 0) {
-                    show = !StringUtils::equals(it2->second.c_str(), "hide");
-                    break;
-                }
-            }
+        char buffer[Inline::kLongNameStackBufferSize];
+        const String &name = option.m_name;
+        StringUtils::format(buffer, sizeof(buffer), "##%s/%p/visible", name.c_str(), drawable);
+        const Effect *effect = project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(name.c_str()));
+        bool enabled = drawable->isOffscreenPassiveRenderTargetEffectEnabled(name);
+        if (ImGuiWindow::handleCheckBox(buffer, &enabled, effect != nullptr)) {
+            drawable->setOffscreenPassiveRenderTargetEffectEnabled(name, enabled);
         }
-        if (show) {
-            char buffer[Inline::kLongNameStackBufferSize];
-            const String &name = option.m_name;
-            StringUtils::format(buffer, sizeof(buffer), "##%s/%p/visible", name.c_str(), drawable);
-            const Effect *effect =
-                project->upcastEffect(drawable->findOffscreenPassiveRenderTargetEffect(name.c_str()));
-            bool enabled = drawable->isOffscreenPassiveRenderTargetEffectEnabled(name);
-            if (ImGuiWindow::handleCheckBox(buffer, &enabled, effect != nullptr)) {
-                drawable->setOffscreenPassiveRenderTargetEffectEnabled(name, enabled);
-            }
-            layoutOffscreenRenderTargetAttachment(project, drawable, name, maxTextWidth);
-        }
+        layoutOffscreenRenderTargetAttachment(project, drawable, name, maxTextWidth);
     }
     addSeparator();
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
