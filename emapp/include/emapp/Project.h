@@ -438,6 +438,7 @@ public:
     void symmetricPasteAllSelectedBones(Error &error);
     void symmetricPasteAllSelectedBones(Model *model, Error &error);
     void selectAllBoneKeyframesFromSelectedBoneSet(Model *model);
+    void forceResetAllPasses();
     bool isModelClipboardEmpty() const NANOEM_DECL_NOEXCEPT;
     bool isMotionClipboardEmpty() const NANOEM_DECL_NOEXCEPT;
     bool hasKeyframeSelection() const NANOEM_DECL_NOEXCEPT;
