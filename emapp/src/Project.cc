@@ -2245,7 +2245,7 @@ Project::resizeWindowSize(const Vector2UI16 &value)
         m_windowSize = value;
         m_camera->update();
         activeCamera()->update();
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
     }
 }
 
@@ -3798,6 +3798,12 @@ Project::selectAllBoneKeyframesFromSelectedBoneSet(Model *model)
     }
 }
 
+void
+Project::forceResetAllPasses()
+{
+    EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+}
+
 bool
 Project::isModelClipboardEmpty() const NANOEM_DECL_NOEXCEPT
 {
@@ -4925,7 +4931,7 @@ Project::setWindowDevicePixelRatio(nanoem_f32_t value)
     if (m_windowDevicePixelRatio.second != value) {
         m_windowDevicePixelRatio.second = value;
         m_eventPublisher->publishSetWindowDevicePixelRatioEvent(value);
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
     }
 }
 
@@ -4941,7 +4947,7 @@ Project::setViewportDevicePixelRatio(nanoem_f32_t value)
     if (m_viewportDevicePixelRatio.second != value) {
         m_viewportDevicePixelRatio.second = value;
         m_eventPublisher->publishSetViewportDevicePixelRatioEvent(value);
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
     }
 }
 
@@ -5545,7 +5551,7 @@ Project::setShadowMapSize(const Vector2UI16 &value)
 {
     if (m_shadowCamera->imageSize() != value) {
         m_shadowCamera->resize(value);
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
     }
 }
 
@@ -5575,7 +5581,7 @@ Project::setViewportPixelFormat(sg_pixel_format value)
 {
     if (viewportPixelFormat() != value) {
         m_viewportPixelFormat.second = value;
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
     }
 }
 
@@ -5752,7 +5758,7 @@ Project::setSampleLevel(nanoem_u32_t value)
     }
     if (value != sampleLevel()) {
         m_sampleLevel.second = value;
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
         eventPublisher()->publishSetProjectSampleLevelEvent(value);
     }
 }
@@ -5851,7 +5857,7 @@ Project::setShadowMapEnabled(bool value)
         RenderPassBundle &d = m_renderPassBundleMap[shadowPass.id];
         d.m_colorImage = m_shadowCamera->colorImage();
         d.m_depthImage = m_shadowCamera->depthImage();
-        EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+        forceResetAllPasses();
     }
     else {
         m_shadowCamera->setEnabled(false);
@@ -6200,7 +6206,7 @@ Project::setActive(bool value)
 {
     if (m_active != value) {
         if (value) {
-            EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+            forceResetAllPasses();
             resume(m_audioPlayer->wasPlaying());
         }
         else {
@@ -6568,7 +6574,7 @@ Project::cancelRenderOffscreenRenderTarget(Effect *ownerEffect)
                     DrawQueue::CommandBuffer *items = it3->m_items;
                     it3 = buffers.erase(it3);
                     nanoem_delete(items);
-                    EnumUtils::setEnabled(kResetAllPasses, m_stateFlags, true);
+                    forceResetAllPasses();
                 }
             }
         }

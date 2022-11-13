@@ -220,6 +220,7 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
         bool enabled = drawable->isOffscreenPassiveRenderTargetEffectEnabled(name);
         if (ImGuiWindow::handleCheckBox(buffer, &enabled, effect != nullptr)) {
             drawable->setOffscreenPassiveRenderTargetEffectEnabled(name, enabled);
+            project->forceResetAllPasses();
         }
         layoutOffscreenRenderTargetAttachment(project, drawable, name, maxTextWidth);
     }
