@@ -182,7 +182,7 @@ UVEditDialog::drawImage(const IImageView *image, nanoem_f32_t scaleFactor)
 {
     const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
     const ImVec2 itemSize(calcExpandedImageSize(image->description(), scaleFactor));
-    ImGui::ImageButton(textureID, itemSize, ImVec2(0, 0), ImVec2(1, 1), 0);
+    ImGui::ImageButton(nullptr, textureID, itemSize, ImVec2(0, 0), ImVec2(1, 1));
 }
 
 void

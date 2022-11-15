@@ -23,7 +23,7 @@ This software uses below libraries.
   - [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/docs/ini.md)
     - [PD/MIT](https://github.com/mattiasgustavsson/libs/blob/master/README.md)
   - [Dear ImGui](https://github.com/ocornut/imgui)
-    - [MIT](https://github.com/ocornut/imgui/blob/9aae45eb4a05a5a1f96be1ef37eb503a12ceb889/LICENSE.md)
+    - [MIT](https://github.com/ocornut/imgui/blob/81160fee56027226bc80b48e196d0332f5541a8c/LICENSE.md)
   - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo/)
     - [MIT](https://github.com/CedricGuillemet/ImGuizmo/blob/e3174578bdc99c715e51c5ad88e7d50b4eeb19b0/LICENSE)
   - [jo_gif](http://jonolick.com/home/gif-writer/)
