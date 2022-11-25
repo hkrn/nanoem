@@ -8,7 +8,7 @@ use anyhow::{Context, Result};
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use wasmer_wasi::WasiBidirectionalSharedPipePair;
+use wasmer_wasi::Pipe;
 
 use crate::motion::{
     plugin::MotionIOPluginController,
@@ -20,9 +20,7 @@ use crate::motion::{
 
 use super::build_type_and_flags;
 
-fn create_controller(
-    pipe: &mut WasiBidirectionalSharedPipePair,
-) -> Result<MotionIOPluginController> {
+fn create_controller(pipe: &mut Pipe) -> Result<MotionIOPluginController> {
     let package = "plugin_wasm_test_motion_full";
     let (ty, flag) = build_type_and_flags();
     inner_create_controller(pipe, &format!("target/wasm32-wasi/{}/{}.wasm", ty, package))
@@ -36,7 +34,7 @@ fn create_controller(
 
 #[test]
 fn create() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let result = create_controller(&mut pipe);
     assert!(result.is_ok());
     let mut controller = result?;
@@ -108,7 +106,7 @@ fn create() -> Result<()> {
 
 #[test]
 fn set_language() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     controller.initialize()?;
     controller.create()?;
@@ -131,7 +129,7 @@ fn set_language() -> Result<()> {
 
 #[test]
 fn execute() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
@@ -192,7 +190,7 @@ fn execute() -> Result<()> {
 
 #[test]
 fn set_all_selected_accessory_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -220,7 +218,7 @@ fn set_all_selected_accessory_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_camera_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -246,7 +244,7 @@ fn set_all_selected_camera_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_light_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -272,7 +270,7 @@ fn set_all_selected_light_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_model_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -298,7 +296,7 @@ fn set_all_selected_model_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_selected_self_shadow_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -326,7 +324,7 @@ fn set_all_selected_self_shadow_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_named_selected_bone_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -355,7 +353,7 @@ fn set_all_named_selected_bone_keyframes() -> Result<()> {
 
 #[test]
 fn set_all_named_selected_morph_keyframes() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = &[1, 4, 9, 16, 25, u32::MAX];
     controller.initialize()?;
@@ -384,7 +382,7 @@ fn set_all_named_selected_morph_keyframes() -> Result<()> {
 
 #[test]
 fn set_audio_description() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
@@ -410,7 +408,7 @@ fn set_audio_description() -> Result<()> {
 
 #[test]
 fn set_audio_data() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
@@ -436,7 +434,7 @@ fn set_audio_data() -> Result<()> {
 
 #[test]
 fn set_camera_description() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
@@ -462,7 +460,7 @@ fn set_camera_description() -> Result<()> {
 
 #[test]
 fn set_light_description() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
@@ -488,7 +486,7 @@ fn set_light_description() -> Result<()> {
 
 #[test]
 fn ui_window() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     let data = create_random_data(4096);
     controller.initialize()?;
@@ -544,7 +542,7 @@ fn ui_window() -> Result<()> {
 
 #[test]
 fn get_failure_reason() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     controller.initialize()?;
     controller.create()?;
@@ -562,7 +560,7 @@ fn get_failure_reason() -> Result<()> {
 
 #[test]
 fn get_recovery_suggestion() -> Result<()> {
-    let mut pipe = WasiBidirectionalSharedPipePair::new().with_blocking(false);
+    let mut pipe = Pipe::new();
     let mut controller = create_controller(&mut pipe)?;
     controller.initialize()?;
     controller.create()?;
