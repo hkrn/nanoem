@@ -256,6 +256,7 @@ typedef enum sg_pixel_format {
     SG_PIXELFORMAT_ETC2_RGBA8,
     SG_PIXELFORMAT_ETC2_RG11,
     SG_PIXELFORMAT_ETC2_RG11SN,
+    SG_PIXELFORMAT_RGB9E5,
 
     _SG_PIXELFORMAT_NUM,
     _SG_PIXELFORMAT_FORCE_U32 = 0x7FFFFFFF
@@ -944,6 +945,22 @@ typedef struct sg_context_desc {
     sg_wgpu_context_desc wgpu;
 } sg_context_desc;
 
+typedef struct sg_commit_listener {
+    void (*func)(void* user_data);
+    void* user_data;
+} sg_commit_listener;
+
+typedef struct sg_allocator {
+    void* (*alloc)(size_t size, void* user_data);
+    void (*free)(void* ptr, void* user_data);
+    void* user_data;
+} sg_allocator;
+
+typedef struct sg_logger {
+    void (*log_cb)(const char* message, void* user_data);
+    void* user_data;
+} sg_logger;
+
 typedef struct sg_desc {
     uint32_t _start_canary;
     int buffer_pool_size;
@@ -955,6 +972,10 @@ typedef struct sg_desc {
     int uniform_buffer_size;
     int staging_buffer_size;
     int sampler_cache_size;
+    int max_commit_listeners;
+    bool disable_validation;    // disable validation layer even in debug mode, useful for tests
+    sg_allocator allocator;
+    sg_logger logger; // optional log function override
     sg_context_desc context;
     uint32_t _end_canary;
 } sg_desc;
@@ -1002,8 +1023,6 @@ namespace sg {
 
 typedef bool(APIENTRY *PFN_sgx_isvalid)(void);
 extern PFN_sgx_isvalid isvalid;
-typedef bool(APIENTRY *PFN_sgx_query_buffer_overflow)(sg_buffer buf);
-extern PFN_sgx_query_buffer_overflow query_buffer_overflow;
 typedef int(APIENTRY *PFN_sgx_append_buffer)(sg_buffer buf, const void *data_ptr, int data_size);
 extern PFN_sgx_append_buffer append_buffer;
 typedef sg_backend(APIENTRY *PFN_sgx_query_backend)(void);
@@ -1070,8 +1089,11 @@ typedef sg_shader_info(APIENTRY *PFN_sgx_query_shader_info)(sg_shader shd);
 extern PFN_sgx_query_shader_info query_shader_info;
 typedef sg_trace_hooks(APIENTRY *PFN_sgx_install_trace_hooks)(const sg_trace_hooks *trace_hooks);
 extern PFN_sgx_install_trace_hooks install_trace_hooks;
+
 typedef void(APIENTRY *PFN_sgx_activate_context)(sg_context ctx_id);
 extern PFN_sgx_activate_context activate_context;
+typedef bool(APIENTRY *PFN_sgx_add_commit_listener)(sg_commit_listener listener);
+extern PFN_sgx_add_commit_listener add_commit_listener;
 typedef void(APIENTRY *PFN_sgx_apply_bindings)(const sg_bindings *bindings);
 extern PFN_sgx_apply_bindings apply_bindings;
 typedef void(APIENTRY *PFN_sgx_apply_pipeline)(sg_pipeline pip);
@@ -1154,10 +1176,16 @@ typedef void(APIENTRY *PFN_sgx_init_pipeline)(sg_pipeline pip_id, const sg_pipel
 extern PFN_sgx_init_pipeline init_pipeline;
 typedef void(APIENTRY *PFN_sgx_init_shader)(sg_shader shd_id, const sg_shader_desc *desc);
 extern PFN_sgx_init_shader init_shader;
+typedef bool(APIENTRY *PFN_sgx_query_buffer_overflow)(sg_buffer buf);
+extern PFN_sgx_query_buffer_overflow query_buffer_overflow;
+typedef bool(APIENTRY *PFN_sgx_query_buffer_will_overflow)(sg_buffer buf, size_t size);
+extern PFN_sgx_query_buffer_will_overflow query_buffer_will_overflow;
 typedef void(APIENTRY *PFN_sgx_pop_debug_group)(void);
 extern PFN_sgx_pop_debug_group pop_debug_group;
 typedef void(APIENTRY *PFN_sgx_push_debug_group)(const char *name);
 extern PFN_sgx_push_debug_group push_debug_group;
+typedef bool(APIENTRY *PFN_sgx_remove_commit_listener)(sg_commit_listener listener);
+extern PFN_sgx_remove_commit_listener remove_commit_listener;
 typedef void(APIENTRY *PFN_sgx_reset_state_cache)(void);
 extern PFN_sgx_reset_state_cache reset_state_cache;
 typedef void(APIENTRY *PFN_sgx_setup)(const sg_desc *desc);
@@ -1168,26 +1196,26 @@ typedef void(APIENTRY *PFN_sgx_update_buffer)(sg_buffer buf, const void *data_pt
 extern PFN_sgx_update_buffer update_buffer;
 typedef void(APIENTRY *PFN_sgx_update_image)(sg_image img, const sg_image_data *data);
 extern PFN_sgx_update_image update_image;
-typedef void(APIENTRY *PFN_sg_dealloc_buffer)(sg_buffer buf_id);
-extern PFN_sg_dealloc_buffer dealloc_buffer;
-typedef void(APIENTRY *PFN_sg_dealloc_image)(sg_image img_id);
-extern PFN_sg_dealloc_image dealloc_image;
-typedef void(APIENTRY *PFN_sg_dealloc_shader)(sg_shader shd_id);
-extern PFN_sg_dealloc_shader dealloc_shader;
-typedef void(APIENTRY *PFN_sg_dealloc_pipeline)(sg_pipeline pip_id);
-extern PFN_sg_dealloc_pipeline dealloc_pipeline;
-typedef void(APIENTRY *PFN_sg_dealloc_pass)(sg_pass pass_id);
-extern PFN_sg_dealloc_pass dealloc_pass;
-typedef bool(APIENTRY *PFN_sg_uninit_buffer)(sg_buffer buf_id);
-extern PFN_sg_uninit_buffer uninit_buffer;
-typedef bool(APIENTRY *PFN_sg_uninit_image)(sg_image img_id);
-extern PFN_sg_uninit_image uninit_image;
-typedef bool(APIENTRY *PFN_sg_uninit_shader)(sg_shader shd_id);
-extern PFN_sg_uninit_shader uninit_shader;
-typedef bool(APIENTRY *PFN_sg_uninit_pipeline)(sg_pipeline pip_id);
-extern PFN_sg_uninit_pipeline uninit_pipeline;
-typedef bool(APIENTRY *PFN_sg_uninit_pass)(sg_pass pass_id);
-extern PFN_sg_uninit_pass uninit_pass;
+typedef void(APIENTRY *PFN_sgx_dealloc_buffer)(sg_buffer buf_id);
+extern PFN_sgx_dealloc_buffer dealloc_buffer;
+typedef void(APIENTRY *PFN_sgx_dealloc_image)(sg_image img_id);
+extern PFN_sgx_dealloc_image dealloc_image;
+typedef void(APIENTRY *PFN_sgx_dealloc_shader)(sg_shader shd_id);
+extern PFN_sgx_dealloc_shader dealloc_shader;
+typedef void(APIENTRY *PFN_sgx_dealloc_pipeline)(sg_pipeline pip_id);
+extern PFN_sgx_dealloc_pipeline dealloc_pipeline;
+typedef void(APIENTRY *PFN_sgx_dealloc_pass)(sg_pass pass_id);
+extern PFN_sgx_dealloc_pass dealloc_pass;
+typedef void(APIENTRY *PFN_sgx_uninit_buffer)(sg_buffer buf_id);
+extern PFN_sgx_uninit_buffer uninit_buffer;
+typedef void(APIENTRY *PFN_sgx_uninit_image)(sg_image img_id);
+extern PFN_sgx_uninit_image uninit_image;
+typedef void(APIENTRY *PFN_sgx_uninit_shader)(sg_shader shd_id);
+extern PFN_sgx_uninit_shader uninit_shader;
+typedef void(APIENTRY *PFN_sgx_uninit_pipeline)(sg_pipeline pip_id);
+extern PFN_sgx_uninit_pipeline uninit_pipeline;
+typedef void(APIENTRY *PFN_sgx_uninit_pass)(sg_pass pass_id);
+extern PFN_sgx_uninit_pass uninit_pass;
 
 void *openSharedLibrary(const char *dllPath);
 void closeSharedLibrary(void *&handle);

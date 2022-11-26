@@ -11,7 +11,7 @@ This software uses below libraries.
   - [Font Awesome](http://fontawesome.io/)
     - [SIL OFL 1.1](https://github.com/FortAwesome/Font-Awesome/blob/a8386aae19e200ddb0f6845b5feeee5eb7013687/README.md)
   - [ffmpeg](http://ffmpeg.org/)
-    - [LGPLv2](https://github.com/FFmpeg/FFmpeg/blob/4bc4cafaef8a55462138d7b6f7579c1522de26dc/COPYING.LGPLv2.1)
+    - [LGPLv2](https://github.com/FFmpeg/FFmpeg/blob/f9f95ceebfbd7b7f43c1b7ad34e25d366e6e2d2b/COPYING.LGPLv2.1)
   - [GLM](http://glm.g-truc.net/)
     - [MIT](https://github.com/g-truc/glm/blob/bf71a834948186f4097caa076cd2663c69a10e1e/copying.txt)
   - [GenEi Font](https://okoneya.jp/font/genei-gothic.html)

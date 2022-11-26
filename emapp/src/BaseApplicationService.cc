@@ -2844,16 +2844,9 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         sg_desc desc;
         Inline::clearZeroMemory(desc);
         m_dllHandle = sg::openSharedLibrary(commandPtr->sokol_dll_path);
-        typedef void *(*PFN_sgx_malloc_t)(void *, size_t, const char *, int);
-        typedef void (*PFN_sgx_free_t)(void *, void *, const char *, int);
-        typedef void (*PFN_sgx_logger_t)(void *, const char *, const char *, int);
-        typedef void(APIENTRY * PFN_sgx_install_allocator_hooks)(
-            PFN_sgx_malloc_t, PFN_sgx_free_t, PFN_sgx_logger_t, void *);
-        if (PFN_sgx_install_allocator_hooks sgx_install_allocator_hooks =
-                reinterpret_cast<PFN_sgx_install_allocator_hooks>(
-                    bx::dlsym(m_dllHandle, "sgx_install_allocator_hooks"))) {
-            sgx_install_allocator_hooks(allocateSGXMemory, releaseSGXMemory, handleSGXMessage, this);
-        }
+        desc.allocator.alloc = allocateSGXMemory;
+        desc.allocator.free = releaseSGXMemory;
+        desc.logger.log_cb = handleSGXMessage;
         desc.buffer_pool_size = glm::clamp(commandPtr->buffer_pool_size, 1024u, 0xffffu);
         desc.image_pool_size = glm::clamp(commandPtr->image_pool_size, 4096u, 0xffffu);
         desc.shader_pool_size = glm::clamp(commandPtr->shader_pool_size, 1024u, 0xffffu);
@@ -5656,23 +5649,22 @@ BaseApplicationService::handleDiscardOnExitApplication(void *userData, Project *
 }
 
 void *
-BaseApplicationService::allocateSGXMemory(void *opaque, size_t size, const char *file, int line)
+BaseApplicationService::allocateSGXMemory(size_t size, void *opaque)
 {
     BX_UNUSED_1(opaque);
-    return bx::realloc(g_sokol_allocator, nullptr, size, 0, file, Inline::roundInt32(line));
+    return bx::realloc(g_sokol_allocator, nullptr, size, 0, nullptr, 0);
 }
 
 void
-BaseApplicationService::releaseSGXMemory(void *opaque, void *ptr, const char *file, int line) NANOEM_DECL_NOEXCEPT
+BaseApplicationService::releaseSGXMemory(void *ptr, void *opaque) NANOEM_DECL_NOEXCEPT
 {
     BX_UNUSED_1(opaque);
-    bx::free(g_sokol_allocator, ptr, 0, file, Inline::roundInt32(line));
+    bx::free(g_sokol_allocator, ptr, 0, nullptr, 0);
 }
 
 void
-BaseApplicationService::handleSGXMessage(void *opaque, const char *message, const char *file, int line)
+BaseApplicationService::handleSGXMessage(const char *message, void *opaque)
 {
-    BX_UNUSED_2(file, line);
     BaseApplicationService *self = static_cast<BaseApplicationService *>(opaque);
     uint32_t key = bx::hash<bx::HashMurmur2A>(message);
     HandledSGXMessageSet::const_iterator it = self->m_handledSGXMessages.find(key);
@@ -5682,10 +5674,7 @@ BaseApplicationService::handleSGXMessage(void *opaque, const char *message, cons
             sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("error"));
             sentry_add_breadcrumb(breadcrumb);
         }
-        if (file) {
-            EMLOG_DEBUG("Captured SGX error: file={} line={} message=\"{}\"", file, line, message);
-        }
-        else if (message) {
+        if (message) {
             EMLOG_DEBUG("Captured SGX error: message=\"{}\"", message);
         }
         self->m_handledSGXMessages.insert(key);

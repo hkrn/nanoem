@@ -2,13 +2,7 @@
 #include <stdlib.h>
 
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
-#define SOKOL_MALLOC(s) g_sgx_malloc(g_sgx_opaque, (s), __FILE__, __LINE__)
-#define SOKOL_FREE(p) g_sgx_free(g_sgx_opaque, (p), __FILE__, __LINE__)
-#define SOKOL_LOG(l) g_sgx_logger(g_sgx_opaque, (l), __FILE__, __LINE__)
 #else
-#define SOKOL_MALLOC(s) g_sgx_malloc(g_sgx_opaque, (s), NULL, 0)
-#define SOKOL_FREE(p) g_sgx_free(g_sgx_opaque, (p), NULL, 0)
-#define SOKOL_LOG(l) g_sgx_logger(g_sgx_opaque, (l), NULL, 0)
 #define SOKOL_VALIDATE_NON_FATAL
 #endif
 
@@ -524,32 +518,50 @@ sgx_dealloc_pass(sg_pass pass_id)
     sg_dealloc_pass(pass_id);
 }
 
-SGX_API_DECL bool APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_uninit_buffer(sg_buffer buf_id)
 {
-    return sg_uninit_buffer(buf_id);
+    sg_uninit_buffer(buf_id);
 }
 
-SGX_API_DECL bool APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_uninit_image(sg_image img_id)
 {
-    return sg_uninit_image(img_id);
+    sg_uninit_image(img_id);
 }
 
-SGX_API_DECL bool APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_uninit_shader(sg_shader shd_id)
 {
-    return sg_uninit_shader(shd_id);
+    sg_uninit_shader(shd_id);
 }
 
-SGX_API_DECL bool APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_uninit_pipeline(sg_pipeline pip_id)
 {
-    return sg_uninit_pipeline(pip_id);
+    sg_uninit_pipeline(pip_id);
+}
+
+SGX_API_DECL void APIENTRY
+sgx_uninit_pass(sg_pass pass_id)
+{
+    sg_uninit_pass(pass_id);
+}
+
+SGX_API_DECL void APIENTRY
+sgx_add_commit_listener(sg_commit_listener listener)
+{
+    sg_add_commit_listener(listener);
+}
+
+SGX_API_DECL void APIENTRY
+sgx_remove_commit_listener(sg_commit_listener listener)
+{
+    sg_remove_commit_listener(listener);
 }
 
 SGX_API_DECL bool APIENTRY
-sgx_uninit_pass(sg_pass pass_id)
+sgx_query_buffer_will_overflow(sg_buffer buf, size_t size)
 {
-    return sg_uninit_pass(pass_id);
+    return sg_query_buffer_will_overflow(buf, size);
 }

@@ -132,7 +132,6 @@ NANOEM_DECL_API nanoem_rsize_t APIENTRY nanoemUnicodeStringGetLength(const nanoe
 namespace nanoem {
 
 class Model;
-extern bx::AllocatorI *g_bgfx_allocator;
 extern bx::AllocatorI *g_emapp_allocator;
 extern bx::AllocatorI *g_tinystl_allocator;
 extern ProtobufCAllocator *g_protobufc_allocator;

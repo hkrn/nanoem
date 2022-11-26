@@ -405,9 +405,9 @@ private:
     static IModalDialog *handleSaveOnExitApplication(void *userData, Project *project);
     static IModalDialog *handleDiscardOnExitApplication(void *userData, Project *project);
     static IModalDialog *handleCancelRecordingVideo(void *userData, Project *project);
-    static void *allocateSGXMemory(void *opaque, size_t size, const char *file, int line);
-    static void releaseSGXMemory(void *opaque, void *ptr, const char *file, int line) NANOEM_DECL_NOEXCEPT;
-    static void handleSGXMessage(void *opaque, const char *message, const char *file, int line);
+    static void *allocateSGXMemory(size_t size, void *opaque);
+    static void releaseSGXMemory(void *ptr, void *opaque) NANOEM_DECL_NOEXCEPT;
+    static void handleSGXMessage(const char *message, void *opaque);
     static void writeRedoMessage(Nanoem__Application__Command *command, Project *project, Error &error);
     static void performRedo(undo_command_t *commandPtr, undo_stack_t *stack, undo_command_t *&commandPtrRef);
 
