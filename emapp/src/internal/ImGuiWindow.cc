@@ -2007,7 +2007,9 @@ ImGuiWindow::setSGXDebbugerEnabled(bool value)
 {
     if (value && !m_debugger) {
         sg_imgui_t *debugger = nanoem_new(sg_imgui_t);
-        sg_imgui_init(debugger);
+        sg_imgui_desc_t desc;
+        Inline::clearZeroMemory(desc);
+        sg_imgui_init(debugger, &desc);
         m_debugger = debugger;
     }
     else if (!value && m_debugger) {
