@@ -167,8 +167,8 @@ function(nanoem_emapp_build_emapp suffix)
                IMGUI_DISABLE_INCLUDE_IMCONFIG_H)
   if(NANOEM_ENABLE_IMGUI_INDEX32)
     set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
-                 $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL>
-                 IMGUI_USER_CONFIG="emapp/private/imgui/config.h")
+                 ImDrawIdx=nanoem_u32_t
+                 NANOEM_ENABLE_IMGUI_INDEX32)
   endif()
   if(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
     set_property(TARGET ${_emapp_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS NANOEM_ENABLE_IMGUI_FILE_DIALOG)
