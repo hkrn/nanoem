@@ -43,11 +43,13 @@ EnumStringifyUtils::toString(sg_blend_op value) NANOEM_DECL_NOEXCEPT
         return "MIN";
     case SG_BLENDOP_MAX:
         return "MAX";
-#endif
+#endif /* NANOEM_ENABLE_BLENDOP_MINMAX */
     case _SG_BLENDOP_NUM:
         return "_SG_BLENDOP_NUM";
     case _SG_BLENDOP_FORCE_U32:
         return "_SG_BLENDOP_FORCE_U32";
+    default:
+        return "(unknown)";
     }
 }
 
@@ -91,6 +93,8 @@ EnumStringifyUtils::toString(sg_blend_factor value) NANOEM_DECL_NOEXCEPT
         return "_SG_BLENDFACTOR_NUM";
     case _SG_BLENDFACTOR_FORCE_U32:
         return "_SG_BLENDFACTOR_FORCE_U32";
+    default:
+        return "(unknown)";
     }
 }
 
@@ -120,6 +124,8 @@ EnumStringifyUtils::toString(sg_compare_func value) NANOEM_DECL_NOEXCEPT
         return "_SG_COMPAREFUNC_NUM";
     case _SG_COMPAREFUNC_FORCE_U32:
         return "_SG_COMPAREFUNC_FORCE_U32";
+    default:
+        return "(unknown)";
     }
 }
 
@@ -149,6 +155,8 @@ EnumStringifyUtils::toString(sg_stencil_op value) NANOEM_DECL_NOEXCEPT
         return "_SG_STENCILOP_NUM";
     case _SG_STENCILOP_FORCE_U32:
         return "_SG_STENCILOP_FORCE_U32";
+    default:
+        return "(unknown)";
     }
 }
 

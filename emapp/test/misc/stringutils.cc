@@ -81,7 +81,7 @@ TEST_CASE("stringutils_formatoverflow", "[emapp][misc]")
     for (int i = 0; i <= 16384; i++) {
         sb.append("0");
     }
-    CHECK(StringUtils::format(result, "%s", sb.c_str()) == sb.size());
+    CHECK(StringUtils::format(result, "%s", sb.c_str()) == static_cast<int>(sb.size()));
     CHECK(result == sb);
 }
 

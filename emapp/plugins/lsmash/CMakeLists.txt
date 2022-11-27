@@ -10,6 +10,9 @@ if(${PROJECT_NAME_PREFIX}_INSTALL_LSMASH_PLUGIN)
   add_library(lsmash ${LSMASH_COMMON_SRC} ${LSMASH_CODECS_SRC} ${LSMASH_CORE_SRC} ${LSMASH_IMPORTER_SRC})
   set_property(TARGET lsmash PROPERTY FOLDER plugins)
   set_property(TARGET lsmash APPEND PROPERTY INCLUDE_DIRECTORIES ${LSMASH_BASE_PATH})
+  if(MSVC)
+    target_compile_options(lsmash PRIVATE /wd4018 /wd4133 /wd4116 /wd4244 /wd4267 /wd4819)
+  endif()
   set(_plugin_name plugin_lsmash)
   add_library(${_plugin_name} ${_library_type}
               ${CMAKE_CURRENT_SOURCE_DIR}/lsmash.cc

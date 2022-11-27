@@ -16,7 +16,6 @@ class Project;
 
 struct TimelineSegment {
     TimelineSegment();
-    TimelineSegment(const TimelineSegment &value);
     TimelineSegment(const Project *project);
     TimelineSegment normalized(nanoem_frame_index_t duration) const NANOEM_DECL_NOEXCEPT;
     nanoem_frame_index_t frameIndexFrom() const NANOEM_DECL_NOEXCEPT;

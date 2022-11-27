@@ -99,6 +99,7 @@ function(nanoem_emapp_link_executable item)
       target_link_libraries(${item} "-framework QuartzCore -weak_framework IOSurface -weak_framework Metal")
     endif()
   elseif(${CMAKE_HOST_SYSTEM_NAME} STREQUAL "Linux")
+    set(OpenGL_GL_PREFERENCE "GLVND")
     target_link_libraries(${item} dl)
     find_package(X11)
     find_package(OpenGL)
@@ -166,8 +167,8 @@ function(nanoem_emapp_build_emapp suffix)
                IMGUI_DISABLE_INCLUDE_IMCONFIG_H)
   if(NANOEM_ENABLE_IMGUI_INDEX32)
     set_property(TARGET ${_emapp_name} ${_emarb_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS
-                 $<$<BOOL:${NANOEM_ENABLE_DEBUG_LABEL}>:NANOEM_ENABLE_DEBUG_LABEL>
-                 IMGUI_USER_CONFIG="emapp/private/imgui/config.h")
+                 ImDrawIdx=nanoem_u32_t
+                 NANOEM_ENABLE_IMGUI_INDEX32)
   endif()
   if(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
     set_property(TARGET ${_emapp_name} ${_embundle_name} APPEND PROPERTY COMPILE_DEFINITIONS NANOEM_ENABLE_IMGUI_FILE_DIALOG)
@@ -209,8 +210,6 @@ function(nanoem_emapp_build_emapp suffix)
   if(EMSCRIPTEN)
     target_link_libraries(${_emapp_name} sokol_gles3)
   endif()
-  # ${PROJECT_NAME} for bullet
-  # set_property(TARGET ${PROJECT_NAME} emapp APPEND PROPERTY COMPILE_DEFINITIONS GLM_FORCE_RADIANS)
 endfunction()
 
 function(nanoem_emapp_organize_executables executables)

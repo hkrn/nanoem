@@ -33,7 +33,11 @@
 #define USE_CUSTOM_SORTING_ICON
 #define tableHeaderAscendingIcon u8"\uf077"
 #define tableHeaderDescendingIcon u8"\uf078"
+
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-parameter")
 #include "imguifiledialog/ImGuiFileDialog.cpp"
+nanoem_pragma_diagnostics_pop()
 #endif /* NANOEM_ENABLE_IMGUI_FILE_DIALOG */
 
 /* ImGuizmo */
@@ -48,7 +52,10 @@ extern bx::AllocatorI *g_par_allocator;
 extern bx::AllocatorI *g_sokol_allocator;
 extern bx::AllocatorI *g_stb_allocator;
 extern bx::AllocatorI *g_tinyobj_allocator;
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_msvc(4244)
 #include "sha256.c"
+nanoem_pragma_diagnostics_pop()
 }
 
 using namespace nanoem;

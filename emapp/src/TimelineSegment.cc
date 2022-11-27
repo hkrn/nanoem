@@ -18,14 +18,6 @@ TimelineSegment::TimelineSegment()
 {
 }
 
-TimelineSegment::TimelineSegment(const TimelineSegment &value)
-    : m_from(value.m_from)
-    , m_to(value.m_to)
-    , m_enableFrom(value.m_enableFrom)
-    , m_enableTo(value.m_enableTo)
-{
-}
-
 TimelineSegment::TimelineSegment(const Project *project)
     : m_from(0)
     , m_to(project->duration())

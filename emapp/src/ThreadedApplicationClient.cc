@@ -124,6 +124,7 @@ ThreadedApplicationClient::sendCommandMessage(const Nanoem__Application__Command
 void
 ThreadedApplicationClient::handleSocketError(const char *prefix)
 {
+    BX_UNUSED_1(prefix);
     EMLOG_ERROR("{}: {}\n", prefix, nn_strerror(nn_errno()));
 }
 

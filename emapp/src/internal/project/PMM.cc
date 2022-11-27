@@ -30,8 +30,11 @@
 
 #include "nanoem/ext/document.h"
 
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wsign-compare")
 #define INI_IMPLEMENTATION
 #include "../../ini.h"
+nanoem_pragma_diagnostics_pop()
 
 namespace nanoem {
 namespace internal {

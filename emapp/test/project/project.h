@@ -17,6 +17,9 @@ namespace {
 static const nanoem_u8_t kHatsuneMiku[] = { 0xe5, 0x88, 0x9d, 0xe9, 0x9f, 0xb3, 0xe3, 0x83, 0x9f, 0xe3, 0x82, 0xaf,
     0x0 };
 
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-function")
+
 static String
 modelPath(int index, const char *filename)
 {
@@ -187,5 +190,7 @@ expectAllOffscreenEffectResourcesSame(ISeekableReader *reader)
     expectAllOffscreenEffectResourcesSame(archiver);
     REQUIRE(archiver.close(error));
 }
+
+nanoem_pragma_diagnostics_pop()
 
 } /* namespace anonymous */

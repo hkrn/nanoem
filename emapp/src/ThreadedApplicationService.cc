@@ -539,7 +539,8 @@ ThreadedApplicationService::handleCommandMessage(Nanoem__Application__Command *c
             fileURIs.push_back(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         }
         if (!fileURIs.empty()) {
-            nanoem_u64_t started = stm_now();
+            const nanoem_u64_t started = stm_now();
+            BX_UNUSED_1(started);
             int language = project ? project->castLanguage() : 0;
             tbb::task_group tg;
             tg.run_and_wait(LoadingAllModelIOPluginsWorker(language, fileURIs, this));
@@ -557,7 +558,8 @@ ThreadedApplicationService::handleCommandMessage(Nanoem__Application__Command *c
             fileURIs.push_back(URI::createFromFilePath(uri->absolute_path, uri->fragment));
         }
         if (!fileURIs.empty()) {
-            nanoem_u64_t started = stm_now();
+            const nanoem_u64_t started = stm_now();
+            BX_UNUSED_1(started);
             int language = project ? project->castLanguage() : 0;
             tbb::task_group tg;
             tg.run_and_wait(LoadingAllMotionIOPluginsWorker(language, fileURIs, this));

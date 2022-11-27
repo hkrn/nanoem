@@ -19,12 +19,12 @@
 #include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/euler_angles.hpp"
 
-nanoem_pragma_diagnostics_push();
-nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-parameter");
-nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-private-field");
-nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-variable");
-nanoem_pragma_diagnostics_ignore_msvc(4100);
-nanoem_pragma_diagnostics_ignore_msvc(4101);
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-parameter")
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-private-field")
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-variable")
+nanoem_pragma_diagnostics_ignore_msvc(4100)
+nanoem_pragma_diagnostics_ignore_msvc(4101)
 #include "BulletCollision/BroadphaseCollision/btDbvtBroadphase.h"
 #include "BulletCollision/CollisionShapes/btBoxShape.h"
 #include "BulletCollision/CollisionShapes/btCapsuleShape.h"
@@ -46,10 +46,13 @@ nanoem_pragma_diagnostics_ignore_msvc(4101);
 #include "BulletSoftBody/btSoftBodyRigidBodyCollisionConfiguration.h"
 #include "BulletSoftBody/btSoftRigidDynamicsWorld.h"
 #include "LinearMath/btDefaultMotionState.h"
-nanoem_pragma_diagnostics_pop();
+nanoem_pragma_diagnostics_pop()
 
 #ifndef NDEBUG
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wdeprecated-declarations")
 #include "glm/gtx/string_cast.hpp"
+nanoem_pragma_diagnostics_pop()
 #include <stdio.h>
 namespace {
 static inline glm::vec3

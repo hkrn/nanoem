@@ -26,6 +26,7 @@ function(nanoem_emapp_build_emarb suffix)
   nanoem_cmake_enable_lto(emarb)
   set_property(TARGET ${_emarb_name} PROPERTY FOLDER nanoem)
   target_compile_definitions(${_emarb_name} PRIVATE
+                            $<$<BOOL:${WIN32}>:NOMINMAX>
                              __STDC_LIMIT_MACROS
                              __STDC_CONSTANT_MACROS
                              __STDC_FORMAT_MACROS)

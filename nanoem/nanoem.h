@@ -140,6 +140,43 @@ typedef double nanoem_f64_t;
 #define nanoem_fourcc(a, b, c, d) (nanoem_u32_t) ((a) << 0 | (b) << 8 | (c) << 16 | (d) << 24)
 #endif /* nanoem_fourcc */
 
+#define nanoem_stringify(x) nanoem_stringify_(x)
+#define nanoem_stringify_(x) #x
+
+#if defined(__clang__)
+#define nanoem_pragma_diagnostics_push() _Pragma("clang diagnostic push")
+#define nanoem_pragma_diagnostics_ignore_clang(x) _Pragma(nanoem_stringify(clang diagnostic ignored x))
+#define nanoem_pragma_diagnostics_ignore_clang_gcc(x) nanoem_pragma_diagnostics_ignore_clang(x)
+#define nanoem_pragma_diagnostics_ignore_gcc(x)
+#define nanoem_pragma_diagnostics_ignore_msvc(x)
+#define nanoem_pragma_diagnostics_pop() _Pragma("clang diagnostic pop")
+#define nanoem_decl_align16(x) x __attribute__((aligned(16)))
+#elif defined(__GNUC__)
+#define nanoem_pragma_diagnostics_push() _Pragma("GCC diagnostic push")
+#define nanoem_pragma_diagnostics_ignore_clang(x)
+#define nanoem_pragma_diagnostics_ignore_gcc(x) _Pragma(nanoem_stringify(GCC diagnostic ignored x))
+#define nanoem_pragma_diagnostics_ignore_clang_gcc(x) nanoem_pragma_diagnostics_ignore_gcc(x)
+#define nanoem_pragma_diagnostics_ignore_msvc(x)
+#define nanoem_pragma_diagnostics_pop() _Pragma("GCC diagnostic pop")
+#define nanoem_decl_align16(x) x __attribute__((aligned(16)))
+#elif defined(_MSC_VER)
+#define nanoem_pragma_diagnostics_push() __pragma(warning(push))
+#define nanoem_pragma_diagnostics_ignore_clang(x)
+#define nanoem_pragma_diagnostics_ignore_gcc(x)
+#define nanoem_pragma_diagnostics_ignore_clang_gcc(x)
+#define nanoem_pragma_diagnostics_ignore_msvc(x) __pragma(warning(disable:x))
+#define nanoem_pragma_diagnostics_pop() __pragma(warning(pop))
+#define nanoem_decl_align16(x) __declspec(align(16)) x
+#else
+#define nanoem_pragma_diagnostics_push()
+#define nanoem_pragma_diagnostics_ignore_clang(x)
+#define nanoem_pragma_diagnostics_ignore_gcc(x)
+#define nanoem_pragma_diagnostics_ignore_clang_gcc(x)
+#define nanoem_pragma_diagnostics_ignore_msvc(x)
+#define nanoem_pragma_diagnostics_pop()
+#define nanoem_decl_align16(x) x
+#endif
+
 #if defined(NANOEM_BUILDING_DLL)
 #ifdef __cplusplus
 #define _NANOEM_DECL_API extern "C"

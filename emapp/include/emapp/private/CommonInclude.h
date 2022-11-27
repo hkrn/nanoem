@@ -15,10 +15,13 @@
 /* GLM */
 #include "glm/gtc/type_ptr.hpp"
 #ifndef NDEBUG
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wdeprecated-declarations")
 #include "glm/gtx/io.hpp"
 #include "glm/gtx/string_cast.hpp"
 #include <iostream>
 #include <sstream>
+nanoem_pragma_diagnostics_pop()
 #endif /* NDEBUG */
 
 /* spdlog */
