@@ -9,6 +9,7 @@ function(nanoem_emapp_build_embundle suffix)
   set_property(TARGET ${_embundle_name} PROPERTY FOLDER nanoem)
   target_compile_definitions(${_embundle_name} PRIVATE
                             $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS=1>
+                            $<$<BOOL:${WIN32}>:NOMINMAX>
                             __STDC_LIMIT_MACROS
                             __STDC_CONSTANT_MACROS
                             __STDC_FORMAT_MACROS)
