@@ -12,7 +12,11 @@
 
 #include "glm/gtc/epsilon.hpp"
 #include "glm/gtc/type_ptr.hpp"
+
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wdeprecated-declarations")
 #include "glm/gtx/string_cast.hpp"
+nanoem_pragma_diagnostics_pop()
 
 #include "bx/commandline.h"
 

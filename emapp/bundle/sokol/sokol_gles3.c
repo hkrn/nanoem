@@ -3,7 +3,7 @@
 #else
 #include <GLES3/gl3.h>
 #define gl3wInit()
-#define glGetTexImage(a, b, c, d, e)
+#define glGetTexImage(a, b, c, d, e) do { (void)a; (void)b; (void)c; (void)d; (void)e; } while (0);
 #endif
 
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
@@ -92,6 +92,7 @@ sgx_pop_group(void)
 SGX_API_DECL void APIENTRY
 sgx_read_image(sg_image image, void *data, size_t size)
 {
+    SOKOL_UNUSED(size);
     const _sg_image_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
     if (ptr) {
         const GLenum target = ptr->gl.target,
@@ -99,7 +100,6 @@ sgx_read_image(sg_image image, void *data, size_t size)
                 type = _sg_gl_teximage_type(ptr->cmn.pixel_format);
         glBindTexture(target, ptr->gl.tex[ptr->cmn.active_slot]);
         {
-            SOKOL_UNUSED(size);
             glGetTexImage(target, 0, format, type, data);
         }
         glBindTexture(target, 0);

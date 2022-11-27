@@ -17,8 +17,6 @@
 #include "bx/timer.h"
 #include "debug-draw/debug_draw.hpp"
 
-#include "glm/gtx/string_cast.hpp"
-
 using namespace nanoem;
 
 namespace test {

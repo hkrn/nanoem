@@ -51,14 +51,12 @@ typedef void(APIENTRYP PFNGLSHADERSOURCEPROC)(
 typedef void(APIENTRYP PFNGLUSEPROGRAMPROC)(GLuint program);
 
 static const GLenum GL_ARRAY_BUFFER = 0x8892;
-static const GLenum GL_BUFFER = 0x82E0;
 static const GLenum GL_COMPUTE_SHADER = 0x91B9;
 static const GLenum GL_COMPILE_STATUS = 0x8B81;
 static const GLenum GL_LINK_STATUS = 0x8B82;
 static const GLenum GL_SHADER_STORAGE_BUFFER = 0x90D2;
 static const GLenum GL_STATIC_READ = 0x88E5;
 static const GLenum GL_STREAM_DRAW = 0x88E0;
-static const GLenum GL_STREAM_READ = 0x88E1;
 static const GLenum GL_UNIFORM_BUFFER = 0x8A11;
 
 PFNGLATTACHSHADERPROC glAttachShader = nullptr;
@@ -570,6 +568,7 @@ void
 OpenGLComputeShaderSkinDeformerFactory::Deformer::setDebugLabel(nanoem_u32_t object, const char *suffix)
 {
 #if defined(SOKOL_DEBUG) && SOKOL_DEBUG
+    static const GLenum GL_BUFFER = 0x82E0;
     char label[Inline::kMarkerStringLength];
     const char *name = m_model->canonicalNameConstString();
     StringUtils::format(label, sizeof(label), "Models/%s/Compute/%s", name, suffix);

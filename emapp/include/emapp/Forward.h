@@ -53,7 +53,8 @@ protected:
 
 class TinySTLAllocator : private NonCopyable {
 public:
-    struct DoNothing : private NonCopyable { };
+    struct DoNothing : private NonCopyable {
+    };
     static void *static_allocate(size_t bytes);
     static void static_deallocate(void *ptr, size_t bytes) NANOEM_DECL_NOEXCEPT;
 };
@@ -105,13 +106,17 @@ public:
 #define nanoem_parameter_assert(cond, message) nanoem_assert(cond, message)
 #endif /* nanoem_parameter_assert */
 
-#include "bx/bx.h"
+#include "nanoem/nanoem.h"
 
+#include "bx/bx.h"
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wdeprecated-copy-with-user-provided-copy")
 #include "tinystl/allocator.h"
 #include "tinystl/string.h"
 #include "tinystl/unordered_map.h"
 #include "tinystl/unordered_set.h"
 #include "tinystl/vector.h"
+nanoem_pragma_diagnostics_pop()
 
 #define GLM_ENABLE_EXPERIMENTAL
 #define GLM_FORCE_LEFT_HANDED
@@ -121,8 +126,6 @@ public:
 #endif
 #include "glm/fwd.hpp"
 #include "glm/gtc/quaternion.hpp"
-
-#include "nanoem/nanoem.h"
 
 namespace nanoem {
 
@@ -946,19 +949,19 @@ typedef struct sg_context_desc {
 } sg_context_desc;
 
 typedef struct sg_commit_listener {
-    void (*func)(void* user_data);
-    void* user_data;
+    void (*func)(void *user_data);
+    void *user_data;
 } sg_commit_listener;
 
 typedef struct sg_allocator {
-    void* (*alloc)(size_t size, void* user_data);
-    void (*free)(void* ptr, void* user_data);
-    void* user_data;
+    void *(*alloc)(size_t size, void *user_data);
+    void (*free)(void *ptr, void *user_data);
+    void *user_data;
 } sg_allocator;
 
 typedef struct sg_logger {
-    void (*log_cb)(const char* message, void* user_data);
-    void* user_data;
+    void (*log_cb)(const char *message, void *user_data);
+    void *user_data;
 } sg_logger;
 
 typedef struct sg_desc {
@@ -973,7 +976,7 @@ typedef struct sg_desc {
     int staging_buffer_size;
     int sampler_cache_size;
     int max_commit_listeners;
-    bool disable_validation;    // disable validation layer even in debug mode, useful for tests
+    bool disable_validation; // disable validation layer even in debug mode, useful for tests
     sg_allocator allocator;
     sg_logger logger; // optional log function override
     sg_context_desc context;

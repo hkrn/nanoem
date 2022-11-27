@@ -200,7 +200,7 @@ EffectParameterDialog::layoutOffscreenMainRenderTargetAttachments(Project *proje
 }
 
 void
-EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *project, const Effect *ownerEffect,
+EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *project, const Effect * /* ownerEffect */,
     const effect::OffscreenRenderTargetOption &option, nanoem_f32_t maxTextWidth)
 {
     const String &d = option.m_description;
@@ -212,7 +212,6 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
     const Project::DrawableList *drawables = project->drawableOrderList();
     for (Project::DrawableList::const_iterator it = drawables->begin(), end = drawables->end(); it != end; ++it) {
         IDrawable *drawable = *it;
-        const IEffect *activeEffect = drawable->activeEffect();
         char buffer[Inline::kLongNameStackBufferSize];
         const String &name = option.m_name;
         StringUtils::format(buffer, sizeof(buffer), "##%s/%p/visible", name.c_str(), drawable);

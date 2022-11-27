@@ -14,9 +14,6 @@
 
 #include <stdlib.h>
 
-#define nanoem_stringify(x) nanoem_stringify_(x)
-#define nanoem_stringify_(x) #x
-
 #define nanoem_status_ptr_assign(status_ptr, value) \
   do { \
     if (nanoem_likely(status_ptr != NULL)) { \
@@ -41,40 +38,6 @@
 #define nanoem_crt_strlen(str) strlen((str))
 #define nanoem_crt_qsort(base, count, size, predict) qsort((base), (count), (size), (predict))
 #define nanoem_crt_bsearch(key, base, count, size, predict) bsearch((key), (base), (count), (size), (predict))
-
-#if defined(__clang__)
-#define nanoem_pragma_diagnostics_push() _Pragma("clang diagnostic push")
-#define nanoem_pragma_diagnostics_ignore_clang(x) _Pragma(nanoem_stringify(clang diagnostic ignored x))
-#define nanoem_pragma_diagnostics_ignore_clang_gcc(x) nanoem_pragma_diagnostics_ignore_clang(x)
-#define nanoem_pragma_diagnostics_ignore_gcc(x)
-#define nanoem_pragma_diagnostics_ignore_msvc(x)
-#define nanoem_pragma_diagnostics_pop() _Pragma("clang diagnostic pop")
-#define nanoem_decl_align16(x) x __attribute__((aligned(16)))
-#elif defined(__GNUC__)
-#define nanoem_pragma_diagnostics_push() _Pragma("GCC diagnostic push")
-#define nanoem_pragma_diagnostics_ignore_clang(x)
-#define nanoem_pragma_diagnostics_ignore_gcc(x) _Pragma(nanoem_stringify(GCC diagnostic ignored x))
-#define nanoem_pragma_diagnostics_ignore_clang_gcc(x) nanoem_pragma_diagnostics_ignore_gcc(x)
-#define nanoem_pragma_diagnostics_ignore_msvc(x)
-#define nanoem_pragma_diagnostics_pop() _Pragma("GCC diagnostic pop")
-#define nanoem_decl_align16(x) x __attribute__((aligned(16)))
-#elif defined(_MSC_VER)
-#define nanoem_pragma_diagnostics_push() __pragma(warning(push))
-#define nanoem_pragma_diagnostics_ignore_clang(x)
-#define nanoem_pragma_diagnostics_ignore_gcc(x)
-#define nanoem_pragma_diagnostics_ignore_clang_gcc(x)
-#define nanoem_pragma_diagnostics_ignore_msvc(x) __pragma(warning(disable:x))
-#define nanoem_pragma_diagnostics_pop() __pragma(warning(pop))
-#define nanoem_decl_align16(x) __declspec(align(16)) x
-#else
-#define nanoem_pragma_diagnostics_push()
-#define nanoem_pragma_diagnostics_ignore_clang(x)
-#define nanoem_pragma_diagnostics_ignore_gcc(x)
-#define nanoem_pragma_diagnostics_ignore_clang_gcc(x)
-#define nanoem_pragma_diagnostics_ignore_msvc(x)
-#define nanoem_pragma_diagnostics_pop()
-#define nanoem_decl_align16(x) x
-#endif
 
 #if defined(NANOEM_NO_TLS)
 #define NANOEM_DECL_TLS
@@ -1059,9 +1022,9 @@ nanoemMotionTrackBundleAddKeyframe(kh_motion_track_bundle_t *bundle, nanoem_moti
 NANOEM_DECL_INTERNAL void
 nanoemMotionTrackBundleDestroy(kh_motion_track_bundle_t *bundle, nanoem_unicode_string_factory_t *factory);
 
-nanoem_pragma_diagnostics_push();
-nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-function");
-nanoem_pragma_diagnostics_ignore_msvc(4930);
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-function")
+nanoem_pragma_diagnostics_ignore_msvc(4930)
 
 static char *
 nanoemUtilCloneString(const char *source, nanoem_status_t *status)
@@ -1516,6 +1479,6 @@ nanoemModelSoftBodyAnchorGetParentSoftBody(const nanoem_model_soft_body_anchor_t
     return nanoem_is_not_null(anchor) ? anchor->base.parent.soft_body : NULL;
 }
 
-nanoem_pragma_diagnostics_pop();
+nanoem_pragma_diagnostics_pop()
 
 #endif /* NANOEM_PRIVATE_H_ */

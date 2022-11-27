@@ -39,7 +39,11 @@ void __stb_free(void *ptr, const char *file, int line);
 #define STBI_REALLOC(p, newsz) __stb_realloc((p), (newsz), nullptr, 0)
 #define STBI_FREE(p) __stb_free((p), nullptr, 0)
 #endif /* NDEBUG */
+
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-function")
 #include "stb/stb_image.h"
+nanoem_pragma_diagnostics_pop()
 
 namespace nanoem {
 namespace {
@@ -284,7 +288,6 @@ void
 image::APNG::composite(Error &error)
 {
     CRC crc;
-    int numFrames = 0;
     ByteArray compositionImageData, buffer;
     MemoryWriter writer(&buffer);
     const nanoem_u32_t width = m_header.m_width, height = m_header.m_height;
@@ -372,7 +375,6 @@ image::APNG::composite(Error &error)
                 }
                 ImageLoader::releaseDecodedImageWithSTB(&decodedImageDataPtr);
             }
-            numFrames++;
         }
         frame->m_composition = compositionImageData;
     }

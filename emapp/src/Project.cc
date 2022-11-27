@@ -497,7 +497,7 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
 #if defined(NANOEM_ENABLE_DEBUG_LABEL)
             char buffer[Inline::kMarkerStringLength];
             StringUtils::format(buffer, sizeof(buffer),
-                "Project::DrawQueue::drawPass(pass=%s, index=%d, type=kCommandTypeApplyPipelineBinding, name=%s)",
+                "Project::DrawQueue::drawPass(pass=%s, index=%lu, type=kCommandTypeApplyPipelineBinding, name=%s)",
                 project->findRenderPassName(pass->m_handle), it2 - pass->m_items->begin(),
                 project->findRenderPipelineName(item.u.m_pb.m_pipeline));
 #endif /* NANOEM_ENABLE_DEBUG_LABEL */

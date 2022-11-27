@@ -34,10 +34,14 @@ namespace nanoem {
 namespace internal {
 namespace {
 
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wdeprecated-declarations")
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-function")
 #define STB_IMAGE_WRITE_STATIC
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STBIW_ASSERT(x) /* prevent _wassert confliction on win32 */
 #include "stb/stb_image_write.h"
+nanoem_pragma_diagnostics_pop()
 
 #include "emapp/private/shaders/color_transform_fs_glsl_core33.h"
 #include "emapp/private/shaders/color_transform_fs_glsl_es3.h"

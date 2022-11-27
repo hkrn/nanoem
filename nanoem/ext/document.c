@@ -11,7 +11,10 @@
 
 #include "./document_p.h"
 
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-function")
 KHASH_SET_INIT_INT64(frame_index_set)
+nanoem_pragma_diagnostics_pop()
 
 nanoem_document_outside_parent_t *
 nanoemDocumentOutsideParentCreate(const nanoem_document_t *document, nanoem_status_t *status)

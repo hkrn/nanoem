@@ -81,7 +81,6 @@ typedef void(APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC)(
 
 static const GLenum GL_ARRAY_BUFFER = 0x8892;
 static const GLenum GL_BUFFER = 0x82E0;
-static const GLenum GL_COMPILE_STATUS = 0x8B81;
 static const GLenum GL_FALSE = 0;
 static const GLenum GL_FLOAT = 0x1406;
 static const GLenum GL_FRAGMENT_SHADER = 0x8B30;
@@ -94,7 +93,6 @@ static const GLenum GL_RGBA = 0x1908;
 static const GLenum GL_RGBA32F = 0x8814;
 static const GLenum GL_STATIC_READ = 0x88E5;
 static const GLenum GL_STREAM_DRAW = 0x88E0;
-static const GLenum GL_STREAM_READ = 0x88E1;
 static const GLenum GL_TEXTURE = 0x1702;
 static const GLenum GL_TEXTURE0 = 0x84C0;
 static const GLenum GL_TEXTURE_2D = 0x0DE1;
@@ -102,7 +100,6 @@ static const GLenum GL_TEXTURE_MAG_FILTER = 0x2800;
 static const GLenum GL_TEXTURE_MIN_FILTER = 0x2801;
 static const GLenum GL_TRANSFORM_FEEDBACK_BUFFER = 0x8C8E;
 static const GLenum GL_VERTEX_SHADER = 0x8B31;
-static const GLenum GL_UNIFORM_BUFFER = 0x8A11;
 
 PFNGLACTIVETEXTUREPROC glActiveTexture = nullptr;
 PFNGLATTACHSHADERPROC glAttachShader = nullptr;

@@ -33,7 +33,11 @@
 #define USE_CUSTOM_SORTING_ICON
 #define tableHeaderAscendingIcon u8"\uf077"
 #define tableHeaderDescendingIcon u8"\uf078"
+
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-parameter")
 #include "imguifiledialog/ImGuiFileDialog.cpp"
+nanoem_pragma_diagnostics_pop()
 #endif /* NANOEM_ENABLE_IMGUI_FILE_DIALOG */
 
 /* ImGuizmo */

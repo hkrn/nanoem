@@ -41,8 +41,15 @@ __pragma(warning(push))
 __pragma(warning(disable:4244))
 __pragma(warning(disable:4305))
 #endif /* _MSC_VER */
+/* (for nanoem_pragma_diagnostics_* macros) */
+#include "nanoem/nanoem.h"
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wsign-compare")
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wstrict-prototypes")
+nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-parameter")
 #define PAR_SHAPES_T uint32_t
 #include "par/par_shapes.h"
+nanoem_pragma_diagnostics_pop()
 #if defined(_MSC_VER)
 __pragma(warning(pop))
 #endif /* _MSC_VER */

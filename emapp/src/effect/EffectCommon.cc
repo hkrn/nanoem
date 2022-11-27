@@ -922,6 +922,7 @@ Preshader::execute(const GlobalUniform::Buffer &inputBuffer, GlobalUniform::Buff
                     nanoem_assert(false, "must NOT reach here");
                     break;
                 }
+                BX_UNUSED_1(dst0);
                 // fprintf(stderr, "  dst[%d] = %3f src0 = %3f src1 = %3f src2 = %3f\n",
                 // j, dst0, src0, src1, src2);
             }
