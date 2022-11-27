@@ -311,7 +311,7 @@ SGX_API_DECL void APIENTRY
 sgx_read_image(sg_image image, sg_buffer buffer, void *data, size_t size)
 {
     _SOKOL_UNUSED(buffer);
-    const _sg_pass_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
+    const _sg_image_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
     if (ptr) {
         sgx_read_image_core(ptr, data, size);
     }
@@ -341,7 +341,7 @@ sgx_map_buffer(sg_buffer buffer)
     _sg_buffer_t *ptr = _sg_lookup_buffer(&_sg.pools, buffer.id);
     D3D11_MAPPED_SUBRESOURCE src = { 0, 0, 0 };
     if (ptr) {
-        ID3D11Resource *res;
+        ID3D11Resource *res = NULL;
         ptr->d3d11.buf->lpVtbl->QueryInterface(ptr->d3d11.buf, &IID_ID3D11Resource, (void **) &res);
         _sg.d3d11.ctx->lpVtbl->Map(_sg.d3d11.ctx, res, 0, D3D11_MAP_WRITE_DISCARD, 0, &src);
         res->lpVtbl->Release(res);
@@ -354,9 +354,9 @@ sgx_unmap_buffer(sg_buffer buffer, void *address)
 {
     _sg_buffer_t *ptr = _sg_lookup_buffer(&_sg.pools, buffer.id);
     if (ptr && address) {
-        ID3D11Resource *res;
+        ID3D11Resource *res = NULL;
         ptr->d3d11.buf->lpVtbl->QueryInterface(ptr->d3d11.buf, &IID_ID3D11Resource, (void**) &res);
-        _sg.d3d11.ctx->lpVtbl->Unmap(_sg.d3d11.ctx, ptr->d3d11.buf, 0);
+        _sg.d3d11.ctx->lpVtbl->Unmap(_sg.d3d11.ctx, res, 0);
         res->lpVtbl->Release(res);
     }
 }
