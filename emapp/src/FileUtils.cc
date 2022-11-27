@@ -801,6 +801,10 @@ FileUtils::timestamp(const char *filePath) NANOEM_DECL_NOEXCEPT
     struct stat st;
     ::stat(filePath, &st);
     value = static_cast<nanoem_u64_t>(st.st_mtimespec.tv_sec) * 1000000000 + st.st_mtimespec.tv_nsec;
+#elif BX_PLATFORM_LINUX
+    struct stat st;
+    ::stat(filePath, &st);
+    value = st.st_mtim.tv_sec * 1000000000 + st.st_mtim.tv_nsec;
 #endif
     return value;
 }
@@ -889,7 +893,7 @@ FileUtils::createTransientFile(const String &source, TransientPath &destination)
         char proc[PATH_MAX], path[PATH_MAX];
         destination.m_handle = fd;
         StringUtils::format(proc, sizeof(proc), "/proc/self/fd/%d", fd);
-        ::readlink(proc, path, sizeof(path));
+        (void) ::readlink(proc, path, sizeof(path));
         ::unlink(path);
         created = destination.m_valid = ::link(source.c_str(), path) == 0;
         destination.m_path = path;
