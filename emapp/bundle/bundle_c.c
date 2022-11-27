@@ -36,27 +36,25 @@ extern void __par_free(void *ptr, const char *file, int line);
 #define PAR_REALLOC(T, p, size) ((T *) __par_realloc((p), (size) * sizeof(T), NULL, 0))
 #define PAR_FREE(p) __par_free((p), 0, 0)
 #endif
-#if defined(_MSC_VER)
-__pragma(warning(push))
-__pragma(warning(disable:4244))
-__pragma(warning(disable:4305))
-#endif /* _MSC_VER */
 /* (for nanoem_pragma_diagnostics_* macros) */
 #include "nanoem/nanoem.h"
 nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_msvc(4018)
+nanoem_pragma_diagnostics_ignore_msvc(4244)
+nanoem_pragma_diagnostics_ignore_msvc(4305)
 nanoem_pragma_diagnostics_ignore_clang_gcc("-Wsign-compare")
 nanoem_pragma_diagnostics_ignore_clang_gcc("-Wstrict-prototypes")
 nanoem_pragma_diagnostics_ignore_clang_gcc("-Wunused-parameter")
 #define PAR_SHAPES_T uint32_t
 #include "par/par_shapes.h"
 nanoem_pragma_diagnostics_pop()
-#if defined(_MSC_VER)
-__pragma(warning(pop))
-#endif /* _MSC_VER */
 
 /* stb */
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_msvc(4311)
 #define STB_SPRINTF_IMPLEMENTATION
 #include "stb/stb_sprintf.h"
+nanoem_pragma_diagnostics_pop()
 
 /* wildcardcmp */
 #include "wildcardcmp.c"

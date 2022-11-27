@@ -52,7 +52,10 @@ extern bx::AllocatorI *g_par_allocator;
 extern bx::AllocatorI *g_sokol_allocator;
 extern bx::AllocatorI *g_stb_allocator;
 extern bx::AllocatorI *g_tinyobj_allocator;
+nanoem_pragma_diagnostics_push()
+nanoem_pragma_diagnostics_ignore_msvc(4244)
 #include "sha256.c"
+nanoem_pragma_diagnostics_pop()
 }
 
 using namespace nanoem;

@@ -355,5 +355,5 @@ nanoemUnicodeStringFactoryDestroyEXT(nanoem_unicode_string_factory_t *factory)
 void APIENTRY
 nanoemUnicodeStringFactoryToUtf8OnStackEXT(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_u8_t *buffer, nanoem_rsize_t capacity, nanoem_status_t *status)
 {
-    return nanoemUnicodeStringFactoryToUtf8OnStackMBWC(factory, string, length, buffer, capacity, status);
+    nanoemUnicodeStringFactoryToUtf8OnStackMBWC(factory, string, length, buffer, capacity, status);
 }
