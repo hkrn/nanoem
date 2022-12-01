@@ -18,8 +18,8 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     env:
-      CC: clang-6.0
-      CXX: clang++-6.0
+      CC: clang
+      CXX: clang++
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -28,7 +28,7 @@ jobs:
       - name: setup prerequisite packages
         run: |
           sudo apt-get update && sudo apt-get install -y \
-            clang-6.0 \
+            clang \
             cmake \
             libasound-dev \
             libgtk-3-dev \
@@ -46,9 +46,6 @@ jobs:
       - name: build all dependencies of nanoem
         run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
-          # Disable building TBB due to LTO bug when "-Os" is passed
-          # https://stackoverflow.com/questions/56238019/linker-error-when-enabling-link-time-optimization-in-ndk
-          NANOEM_DISABLE_BUILD_TBB: 1
           NANOEM_ENABLE_BUILD_FFMPEG: 1
           NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
