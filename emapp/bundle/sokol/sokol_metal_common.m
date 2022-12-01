@@ -238,7 +238,7 @@ sgx_map_buffer(sg_buffer buffer)
             address = mtl_buf.contents;
         }
     }
-    return 0;
+    return address;
 }
 
 SGX_API_DECL void
