@@ -50,6 +50,7 @@ else()
   set_property(CACHE FX9_TARGET_COMPILER PROPERTY STRINGS "clang;gcc")
 endif()
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/common.cmake)
+set_property(TARGET fx9 PROPERTY CXX_STANDARD ${fx9_cxx_standard})
 
 # protobuf-c
 add_library(protobuf-c STATIC ${FX9_DEPENDENCIES_PATH}/protobuf-c/protobuf-c/protobuf-c.c)
@@ -80,6 +81,7 @@ if(GLFW_LIBRARY_RELEASE AND GLFW_INCLUDE_DIR)
                ${FX9_PROTOBUF_PATH}
                ${GLFW_INCLUDE_DIR})
   set_property(TARGET fx9_runner PROPERTY VS_STARTUP_PROJECT fx9_runner)
+  set_property(TARGET fx9_runner PROPERTY CXX_STANDARD ${fx9_cxx_standard})
   target_link_libraries(fx9_runner protobuf-c fx9 fx9_protobuf)
   target_link_libraries(fx9_runner optimized ${GLFW_LIBRARY_RELEASE} debug ${GLFW_LIBRARY_DEBUG})
   if(APPLE)
