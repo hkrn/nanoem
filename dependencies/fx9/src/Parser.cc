@@ -218,9 +218,11 @@ struct MatrixSwizzleConverter : TIntermTraverser {
         , m_context(context)
     {
     }
+
     bool
-    visitBinary(TVisit, TIntermBinary *node)
+    visitBinary(TVisit, TIntermBinary *node) override
     {
+        bool result = true;
         if (node->getOp() == EOpMatrixSwizzle) {
             TIntermAggregate *swizzleNode = node->getRight()->getAsAggregate();
             const TIntermSequence &sequence = swizzleNode->getSequence();
@@ -240,13 +242,195 @@ struct MatrixSwizzleConverter : TIntermTraverser {
                 TIntermConstantUnion *oneNode = m_intermediate->addConstantUnion(1.0, EbtFloat, loc, true);
                 node->setRight(m_context->handleConstructor(loc, oneNode, type));
                 node->setOp(EOpMul);
-                return false;
+                result = false;
             }
         }
-        return true;
+        return result;
     }
+
     TIntermediate *m_intermediate;
     HlslParseContext *m_context;
+};
+
+struct ParameterInvestigator : TIntermTraverser {
+    ParameterInvestigator()
+        : TIntermTraverser(true, true)
+    {
+    }
+
+    bool
+    visitAggregate(TVisit visit, TIntermAggregate *node) override
+    {
+        bool result = true;
+        switch (visit) {
+        case EvPreVisit: {
+            if (node->getOp() == EOpFunctionCall) {
+                auto it = m_parameters.find(node->getName());
+                if (it != m_parameters.end()) {
+                    int offset = 0;
+                    for (auto it2 : node->getSequence()) {
+                        it->second[offset++].second = it2;
+                    }
+                }
+            }
+            break;
+        }
+        case EvInVisit: {
+            if (node->getOp() == EOpFunction) {
+                TIntermAggregate *aggr = node->getSequence()[0]->getAsAggregate();
+                std::vector<std::pair<TString, TIntermNode *>> parameters;
+                for (auto it : aggr->getSequence()) {
+                    TIntermSymbol *argument = it->getAsSymbolNode();
+                    parameters.push_back(std::make_pair(argument->getName(), nullptr));
+                }
+                m_parameters.insert(std::make_pair(node->getName(), parameters));
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        return result;
+    }
+    const std::vector<std::pair<TString, TIntermNode *>> *
+    findParameters(const TString &name) const
+    {
+        auto it = m_parameters.find(name);
+        if (it != m_parameters.end()) {
+            return &it->second;
+        }
+        return nullptr;
+    }
+
+    TUnorderedMap<TString, std::vector<std::pair<TString, TIntermNode *>>> m_parameters;
+};
+
+/* https://github.com/microsoft/DirectXShaderCompiler/wiki/Porting-shaders-from-FXC-to-DXC#multiplication-only-pattern-for-the-intrinsic-function-pow */
+struct MultiplicationOnlyPowConverter : TIntermTraverser {
+    MultiplicationOnlyPowConverter(TIntermediate *intermediate, const ParameterInvestigator *parameterInvestigator)
+        : TIntermTraverser(true, true, true)
+        , m_parameterInvestigator(parameterInvestigator)
+        , m_intermediate(intermediate)
+    {
+    }
+
+    bool
+    visitAggregate(TVisit visit, TIntermAggregate *node) override
+    {
+        bool result = true;
+        switch (visit) {
+        case EvPreVisit: {
+            if (node->getOp() == EOpFunction) {
+                m_currentFunction = node->getName();
+            }
+            break;
+        }
+        case EvInVisit: {
+            if (node->getOp() == EOpPow) {
+                TIntermSequence &sequence = node->getSequence();
+                if (sequence.size() == 2) {
+                    TIntermTyped *arg1 = sequence[1]->getAsTyped();
+                    if (const auto constantUnion = arg1->getAsConstantUnion()) {
+                        rewritePowCall(constantUnion, node);
+                        result = false;
+                    }
+                    else if (const auto constantUnion = resolveSymbolNode(arg1)) {
+                        rewritePowCall(constantUnion, node);
+                        result = false;
+                    }
+                    else if (TIntermAggregate *arg1Aggr = arg1->getAsAggregate()) {
+                        TIntermSequence &arg1Sequence = arg1Aggr->getSequence();
+                        if (TIntermBinary *binaryNode = arg1Sequence[0]->getAsBinaryNode()) {
+                            result = evalBinaryNode(binaryNode, node);
+                        }
+                    }
+                    else if (TIntermBinary *binaryNode = arg1->getAsBinaryNode()) {
+                        result = evalBinaryNode(binaryNode, node);
+                    }
+                }
+            }
+            break;
+        }
+        case EvPostVisit: {
+            if (node->getOp() == EOpFunctionCall) {
+                m_currentFunction = TString();
+            }
+            break;
+        }
+        default:
+            break;
+        }
+        return result;
+    }
+    TIntermConstantUnion *
+    resolveSymbolNode(TIntermNode *node) const
+    {
+        TIntermConstantUnion *result = nullptr;
+        if (const auto symbolNode = node->getAsSymbolNode()) {
+            if (const auto parameters = m_parameterInvestigator->findParameters(m_currentFunction)) {
+                for (const auto &it : *parameters) {
+                    if (it.first == symbolNode->getName() && it.second) {
+                        if (const auto constantUnion = it.second->getAsConstantUnion()) {
+                            result = constantUnion;
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    bool
+    evalBinaryNode(TIntermBinary *binaryNode, TIntermAggregate *powNode)
+    {
+        bool result = true;
+        if (auto symbolNode = resolveSymbolNode(binaryNode->getLeft())) {
+            if (const auto constantUnion = symbolNode->fold(binaryNode->getOp(), binaryNode->getRight())->getAsConstantUnion()) {
+                rewritePowCall(constantUnion, powNode);
+                result = false;
+            }
+        }
+        else if (auto symbolNode = resolveSymbolNode(binaryNode->getRight())) {
+            if (const auto constantUnion = symbolNode->fold(binaryNode->getOp(), binaryNode->getLeft())->getAsConstantUnion()) {
+                rewritePowCall(constantUnion, powNode);
+                result = false;
+            }
+        }
+        return result;
+    }
+    void
+    rewritePowCall(const TIntermConstantUnion *constantUnion, TIntermAggregate *powNode)
+    {
+        auto constantValue = constantUnion->getConstArray()[0];
+        int count = 0;
+        switch (constantUnion->getBasicType()) {
+        case EbtBool: {
+            count = constantValue.getBConst() ? 1 : 0;
+            break;
+        }
+        case EbtInt: {
+            count = constantValue.getIConst();
+            break;
+        }
+        case EbtFloat: {
+            count = static_cast<int>(constantValue.getDConst());
+            break;
+        }
+        default:
+            break;
+        }
+        TIntermSequence &sequence = powNode->getSequence();
+        TIntermTyped *valueNode = sequence[0]->getAsTyped(), *assignNode = valueNode;
+        for (int i = 1; i < count; i++) {
+            assignNode = m_intermediate->addBinaryMath(EOpMul, assignNode, valueNode, TSourceLoc());
+        }
+        powNode->setOp(EOpSequence);
+        sequence.clear();
+        sequence.push_back(assignNode);
+    }
+
+    const ParameterInvestigator *m_parameterInvestigator;
+    TIntermediate *m_intermediate;
+    TString m_currentFunction;
 };
 
 } /* namespace anonymous */
@@ -927,8 +1111,12 @@ ParserContext::acceptTranslationUnit(atom_t unit)
             default:
                 break;
             }
-            MatrixSwizzleConverter traverser(&m_intermediate, m_context);
-            unitNode->traverse(&traverser);
+            MatrixSwizzleConverter matrixSwizzleConverter(&m_intermediate, m_context);
+            unitNode->traverse(&matrixSwizzleConverter);
+            ParameterInvestigator parameterInvestigator;
+            unitNode->traverse(&parameterInvestigator);
+            MultiplicationOnlyPowConverter mulOnlyPowConverter(&m_intermediate, &parameterInvestigator);
+            unitNode->traverse(&mulOnlyPowConverter);
             if (m_intermediate.postProcess(unitNode, m_context->getLanguage())) {
                 m_intermediate.setTreeRoot(unitNode);
             }
@@ -1607,14 +1795,12 @@ ParserContext::setGlobalVariableTypeSpec(atom_t declarations, atom_t type, atom_
             TIntermTyped *initializerNode = assignmentNode->getLeft();
             TIntermBinary *semanticAnnotationNode =
                 assignmentNode->getRight() ? assignmentNode->getRight()->getAsBinaryNode() : nullptr;
-            bool hasAnnotations = false;
             if (semanticAnnotationNode) {
                 if (TIntermNode *rightNode = semanticAnnotationNode->getRight()) {
                     const TIntermAggregate *annotationsNode = rightNode->getAsAggregate();
                     AnnotationList annotations;
                     convertAllAnnotations(annotationsNode, annotations);
                     m_annotations.insert(std::make_pair(nameNode->getName().c_str(), annotations));
-                    hasAnnotations = !annotations.empty();
                 }
             }
             const TType &specType = typeNode->getType();
@@ -4115,7 +4301,6 @@ TIntermTyped *
 ParserContext::overrideBuiltInPowCall(
     const glslang::TFunction *builtInFunction, TIntermTyped *argumentsNode, const glslang::TSourceLoc &loc)
 {
-    /* float z = pow(x, y); z = isnan(z) ? 0.0 : z */
     TIntermTyped *callerNode = nullptr;
     TIntermAggregate *args = argumentsNode->getAsAggregate();
     if (builtInFunction->getType().isScalar() && args) {
@@ -4125,6 +4310,7 @@ ParserContext::overrideBuiltInPowCall(
         for (auto item : args->getSequence()) {
             builtInFuncNode->getSequence().push_back(item);
         }
+        /* float z = pow(x, y); z = isnan(z) ? 0.0 : z */
         callerNode = castNaNToZero(builtInFuncNode, type, loc);
     }
     return callerNode;
