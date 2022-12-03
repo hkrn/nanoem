@@ -3675,14 +3675,16 @@ ImGuiWindow::drawKeyframeSelectionPanel(void *selector, int index, nanoem_f32_t 
     TimelineSegment segment = project->selectionSegment();
     ImGui::PushItemWidth((ImGui::GetContentRegionAvail().x - padding) / 2.0f);
     if (handleDragScalarN("##timeline.select.range.from", kFrameIndexDataType, &segment.m_from, 1, !playing, 1.0f,
-            nullptr, &segment.m_to, "From: %u", ImGuiSliderFlags_None) && ImGui::IsItemDeactivatedAfterEdit()) {
+            nullptr, &segment.m_to, "From: %u", ImGuiSliderFlags_None) &&
+        ImGui::IsItemDeactivatedAfterEdit()) {
         project->setSelectionSegment(segment);
     }
     ImGui::PopItemWidth();
     ImGui::SameLine();
     ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x - padding);
     if (handleDragScalarN("##timeline.select.range.to", kFrameIndexDataType, &segment.m_to, 1, !playing, 1.0f,
-            &segment.m_from, &duration, "To: %u", ImGuiSliderFlags_None) && ImGui::IsItemDeactivatedAfterEdit()) {
+            &segment.m_from, &duration, "To: %u", ImGuiSliderFlags_None) &&
+        ImGui::IsItemDeactivatedAfterEdit()) {
         project->setSelectionSegment(segment);
     }
     ImGui::PopItemWidth();
@@ -4659,7 +4661,8 @@ ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
     ImGui::PushItemWidth(-1);
     const nanoem_frame_index_t duration = project->duration();
     if (handleDragScalarN("##play.start.value", kFrameIndexDataType, &segment.m_from, 1, !isPlaying, 1.0f, nullptr,
-            &segment.m_to, "From: %u", ImGuiSliderFlags_None) && ImGui::IsItemDeactivatedAfterEdit()) {
+            &segment.m_to, "From: %u", ImGuiSliderFlags_None) &&
+        ImGui::IsItemDeactivatedAfterEdit()) {
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();
@@ -4669,7 +4672,8 @@ ImGuiWindow::drawPlayPanel(const ImVec2 &panelSize, Project *project)
     ImGui::SameLine();
     ImGui::PushItemWidth(-1);
     if (handleDragScalarN("##play.end.value", kFrameIndexDataType, &segment.m_to, 1, !isPlaying, 1.0f, &segment.m_from,
-            &duration, "To: %u", ImGuiSliderFlags_None) && ImGui::IsItemDeactivatedAfterEdit()) {
+            &duration, "To: %u", ImGuiSliderFlags_None) &&
+        ImGui::IsItemDeactivatedAfterEdit()) {
         project->setPlayingSegment(segment);
     }
     ImGui::PopItemWidth();

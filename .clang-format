@@ -15,4 +15,9 @@ ColumnLimit: 120
 NamespaceIndentation: None
 PointerAlignment: Right
 SpaceAfterCStyleCast: true
-
+StatementMacros: [
+  'nanoem_pragma_diagnostics_push',
+  'nanoem_pragma_diagnostics_ignore_clang_gcc',
+  'nanoem_pragma_diagnostics_ignore_msvc',
+  'nanoem_pragma_diagnostics_pop'
+]

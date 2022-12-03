@@ -47,7 +47,9 @@ protected:
     }
 
     void
-    flush_() override {}
+    flush_() override
+    {
+    }
 };
 } /* anonymous */
 
@@ -86,7 +88,7 @@ runApplication(HINSTANCE hInstance, int argc, const char *const *argv, const wch
             "emapp", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
         spdlog::register_logger(logger);
         spdlog::cfg::load_env_levels();
-#endif /* NANOEM_ENABLE_LOGGING */        
+#endif /* NANOEM_ENABLE_LOGGING */
         const int screenWidth = GetSystemMetrics(SM_CXSCREEN);
         const int screenHeight = GetSystemMetrics(SM_CYSCREEN);
         const nanoem_f32_t devicePixelRatio = Win32ThreadedApplicationService::calculateDevicePixelRatio();

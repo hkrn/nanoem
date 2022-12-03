@@ -353,7 +353,8 @@ openSharedLibrary(const char *dllPath)
     void *handle = bx::dlopen(dllPath);
     if (handle) {
         activate_context = reinterpret_cast<PFN_sgx_activate_context>(bx::dlsym(handle, "sgx_activate_context"));
-        add_commit_listener = reinterpret_cast<PFN_sgx_add_commit_listener>(bx::dlsym(handle, "sgx_add_commit_listener"));
+        add_commit_listener =
+            reinterpret_cast<PFN_sgx_add_commit_listener>(bx::dlsym(handle, "sgx_add_commit_listener"));
         alloc_buffer = reinterpret_cast<PFN_sgx_alloc_buffer>(bx::dlsym(handle, "sgx_alloc_buffer"));
         alloc_image = reinterpret_cast<PFN_sgx_alloc_image>(bx::dlsym(handle, "sgx_alloc_image"));
         alloc_pass = reinterpret_cast<PFN_sgx_alloc_pass>(bx::dlsym(handle, "sgx_alloc_pass"));
@@ -417,7 +418,8 @@ openSharedLibrary(const char *dllPath)
         query_buffer_overflow =
             reinterpret_cast<PFN_sgx_query_buffer_overflow>(bx::dlsym(handle, "sgx_query_buffer_overflow"));
         query_buffer_state = reinterpret_cast<PFN_sgx_query_buffer_state>(bx::dlsym(handle, "sgx_query_buffer_state"));
-        query_buffer_will_overflow = reinterpret_cast<PFN_sgx_query_buffer_will_overflow>(bx::dlsym(handle, "sgx_query_buffer_will_overflow"));
+        query_buffer_will_overflow =
+            reinterpret_cast<PFN_sgx_query_buffer_will_overflow>(bx::dlsym(handle, "sgx_query_buffer_will_overflow"));
         query_desc = reinterpret_cast<PFN_sgx_query_desc>(bx::dlsym(handle, "sgx_query_desc"));
         query_features = reinterpret_cast<PFN_sgx_query_features>(bx::dlsym(handle, "sgx_query_features"));
         query_image_defaults =
@@ -445,7 +447,8 @@ openSharedLibrary(const char *dllPath)
         read_image = reinterpret_cast<PFN_sgx_read_image>(bx::dlsym(handle, "sgx_read_image"));
         read_pass = reinterpret_cast<PFN_sgx_read_pass>(bx::dlsym(handle, "sgx_read_pass"));
         read_pass_async = reinterpret_cast<PFN_sgx_read_pass_async>(bx::dlsym(handle, "sgx_read_pass_async"));
-        remove_commit_listener = reinterpret_cast<PFN_sgx_remove_commit_listener>(bx::dlsym(handle, "sgx_remove_commit_listener"));
+        remove_commit_listener =
+            reinterpret_cast<PFN_sgx_remove_commit_listener>(bx::dlsym(handle, "sgx_remove_commit_listener"));
         setup_context = reinterpret_cast<PFN_sgx_setup_context>(bx::dlsym(handle, "sgx_setup_context"));
         shutdown = reinterpret_cast<PFN_sgx_shutdown>(bx::dlsym(handle, "sgx_shutdown"));
         uninit_buffer = reinterpret_cast<PFN_sgx_uninit_buffer>(bx::dlsym(handle, "sgx_uninit_buffer"));

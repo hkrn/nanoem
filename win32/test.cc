@@ -4,18 +4,18 @@
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
 
+#include <Pdh.h>
+#include <Psapi.h>
 #include <ShlObj.h>
+#include <VersionHelpers.h>
 #include <Windows.h>
 #include <commdlg.h>
 #include <d3d11.h>
 #include <dxgi.h>
 #include <mfapi.h>
 #include <objbase.h>
-#include <Pdh.h>
-#include <Psapi.h>
 #include <shellapi.h>
 #include <windowsx.h>
-#include <VersionHelpers.h>
 
 #include "bx/commandline.h"
 #include "emapp/Allocator.h"

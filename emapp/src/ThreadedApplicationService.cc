@@ -39,7 +39,7 @@
 #include <new>
 namespace tbb {
 struct task_group {
-    template<typename F>
+    template <typename F>
     static void
     run_and_wait(const F &task)
     {
@@ -563,7 +563,8 @@ ThreadedApplicationService::handleCommandMessage(Nanoem__Application__Command *c
             int language = project ? project->castLanguage() : 0;
             tbb::task_group tg;
             tg.run_and_wait(LoadingAllMotionIOPluginsWorker(language, fileURIs, this));
-            EMLOG_DEBUG("All {} motion I/O plugins area loaded in {} msecs", fileURIs.size(), stm_ms(stm_since(started)));
+            EMLOG_DEBUG(
+                "All {} motion I/O plugins area loaded in {} msecs", fileURIs.size(), stm_ms(stm_since(started)));
         }
 #endif /* NANOEM_ENABLE_STATIC_BUNDLE_PLUGIN */
         break;
