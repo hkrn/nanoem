@@ -150,7 +150,9 @@ LoadPMMExecutor::run()
         nanoem_buffer_t *buffer = nanoemBufferCreate(bytes.data(), bytes.size(), &status);
         nanoem_document_t *document = nanoemDocumentCreate(factory, &status);
         if (nanoemDocumentLoadFromBuffer(document, buffer, &status)) {
-            sendDocument(document, path);
+            String canonicalizedPath;
+            FileUtils::canonicalizePathSeparator(path, canonicalizedPath);
+            sendDocument(document, canonicalizedPath);
         }
         nanoemDocumentDestroy(document);
         nanoemBufferDestroy(buffer);
