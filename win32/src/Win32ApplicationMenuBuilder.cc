@@ -15,6 +15,8 @@
 
 #include "bx/handlealloc.h"
 
+#include <string>
+
 namespace nanoem {
 namespace win32 {
 

@@ -29,6 +29,7 @@ elseif(YAMLCPP_LIBRARY_DEBUG AND YAMLCPP_LIBRARY_RELEASE AND YAMLCPP_INCLUDE_DIR
   add_executable(emarb_yaml2pb ${CMAKE_CURRENT_SOURCE_DIR}/yaml2pb.cc
                                ${CMAKE_CURRENT_SOURCE_DIR}/../../src/protoc/common.pb-c.c
                                ${CMAKE_CURRENT_SOURCE_DIR}/../../src/protoc/translation.pb-c.c)
+  target_compile_definitions(emarb_yaml2pb PRIVATE YAML_CPP_STATIC_DEFINE)
   target_link_libraries(emarb_yaml2pb protobuf-c)
   set_property(TARGET emarb_yaml2pb PROPERTY FOLDER nanoem/resources)
   set_property(TARGET emarb_yaml2pb PROPERTY OUTPUT_NAME yaml2pb)

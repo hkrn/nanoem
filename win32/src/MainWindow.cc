@@ -23,6 +23,8 @@
 #include <d3d11on12.h>
 #endif /* NANOEM_ENABLE_D3D11ON12 */
 
+#include <string>
+
 #include "COMInline.h"
 #include "Dialog.h"
 #include "Preference.h"
