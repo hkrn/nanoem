@@ -352,6 +352,7 @@ TestWindow::setupDirectXRenderer(int width, int height)
 void
 TestWindow::setupOpenGLRenderer(int /* width */, int /* height */)
 {
+#if defined(NANOEM_WIN32_HAS_OPENGL)
     typedef BOOL (*pfn_wglSwapIntervalEXT)(int interval);
     typedef HGLRC (*pfn_wglCreateContextAttribsARB)(HDC hDC, HGLRC hshareContext, const int *attribList);
     static const int WGL_CONTEXT_MAJOR_VERSION_ARB = 0x2091;
@@ -394,6 +395,7 @@ TestWindow::setupOpenGLRenderer(int /* width */, int /* height */)
     m_service->setNativeContext(m_context);
     m_service->setNativeDevice(m_device);
     m_service->setNativeView(m_windowHandle);
+#endif /* NANOEM_WIN32_HAS_OPENGL */
 }
 
 void
@@ -433,6 +435,7 @@ TestWindow::handleTerminateEvent()
         device->Release();
         swapChain->Release();
     }
+#if defined(NANOEM_WIN32_HAS_OPENGL)
     else {
         HGLRC context = static_cast<HGLRC>(m_context);
         HDC device = static_cast<HDC>(m_device);
@@ -440,6 +443,7 @@ TestWindow::handleTerminateEvent()
         wglDeleteContext(context);
         ReleaseDC(m_windowHandle, device);
     }
+#endif /* NANOEM_WIN32_HAS_OPENGL */
     DestroyWindow(m_windowHandle);
     EMLOG_INFO("Termination has been completed: window={}", static_cast<const void *>(m_windowHandle));
 }
