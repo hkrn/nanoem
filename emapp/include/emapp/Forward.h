@@ -53,8 +53,7 @@ protected:
 
 class TinySTLAllocator : private NonCopyable {
 public:
-    struct DoNothing : private NonCopyable {
-    };
+    struct DoNothing : private NonCopyable { };
     static void *static_allocate(size_t bytes);
     static void static_deallocate(void *ptr, size_t bytes) NANOEM_DECL_NOEXCEPT;
 };

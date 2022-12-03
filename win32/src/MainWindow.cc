@@ -1343,8 +1343,7 @@ MainWindow::handleInitializeEvent()
         }
     }
     else if (m_commandLine->hasArg("recovery-from-latest")) {
-        String path(
-            json_object_dotget_string(json_object(m_service->applicationConfiguration()), "win32.redo.path")),
+        String path(json_object_dotget_string(json_object(m_service->applicationConfiguration()), "win32.redo.path")),
             basePath(path);
         basePath.append("/*");
         MutableWideString wideBasePath;
@@ -2316,7 +2315,8 @@ MainWindow::registerAllPrerequisiteEventListeners()
         [](void *userData, int code, const char *reason, const char *recoverySuggestion) {
             BX_UNUSED_4(userData, code, reason, recoverySuggestion);
             if (recoverySuggestion) {
-                EMLOG_ERROR("Received an error: code={} reason=\"{}\" suggestion=\"{}\"", code, reason, recoverySuggestion);
+                EMLOG_ERROR(
+                    "Received an error: code={} reason=\"{}\" suggestion=\"{}\"", code, reason, recoverySuggestion);
             }
             else if (reason) {
                 EMLOG_ERROR("Received an error: code={} reason=\"{}\"", code, reason);
