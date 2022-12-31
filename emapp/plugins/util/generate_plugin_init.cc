@@ -159,7 +159,7 @@ main(int argc, char *argv[])
         FILE *fp = fopen("./init.h", "wb");
         fprintf(fp,
             "/*\n"
-            "   Copyright (c) 2015-2021 hkrn All rights reserved\n"
+            "   Copyright (c) 2015-2023 hkrn All rights reserved\n"
             "\n"
             "   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md "
             "for more details.\n"
@@ -213,7 +213,7 @@ main(int argc, char *argv[])
         fp = fopen("./init.cc", "wb");
         fprintf(fp,
             "/*\n"
-            "   Copyright (c) 2015-2021 hkrn All rights reserved\n"
+            "   Copyright (c) 2015-2023 hkrn All rights reserved\n"
             "\n"
             "   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md "
             "for more details.\n"

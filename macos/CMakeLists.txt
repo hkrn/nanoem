@@ -25,7 +25,7 @@ set_target_properties(${NANOEM_EXECUTABLE_NAME} PROPERTIES OUTPUT_NAME ${PROJECT
                       MACOSX_BUNDLE_LONG_VERSION_STRING "${PROJECT_NAME} ${NANOEM_BUNDLE_VERSION}"
                       MACOSX_BUNDLE_BUNDLE_NAME "${PROJECT_NAME}"
                       MACOSX_BUNDLE_SHORT_VERSION_STRING "${CMAKE_MATCH_1}"
-                      MACOSX_BUNDLE_COPYRIGHT "Copyright 2015-2020 hkrn All Rights Reserved."
+                      MACOSX_BUNDLE_COPYRIGHT "Copyright 2015-2023 hkrn All Rights Reserved."
                       MACOSX_BUNDLE_BUNDLE_VERSION "${NANOEM_BUNDLE_VERSION}"
                       MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/Info.plist.in"
                       XCODE_ATTRIBUTE_CLANG_ENABLE_MODULES "YES"

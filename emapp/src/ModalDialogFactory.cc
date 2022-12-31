@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2015-2021 hkrn All rights reserved
+   Copyright (c) 2015-2023 hkrn All rights reserved
 
    This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
  */
@@ -832,7 +832,7 @@ AboutDialog::AboutDialog(BaseApplicationService *applicationPtr)
     : NoActionDialog(applicationPtr)
 {
     StringUtils::format(m_title, "About nanoem %s", nanoemGetVersionString());
-    static const char kPrefixText[] = "Copyright (c) 2015-2021 hkrn All rights reserved\n\n";
+    static const char kPrefixText[] = "Copyright (c) 2015-2023 hkrn All rights reserved\n\n";
     m_text.assign(kPrefixText, kPrefixText + sizeof(kPrefixText));
     const nanoem_u8_t *data = nullptr;
     size_t length = 0;
