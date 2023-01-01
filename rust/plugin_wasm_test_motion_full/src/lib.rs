@@ -96,7 +96,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreate(
         })
         .unwrap()
     );
-    let plugin = Box::new(nanoem_application_plugin_motion_io_t::default());
+    let plugin = Box::<nanoem_application_plugin_motion_io_t>::default();
     std::mem::transmute(plugin)
 }
 
