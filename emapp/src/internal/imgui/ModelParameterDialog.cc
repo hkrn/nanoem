@@ -3234,6 +3234,8 @@ ModelParameterDialog::layoutBoneConstraintPanel(nanoem_model_bone_t *bonePtr, Pr
             if (ImGui::DragInt("##constraint.iterations", &value, 1.0f, 0, 0xff, buffer)) {
                 command::ScopedMutableConstraint scoped(constraintPtr);
                 nanoemMutableModelConstraintSetNumIterations(scoped, value);
+                model::Constraint *constraint = model::Constraint::cast(constraintPtr);
+                constraint->setIterationCount(constraintPtr, Inline::roundInt32(value));
             }
         }
         {
