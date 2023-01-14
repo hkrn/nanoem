@@ -164,13 +164,19 @@ void
 Constraint::initialize(const nanoem_model_constraint_t *constraintPtr)
 {
     nanoem_parameter_assert(constraintPtr, "must not be nullptr");
+    nanoem_rsize_t numIterations = nanoem_rsize_t(glm::max(nanoemModelConstraintGetNumIterations(constraintPtr), 0));
+    setIterationCount(constraintPtr, numIterations);
+}
+
+void
+Constraint::setIterationCount(const nanoem_model_constraint_t *constraintPtr, nanoem_rsize_t value)
+{
     nanoem_rsize_t numJoints;
     nanoem_model_constraint_joint_t *const *joints = nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
-    nanoem_rsize_t numIterations = nanoem_rsize_t(glm::max(nanoemModelConstraintGetNumIterations(constraintPtr), 0));
     for (nanoem_rsize_t i = 0; i < numJoints; i++) {
         nanoem_model_constraint_joint_t *joint = joints[i];
-        m_jointIterationResult[joint].reserve(numIterations);
-        m_effectorIterationResult[joint].reserve(numIterations);
+        m_jointIterationResult[joint].resize(value);
+        m_effectorIterationResult[joint].resize(value);
     }
 }
 

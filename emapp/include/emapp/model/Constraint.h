@@ -59,6 +59,7 @@ public:
     void resetLanguage(const nanoem_model_constraint_t *constraintPtr, nanoem_unicode_string_factory_t *factory,
         nanoem_language_type_t language);
     void initialize(const nanoem_model_constraint_t *constraintPtr);
+    void setIterationCount(const nanoem_model_constraint_t *constraintPtr, nanoem_rsize_t value);
 
     const JointIterationResult *jointIterationResult() const NANOEM_DECL_NOEXCEPT;
     const JointIterationResult *effectorIterationResult() const NANOEM_DECL_NOEXCEPT;
