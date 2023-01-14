@@ -501,7 +501,7 @@ DeletingMaterialState::save(const Model *model, const nanoem_model_material_t *m
             nanoem_model_morph_material_t *const *items =
                 nanoemModelMorphGetAllMaterialMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
-                nanoem_model_morph_material_t *item = items[i];
+                nanoem_model_morph_material_t *item = items[j];
                 if (nanoemModelMorphMaterialGetMaterialObject(item) == materialPtr) {
                     nanoem_mutable_model_morph_material_t *mutableMorph =
                         nanoemMutableModelMorphMaterialCreateAsReference(item, status);
@@ -617,7 +617,7 @@ DeletingBoneState::save(const Model *model, const nanoem_model_bone_t *bonePtr, 
             nanoem_model_constraint_joint_t *const *joints =
                 nanoemModelConstraintGetAllJointObjects(constraintPtr, &numJoints);
             for (nanoem_rsize_t j = 0; j < numJoints; j++) {
-                nanoem_model_constraint_joint_t *jointPtr = joints[i];
+                nanoem_model_constraint_joint_t *jointPtr = joints[j];
                 if (nanoemModelConstraintJointGetBoneObject(jointPtr) == bonePtr) {
                     nanoem_mutable_model_constraint_joint_t *mutableJoint =
                         nanoemMutableModelConstraintJointCreateAsReference(jointPtr, status);
@@ -639,7 +639,7 @@ DeletingBoneState::save(const Model *model, const nanoem_model_bone_t *bonePtr, 
             nanoem_rsize_t numItems;
             nanoem_model_morph_bone_t *const *items = nanoemModelMorphGetAllBoneMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
-                nanoem_model_morph_bone_t *item = items[i];
+                nanoem_model_morph_bone_t *item = items[j];
                 if (nanoemModelMorphBoneGetBoneObject(item) == bonePtr) {
                     nanoem_mutable_model_morph_bone_t *mutableMorph =
                         nanoemMutableModelMorphBoneCreateAsReference(item, status);
@@ -727,7 +727,7 @@ DeletingMorphState::save(const Model *model, const nanoem_model_morph_t *morphPt
             nanoem_rsize_t numItems;
             nanoem_model_morph_flip_t *const *items = nanoemModelMorphGetAllFlipMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
-                nanoem_model_morph_flip_t *item = items[i];
+                nanoem_model_morph_flip_t *item = items[j];
                 if (nanoemModelMorphFlipGetMorphObject(item) == morphPtr) {
                     nanoem_mutable_model_morph_flip_t *mutableMorph =
                         nanoemMutableModelMorphFlipCreateAsReference(item, status);
@@ -739,7 +739,7 @@ DeletingMorphState::save(const Model *model, const nanoem_model_morph_t *morphPt
             nanoem_rsize_t numItems;
             nanoem_model_morph_group_t *const *items = nanoemModelMorphGetAllGroupMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
-                nanoem_model_morph_group_t *item = items[i];
+                nanoem_model_morph_group_t *item = items[j];
                 if (nanoemModelMorphGroupGetMorphObject(item) == morphPtr) {
                     nanoem_mutable_model_morph_group_t *mutableMorph =
                         nanoemMutableModelMorphGroupCreateAsReference(item, status);
@@ -794,7 +794,7 @@ DeletingRigidBodyState::save(const Model *model, const nanoem_model_rigid_body_t
             nanoem_rsize_t numItems;
             nanoem_model_morph_impulse_t *const *items = nanoemModelMorphGetAllImpulseMorphObjects(morphPtr, &numItems);
             for (nanoem_rsize_t j = 0; j < numItems; j++) {
-                nanoem_model_morph_impulse_t *item = items[i];
+                nanoem_model_morph_impulse_t *item = items[j];
                 if (nanoemModelMorphImpulseGetRigidBodyObject(item) == rigidBodyPtr) {
                     nanoem_mutable_model_morph_impulse_t *mutableMorph =
                         nanoemMutableModelMorphImpulseCreateAsReference(item, status);
