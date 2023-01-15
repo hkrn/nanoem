@@ -2847,6 +2847,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         desc.allocator.alloc = allocateSGXMemory;
         desc.allocator.free = releaseSGXMemory;
         desc.logger.log_cb = handleSGXMessage;
+        desc.logger.user_data = this;
         desc.buffer_pool_size = glm::clamp(commandPtr->buffer_pool_size, 1024u, 0xffffu);
         desc.image_pool_size = glm::clamp(commandPtr->image_pool_size, 4096u, 0xffffu);
         desc.shader_pool_size = glm::clamp(commandPtr->shader_pool_size, 1024u, 0xffffu);
