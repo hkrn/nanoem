@@ -150,7 +150,7 @@ install(CODE "
     set(\${path} \"@executable_path/../Frameworks\" PARENT_SCOPE)
   endfunction()
   # construct app
-  set(app_path \"${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app\")
+  set(app_path \"\${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}.app\")
   file(REMOVE_RECURSE \"\${CMAKE_CURRENT_BINARY_DIR}/Contents/PlugIns\")
   file(GLOB_RECURSE INSTALLED_PLUGINS \"\${app_path}/Contents/PlugIns/*${CMAKE_SHARED_LIBRARY_SUFFIX}\")
   fixup_bundle(\"\${app_path}\" \"\${INSTALLED_PLUGINS}\" \"${LIBRARY_PATHS}\")
