@@ -29,10 +29,10 @@ function(nanoem_emapp_build_sokol_glcore33)
 endfunction()
 
 function(nanoem_emapp_build_sokol_gles3)
-  find_library(GLES3_LIBRARY_PATH NAMES GLESv3 GLESv2)
+  find_library(GLES3_LIBRARY_PATH NAMES GLESv3)
   find_path(GLES3_INCLUDE_DIR NAMES GLES3/gl3.h)
   mark_as_advanced(GLES3_LIBRARY_PATH GLES3_INCLUDE_DIR)
-  if((NANOEM_ENABLE_SOKOL_GLES3_COMPAT OR EMSCRIPTEN) OR (GLES3_LIBRARY_PATH AND GLES3_INCLUDE_DIR))
+  if((NANOEM_ENABLE_SOKOL_GLES3_COMPAT OR EMSCRIPTEN) OR (GLES3_LIBRARY_PATH AND GLES3_INCLUDE_DIR) AND NOT APPLE)
     add_library(sokol_gles3 ${_library_type}
                 ${CMAKE_CURRENT_SOURCE_DIR}/sokol_gles3.c
                 $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/sokol_gles3.def>)
