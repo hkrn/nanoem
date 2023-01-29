@@ -207,6 +207,9 @@ function(compile_tbb _cmake_build_type _generator _toolset_option _arch_option _
                                            -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
                                            -DCMAKE_INSTALL_LIBDIR=lib
                                            -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DCMAKE_BUILD_WITH_INSTALL_NAME_DIR=ON
+                                           -DCMAKE_MACOS_RPATH=ON
+                                           -DCMAKE_INSTALL_NAME_DIR=${_build_path}/install-root/lib
                                            -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
   rewrite_cmake_cache(${_build_path})
   execute_build(${_build_path})
