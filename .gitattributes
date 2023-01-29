@@ -16,3 +16,5 @@
 *.json eol=lf
 *.cmake eol=lf
 *.proto eol=lf
+
+CMakeLists.txt eol=lf
