@@ -165,6 +165,22 @@ jobs:
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+  build-rust:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}/rust
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: setup prerequisite packages
+        run: |
+          sudo apt-get update && sudo apt-get install -y \
+            protobuf-compiler
+      - name: setup rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: build plugin_wasm
+        run: ./scripts/build.sh
   codeql:
     if: ${{ false }}
     runs-on: ubuntu-latest
