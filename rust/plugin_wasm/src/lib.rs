@@ -61,14 +61,14 @@ fn inner_get_data_internal(
     let data_size_ptr = allocate_size_ptr(instance, store)?;
     get_data_size.call(store, *opaque, data_size_ptr)?;
     let data_size = data_size_ptr
-        .deref(&inner_memory(instance).view(store))
+        .deref(&inner_memory(instance)?.view(store))
         .read()?;
     let bytes = allocate_byte_array(instance, data_size, store)?;
     let status_ptr = allocate_status_ptr(instance, store)?;
     get_data_body.call(store, *opaque, bytes, data_size, status_ptr)?;
-    let cell = bytes.deref(&inner_memory(instance).view(store)).as_ptr32();
+    let cell = bytes.deref(&inner_memory(instance)?.view(store)).as_ptr32();
     output_data.resize(data_size as usize, 0);
-    let view = inner_memory(instance).view(store);
+    let view = inner_memory(instance)?.view(store);
     let slice = cell.slice(&view, data_size)?;
     for byte in slice.iter() {
         output_data.push(byte.read()?);
@@ -116,8 +116,8 @@ pub(crate) fn initialize_env_logger() {
     tracing_subscriber::fmt::try_init().unwrap_or_default();
 }
 
-pub(crate) fn inner_memory(instance: &Instance) -> &Memory {
-    instance.exports.get_memory("memory").unwrap()
+pub(crate) fn inner_memory(instance: &Instance) -> Result<&Memory> {
+    Ok(instance.exports.get_memory("memory")?)
 }
 
 pub(crate) fn allocate_byte_array(
@@ -140,7 +140,7 @@ pub(crate) fn allocate_byte_array_with_data(
 ) -> Result<ByteArray> {
     let data_size = data.len() as u32;
     let data_ptr = allocate_byte_array(instance, data_size, store)?;
-    let view = inner_memory(instance).view(store);
+    let view = inner_memory(instance)?.view(store);
     let cell = data_ptr.deref(&view);
     let ptr = cell.as_ptr32();
     for (offset, byte) in data.iter().enumerate() {
@@ -155,13 +155,13 @@ pub(crate) fn allocate_status_ptr(instance: &Instance, store: &mut Store) -> Res
         .exports
         .get_typed_function::<u32, StatusPtr>(store, MALLOC_FN)?;
     let data_ptr = malloc_func.call(store, size_of::<u32>() as u32)?;
-    let view = inner_memory(instance).view(store);
+    let view = inner_memory(instance)?.view(store);
     data_ptr.deref(&view).write(0)?;
     Ok(data_ptr)
 }
 
 pub(crate) fn allocate_size_ptr(instance: &Instance, store: &mut Store) -> Result<SizePtr> {
-    let memory = inner_memory(instance);
+    let memory = inner_memory(instance)?;
     let malloc_func = instance
         .exports
         .get_typed_function::<u32, SizePtr>(store, MALLOC_FN)?;
@@ -178,8 +178,7 @@ pub(crate) fn release_byte_array(
 ) -> Result<()> {
     let free_func = instance
         .exports
-        .get_typed_function::<ByteArray, ()>(store, FREE_FN)
-        .unwrap();
+        .get_typed_function::<ByteArray, ()>(store, FREE_FN)?;
     free_func.call(store, ptr)?;
     tracing::debug!("Released byte array");
     Ok(())
@@ -188,8 +187,7 @@ pub(crate) fn release_byte_array(
 pub(crate) fn release_size_ptr(instance: &Instance, ptr: SizePtr, store: &mut Store) -> Result<()> {
     let free_func = instance
         .exports
-        .get_typed_function::<SizePtr, ()>(store, FREE_FN)
-        .unwrap();
+        .get_typed_function::<SizePtr, ()>(store, FREE_FN)?;
     free_func.call(store, ptr)?;
     Ok(())
 }
@@ -201,8 +199,7 @@ pub(crate) fn release_status_ptr(
 ) -> Result<()> {
     let free_func = instance
         .exports
-        .get_typed_function::<StatusPtr, ()>(store, FREE_FN)
-        .unwrap();
+        .get_typed_function::<StatusPtr, ()>(store, FREE_FN)?;
     free_func.call(store, ptr)?;
     Ok(())
 }
@@ -257,7 +254,7 @@ pub(crate) fn inner_destroy_opaque(
 
 pub(crate) fn inner_terminate_function(instance: &Instance, name: &str, store: &mut Store) {
     if let Ok(terminate) = instance.exports.get_typed_function::<(), ()>(store, name) {
-        terminate.call(store).unwrap();
+        terminate.call(store).unwrap_or_default();
         tracing::debug!(name = name, "Called termination");
     } else {
         notify_export_function_error(name);
@@ -275,7 +272,7 @@ pub(crate) fn inner_get_string(
             .exports
             .get_typed_function::<OpaquePtr, ByteArray>(store, name)
         {
-            let memory = inner_memory(instance);
+            let memory = inner_memory(instance)?;
             let value = get_string
                 .call(store, *opaque)?
                 .read_utf8_string_with_nul(&memory.view(store))
@@ -394,7 +391,7 @@ pub(crate) fn inner_get_function_name(
         let get_function_name = instance
             .exports
             .get_typed_function::<(OpaquePtr, i32), ByteArray>(store, name)?;
-        let memory = inner_memory(instance);
+        let memory = inner_memory(instance)?;
         let function_name = get_function_name
             .call(store, *opaque, index)?
             .read_utf8_string_with_nul(&memory.view(store))
@@ -425,7 +422,7 @@ pub(crate) fn inner_set_function(
             .exports
             .get_typed_function::<(OpaquePtr, i32, StatusPtr), ()>(store, name)?;
         set_function.call(store, *opaque, index, status_ptr)?;
-        let result = status_ptr.read(&inner_memory(instance).view(store))?;
+        let result = status_ptr.read(&inner_memory(instance)?.view(store))?;
         tracing::debug!(name = name, opaque = ?opaque, index = index, "Called setting function");
         release_status_ptr(instance, status_ptr, store)?;
         result
@@ -447,7 +444,7 @@ pub(crate) fn inner_execute(
             .exports
             .get_typed_function::<(OpaquePtr, StatusPtr), ()>(store, name)?;
         execute.call(store, *opaque, status_ptr)?;
-        let result = status_ptr.read(&inner_memory(instance).view(store))?;
+        let result = status_ptr.read(&inner_memory(instance)?.view(store))?;
         tracing::debug!(name = name, opaque = ?opaque, "Called executing function");
         release_status_ptr(instance, status_ptr, store)?;
         result
@@ -470,7 +467,7 @@ pub(crate) fn inner_load_ui_window(
         {
             let status_ptr = allocate_status_ptr(instance, store)?;
             load_ui_window_layout.call(store, *opaque, status_ptr)?;
-            let result = status_ptr.read(&inner_memory(instance).view(store))?;
+            let result = status_ptr.read(&inner_memory(instance)?.view(store))?;
             tracing::debug!(name = name, opaque = ?opaque, "Called loading UI window");
             release_status_ptr(instance, status_ptr, store)?;
             result
@@ -516,7 +513,7 @@ pub(crate) fn inner_set_ui_component_layout(
                 status_ptr,
             )?;
             *reload = false;
-            let result = status_ptr.read(&inner_memory(instance).view(store))?;
+            let result = status_ptr.read(&inner_memory(instance)?.view(store))?;
             tracing::debug!(name = name, opaque = ?opaque, "Called setting UI component layout");
             release_byte_array(instance, id_ptr, store)?;
             release_byte_array(instance, data_ptr, store)?;
