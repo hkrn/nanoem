@@ -6,10 +6,11 @@
 
 #include "emapp/command/UpdateCameraCommand.h"
 
-#include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
+#include "emapp/Constants.h"
 #include "emapp/ICamera.h"
 #include "emapp/private/CommonInclude.h"
+
+#include "../CommandMessage.inl"
 
 #include "undo/undo.h"
 

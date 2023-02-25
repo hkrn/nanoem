@@ -6,6 +6,7 @@
 
 #include "emapp/model/Bone.h"
 
+#include "emapp/Constants.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Motion.h"

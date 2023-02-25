@@ -6,15 +6,15 @@
 
 #include "./project.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Accessory.h"
 #include "emapp/CommandRegistrator.h"
-#include "emapp/DirectionalLight.h"
 #include "emapp/FileUtils.h"
 #include "emapp/Grid.h"
 #include "emapp/IAudioPlayer.h"
-#include "emapp/IFileManager.h"
+#include "emapp/ICamera.h"
+#include "emapp/ILight.h"
 #include "emapp/Model.h"
-#include "emapp/PerspectiveCamera.h"
 #include "emapp/ShadowCamera.h"
 
 using namespace nanoem;

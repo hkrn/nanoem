@@ -6,7 +6,6 @@
 
 #include "emapp/PhysicsEngine.h"
 
-#include "bx/os.h"
 #include "emapp/Constants.h"
 #include "emapp/private/CommonInclude.h"
 

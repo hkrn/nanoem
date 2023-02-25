@@ -18,9 +18,6 @@
 #include "nanomsg/nn.h"
 #include "nanomsg/pubsub.h"
 
-#include "emapp/StringUtils.h"
-#include "emapp/ThreadedApplicationService.h"
-
 #endif /* NANOEM_ENABLE_NANOMSG */
 
 namespace nanoem {

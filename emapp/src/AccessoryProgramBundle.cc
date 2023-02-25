@@ -14,7 +14,6 @@
 #include "emapp/ILight.h"
 #include "emapp/PixelFormat.h"
 #include "emapp/Project.h"
-#include "emapp/ResourceBundle.h"
 #include "emapp/ShadowCamera.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"

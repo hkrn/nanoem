@@ -7,12 +7,12 @@
 #include "emapp/command/BaseAccessoryKeyframeCommand.h"
 
 #include "emapp/Accessory.h"
+#include "emapp/Constants.h"
 #include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 
 namespace nanoem {
 namespace command {

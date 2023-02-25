@@ -19,6 +19,8 @@ struct ID3D11UnorderedAccessView;
 namespace nanoem {
 
 namespace model {
+class Bone;
+class Morph;
 class Vertex;
 }
 

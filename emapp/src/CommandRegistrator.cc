@@ -36,7 +36,6 @@
 #include "emapp/command/RemoveMorphKeyframeCommand.h"
 #include "emapp/command/RemoveSelfShadowKeyframeCommand.h"
 #include "emapp/command/RemoveTimelineFrameCommand.h"
-#include "emapp/command/TransformBoneCommand.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace nanoem {

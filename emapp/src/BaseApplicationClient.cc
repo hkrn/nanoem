@@ -8,7 +8,6 @@
 
 #include "emapp/ApplicationPreference.h"
 #include "emapp/StringUtils.h"
-#include "emapp/ThreadedApplicationService.h"
 #include "emapp/internal/ApplicationUtils.h"
 #include "emapp/private/CommonInclude.h"
 

@@ -8,13 +8,9 @@
 
 #include "emapp/Constants.h"
 #include "emapp/IEventPublisher.h"
-#include "emapp/PerspectiveCamera.h"
 #include "emapp/Project.h"
-#include "emapp/ResourceBundle.h"
 #include "emapp/internal/LineDrawer.h"
 #include "emapp/private/CommonInclude.h"
-
-#include "bx/hash.h"
 
 namespace nanoem {
 

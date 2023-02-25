@@ -10,6 +10,7 @@
 #include "emapp/AccessoryProgramBundle.h"
 #include "emapp/Archiver.h"
 #include "emapp/CommandRegistrator.h"
+#include "emapp/Constants.h"
 #include "emapp/DirectionalLight.h"
 #include "emapp/Effect.h"
 #include "emapp/EnumUtils.h"
@@ -27,7 +28,6 @@
 #include "emapp/ITranslator.h"
 #include "emapp/ImageLoader.h"
 #include "emapp/ListUtils.h"
-#include "emapp/ModalDialogFactory.h"
 #include "emapp/Model.h"
 #include "emapp/ModelProgramBundle.h"
 #include "emapp/PerspectiveCamera.h"
@@ -56,12 +56,11 @@
 
 #include "bx/handlealloc.h"
 #include "bx/hash.h"
-#include "bx/timer.h"
+#include "bx/rng.h"
 
 #include "lz4/lib/lz4.h"
 #include "sokol/sokol_time.h"
 #include "undo/undo.h"
-#include "zlib.h"
 
 extern "C" {
 #include "wildcardcmp.h"

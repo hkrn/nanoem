@@ -6,6 +6,7 @@
 
 #include "emapp/internal/imgui/CameraParentModelBoneSelector.h"
 
+#include "emapp/ITranslator.h"
 #include "emapp/Model.h"
 #include "emapp/private/CommonInclude.h"
 

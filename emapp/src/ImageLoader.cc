@@ -15,10 +15,10 @@
 #include "emapp/URI.h"
 #include "emapp/private/CommonInclude.h"
 
+#include "bx/endian.h"
+
 /* for sscanf */
 #include <stdio.h>
-
-#include "bx/file.h"
 
 extern "C" {
 void *__stb_malloc(size_t size, const char *file, int line);

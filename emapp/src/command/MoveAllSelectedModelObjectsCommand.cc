@@ -6,6 +6,7 @@
 
 #include "emapp/command/MoveAllSelectedModelObjectsCommand.h"
 
+#include "emapp/Constants.h"
 #include "emapp/model/IGizmo.h"
 #include "emapp/private/CommonInclude.h"
 

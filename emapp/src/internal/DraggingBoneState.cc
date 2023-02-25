@@ -6,16 +6,14 @@
 
 #include "emapp/internal/DraggingBoneState.h"
 
+#include "emapp/Constants.h"
 #include "emapp/ICamera.h"
 #include "emapp/IEventPublisher.h"
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
-#include "emapp/Ray.h"
 #include "emapp/command/TransformBoneCommand.h"
-#include "emapp/internal/IDraggingState.h"
-#include "emapp/private/CommonInclude.h"
 
 #include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtc/type_ptr.hpp"

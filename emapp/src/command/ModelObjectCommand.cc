@@ -6,15 +6,14 @@
 
 #include "emapp/command/ModelObjectCommand.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Error.h"
 #include "emapp/IModelObjectSelection.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
-#include "emapp/Progress.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"
 #include "emapp/model/Bone.h"
-#include "emapp/model/Constraint.h"
 #include "emapp/model/Joint.h"
 #include "emapp/model/Label.h"
 #include "emapp/model/Material.h"
@@ -25,7 +24,6 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "nanoem/ext/mutable.h"
-#include "tinyobjloader-c/tinyobj_loader_c.h"
 
 namespace nanoem {
 namespace command {

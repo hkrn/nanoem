@@ -6,7 +6,6 @@
 
 #include "emapp/internal/ApplicationUtils.h"
 
-#include "emapp/Model.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 #include "sokol/sokol_time.h"

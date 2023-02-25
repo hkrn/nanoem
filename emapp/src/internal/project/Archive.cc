@@ -10,7 +10,6 @@
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/Effect.h"
 #include "emapp/FileUtils.h"
-#include "emapp/Grid.h"
 #include "emapp/IAudioPlayer.h"
 #include "emapp/IBackgroundVideoRenderer.h"
 #include "emapp/ICamera.h"
@@ -18,18 +17,15 @@
 #include "emapp/ILight.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
-#include "emapp/PhysicsEngine.h"
 #include "emapp/PluginFactory.h"
 #include "emapp/Progress.h"
 #include "emapp/Project.h"
-#include "emapp/ShadowCamera.h"
 #include "emapp/StringUtils.h"
 #include "emapp/UUID.h"
 #include "emapp/internal/project/Native.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "../../protoc/project.pb-c.h"
-#include "bx/rng.h"
 
 namespace nanoem {
 namespace internal {

@@ -6,8 +6,8 @@
 
 #include "emapp/model/BindPose.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Error.h"
-#include "emapp/IModelObjectSelection.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/StringUtils.h"

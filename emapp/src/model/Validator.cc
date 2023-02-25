@@ -6,6 +6,7 @@
 
 #include "emapp/model/Validator.h"
 
+#include "emapp/Constants.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/IImageView.h"
 #include "emapp/Model.h"
@@ -15,7 +16,8 @@
 #include "emapp/model/Label.h"
 #include "emapp/model/SoftBody.h"
 #include "emapp/model/Vertex.h"
-#include "emapp/private/CommonInclude.h"
+
+#include "glm/gtc/type_ptr.hpp"
 
 namespace nanoem {
 namespace model {

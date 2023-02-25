@@ -8,6 +8,7 @@
 #include "emapp/sdk/Encoder.h"
 
 #include "bx/commandline.h"
+#include "bx/rng.h"
 
 #include "glm/gtc/noise.hpp"
 

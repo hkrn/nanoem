@@ -6,6 +6,7 @@
 
 #include "emapp/internal/imgui/ModelParameterDialog.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Error.h"
 #include "emapp/Grid.h"
 #include "emapp/ICamera.h"
@@ -15,7 +16,6 @@
 #include "emapp/ILight.h"
 #include "emapp/ListUtils.h"
 #include "emapp/ModalDialogFactory.h"
-#include "emapp/Progress.h"
 #include "emapp/command/ModelObjectCommand.h"
 #include "emapp/command/TransformModelCommand.h"
 #include "emapp/internal/ModelObjectSelection.h"

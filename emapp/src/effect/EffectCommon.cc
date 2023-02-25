@@ -6,18 +6,12 @@
 
 #include "emapp/effect/Common.h"
 
-#include "emapp/Accessory.h"
 #include "emapp/Constants.h"
-#include "emapp/Effect.h"
-#include "emapp/ImageLoader.h"
-#include "emapp/Project.h"
 #include "emapp/StringUtils.h"
 #include "emapp/effect/GlobalUniform.h"
 #include "emapp/effect/RenderTargetNormalizer.h"
-#include "emapp/internal/BlitPass.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "glm/gtc/matrix_inverse.hpp"
 #include "sokol/sokol_time.h"
 
 #include "../protoc/effect.pb-c.h"

@@ -6,6 +6,7 @@
 
 #include "../common.h"
 
+#include "emapp/Constants.h"
 #include "emapp/internal/DraggingBoneState.h"
 
 using namespace nanoem;

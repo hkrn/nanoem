@@ -12,7 +12,6 @@
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/ShadowCamera.h"
-#include "emapp/StringUtils.h"
 #include "emapp/ThreadedApplicationClient.h"
 #include "emapp/private/CommonInclude.h"
 

@@ -6,8 +6,8 @@
 
 #include "emapp/internal/imgui/GizmoController.h"
 
+#include "emapp/Constants.h"
 #include "emapp/ICamera.h"
-#include "emapp/IModelObjectSelection.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/model/IGizmo.h"

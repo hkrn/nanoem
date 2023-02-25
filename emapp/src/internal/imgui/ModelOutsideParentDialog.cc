@@ -8,7 +8,8 @@
 
 #include "emapp/CommandRegistrator.h"
 #include "emapp/Model.h"
-#include "emapp/private/CommonInclude.h"
+
+#include "glm/gtc/type_ptr.hpp"
 
 namespace nanoem {
 namespace internal {

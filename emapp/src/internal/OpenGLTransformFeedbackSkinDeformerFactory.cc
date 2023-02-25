@@ -6,8 +6,6 @@
 
 #include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
 
-#include "emapp/Error.h"
-#include "emapp/ICamera.h"
 #include "emapp/Model.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"

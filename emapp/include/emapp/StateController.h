@@ -10,7 +10,6 @@
 
 #include "emapp/Forward.h"
 #include "emapp/IProjectHolder.h"
-#include "emapp/ModalDialogFactory.h"
 #include "emapp/Project.h"
 
 namespace nanoem {

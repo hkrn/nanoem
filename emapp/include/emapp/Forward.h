@@ -110,7 +110,6 @@ public:
 #include "bx/bx.h"
 nanoem_pragma_diagnostics_push()
 nanoem_pragma_diagnostics_ignore_clang_gcc("-Wdeprecated-copy-with-user-provided-copy")
-#include "tinystl/allocator.h"
 #include "tinystl/string.h"
 #include "tinystl/unordered_map.h"
 #include "tinystl/unordered_set.h"

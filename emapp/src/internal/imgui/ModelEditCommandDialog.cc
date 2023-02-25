@@ -6,15 +6,9 @@
 
 #include "emapp/internal/imgui/ModelEditCommandDialog.h"
 
-#include "emapp/ICamera.h"
-#include "emapp/ILight.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
-#include "emapp/StringUtils.h"
 #include "emapp/model/IGizmo.h"
-#include "emapp/private/CommonInclude.h"
-
-#include "glm/gtx/matrix_query.hpp"
 
 namespace nanoem {
 namespace internal {

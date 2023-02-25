@@ -5,10 +5,12 @@
  */
 
 #include "emapp/DefaultFileManager.h"
+
 #include "emapp/Accessory.h"
 #include "emapp/Archiver.h"
 #include "emapp/BaseApplicationService.h"
 #include "emapp/BaseAudioPlayer.h"
+#include "emapp/Constants.h"
 #include "emapp/Effect.h"
 #include "emapp/FileUtils.h"
 #include "emapp/IBackgroundVideoRenderer.h"
@@ -16,15 +18,12 @@
 #include "emapp/IEventPublisher.h"
 #include "emapp/IFileManager.h"
 #include "emapp/IModalDialog.h"
-#include "emapp/IMotionKeyframeSelection.h"
-#include "emapp/ImageLoader.h"
 #include "emapp/ModalDialogFactory.h"
 #include "emapp/Model.h"
 #include "emapp/Motion.h"
 #include "emapp/PluginFactory.h"
 #include "emapp/Progress.h"
 #include "emapp/Project.h"
-#include "emapp/ResourceBundle.h"
 #include "emapp/StringUtils.h"
 #include "emapp/internal/ModelEffectSetting.h"
 #include "emapp/plugin/DecoderPlugin.h"
@@ -32,7 +31,6 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "bx/handlealloc.h"
-#include "protoc/application.pb-c.h"
 
 #include <ctype.h> /* isspace */
 #if !BX_PLATFORM_WINDOWS

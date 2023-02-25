@@ -7,7 +7,6 @@
 #include "emapp/command/RemoveTimelineFrameCommand.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 #include "bx/handlealloc.h"
 #include "emapp/private/CommonInclude.h"
 

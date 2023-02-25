@@ -6,7 +6,7 @@
 
 #include "../common.h"
 
-#include "emapp/IModalDialog.h"
+#include "emapp/Constants.h"
 #include "emapp/internal/DraggingBoneState.h"
 #include "emapp/internal/project/Redo.h"
 

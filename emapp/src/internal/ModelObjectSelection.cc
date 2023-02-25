@@ -6,6 +6,7 @@
 
 #include "emapp/internal/ModelObjectSelection.h"
 
+#include "emapp/Constants.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"

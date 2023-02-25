@@ -8,10 +8,8 @@
 
 #include "emapp/Accessory.h"
 #include "emapp/EnumUtils.h"
-#include "emapp/private/CommonInclude.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 #include "bx/handlealloc.h"
 
 namespace nanoem {

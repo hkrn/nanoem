@@ -6,6 +6,7 @@
 
 #include "emapp/internal/imgui/UVEditDialog.h"
 
+#include "emapp/Constants.h"
 #include "emapp/IImageView.h"
 #include "emapp/Model.h"
 #include "emapp/StringUtils.h"

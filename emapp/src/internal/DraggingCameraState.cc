@@ -10,8 +10,6 @@
 #include "emapp/IEventPublisher.h"
 #include "emapp/Project.h"
 #include "emapp/command/UpdateCameraCommand.h"
-#include "emapp/internal/IDraggingState.h"
-#include "emapp/private/CommonInclude.h"
 
 namespace nanoem {
 namespace internal {

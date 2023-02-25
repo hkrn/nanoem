@@ -21,7 +21,6 @@
 #include "emapp/StringUtils.h"
 #include "emapp/internal/BasePass.h"
 #include "emapp/internal/PluginUI.h"
-#include "emapp/plugin/DecoderPlugin.h"
 #include "emapp/plugin/EncoderPlugin.h"
 #include "emapp/private/CommonInclude.h"
 #include "emapp/sdk/Encoder.h"

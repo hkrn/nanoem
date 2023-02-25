@@ -10,7 +10,6 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 
 namespace nanoem {
 namespace command {

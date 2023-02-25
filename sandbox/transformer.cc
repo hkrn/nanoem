@@ -5,6 +5,7 @@
 #include "emapp/model/Importer.h"
 
 #include "bx/commandline.h"
+#include "bx/os.h"
 
 #include <stdio.h>
 

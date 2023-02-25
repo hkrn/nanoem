@@ -8,8 +8,6 @@
 #ifndef NANOEM_EMAPP_FILEUTILS_H_
 #define NANOEM_EMAPP_FILEUTILS_H_
 
-#include "bx/readerwriter.h"
-
 #include "emapp/Forward.h"
 
 namespace nanoem {

@@ -9,10 +9,8 @@
 #define NANOEM_EMAPP_MODEL_H_
 
 #include "emapp/BoundingBox.h"
-#include "emapp/Constants.h"
 #include "emapp/IDrawable.h"
 #include "emapp/IEffect.h"
-#include "emapp/ITranslator.h"
 #include "emapp/PhysicsEngine.h"
 #include "emapp/URI.h"
 #include "emapp/model/Bone.h"
