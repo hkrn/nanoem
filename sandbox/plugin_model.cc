@@ -3,9 +3,9 @@
 #include "emapp/internal/StubEventPublisher.h"
 
 #include "emapp/plugin/ModelIOPlugin.h"
-#include "emapp/sdk/Model.h"
 
 #include "bx/commandline.h"
+#include "bx/os.h"
 
 #include <stdio.h>
 

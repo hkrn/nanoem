@@ -11,14 +11,11 @@
 #include "../../protoc/application.pb-c.h"
 #include "emapp/BaseApplicationService.h"
 #include "emapp/Error.h"
-#include "emapp/IEventPublisher.h"
-#include "emapp/IFileManager.h"
 #include "emapp/IModalDialog.h"
 #include "emapp/Project.h"
 #include "emapp/ThreadedApplicationService.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "bx/readerwriter.h"
 #include "lz4/lib/lz4.h"
 #include "sokol/sokol_time.h"
 

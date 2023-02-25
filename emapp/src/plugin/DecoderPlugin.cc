@@ -10,7 +10,6 @@
 #include "emapp/IEventPublisher.h"
 #include "emapp/StringUtils.h"
 #include "emapp/URI.h"
-#include "emapp/internal/Stub.h"
 #include "emapp/private/CommonInclude.h"
 #include "emapp/sdk/Decoder.h"
 

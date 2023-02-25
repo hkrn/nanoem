@@ -8,6 +8,7 @@
 #include "emapp/integration/IExecutor.h"
 
 #include "bx/commandline.h"
+#include "bx/rng.h"
 #include "nanoem/ext/document.h"
 #include "sokol/sokol_time.h"
 

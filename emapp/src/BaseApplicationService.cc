@@ -12,6 +12,7 @@
 #include "emapp/ApplicationPreference.h"
 #include "emapp/BaseAudioPlayer.h"
 #include "emapp/CommandRegistrator.h"
+#include "emapp/Constants.h"
 #include "emapp/DefaultFileManager.h"
 #include "emapp/Effect.h"
 #include "emapp/EnumUtils.h"
@@ -78,7 +79,6 @@
 #include "emapp/command/UpdateLightCommand.h"
 #include "protoc/application.pb-c.h"
 
-#include "bx/commandline.h"
 #include "bx/handlealloc.h"
 #include "sokol/sokol_time.h"
 #include "undo/undo.h"

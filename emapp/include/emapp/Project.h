@@ -18,8 +18,6 @@
 #include "emapp/TimelineSegment.h"
 #include "emapp/effect/OffscreenRenderTargetOption.h"
 #include "emapp/model/BindPose.h"
-#include "emapp/model/Bone.h"
-#include "emapp/model/Morph.h"
 #include "emapp/model/RigidBody.h"
 
 #include "nanoem/ext/parson/parson.h"

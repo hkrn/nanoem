@@ -6,6 +6,7 @@
 
 #include "emapp/PerspectiveCamera.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Model.h"
 #include "emapp/Motion.h"
 #include "emapp/Project.h"
@@ -14,7 +15,6 @@
 
 #include "glm/gtc/matrix_inverse.hpp"
 #include "glm/gtx/intersect.hpp"
-#include "glm/gtx/quaternion.hpp"
 
 #include "undo/undo.h"
 

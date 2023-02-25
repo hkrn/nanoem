@@ -10,8 +10,8 @@
 #include "emapp/Motion.h"
 #include "emapp/PerspectiveCamera.h"
 #include "emapp/Project.h"
-#include "emapp/private/CommonInclude.h"
 
+#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/vector_query.hpp"
 
 #include "undo/undo.h"

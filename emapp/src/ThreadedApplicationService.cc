@@ -9,25 +9,16 @@
 #if defined(NANOEM_ENABLE_NANOMSG)
 
 #include "./protoc/application.pb-c.h"
-#include "emapp/Accessory.h"
 #include "emapp/BaseApplicationService.h"
 #include "emapp/DefaultFileManager.h"
-#include "emapp/IEventPublisher.h"
 #include "emapp/IModalDialog.h"
-#include "emapp/IVideoRecorder.h"
+#include "emapp/IProjectHolder.h"
 #include "emapp/ModalDialogFactory.h"
-#include "emapp/Model.h"
-#include "emapp/Motion.h"
 #include "emapp/Progress.h"
-#include "emapp/StateController.h"
 #include "emapp/StringUtils.h"
-#include "emapp/internal/CapturingPassState.h"
 #include "emapp/internal/project/Redo.h"
-#include "emapp/model/Bone.h"
-#include "emapp/model/Morph.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "bx/handlealloc.h"
 #include "sokol/sokol_time.h"
 
 #define NN_STATIC_LIB

@@ -27,8 +27,6 @@
 #include "emapp/model/IVertexWeightPainter.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "glm/gtx/vector_query.hpp"
-
 #include "sokol/sokol_time.h"
 
 namespace nanoem {

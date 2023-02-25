@@ -7,7 +7,6 @@
 #include "emapp/command/AddCameraKeyframeCommand.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 #include "emapp/ICamera.h"
 #include "emapp/private/CommonInclude.h"
 

@@ -7,7 +7,6 @@
 #include "emapp/command/BatchUndoCommandListCommand.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 
 #include "emapp/Accessory.h"
 #include "emapp/private/CommonInclude.h"

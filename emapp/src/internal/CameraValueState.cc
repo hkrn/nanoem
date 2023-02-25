@@ -7,7 +7,6 @@
 #include "emapp/internal/CameraValueState.h"
 
 #include "emapp/ICamera.h"
-#include "emapp/IVectorValueState.h"
 #include "emapp/Project.h"
 #include "emapp/command/UpdateCameraCommand.h"
 

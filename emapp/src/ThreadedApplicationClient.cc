@@ -12,7 +12,6 @@
 #include "emapp/ThreadedApplicationService.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "bx/debug.h"
 #include "sokol/sokol_time.h"
 
 #define NN_STATIC_LIB

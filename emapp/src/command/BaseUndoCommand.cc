@@ -7,7 +7,6 @@
 #include "emapp/command/BaseUndoCommand.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 #include "emapp/Error.h"
 #include "emapp/Project.h"
 #include "emapp/private/CommonInclude.h"

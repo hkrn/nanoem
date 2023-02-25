@@ -4,12 +4,10 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-#include "emapp/Effect.h"
 #include "emapp/StringUtils.h"
 #include "emapp/effect/Common.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "../protoc/effect.pb-c.h"
 #include "./EffectCommon.inl"
 
 namespace nanoem {

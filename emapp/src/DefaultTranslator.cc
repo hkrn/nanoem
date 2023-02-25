@@ -6,7 +6,6 @@
 
 #include "emapp/DefaultTranslator.h"
 
-#include "emapp/FileUtils.h"
 #include "emapp/ResourceBundle.h"
 #include "emapp/private/CommonInclude.h"
 

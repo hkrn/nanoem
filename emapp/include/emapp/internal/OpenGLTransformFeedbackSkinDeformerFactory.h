@@ -17,6 +17,7 @@ class Model;
 
 namespace model {
 class Bone;
+class Morph;
 class Vertex;
 }
 

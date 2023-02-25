@@ -6,7 +6,7 @@
 
 #include "emapp/internal/imgui/PhysicsSimulationDialog.h"
 
-#include "emapp/private/CommonInclude.h"
+#include "glm/gtc/type_ptr.hpp"
 
 namespace nanoem {
 namespace internal {

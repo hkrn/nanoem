@@ -6,8 +6,8 @@
 
 #include "emapp/internal/DraggingMorphState.h"
 
+#include "emapp/ICamera.h"
 #include "emapp/Model.h"
-#include "emapp/PerspectiveCamera.h"
 #include "emapp/Project.h"
 #include "emapp/command/TransformMorphCommand.h"
 #include "emapp/model/Morph.h"

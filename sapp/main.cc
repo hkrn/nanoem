@@ -10,6 +10,7 @@
 #include "MainWindow.h"
 
 #include "bx/commandline.h"
+#include "bx/os.h"
 #include "whereami.h"
 
 #if defined(NANOEM_ENABLE_LOGGING)

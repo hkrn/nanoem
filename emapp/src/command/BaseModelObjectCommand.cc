@@ -7,7 +7,6 @@
 #include "emapp/command/BaseModelObjectCommand.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 #include "emapp/private/CommonInclude.h"
 
 namespace {

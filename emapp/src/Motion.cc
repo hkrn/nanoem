@@ -7,6 +7,7 @@
 #include "emapp/Motion.h"
 
 #include "emapp/Accessory.h"
+#include "emapp/Constants.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/Error.h"
 #include "emapp/FileUtils.h"

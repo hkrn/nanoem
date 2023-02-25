@@ -6,10 +6,11 @@
 
 #include "emapp/command/UpdateLightCommand.h"
 
-#include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
+#include "emapp/Constants.h"
 #include "emapp/ILight.h"
 #include "emapp/private/CommonInclude.h"
+
+#include "../CommandMessage.inl"
 
 #include "undo/undo.h"
 

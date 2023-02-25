@@ -7,7 +7,6 @@
 #include "emapp/internal/LightValueState.h"
 
 #include "emapp/ILight.h"
-#include "emapp/IVectorValueState.h"
 #include "emapp/Project.h"
 #include "emapp/command/UpdateLightCommand.h"
 

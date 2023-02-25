@@ -10,6 +10,7 @@
 #include <d3d11shader.h>
 #include <d3dcommon.h>
 #include <d3dcompiler.h>
+#include "bx/readerwriter.h"
 #if defined(__MINGW32__)
 #define D3DCOMPILE_FLAGS2_FORCE_ROOT_SIGNATURE_LATEST 0
 #endif
@@ -25,6 +26,7 @@ pfn_D3DCompile g_D3DCompile = nullptr;
 #include "emapp/Accessory.h"
 #include "emapp/AccessoryProgramBundle.h"
 #include "emapp/Archiver.h"
+#include "emapp/Constants.h"
 #include "emapp/FileUtils.h"
 #include "emapp/ICamera.h"
 #include "emapp/IEventPublisher.h"
@@ -43,7 +45,6 @@ pfn_D3DCompile g_D3DCompile = nullptr;
 #include "emapp/effect/AnimatedImageContainer.h"
 #include "emapp/effect/RenderTargetMipmapGenerator.h"
 #include "emapp/effect/RenderTargetNormalizer.h"
-#include "emapp/internal/BlitPass.h"
 #include "emapp/model/Morph.h"
 #include "emapp/private/CommonInclude.h"
 
@@ -51,7 +52,6 @@ pfn_D3DCompile g_D3DCompile = nullptr;
 #include "./protoc/effect.pb-c.h"
 
 #include "bx/hash.h"
-#include "glm/gtc/noise.hpp"
 
 namespace nanoem {
 namespace effect {

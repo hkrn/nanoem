@@ -7,7 +7,6 @@
 #include "emapp/command/TransformMorphCommand.h"
 
 #include "../CommandMessage.inl"
-#include "../protoc/command.pb-c.h"
 #include "emapp/model/Morph.h"
 #include "emapp/private/CommonInclude.h"
 

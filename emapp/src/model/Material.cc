@@ -6,8 +6,8 @@
 
 #include "emapp/model/Material.h"
 
+#include "emapp/Constants.h"
 #include "emapp/EnumUtils.h"
-#include "emapp/Model.h"
 #include "emapp/StringUtils.h"
 #include "emapp/private/CommonInclude.h"
 

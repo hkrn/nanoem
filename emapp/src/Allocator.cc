@@ -9,9 +9,6 @@
 #include "imgui/imgui.h"
 
 #include "bx/allocator.h"
-#include "bx/debug.h"
-#include "bx/string.h"
-#include "tinystl/allocator.h"
 
 #if defined(NANOEM_ENABLE_MIMALLOC)
 #include "mimalloc.h"

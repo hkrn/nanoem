@@ -6,6 +6,7 @@
 
 #include "emapp/model/Importer.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Error.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"

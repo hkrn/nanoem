@@ -6,7 +6,7 @@
 
 #include "emapp/internal/LineDrawer.h"
 
-#include "emapp/PerspectiveCamera.h"
+#include "emapp/ICamera.h"
 #include "emapp/PixelFormat.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"

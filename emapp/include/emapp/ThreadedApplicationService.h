@@ -9,7 +9,6 @@
 #define NANOEM_EMAPP_THREADEDAPPLICATIONSERVICE_H_
 
 #include "emapp/BaseApplicationService.h"
-#include "emapp/IFileManager.h"
 #include "emapp/ModalDialogFactory.h"
 #include "emapp/PluginFactory.h"
 

@@ -8,7 +8,6 @@
 
 #include "emapp/Accessory.h"
 #include "emapp/BaseAudioPlayer.h"
-#include "emapp/DefaultFileManager.h"
 #include "emapp/IEventPublisher.h"
 #include "emapp/IFileManager.h"
 #include "emapp/ITranslator.h"

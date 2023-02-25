@@ -10,11 +10,6 @@
 
 #include "emapp/Forward.h"
 
-#include "bx/hash.h"
-#include "bx/os.h"
-#include "bx/rng.h"
-#include "bx/timer.h"
-
 namespace nanoem {
 
 class UUID NANOEM_DECL_SEALED {

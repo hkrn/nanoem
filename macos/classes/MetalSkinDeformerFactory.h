@@ -20,6 +20,8 @@
 namespace nanoem {
 
 namespace model {
+class Bone;
+class Morph;
 class Vertex;
 }
 

@@ -7,15 +7,7 @@
 #include "emapp/internal/DraggingBackgroundVideoState.h"
 
 #include "emapp/IEventPublisher.h"
-#include "emapp/ListUtils.h"
-#include "emapp/Model.h"
 #include "emapp/Project.h"
-#include "emapp/private/CommonInclude.h"
-
-#include "glm/gtc/matrix_inverse.hpp"
-#include "glm/gtc/matrix_transform.hpp"
-#include "glm/gtc/type_ptr.hpp"
-#include "glm/gtx/closest_point.hpp"
 
 namespace nanoem {
 namespace internal {

@@ -6,11 +6,11 @@
 
 #include "emapp/internal/imgui/ModelKeyframeSelector.h"
 
+#include "emapp/IModelObjectSelection.h"
 #include "emapp/IMotionKeyframeSelection.h"
 #include "emapp/ITrack.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
-#include "emapp/internal/ModelObjectSelection.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "imgui/imgui.h"

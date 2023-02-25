@@ -8,12 +8,12 @@
 
 #include "emapp/AccessoryProgramBundle.h"
 #include "emapp/Archiver.h"
+#include "emapp/Constants.h"
 #include "emapp/Effect.h"
 #include "emapp/EnumUtils.h"
 #include "emapp/Error.h"
 #include "emapp/FileUtils.h"
 #include "emapp/IEventPublisher.h"
-#include "emapp/IFileManager.h"
 #include "emapp/ILight.h"
 #include "emapp/ImageLoader.h"
 #include "emapp/ListUtils.h"
@@ -23,7 +23,6 @@
 #include "emapp/private/CommonInclude.h"
 
 #include "CommandMessage.inl"
-#include "protoc/command.pb-c.h"
 
 #include "glm/gtx/normal.hpp"
 #include "glm/gtx/vector_query.hpp"

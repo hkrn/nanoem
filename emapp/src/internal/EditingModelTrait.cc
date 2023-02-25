@@ -6,13 +6,15 @@
 
 #include "emapp/internal/EditingModelTrait.h"
 
+#include "emapp/Constants.h"
 #include "emapp/Error.h"
 #include "emapp/IEventPublisher.h"
 #include "emapp/ListUtils.h"
 #include "emapp/Model.h"
 #include "emapp/Project.h"
 #include "emapp/StringUtils.h"
-#include "emapp/private/CommonInclude.h"
+
+#include "glm/gtc/type_ptr.hpp"
 
 namespace nanoem {
 namespace internal {
