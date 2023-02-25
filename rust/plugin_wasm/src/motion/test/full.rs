@@ -23,11 +23,10 @@ use super::build_type_and_flags;
 fn create_controller(pipe: &mut Pipe) -> Result<MotionIOPluginController> {
     let package = "plugin_wasm_test_motion_full";
     let (ty, flag) = build_type_and_flags();
-    inner_create_controller(pipe, &format!("target/wasm32-wasi/{}/{}.wasm", ty, package))
+    inner_create_controller(pipe, &format!("target/wasm32-wasi/{ty}/{package}.wasm"))
         .with_context(|| {
             format!(
-                "try build with \"cargo build --package {} --target wasm32-wasi{}\"",
-                package, flag
+                "try build with \"cargo build --package {package} --target wasm32-wasi{flag}\"",
             )
         })
 }
