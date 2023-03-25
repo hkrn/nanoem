@@ -5,6 +5,7 @@
 */
 
 use anyhow::{Context, Result};
+use assert_matches::assert_matches;
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
@@ -37,8 +38,8 @@ fn create() -> Result<()> {
     let result = create_controller(&mut pipe);
     assert!(result.is_ok());
     let mut controller = result?;
-    assert!(controller.initialize().is_ok());
-    assert!(controller.create().is_ok());
+    assert_matches!(controller.initialize(), Ok(_));
+    assert_matches!(controller.create(), Ok(_));
     assert_eq!(
         vec![
             PluginOutput {
@@ -111,7 +112,7 @@ fn set_language() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_language(0).is_ok());
+    assert_matches!(controller.set_language(0), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetLanguage".to_owned(),
@@ -135,11 +136,11 @@ fn execute() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_input_model_data(&data).is_ok());
-    assert!(controller.set_input_motion_data(&data).is_ok());
-    assert!(controller.execute().is_ok());
+    assert_matches!(controller.set_input_model_data(&data), Ok(_));
+    assert_matches!(controller.set_input_motion_data(&data), Ok(_));
+    assert_matches!(controller.execute(), Ok(_));
     let output = controller.get_output_data();
-    assert!(output.is_ok());
+    assert_matches!(output, Ok(_));
     let output_motion_data = output?;
     assert_eq!(
         vec![
@@ -196,9 +197,7 @@ fn set_all_selected_accessory_keyframes() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller
-        .set_all_selected_accessory_keyframes(data)
-        .is_ok());
+    assert_matches!(controller.set_all_selected_accessory_keyframes(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetAllSelectedAccessoryKeyframes".to_owned(),
@@ -224,7 +223,7 @@ fn set_all_selected_camera_keyframes() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_camera_keyframes(data).is_ok());
+    assert_matches!(controller.set_all_selected_camera_keyframes(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetAllSelectedCameraKeyframes".to_owned(),
@@ -250,7 +249,7 @@ fn set_all_selected_light_keyframes() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_light_keyframes(data).is_ok());
+    assert_matches!(controller.set_all_selected_light_keyframes(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetAllSelectedLightKeyframes".to_owned(),
@@ -276,7 +275,7 @@ fn set_all_selected_model_keyframes() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_model_keyframes(data).is_ok());
+    assert_matches!(controller.set_all_selected_model_keyframes(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetAllSelectedModelKeyframes".to_owned(),
@@ -388,7 +387,7 @@ fn set_audio_description() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_audio_description(&data).is_ok());
+    assert_matches!(controller.set_audio_description(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetAudioDescription".to_owned(),
@@ -414,7 +413,7 @@ fn set_audio_data() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_audio_data(&data).is_ok());
+    assert_matches!(controller.set_audio_data(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetInputAudioData".to_owned(),
@@ -440,7 +439,7 @@ fn set_camera_description() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_camera_description(&data).is_ok());
+    assert_matches!(controller.set_camera_description(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetCameraDescription".to_owned(),
@@ -466,7 +465,7 @@ fn set_light_description() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_light_description(&data).is_ok());
+    assert_matches!(controller.set_light_description(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginMotionIOSetLightDescription".to_owned(),
@@ -492,9 +491,9 @@ fn ui_window() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.load_ui_window_layout().is_ok());
+    assert_matches!(controller.load_ui_window_layout(), Ok(_));
     let output = controller.get_ui_window_layout();
-    assert!(output.is_ok());
+    assert_matches!(output, Ok(_));
     let output_ui_layout_data = output?;
     let mut reload = false;
     assert!(controller
