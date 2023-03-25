@@ -5,6 +5,7 @@
 */
 
 use anyhow::{Context, Result};
+use assert_matches::assert_matches;
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
@@ -20,12 +21,9 @@ use super::{build_type_and_flags, inner_create_controller};
 fn create_controller(pipe: &mut Pipe) -> Result<ModelIOPluginController> {
     let package = "plugin_wasm_test_model_full";
     let (ty, flag) = build_type_and_flags();
-    inner_create_controller(pipe, &format!("target/wasm32-wasi/{ty}/{package}.wasm"))
-        .with_context(|| {
-            format!(
-                "try build with \"cargo build --package {package} --target wasm32-wasi{flag}\""
-            )
-        })
+    inner_create_controller(pipe, &format!("target/wasm32-wasi/{ty}/{package}.wasm")).with_context(
+        || format!("try build with \"cargo build --package {package} --target wasm32-wasi{flag}\""),
+    )
 }
 
 #[test]
@@ -34,8 +32,8 @@ fn create() -> Result<()> {
     let result = create_controller(&mut pipe);
     assert!(result.is_ok());
     let mut controller = result?;
-    assert!(controller.initialize().is_ok());
-    assert!(controller.create().is_ok());
+    assert_matches!(controller.initialize(), Ok(_));
+    assert_matches!(controller.create(), Ok(_));
     assert_eq!(
         vec![
             PluginOutput {
@@ -108,7 +106,7 @@ fn set_language() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_language(0).is_ok());
+    assert_matches!(controller.set_language(0), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetLanguage".to_owned(),
@@ -132,10 +130,10 @@ fn execute() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_input_model_data(&data).is_ok());
-    assert!(controller.execute().is_ok());
+    assert_matches!(controller.set_input_model_data(&data), Ok(_));
+    assert_matches!(controller.execute(), Ok(_));
     let output = controller.get_output_data();
-    assert!(output.is_ok());
+    assert_matches!(output, Ok(_));
     let output_model_data = output?;
     assert_eq!(
         vec![
@@ -184,7 +182,7 @@ fn set_all_selected_vertex_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_vertex_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_vertex_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedVertexObjectIndices".to_owned(),
@@ -210,7 +208,7 @@ fn set_all_selected_material_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_material_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_material_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedMaterialObjectIndices"
@@ -237,7 +235,7 @@ fn set_all_selected_bone_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_bone_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_bone_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedBoneObjectIndices".to_owned(),
@@ -263,7 +261,7 @@ fn set_all_selected_morph_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_morph_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_morph_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedMorphObjectIndices".to_owned(),
@@ -289,7 +287,7 @@ fn set_all_selected_label_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_label_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_label_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedLabelObjectIndices".to_owned(),
@@ -315,7 +313,7 @@ fn set_all_selected_rigid_body_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_rigid_body_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_rigid_body_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedRigidBodyObjectIndices"
@@ -342,7 +340,7 @@ fn set_all_selected_joint_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_joint_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_joint_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedJointObjectIndices".to_owned(),
@@ -368,7 +366,7 @@ fn set_all_selected_soft_body_indices() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_all_selected_soft_body_indices(data).is_ok());
+    assert_matches!(controller.set_all_selected_soft_body_indices(data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObjectIndices"
@@ -395,7 +393,7 @@ fn set_audio_description() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_audio_description(&data).is_ok());
+    assert_matches!(controller.set_audio_description(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetAudioDescription".to_owned(),
@@ -421,7 +419,7 @@ fn set_audio_data() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_audio_data(&data).is_ok());
+    assert_matches!(controller.set_audio_data(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetInputAudioData".to_owned(),
@@ -447,7 +445,7 @@ fn set_camera_description() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_camera_description(&data).is_ok());
+    assert_matches!(controller.set_camera_description(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetCameraDescription".to_owned(),
@@ -473,7 +471,7 @@ fn set_light_description() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.set_light_description(&data).is_ok());
+    assert_matches!(controller.set_light_description(&data), Ok(_));
     assert_eq!(
         vec![PluginOutput {
             function: "nanoemApplicationPluginModelIOSetLightDescription".to_owned(),
@@ -499,14 +497,15 @@ fn ui_window() -> Result<()> {
     controller.create()?;
     controller.set_function(0)?;
     flush_plugin_output(&mut pipe)?;
-    assert!(controller.load_ui_window_layout().is_ok());
+    assert_matches!(controller.load_ui_window_layout(), Ok(_));
     let output = controller.get_ui_window_layout();
-    assert!(output.is_ok());
+    assert_matches!(output, Ok(_));
     let output_ui_layout_data = output?;
     let mut reload = false;
-    assert!(controller
-        .set_ui_component_layout("ui_window", &data, &mut reload)
-        .is_ok());
+    assert_matches!(
+        controller.set_ui_component_layout("ui_window", &data, &mut reload),
+        Ok(_)
+    );
     assert_eq!(
         vec![
             PluginOutput {
