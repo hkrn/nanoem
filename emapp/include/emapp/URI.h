@@ -36,12 +36,16 @@ public:
     String lastPathComponent() const;
     const char *lastPathComponentConstString() const NANOEM_DECL_NOEXCEPT;
     String pathExtension() const;
+    nanoem_u32_t hash() const NANOEM_DECL_NOEXCEPT;
     bool isEmpty() const NANOEM_DECL_NOEXCEPT;
     bool hasFragment() const;
     bool equalsTo(const URI &other) const NANOEM_DECL_NOEXCEPT;
     bool equalsToAbsolutePath(const String &other) const NANOEM_DECL_NOEXCEPT;
     bool equalsToAbsolutePathConstString(const char *other) const NANOEM_DECL_NOEXCEPT;
     bool equalsToFilenameConstString(const char *other) const NANOEM_DECL_NOEXCEPT;
+
+    bool operator==(const URI &value) const NANOEM_DECL_NOEXCEPT;
+    operator size_t() const NANOEM_DECL_NOEXCEPT { return hash(); }
 
 private:
     URI(const String &path, const String &fragment);

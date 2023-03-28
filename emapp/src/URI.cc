@@ -8,6 +8,8 @@
 
 #include "emapp/StringUtils.h"
 
+#include "bx/hash.h"
+
 namespace nanoem {
 
 String
@@ -145,6 +147,16 @@ URI::pathExtension() const
     return pathExtension(m_absolutePath);
 }
 
+nanoem_u32_t
+URI::hash() const NANOEM_DECL_NOEXCEPT
+{
+    bx::HashMurmur2A hasher;
+    hasher.begin();
+    hasher.add(m_absolutePath.c_str(), m_absolutePath.size());
+    hasher.add(m_fragment.c_str(), m_fragment.size());
+    return hasher.end();
+}
+
 bool
 URI::isEmpty() const NANOEM_DECL_NOEXCEPT
 {
@@ -180,6 +192,13 @@ URI::equalsToFilenameConstString(const char *other) const NANOEM_DECL_NOEXCEPT
 {
     const char *p = lastPathComponentConstString(m_absolutePath);
     return p ? StringUtils::equalsIgnoreCase(p, other) : false;
+}
+
+bool
+URI::operator==(const URI &value) const NANOEM_DECL_NOEXCEPT
+{
+    return StringUtils::equals(absolutePathConstString(), value.absolutePathConstString()) &&
+            StringUtils::equals(fragmentConstString(), value.fragmentConstString());
 }
 
 URI::URI(const String &path, const String &fragment)

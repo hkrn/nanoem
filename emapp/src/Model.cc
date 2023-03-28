@@ -2926,19 +2926,19 @@ Model::createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32
         FileUtils::canonicalizePathSeparator(reinterpret_cast<const char *>(utf8Path), filename);
         nanoemUnicodeStringFactoryDestroyByteArray(factory, utf8Path);
         if (!filename.empty()) {
-            ImageMap::const_iterator it = m_imageHandles.find(filename);
+            const URI imageURI(Project::resolveArchiveURI(resolvedFileURI(), filename));
+            ImageMap::const_iterator it = m_imageHandles.find(imageURI);
             if (it != m_imageHandles.end()) {
                 imagePtr = it->second;
             }
             else {
-                const URI imageURI(Project::resolveArchiveURI(resolvedFileURI(), filename));
                 Image *image = nanoem_new(Image);
                 image->setFilename(filename);
-                m_imageHandles.insert(tinystl::make_pair(filename, image));
-                m_imageURIs.insert(tinystl::make_pair(filename, imageURI));
+                m_imageHandles.insert(tinystl::make_pair(imageURI, image));
                 m_loadingImageItems.push_back(nanoem_new(LoadingImageItem(imageURI, filename, wrap, flags)));
                 imagePtr = image;
             }
+            m_imageURIs.insert(tinystl::make_pair(filename, imageURI));
         }
     }
     return imagePtr;
@@ -2950,39 +2950,43 @@ Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bo
     SG_PUSH_GROUPF("Model::internalUploadImage(name=%s, width=%d, height=%d, fileExist=%d)", filename.c_str(),
         desc.width, desc.height, fileExist);
     Image *image = nullptr;
-    ImageMap::iterator it = m_imageHandles.find(filename);
-    if (it != m_imageHandles.end()) {
-        image = it->second;
-        ImageLoader::copyImageDescrption(desc, image);
-        if (Inline::isDebugLabelEnabled()) {
-            char label[Inline::kMarkerStringLength];
-            StringUtils::format(label, sizeof(label), "Models/%s/%s", canonicalNameConstString(), filename.c_str());
-            image->setLabel(label);
-        }
-        image->setFileExist(fileExist);
-        image->create();
-        nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
-        StringUtils::UnicodeStringScope scope(factory);
-        StringUtils::tryGetString(factory, filename, scope);
-        nanoem_rsize_t numMaterials;
-        nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
-        for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
-            const nanoem_model_material_t *materialPtr = materials[i];
-            if (!nanoemModelMaterialIsToonShared(materialPtr)) {
-                const nanoem_model_texture_t *texture = nanoemModelMaterialGetToonTextureObject(materialPtr);
-                const nanoem_unicode_string_t *texturePath = nanoemModelTextureGetPath(texture);
-                if (nanoemUnicodeStringFactoryCompareString(factory, scope.value(), texturePath) == 0) {
-                    if (model::Material *material = model::Material::cast(materialPtr)) {
-                        /* fetch left-bottom corner pixel */
-                        const nanoem_rsize_t offset = nanoem_rsize_t(glm::max(desc.height - 1, 0)) * desc.width * 4;
-                        const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(desc.data.subimage[0][0].ptr);
-                        const Vector4 toonColor(glm::make_vec4(dataPtr + offset));
-                        material->setToonColor(toonColor / Vector4(0xff));
+    FileEntityMap::const_iterator it = m_imageURIs.find(filename.c_str());
+    if (it != m_imageURIs.end()) {
+        const URI &imageURI = it->second;
+        ImageMap::iterator it2 = m_imageHandles.find(imageURI);
+        if (it2 != m_imageHandles.end()) {
+            image = it2->second;
+            ImageLoader::copyImageDescrption(desc, image);
+            if (Inline::isDebugLabelEnabled()) {
+                char label[Inline::kMarkerStringLength];
+                StringUtils::format(label, sizeof(label), "Models/%s/%s", canonicalNameConstString(), filename.c_str());
+                image->setLabel(label);
+            }
+            image->setFileExist(fileExist);
+            image->create();
+            nanoem_unicode_string_factory_t *factory = m_project->unicodeStringFactory();
+            StringUtils::UnicodeStringScope scope(factory);
+            StringUtils::tryGetString(factory, filename, scope);
+            nanoem_rsize_t numMaterials;
+            nanoem_model_material_t *const *materials = nanoemModelGetAllMaterialObjects(m_opaque, &numMaterials);
+            for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
+                const nanoem_model_material_t *materialPtr = materials[i];
+                if (!nanoemModelMaterialIsToonShared(materialPtr)) {
+                    const nanoem_model_texture_t *texture = nanoemModelMaterialGetToonTextureObject(materialPtr);
+                    const nanoem_unicode_string_t *texturePath = nanoemModelTextureGetPath(texture);
+                    if (nanoemUnicodeStringFactoryCompareString(factory, scope.value(), texturePath) == 0) {
+                        if (model::Material *material = model::Material::cast(materialPtr)) {
+                            /* fetch left-bottom corner pixel */
+                            const nanoem_rsize_t offset = nanoem_rsize_t(glm::max(desc.height - 1, 0)) * desc.width * 4;
+                            const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(desc.data.subimage[0][0].ptr);
+                            const Vector4 toonColor(glm::make_vec4(dataPtr + offset));
+                            material->setToonColor(toonColor / Vector4(0xff));
+                        }
                     }
                 }
             }
+            EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->handle().id);
         }
-        EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->handle().id);
     }
     SG_POP_GROUP();
     return image;
@@ -3209,7 +3213,7 @@ Model::internalClear()
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
         Image *image = it->second;
-        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", image->handle().id, it->first.c_str());
+        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", image->handle().id, image->filenameConstString());
         image->destroy();
         nanoem_delete(image);
     }
@@ -5404,7 +5408,8 @@ Model::getAllImageViews(ImageViewMap &value) const
 {
     value.clear();
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
-        value.insert(tinystl::make_pair(it->first, static_cast<IImageView *>(it->second)));
+        IImageView *view = static_cast<IImageView *>(it->second);
+        value.insert(tinystl::make_pair(view->filename(), view));
     }
 }
 
