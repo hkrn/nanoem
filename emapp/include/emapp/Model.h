@@ -436,7 +436,7 @@ private:
     struct LoadingImageItem;
     typedef tinystl::vector<sg::LineVertexUnit, TinySTLAllocator> LineVertexList;
     typedef tinystl::vector<LoadingImageItem *, TinySTLAllocator> LoadingImageItemList;
-    typedef tinystl::unordered_map<String, Image *, TinySTLAllocator> ImageMap;
+    typedef tinystl::unordered_map<URI, Image *, TinySTLAllocator> ImageMap;
     typedef tinystl::unordered_map<String, const nanoem_model_bone_t *, TinySTLAllocator> BoneHashMap;
     typedef tinystl::unordered_map<String, const nanoem_model_morph_t *, TinySTLAllocator> MorphHashMap;
     typedef tinystl::unordered_map<const nanoem_model_bone_t *, const nanoem_model_constraint_t *, TinySTLAllocator>
