@@ -2,7 +2,7 @@ export NANOEM_TARGET_GENERATOR=${NANOEM_TARGET_GENERATOR:=Ninja}
 export NANOEM_TARGET_ARCHITECTURE=${NANOEM_TARGET_ARCHITECTURE:=ub}
 
 CMAKE_OSX_ARCHITECTURES=$([ "$NANOEM_TARGET_ARCHITECTURE" = "ub" ] && echo "arm64;x86_64" || echo $NANOEM_TARGET_ARCHITECTURE)
-CMAKE_OSX_DEPLOYMENT_TARGET=$([ "$NANOEM_TARGET_ARCHITECTURE" = "arm64" ] && echo "11.0" || echo "10.9")
+CMAKE_OSX_DEPLOYMENT_TARGET=$([ "$NANOEM_TARGET_ARCHITECTURE" = "arm64" ] && echo "11.0" || echo "10.13")
 nanoem_path=${nanoem_path:-$HOME/src/nanoem/development}
 
 cmake_common_options="-DCMAKE_INSTALL_PREFIX=$PWD/install-root \
