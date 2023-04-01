@@ -332,7 +332,7 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then\line
   rm -f libavcodec.so.* libavformat.so.* libavutil.so.* libswresample.so.* libswscale.so.*\line
 fi\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel2 \b \fs28 ICU build configuration\par}
-{\pard \ql \f0 \sa180 \li0 \fi0 \f1 FLAGS="-DUCONFIG_NO_BREAK_ITERATION -DUCONFIG_NO_COLLATION -DUCONFIG_NO_FORMATTING -DUCONFIG_NO_TRANSLITERATION -DUCONFIG_NO_REGULAR_EXPRESSIONS -mmacosx-version-min=10.9"\line
+{\pard \ql \f0 \sa180 \li0 \fi0 \f1 FLAGS="-DUCONFIG_NO_BREAK_ITERATION -DUCONFIG_NO_COLLATION -DUCONFIG_NO_FORMATTING -DUCONFIG_NO_TRANSLITERATION -DUCONFIG_NO_REGULAR_EXPRESSIONS -mmacosx-version-min=10.13"\line
 CFLAGS="$FLAGS -std=c99" CXXFLAGS="$FLAGS -std=c++11" ./configure \\\line
   --prefix=$PWD/../install-root \\\line
   --with-data-packaging=static \\\line
