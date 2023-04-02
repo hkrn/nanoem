@@ -17,19 +17,21 @@ env:
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    # libc++/libc++abi are not prerequsite libraries but specifies to test CXXFLAGS/LDFLAGS are functional
     env:
       CC: clang
       CXX: clang++
+      CXXFLAGS: -stdlib=libc++
+      LDFLAGS: -lc++abi
     steps:
       - name: checkout
         uses: actions/checkout@v3
         with:
           submodules: recursive
+      # Assumes clang/cmake/libc++/libc++abi are installed on GitHub Actions Runner
       - name: setup prerequisite packages
         run: |
           sudo apt-get update && sudo apt-get install -y \
-            clang \
-            cmake \
             libasound-dev \
             libgtk-3-dev \
             libglu1-mesa-dev \
