@@ -2504,9 +2504,8 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
     }
     else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) &&
         PrivateModelUtils::isBoneEditingVisible(bonePtr)) {
-        const nanoem_f32_t *v = nanoemModelBoneGetDestinationOrigin(bonePtr);
         const Matrix4x4 transform(worldTransform(PrivateModelUtils::boneWorldMatrix(bonePtr)));
-        const Vector3 destinationPositon((Matrix3x3(transform) * glm::make_vec3(v)) + Vector3(transform[3]));
+        const Vector3 destinationPositon(Matrix3x3(transform) * model::Bone::destinationOrigin(bonePtr) + Vector3(transform[3]));
         const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
         drawBoneConnection(primitive, bonePtr, destinationPositon, color, circleRadius, kDrawBoneConnectionThickness);
     }

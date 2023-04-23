@@ -779,6 +779,9 @@ Validator::validateAllBoneObjects(const Model *model, nanoem_u32_t filter, Diagn
         if (!validateVector3(nanoemModelBoneGetOrigin(bonePtr), filter, &diag)) {
             result.push_back(diag);
         }
+        if (!validateVector3(nanoemModelBoneGetDestinationOrigin(bonePtr), filter, &diag)) {
+            result.push_back(diag);
+        }
         if (nanoemModelBoneHasInherentTranslation(bonePtr) || nanoemModelBoneHasInherentOrientation(bonePtr)) {
             const nanoem_model_bone_t *inherentParentBonePtr = nanoemModelBoneGetInherentParentBoneObject(bonePtr);
             if (inherentParentBonePtr == nullptr && testDiagnosticsSeverity(kSeverityTypeError, filter, &diag)) {

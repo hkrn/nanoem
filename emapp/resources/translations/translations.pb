@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -1002,7 +1002,9 @@ $nanoem.error.motion.not-model.reasonE読み込まれたモーションはモ�
 #nanoem.model.measure-height.messageMモデル「%s」の身長の近似値は %.2f センチメートルです。>
 #nanoem.model.validator.result.title「%s」の検証結果\
 %nanoem.model.validator.result.success3検証した結果問題はありませんでしたd
-%nanoem.model.validator.result.failure;検証した結果 %zu 件の問題が見つかりましたJ
+%nanoem.model.validator.result.failure;検証した結果 %zu 件の問題が見つかりましたI
+*nanoem.model.validator.primitive.float-nan非数値が存在しますI
+*nanoem.model.validator.primitive.float-inf無限値が存在しますJ
 .nanoem.model.validator.vertex.model.name.emptyモデル名が空ですY
 1nanoem.model.validator.vertex.model.comment.empty$モデルのコメントが空ですN
 ,nanoem.model.validator.vertex.normal.invalid頂点の法線が不正です^
@@ -1179,7 +1181,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -2204,6 +2206,8 @@ $nanoem.error.motion.not-model.reason,The loading motion is not intended for mo
 #nanoem.model.validator.result.titleValidation result of %sD
 %nanoem.model.validator.result.successNo validation problem foundH
 %nanoem.model.validator.result.failure%zu validation problem(s) foundI
+*nanoem.model.validator.primitive.float-nanThere is NaN (Not a Number)?
+*nanoem.model.validator.primitive.float-infThere is InfinityI
 .nanoem.model.validator.vertex.model.name.emptyThe model name is emptyR
 1nanoem.model.validator.vertex.model.comment.emptyComment of the model is emptyO
 ,nanoem.model.validator.vertex.normal.invalidNormal of the vertex is invalid^

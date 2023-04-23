@@ -115,22 +115,14 @@ Facebook とか LINE とかの場合は知ってそうな友達に聞くしか�
 不具合報告の方法
 -------------------------------------------------------
 
-まずは「:doc:`faq`」または「:doc:`trouble_shooting`」を確認してから以下のいずれかの方法で質問してください。
+.. important::
+   「`マシュマロ <https://marshmallow-qa.com>`_」でのサポートも行っていましたが、2023年4月時点での Twitter の情勢の問題によりサポート対象から外しました。今後は GitHub を利用してください。
 
-* 「`GitHub の Discussions の Q/A ボード <https://github.com/hkrn/nanoem/discussions/categories/q-a>`_」
+まずは「:doc:`faq`」または「:doc:`trouble_shooting`」を確認してから「`GitHub の Discussions の Q/A ボード <https://github.com/hkrn/nanoem/discussions/categories/q-a>`_」で質問を行なってください。
 
-  * 要 GitHub アカウント
-  * サービスの性質上英語表記ですが ``Discussions`` タブの方は日本語で質問投げても問題ありません
-  * ``Issues`` タブの方は原則英語で回答対応のためもし投げる場合は英語でお願いします
-
-* 「`マシュマロ <https://marshmallow-qa.com/shimacpyon>`_」
-
-  * ログイン不要
-  * サービスの性質上書き方が悪いと本人のもとに届かないことがあります
-
-    * また、届いたかどうかについての回答はしません
-
-  * 有料のチョコマシュマロは対応していません
+* 要 GitHub アカウント
+* サービスの性質上英語表記ですが ``Discussions`` タブの方は日本語で質問投げても問題ありません
+* ``Issues`` タブの方は原則英語で回答対応のため、もし投げる場合は英語でお願いします
 
 不具合報告時の注意
 -------------------------------------------------------

@@ -512,7 +512,7 @@ Bone::localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
                 const nanoem_model_bone_t *targetBonePtr = nanoemModelBoneGetTargetBoneObject(bonePtr);
                 const Vector3 parentOrigin(model::Bone::origin(bonePtr)),
                     baseOrigin(targetBonePtr ? model::Bone::origin(targetBonePtr)
-                                             : glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr))),
+                                             : model::Bone::destinationOrigin(bonePtr)),
                     directionAxis(glm::normalize(baseOrigin - parentOrigin));
                 float angle = glm::angle(Constants::kUnitX, directionAxis);
                 orientation = glm::angleAxis(-angle, Constants::kUnitZ);
@@ -530,6 +530,16 @@ Vector3
 Bone::origin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
 {
     return glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr)) * Constants::kTranslateDirection;
+}
+
+Vector3
+Bone::destinationOrigin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT
+{
+    glm::vec3 v(glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr)));
+    v.x = glm::isnan(v.x) ? 0.0: v.x;
+    v.y = glm::isnan(v.y) ? 0.0: v.y;
+    v.z = glm::isnan(v.z) ? 0.0: v.z;
+    return v;
 }
 
 Vector3
