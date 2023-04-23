@@ -30,7 +30,7 @@ impl Drop for nanoem_application_plugin_motion_io_t {
 impl nanoem_application_plugin_motion_io_t {
     pub fn new(path: &CStr) -> Result<Self> {
         let path = Path::new(path.to_str()?);
-        let mut controller = MotionIOPluginController::from_path(path)?;
+        let mut controller = MotionIOPluginController::from_path(path, |_| ())?;
         controller.initialize()?;
         Ok(Self { controller })
     }

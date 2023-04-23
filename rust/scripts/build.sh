@@ -3,9 +3,17 @@
 rustup target add wasm32-wasi
 cargo install cargo-deny
 cargo deny check
-cargo build --profile release-lto --package plugin_wasm_test_model_minimum --target wasm32-wasi
-cargo build --profile release-lto --package plugin_wasm_test_motion_minimum --target wasm32-wasi
-cargo build --profile release-lto --package plugin_wasm_test_model_full --target wasm32-wasi
-cargo build --profile release-lto --package plugin_wasm_test_motion_full --target wasm32-wasi
+profiles=('dev' 'release-lto')
+packages=(
+  'plugin_wasm_test_model_minimum'
+  'plugin_wasm_test_motion_minimum'
+  'plugin_wasm_test_model_full'
+  'plugin_wasm_test_motion_full'
+)
+for profile in "${profiles[@]}"; do
+  for package in "${packages[@]}"; do
+    cargo build --profile ${profile} --package ${package} --target wasm32-wasi
+  done
+done
 cargo build --profile release-lto
 cargo test --profile release-lto

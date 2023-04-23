@@ -7,6 +7,9 @@ yanked = "warn"
 notice = "warn"
 ignore = [
     "RUSTSEC-2020-0056", # unmaintained stdweb issue
+    "RUSTSEC-2020-0163", # unmaintained term_size issue
+    "RUSTSEC-2020-0168", # unmaintained mach issue
+    "RUSTSEC-2021-0127", # unmaintained serde_cbor issue
 ]
 
 [licenses]
@@ -17,7 +20,9 @@ allow = [
     "Apache-2.0 WITH LLVM-exception",
     "BSD-3-Clause",
     "BSD-2-Clause",
+    "BUSL-1.1",
     "CC0-1.0",
+    "ISC",
     "MIT",
     "MPL-2.0",
     "Unicode-DFS-2016",
