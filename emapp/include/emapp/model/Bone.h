@@ -84,6 +84,7 @@ public:
         const nanoem_model_bone_t *bonePtr, const char *placeHolder) NANOEM_DECL_NOEXCEPT;
     static Matrix3x3 localAxes(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
     static Vector3 origin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
+    static Vector3 destinationOrigin(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;
     static Vector3 toVector3(const nanoem_motion_bone_keyframe_t *keyframe) NANOEM_DECL_NOEXCEPT;
     static Quaternion toQuaternion(const nanoem_motion_bone_keyframe_t *keyframe) NANOEM_DECL_NOEXCEPT;
     static Bone *cast(const nanoem_model_bone_t *bonePtr) NANOEM_DECL_NOEXCEPT;

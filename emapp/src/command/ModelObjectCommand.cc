@@ -4868,8 +4868,8 @@ BatchChangeAllBoneObjectsCommand::create(Model *activeModel, const List &objects
 void
 BatchChangeAllBoneObjectsCommand::save(const nanoem_model_bone_t *bonePtr, Parameter &parameter)
 {
-    parameter.m_origin = glm::make_vec3(nanoemModelBoneGetOrigin(bonePtr));
-    parameter.m_destinationOrigin = glm::make_vec3(nanoemModelBoneGetDestinationOrigin(bonePtr));
+    parameter.m_origin = model::Bone::origin(bonePtr);
+    parameter.m_destinationOrigin = model::Bone::destinationOrigin(bonePtr);
     parameter.m_fixedAxis = glm::make_vec3(nanoemModelBoneGetFixedAxis(bonePtr));
     parameter.m_localAxisX = glm::make_vec3(nanoemModelBoneGetLocalXAxis(bonePtr));
     parameter.m_localAxisZ = glm::make_vec3(nanoemModelBoneGetLocalZAxis(bonePtr));
