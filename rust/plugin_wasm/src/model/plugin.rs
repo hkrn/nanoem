@@ -9,7 +9,7 @@ use std::{ffi::CString, path::Path};
 use anyhow::Result;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
-use wasmer_wasi::{WasiEnv, WasiFunctionEnv, WasiState};
+use wasmer_wasix::{wasmer_wasix_types::wasi::Errno, WasiEnv, WasiEnvBuilder, WasiFunctionEnv};
 
 use crate::{
     inner_count_all_functions, inner_create_opaque, inner_destroy_opaque, inner_execute,
@@ -78,13 +78,12 @@ pub struct ModelIOPlugin {
 }
 
 impl ModelIOPlugin {
-    pub fn new(bytes: &[u8], env: WasiFunctionEnv, mut store: Store) -> Result<Self> {
+    pub fn new(bytes: &[u8], mut env: WasiFunctionEnv, mut store: Store) -> Result<Self> {
         let module = Module::new(&store, bytes)?;
         let imports = env.import_object(&mut store, &module)?;
         let instance = Instance::new(&mut store, &module, &imports)?;
-        let memory = instance.exports.get_memory("memory")?;
-        env.data_mut(&mut store).set_memory(memory.clone());
         validate_plugin(&instance, &mut store)?;
+        env.initialize(&mut store, instance.clone())?;
         Ok(Self {
             instance,
             env,
@@ -371,6 +370,13 @@ impl ModelIOPlugin {
     }
 }
 
+impl Drop for ModelIOPlugin {
+    fn drop(&mut self) {
+        self.env
+            .cleanup(&mut self.store, Some(Errno::Success.into()));
+    }
+}
+
 pub struct ModelIOPluginController {
     plugins: Vec<ModelIOPlugin>,
     function_indices: Vec<(usize, i32, CString)>,
@@ -390,7 +396,10 @@ impl ModelIOPluginController {
             recovery_suggestion: None,
         }
     }
-    pub fn from_path(path: &Path) -> Result<Self> {
+    pub fn from_path<F>(path: &Path, builder_callback: F) -> Result<Self>
+    where
+        F: Fn(&mut WasiEnvBuilder),
+    {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
@@ -398,7 +407,9 @@ impl ModelIOPluginController {
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
                 let mut store = Store::default();
-                let env = WasiState::new("nanoem").finalize(&mut store)?;
+                let mut builder = WasiEnvBuilder::new("nanoem");
+                builder_callback(&mut builder);
+                let env = builder.finalize(&mut store)?;
                 match ModelIOPlugin::new(&bytes, env, store) {
                     Ok(plugin) => {
                         plugins.push(plugin);

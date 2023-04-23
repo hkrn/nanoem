@@ -9,16 +9,16 @@ use assert_matches::assert_matches;
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use wasmer_wasi::Pipe;
+use wasmer_wasix::Pipe;
 
 use crate::model::{
     plugin::ModelIOPluginController,
-    test::{create_random_data, flush_plugin_output, read_plugin_output, PluginOutput},
+    test::{create_random_data, read_plugin_output, PluginOutput},
 };
 
 use super::{build_type_and_flags, inner_create_controller};
 
-fn create_controller(pipe: &mut Pipe) -> Result<ModelIOPluginController> {
+fn create_controller(pipe: Pipe) -> Result<ModelIOPluginController> {
     let package = "plugin_wasm_test_model_minimum";
     let (ty, flag) = build_type_and_flags();
     inner_create_controller(pipe, &format!("target/wasm32-wasi/{ty}/{package}.wasm")).with_context(
@@ -28,12 +28,25 @@ fn create_controller(pipe: &mut Pipe) -> Result<ModelIOPluginController> {
 
 #[test]
 fn create() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let result = create_controller(&mut pipe);
-    assert!(result.is_ok());
-    let mut controller = result?;
-    assert_matches!(controller.initialize(), Ok(_));
-    assert_matches!(controller.create(), Ok(_));
+    let (stdout_writer, stdout_reader) = Pipe::channel();
+    {
+        let result = create_controller(stdout_writer);
+        assert!(result.is_ok());
+        let mut controller = result?;
+        assert_matches!(controller.initialize(), Ok(_));
+        assert_matches!(controller.create(), Ok(_));
+        assert_eq!(2, controller.count_all_functions());
+        assert_eq!(
+            "plugin_wasm_test_model_minimum: function0 (1.2.3)",
+            controller.function_name(0)?.to_str()?
+        );
+        assert_eq!(
+            "plugin_wasm_test_model_minimum: function0 (1.2.3)",
+            controller.function_name(1)?.to_str()?
+        );
+        controller.destroy();
+        controller.terminate();
+    }
     assert_eq!(
         vec![
             PluginOutput {
@@ -64,69 +77,136 @@ fn create() -> Result<()> {
                     "index".to_owned() => json!(1),
                 })
             },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
         ],
-        read_plugin_output(&mut pipe)?
-    );
-    assert_eq!(2, controller.count_all_functions());
-    assert_eq!(
-        "plugin_wasm_test_model_minimum: function0 (1.2.3)",
-        controller.function_name(0)?.to_str()?
-    );
-    assert_eq!(
-        "plugin_wasm_test_model_minimum: function0 (1.2.3)",
-        controller.function_name(1)?.to_str()?
-    );
-    controller.destroy();
-    controller.terminate();
-    assert_eq!(
-        vec![PluginOutput {
-            function: "nanoemApplicationPluginModelIODestroy".to_owned(),
-            ..Default::default()
-        },],
-        read_plugin_output(&mut pipe)?
+        read_plugin_output(stdout_reader)?
     );
     Ok(())
 }
 
 #[test]
 fn set_language() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_language(0), Ok(_));
+    let (stdout_writer, stdout_reader) = Pipe::channel();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_language(0), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
     assert_eq!(
-        vec![PluginOutput {
-            function: "nanoemApplicationPluginModelIOSetLanguage".to_owned(),
-            arguments: Some(hashmap! {
-                "value".to_owned() => json!(0),
-            })
-        },],
-        read_plugin_output(&mut pipe)?
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetLanguage".to_owned(),
+                arguments: Some(hashmap! {
+                    "value".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
     );
-    controller.destroy();
-    controller.terminate();
     Ok(())
 }
 
 #[test]
 fn execute() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = create_random_data(4096);
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_input_model_data(&data), Ok(_));
-    assert_matches!(controller.execute(), Ok(_));
-    let output = controller.get_output_data();
-    assert_matches!(output, Ok(_));
-    let output_model_data = output?;
+    let output_model_data = {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_input_model_data(&data), Ok(_));
+        assert_matches!(controller.execute(), Ok(_));
+        let output = controller.get_output_data();
+        assert_matches!(output, Ok(_));
+        let output_model_data = output?;
+        controller.destroy();
+        controller.terminate();
+        output_model_data
+    };
     assert_eq!(
         vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
             PluginOutput {
                 function: "nanoemApplicationPluginModelIOSetInputModelData".to_owned(),
                 arguments: Some(hashmap! {
@@ -155,261 +235,943 @@ fn execute() -> Result<()> {
                     "status".to_owned() => json!(0),
                 })
             },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
         ],
-        read_plugin_output(&mut pipe)?
+        read_plugin_output(stdout_reader)?
     );
-    controller.destroy();
-    controller.terminate();
     Ok(())
 }
 
 #[test]
 fn set_all_selected_vertex_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_vertex_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_vertex_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_material_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_material_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_material_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_bone_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_bone_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_bone_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_morph_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_morph_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_morph_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_label_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_label_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_label_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_rigid_body_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_rigid_body_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_rigid_body_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_joint_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_joint_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_joint_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_all_selected_soft_body_indices() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = &[1, 4, 9, 16, 25, i32::MAX];
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_all_selected_soft_body_indices(data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_all_selected_soft_body_indices(data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_audio_description() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = create_random_data(4096);
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_audio_description(&data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_audio_description(&data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_audio_data() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = create_random_data(4096);
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_audio_data(&data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_audio_data(&data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_camera_description() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = create_random_data(4096);
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_camera_description(&data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_camera_description(&data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn set_light_description() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = create_random_data(4096);
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.set_light_description(&data), Ok(_));
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.set_light_description(&data), Ok(_));
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn ui_window() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
+    let (stdout_writer, stdout_reader) = Pipe::channel();
     let data = create_random_data(4096);
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(0)?;
-    flush_plugin_output(&mut pipe)?;
-    assert_matches!(controller.load_ui_window_layout(), Ok(_));
-    let output = controller.get_ui_window_layout();
-    assert_matches!(output, Ok(_));
-    assert!(output?.is_empty());
-    let mut reload = false;
-    assert_matches!(
-        controller.set_ui_component_layout("ui_window", &data, &mut reload),
-        Ok(_)
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(0)?;
+        assert_matches!(controller.load_ui_window_layout(), Ok(_));
+        let output = controller.get_ui_window_layout();
+        assert_matches!(output, Ok(_));
+        assert!(output?.is_empty());
+        let mut reload = false;
+        assert_matches!(
+            controller.set_ui_component_layout("ui_window", &data, &mut reload),
+            Ok(_)
+        );
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
     );
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
     Ok(())
 }
 
 #[test]
 fn get_failure_reason() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(1)?;
-    controller.execute().unwrap_or_default();
-    flush_plugin_output(&mut pipe)?;
-    let result = controller.failure_reason();
-    assert!(result.is_some());
-    assert_eq!("Failure Reason", result.unwrap());
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    let (stdout_writer, stdout_reader) = Pipe::channel();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(1)?;
+        controller.execute().unwrap_or_default();
+        let result = controller.failure_reason();
+        assert!(result.is_some());
+        assert_eq!("Failure Reason", result.unwrap());
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOExecute".to_owned(),
+                arguments: Some(hashmap! {
+                    "status".to_owned() => json!(-1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFailureReason".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }
 
 #[test]
 fn get_recovery_suggestion() -> Result<()> {
-    let mut pipe = Pipe::new();
-    let mut controller = create_controller(&mut pipe)?;
-    controller.initialize()?;
-    controller.create()?;
-    controller.set_function(1)?;
-    controller.execute().unwrap_or_default();
-    flush_plugin_output(&mut pipe)?;
-    let result = controller.recovery_suggestion();
-    assert!(result.is_none());
-    assert!(read_plugin_output(&mut pipe)?.is_empty());
-    controller.destroy();
-    controller.terminate();
+    let (stdout_writer, stdout_reader) = Pipe::channel();
+    {
+        let mut controller = create_controller(stdout_writer)?;
+        controller.initialize()?;
+        controller.create()?;
+        controller.set_function(1)?;
+        controller.execute().unwrap_or_default();
+        let result = controller.recovery_suggestion();
+        assert!(result.is_none());
+        controller.destroy();
+        controller.terminate();
+    }
+    assert_eq!(
+        vec![
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCreate".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetName".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetVersion".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOCountAllFunctions".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFunctionName".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOSetFunction".to_owned(),
+                arguments: Some(hashmap! {
+                    "index".to_owned() => json!(1),
+                    "status".to_owned() => json!(0),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOExecute".to_owned(),
+                arguments: Some(hashmap! {
+                    "status".to_owned() => json!(-1),
+                })
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIOGetFailureReason".to_owned(),
+                ..Default::default()
+            },
+            PluginOutput {
+                function: "nanoemApplicationPluginModelIODestroy".to_owned(),
+                ..Default::default()
+            },
+        ],
+        read_plugin_output(stdout_reader)?
+    );
     Ok(())
 }

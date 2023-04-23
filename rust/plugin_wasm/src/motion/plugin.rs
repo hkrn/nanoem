@@ -10,7 +10,7 @@ use anyhow::Result;
 use tracing::warn;
 use walkdir::WalkDir;
 use wasmer::{Instance, Module, Store};
-use wasmer_wasi::{WasiEnv, WasiFunctionEnv, WasiState};
+use wasmer_wasix::{wasmer_wasix_types::wasi::Errno, WasiEnv, WasiEnvBuilder, WasiFunctionEnv};
 
 use crate::{
     allocate_byte_array_with_data, allocate_status_ptr, inner_count_all_functions,
@@ -121,13 +121,12 @@ fn validate_plugin(instance: &Instance, store: &Store) -> Result<()> {
 }
 
 impl MotionIOPlugin {
-    pub fn new(bytes: &[u8], env: WasiFunctionEnv, mut store: Store) -> Result<Self> {
+    pub fn new(bytes: &[u8], mut env: WasiFunctionEnv, mut store: Store) -> Result<Self> {
         let module = Module::new(&store, bytes)?;
         let imports = env.import_object(&mut store, &module)?;
         let instance = Instance::new(&mut store, &module, &imports)?;
-        let memory = instance.exports.get_memory("memory")?;
-        env.data_mut(&mut store).set_memory(memory.clone());
         validate_plugin(&instance, &store)?;
+        env.initialize(&mut store, instance.clone())?;
         Ok(Self {
             instance,
             store,
@@ -425,6 +424,13 @@ impl MotionIOPlugin {
     }
 }
 
+impl Drop for MotionIOPlugin {
+    fn drop(&mut self) {
+        self.env
+            .cleanup(&mut self.store, Some(Errno::Success.into()));
+    }
+}
+
 pub struct MotionIOPluginController {
     plugins: Vec<MotionIOPlugin>,
     function_indices: Vec<(usize, i32, CString)>,
@@ -444,7 +450,10 @@ impl MotionIOPluginController {
             recovery_suggestion: None,
         }
     }
-    pub fn from_path(path: &Path) -> Result<Self> {
+    pub fn from_path<F>(path: &Path, builder_callback: F) -> Result<Self>
+    where
+        F: Fn(&mut WasiEnvBuilder),
+    {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
@@ -452,7 +461,9 @@ impl MotionIOPluginController {
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
                 let mut store = Store::default();
-                let env = WasiState::new("nanoem").finalize(&mut store)?;
+                let mut builder = WasiEnvBuilder::new("nanoem");
+                builder_callback(&mut builder);
+                let env = builder.finalize(&mut store)?;
                 match MotionIOPlugin::new(&bytes, env, store) {
                     Ok(plugin) => {
                         plugins.push(plugin);
