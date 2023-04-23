@@ -4231,6 +4231,14 @@
   phrase:
     en_US: '%zu validation problem(s) found'
     ja_JP: '検証した結果 %zu 件の問題が見つかりました'
+- key: nanoem.model.validator.primitive.float-nan
+  phrase:
+    en_US: 'There is NaN (Not a Number)'
+    ja_JP: '非数値が存在します'
+- key: nanoem.model.validator.primitive.float-inf
+  phrase:
+    en_US: 'There is Infinity'
+    ja_JP: '無限値が存在します'
 - key: nanoem.model.validator.vertex.model.name.empty
   phrase:
     en_US: 'The model name is empty'
