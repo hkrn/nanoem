@@ -177,7 +177,6 @@ typedef struct sg_color {
 
 typedef enum sg_backend {
     SG_BACKEND_GLCORE33,
-    SG_BACKEND_GLES2,
     SG_BACKEND_GLES3,
     SG_BACKEND_D3D11,
     SG_BACKEND_METAL_IOS,
@@ -215,6 +214,7 @@ typedef enum sg_pixel_format {
     SG_PIXELFORMAT_RG16SI,
     SG_PIXELFORMAT_RG16F,
     SG_PIXELFORMAT_RGBA8,
+    SG_PIXELFORMAT_SRGB8A8,
     SG_PIXELFORMAT_RGBA8SN,
     SG_PIXELFORMAT_RGBA8UI,
     SG_PIXELFORMAT_RGBA8SI,
@@ -299,6 +299,7 @@ typedef struct sg_limits {
     int max_image_array_layers; // max number of layers in SG_IMAGETYPE_ARRAY images
     int max_vertex_attrs; // <= SG_MAX_VERTEX_ATTRIBUTES or less (on some GLES2 impls)
     int gl_max_vertex_uniform_vectors; // <= GL_MAX_VERTEX_UNIFORM_VECTORS (only on GL backends)
+    int gl_max_combined_texture_image_units; // <= GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS (only on GL backends)
 } sg_limits;
 
 typedef enum sg_resource_state {
@@ -886,8 +887,6 @@ typedef struct sg_image_info {
     uint32_t upd_frame_index; /* frame index of last sg_update_image() */
     int num_slots; /* number of renaming-slots for dynamically updated images */
     int active_slot; /* currently active write-slot for dynamically updated images */
-    int width; /* image width */
-    int height; /* image height */
 } sg_image_info;
 
 typedef struct sg_shader_info {
@@ -901,10 +900,6 @@ typedef struct sg_pipeline_info {
 typedef struct sg_pass_info {
     sg_slot_info slot; /* resource pool slot info */
 } sg_pass_info;
-
-typedef struct sg_gl_context_desc {
-    bool force_gles2;
-} sg_gl_context_desc;
 
 typedef struct sg_metal_context_desc {
     const void *device;
@@ -940,7 +935,6 @@ typedef struct sg_context_desc {
     sg_pixel_format color_format;
     sg_pixel_format depth_format;
     int sample_count;
-    sg_gl_context_desc gl;
     sg_metal_context_desc metal;
     sg_d3d11_context_desc d3d11;
     sg_wgpu_context_desc wgpu;
@@ -958,7 +952,8 @@ typedef struct sg_allocator {
 } sg_allocator;
 
 typedef struct sg_logger {
-    void (*log_cb)(const char *message, void *user_data);
+    void (*log_cb)(const char *tag, uint32_t log_level, uint32_t log_item_id, const char *message_or_null,
+        uint32_t line_nr, const char *filename_or_null, void *user_data);
     void *user_data;
 } sg_logger;
 

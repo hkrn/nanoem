@@ -407,7 +407,8 @@ private:
     static IModalDialog *handleCancelRecordingVideo(void *userData, Project *project);
     static void *allocateSGXMemory(size_t size, void *opaque);
     static void releaseSGXMemory(void *ptr, void *opaque) NANOEM_DECL_NOEXCEPT;
-    static void handleSGXMessage(const char *message, void *opaque);
+    static void handleSGXMessage(const char *tag, uint32_t log_level, uint32_t log_item_id, const char *message_or_null,
+        uint32_t line_nr, const char *filename_or_null, void *user_data);
     static void writeRedoMessage(Nanoem__Application__Command *command, Project *project, Error &error);
     static void performRedo(undo_command_t *commandPtr, undo_stack_t *stack, undo_command_t *&commandPtrRef);
 
