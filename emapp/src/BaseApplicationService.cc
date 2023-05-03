@@ -5664,23 +5664,24 @@ BaseApplicationService::releaseSGXMemory(void *ptr, void *opaque) NANOEM_DECL_NO
 }
 
 void
-BaseApplicationService::handleSGXMessage(const char *message, void *opaque)
+BaseApplicationService::handleSGXMessage(const char * /* tag */, uint32_t /* log_level */, uint32_t /* log_item_id */,
+    const char *message_or_null, uint32_t /* line_nr */, const char * /* filename_or_null */, void *user_data)
 {
-    BaseApplicationService *self = static_cast<BaseApplicationService *>(opaque);
-    uint32_t key = bx::hash<bx::HashMurmur2A>(message);
+    BaseApplicationService *self = static_cast<BaseApplicationService *>(user_data);
+    uint32_t key = bx::hash<bx::HashMurmur2A>(message_or_null);
     HandledSGXMessageSet::const_iterator it = self->m_handledSGXMessages.find(key);
     if (it == self->m_handledSGXMessages.end()) {
         if (g_sentryAvailable) {
-            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, message);
+            sentry_value_t breadcrumb = sentry_value_new_breadcrumb(nullptr, message_or_null);
             sentry_value_set_by_key(breadcrumb, "category", sentry_value_new_string("error"));
             sentry_add_breadcrumb(breadcrumb);
         }
-        if (message) {
-            EMLOG_DEBUG("Captured SGX error: message=\"{}\"", message);
+        if (message_or_null) {
+            EMLOG_DEBUG("Captured SGX error: message=\"{}\"", message_or_null);
         }
         self->m_handledSGXMessages.insert(key);
     }
-    SG_INSERT_MARKER(message);
+    SG_INSERT_MARKER(message_or_null);
 }
 
 void

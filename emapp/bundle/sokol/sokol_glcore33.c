@@ -17,7 +17,7 @@ sgx_debug_callback(GLenum source, GLenum type, GLuint eid, GLenum severity, GLsi
     _SOKOL_UNUSED(severity);
     _SOKOL_UNUSED(length);
     _SOKOL_UNUSED(user_param);
-    SOKOL_LOG(message);
+    _sg.desc.logger.func("sg", 3, SG_LOGITEM_OK, message, 0, NULL, _sg.desc.logger.user_data);
 }
 #endif /* SOKOL_DEBUG */
 
@@ -62,10 +62,6 @@ sgx_label_image(sg_image image, const char *text)
     if (glObjectLabel && ptr && text) {
         GLuint id;
         if ((id = ptr->gl.msaa_render_buffer) != 0) {
-            glObjectLabel(GL_RENDERBUFFER, id, -1, text);
-            _SG_GL_CHECK_ERROR();
-        }
-        else if ((id = ptr->gl.depth_render_buffer) != 0) {
             glObjectLabel(GL_RENDERBUFFER, id, -1, text);
             _SG_GL_CHECK_ERROR();
         }

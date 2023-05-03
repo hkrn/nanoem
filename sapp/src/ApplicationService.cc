@@ -298,7 +298,6 @@ ApplicationService::handleSetupGraphicsEngine(sg_desc &desc)
     context.color_format = static_cast<sg_pixel_format>(sapp_color_format());
     context.depth_format = static_cast<sg_pixel_format>(sapp_depth_format());
     context.sample_count = sapp_sample_count();
-    context.gl.force_gles2 = sapp_gles2();
     context.metal.device = sapp_metal_get_device();
     context.metal.renderpass_descriptor_cb = sapp_metal_get_renderpass_descriptor;
     context.metal.drawable_cb = sapp_metal_get_drawable;
