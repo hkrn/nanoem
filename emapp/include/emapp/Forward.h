@@ -276,18 +276,12 @@ typedef struct sg_pixelformat_info {
 } sg_pixelformat_info;
 
 typedef struct sg_features {
-    bool instancing; // hardware instancing supported
-    bool origin_top_left; // framebuffer and texture origin is in top left corner
-    bool multiple_render_targets; // offscreen render passes can have multiple render targets attached
-    bool msaa_render_targets; // offscreen render passes support MSAA antialiasing
-    bool imagetype_3d; // creation of SG_IMAGETYPE_3D images is supported
-    bool imagetype_array; // creation of SG_IMAGETYPE_ARRAY images is supported
-    bool image_clamp_to_border; // border color and clamp-to-border UV-wrap mode is supported
-    bool mrt_independent_blend_state; // multiple-render-target rendering can use per-render-target blend state
-    bool mrt_independent_write_mask; // multiple-render-target rendering can use per-render-target color write masks
-    bool blend_op_minmax; // min/max blend operation mode is supported
+    bool origin_top_left;               // framebuffer and texture origin is in top left corner
+    bool image_clamp_to_border;         // border color and clamp-to-border UV-wrap mode is supported
+    bool mrt_independent_blend_state;   // multiple-render-target rendering can use per-render-target blend state
+    bool mrt_independent_write_mask;    // multiple-render-target rendering can use per-render-target color write masks
 #if defined(SOKOL_ZIG_BINDINGS)
-    uint32_t __pad[2];
+    uint32_t __pad[3];
 #endif
 } sg_features;
 
