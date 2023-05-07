@@ -43,8 +43,8 @@
 #include "emapp/model/Vertex.h"
 #include "emapp/private/CommonInclude.h"
 
-#include "glm/gtx/norm.hpp"
 #include "glm/gtx/dual_quaternion.hpp"
+#include "glm/gtx/norm.hpp"
 
 #include "./CommandMessage.inl"
 #include "nanoem/ext/converter.h"
@@ -2505,7 +2505,8 @@ Model::drawBoneConnections(IPrimitive2D *primitive, const nanoem_model_bone_t *b
     else if ((isShowAllBones() || isBoneConnectionDrawable(bonePtr)) &&
         PrivateModelUtils::isBoneEditingVisible(bonePtr)) {
         const Matrix4x4 transform(worldTransform(PrivateModelUtils::boneWorldMatrix(bonePtr)));
-        const Vector3 destinationPositon(Matrix3x3(transform) * model::Bone::destinationOrigin(bonePtr) + Vector3(transform[3]));
+        const Vector3 destinationPositon(
+            Matrix3x3(transform) * model::Bone::destinationOrigin(bonePtr) + Vector3(transform[3]));
         const Vector4 color(connectionBoneColor(bonePtr, Vector4(0, 0, 1, 1), false));
         drawBoneConnection(primitive, bonePtr, destinationPositon, color, circleRadius, kDrawBoneConnectionThickness);
     }

@@ -7,10 +7,10 @@
 #include "emapp/Effect.h"
 
 #if BX_PLATFORM_WINDOWS
+#include "bx/readerwriter.h"
 #include <d3d11shader.h>
 #include <d3dcommon.h>
 #include <d3dcompiler.h>
-#include "bx/readerwriter.h"
 #if defined(__MINGW32__)
 #define D3DCOMPILE_FLAGS2_FORCE_ROOT_SIGNATURE_LATEST 0
 #endif

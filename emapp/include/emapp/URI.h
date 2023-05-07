@@ -45,7 +45,10 @@ public:
     bool equalsToFilenameConstString(const char *other) const NANOEM_DECL_NOEXCEPT;
 
     bool operator==(const URI &value) const NANOEM_DECL_NOEXCEPT;
-    operator size_t() const NANOEM_DECL_NOEXCEPT { return hash(); }
+    operator size_t() const NANOEM_DECL_NOEXCEPT
+    {
+        return hash();
+    }
 
 private:
     URI(const String &path, const String &fragment);
