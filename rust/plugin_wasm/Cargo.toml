@@ -10,11 +10,11 @@ anyhow = "1"
 nanoem-protobuf = { version = "35", path = "../protobuf" }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
-wasmer = { version = "3.2", default-features = false, features = [
+wasmer = { version = "3.3", default-features = false, features = [
     "sys",
     "cranelift",
 ] }
-wasmer-wasix = { version = "0.3", default-features = false, features = [
+wasmer-wasix = { version = "0.4", default-features = false, features = [
     "sys",
     "sys-poll",
     "sys-thread",
