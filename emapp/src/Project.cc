@@ -929,7 +929,7 @@ Project::Pass::update(const Vector2UI16 &size)
     SG_PUSH_GROUPF("Project::Pass::update(name=%s, width=%d, height=%d)", m_name.c_str(), size.x, size.y);
     sg_image_desc id;
     const sg_pixel_format colorPixelFormat = m_project->viewportPixelFormat();
-    const bool enableMSAA = sg::query_features().msaa_render_targets && sg::query_pixelformat(colorPixelFormat).msaa;
+    const bool enableMSAA = sg::query_pixelformat(colorPixelFormat).msaa;
     char label[Inline::kMarkerStringLength];
     Inline::clearZeroMemory(id);
     if (Inline::isDebugLabelEnabled()) {
