@@ -276,10 +276,10 @@ typedef struct sg_pixelformat_info {
 } sg_pixelformat_info;
 
 typedef struct sg_features {
-    bool origin_top_left;               // framebuffer and texture origin is in top left corner
-    bool image_clamp_to_border;         // border color and clamp-to-border UV-wrap mode is supported
-    bool mrt_independent_blend_state;   // multiple-render-target rendering can use per-render-target blend state
-    bool mrt_independent_write_mask;    // multiple-render-target rendering can use per-render-target color write masks
+    bool origin_top_left; // framebuffer and texture origin is in top left corner
+    bool image_clamp_to_border; // border color and clamp-to-border UV-wrap mode is supported
+    bool mrt_independent_blend_state; // multiple-render-target rendering can use per-render-target blend state
+    bool mrt_independent_write_mask; // multiple-render-target rendering can use per-render-target color write masks
 #if defined(SOKOL_ZIG_BINDINGS)
     uint32_t __pad[3];
 #endif

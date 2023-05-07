@@ -6,8 +6,8 @@
 
 #include "../common.h"
 
-#include "emapp/Constants.h"
 #include "emapp/CommandRegistrator.h"
+#include "emapp/Constants.h"
 #include "emapp/Model.h"
 
 using namespace nanoem;

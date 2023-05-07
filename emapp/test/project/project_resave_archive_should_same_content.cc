@@ -6,9 +6,9 @@
 
 #include "./project.h"
 
-#include "emapp/Constants.h"
 #include "emapp/Accessory.h"
 #include "emapp/CommandRegistrator.h"
+#include "emapp/Constants.h"
 #include "emapp/FileUtils.h"
 #include "emapp/Grid.h"
 #include "emapp/IAudioPlayer.h"

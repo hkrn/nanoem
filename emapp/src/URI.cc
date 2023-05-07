@@ -198,7 +198,7 @@ bool
 URI::operator==(const URI &value) const NANOEM_DECL_NOEXCEPT
 {
     return StringUtils::equals(absolutePathConstString(), value.absolutePathConstString()) &&
-            StringUtils::equals(fragmentConstString(), value.fragmentConstString());
+        StringUtils::equals(fragmentConstString(), value.fragmentConstString());
 }
 
 URI::URI(const String &path, const String &fragment)
