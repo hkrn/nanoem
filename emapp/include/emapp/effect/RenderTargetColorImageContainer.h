@@ -46,7 +46,9 @@ public:
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;
     const sg_image_desc &colorImageDescription() const NANOEM_DECL_NOEXCEPT;
     const Vector2 scaleFactor() const NANOEM_DECL_NOEXCEPT;
+    sg_image preferredColorImageHandle() const NANOEM_DECL_NOEXCEPT;
     sg_image colorImageHandle() const NANOEM_DECL_NOEXCEPT;
+    sg_image resolveImageHandle() const NANOEM_DECL_NOEXCEPT;
     bool isSharedTexture() const NANOEM_DECL_NOEXCEPT;
 
 protected:
@@ -58,6 +60,7 @@ private:
     RenderTargetMipmapGenerator *m_mipmapGenerator;
     Vector2 m_scaleFactor;
     sg_image m_colorImage;
+    sg_image m_resolveImage;
     sg_image_desc m_colorImageDescription;
     bool m_sharedTexture;
     bool m_dirty;

@@ -360,8 +360,7 @@ DebugDrawer::draw(sg_pipeline pipeline, sg_buffer buffer, int count)
     sg_pass pass = m_project->viewportPrimaryPass();
     if (sg::is_valid(pass)) {
         sg_pass_action action;
-        Inline::clearZeroMemory(action);
-        action.colors[0].action = action.depth.action = action.stencil.action = SG_ACTION_LOAD;
+        sg::PassBlock::initializeLoadStoreAction(action);
         sg::PassBlock pb(m_project->sharedBatchDrawQueue(), pass, action);
         Matrix4x4 view, projection;
         m_project->activeCamera()->getViewTransform(view, projection);

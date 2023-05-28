@@ -17,7 +17,8 @@ struct OffscreenRenderTargetOption {
     OffscreenRenderTargetOption(
         const String &name, const String &description, const Vector4 &clearColor, nanoem_f32_t clearDepth);
     ~OffscreenRenderTargetOption() NANOEM_DECL_NOEXCEPT;
-    void getPassAction(sg_pass_action &pa) const NANOEM_DECL_NOEXCEPT;
+
+    void getClearPassAction(sg_pass_action &pa) const NANOEM_DECL_NOEXCEPT;
     void getPassDescription(sg_pass_desc &pd) const NANOEM_DECL_NOEXCEPT;
 
     const String m_name;
@@ -26,6 +27,7 @@ struct OffscreenRenderTargetOption {
     const nanoem_f32_t m_clearDepth;
     sg_image m_colorImage;
     sg_image m_depthStencilImage;
+    sg_image m_resolveImage;
     sg_image_desc m_colorImageDescription;
     sg_image_desc m_depthStencilImageDescription;
     StringPairList m_conditions;

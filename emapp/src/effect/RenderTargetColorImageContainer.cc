@@ -36,7 +36,7 @@ RenderTargetColorImageContainer::RenderTargetColorImageContainer(const String &n
     , m_dirty(false)
 {
     Inline::clearZeroMemory(m_colorImageDescription);
-    m_colorImage = { SG_INVALID_ID };
+    m_colorImage = m_resolveImage = { SG_INVALID_ID };
     if (Inline::isDebugLabelEnabled()) {
         m_colorImageDescription.label = m_name.c_str();
     }
@@ -47,6 +47,7 @@ RenderTargetColorImageContainer::RenderTargetColorImageContainer(const RenderTar
     , m_mipmapGenerator(nullptr)
     , m_scaleFactor(value.m_scaleFactor)
     , m_colorImage(value.m_colorImage)
+    , m_resolveImage(value.m_resolveImage)
     , m_colorImageDescription(value.m_colorImageDescription)
     , m_sharedTexture(value.m_sharedTexture)
     , m_dirty(false)
@@ -65,10 +66,19 @@ RenderTargetColorImageContainer::create(Effect *effect)
             label, sizeof(label), "Effects/%s/%s/ColorImage", effect->nameConstString(), m_name.c_str());
         labeledColorImageDescription.label = label;
         m_colorImage = sg::make_image(&labeledColorImageDescription);
+        if (labeledColorImageDescription.sample_count > 1) {
+            labeledColorImageDescription.sample_count = 1;
+            m_resolveImage = sg::make_image(&labeledColorImageDescription);
+        }
     }
     else {
         *label = 0;
         m_colorImage = sg::make_image(&m_colorImageDescription);
+        if (m_colorImageDescription.sample_count > 1) {
+            sg_image_desc desc(m_colorImageDescription);
+            desc.sample_count = 1;
+            m_resolveImage = sg::make_image(&desc);
+        }
     }
     nanoem_assert(sg::query_image_state(m_colorImage) == SG_RESOURCESTATE_VALID, "image must be valid");
     effect->setImageLabel(m_colorImage, m_name);
@@ -196,9 +206,28 @@ RenderTargetColorImageContainer::scaleFactor() const NANOEM_DECL_NOEXCEPT
 }
 
 sg_image
+RenderTargetColorImageContainer::preferredColorImageHandle() const NANOEM_DECL_NOEXCEPT
+{
+    sg_image handle = { SG_INVALID_ID };
+    if (sg::is_valid(m_resolveImage)) {
+        handle = m_resolveImage;
+    }
+    else if (sg::is_valid(m_colorImage)) {
+        handle = m_colorImage;
+    }
+    return handle;
+}
+
+sg_image
 RenderTargetColorImageContainer::colorImageHandle() const NANOEM_DECL_NOEXCEPT
 {
     return m_colorImage;
+}
+
+sg_image
+RenderTargetColorImageContainer::resolveImageHandle() const NANOEM_DECL_NOEXCEPT
+{
+    return m_resolveImage;
 }
 
 bool
