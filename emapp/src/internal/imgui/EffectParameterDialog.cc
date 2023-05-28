@@ -523,7 +523,7 @@ EffectParameterDialog::layoutAllParameters(Project *project, Effect *effect, boo
                 const effect::RenderTargetColorImageContainer *container = it->second;
                 const sg_image_desc &desc = container->colorImageDescription();
                 const Vector2UI16 size(desc.width, desc.height);
-                layoutRenderTargetImage(container->colorImageHandle(), size, it->first, String());
+                layoutRenderTargetImage(container->preferredColorImageHandle(), size, it->first, String());
             }
             else {
                 ImGui::TextUnformatted("(Unknown)");

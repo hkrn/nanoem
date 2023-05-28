@@ -1850,12 +1850,11 @@ ImGuiWindow::drawAllWindows(Project *project, IState *state, nanoem_u32_t flags)
     BX_UNUSED_2(project, flags);
     sg_pass_action pa;
     sg::PassBlock pb;
-    Inline::clearZeroMemory(pa);
-    pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_CLEAR;
-    pa.colors[0].value.r = 0.0f;
-    pa.colors[0].value.g = 0.5f;
-    pa.colors[0].value.b = 0.7f;
-    pa.colors[0].value.a = 1.0f;
+    sg::PassBlock::initializeClearAction(pa);
+    pa.colors[0].clear_value.r = 0.0f;
+    pa.colors[0].clear_value.g = 0.5f;
+    pa.colors[0].clear_value.b = 0.7f;
+    pa.colors[0].clear_value.a = 1.0f;
     if (isVisible()) {
         SG_PUSH_GROUP("ImGuiWindow::drawAllWindows");
         const ImGuiIO &io = ImGui::GetIO();

@@ -6,16 +6,10 @@
 static void
 sgx_read_image_core(const _sg_image_t *image_ptr, sg_buffer buffer, void *data, size_t size)
 {
-    uint32_t texture_pool_index, buffer_pool_index;
     _sg_buffer_t *buffer_ptr = _sg_lookup_buffer(&_sg.pools, buffer.id);
     if (buffer_ptr) {
-        buffer_pool_index = buffer_ptr->mtl.buf[buffer_ptr->cmn.active_slot];
-        if (image_ptr->mtl.depth_tex != _SG_MTL_INVALID_SLOT_INDEX) {
-            texture_pool_index = image_ptr->mtl.depth_tex;
-        }
-        else {
-            texture_pool_index = image_ptr->mtl.tex[image_ptr->cmn.active_slot];
-        }
+        uint32_t buffer_pool_index = buffer_ptr->mtl.buf[buffer_ptr->cmn.active_slot];
+        uint32_t texture_pool_index = image_ptr->mtl.tex[image_ptr->cmn.active_slot];
         __unsafe_unretained id<MTLTexture> source = _sg_mtl_id(texture_pool_index);
         __unsafe_unretained id<MTLBuffer> dest = _sg_mtl_id(buffer_pool_index);
         if (source && dest) {
@@ -70,16 +64,7 @@ sgx_label_image(sg_image image, const char *text)
 {
     _sg_image_t *ptr = _sg_lookup_image(&_sg.pools, image.id);
     if (ptr && text) {
-        uint32_t pool_index;
-        if (ptr->mtl.msaa_tex != _SG_MTL_INVALID_SLOT_INDEX) {
-            pool_index = ptr->mtl.msaa_tex;
-        }
-        else if (ptr->mtl.depth_tex != _SG_MTL_INVALID_SLOT_INDEX) {
-            pool_index = ptr->mtl.depth_tex;
-        }
-        else {
-            pool_index = ptr->mtl.tex[ptr->cmn.active_slot];
-        }
+        uint32_t pool_index = ptr->mtl.tex[ptr->cmn.active_slot];
         if (pool_index != _SG_MTL_INVALID_SLOT_INDEX) {
             __unsafe_unretained id<MTLTexture> mtl_tex = _sg_mtl_id(pool_index);
             NSString *label = [[NSString alloc] initWithUTF8String:text];
@@ -188,17 +173,11 @@ sgx_read_pass_async(sg_pass pass, sg_buffer buffer, sgx_read_pass_async_callback
 {
     _sg_pass_t *ptr = _sg_lookup_pass(&_sg.pools, pass.id);
     if (ptr) {
-        uint32_t texture_pool_index, buffer_pool_index;
         const _sg_image_t *image_ptr = _sg_lookup_image(&_sg.pools, ptr->cmn.color_atts[0].image_id.id);
         _sg_buffer_t *buffer_ptr = _sg_lookup_buffer(&_sg.pools, buffer.id);
         if (image_ptr && buffer_ptr) {
-            buffer_pool_index = buffer_ptr->mtl.buf[buffer_ptr->cmn.active_slot];
-            if (image_ptr->mtl.depth_tex != _SG_MTL_INVALID_SLOT_INDEX) {
-                texture_pool_index = image_ptr->mtl.depth_tex;
-            }
-            else {
-                texture_pool_index = image_ptr->mtl.tex[image_ptr->cmn.active_slot];
-            }
+            uint32_t buffer_pool_index = buffer_ptr->mtl.buf[buffer_ptr->cmn.active_slot];
+            uint32_t texture_pool_index = image_ptr->mtl.tex[image_ptr->cmn.active_slot];
             __unsafe_unretained id<MTLBuffer> dest = _sg_mtl_id(buffer_pool_index);
             __unsafe_unretained id<MTLTexture> source = _sg_mtl_id(texture_pool_index);
             if (source && dest) {

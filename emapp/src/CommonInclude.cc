@@ -538,6 +538,28 @@ push_group_format(const char *format, ...)
     va_end(ap);
 }
 
+void
+PassBlock::initializeClearAction(sg_pass_action &action) NANOEM_DECL_NOEXCEPT
+{
+    Inline::clearZeroMemory(action);
+    for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
+        action.colors[i].load_action = SG_LOADACTION_CLEAR;
+        action.colors[i].store_action = SG_STOREACTION_STORE;
+    }
+    action.depth.load_action = action.stencil.load_action = SG_LOADACTION_CLEAR;
+    action.depth.store_action = action.stencil.store_action = SG_STOREACTION_STORE;
+}
+
+void
+PassBlock::initializeLoadStoreAction(sg_pass_action &action) NANOEM_DECL_NOEXCEPT
+{
+    Inline::clearZeroMemory(action);
+    for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
+        action.colors[i].load_action = SG_LOADACTION_LOAD;
+    }
+    action.depth.load_action = action.stencil.load_action = SG_LOADACTION_LOAD;
+}
+
 PassBlock::PassBlock() NANOEM_DECL_NOEXCEPT : m_drawQueue(nullptr)
 {
 }

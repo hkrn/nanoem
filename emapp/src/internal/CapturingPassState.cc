@@ -209,8 +209,7 @@ void
 CapturingPassState::ImageBlitter::draw(sg_pipeline pipeline, sg_pass dest, sg_image source)
 {
     sg_pass_action pa;
-    Inline::clearZeroMemory(pa);
-    pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_CLEAR;
+    sg::PassBlock::initializeLoadStoreAction(pa);
     m_bindings.fs_images[0] = source;
     sg::PassBlock pb(m_project->sharedBatchDrawQueue(), dest, pa);
     pb.applyPipelineBindings(pipeline, m_bindings);

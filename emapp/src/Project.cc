@@ -213,7 +213,8 @@ PassScope::~PassScope() NANOEM_DECL_NOEXCEPT
 struct EnumStringifyUtils : private NonCopyable {
     static const char *toString(IEffect::ScriptOrderType order) NANOEM_DECL_NOEXCEPT;
     static const char *toString(IDrawable::DrawType type) NANOEM_DECL_NOEXCEPT;
-    static const char *toString(sg_action action) NANOEM_DECL_NOEXCEPT;
+    static const char *toString(sg_load_action action) NANOEM_DECL_NOEXCEPT;
+    static const char *toString(sg_store_action action) NANOEM_DECL_NOEXCEPT;
 };
 
 const char *
@@ -251,14 +252,27 @@ EnumStringifyUtils::toString(IDrawable::DrawType type) NANOEM_DECL_NOEXCEPT
 }
 
 const char *
-EnumStringifyUtils::toString(sg_action action) NANOEM_DECL_NOEXCEPT
+EnumStringifyUtils::toString(sg_load_action action) NANOEM_DECL_NOEXCEPT
 {
     switch (action) {
-    case SG_ACTION_CLEAR:
+    case SG_LOADACTION_CLEAR:
         return "Clear";
-    case SG_ACTION_LOAD:
+    case SG_LOADACTION_LOAD:
         return "Load";
-    case SG_ACTION_DONTCARE:
+    case SG_LOADACTION_DONTCARE:
+        return "DontCare";
+    default:
+        return "(Unknown)";
+    }
+}
+
+const char *
+EnumStringifyUtils::toString(sg_store_action action) NANOEM_DECL_NOEXCEPT
+{
+    switch (action) {
+    case SG_STOREACTION_STORE:
+        return "Clear";
+    case SG_STOREACTION_DONTCARE:
         return "DontCare";
     default:
         return "(Unknown)";
@@ -467,20 +481,23 @@ Project::DrawQueue::drawPass(const DrawQueue::PassCommandBuffer *pass, Project *
     sg_pass_action pa(pass->m_items->data()->u.m_action);
     for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
         sg_color_attachment_action &ca = pa.colors[i];
-        if (ca.action == _SG_ACTION_DEFAULT) {
-            ca.action = SG_ACTION_LOAD;
+        if (ca.load_action == _SG_LOADACTION_DEFAULT) {
+            ca.load_action = SG_LOADACTION_LOAD;
+            ca.store_action = SG_STOREACTION_STORE;
         }
     }
-    if (pa.depth.action == _SG_ACTION_DEFAULT) {
-        pa.depth.action = SG_ACTION_LOAD;
+    if (pa.depth.load_action == _SG_LOADACTION_DEFAULT) {
+        pa.depth.load_action = SG_LOADACTION_LOAD;
+        pa.depth.store_action = SG_STOREACTION_STORE;
     }
-    if (pa.stencil.action == _SG_ACTION_DEFAULT) {
-        pa.stencil.action = SG_ACTION_LOAD;
+    if (pa.stencil.load_action == _SG_LOADACTION_DEFAULT) {
+        pa.stencil.load_action = SG_LOADACTION_LOAD;
+        pa.stencil.store_action = SG_STOREACTION_STORE;
     }
     sg::begin_pass(pass->m_handle, &pa);
     SG_INSERT_MARKERF("Project::DrawQueue::beginPass(color=%s, depth=%s, stencil=%s, batch=%s)",
-        EnumStringifyUtils::toString(pa.colors[0].action), EnumStringifyUtils::toString(pa.depth.action),
-        EnumStringifyUtils::toString(pa.stencil.action), pass->m_batch ? "true" : "false");
+        EnumStringifyUtils::toString(pa.colors[0].load_action), EnumStringifyUtils::toString(pa.depth.load_action),
+        EnumStringifyUtils::toString(pa.stencil.load_action), pass->m_batch ? "true" : "false");
     nanoem_u32_t lastDrawPassHash = 0;
     bool pipelineApplied = false;
     hasher.begin();
@@ -656,8 +673,9 @@ Project::BatchDrawQueue::beginPass(sg_pass pass, const sg_pass_action &action)
     if (!found) {
         SG_INSERT_MARKERF("Project::BatchDrawQueue::beginPass(handle=%d, name=%s, color=%s, depth=%s, stencil=%s)",
             pass, m_drawQueue->m_project->findRenderPassName(pass),
-            EnumStringifyUtils::toString(action.colors[0].action), EnumStringifyUtils::toString(action.depth.action),
-            EnumStringifyUtils::toString(action.stencil.action));
+            EnumStringifyUtils::toString(action.colors[0].load_action),
+            EnumStringifyUtils::toString(action.depth.load_action),
+            EnumStringifyUtils::toString(action.stencil.load_action));
         DrawQueue::PassCommandBuffer pb;
         DrawQueue::Command item;
         item.m_type = DrawQueue::kCommandTypeSetPassAction;
@@ -789,26 +807,28 @@ Project::SerialDrawQueue::beginPass(sg_pass pass, const sg_pass_action &action)
             for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
                 const sg_color_attachment_action &sca = action.colors[i];
                 sg_color_attachment_action &dca = dstAction.colors[i];
-                if (dca.action == _SG_ACTION_DEFAULT && sca.action != _SG_ACTION_DEFAULT) {
+                if (dca.load_action == _SG_LOADACTION_DEFAULT && sca.load_action != _SG_LOADACTION_DEFAULT) {
                     SG_INSERT_MARKERF("Project::SerialDrawQueue::setColorAttachmentAction(index=%d, action=%s, "
                                       "R=%.2f, G=%.2f, B=%.2f, A=%.2f)",
-                        i, EnumStringifyUtils::toString(sca.action), sca.value.r, sca.value.g, sca.value.b,
-                        sca.value.a);
+                        i, EnumStringifyUtils::toString(sca.load_action), sca.clear_value.r, sca.clear_value.g,
+                        sca.clear_value.b, sca.clear_value.a);
                     dca = sca;
-                    mergeable &= sca.action != SG_ACTION_LOAD;
+                    mergeable &= sca.load_action != SG_LOADACTION_LOAD;
                 }
             }
-            if (dstAction.depth.action == _SG_ACTION_DEFAULT && action.depth.action != _SG_ACTION_DEFAULT) {
+            if (dstAction.depth.load_action == _SG_LOADACTION_DEFAULT &&
+                action.depth.load_action != _SG_LOADACTION_DEFAULT) {
                 SG_INSERT_MARKERF("Project::SerialDrawQueue::setDepthAttachmentAction(action=%s, value=%.2f)",
-                    EnumStringifyUtils::toString(action.depth.action), action.depth.value);
+                    EnumStringifyUtils::toString(action.depth.load_action), action.depth.clear_value);
                 dstAction.depth = action.depth;
-                mergeable &= dstAction.depth.action != SG_ACTION_LOAD;
+                mergeable &= dstAction.depth.load_action != SG_LOADACTION_LOAD;
             }
-            if (dstAction.stencil.action == _SG_ACTION_DEFAULT && action.stencil.action != _SG_ACTION_DEFAULT) {
+            if (dstAction.stencil.load_action == _SG_LOADACTION_DEFAULT &&
+                action.stencil.load_action != _SG_LOADACTION_DEFAULT) {
                 SG_INSERT_MARKERF("Project::SerialDrawQueue::setStencilAttachmentAction(action=%s, value=%d)",
-                    EnumStringifyUtils::toString(action.stencil.action), action.stencil.value);
+                    EnumStringifyUtils::toString(action.stencil.load_action), action.stencil.clear_value);
                 dstAction.stencil = action.stencil;
-                mergeable &= dstAction.stencil.action != SG_ACTION_LOAD;
+                mergeable &= dstAction.stencil.load_action != SG_LOADACTION_LOAD;
             }
         }
     }
@@ -816,8 +836,9 @@ Project::SerialDrawQueue::beginPass(sg_pass pass, const sg_pass_action &action)
         SG_INSERT_MARKERF(
             "Project::SerialDrawQueue::beginPass(offset=%d, handle=%d, name=%s, color=%s, depth=%s, stencil=%s)",
             Inline::saturateInt32(buffers.size() + 1), pass, m_drawQueue->m_project->findRenderPassName(pass),
-            EnumStringifyUtils::toString(action.colors[0].action), EnumStringifyUtils::toString(action.depth.action),
-            EnumStringifyUtils::toString(action.stencil.action));
+            EnumStringifyUtils::toString(action.colors[0].load_action),
+            EnumStringifyUtils::toString(action.depth.load_action),
+            EnumStringifyUtils::toString(action.stencil.load_action));
         DrawQueue::PassCommandBuffer buffer;
         DrawQueue::Command item;
         item.m_type = DrawQueue::kCommandTypeSetPassAction;
@@ -920,7 +941,7 @@ Project::Pass::Pass(Project *project, const char *name)
     , m_name(name)
 {
     m_handle = { SG_INVALID_ID };
-    m_colorImage = m_depthImage = { SG_INVALID_ID };
+    m_colorImage = m_depthImage = m_resolveImage = { SG_INVALID_ID };
 }
 
 void
@@ -936,17 +957,27 @@ Project::Pass::update(const Vector2UI16 &size)
         StringUtils::format(label, sizeof(label), "%s/ColorImage", m_name.c_str());
         id.label = label;
     }
+    int numSamples = m_project->sampleCount();
     id.render_target = true;
     id.width = size.x;
     id.height = size.y;
     id.pixel_format = colorPixelFormat;
     id.mag_filter = id.min_filter = SG_FILTER_LINEAR;
     id.wrap_u = id.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-    id.sample_count = enableMSAA ? m_project->sampleCount() : 1;
+    id.sample_count = enableMSAA ? numSamples : 1;
     sg::destroy_image(m_colorImage);
     m_colorImage = sg::make_image(&id);
     nanoem_assert(sg::query_image_state(m_colorImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
     SG_LABEL_IMAGE(m_colorImage, label);
+    if (enableMSAA && numSamples > 1) {
+        id.num_mipmaps = id.sample_count = 1;
+        m_resolveImage = sg::make_image(&id);
+        id.sample_count = numSamples;
+    }
+    else if (sg::is_valid(m_resolveImage)) {
+        sg::destroy_image(m_resolveImage);
+        m_resolveImage = { SG_INVALID_ID };
+    }
     id.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
     sg::destroy_image(m_depthImage);
     if (Inline::isDebugLabelEnabled()) {
@@ -971,6 +1002,7 @@ Project::Pass::update(const Vector2UI16 &size)
     desc.m_handle = m_handle;
     desc.m_colorImage = m_colorImage;
     desc.m_depthImage = m_depthImage;
+    desc.m_resolveImage = m_resolveImage;
     desc.m_desciption = pd;
     PixelFormat &format = desc.m_format;
     format.setColorPixelFormat(colorPixelFormat, 0);
@@ -986,6 +1018,7 @@ Project::Pass::getDescription(sg_pass_desc &pd) const NANOEM_DECL_NOEXCEPT
     Inline::clearZeroMemory(pd);
     pd.color_attachments[0].image = m_colorImage;
     pd.depth_stencil_attachment.image = m_depthImage;
+    pd.resolve_attachments[0].image = m_resolveImage;
 }
 
 void
@@ -998,6 +1031,8 @@ Project::Pass::destroy()
     m_colorImage = { SG_INVALID_ID };
     sg::destroy_image(m_depthImage);
     m_depthImage = { SG_INVALID_ID };
+    sg::destroy_image(m_resolveImage);
+    m_resolveImage = { SG_INVALID_ID };
     SG_POP_GROUP();
 }
 
@@ -1032,7 +1067,7 @@ Project::RenderPassBundle::RenderPassBundle()
     Inline::clearZeroMemory(m_format);
     Inline::clearZeroMemory(m_desciption);
     m_handle = { SG_INVALID_ID };
-    m_colorImage = m_depthImage = { SG_INVALID_ID };
+    m_colorImage = m_depthImage = m_resolveImage = { SG_INVALID_ID };
 }
 
 Project::RenderPassBundle::~RenderPassBundle() NANOEM_DECL_NOEXCEPT
@@ -3076,6 +3111,7 @@ Project::getOriginOffscreenRenderPassColorImageDescription(
                 id.pixel_format = format.colorPixelFormat(0);
                 id.sample_count = format.numSamples();
                 pd.color_attachments[0].image = colorImage;
+                pd.resolve_attachments[0].image = desc.m_resolveImage;
                 const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
                 id.width = imageSize.x;
                 id.height = imageSize.y;
@@ -3114,6 +3150,7 @@ Project::getRenderPassColorImageDescription(
         id.pixel_format = format.colorPixelFormat(0);
         id.sample_count = format.numSamples();
         pd.color_attachments[0].image = desc.m_desciption.color_attachments[0].image;
+        pd.resolve_attachments[0].image = desc.m_desciption.resolve_attachments[0].image;
         const Vector2UI16 imageSize(deviceScaleUniformedViewportImageSize());
         id.width = imageSize.x;
         id.height = imageSize.y;
@@ -3126,7 +3163,8 @@ Project::getViewportRenderPassColorImageDescription(sg_pass_desc &pd, sg_image_d
 {
     id.pixel_format = viewportPixelFormat();
     id.sample_count = sampleCount();
-    pd.color_attachments[0].image = viewportPrimaryImage();
+    pd.color_attachments[0].image = m_viewportPrimaryPass.m_colorImage;
+    pd.resolve_attachments[0].image = m_viewportPrimaryPass.m_resolveImage;
     const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
     id.width = imageSize.x;
     id.height = imageSize.y;
@@ -5124,10 +5162,9 @@ Project::setScriptExternalRenderPass(sg_pass value, const Vector4 &clearColor, n
         if (it != m_renderPassBundleMap.end()) {
             const RenderPassBundle &pd = it->second;
             sg_pass_action pa;
-            Inline::clearZeroMemory(pa);
-            pa.colors[0].action = pa.depth.action = SG_ACTION_CLEAR;
-            memcpy(&pa.colors[0].value, glm::value_ptr(clearColor), sizeof(pa.colors[0].value));
-            pa.depth.value = clearDepth;
+            sg::PassBlock::initializeClearAction(pa);
+            memcpy(&pa.colors[0].clear_value, glm::value_ptr(clearColor), sizeof(pa.colors[0].clear_value));
+            pa.depth.clear_value = clearDepth;
             const PixelFormat format(findRenderPassPixelFormat(value, pd.m_format.numSamples()));
             m_renderPassCleaner->clear(sharedBatchDrawQueue(), value, pa, format);
         }
@@ -5254,15 +5291,27 @@ Project::viewportPrimaryPass() const NANOEM_DECL_NOEXCEPT
 sg_image
 Project::viewportPrimaryImage() const NANOEM_DECL_NOEXCEPT
 {
-    sg_image image = m_viewportPrimaryPass.m_colorImage;
-    return sg::is_valid(image) ? image : m_fallbackImage;
+    sg_image image = m_fallbackImage;
+    if (sg::is_valid(m_viewportPrimaryPass.m_resolveImage)) {
+        image = m_viewportPrimaryPass.m_resolveImage;
+    }
+    else if (sg::is_valid(m_viewportPrimaryPass.m_colorImage)) {
+        image = m_viewportPrimaryPass.m_colorImage;
+    }
+    return image;
 }
 
 sg_image
 Project::viewportSecondaryImage() const NANOEM_DECL_NOEXCEPT
 {
-    sg_image image = m_viewportSecondaryPass.m_colorImage;
-    return sg::is_valid(image) ? image : m_fallbackImage;
+    sg_image image = m_fallbackImage;
+    if (sg::is_valid(m_viewportSecondaryPass.m_resolveImage)) {
+        image = m_viewportSecondaryPass.m_resolveImage;
+    }
+    else if (sg::is_valid(m_viewportSecondaryPass.m_colorImage)) {
+        image = m_viewportSecondaryPass.m_colorImage;
+    }
+    return image;
 }
 
 sg_image
@@ -6926,13 +6975,8 @@ Project::registerRenderPass(const sg_pass_desc &desc, const PixelFormat &format,
         descPtrRef->m_handle = pass;
         m_hashedRenderPassBundleMap.insert(tinystl::make_pair(key, descPtrRef));
         sg_pass_action pa;
-        Inline::clearZeroMemory(pa);
-        for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
-            pa.colors[i].action = SG_ACTION_CLEAR;
-        }
-        pa.depth.value = 1;
-        pa.depth.action = SG_ACTION_CLEAR;
-        pa.stencil.action = SG_ACTION_CLEAR;
+        sg::PassBlock::initializeLoadStoreAction(pa);
+        pa.depth.clear_value = 1;
         clearRenderPass(m_serialDrawQueue, pass, pa, format);
         SG_INSERT_MARKERF("Project::registerRenderPass(handle=%d)", pass.id);
     }
@@ -6972,11 +7016,12 @@ Project::drawOffscreenRenderTarget(Effect *ownerEffect)
         BX_UNUSED_2(scope, scope2);
         SG_PUSH_GROUPF("Project::drawOffscreenRenderTarget(name=%s, pass=%s, owner=%s)", name.c_str(),
             findRenderPassName(pass), ownerEffect->nameConstString());
-        option->getPassAction(pa);
+        option->getClearPassAction(pa);
         setOffscreenRenderPassScope(&renderPassScope);
         const int numSamples = option->m_colorImageDescription.sample_count;
         const PixelFormat format(findRenderPassPixelFormat(pass, numSamples));
         clearRenderPass(sharedBatchDrawQueue(), pass, pa, format);
+        sg::PassBlock::initializeLoadStoreAction(pa);
         for (DrawableList::const_iterator it2 = m_drawableOrderList.begin(), end2 = m_drawableOrderList.end();
              it2 != end2; ++it2) {
             drawObjectToOffscreenRenderTarget(*it2, ownerEffect, name);
@@ -7067,10 +7112,10 @@ Project::clearViewportPrimaryPass()
 {
     SG_PUSH_GROUP("Project::clearViewportPass");
     sg_pass_action action;
-    Inline::clearZeroMemory(action);
-    action.colors[0].action = action.depth.action = action.stencil.action = SG_ACTION_CLEAR;
-    memcpy(&action.colors[0].value, glm::value_ptr(m_viewportBackgroundColor), sizeof(action.colors[0].value));
-    action.depth.value = 1;
+    sg::PassBlock::initializeClearAction(action);
+    memcpy(
+        &action.colors[0].clear_value, glm::value_ptr(m_viewportBackgroundColor), sizeof(action.colors[0].clear_value));
+    action.depth.clear_value = 1;
     const PixelFormat format(findRenderPassPixelFormat(currentRenderPass(), sampleCount()));
     clearRenderPass(sharedBatchDrawQueue(), currentRenderPass(), action, format);
     SG_POP_GROUP();
@@ -7097,8 +7142,7 @@ Project::drawGrid()
     SG_PUSH_GROUPF("Project::drawGrid(id=%d, name=%s)", pass.id, findRenderPassName(pass));
     {
         sg_pass_action action;
-        Inline::clearZeroMemory(action);
-        action.colors[0].action = action.depth.action = action.stencil.action = SG_ACTION_LOAD;
+        sg::PassBlock::initializeLoadStoreAction(action);
         sg::PassBlock pb(sharedBatchDrawQueue(), beginRenderPass(pass), action);
         m_grid->draw(pb);
     }
@@ -7113,8 +7157,7 @@ Project::drawViewport(IEffect::ScriptOrderType order, IDrawable::DrawType type)
         SG_PUSH_GROUPF("Project::drawViewport(order=%s, type=%s)", EnumStringifyUtils::toString(order),
             EnumStringifyUtils::toString(type));
         sg_pass_action action;
-        Inline::clearZeroMemory(action);
-        action.colors[0].action = action.depth.action = SG_ACTION_LOAD;
+        sg::PassBlock::initializeLoadStoreAction(action);
         const DrawableSet &drawableSet = it->second;
         for (DrawableList::const_iterator it2 = m_drawableOrderList.begin(), end2 = m_drawableOrderList.end();
              it2 != end2; ++it2) {
@@ -7134,14 +7177,21 @@ Project::blitRenderPass(
     if (sourceRenderPass.id != destRenderPass.id) {
         RenderPassBundleMap::const_iterator source = m_renderPassBundleMap.find(sourceRenderPass.id);
         if (source != m_renderPassBundleMap.end()) {
-            sg_image sourceColorImage = source->second.m_desciption.color_attachments[0].image;
+            const sg_pass_desc &desc = source->second.m_desciption;
+            sg_image sourceColorImage = { SG_INVALID_ID };
+            if (sg::is_valid(desc.resolve_attachments[0].image)) {
+                sourceColorImage = desc.resolve_attachments[0].image;
+            }
+            else if (sg::is_valid(desc.color_attachments[0].image)) {
+                sourceColorImage = desc.color_attachments[0].image;
+            }
             /* prevent blitting dest(viewportPrimaryPass) == source(viewportPrimaryPass) */
-            if (sourceColorImage.id == m_viewportPrimaryPass.m_colorImage.id &&
+            if (sourceColorImage.id == viewportPrimaryImage().id &&
                 destRenderPass.id != m_viewportSecondaryPass.m_handle.id) {
                 blitter->blit(drawQueue, tinystl::make_pair(m_viewportSecondaryPass.m_handle, kViewportSecondaryName),
                     tinystl::make_pair(sourceColorImage, kViewportPrimaryName), kRectCoordination,
                     findRenderPassPixelFormat(m_viewportSecondaryPass.m_handle, sampleCount()));
-                sourceColorImage = m_viewportSecondaryPass.m_colorImage;
+                sourceColorImage = viewportSecondaryImage();
             }
             RenderPassBundleMap::const_iterator it = m_renderPassBundleMap.find(destRenderPass.id);
             int numSamples = sampleCount();

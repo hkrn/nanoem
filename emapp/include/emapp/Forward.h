@@ -557,28 +557,37 @@ typedef enum sg_color_mask {
     _SG_COLORMASK_FORCE_U32 = 0x7FFFFFFF
 } sg_color_mask;
 
-typedef enum sg_action {
-    _SG_ACTION_DEFAULT,
-    SG_ACTION_CLEAR,
-    SG_ACTION_LOAD,
-    SG_ACTION_DONTCARE,
-    _SG_ACTION_NUM,
-    _SG_ACTION_FORCE_U32 = 0x7FFFFFFF
-} sg_action;
+typedef enum sg_load_action {
+    _SG_LOADACTION_DEFAULT,
+    SG_LOADACTION_CLEAR,
+    SG_LOADACTION_LOAD,
+    SG_LOADACTION_DONTCARE,
+    _SG_LOADACTION_FORCE_U32 = 0x7FFFFFFF
+} sg_load_action;
+
+typedef enum sg_store_action {
+    _SG_STOREACTION_DEFAULT,
+    SG_STOREACTION_STORE,
+    SG_STOREACTION_DONTCARE,
+    _SG_STOREACTION_FORCE_U32 = 0x7FFFFFFF
+} sg_store_action;
 
 typedef struct sg_color_attachment_action {
-    sg_action action;
-    sg_color value;
+    sg_load_action load_action;
+    sg_store_action store_action;
+    sg_color clear_value;
 } sg_color_attachment_action;
 
 typedef struct sg_depth_attachment_action {
-    sg_action action;
-    float value;
+    sg_load_action load_action;
+    sg_store_action store_action;
+    float clear_value;
 } sg_depth_attachment_action;
 
 typedef struct sg_stencil_attachment_action {
-    sg_action action;
-    uint8_t value;
+    sg_load_action load_action;
+    sg_store_action store_action;
+    uint8_t clear_value;
 } sg_stencil_attachment_action;
 
 typedef struct sg_pass_action {
@@ -791,6 +800,7 @@ typedef struct sg_pass_attachment_desc {
 typedef struct sg_pass_desc {
     uint32_t _start_canary;
     sg_pass_attachment_desc color_attachments[SG_MAX_COLOR_ATTACHMENTS];
+    sg_pass_attachment_desc resolve_attachments[SG_MAX_COLOR_ATTACHMENTS];
     sg_pass_attachment_desc depth_stencil_attachment;
     const char *label;
     uint32_t _end_canary;
@@ -1236,6 +1246,9 @@ public:
         virtual void draw(int offset, int count) = 0;
         virtual void registerCallback(Callback callback, void *userData) = 0;
     };
+    static void initializeClearAction(sg_pass_action &action) NANOEM_DECL_NOEXCEPT;
+    static void initializeLoadStoreAction(sg_pass_action &action) NANOEM_DECL_NOEXCEPT;
+
     PassBlock() NANOEM_DECL_NOEXCEPT;
     PassBlock(IDrawQueue *queue, sg_pass pass, const sg_pass_action &action) NANOEM_DECL_NOEXCEPT;
     ~PassBlock() NANOEM_DECL_NOEXCEPT;

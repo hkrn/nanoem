@@ -53,7 +53,7 @@ This software uses below libraries.
   - [sentry-native](https://github.com/getsentry/sentry-native)
     - [MIT](https://github.com/getsentry/sentry-native/blob/ff5bfcf0eb2c47d03eb57a51bdf2e6ad4b8ece10/LICENSE)
   - [sokol](https://github.com/hkrn/sokol)
-    - [zlib](https://github.com/hkrn/sokol/blob/900e40b71b16e853661cb43869b795d1c489aff0/LICENSE)
+    - [zlib](https://github.com/hkrn/sokol/blob/e75c4d4e2bb176b94c13d4fcbe05a438d9021ca7/LICENSE)
   - [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross/)
     - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Cross/blob/9acb9ec31f5a8ef80ea6b994bb77be787b08d3d1/LICENSE)
   - [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools/)

@@ -109,24 +109,6 @@ sgx_label_image(sg_image image, const char *text)
                 free(name);
             }
         }
-        ID3D11Texture2D *texds = ptr->d3d11.texds;
-        if (texds) {
-            name = appendSuffix(text, length, L"/DepthStencil", &new_size);
-            if (name) {
-                texds->lpVtbl->SetPrivateData(texds, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-                texds->lpVtbl->SetPrivateData(texds, &WKPDID_D3DDebugObjectNameW, new_size, name);
-                free(name);
-            }
-        }
-        ID3D11Texture2D *texmsaa = ptr->d3d11.texmsaa;
-        if (texmsaa) {
-            name = appendSuffix(text, length, L"/MSAA", &new_size);
-            if (name) {
-                texmsaa->lpVtbl->SetPrivateData(texmsaa, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-                texmsaa->lpVtbl->SetPrivateData(texmsaa, &WKPDID_D3DDebugObjectNameW, new_size, name);
-                free(name);
-            }
-        }
         ID3D11SamplerState *smp = ptr->d3d11.smp;
         if (smp) {
             name = appendSuffix(text, length, L"/SamplerState", &new_size);
@@ -205,7 +187,7 @@ sgx_label_pass(sg_pass pass, const char *text)
         if (name) {
             MultiByteToWideChar(CP_UTF8, 0, text, length, name, count);
             for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
-                ID3D11RenderTargetView *color_view = ptr->d3d11.color_atts[i].rtv;
+                ID3D11RenderTargetView *color_view = ptr->d3d11.color_atts[i].view.rtv;
                 if (color_view) {
                     wchar_t suffix[16];
                     int new_size;
@@ -218,7 +200,7 @@ sgx_label_pass(sg_pass pass, const char *text)
                     }
                 }
             }
-            ID3D11RenderTargetView *depth_view = ptr->d3d11.ds_att.dsv;
+            ID3D11RenderTargetView *depth_view = ptr->d3d11.ds_att.view.dsv;
             if (depth_view) {
                 int new_size;
                 name = appendSuffix(text, length, L"/DepthStencilView", &new_size);

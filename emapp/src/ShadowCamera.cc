@@ -87,11 +87,9 @@ void
 ShadowCamera::clear()
 {
     sg_pass_action action;
-    Inline::clearZeroMemory(action);
-    action.colors[0].action = SG_ACTION_CLEAR;
-    memcpy(&action.colors[0].value, glm::value_ptr(Vector4(1)), sizeof(action.colors[0].value));
-    action.depth.action = action.stencil.action = SG_ACTION_CLEAR;
-    action.depth.value = 1;
+    sg::PassBlock::initializeLoadStoreAction(action);
+    memcpy(&action.colors[0].clear_value, glm::value_ptr(Vector4(1)), sizeof(action.colors[0].clear_value));
+    action.depth.clear_value = 1;
     const PixelFormat format(m_project->findRenderPassPixelFormat(pass(), 1));
     m_project->clearRenderPass(m_project->sharedBatchDrawQueue(), pass(), action, format);
 }

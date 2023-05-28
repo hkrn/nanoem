@@ -367,9 +367,7 @@ AccessoryProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, co
     m_bindings.vertex_buffers[0] = buffer.m_vertexBuffer;
     m_bindings.index_buffer = buffer.m_indexBuffer;
     sg_pass_action action;
-    Inline::clearZeroMemory(action);
-    action.colors[0].action = SG_ACTION_LOAD;
-    action.depth.action = action.stencil.action = SG_ACTION_LOAD;
+    sg::PassBlock::initializeLoadStoreAction(action);
     {
         SG_PUSH_GROUPF("AccessoryProgramBundle::CommonPass::execute(pass=%s)", project->findRenderPassName(pass));
         sg::PassBlock pb(project->sharedBatchDrawQueue(), project->beginRenderPass(pass), action);

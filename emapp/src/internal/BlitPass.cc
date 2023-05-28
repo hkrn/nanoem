@@ -85,8 +85,7 @@ BlitPass::blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, 
     sg_pipeline pipeline = { SG_INVALID_ID };
     setupPipeline(format, pipeline);
     sg_pass_action pa;
-    Inline::clearZeroMemory(pa);
-    pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
+    sg::PassBlock::initializeLoadStoreAction(pa);
     sg_bindings bindings(m_bindings);
     bindings.fs_images[0] = source.first;
     sg::PassBlock pb(drawQueue, dest.first, pa);
@@ -107,8 +106,7 @@ BlitPass::draw(sg::PassBlock::IDrawQueue *drawQueue, sg_pipeline pipeline, sg_pa
     nanoem_parameter_assert(sg::query_image_state(source) == SG_RESOURCESTATE_VALID, "source image must NOT be null");
     nanoem_parameter_assert(sg::query_pass_state(dest) == SG_RESOURCESTATE_VALID, "destination pass must NOT be null");
     sg_pass_action pa;
-    Inline::clearZeroMemory(pa);
-    pa.colors[0].action = pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
+    sg::PassBlock::initializeLoadStoreAction(pa);
     sg_bindings bindings(m_bindings);
     bindings.fs_images[0] = source;
     sg::PassBlock pb(drawQueue, dest, pa);

@@ -192,9 +192,7 @@ void
 LineDrawer::drawPass(const Option &option)
 {
     sg_pass_action action;
-    Inline::clearZeroMemory(action);
-    action.colors[0].action = SG_ACTION_LOAD;
-    action.depth.action = action.stencil.action = SG_ACTION_LOAD;
+    sg::PassBlock::initializeLoadStoreAction(action);
     const sg_pass basePass = sg::is_valid(option.m_pass) ? option.m_pass : m_project->currentRenderPass(),
                   pass = m_project->beginRenderPass(basePass);
     sg::PassBlock::IDrawQueue *drawQueue = option.m_drawQueue ? option.m_drawQueue : m_project->sharedBatchDrawQueue();
