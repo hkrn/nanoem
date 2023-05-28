@@ -123,7 +123,7 @@ RenderTargetMipmapGenerator::generateAllMipmapImages(const Effect *effect, const
         for (int i = 1; i < colorImageDesc.num_mipmaps; i++) {
             sg_pass_desc passDesc;
             Inline::clearZeroMemory(passDesc);
-            passDesc.color_attachments[0].image = colorImageContainer->colorImageHandle();
+            passDesc.color_attachments[0].image = colorImageContainer->preferredColorImageHandle();
             passDesc.color_attachments[0].mip_level = i;
             passDesc.depth_stencil_attachment.image = depthImages->data()[i - 1];
             if (Inline::isDebugLabelEnabled()) {
@@ -150,7 +150,7 @@ RenderTargetMipmapGenerator::generateAllMipmapImages(const Effect *effect, const
         for (int i = 1; i < colorImageDesc.num_mipmaps; i++) {
             sg_pass_desc passDesc;
             Inline::clearZeroMemory(passDesc);
-            passDesc.color_attachments[0].image = offscreenImageContainer->colorImageHandle();
+            passDesc.color_attachments[0].image = offscreenImageContainer->preferredColorImageHandle();
             passDesc.color_attachments[0].mip_level = i;
             passDesc.depth_stencil_attachment.image = offscreenImageContainer->mipmapDepthStencilImageHandleAt(i - 1);
             if (Inline::isDebugLabelEnabled()) {

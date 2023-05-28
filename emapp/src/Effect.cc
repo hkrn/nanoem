@@ -2184,7 +2184,7 @@ Effect::resetAllSharedOffscreenRenderTargets(const StringSet &names)
             RenderTargetColorImageContainer *container = it2->second,
                                             *sharedContainer =
                                                 m_project->findSharedRenderTargetImageContainer(name, nullptr);
-            container->setColorImageHandle(sharedContainer ? sharedContainer->colorImageHandle() : invalid);
+            container->setColorImageHandle(sharedContainer ? sharedContainer->preferredColorImageHandle() : invalid);
         }
     }
 }
@@ -2284,7 +2284,7 @@ Effect::generateOffscreenMipmapImagesChain(const effect::OffscreenRenderTargetOp
                 generator = nanoem_new(RenderTargetMipmapGenerator(this, name.c_str(), colorImageDesc));
                 offscreenContainer->setMipmapGenerator(generator);
             }
-            generator->blitSourceImage(this, offscreenContainer->colorImageHandle(), format, name.c_str());
+            generator->blitSourceImage(this, offscreenContainer->preferredColorImageHandle(), format, name.c_str());
             generator->generateAllMipmapImages(this, format, offscreenContainer, name.c_str());
             SG_POP_GROUP();
         }
@@ -2390,6 +2390,7 @@ Effect::getAllOffscreenRenderTargetOptions(OffscreenRenderTargetOptionList &valu
             const OffscreenRenderTargetImageContainer *container = it2->second;
             option.m_colorImage = container->colorImageHandle();
             option.m_depthStencilImage = container->depthStencilImageHandle();
+            option.m_resolveImage = container->resolveImageHandle();
             option.m_colorImageDescription = container->colorImageDescription();
             option.m_depthStencilImageDescription = container->depthStencilImageDescription();
             option.m_sharedImageReferenceCount = m_project->countSharedRenderTargetImageContainer(name, this);
@@ -5002,7 +5003,7 @@ Effect::setFoundImageSamplers(const SemanticUniformList &uniforms,
             const String &name = *it;
             NamedRenderTargetColorImageContainerMap::const_iterator it2 = containers.find(name);
             if (it2 != containers.end()) {
-                setImageUniform(name, passPtr, it2->second->colorImageHandle());
+                setImageUniform(name, passPtr, it2->second->preferredColorImageHandle());
             }
         }
     }
@@ -5017,7 +5018,7 @@ Effect::setFoundImageSamplers(const SemanticUniformList &uniforms,
             const String &name = *it;
             OffscreenRenderTargetImageContainerMap::const_iterator it2 = containers.find(name);
             if (it2 != containers.end()) {
-                setImageUniform(name, passPtr, it2->second->colorImageHandle());
+                setImageUniform(name, passPtr, it2->second->preferredColorImageHandle());
             }
         }
     }
@@ -5152,7 +5153,7 @@ Effect::setTextureValues(const NamedRenderTargetColorImageContainerMap &containe
                     }
                     if (!sb->m_read) {
                         SG_PUSH_GROUPF("Effect::setTextureValues(name=%s, target=%s)", name.c_str(), target.c_str());
-                        sg_image image = container->colorImageHandle();
+                        sg_image image = container->preferredColorImageHandle();
                         sg::read_image(image, sb->m_handle, sb->m_content.data(), sb->m_content.size());
                         SG_POP_GROUP();
                         sb->m_read = true;
@@ -5207,7 +5208,7 @@ Effect::setTextureValues(const OffscreenRenderTargetImageContainerMap &container
                     }
                     if (!sb->m_read) {
                         SG_PUSH_GROUPF("Effect::setTextureValues(name=%s, target=%s)", name.c_str(), target.c_str());
-                        sg_image image = container->colorImageHandle();
+                        sg_image image = container->preferredColorImageHandle();
                         sg::read_image(image, sb->m_handle, sb->m_content.data(), sb->m_content.size());
                         SG_POP_GROUP();
                         sb->m_read = true;
@@ -5757,11 +5758,7 @@ Effect::internalDrawRenderPass(const IDrawable *drawable, effect::Pass *pass, sg
     nanoem_parameter_assert(
         classType == kScriptClassTypeScene || classType == kScriptClassTypeObject, "must be object or scene");
     sg_pass_action pa;
-    Inline::clearZeroMemory(pa);
-    for (size_t i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
-        pa.colors[i].action = SG_ACTION_LOAD;
-    }
-    pa.depth.action = pa.stencil.action = SG_ACTION_LOAD;
+    sg::PassBlock::initializeLoadStoreAction(pa);
     const sg_pass currentRenderPass = m_project->currentRenderPass();
     sg_pass handle = currentRenderPass;
     RenderTargetNormalizer *renderTargetNormalizer = nullptr;
@@ -5834,7 +5831,7 @@ Effect::generateRenderTargetMipmapImagesChain(const IDrawable *drawable, const S
             char label[Inline::kMarkerStringLength];
             const char *name = m_currentNamedPrimaryRenderTargetColorImageDescription.first.c_str();
             StringUtils::format(label, sizeof(label), "Effects/%s/%s", nameConstString(), name);
-            generator->blitSourceImage(this, colorImageContainer->colorImageHandle(), format, label);
+            generator->blitSourceImage(this, colorImageContainer->preferredColorImageHandle(), format, label);
             generator->generateAllMipmapImages(this, format, colorImageContainer, depthStencilImageContainer, label);
             SG_POP_GROUP();
         }
@@ -5970,6 +5967,8 @@ Effect::setRenderTargetColorImageDescription(const IDrawable *drawable, size_t r
             const sg_image_desc &sourceColorImageDescription = container->colorImageDescription();
             m_currentRenderTargetPassDescription.color_attachments[renderTargetIndex].image =
                 container->colorImageHandle();
+            m_currentRenderTargetPassDescription.resolve_attachments[renderTargetIndex].image =
+                container->resolveImageHandle();
             m_currentRenderTargetPixelFormat.setColorPixelFormat(
                 sourceColorImageDescription.pixel_format, renderTargetIndex);
             m_currentRenderTargetPixelFormat.setNumSamples(sourceColorImageDescription.sample_count);
@@ -5994,6 +5993,7 @@ Effect::setRenderTargetColorImageDescription(const IDrawable *drawable, size_t r
     else {
         SG_PUSH_GROUPF("Effect::setRenderTargetColorImageDescription(index=%d, name=(null))", renderTargetIndex);
         m_currentRenderTargetPassDescription.color_attachments[renderTargetIndex].image = { SG_INVALID_ID };
+        m_currentRenderTargetPassDescription.resolve_attachments[renderTargetIndex].image = { SG_INVALID_ID };
         if (renderTargetIndex == 0) {
             Inline::clearZeroMemory(destColorImageDescription);
             int numSamples = destColorImageDescription.sample_count;
@@ -6114,13 +6114,15 @@ Effect::clearRenderPass(
         const Vector4 clearColor(m_clearColor);
         for (size_t i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
             sg_color_attachment_action &action = pa.colors[i];
-            action.action = SG_ACTION_CLEAR;
-            memcpy(&action.value, glm::value_ptr(clearColor), sizeof(action.value));
+            action.load_action = SG_LOADACTION_CLEAR;
+            action.store_action = SG_STOREACTION_STORE;
+            memcpy(&action.clear_value, glm::value_ptr(clearColor), sizeof(action.clear_value));
         }
     }
     else if (StringUtils::equals(target.c_str(), "Depth")) {
-        pa.depth.action = pa.stencil.action = SG_ACTION_CLEAR;
-        pa.depth.value = m_clearDepth;
+        pa.depth.load_action = pa.stencil.load_action = SG_LOADACTION_CLEAR;
+        pa.depth.store_action = pa.stencil.store_action = SG_STOREACTION_STORE;
+        pa.depth.clear_value = m_clearDepth;
     }
     RenderTargetNormalizer *renderTargetNormalizer = nullptr;
     sg_pass pass = resetRenderPass(drawable, name, nullptr, renderTargetNormalizer);

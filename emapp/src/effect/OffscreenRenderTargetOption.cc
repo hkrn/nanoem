@@ -21,7 +21,7 @@ OffscreenRenderTargetOption::OffscreenRenderTargetOption(
 {
     Inline::clearZeroMemory(m_colorImageDescription);
     Inline::clearZeroMemory(m_depthStencilImageDescription);
-    m_colorImage = m_depthStencilImage = { SG_INVALID_ID };
+    m_colorImage = m_depthStencilImage = m_resolveImage = { SG_INVALID_ID };
 }
 
 OffscreenRenderTargetOption::~OffscreenRenderTargetOption() NANOEM_DECL_NOEXCEPT
@@ -29,12 +29,11 @@ OffscreenRenderTargetOption::~OffscreenRenderTargetOption() NANOEM_DECL_NOEXCEPT
 }
 
 void
-OffscreenRenderTargetOption::getPassAction(sg_pass_action &pa) const NANOEM_DECL_NOEXCEPT
+OffscreenRenderTargetOption::getClearPassAction(sg_pass_action &pa) const NANOEM_DECL_NOEXCEPT
 {
-    Inline::clearZeroMemory(pa);
-    pa.colors[0].action = pa.depth.action = SG_ACTION_CLEAR;
-    memcpy(&pa.colors[0].value, glm::value_ptr(m_clearColor), sizeof(pa.colors[0].value));
-    pa.depth.value = m_clearDepth;
+    sg::PassBlock::initializeClearAction(pa);
+    memcpy(&pa.colors[0].clear_value, glm::value_ptr(m_clearColor), sizeof(pa.colors[0].clear_value));
+    pa.depth.clear_value = m_clearDepth;
 }
 
 void
@@ -43,6 +42,7 @@ OffscreenRenderTargetOption::getPassDescription(sg_pass_desc &pd) const NANOEM_D
     Inline::clearZeroMemory(pd);
     pd.color_attachments[0].image = m_colorImage;
     pd.depth_stencil_attachment.image = m_depthStencilImage;
+    pd.resolve_attachments[0].image = m_resolveImage;
 }
 
 } /* namespace effect */
