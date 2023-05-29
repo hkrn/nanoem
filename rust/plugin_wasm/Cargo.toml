@@ -14,7 +14,7 @@ wasmer = { version = "3.3", default-features = false, features = [
     "sys",
     "cranelift",
 ] }
-wasmer-wasix = { version = "0.4", default-features = false, features = [
+wasmer-wasix = { version = "0.5", default-features = false, features = [
     "sys",
     "sys-poll",
     "sys-thread",
