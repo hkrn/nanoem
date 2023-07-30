@@ -20,7 +20,7 @@
 #include "imgui/imgui.h"
 
 #define SOKOL_GFX_INCLUDED /* stub */
-#include "sokol/util/sokol_gfx_imgui.h"
+// #include "sokol/util/sokol_gfx_imgui.h"
 
 #if defined(NANOEM_ENABLE_IMGUI_FILE_DIALOG)
 #include "imguifiledialog/ImGuiFileDialog.h"
@@ -317,6 +317,7 @@ ImGuiApplicationMenuBuilder::draw(void *debugger)
 {
     if (ImGui::BeginMainMenuBar()) {
         m_rootMenuItem.draw();
+#ifdef SOKOL_GFX_IMGUI_INCLUDED
         if (debugger) {
             if (ImGui::BeginMenu("Debug")) {
                 sg_imgui_t *context = static_cast<sg_imgui_t *>(debugger);
@@ -329,6 +330,9 @@ ImGuiApplicationMenuBuilder::draw(void *debugger)
                 ImGui::EndMenu();
             }
         }
+#else
+        BX_UNUSED_1(debugger);
+#endif /* SOKOL_GFX_IMGUI_INCLUDED */
         ImGui::EndMainMenuBar();
     }
     if (m_openFileDialogState.hasAllowedExtensions()) {

@@ -335,7 +335,6 @@ image::APNG::composite(Error &error)
             nanoem_u8_t *decodedImageDataPtr = nullptr;
             Inline::clearZeroMemory(desc);
             if (ImageLoader::decodeImageWithSTB(buffer.data(), buffer.size(), "", desc, &decodedImageDataPtr, err)) {
-                desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
                 if (frameControl.m_blendOp == APNG::kBlendOpSource) {
                     const nanoem_u32_t *imageDataPtr = reinterpret_cast<const nanoem_u32_t *>(decodedImageDataPtr);
                     nanoem_u32_t *compositionImageDataPtr =
@@ -1257,8 +1256,9 @@ image::PFM::height() const NANOEM_DECL_NOEXCEPT
 Image::Image()
     : m_fileExist(false)
 {
-    Inline::clearZeroMemory(m_description);
-    m_handle = { SG_INVALID_ID };
+    Inline::clearZeroMemory(m_imageDescription);
+    m_imageHandle = { SG_INVALID_ID };
+    m_samplerHandle = { SG_INVALID_ID };
 }
 
 Image::~Image() NANOEM_DECL_NOEXCEPT
@@ -1268,24 +1268,28 @@ Image::~Image() NANOEM_DECL_NOEXCEPT
 void
 Image::create()
 {
-    m_handle = sg::make_image(&m_description);
+    m_imageHandle = sg::make_image(&m_imageDescription);
+    m_samplerHandle = sg::make_sampler(&m_samplerDescription);
     if (!m_label.empty()) {
-        SG_LABEL_IMAGE(m_handle, m_label.c_str());
+        SG_LABEL_IMAGE(m_imageHandle, m_label.c_str());
+        SG_LABEL_SAMPLER(m_samplerHandle, m_label.c_str());
     }
 }
 
 void
 Image::destroy()
 {
-    sg::destroy_image(m_handle);
-    m_handle = { SG_INVALID_ID };
+    sg::destroy_image(m_imageHandle);
+    m_imageHandle = { SG_INVALID_ID };
+    sg::destroy_sampler(m_samplerHandle);
+    m_samplerHandle = { SG_INVALID_ID };
 }
 
 void
 Image::setOriginData(const nanoem_u8_t *data, nanoem_rsize_t size)
 {
     m_originData.assign(data, data + size);
-    sg_range &dst = m_description.data.subimage[0][0];
+    sg_range &dst = m_imageDescription.data.subimage[0][0];
     dst.ptr = m_originData.data();
     dst.size = size;
 }
@@ -1294,7 +1298,7 @@ void
 Image::setMipmapData(nanoem_rsize_t index, const nanoem_u8_t *data, nanoem_rsize_t size)
 {
     m_mipmapData[index].assign(data, data + size);
-    sg_range &innerDst = m_description.data.subimage[0][index + 1];
+    sg_range &innerDst = m_imageDescription.data.subimage[0][index + 1];
     innerDst.ptr = m_mipmapData[index].data();
     innerDst.size = size;
 }
@@ -1303,31 +1307,55 @@ void
 Image::setLabel(const String &value)
 {
     m_label = value;
-    m_description.label = m_label.c_str();
+    m_imageDescription.label = m_label.c_str();
 }
 
 sg_image
-Image::handle() const NANOEM_DECL_NOEXCEPT
+Image::imageHandle() const NANOEM_DECL_NOEXCEPT
 {
-    return m_handle;
+    return m_imageHandle;
 }
 
 void
-Image::setHandle(sg_image value)
+Image::setImageHandle(sg_image value)
 {
-    m_handle = value;
+    m_imageHandle = value;
+}
+
+sg_sampler
+Image::samplerHandle() const NANOEM_DECL_NOEXCEPT
+{
+    return m_samplerHandle;
+}
+
+void
+Image::setSamplerHandle(sg_sampler value)
+{
+    m_samplerHandle = value;
 }
 
 sg_image_desc
-Image::description() const NANOEM_DECL_NOEXCEPT
+Image::imageDescription() const NANOEM_DECL_NOEXCEPT
 {
-    return m_description;
+    return m_imageDescription;
+}
+
+sg_sampler_desc
+Image::samplerDescription() const NANOEM_DECL_NOEXCEPT
+{
+    return m_samplerDescription;
 }
 
 void
-Image::setDescription(const sg_image_desc &value)
+Image::setImageDescription(const sg_image_desc &value)
 {
-    m_description = value;
+    m_imageDescription = value;
+}
+
+void
+Image::setSamplerDescription(const sg_sampler_desc &value)
+{
+    m_samplerDescription = value;
 }
 
 const ByteArray *
@@ -1417,16 +1445,18 @@ ImageLoader::decodePFM(const ByteArray &bytes, Error &error)
 }
 
 void
-ImageLoader::copyImageDescrption(const sg_image_desc &desc, Image *image)
+ImageLoader::copySampledImageDescrption(
+    const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc, Image *image)
 {
-    image->setDescription(desc);
-    const sg_range &src = desc.data.subimage[0][0];
+    image->setImageDescription(imageDesc);
+    image->setSamplerDescription(samplerDesc);
+    const sg_range &src = imageDesc.data.subimage[0][0];
     const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(src.ptr);
     image->setOriginData(dataPtr, src.size);
-    if (desc.num_mipmaps > 1) {
-        const int numMipmaps = desc.num_mipmaps - 1;
+    if (imageDesc.num_mipmaps > 1) {
+        const int numMipmaps = imageDesc.num_mipmaps - 1;
         for (int i = 0; i < numMipmaps; i++) {
-            const sg_range &innerSrc = desc.data.subimage[0][i + 1];
+            const sg_range &innerSrc = imageDesc.data.subimage[0][i + 1];
             const nanoem_u8_t *innerDataPtr = static_cast<const nanoem_u8_t *>(innerSrc.ptr);
             image->setMipmapData(i, innerDataPtr, innerSrc.size);
         }
@@ -1499,8 +1529,6 @@ ImageLoader::fill1x1PixelImage(const nanoem_u32_t *pixel, sg_image_desc &desc) N
     Inline::clearZeroMemory(desc);
     desc.width = desc.height = desc.sample_count = 1;
     desc.type = SG_IMAGETYPE_2D;
-    desc.mag_filter = desc.min_filter = SG_FILTER_NEAREST;
-    desc.wrap_u = desc.wrap_v = SG_WRAP_REPEAT;
     desc.pixel_format = SG_PIXELFORMAT_RGBA8;
     desc.data.subimage[0][0].ptr = pixel;
     desc.data.subimage[0][0].size = sizeof(*pixel);
@@ -1625,16 +1653,18 @@ ImageLoader::decode(
 IImageView *
 ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDrawable *drawable, Error &error)
 {
-    sg_image_desc desc;
+    sg_image_desc imageDesc;
+    sg_sampler_desc samplerDesc;
     IImageView *imageView = nullptr;
     nanoem_u8_t *decodedImagePtr = nullptr;
-    Inline::clearZeroMemory(desc);
+    Inline::clearZeroMemory(imageDesc);
+    Inline::clearZeroMemory(samplerDesc);
     if (decodeImageWithSTB(
-            container.m_dataPtr, container.m_dataSize, container.m_name.c_str(), desc, &decodedImagePtr, error)) {
-        desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
-        desc.max_anisotropy = container.m_anisotropy;
-        desc.wrap_u = desc.wrap_v = container.m_wrap;
-        imageView = drawable->uploadImage(container.m_name, desc);
+            container.m_dataPtr, container.m_dataSize, container.m_name.c_str(), imageDesc, &decodedImagePtr, error)) {
+        samplerDesc.mag_filter = samplerDesc.min_filter = SG_FILTER_LINEAR;
+        samplerDesc.max_anisotropy = container.m_anisotropy;
+        samplerDesc.wrap_u = samplerDesc.wrap_v = container.m_wrap;
+        imageView = drawable->uploadImage(container.m_name, imageDesc, samplerDesc);
         releaseDecodedImageWithSTB(&decodedImagePtr);
     }
     else if (container.m_dataSize >= sizeof(image::DDS::kSignature) &&
@@ -1643,11 +1673,11 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         MemoryReader reader(&bytes);
         Error innerError;
         if (image::DDS *dds = decodeDDS(&reader, innerError)) {
-            dds->setImageDescription(desc);
-            desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
-            desc.max_anisotropy = container.m_anisotropy;
-            desc.wrap_u = desc.wrap_v = container.m_wrap;
-            imageView = drawable->uploadImage(container.m_name, desc);
+            dds->setImageDescription(imageDesc);
+            samplerDesc.mag_filter = samplerDesc.min_filter = SG_FILTER_LINEAR;
+            samplerDesc.max_anisotropy = container.m_anisotropy;
+            samplerDesc.wrap_u = samplerDesc.wrap_v = container.m_wrap;
+            imageView = drawable->uploadImage(container.m_name, imageDesc, samplerDesc);
             nanoem_delete(dds);
         }
         else if (innerError.hasReason()) {

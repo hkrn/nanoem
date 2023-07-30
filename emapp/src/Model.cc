@@ -760,18 +760,18 @@ void
 Model::setStandardPipelineDescription(sg_pipeline_desc &desc)
 {
     setCommonPipelineDescription(desc);
-    sg_layout_desc &ld = desc.layout;
-    ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_info), SG_VERTEXFORMAT_FLOAT4 };
+    sg_vertex_layout_state &ld = desc.layout;
+    ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_info), SG_VERTEXFORMAT_FLOAT4 };
 }
 
 void
 Model::setEdgePipelineDescription(sg_pipeline_desc &desc)
 {
     setCommonPipelineDescription(desc);
-    sg_layout_desc &ld = desc.layout;
-    ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_edge), SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_info), SG_VERTEXFORMAT_FLOAT4 };
+    sg_vertex_layout_state &ld = desc.layout;
+    ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_edge), SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_info), SG_VERTEXFORMAT_FLOAT4 };
 }
 
 void
@@ -1409,17 +1409,19 @@ Model::uploadArchive(const Archiver &archiver, Progress &progress, Error &error)
             imageLoader->decode(bytes, item->m_filename, this, item->m_wrap, item->m_flags, error);
         }
         else {
-            sg_image_desc desc;
+            sg_image_desc imageDesc;
+            sg_sampler_desc samplerDesc;
             if (EnumUtils::isEnabled(item->m_flags, ImageLoader::kFlagsFallbackWhiteOpaque)) {
-                ImageLoader::fill1x1WhitePixelImage(desc);
+                ImageLoader::fill1x1WhitePixelImage(imageDesc);
             }
             else if (EnumUtils::isEnabled(item->m_flags, ImageLoader::kFlagsFallbackBlackOpaque)) {
-                ImageLoader::fill1x1BlackPixelImage(desc);
+                ImageLoader::fill1x1BlackPixelImage(imageDesc);
             }
             else {
-                ImageLoader::fill1x1TransparentPixelImage(desc);
+                ImageLoader::fill1x1TransparentPixelImage(imageDesc);
             }
-            internalUploadImage(item->m_filename, desc, false);
+            Inline::clearZeroMemory(samplerDesc);
+            internalUploadImage(item->m_filename, imageDesc, samplerDesc, false);
         }
     }
     clearAllLoadingImageItems();
@@ -1456,17 +1458,19 @@ Model::loadAllImages(Progress &progress, Error &error)
             break;
         }
         else if (!imageLoader->load(fileURI, this, item->m_wrap, item->m_flags, error)) {
-            sg_image_desc desc;
+            sg_image_desc imageDesc;
+            sg_sampler_desc samplerDesc;
             if (EnumUtils::isEnabled(item->m_flags, ImageLoader::kFlagsFallbackWhiteOpaque)) {
-                ImageLoader::fill1x1WhitePixelImage(desc);
+                ImageLoader::fill1x1WhitePixelImage(imageDesc);
             }
             else if (EnumUtils::isEnabled(item->m_flags, ImageLoader::kFlagsFallbackBlackOpaque)) {
-                ImageLoader::fill1x1BlackPixelImage(desc);
+                ImageLoader::fill1x1BlackPixelImage(imageDesc);
             }
             else {
-                ImageLoader::fill1x1TransparentPixelImage(desc);
+                ImageLoader::fill1x1TransparentPixelImage(imageDesc);
             }
-            internalUploadImage(item->m_filename, desc, false);
+            Inline::clearZeroMemory(samplerDesc);
+            internalUploadImage(item->m_filename, imageDesc, samplerDesc, false);
         }
         progress.increment();
     }
@@ -2838,9 +2842,9 @@ Model::removeOutsideParent(const nanoem_model_bone_t *key)
 }
 
 IImageView *
-Model::uploadImage(const String &filename, const sg_image_desc &desc)
+Model::uploadImage(const String &filename, const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc)
 {
-    return internalUploadImage(filename, desc, true);
+    return internalUploadImage(filename, imageDesc, samplerDesc, true);
 }
 
 int
@@ -2874,20 +2878,20 @@ Model::handlePerformSkinningVertexTransform(void *opaque, size_t index)
 void
 Model::setCommonPipelineDescription(sg_pipeline_desc &desc)
 {
-    sg_layout_desc &ld = desc.layout;
+    sg_vertex_layout_state &ld = desc.layout;
     ld.buffers[0].stride = sizeof(VertexUnit);
     ld.attrs[1] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_normal)), SG_VERTEXFORMAT_FLOAT3 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_normal)), SG_VERTEXFORMAT_FLOAT3 };
     ld.attrs[2] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_texcoord)), SG_VERTEXFORMAT_FLOAT2 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_texcoord)), SG_VERTEXFORMAT_FLOAT2 };
     ld.attrs[3] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[0])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[0])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[4] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[1])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[1])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[5] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[2])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[2])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[6] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[3])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[3])), SG_VERTEXFORMAT_FLOAT4 };
     desc.index_type = SG_INDEXTYPE_UINT32;
     Project::setStandardDepthStencilState(desc.depth, desc.stencil);
 }
@@ -2945,10 +2949,11 @@ Model::createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32
 }
 
 Image *
-Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist)
+Model::internalUploadImage(
+    const String &filename, const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc, bool fileExist)
 {
     SG_PUSH_GROUPF("Model::internalUploadImage(name=%s, width=%d, height=%d, fileExist=%d)", filename.c_str(),
-        desc.width, desc.height, fileExist);
+        imageDesc.width, imageDesc.height, fileExist);
     Image *image = nullptr;
     FileEntityMap::const_iterator it = m_imageURIs.find(filename.c_str());
     if (it != m_imageURIs.end()) {
@@ -2956,7 +2961,7 @@ Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bo
         ImageMap::iterator it2 = m_imageHandles.find(imageURI);
         if (it2 != m_imageHandles.end()) {
             image = it2->second;
-            ImageLoader::copyImageDescrption(desc, image);
+            ImageLoader::copySampledImageDescrption(imageDesc, samplerDesc, image);
             if (Inline::isDebugLabelEnabled()) {
                 char label[Inline::kMarkerStringLength];
                 StringUtils::format(label, sizeof(label), "Models/%s/%s", canonicalNameConstString(), filename.c_str());
@@ -2977,15 +2982,17 @@ Model::internalUploadImage(const String &filename, const sg_image_desc &desc, bo
                     if (nanoemUnicodeStringFactoryCompareString(factory, scope.value(), texturePath) == 0) {
                         if (model::Material *material = model::Material::cast(materialPtr)) {
                             /* fetch left-bottom corner pixel */
-                            const nanoem_rsize_t offset = nanoem_rsize_t(glm::max(desc.height - 1, 0)) * desc.width * 4;
-                            const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(desc.data.subimage[0][0].ptr);
+                            const nanoem_rsize_t offset =
+                                nanoem_rsize_t(glm::max(imageDesc.height - 1, 0)) * imageDesc.width * 4;
+                            const nanoem_u8_t *dataPtr =
+                                static_cast<const nanoem_u8_t *>(imageDesc.data.subimage[0][0].ptr);
                             const Vector4 toonColor(glm::make_vec4(dataPtr + offset));
                             material->setToonColor(toonColor / Vector4(0xff));
                         }
                     }
                 }
             }
-            EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->handle().id);
+            EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->imageHandle().id);
         }
     }
     SG_POP_GROUP();
@@ -3008,7 +3015,7 @@ Model::updateDiffuseImage(const nanoem_model_material_t *materialPtr, sg_wrap &m
         if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(utf8Path))) {
             m_screenImage = nanoem_new(Image);
             m_screenImage->setFilename(Project::kViewportSecondaryName);
-            m_screenImage->setHandle(m_project->viewportSecondaryImage());
+            m_screenImage->setImageHandle(m_project->viewportSecondaryImage());
             material->setDiffuseImage(m_screenImage);
         }
         else {
@@ -3213,7 +3220,8 @@ Model::internalClear()
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
         Image *image = it->second;
-        SG_INSERT_MARKERF("Model::internalClear(image=%d, name=%s)", image->handle().id, image->filenameConstString());
+        SG_INSERT_MARKERF(
+            "Model::internalClear(image=%d, name=%s)", image->imageHandle().id, image->filenameConstString());
         image->destroy();
         nanoem_delete(image);
     }
@@ -4049,7 +4057,7 @@ Model::drawColor(bool scriptExternalColor)
     const String &passType = isShadowMapEnabled() && m_project->isShadowMapEnabled() ? Effect::kPassTypeObjectSelfShadow
                                                                                      : Effect::kPassTypeObject;
     if (m_screenImage) {
-        m_screenImage->setHandle(m_project->viewportSecondaryImage());
+        m_screenImage->setImageHandle(m_project->viewportSecondaryImage());
     }
     for (nanoem_rsize_t i = 0; i < numMaterials; i++) {
         const nanoem_model_material_t *materialPtr = materials[i];

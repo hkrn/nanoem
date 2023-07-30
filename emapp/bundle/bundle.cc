@@ -158,7 +158,7 @@ sg_query_shader_info(sg_shader shd)
 
 #define SOKOL_GFX_INCLUDED
 #define SOKOL_GFX_IMGUI_IMPL
-#include "sokol/util/sokol_gfx_imgui.h"
+//#include "sokol/util/sokol_gfx_imgui.h"
 
 #if BX_PLATFORM_WINDOWS
 #include <Windows.h>

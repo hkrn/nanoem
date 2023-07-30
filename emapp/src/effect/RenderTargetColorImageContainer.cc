@@ -36,7 +36,9 @@ RenderTargetColorImageContainer::RenderTargetColorImageContainer(const String &n
     , m_dirty(false)
 {
     Inline::clearZeroMemory(m_colorImageDescription);
+    Inline::clearZeroMemory(m_colorSamplerDescription);
     m_colorImage = m_resolveImage = { SG_INVALID_ID };
+    m_sampler = { SG_INVALID_ID };
     if (Inline::isDebugLabelEnabled()) {
         m_colorImageDescription.label = m_name.c_str();
     }
@@ -49,6 +51,7 @@ RenderTargetColorImageContainer::RenderTargetColorImageContainer(const RenderTar
     , m_colorImage(value.m_colorImage)
     , m_resolveImage(value.m_resolveImage)
     , m_colorImageDescription(value.m_colorImageDescription)
+    , m_colorSamplerDescription(value.m_colorSamplerDescription)
     , m_sharedTexture(value.m_sharedTexture)
     , m_dirty(false)
 {
@@ -82,6 +85,9 @@ RenderTargetColorImageContainer::create(Effect *effect)
     }
     nanoem_assert(sg::query_image_state(m_colorImage) == SG_RESOURCESTATE_VALID, "image must be valid");
     effect->setImageLabel(m_colorImage, m_name);
+    m_sampler = sg::make_sampler(&m_colorSamplerDescription);
+    effect->setSamplerLabel(m_sampler, m_name.c_str());
+    nanoem_assert(sg::query_sampler_state(m_sampler) == SG_RESOURCESTATE_VALID, "sampler must be valid");
     SG_POP_GROUP();
 }
 
@@ -148,9 +154,14 @@ void
 RenderTargetColorImageContainer::setColorImageDescription(const sg_image_desc &value)
 {
     m_colorImageDescription = value;
-    if (m_colorImageDescription.num_mipmaps == 1) {
-        RenderState::normalizeMinFilter(m_colorImageDescription.min_filter);
-    }
+    m_dirty = true;
+}
+
+void
+RenderTargetColorImageContainer::setColorSamplerDescription(const sg_sampler_desc &value)
+{
+    m_colorSamplerDescription = value;
+    m_dirty = true;
 }
 
 void
@@ -199,6 +210,12 @@ RenderTargetColorImageContainer::colorImageDescription() const NANOEM_DECL_NOEXC
     return m_colorImageDescription;
 }
 
+const sg_sampler_desc &
+RenderTargetColorImageContainer::samplerImageDescription() const NANOEM_DECL_NOEXCEPT
+{
+    return m_colorSamplerDescription;
+}
+
 const Vector2
 RenderTargetColorImageContainer::scaleFactor() const NANOEM_DECL_NOEXCEPT
 {
@@ -228,6 +245,12 @@ sg_image
 RenderTargetColorImageContainer::resolveImageHandle() const NANOEM_DECL_NOEXCEPT
 {
     return m_resolveImage;
+}
+
+sg_sampler
+RenderTargetColorImageContainer::samplerHandle() const NANOEM_DECL_NOEXCEPT
+{
+    return m_sampler;
 }
 
 bool

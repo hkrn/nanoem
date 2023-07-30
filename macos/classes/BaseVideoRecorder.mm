@@ -38,13 +38,11 @@ BaseVideoRecorder::BaseVideoRecorder(Project *projectPtr)
     , m_pixelFormat(SG_PIXELFORMAT_RGBA8, kCVPixelFormatType_32BGRA)
     , m_lastAppendSample(Motion::kMaxFrameIndex, Motion::kMaxFrameIndex)
 {
-    Inline::clearZeroMemory(m_description);
+    Inline::clearZeroMemory(m_imageDescription);
     Inline::clearZeroMemory(m_receivePassDesc);
-    m_description.pixel_format = SG_PIXELFORMAT_RGBA8;
-    m_description.usage = SG_USAGE_IMMUTABLE;
-    m_description.mag_filter = m_description.min_filter = SG_FILTER_LINEAR;
-    m_description.wrap_u = m_description.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-    m_description.render_target = true;
+    m_imageDescription.pixel_format = SG_PIXELFORMAT_RGBA8;
+    m_imageDescription.usage = SG_USAGE_IMMUTABLE;
+    m_imageDescription.render_target = true;
     m_depthImage = { SG_INVALID_ID };
     m_receivePass = { SG_INVALID_ID };
     m_blitter = nanoem_new(internal::BlitPass(projectPtr, false));
@@ -496,8 +494,6 @@ BaseVideoRecorder::updateAllMSAAImages(int width, int height)
         desc.usage = SG_USAGE_IMMUTABLE;
         desc.width = width;
         desc.height = height;
-        desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
-        desc.wrap_u = desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
         desc.render_target = true;
         desc.sample_count = 1;
         m_receivePassDesc.color_attachments[0].image = sg::make_image(&desc);

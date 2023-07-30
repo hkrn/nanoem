@@ -194,10 +194,14 @@ public:
     void setMipmapData(nanoem_rsize_t index, const nanoem_u8_t *data, nanoem_rsize_t size);
     void setLabel(const String &value);
 
-    sg_image handle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setHandle(sg_image value);
-    sg_image_desc description() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
-    void setDescription(const sg_image_desc &value);
+    sg_image imageHandle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setImageHandle(sg_image value);
+    sg_sampler samplerHandle() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setSamplerHandle(sg_sampler value);
+    sg_image_desc imageDescription() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    sg_sampler_desc samplerDescription() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
+    void setImageDescription(const sg_image_desc &value);
+    void setSamplerDescription(const sg_sampler_desc &value);
     const ByteArray *originData() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     const ByteArray *mipmapData(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT_OVERRIDE;
     const char *filenameConstString() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
@@ -209,8 +213,10 @@ public:
 private:
     String m_filename;
     String m_label;
-    sg_image m_handle;
-    sg_image_desc m_description;
+    sg_image m_imageHandle;
+    sg_sampler m_samplerHandle;
+    sg_image_desc m_imageDescription;
+    sg_sampler_desc m_samplerDescription;
     ByteArray m_originData;
     ByteArray m_mipmapData[SG_MAX_MIPMAPS];
     bool m_fileExist;
@@ -228,7 +234,8 @@ public:
     static image::APNG *decodeAPNG(ISeekableReader *reader, Error &error);
     static image::DDS *decodeDDS(IReader *reader, Error &error);
     static image::PFM *decodePFM(const ByteArray &bytes, Error &error);
-    static void copyImageDescrption(const sg_image_desc &desc, Image *image);
+    static void copySampledImageDescrption(
+        const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc, Image *image);
     static bool validateImageSize(const sg_image_desc &desc, const char *name, Error &error);
     static bool isScreenBMP(const char *path) NANOEM_DECL_NOEXCEPT;
     static void fill1x1PixelImage(const nanoem_u32_t *pixel, sg_image_desc &desc) NANOEM_DECL_NOEXCEPT;

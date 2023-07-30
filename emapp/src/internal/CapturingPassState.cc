@@ -210,7 +210,7 @@ CapturingPassState::ImageBlitter::draw(sg_pipeline pipeline, sg_pass dest, sg_im
 {
     sg_pass_action pa;
     sg::PassBlock::initializeLoadStoreAction(pa);
-    m_bindings.fs_images[0] = source;
+    m_bindings.fs.images[0] = source;
     sg::PassBlock pb(m_project->sharedBatchDrawQueue(), dest, pa);
     pb.applyPipelineBindings(pipeline, m_bindings);
     pb.draw(0, 4);
@@ -225,35 +225,29 @@ CapturingPassState::ImageBlitter::setupShaderDescription(sg_shader_desc &desc)
         desc.fs.bytecode.size = g_nanoem_color_transform_ps_dxbc_size;
         desc.vs.bytecode.ptr = g_nanoem_color_transform_vs_dxbc_data;
         desc.vs.bytecode.size = g_nanoem_color_transform_vs_dxbc_size;
-        desc.fs.images[0] = sg_shader_image_desc { nullptr, SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
     }
     else if (sg::is_backend_metal(backend)) {
         desc.fs.bytecode.ptr = g_nanoem_color_transform_fs_msl_macos_data;
         desc.fs.bytecode.size = g_nanoem_color_transform_fs_msl_macos_size;
         desc.vs.bytecode.ptr = g_nanoem_color_transform_vs_msl_macos_data;
         desc.vs.bytecode.size = g_nanoem_color_transform_vs_msl_macos_size;
-        desc.fs.images[0] = sg_shader_image_desc { nullptr, SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
     }
     else if (backend == SG_BACKEND_GLCORE33) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_fs_glsl_core33_data);
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_vs_glsl_core33_data);
-#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
-#else
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D,
-            SG_SAMPLERTYPE_FLOAT };
-#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
     else if (backend == SG_BACKEND_GLES3) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_fs_glsl_es3_data);
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_vs_glsl_es3_data);
-#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
-#else
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D,
-            SG_SAMPLERTYPE_FLOAT };
-#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     }
+    desc.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+    desc.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+#if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
+    desc.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
+#else
+    desc.fs.image_sampler_pairs[0] =
+        sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combinedu_textureu_textureSampler" };
+#endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
     desc.vs.entry = "nanoemVSMain";
     desc.fs.entry = "nanoemPSMain";
     desc.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };
@@ -274,18 +268,18 @@ CapturingPassState::ImageBlitter::setupPipelineDescription(sg_pipeline_desc &des
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLE_STRIP;
     desc.face_winding = SG_FACEWINDING_CW;
     desc.cull_mode = SG_CULLMODE_BACK;
-    sg_layout_desc &ld = desc.layout;
+    sg_vertex_layout_state &ld = desc.layout;
     ld.buffers[0].stride = sizeof(sg::QuadVertexUnit);
-    ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[1] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[2] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[1] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[2] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
     const sg_backend backend = sg::query_backend();
     if (backend == SG_BACKEND_D3D11) {
-        ld.attrs[3] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
-        ld.attrs[4] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
-        ld.attrs[5] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
-        ld.attrs[6] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
-        ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT4 };
+        ld.attrs[3] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
+        ld.attrs[4] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
+        ld.attrs[5] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
+        ld.attrs[6] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT4 };
+        ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT4 };
     }
 }
 
