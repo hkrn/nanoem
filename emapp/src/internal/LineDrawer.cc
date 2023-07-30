@@ -150,16 +150,16 @@ LineDrawer::draw(sg::PassBlock &pb, const Option &option)
             pd.depth.compare = SG_COMPAREFUNC_LESS_EQUAL;
         }
         pd.sample_count = format.numSamples();
-        sg_layout_desc &ld = pd.layout;
+        sg_vertex_layout_state &ld = pd.layout;
         ld.buffers[0].stride = sizeof(sg::LineVertexUnit);
-        ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-        ld.attrs[1] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-        ld.attrs[2] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-        ld.attrs[3] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-        ld.attrs[4] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-        ld.attrs[5] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-        ld.attrs[6] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-        ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(sg::LineVertexUnit, m_color), SG_VERTEXFORMAT_UBYTE4N };
+        ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+        ld.attrs[1] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+        ld.attrs[2] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+        ld.attrs[3] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+        ld.attrs[4] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+        ld.attrs[5] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+        ld.attrs[6] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+        ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(sg::LineVertexUnit, m_color), SG_VERTEXFORMAT_UBYTE4N };
         pd.primitive_type = option.m_primitiveType;
         pd.index_type = option.m_indexType;
         char label[Inline::kMarkerStringLength];

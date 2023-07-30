@@ -17,8 +17,10 @@ public:
     virtual ~IImageView() NANOEM_DECL_NOEXCEPT
     {
     }
-    virtual sg_image handle() const NANOEM_DECL_NOEXCEPT = 0;
-    virtual sg_image_desc description() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual sg_image imageHandle() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual sg_sampler samplerHandle() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual sg_image_desc imageDescription() const NANOEM_DECL_NOEXCEPT = 0;
+    virtual sg_sampler_desc samplerDescription() const NANOEM_DECL_NOEXCEPT = 0;
     virtual const ByteArray *originData() const NANOEM_DECL_NOEXCEPT = 0;
     virtual const ByteArray *mipmapData(nanoem_rsize_t index) const NANOEM_DECL_NOEXCEPT = 0;
     virtual const char *filenameConstString() const NANOEM_DECL_NOEXCEPT = 0;

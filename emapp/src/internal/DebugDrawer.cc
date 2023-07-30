@@ -120,7 +120,7 @@ void
 DebugDrawer::drawGlyphList(const dd::DrawVertex *glyphs, int count, dd::GlyphTextureHandle glyphTex)
 {
     sg_pipeline pipeline;
-    m_bindings.fs_images[0].id = static_cast<nanoem_u32_t>(reinterpret_cast<intptr_t>(glyphTex));
+    m_bindings.fs.images[0].id = static_cast<nanoem_u32_t>(reinterpret_cast<intptr_t>(glyphTex));
     setupGlyphPipeline(pipeline);
     sg_buffer buffer = createBuffer(glyphs, count);
     draw(pipeline, buffer, count);
@@ -206,7 +206,8 @@ DebugDrawer::setupPointPipeline(bool depthEnabled, sg_pipeline &pipelineRef)
         m_points.insert(tinystl::make_pair(key, pipeline));
         pipelineRef = pipeline;
     }
-    m_bindings.fs_images[0] = m_project->sharedFallbackImage();
+    m_bindings.fs.images[0] = m_project->sharedFallbackImage();
+    m_bindings.fs.samplers[0] = m_project->sharedFallbackSampler();
 }
 
 void
@@ -242,7 +243,8 @@ DebugDrawer::setupLinePipeline(bool depthEnabled, sg_pipeline &pipelineRef)
         m_lines.insert(tinystl::make_pair(key, pipeline));
         pipelineRef = pipeline;
     }
-    m_bindings.fs_images[0] = m_project->sharedFallbackImage();
+    m_bindings.fs.images[0] = m_project->sharedFallbackImage();
+    m_bindings.fs.samplers[0] = m_project->sharedFallbackSampler();
 }
 
 void
@@ -284,16 +286,16 @@ DebugDrawer::initializeCommonPipelineDescription(sg_pipeline_desc &desc)
     desc.colors[0].pixel_format = m_project->viewportPixelFormat();
     desc.sample_count = m_project->sampleCount();
     Project::setAlphaBlendMode(desc.colors[0]);
-    sg_layout_desc &ld = desc.layout;
+    sg_vertex_layout_state &ld = desc.layout;
     ld.buffers[0].stride = sizeof(dd::DrawVertex);
-    ld.attrs[0] = sg_vertex_attr_desc { 0, 0, SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[1] = sg_vertex_attr_desc { 0, 0, SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[2] = sg_vertex_attr_desc { 0, 8, SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[3] = sg_vertex_attr_desc { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[4] = sg_vertex_attr_desc { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[5] = sg_vertex_attr_desc { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[6] = sg_vertex_attr_desc { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[7] = sg_vertex_attr_desc { 0, 12, SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[0] = sg_vertex_attr_state { 0, 0, SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[1] = sg_vertex_attr_state { 0, 0, SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[2] = sg_vertex_attr_state { 0, 8, SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[3] = sg_vertex_attr_state { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[4] = sg_vertex_attr_state { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[5] = sg_vertex_attr_state { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[6] = sg_vertex_attr_state { 0, 0, SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[7] = sg_vertex_attr_state { 0, 12, SG_VERTEXFORMAT_FLOAT3 };
 }
 
 void
@@ -323,13 +325,16 @@ DebugDrawer::setupShader()
             desc.vs.source = reinterpret_cast<const char *>(g_nanoem_debug_vs_glsl_es3_data);
             desc.fs.source = reinterpret_cast<const char *>(g_nanoem_debug_fs_glsl_es3_data);
         }
-        desc.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
         desc.vs.entry = "nanoemVSMain";
         desc.vs.uniform_blocks[0].size = sizeof(Matrix4x4);
+        desc.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+        desc.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_30", SG_UNIFORMTYPE_MAT4, 1 };
+        desc.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
 #else
         desc.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "ui_parameters_t", SG_UNIFORMTYPE_MAT4, 1 };
+        desc.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
 #endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
         desc.fs.entry = "nanoemPSMain";
         desc.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };

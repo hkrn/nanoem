@@ -450,6 +450,7 @@ private:
     sg_bindings m_bindings;
     sg_pipeline_desc m_basePipelineDescription;
     sg_image m_atlasImage;
+    sg_sampler m_atlasSampler;
     sg_image m_transparentTileImage;
     ScreenCursor m_screenCursor;
     uint64_t m_elapsedTime;

@@ -72,7 +72,7 @@ protected:
     void enableOpenGLCompatibility();
     void enableMetalCompatibility();
 
-    sg_image_desc m_description;
+    sg_image_desc m_imageDescription;
     sg_pass m_videoFramePass = { SG_INVALID_ID };
     sg_image m_colorImage = { SG_INVALID_ID };
     sg_image m_depthImage = { SG_INVALID_ID };

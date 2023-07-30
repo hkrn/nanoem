@@ -387,7 +387,7 @@ Technique::match(const Accessory::Material *material) const NANOEM_DECL_NOEXCEPT
             material->sphereTextureMapType() == NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_MULTIPLY ||
             material->sphereTextureMapType() == NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD;
         const IImageView *imagePtr = material->diffuseImage();
-        const int hasTexture = imagePtr && sg::is_valid(imagePtr->handle()) ? 1 : 0;
+        const int hasTexture = imagePtr && sg::is_valid(imagePtr->imageHandle()) ? 1 : 0;
         const int hasToonTexture = 0;
         if (m_useDiffuseTexture >= 0 && !isSphereMapTexture) {
             found = found && (hasTexture == m_useDiffuseTexture);
@@ -409,11 +409,11 @@ Technique::match(const nanoem_model_material_t *materialPtr) const NANOEM_DECL_N
     bool found = true;
     if (m_useDiffuseTexture >= 0) {
         const IImageView *imagePtr = material->diffuseImage();
-        found = found && ((imagePtr && sg::is_valid(imagePtr->handle()) ? 1 : 0) == m_useDiffuseTexture);
+        found = found && ((imagePtr && sg::is_valid(imagePtr->imageHandle()) ? 1 : 0) == m_useDiffuseTexture);
     }
     if (m_useSphereMapTexture >= 0) {
         const IImageView *imagePtr = material->sphereMapImage();
-        const int hasSphereMapTexture = imagePtr && sg::is_valid(imagePtr->handle()) &&
+        const int hasSphereMapTexture = imagePtr && sg::is_valid(imagePtr->imageHandle()) &&
                 nanoemModelMaterialGetSphereMapTextureType(materialPtr) !=
                     NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE
             ? 1
@@ -459,18 +459,18 @@ Technique::overrideScenePipelineDescription(
     body.primitive_type = SG_PRIMITIVETYPE_TRIANGLE_STRIP;
     body.face_winding = SG_FACEWINDING_CW;
     body.cull_mode = SG_CULLMODE_BACK;
-    sg_layout_desc &ld = body.layout;
+    sg_vertex_layout_state &ld = body.layout;
     Inline::clearZeroMemory(ld.attrs);
     ld.buffers[0].stride = sizeof(sg::QuadVertexUnit);
     /* dummy location to be same as Accessory/Model vertex description */
-    ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[1] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[2] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[3] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[4] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[5] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[6] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[1] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[2] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[3] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[4] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[5] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[6] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_texcoord), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
     overrideColorState(drawable, pd, m_pipelineDescription.colors[0], body.colors[0]);
     overrideDepthState(pd, m_pipelineDescription.depth, body.depth);
     overrideStencilState(pd, m_pipelineDescription.stencil, body.stencil);
@@ -545,8 +545,8 @@ Technique::mutablePipelineDescription() NANOEM_DECL_NOEXCEPT
 }
 
 void
-Technique::overrideColorState(const IDrawable *drawable, const PipelineDescriptor &pd, const sg_color_state &csrc,
-    sg_color_state &cdst) NANOEM_DECL_NOEXCEPT
+Technique::overrideColorState(const IDrawable *drawable, const PipelineDescriptor &pd,
+    const sg_color_target_state &csrc, sg_color_target_state &cdst) NANOEM_DECL_NOEXCEPT
 {
     const sg_blend_state &src = csrc.blend;
     sg_blend_state &dst = cdst.blend;

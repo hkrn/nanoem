@@ -88,8 +88,8 @@
 #define PAR_SHAPES_T uint32_t
 #include "par/par_shapes.h"
 
-#define SOKOL_GFX_INCLUDED /* stub */
-#include "sokol/util/sokol_gfx_imgui.h"
+// #define SOKOL_GFX_INCLUDED /* stub */
+// #include "sokol/util/sokol_gfx_imgui.h"
 
 namespace nanoem {
 namespace internal {
@@ -1166,10 +1166,12 @@ ImGuiWindow::ImGuiWindow(BaseApplicationService *application)
 
 ImGuiWindow::~ImGuiWindow()
 {
+#ifdef SOKOL_GFX_IMGUI_INCLUDED
     if (m_debugger) {
         nanoem_delete(static_cast<sg_imgui_t *>(m_debugger));
         m_debugger = nullptr;
     }
+#endif /* SOKOL_GFX_IMGUI_INCLUDED */
     for (LazyExecutionCommandList::const_iterator it = m_lazyExecutionCommands.begin(),
                                                   end = m_lazyExecutionCommands.end();
          it != end; ++it) {
@@ -1354,13 +1356,15 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
     }
     sd.vs.entry = "nanoemVSMain";
     sd.fs.uniform_blocks[0].size = sd.vs.uniform_blocks[0].size = sizeof(UniformBlock);
+    sd.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+    sd.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
-    sd.fs.images[0] = sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+    sd.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
     sd.fs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_37", SG_UNIFORMTYPE_FLOAT4, 4 };
     sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_19", SG_UNIFORMTYPE_FLOAT4, 4 };
 #else
-    sd.fs.images[0] =
-        sg_shader_image_desc { "SPIRV_Cross_Combinedu_textureu_textureSampler", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+    sd.fs.image_sampler_pairs[0] =
+        sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combinedu_textureu_textureSampler" };
     sd.fs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "ui_parameters_t", SG_UNIFORMTYPE_FLOAT4, 4 };
     sd.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "ui_parameters_t", SG_UNIFORMTYPE_FLOAT4, 4 };
 #endif /* NANOEM_ENABLE_SHADER_OPTIMIZED */
@@ -1385,16 +1389,16 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
 #else
     m_basePipelineDescription.index_type = SG_INDEXTYPE_UINT16;
 #endif
-    sg_layout_desc &ld = m_basePipelineDescription.layout;
+    sg_vertex_layout_state &ld = m_basePipelineDescription.layout;
     ld.buffers[0].stride = sizeof(VertexUnit);
-    ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[1] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
-    ld.attrs[2] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[3] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[4] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[5] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[6] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
-    ld.attrs[7] = sg_vertex_attr_desc { 0, offsetof(VertexUnit, m_color), SG_VERTEXFORMAT_UBYTE4N };
+    ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[1] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_position), SG_VERTEXFORMAT_FLOAT3 };
+    ld.attrs[2] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[3] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[4] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[5] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[6] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_color), SG_VERTEXFORMAT_UBYTE4N };
     m_basePipelineDescription.depth.write_enabled = false;
     m_basePipelineDescription.sample_count = 1;
     sg_blend_state &bs = m_basePipelineDescription.colors[0].blend;
@@ -1487,9 +1491,11 @@ ImGuiWindow::reset(Project *project)
 void
 ImGuiWindow::destroy() NANOEM_DECL_NOEXCEPT
 {
+#ifdef SOKOL_GFX_IMGUI_INCLUDED
     if (m_debugger) {
         sg_imgui_discard(static_cast<sg_imgui_t *>(m_debugger));
     }
+#endif /* SOKOL_GFX_IMGUI_INCLUDED */
     for (PipelineMap::iterator it = m_pipelines.begin(), end = m_pipelines.end(); it != end; ++it) {
         sg::destroy_pipeline(it->second);
     }
@@ -1540,14 +1546,18 @@ ImGuiWindow::setFontPointSize(nanoem_f32_t pointSize)
     id.width = width;
     id.height = height;
     id.pixel_format = SG_PIXELFORMAT_RGBA8;
-    id.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
-    id.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     sg_range &content = id.data.subimage[0][0];
     content.ptr = pixels;
     content.size = nanoem_rsize_t(4) * width * height;
     sg::destroy_image(m_atlasImage);
     m_atlasImage = sg::make_image(&id);
     nanoem_assert(sg::query_image_state(m_atlasImage) == SG_RESOURCESTATE_VALID, "font atlas must be valid");
+    sg_sampler_desc sd;
+    Inline::clearZeroMemory(sd);
+    sd.wrap_u = SG_WRAP_CLAMP_TO_EDGE;
+    sd.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+    m_atlasSampler = sg::make_sampler(&sd);
+    nanoem_assert(sg::query_sampler_state(m_atlasSampler) == SG_RESOURCESTATE_VALID, "font atlas must be valid");
 }
 
 void
@@ -1873,9 +1883,11 @@ ImGuiWindow::drawAllWindows(Project *project, IState *state, nanoem_u32_t flags)
 #if !defined(NDEBUG)
         ImGui::ShowDemoWindow();
 #endif
+#ifdef SOKOL_GFX_IMGUI_INCLUDED
         if (sg_imgui_t *debugger = static_cast<sg_imgui_t *>(m_debugger)) {
             sg_imgui_draw(debugger);
         }
+#endif /* SOKOL_GFX_IMGUI_INCLUDED */
         ImGui::Render();
         Buffer *buffer = &m_buffers[0];
         renderDrawList(project, ImGui::GetDrawData(), sampleCount, buffer, m_bindings, pb);
@@ -1998,6 +2010,7 @@ ImGuiWindow::isSGXDebuggerEnabled() const NANOEM_DECL_NOEXCEPT
 void
 ImGuiWindow::setSGXDebbugerEnabled(bool value)
 {
+#ifdef SOKOL_GFX_IMGUI_INCLUDED
     if (value && !m_debugger) {
         sg_imgui_t *debugger = nanoem_new(sg_imgui_t);
         sg_imgui_desc_t desc;
@@ -2011,6 +2024,9 @@ ImGuiWindow::setSGXDebbugerEnabled(bool value)
         sg_imgui_discard(debugger);
         nanoem_delete(debugger);
     }
+#else
+    BX_UNUSED_1(value);
+#endif /* SOKOL_GFX_IMGUI_INCLUDED */
 }
 
 ImGuiKey
@@ -5622,7 +5638,8 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
         pb.applyPipeline(pipeline);
         pb.applyUniformBlock(
             SG_SHADERSTAGE_VS, &uniformBlockWithTransparentColor, sizeof(uniformBlockWithTransparentColor));
-        bindingsRef.fs_images[0].id = m_atlasImage.id;
+        bindingsRef.fs.images[0] = m_atlasImage;
+        bindingsRef.fs.samplers[0] = m_atlasSampler;
         nanoem_u32_t savedTextureID = m_atlasImage.id, vertexBufferOffset = 0, indexBufferOffset = 0;
         for (int i = 0, numCmdLists = drawData->CmdListsCount; i < numCmdLists; i++) {
             const ImDrawList *cmdList = drawData->CmdLists[i];
@@ -5660,7 +5677,8 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
                     if (savedTextureID != image.id || savedVertexOffset != command.VtxOffset) {
                         savedTextureID = image.id;
                         savedVertexOffset = command.VtxOffset;
-                        bindingsRef.fs_images[0] = sg::is_valid(image) ? image : m_atlasImage;
+                        bindingsRef.fs.images[0] = sg::is_valid(image) ? image : m_atlasImage;
+                        bindingsRef.fs.samplers[0] = m_atlasSampler;
                         bindingsRef.vertex_buffer_offsets[0] =
                             vertexBufferOffset + savedVertexOffset * sizeof(ImGuiWindow::VertexUnit);
                         pb.applyBindings(bindingsRef);

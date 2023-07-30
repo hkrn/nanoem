@@ -161,6 +161,7 @@ PFN_sgx_alloc_buffer alloc_buffer = nullptr;
 PFN_sgx_alloc_image alloc_image = nullptr;
 PFN_sgx_alloc_pass alloc_pass = nullptr;
 PFN_sgx_alloc_pipeline alloc_pipeline = nullptr;
+PFN_sgx_alloc_sampler alloc_sampler = nullptr;
 PFN_sgx_alloc_shader alloc_shader = nullptr;
 PFN_sgx_append_buffer append_buffer = nullptr;
 PFN_sgx_apply_bindings apply_bindings = nullptr;
@@ -173,13 +174,15 @@ PFN_sgx_begin_pass begin_pass = nullptr;
 PFN_sgx_commit commit = nullptr;
 PFN_sgx_dealloc_buffer dealloc_buffer = nullptr;
 PFN_sgx_dealloc_image dealloc_image = nullptr;
-PFN_sgx_dealloc_shader dealloc_shader = nullptr;
-PFN_sgx_dealloc_pipeline dealloc_pipeline = nullptr;
 PFN_sgx_dealloc_pass dealloc_pass = nullptr;
+PFN_sgx_dealloc_pipeline dealloc_pipeline = nullptr;
+PFN_sgx_dealloc_sampler dealloc_sampler = nullptr;
+PFN_sgx_dealloc_shader dealloc_shader = nullptr;
 PFN_sgx_destroy_buffer destroy_buffer = nullptr;
 PFN_sgx_destroy_image destroy_image = nullptr;
 PFN_sgx_destroy_pass destroy_pass = nullptr;
 PFN_sgx_destroy_pipeline destroy_pipeline = nullptr;
+PFN_sgx_destroy_sampler destroy_sampler = nullptr;
 PFN_sgx_destroy_shader destroy_shader = nullptr;
 PFN_sgx_discard_context discard_context = nullptr;
 PFN_sgx_draw draw = nullptr;
@@ -189,16 +192,19 @@ PFN_sgx_label_buffer label_buffer = nullptr;
 PFN_sgx_label_image label_image = nullptr;
 PFN_sgx_label_pass label_pass = nullptr;
 PFN_sgx_label_pipeline label_pipeline = nullptr;
+PFN_sgx_label_sampler label_sampler = nullptr;
 PFN_sgx_label_shader label_shader = nullptr;
 PFN_sgx_fail_buffer fail_buffer = nullptr;
 PFN_sgx_fail_image fail_image = nullptr;
 PFN_sgx_fail_pass fail_pass = nullptr;
 PFN_sgx_fail_pipeline fail_pipeline = nullptr;
+PFN_sgx_fail_sampler fail_sampler = nullptr;
 PFN_sgx_fail_shader fail_shader = nullptr;
 PFN_sgx_init_buffer init_buffer = nullptr;
 PFN_sgx_init_image init_image = nullptr;
 PFN_sgx_init_pass init_pass = nullptr;
 PFN_sgx_init_pipeline init_pipeline = nullptr;
+PFN_sgx_init_sampler init_sampler = nullptr;
 PFN_sgx_init_shader init_shader = nullptr;
 PFN_sgx_install_trace_hooks install_trace_hooks = nullptr;
 PFN_sgx_isvalid isvalid = nullptr;
@@ -206,6 +212,7 @@ PFN_sgx_make_buffer make_buffer = nullptr;
 PFN_sgx_make_image make_image = nullptr;
 PFN_sgx_make_pass make_pass = nullptr;
 PFN_sgx_make_pipeline make_pipeline = nullptr;
+PFN_sgx_make_sampler make_sampler = nullptr;
 PFN_sgx_make_shader make_shader = nullptr;
 PFN_sgx_map_buffer map_buffer = nullptr;
 PFN_sgx_pop_group pop_group = nullptr;
@@ -231,6 +238,9 @@ PFN_sgx_query_pipeline_defaults query_pipeline_defaults = nullptr;
 PFN_sgx_query_pipeline_info query_pipeline_info = nullptr;
 PFN_sgx_query_pipeline_state query_pipeline_state = nullptr;
 PFN_sgx_query_pixelformat query_pixelformat = nullptr;
+PFN_sgx_query_sampler_defaults query_sampler_defaults = nullptr;
+PFN_sgx_query_sampler_info query_sampler_info = nullptr;
+PFN_sgx_query_sampler_state query_sampler_state = nullptr;
 PFN_sgx_query_shader_defaults query_shader_defaults = nullptr;
 PFN_sgx_query_shader_info query_shader_info = nullptr;
 PFN_sgx_query_shader_state query_shader_state = nullptr;
@@ -244,9 +254,10 @@ PFN_sgx_setup_context setup_context = nullptr;
 PFN_sgx_shutdown shutdown = nullptr;
 PFN_sgx_uninit_buffer uninit_buffer = nullptr;
 PFN_sgx_uninit_image uninit_image = nullptr;
-PFN_sgx_uninit_shader uninit_shader = nullptr;
-PFN_sgx_uninit_pipeline uninit_pipeline = nullptr;
 PFN_sgx_uninit_pass uninit_pass = nullptr;
+PFN_sgx_uninit_pipeline uninit_pipeline = nullptr;
+PFN_sgx_uninit_sampler uninit_sampler = nullptr;
+PFN_sgx_uninit_shader uninit_shader = nullptr;
 PFN_sgx_unmap_buffer unmap_buffer = nullptr;
 PFN_sgx_update_buffer update_buffer = nullptr;
 PFN_sgx_update_image update_image = nullptr;
@@ -359,6 +370,7 @@ openSharedLibrary(const char *dllPath)
         alloc_image = reinterpret_cast<PFN_sgx_alloc_image>(bx::dlsym(handle, "sgx_alloc_image"));
         alloc_pass = reinterpret_cast<PFN_sgx_alloc_pass>(bx::dlsym(handle, "sgx_alloc_pass"));
         alloc_pipeline = reinterpret_cast<PFN_sgx_alloc_pipeline>(bx::dlsym(handle, "sgx_alloc_pipeline"));
+        alloc_sampler = reinterpret_cast<PFN_sgx_alloc_sampler>(bx::dlsym(handle, "sgx_alloc_sampler"));
         alloc_shader = reinterpret_cast<PFN_sgx_alloc_shader>(bx::dlsym(handle, "sgx_alloc_shader"));
         append_buffer = reinterpret_cast<PFN_sgx_append_buffer>(bx::dlsym(handle, "sgx_append_buffer"));
         apply_bindings = reinterpret_cast<PFN_sgx_apply_bindings>(bx::dlsym(handle, "sgx_apply_bindings"));
@@ -371,13 +383,15 @@ openSharedLibrary(const char *dllPath)
         commit = reinterpret_cast<PFN_sgx_commit>(bx::dlsym(handle, "sgx_commit"));
         dealloc_buffer = reinterpret_cast<PFN_sgx_dealloc_buffer>(bx::dlsym(handle, "sgx_dealloc_buffer"));
         dealloc_image = reinterpret_cast<PFN_sgx_dealloc_image>(bx::dlsym(handle, "sgx_dealloc_image"));
-        dealloc_shader = reinterpret_cast<PFN_sgx_dealloc_shader>(bx::dlsym(handle, "sgx_dealloc_shader"));
         dealloc_pipeline = reinterpret_cast<PFN_sgx_dealloc_pipeline>(bx::dlsym(handle, "sgx_dealloc_pipeline"));
         dealloc_pass = reinterpret_cast<PFN_sgx_dealloc_pass>(bx::dlsym(handle, "sgx_dealloc_pass"));
+        dealloc_sampler = reinterpret_cast<PFN_sgx_dealloc_sampler>(bx::dlsym(handle, "sgx_dealloc_sampler"));
+        dealloc_shader = reinterpret_cast<PFN_sgx_dealloc_shader>(bx::dlsym(handle, "sgx_dealloc_shader"));
         destroy_buffer = reinterpret_cast<PFN_sgx_destroy_buffer>(bx::dlsym(handle, "sgx_destroy_buffer"));
         destroy_image = reinterpret_cast<PFN_sgx_destroy_image>(bx::dlsym(handle, "sgx_destroy_image"));
         destroy_pass = reinterpret_cast<PFN_sgx_destroy_pass>(bx::dlsym(handle, "sgx_destroy_pass"));
         destroy_pipeline = reinterpret_cast<PFN_sgx_destroy_pipeline>(bx::dlsym(handle, "sgx_destroy_pipeline"));
+        destroy_sampler = reinterpret_cast<PFN_sgx_destroy_sampler>(bx::dlsym(handle, "sgx_destroy_sampler"));
         destroy_shader = reinterpret_cast<PFN_sgx_destroy_shader>(bx::dlsym(handle, "sgx_destroy_shader"));
         discard_context = reinterpret_cast<PFN_sgx_discard_context>(bx::dlsym(handle, "sgx_discard_context"));
         draw = reinterpret_cast<PFN_sgx_draw>(bx::dlsym(handle, "sgx_draw"));
@@ -387,16 +401,19 @@ openSharedLibrary(const char *dllPath)
         label_image = reinterpret_cast<PFN_sgx_label_image>(bx::dlsym(handle, "sgx_label_image"));
         label_pass = reinterpret_cast<PFN_sgx_label_pass>(bx::dlsym(handle, "sgx_label_pass"));
         label_pipeline = reinterpret_cast<PFN_sgx_label_pipeline>(bx::dlsym(handle, "sgx_label_pipeline"));
+        label_sampler = reinterpret_cast<PFN_sgx_label_sampler>(bx::dlsym(handle, "sgx_label_sampler"));
         label_shader = reinterpret_cast<PFN_sgx_label_shader>(bx::dlsym(handle, "sgx_label_shader"));
         fail_buffer = reinterpret_cast<PFN_sgx_fail_buffer>(bx::dlsym(handle, "sgx_fail_buffer"));
         fail_image = reinterpret_cast<PFN_sgx_fail_image>(bx::dlsym(handle, "sgx_fail_image"));
         fail_pass = reinterpret_cast<PFN_sgx_fail_pass>(bx::dlsym(handle, "sgx_fail_pass"));
         fail_pipeline = reinterpret_cast<PFN_sgx_fail_pipeline>(bx::dlsym(handle, "sgx_fail_pipeline"));
+        fail_sampler = reinterpret_cast<PFN_sgx_fail_sampler>(bx::dlsym(handle, "sgx_fail_sampler"));
         fail_shader = reinterpret_cast<PFN_sgx_fail_shader>(bx::dlsym(handle, "sgx_fail_shader"));
         init_buffer = reinterpret_cast<PFN_sgx_init_buffer>(bx::dlsym(handle, "sgx_init_buffer"));
         init_image = reinterpret_cast<PFN_sgx_init_image>(bx::dlsym(handle, "sgx_init_image"));
         init_pass = reinterpret_cast<PFN_sgx_init_pass>(bx::dlsym(handle, "sgx_init_pass"));
         init_pipeline = reinterpret_cast<PFN_sgx_init_pipeline>(bx::dlsym(handle, "sgx_init_pipeline"));
+        init_sampler = reinterpret_cast<PFN_sgx_init_sampler>(bx::dlsym(handle, "sgx_init_sampler"));
         init_shader = reinterpret_cast<PFN_sgx_init_shader>(bx::dlsym(handle, "sgx_init_shader"));
         install_trace_hooks =
             reinterpret_cast<PFN_sgx_install_trace_hooks>(bx::dlsym(handle, "sgx_install_trace_hooks"));
@@ -405,6 +422,7 @@ openSharedLibrary(const char *dllPath)
         make_image = reinterpret_cast<PFN_sgx_make_image>(bx::dlsym(handle, "sgx_make_image"));
         make_pass = reinterpret_cast<PFN_sgx_make_pass>(bx::dlsym(handle, "sgx_make_pass"));
         make_pipeline = reinterpret_cast<PFN_sgx_make_pipeline>(bx::dlsym(handle, "sgx_make_pipeline"));
+        make_sampler = reinterpret_cast<PFN_sgx_make_sampler>(bx::dlsym(handle, "sgx_make_sampler"));
         make_shader = reinterpret_cast<PFN_sgx_make_shader>(bx::dlsym(handle, "sgx_make_shader"));
         map_buffer = reinterpret_cast<PFN_sgx_map_buffer>(bx::dlsym(handle, "sgx_map_buffer"));
         pop_group = reinterpret_cast<PFN_sgx_pop_group>(bx::dlsym(handle, "sgx_pop_group"));
@@ -440,6 +458,10 @@ openSharedLibrary(const char *dllPath)
         query_pixelformat = reinterpret_cast<PFN_sgx_query_pixelformat>(bx::dlsym(handle, "sgx_query_pixelformat"));
         query_shader_defaults =
             reinterpret_cast<PFN_sgx_query_shader_defaults>(bx::dlsym(handle, "sgx_query_shader_defaults"));
+        query_sampler_defaults =
+            reinterpret_cast<PFN_sgx_query_sampler_defaults>(bx::dlsym(handle, "sgx_query_sampler_defaults"));
+        query_sampler_info = reinterpret_cast<PFN_sgx_query_sampler_info>(bx::dlsym(handle, "sgx_query_sampler_info"));
+        query_sampler_state = reinterpret_cast<PFN_sgx_query_sampler_state>(bx::dlsym(handle, "sgx_query_sampler_state"));
         query_shader_info = reinterpret_cast<PFN_sgx_query_shader_info>(bx::dlsym(handle, "sgx_query_shader_info"));
         query_shader_state = reinterpret_cast<PFN_sgx_query_shader_state>(bx::dlsym(handle, "sgx_query_shader_state"));
         reset_state_cache = reinterpret_cast<PFN_sgx_reset_state_cache>(bx::dlsym(handle, "sgx_reset_state_cache"));
@@ -453,9 +475,10 @@ openSharedLibrary(const char *dllPath)
         shutdown = reinterpret_cast<PFN_sgx_shutdown>(bx::dlsym(handle, "sgx_shutdown"));
         uninit_buffer = reinterpret_cast<PFN_sgx_uninit_buffer>(bx::dlsym(handle, "sgx_uninit_buffer"));
         uninit_image = reinterpret_cast<PFN_sgx_uninit_image>(bx::dlsym(handle, "sgx_uninit_image"));
-        uninit_shader = reinterpret_cast<PFN_sgx_uninit_shader>(bx::dlsym(handle, "sgx_uninit_shader"));
         uninit_pipeline = reinterpret_cast<PFN_sgx_uninit_pipeline>(bx::dlsym(handle, "sgx_uninit_pipeline"));
         uninit_pass = reinterpret_cast<PFN_sgx_uninit_pass>(bx::dlsym(handle, "sgx_uninit_pass"));
+        uninit_sampler = reinterpret_cast<PFN_sgx_uninit_sampler>(bx::dlsym(handle, "sgx_uninit_sampler"));
+        uninit_shader = reinterpret_cast<PFN_sgx_uninit_shader>(bx::dlsym(handle, "sgx_uninit_shader"));
         unmap_buffer = reinterpret_cast<PFN_sgx_unmap_buffer>(bx::dlsym(handle, "sgx_unmap_buffer"));
         update_buffer = reinterpret_cast<PFN_sgx_update_buffer>(bx::dlsym(handle, "sgx_update_buffer"));
         update_image = reinterpret_cast<PFN_sgx_update_image>(bx::dlsym(handle, "sgx_update_image"));
@@ -493,6 +516,12 @@ is_valid(sg_pass value) NANOEM_DECL_NOEXCEPT
 
 bool
 is_valid(sg_pipeline value) NANOEM_DECL_NOEXCEPT
+{
+    return value.id != SG_INVALID_ID;
+}
+
+bool
+is_valid(sg_sampler value) NANOEM_DECL_NOEXCEPT
 {
     return value.id != SG_INVALID_ID;
 }

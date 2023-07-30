@@ -38,6 +38,7 @@ public:
     void inherit(const RenderTargetColorImageContainer *shared);
     void setMipmapGenerator(RenderTargetMipmapGenerator *value);
     void setColorImageDescription(const sg_image_desc &value);
+    void setColorSamplerDescription(const sg_sampler_desc &value);
     void setColorImageHandle(sg_image value);
     void setScaleFactor(const Vector2 &value);
     void destroy(Effect *effect) NANOEM_DECL_NOEXCEPT;
@@ -45,10 +46,12 @@ public:
     RenderTargetMipmapGenerator *mipmapGenerator();
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;
     const sg_image_desc &colorImageDescription() const NANOEM_DECL_NOEXCEPT;
+    const sg_sampler_desc &samplerImageDescription() const NANOEM_DECL_NOEXCEPT;
     const Vector2 scaleFactor() const NANOEM_DECL_NOEXCEPT;
     sg_image preferredColorImageHandle() const NANOEM_DECL_NOEXCEPT;
     sg_image colorImageHandle() const NANOEM_DECL_NOEXCEPT;
     sg_image resolveImageHandle() const NANOEM_DECL_NOEXCEPT;
+    sg_sampler samplerHandle() const NANOEM_DECL_NOEXCEPT;
     bool isSharedTexture() const NANOEM_DECL_NOEXCEPT;
 
 protected:
@@ -61,7 +64,9 @@ private:
     Vector2 m_scaleFactor;
     sg_image m_colorImage;
     sg_image m_resolveImage;
+    sg_sampler m_sampler;
     sg_image_desc m_colorImageDescription;
+    sg_sampler_desc m_colorSamplerDescription;
     bool m_sharedTexture;
     bool m_dirty;
 };
