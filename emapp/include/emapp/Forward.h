@@ -139,6 +139,9 @@ typedef struct sg_buffer {
 typedef struct sg_image {
     uint32_t id;
 } sg_image;
+typedef struct sg_sampler {
+    uint32_t id;
+} sg_sampler;
 typedef struct sg_shader {
     uint32_t id;
 } sg_shader;
@@ -162,8 +165,10 @@ enum {
     SG_NUM_SHADER_STAGES = 2,
     SG_NUM_INFLIGHT_FRAMES = 2,
     SG_MAX_COLOR_ATTACHMENTS = 4,
-    SG_MAX_SHADERSTAGE_BUFFERS = 8,
+    SG_MAX_VERTEX_BUFFERS = 8,
     SG_MAX_SHADERSTAGE_IMAGES = 12,
+    SG_MAX_SHADERSTAGE_SAMPLERS = 8,
+    SG_MAX_SHADERSTAGE_IMAGESAMPLERPAIRS = 12,
     SG_MAX_SHADERSTAGE_UBS = 4,
     SG_MAX_UB_MEMBERS = 16,
     SG_MAX_VERTEX_ATTRIBUTES = 16,
@@ -341,11 +346,22 @@ typedef enum sg_image_type {
     _SG_IMAGETYPE_FORCE_U32 = 0x7FFFFFFF
 } sg_image_type;
 
+typedef enum sg_image_sample_type {
+    _SG_IMAGESAMPLETYPE_DEFAULT, // value 0 reserved for default-init
+    SG_IMAGESAMPLETYPE_FLOAT,
+    SG_IMAGESAMPLETYPE_DEPTH,
+    SG_IMAGESAMPLETYPE_SINT,
+    SG_IMAGESAMPLETYPE_UINT,
+    _SG_IMAGESAMPLETYPE_NUM,
+    _SG_IMAGESAMPLETYPE_FORCE_U32 = 0x7FFFFFFF
+} sg_image_sample_type;
+
 typedef enum sg_sampler_type {
-    _SG_SAMPLERTYPE_DEFAULT, /* value 0 reserved for default-init */
-    SG_SAMPLERTYPE_FLOAT,
-    SG_SAMPLERTYPE_SINT,
-    SG_SAMPLERTYPE_UINT,
+    _SG_SAMPLERTYPE_DEFAULT,
+    SG_SAMPLERTYPE_SAMPLE,
+    SG_SAMPLERTYPE_COMPARE,
+    _SG_SAMPLERTYPE_NUM,
+    _SG_SAMPLERTYPE_FORCE_U32,
 } sg_sampler_type;
 
 typedef enum sg_cube_face {
@@ -378,12 +394,9 @@ typedef enum sg_primitive_type {
 
 typedef enum sg_filter {
     _SG_FILTER_DEFAULT, /* value 0 reserved for default-init */
+    SG_FILTER_NONE,
     SG_FILTER_NEAREST,
     SG_FILTER_LINEAR,
-    SG_FILTER_NEAREST_MIPMAP_NEAREST,
-    SG_FILTER_NEAREST_MIPMAP_LINEAR,
-    SG_FILTER_LINEAR_MIPMAP_NEAREST,
-    SG_FILTER_LINEAR_MIPMAP_LINEAR,
     _SG_FILTER_NUM,
     _SG_FILTER_FORCE_U32 = 0x7FFFFFFF
 } sg_filter;
@@ -598,14 +611,19 @@ typedef struct sg_pass_action {
     uint32_t _end_canary;
 } sg_pass_action;
 
+typedef struct sg_stage_bindings {
+    sg_image images[SG_MAX_SHADERSTAGE_IMAGES];
+    sg_sampler samplers[SG_MAX_SHADERSTAGE_SAMPLERS];
+} sg_stage_bindings;
+
 typedef struct sg_bindings {
     uint32_t _start_canary;
-    sg_buffer vertex_buffers[SG_MAX_SHADERSTAGE_BUFFERS];
-    int vertex_buffer_offsets[SG_MAX_SHADERSTAGE_BUFFERS];
+    sg_buffer vertex_buffers[SG_MAX_VERTEX_BUFFERS];
+    int vertex_buffer_offsets[SG_MAX_VERTEX_BUFFERS];
     sg_buffer index_buffer;
     int index_buffer_offset;
-    sg_image vs_images[SG_MAX_SHADERSTAGE_IMAGES];
-    sg_image fs_images[SG_MAX_SHADERSTAGE_IMAGES];
+    sg_stage_bindings vs;
+    sg_stage_bindings fs;
     uint32_t _end_canary;
 } sg_bindings;
 
@@ -642,15 +660,6 @@ typedef struct sg_image_desc {
     sg_usage usage;
     sg_pixel_format pixel_format;
     int sample_count;
-    sg_filter min_filter;
-    sg_filter mag_filter;
-    sg_wrap wrap_u;
-    sg_wrap wrap_v;
-    sg_wrap wrap_w;
-    sg_border_color border_color;
-    uint32_t max_anisotropy;
-    float min_lod;
-    float max_lod;
     sg_image_data data;
     const char *label;
     /* GL specific */
@@ -665,6 +674,28 @@ typedef struct sg_image_desc {
     const void *wgpu_texture;
     uint32_t _end_canary;
 } sg_image_desc;
+
+typedef struct sg_sampler_desc {
+    uint32_t _start_canary;
+    sg_filter min_filter;
+    sg_filter mag_filter;
+    sg_filter mipmap_filter;
+    sg_wrap wrap_u;
+    sg_wrap wrap_v;
+    sg_wrap wrap_w;
+    float min_lod;
+    float max_lod;
+    sg_border_color border_color;
+    sg_compare_func compare;
+    uint32_t max_anisotropy;
+    const char *label;
+    // optionally inject backend-specific resources
+    uint32_t gl_sampler;
+    const void *mtl_sampler;
+    const void *d3d11_sampler;
+    const void *wgpu_sampler;
+    uint32_t _end_canary;
+} sg_sampler_desc;
 
 typedef struct sg_shader_attr_desc {
     const char *name; // GLSL vertex attribute name (only strictly required for GLES2)
@@ -685,10 +716,23 @@ typedef struct sg_shader_uniform_block_desc {
 } sg_shader_uniform_block_desc;
 
 typedef struct sg_shader_image_desc {
-    const char *name;
+    bool used;
+    bool multisampled;
     sg_image_type image_type;
-    sg_sampler_type sampler_type;
+    sg_image_sample_type sampler_type;
 } sg_shader_image_desc;
+
+typedef struct sg_shader_sampler_desc {
+    bool used;
+    sg_sampler_type sampler_type;
+} sg_shader_sampler_desc;
+
+typedef struct sg_shader_image_sampler_pair_desc {
+    bool used;
+    int image_slot;
+    int sampler_slot;
+    const char *glsl_name;
+} sg_shader_image_sampler_pair_desc;
 
 typedef struct sg_shader_stage_desc {
     const char *source;
@@ -697,6 +741,8 @@ typedef struct sg_shader_stage_desc {
     const char *d3d11_target;
     sg_shader_uniform_block_desc uniform_blocks[SG_MAX_SHADERSTAGE_UBS];
     sg_shader_image_desc images[SG_MAX_SHADERSTAGE_IMAGES];
+    sg_shader_sampler_desc samplers[SG_MAX_SHADERSTAGE_SAMPLERS];
+    sg_shader_image_sampler_pair_desc image_sampler_pairs[SG_MAX_SHADERSTAGE_IMAGESAMPLERPAIRS];
 } sg_shader_stage_desc;
 
 typedef struct sg_shader_desc {
@@ -708,28 +754,28 @@ typedef struct sg_shader_desc {
     uint32_t _end_canary;
 } sg_shader_desc;
 
-typedef struct sg_buffer_layout_desc {
+typedef struct sg_vertex_buffer_layout_state {
     int stride;
     sg_vertex_step step_func;
     int step_rate;
 #if defined(SOKOL_ZIG_BINDINGS)
     uint32_t __pad[2];
 #endif
-} sg_buffer_layout_desc;
+} sg_vertex_buffer_layout_state;
 
-typedef struct sg_vertex_attr_desc {
+typedef struct sg_vertex_attr_state {
     int buffer_index;
     int offset;
     sg_vertex_format format;
 #if defined(SOKOL_ZIG_BINDINGS)
     uint32_t __pad[2];
 #endif
-} sg_vertex_attr_desc;
+} sg_vertex_attr_state;
 
-typedef struct sg_layout_desc {
-    sg_buffer_layout_desc buffers[SG_MAX_SHADERSTAGE_BUFFERS];
-    sg_vertex_attr_desc attrs[SG_MAX_VERTEX_ATTRIBUTES];
-} sg_layout_desc;
+typedef struct sg_vertex_layout_state {
+    sg_vertex_buffer_layout_state buffers[SG_MAX_VERTEX_BUFFERS];
+    sg_vertex_attr_state attrs[SG_MAX_VERTEX_ATTRIBUTES];
+} sg_vertex_layout_state;
 
 typedef struct sg_stencil_face_state {
     sg_compare_func compare;
@@ -766,20 +812,20 @@ typedef struct sg_blend_state {
     sg_blend_op op_alpha;
 } sg_blend_state;
 
-typedef struct sg_color_state {
+typedef struct sg_color_target_state {
     sg_pixel_format pixel_format;
     sg_color_mask write_mask;
     sg_blend_state blend;
-} sg_color_state;
+} sg_color_target_state;
 
 typedef struct sg_pipeline_desc {
     uint32_t _start_canary;
     sg_shader shader;
-    sg_layout_desc layout;
+    sg_vertex_layout_state layout;
     sg_depth_state depth;
     sg_stencil_state stencil;
     int color_count;
-    sg_color_state colors[SG_MAX_COLOR_ATTACHMENTS];
+    sg_color_target_state colors[SG_MAX_COLOR_ATTACHMENTS];
     sg_primitive_type primitive_type;
     sg_index_type index_type;
     sg_cull_mode cull_mode;
@@ -811,11 +857,13 @@ typedef struct sg_trace_hooks {
     void (*reset_state_cache)(void *user_data);
     void (*make_buffer)(const sg_buffer_desc *desc, sg_buffer result, void *user_data);
     void (*make_image)(const sg_image_desc *desc, sg_image result, void *user_data);
+    void (*make_sampler)(const sg_sampler_desc *desc, sg_sampler result, void *user_data);
     void (*make_shader)(const sg_shader_desc *desc, sg_shader result, void *user_data);
     void (*make_pipeline)(const sg_pipeline_desc *desc, sg_pipeline result, void *user_data);
     void (*make_pass)(const sg_pass_desc *desc, sg_pass result, void *user_data);
     void (*destroy_buffer)(sg_buffer buf, void *user_data);
     void (*destroy_image)(sg_image img, void *user_data);
+    void (*destroy_sampler)(sg_sampler smp, void *user_data);
     void (*destroy_shader)(sg_shader shd, void *user_data);
     void (*destroy_pipeline)(sg_pipeline pip, void *user_data);
     void (*destroy_pass)(sg_pass pass, void *user_data);
@@ -834,40 +882,36 @@ typedef struct sg_trace_hooks {
     void (*commit)(void *user_data);
     void (*alloc_buffer)(sg_buffer result, void *user_data);
     void (*alloc_image)(sg_image result, void *user_data);
+    void (*alloc_sampler)(sg_sampler result, void *user_data);
     void (*alloc_shader)(sg_shader result, void *user_data);
     void (*alloc_pipeline)(sg_pipeline result, void *user_data);
     void (*alloc_pass)(sg_pass result, void *user_data);
     void (*dealloc_buffer)(sg_buffer buf_id, void *user_data);
     void (*dealloc_image)(sg_image img_id, void *user_data);
+    void (*dealloc_sampler)(sg_sampler smp_id, void *user_data);
     void (*dealloc_shader)(sg_shader shd_id, void *user_data);
     void (*dealloc_pipeline)(sg_pipeline pip_id, void *user_data);
     void (*dealloc_pass)(sg_pass pass_id, void *user_data);
     void (*init_buffer)(sg_buffer buf_id, const sg_buffer_desc *desc, void *user_data);
     void (*init_image)(sg_image img_id, const sg_image_desc *desc, void *user_data);
+    void (*init_sampler)(sg_sampler smp_id, const sg_sampler_desc *desc, void *user_data);
     void (*init_shader)(sg_shader shd_id, const sg_shader_desc *desc, void *user_data);
     void (*init_pipeline)(sg_pipeline pip_id, const sg_pipeline_desc *desc, void *user_data);
     void (*init_pass)(sg_pass pass_id, const sg_pass_desc *desc, void *user_data);
     void (*uninit_buffer)(sg_buffer buf_id, void *user_data);
     void (*uninit_image)(sg_image img_id, void *user_data);
+    void (*uninit_sampler)(sg_sampler smp_id, void *user_data);
     void (*uninit_shader)(sg_shader shd_id, void *user_data);
     void (*uninit_pipeline)(sg_pipeline pip_id, void *user_data);
     void (*uninit_pass)(sg_pass pass_id, void *user_data);
     void (*fail_buffer)(sg_buffer buf_id, void *user_data);
     void (*fail_image)(sg_image img_id, void *user_data);
+    void (*fail_sampler)(sg_sampler smp_id, void *user_data);
     void (*fail_shader)(sg_shader shd_id, void *user_data);
     void (*fail_pipeline)(sg_pipeline pip_id, void *user_data);
     void (*fail_pass)(sg_pass pass_id, void *user_data);
     void (*push_debug_group)(const char *name, void *user_data);
     void (*pop_debug_group)(void *user_data);
-    void (*err_buffer_pool_exhausted)(void *user_data);
-    void (*err_image_pool_exhausted)(void *user_data);
-    void (*err_shader_pool_exhausted)(void *user_data);
-    void (*err_pipeline_pool_exhausted)(void *user_data);
-    void (*err_pass_pool_exhausted)(void *user_data);
-    void (*err_context_mismatch)(void *user_data);
-    void (*err_pass_invalid)(void *user_data);
-    void (*err_draw_invalid)(void *user_data);
-    void (*err_bindings_invalid)(void *user_data);
 } sg_trace_hooks;
 
 typedef struct sg_slot_info {
@@ -892,6 +936,10 @@ typedef struct sg_image_info {
     int num_slots; /* number of renaming-slots for dynamically updated images */
     int active_slot; /* currently active write-slot for dynamically updated images */
 } sg_image_info;
+
+typedef struct sg_sampler_info {
+    sg_slot_info slot; // resource pool slot info
+} sg_sampler_info;
 
 typedef struct sg_shader_info {
     sg_slot_info slot; /* resoure pool slot info */
@@ -965,15 +1013,16 @@ typedef struct sg_desc {
     uint32_t _start_canary;
     int buffer_pool_size;
     int image_pool_size;
+    int sampler_pool_size;
     int shader_pool_size;
     int pipeline_pool_size;
     int pass_pool_size;
     int context_pool_size;
     int uniform_buffer_size;
     int staging_buffer_size;
-    int sampler_cache_size;
     int max_commit_listeners;
     bool disable_validation; // disable validation layer even in debug mode, useful for tests
+    bool mtl_force_managed_storage_mode; // for debugging: use Metal managed storage mode for resources even with UMA
     sg_allocator allocator;
     sg_logger logger; // optional log function override
     sg_context_desc context;
@@ -1049,8 +1098,16 @@ typedef sg_image_desc(APIENTRY *PFN_sgx_query_image_defaults)(const sg_image_des
 extern PFN_sgx_query_image_defaults query_image_defaults;
 typedef sg_image_info(APIENTRY *PFN_sgx_query_image_info)(sg_image img);
 extern PFN_sgx_query_image_info query_image_info;
+typedef sg_sampler_desc(APIENTRY *PFN_sgx_query_sampler_defaults)(const sg_sampler_desc *desc);
+extern PFN_sgx_query_sampler_defaults query_sampler_defaults;
+typedef sg_sampler_info(APIENTRY *PFN_sgx_query_sampler_info)(sg_sampler smp);
+extern PFN_sgx_query_sampler_info query_sampler_info;
 typedef sg_limits(APIENTRY *PFN_sgx_query_limits)(void);
 extern PFN_sgx_query_limits query_limits;
+typedef sg_sampler(APIENTRY *PFN_sgx_alloc_sampler)(void);
+extern PFN_sgx_alloc_sampler alloc_sampler;
+typedef sg_sampler(APIENTRY *PFN_sgx_make_sampler)(const sg_sampler_desc *desc);
+extern PFN_sgx_make_sampler make_sampler;
 typedef sg_pass(APIENTRY *PFN_sgx_alloc_pass)(void);
 extern PFN_sgx_alloc_pass alloc_pass;
 typedef sg_pass(APIENTRY *PFN_sgx_make_pass)(const sg_pass_desc *desc);
@@ -1077,6 +1134,8 @@ typedef sg_resource_state(APIENTRY *PFN_sgx_query_pass_state)(sg_pass pass);
 extern PFN_sgx_query_pass_state query_pass_state;
 typedef sg_resource_state(APIENTRY *PFN_sgx_query_pipeline_state)(sg_pipeline pip);
 extern PFN_sgx_query_pipeline_state query_pipeline_state;
+typedef sg_resource_state(APIENTRY *PFN_sgx_query_sampler_state)(sg_sampler smp);
+extern PFN_sgx_query_sampler_state query_sampler_state;
 typedef sg_resource_state(APIENTRY *PFN_sgx_query_shader_state)(sg_shader shd);
 extern PFN_sgx_query_shader_state query_shader_state;
 typedef sg_shader(APIENTRY *PFN_sgx_alloc_shader)(void);
@@ -1114,6 +1173,8 @@ typedef void(APIENTRY *PFN_sgx_destroy_buffer)(sg_buffer buf);
 extern PFN_sgx_destroy_buffer destroy_buffer;
 typedef void(APIENTRY *PFN_sgx_destroy_image)(sg_image img);
 extern PFN_sgx_destroy_image destroy_image;
+typedef void(APIENTRY *PFN_sgx_destroy_sampler)(sg_sampler smp);
+extern PFN_sgx_destroy_sampler destroy_sampler;
 typedef void(APIENTRY *PFN_sgx_destroy_pass)(sg_pass pass);
 extern PFN_sgx_destroy_pass destroy_pass;
 typedef void(APIENTRY *PFN_sgx_destroy_pipeline)(sg_pipeline pip);
@@ -1130,6 +1191,8 @@ typedef void(APIENTRY *PFN_sgx_label_buffer)(sg_buffer buffer, const char *text)
 extern PFN_sgx_label_buffer label_buffer;
 typedef void(APIENTRY *PFN_sgx_label_image)(sg_image image, const char *text);
 extern PFN_sgx_label_image label_image;
+typedef void(APIENTRY *PFN_sgx_label_sampler)(sg_sampler sampler, const char *text);
+extern PFN_sgx_label_sampler label_sampler;
 typedef void(APIENTRY *PFN_sgx_label_shader)(sg_shader shader, const char *text);
 extern PFN_sgx_label_shader label_shader;
 typedef void(APIENTRY *PFN_sgx_label_pass)(sg_pass pass, const char *text);
@@ -1164,6 +1227,8 @@ typedef void(APIENTRY *PFN_sgx_fail_pass)(sg_pass pass_id);
 extern PFN_sgx_fail_pass fail_pass;
 typedef void(APIENTRY *PFN_sgx_fail_pipeline)(sg_pipeline pip_id);
 extern PFN_sgx_fail_pipeline fail_pipeline;
+typedef void(APIENTRY *PFN_sgx_fail_sampler)(sg_sampler smp_id);
+extern PFN_sgx_fail_sampler fail_sampler;
 typedef void(APIENTRY *PFN_sgx_fail_shader)(sg_shader shd_id);
 extern PFN_sgx_fail_shader fail_shader;
 typedef void(APIENTRY *PFN_sgx_init_buffer)(sg_buffer buf_id, const sg_buffer_desc *desc);
@@ -1174,6 +1239,8 @@ typedef void(APIENTRY *PFN_sgx_init_pass)(sg_pass pass_id, const sg_pass_desc *d
 extern PFN_sgx_init_pass init_pass;
 typedef void(APIENTRY *PFN_sgx_init_pipeline)(sg_pipeline pip_id, const sg_pipeline_desc *desc);
 extern PFN_sgx_init_pipeline init_pipeline;
+typedef void(APIENTRY *PFN_sgx_init_sampler)(sg_sampler smp_id, const sg_sampler_desc *desc);
+extern PFN_sgx_init_sampler init_sampler;
 typedef void(APIENTRY *PFN_sgx_init_shader)(sg_shader shd_id, const sg_shader_desc *desc);
 extern PFN_sgx_init_shader init_shader;
 typedef bool(APIENTRY *PFN_sgx_query_buffer_overflow)(sg_buffer buf);
@@ -1200,6 +1267,8 @@ typedef void(APIENTRY *PFN_sgx_dealloc_buffer)(sg_buffer buf_id);
 extern PFN_sgx_dealloc_buffer dealloc_buffer;
 typedef void(APIENTRY *PFN_sgx_dealloc_image)(sg_image img_id);
 extern PFN_sgx_dealloc_image dealloc_image;
+typedef void(APIENTRY *PFN_sgx_dealloc_sampler)(sg_sampler smp_id);
+extern PFN_sgx_dealloc_sampler dealloc_sampler;
 typedef void(APIENTRY *PFN_sgx_dealloc_shader)(sg_shader shd_id);
 extern PFN_sgx_dealloc_shader dealloc_shader;
 typedef void(APIENTRY *PFN_sgx_dealloc_pipeline)(sg_pipeline pip_id);
@@ -1210,6 +1279,8 @@ typedef void(APIENTRY *PFN_sgx_uninit_buffer)(sg_buffer buf_id);
 extern PFN_sgx_uninit_buffer uninit_buffer;
 typedef void(APIENTRY *PFN_sgx_uninit_image)(sg_image img_id);
 extern PFN_sgx_uninit_image uninit_image;
+typedef void(APIENTRY *PFN_sgx_uninit_sampler)(sg_sampler smp_id);
+extern PFN_sgx_uninit_sampler uninit_sampler;
 typedef void(APIENTRY *PFN_sgx_uninit_shader)(sg_shader shd_id);
 extern PFN_sgx_uninit_shader uninit_shader;
 typedef void(APIENTRY *PFN_sgx_uninit_pipeline)(sg_pipeline pip_id);
@@ -1223,6 +1294,7 @@ bool is_valid(sg_buffer value) NANOEM_DECL_NOEXCEPT;
 bool is_valid(sg_image value) NANOEM_DECL_NOEXCEPT;
 bool is_valid(sg_pass value) NANOEM_DECL_NOEXCEPT;
 bool is_valid(sg_pipeline value) NANOEM_DECL_NOEXCEPT;
+bool is_valid(sg_sampler value) NANOEM_DECL_NOEXCEPT;
 bool is_valid(sg_shader value) NANOEM_DECL_NOEXCEPT;
 bool is_backend_metal(sg_backend value) NANOEM_DECL_NOEXCEPT;
 void insert_marker_format(const char *format, ...);

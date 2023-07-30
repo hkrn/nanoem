@@ -33,6 +33,7 @@ ShadowCamera::ShadowCamera(Project *project)
     , m_dirty(false)
 {
     m_shadowPass = m_fallbackPass = { SG_INVALID_ID };
+    m_sampler = { SG_INVALID_ID };
     Inline::clearZeroMemory(m_shadowPassDesc);
     Inline::clearZeroMemory(m_fallbackPassDesc);
     if (Inline::isDebugLabelEnabled()) {
@@ -52,7 +53,6 @@ ShadowCamera::initialize()
     Inline::clearZeroMemory(id);
     id.width = id.height = 1;
     id.pixel_format = SG_PIXELFORMAT_RGBA8;
-    id.mag_filter = id.min_filter = SG_FILTER_NEAREST;
     id.render_target = true;
     sg_image &colorImage = m_fallbackPassDesc.color_attachments[0].image;
     if (!sg::is_valid(colorImage)) {
@@ -80,6 +80,16 @@ ShadowCamera::initialize()
         m_fallbackPass = sg::make_pass(&m_fallbackPassDesc);
         nanoem_assert(sg::query_pass_state(m_fallbackPass) == SG_RESOURCESTATE_VALID, "pass must be valid");
     }
+    if (!sg::is_valid(m_sampler)) {
+        sg_sampler_desc sd;
+        Inline::clearZeroMemory(sd);
+        sd.mag_filter = sd.min_filter = SG_FILTER_NEAREST;
+        if (Inline::isDebugLabelEnabled()) {
+            sd.label = "@nanoem/ShadowCamera/FallbackPass";
+        }
+        m_sampler = sg::make_sampler(&sd);
+        nanoem_assert(sg::query_sampler_state(m_sampler) == SG_RESOURCESTATE_VALID, "pass must be valid");
+    }
     SG_POP_GROUP();
 }
 
@@ -90,8 +100,8 @@ ShadowCamera::clear()
     sg::PassBlock::initializeLoadStoreAction(action);
     memcpy(&action.colors[0].clear_value, glm::value_ptr(Vector4(1)), sizeof(action.colors[0].clear_value));
     action.depth.clear_value = 1;
-    const PixelFormat format(m_project->findRenderPassPixelFormat(pass(), 1));
-    m_project->clearRenderPass(m_project->sharedBatchDrawQueue(), pass(), action, format);
+    const PixelFormat format(m_project->findRenderPassPixelFormat(passHandle(), 1));
+    m_project->clearRenderPass(m_project->sharedBatchDrawQueue(), passHandle(), action, format);
 }
 
 void
@@ -121,7 +131,6 @@ ShadowCamera::update()
         id.width = m_textureSize.x;
         id.height = m_textureSize.y;
         id.pixel_format = SG_PIXELFORMAT_R32F;
-        id.mag_filter = id.min_filter = SG_FILTER_NEAREST;
         id.render_target = true;
         format.setColorPixelFormat(SG_PIXELFORMAT_R32F, 0);
         sg_image &colorImage = m_shadowPassDesc.color_attachments[0].image;
@@ -168,23 +177,29 @@ ShadowCamera::destroy() NANOEM_DECL_NOEXCEPT
 }
 
 sg_pass
-ShadowCamera::pass() const NANOEM_DECL_NOEXCEPT
+ShadowCamera::passHandle() const NANOEM_DECL_NOEXCEPT
 {
     return sg::is_valid(m_shadowPass) ? m_shadowPass : m_fallbackPass;
 }
 
 sg_image
-ShadowCamera::colorImage() const NANOEM_DECL_NOEXCEPT
+ShadowCamera::colorImageHandle() const NANOEM_DECL_NOEXCEPT
 {
     return sg::is_valid(m_shadowPass) ? m_shadowPassDesc.color_attachments[0].image
                                       : m_fallbackPassDesc.color_attachments[0].image;
 }
 
 sg_image
-ShadowCamera::depthImage() const NANOEM_DECL_NOEXCEPT
+ShadowCamera::depthImageHandle() const NANOEM_DECL_NOEXCEPT
 {
     return sg::is_valid(m_shadowPass) ? m_shadowPassDesc.depth_stencil_attachment.image
                                       : m_fallbackPassDesc.depth_stencil_attachment.image;
+}
+
+sg_sampler
+ShadowCamera::samplerHandle() const NANOEM_DECL_NOEXCEPT
+{
+    return m_sampler;
 }
 
 Vector2UI16

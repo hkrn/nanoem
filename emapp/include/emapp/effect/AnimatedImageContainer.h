@@ -31,6 +31,7 @@ public:
 
     const char *seekVariableNameConstString() const NANOEM_DECL_NOEXCEPT;
     sg_image colorImage() const NANOEM_DECL_NOEXCEPT;
+    sg_sampler colorSampler() const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t offset() const NANOEM_DECL_NOEXCEPT;
     nanoem_f32_t speed() const NANOEM_DECL_NOEXCEPT;
 
@@ -39,7 +40,9 @@ private:
     const String m_seekVariable;
     image::APNG *m_data;
     sg_image m_colorImage;
+    sg_sampler m_colorSampler;
     sg_image_desc m_colorImageDescription;
+    sg_sampler_desc m_colorSamplerDescription;
     nanoem_f32_t m_offset;
     nanoem_f32_t m_speed;
     bool m_dirty;

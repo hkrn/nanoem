@@ -2678,10 +2678,10 @@ ModelParameterDialog::layoutMaterialToonImage(const IImageView *image, const Str
         ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0xff, 0xff, 0, 0xff));
     }
     if (ImGui::CollapsingHeader(label)) {
-        const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->handle().id);
+        const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->imageHandle().id);
         ImVec2 uv0, uv1;
         ImGuiWindow::getImageCoordinate(uv0, uv1);
-        ImGui::Image(textureID, calcExpandedImageSize(image->description(), 1.0f), uv0, uv1, ImVec4(1, 1, 1, 1),
+        ImGui::Image(textureID, calcExpandedImageSize(image->imageDescription(), 1.0f), uv0, uv1, ImVec4(1, 1, 1, 1),
             ImGui::ColorConvertU32ToFloat4(ImGuiWindow::kColorBorder));
     }
     if (imageNotFound) {

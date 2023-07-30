@@ -229,8 +229,8 @@ public:
     static bool isArchiveURI(const URI &fileURI);
     static bool isLoadableExtension(const String &extension);
     static bool isLoadableExtension(const URI &fileURI);
-    static void setAlphaBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT;
-    static void setAddBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT;
+    static void setAlphaBlendMode(sg_color_target_state &state) NANOEM_DECL_NOEXCEPT;
+    static void setAddBlendMode(sg_color_target_state &state) NANOEM_DECL_NOEXCEPT;
     static void setStandardDepthStencilState(sg_depth_state &ds, sg_stencil_state &ss) NANOEM_DECL_NOEXCEPT;
     static void setShadowDepthStencilState(sg_depth_state &ds, sg_stencil_state &ss) NANOEM_DECL_NOEXCEPT;
 
@@ -359,6 +359,7 @@ public:
     void setRenderPassName(sg_pass pass, const char *value);
     void setRenderPipelineName(sg_pipeline pipeline, const char *value);
     sg_image sharedFallbackImage() const NANOEM_DECL_NOEXCEPT;
+    sg_sampler sharedFallbackSampler() const NANOEM_DECL_NOEXCEPT;
     sg::PassBlock::IDrawQueue *sharedBatchDrawQueue() NANOEM_DECL_NOEXCEPT;
     sg::PassBlock::IDrawQueue *sharedSerialDrawQueue() NANOEM_DECL_NOEXCEPT;
     ImageLoader *sharedImageLoader();
@@ -956,6 +957,7 @@ private:
     OffscreenRenderTargetConditionListMap m_allOffscreenRenderTargets;
     OffscreenRenderTargetEffectSetMap m_allOffscreenRenderTargetEffectSets;
     sg_image m_fallbackImage;
+    sg_sampler m_fallbackSampler;
     bx::HandleAlloc *m_objectHandleAllocator;
     AccessoryHandleMap m_accessoryHandleMap;
     ModelHandleMap m_modelHandleMap;

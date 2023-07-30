@@ -22,7 +22,7 @@ public:
     BasePass(Project *project);
     virtual ~BasePass() NANOEM_DECL_NOEXCEPT;
 
-    void destroy() NANOEM_DECL_NOEXCEPT;
+    virtual void destroy() NANOEM_DECL_NOEXCEPT;
 
 protected:
     void setupPipeline(const PixelFormat &format, sg_pipeline &pipelineRef);

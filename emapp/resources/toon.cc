@@ -8,7 +8,6 @@
 
 #include "emapp/Error.h"
 #include "emapp/ImageLoader.h"
-#include "emapp/Project.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "glm/gtc/type_ptr.hpp"
@@ -34,27 +33,30 @@ loadSharedTexture(const nanoem_u8_t *data, size_t size, int index, Image *&image
     nanoem_parameter_assert(data, "must not be NULL");
     nanoem_parameter_assert(size > 0, "must not be NULL");
     Error error;
-    sg_image_desc desc;
+    sg_image_desc imageDesc;
     nanoem_u8_t *decodedImageDataPtr = nullptr;
-    Inline::clearZeroMemory(desc);
-    if (ImageLoader::decodeImageWithSTB(data, size, "", desc, &decodedImageDataPtr, error)) {
+    Inline::clearZeroMemory(imageDesc);
+    if (ImageLoader::decodeImageWithSTB(data, size, "", imageDesc, &decodedImageDataPtr, error)) {
         String filename;
         bx::stringPrintf(filename, "@nanoem/SharedToonTexture/%d", index);
-        desc.mag_filter = desc.min_filter = SG_FILTER_NEAREST;
-        desc.wrap_u = desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
-        desc.num_mipmaps = 1;
+        sg_sampler_desc samplerDesc;
+        Inline::clearZeroMemory(samplerDesc);
+        samplerDesc.mag_filter = samplerDesc.min_filter = SG_FILTER_NEAREST;
+        samplerDesc.wrap_u = samplerDesc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+        imageDesc.num_mipmaps = 1;
         imageRef->setFilename(filename);
-        imageRef->setDescription(desc);
+        imageRef->setImageDescription(imageDesc);
+        imageRef->setSamplerDescription(samplerDesc);
         if (Inline::isDebugLabelEnabled()) {
             imageRef->setLabel(imageRef->filenameConstString());
         }
-        const sg_range &range = desc.data.subimage[0][0];
+        const sg_range &range = imageDesc.data.subimage[0][0];
         const nanoem_u8_t *ptr = static_cast<const nanoem_u8_t *>(range.ptr);
         bytes.assign(ptr, ptr + range.size);
         imageRef->setOriginData(ptr, range.size);
         imageRef->setFileExist(true);
         imageRef->create();
-        SG_LABEL_IMAGE(imageRef->handle(), filename.c_str());
+        SG_LABEL_IMAGE(imageRef->imageHandle(), filename.c_str());
         ImageLoader::releaseDecodedImageWithSTB(&decodedImageDataPtr);
     }
 }

@@ -145,24 +145,24 @@ Accessory::isLoadableExtension(const URI &fileURI)
 void
 Accessory::setStandardPipelineDescription(sg_pipeline_desc &desc)
 {
-    sg_layout_desc &ld = desc.layout;
+    sg_vertex_layout_state &ld = desc.layout;
     ld.buffers[0].stride = sizeof(VertexUnit);
     ld.attrs[0] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_position)), SG_VERTEXFORMAT_FLOAT3 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_position)), SG_VERTEXFORMAT_FLOAT3 };
     ld.attrs[1] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_normal)), SG_VERTEXFORMAT_FLOAT3 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_normal)), SG_VERTEXFORMAT_FLOAT3 };
     ld.attrs[2] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_texcoord)), SG_VERTEXFORMAT_FLOAT2 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_texcoord)), SG_VERTEXFORMAT_FLOAT2 };
     ld.attrs[3] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[0])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[0])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[4] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[1])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[1])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[5] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[2])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[2])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[6] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[3])), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_uva[3])), SG_VERTEXFORMAT_FLOAT4 };
     ld.attrs[7] =
-        sg_vertex_attr_desc { 0, Inline::saturateInt32(offsetof(VertexUnit, m_color)), SG_VERTEXFORMAT_FLOAT4 };
+        sg_vertex_attr_state { 0, Inline::saturateInt32(offsetof(VertexUnit, m_color)), SG_VERTEXFORMAT_FLOAT4 };
     desc.index_type = SG_INDEXTYPE_UINT32;
     Project::setStandardDepthStencilState(desc.depth, desc.stencil);
 }
@@ -376,10 +376,12 @@ Accessory::uploadArchive(const String &entryPoint, const Archiver &archiver, Pro
                     imageLoader->decode(bytes, item->m_filename, this, SG_WRAP_REPEAT, 0, error);
                 }
                 else {
-                    sg_image_desc desc;
+                    sg_image_desc imageDesc;
+                    sg_sampler_desc samplerDesc;
                     const nanoem_u32_t pixel = item->m_usingWhiteFallback ? 0xffffffff : 0x0;
-                    ImageLoader::fill1x1PixelImage(&pixel, desc);
-                    internalUploadImage(item->m_filename, desc, false);
+                    ImageLoader::fill1x1PixelImage(&pixel, imageDesc);
+                    Inline::clearZeroMemory(samplerDesc);
+                    internalUploadImage(item->m_filename, imageDesc, samplerDesc, false);
                 }
             }
             SG_POP_GROUP();
@@ -418,10 +420,12 @@ Accessory::loadAllImages(Progress &progress, Error &error)
             break;
         }
         else if (!imageLoader->load(fileURI, this, SG_WRAP_REPEAT, ImageLoader::kFlagsEnableMipmap, error)) {
-            sg_image_desc desc;
+            sg_image_desc imageDesc;
+            sg_sampler_desc samplerDesc;
             const nanoem_u32_t pixel = item->m_usingWhiteFallback ? 0xffffffff : 0x0;
-            ImageLoader::fill1x1PixelImage(&pixel, desc);
-            uploadImage(item->m_filename, desc);
+            ImageLoader::fill1x1PixelImage(&pixel, imageDesc);
+            Inline::clearZeroMemory(samplerDesc);
+            uploadImage(item->m_filename, imageDesc, samplerDesc);
         }
         progress.increment();
     }
@@ -489,7 +493,7 @@ Accessory::destroy()
     }
     for (ImageMap::const_iterator it = m_imageHandles.begin(), end = m_imageHandles.end(); it != end; ++it) {
         Image *image = it->second;
-        SG_INSERT_MARKERF("Accessory::destroy(image=%d, name=%s)", image->handle().id, it->first.c_str());
+        SG_INSERT_MARKERF("Accessory::destroy(image=%d, name=%s)", image->imageHandle().id, it->first.c_str());
         image->destroy();
         nanoem_delete(image);
     }
@@ -571,9 +575,9 @@ Accessory::synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *ke
 }
 
 IImageView *
-Accessory::uploadImage(const String &filename, const sg_image_desc &desc)
+Accessory::uploadImage(const String &filename, const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc)
 {
-    return internalUploadImage(filename, desc, true);
+    return internalUploadImage(filename, imageDesc, samplerDesc, true);
 }
 
 const Accessory::Material *
@@ -1168,15 +1172,16 @@ Accessory::createImage(const nanodxm_uint8_t *path)
 }
 
 Image *
-Accessory::internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist)
+Accessory::internalUploadImage(
+    const String &filename, const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc, bool fileExist)
 {
     SG_PUSH_GROUPF("Accessory::internalUploadImage(filename=%s, width=%d, height=%d, fileExist=%d)", filename.c_str(),
-        desc.width, desc.height, fileExist);
+        imageDesc.width, imageDesc.height, fileExist);
     Image *image = nullptr;
     ImageMap::iterator it = m_imageHandles.find(filename);
     if (it != m_imageHandles.end()) {
         image = it->second;
-        ImageLoader::copyImageDescrption(desc, image);
+        ImageLoader::copySampledImageDescrption(imageDesc, samplerDesc, image);
         if (Inline::isDebugLabelEnabled()) {
             char label[Inline::kMarkerStringLength];
             StringUtils::format(
@@ -1185,7 +1190,7 @@ Accessory::internalUploadImage(const String &filename, const sg_image_desc &desc
         }
         image->setFileExist(fileExist);
         image->create();
-        EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->handle().id);
+        EMLOG_DEBUG("The image is allocated: name={} ID={}", filename.c_str(), image->imageHandle().id);
     }
     SG_POP_GROUP();
     return image;
@@ -1222,7 +1227,8 @@ Accessory::createAllImages()
             if (ImageLoader::isScreenBMP(reinterpret_cast<const char *>(path))) {
                 m_screenImage = nanoem_new(Image);
                 m_screenImage->setFilename(Project::kViewportSecondaryName);
-                m_screenImage->setHandle(m_project->viewportSecondaryImage());
+                m_screenImage->setImageHandle(m_project->viewportSecondaryImage());
+                m_screenImage->setSamplerHandle(m_project->sharedFallbackSampler());
                 material->setDiffuseImage(m_screenImage);
             }
             else {
@@ -1534,7 +1540,7 @@ Accessory::getVertexIndexBufferAndTexture(const nanodxm_material_t *materialPtr,
     if (it != m_materials.end()) {
         const Material *material = it->second;
         const IImageView *image = material->diffuseImage();
-        diffuseTexture = image ? image->handle() : m_project->sharedFallbackImage();
+        diffuseTexture = image ? image->imageHandle() : m_project->sharedFallbackImage();
         sphereTextureType = material->sphereTextureMapType();
     }
     buffer.m_vertexBuffer = m_vertexBuffer;
@@ -1563,7 +1569,7 @@ Accessory::drawColor(bool scriptExternalColor)
     nanodxm_rsize_t numMaterials, indexOffset = 0;
     nanodxm_material_t *const *materials = nanodxmDocumentGetMaterials(m_opaque, &numMaterials);
     if (m_screenImage) {
-        m_screenImage->setHandle(m_project->viewportSecondaryImage());
+        m_screenImage->setImageHandle(m_project->viewportSecondaryImage());
     }
     sg_image diffuseTexture = { SG_INVALID_ID };
     for (nanodxm_rsize_t i = 0; i < numMaterials; i++) {

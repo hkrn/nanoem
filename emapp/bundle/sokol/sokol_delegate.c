@@ -126,6 +126,12 @@ sgx_make_image(const sg_image_desc *desc)
     return sg_make_image(desc);
 }
 
+SGX_API_DECL sg_sampler APIENTRY
+sgx_make_sampler(const sg_sampler_desc *desc)
+{
+    return sg_make_sampler(desc);
+}
+
 SGX_API_DECL sg_shader APIENTRY
 sgx_make_shader(const sg_shader_desc *desc)
 {
@@ -154,6 +160,12 @@ SGX_API_DECL void APIENTRY
 sgx_destroy_image(sg_image img)
 {
     sg_destroy_image(img);
+}
+
+SGX_API_DECL void APIENTRY
+sgx_destroy_sampler(sg_sampler smp)
+{
+    sg_destroy_sampler(smp);
 }
 
 SGX_API_DECL void APIENTRY
@@ -303,6 +315,12 @@ sgx_query_image_state(sg_image img)
 }
 
 SGX_API_DECL sg_resource_state APIENTRY
+sgx_query_sampler_state(sg_sampler smp)
+{
+    return sg_query_sampler_state(smp);
+}
+
+SGX_API_DECL sg_resource_state APIENTRY
 sgx_query_shader_state(sg_shader shd)
 {
     return sg_query_shader_state(shd);
@@ -330,6 +348,12 @@ SGX_API_DECL sg_image_info APIENTRY
 sgx_query_image_info(sg_image img)
 {
     return sg_query_image_info(img);
+}
+
+SGX_API_DECL sg_sampler_info APIENTRY
+sgx_query_sampler_info(sg_sampler smp)
+{
+    return sg_query_sampler_info(smp);
 }
 
 SGX_API_DECL sg_shader_info APIENTRY
@@ -362,6 +386,12 @@ sgx_query_image_defaults(const sg_image_desc *desc)
     return sg_query_image_defaults(desc);
 }
 
+SGX_API_DECL sg_sampler_desc APIENTRY
+sgx_query_sampler_defaults(const sg_sampler_desc *desc)
+{
+    return sg_query_sampler_defaults(desc);
+}
+
 SGX_API_DECL sg_shader_desc APIENTRY
 sgx_query_shader_defaults(const sg_shader_desc *desc)
 {
@@ -390,6 +420,12 @@ SGX_API_DECL sg_image APIENTRY
 sgx_alloc_image(void)
 {
     return sg_alloc_image();
+}
+
+SGX_API_DECL sg_sampler APIENTRY
+sgx_alloc_sampler(void)
+{
+    return sg_alloc_sampler();
 }
 
 SGX_API_DECL sg_shader APIENTRY
@@ -423,6 +459,12 @@ sgx_init_image(sg_image img_id, const sg_image_desc *desc)
 }
 
 SGX_API_DECL void APIENTRY
+sgx_init_sampler(sg_sampler smp_id, const sg_sampler_desc *desc)
+{
+    sg_init_sampler(smp_id, desc);
+}
+
+SGX_API_DECL void APIENTRY
 sgx_init_shader(sg_shader shd_id, const sg_shader_desc *desc)
 {
     sg_init_shader(shd_id, desc);
@@ -450,6 +492,12 @@ SGX_API_DECL void APIENTRY
 sgx_fail_image(sg_image img_id)
 {
     sg_fail_image(img_id);
+}
+
+SGX_API_DECL void APIENTRY
+sgx_fail_sampler(sg_sampler smp_id)
+{
+    sg_fail_sampler(smp_id);
 }
 
 SGX_API_DECL void APIENTRY
@@ -501,6 +549,12 @@ sgx_dealloc_image(sg_image img_id)
 }
 
 SGX_API_DECL void APIENTRY
+sgx_dealloc_sampler(sg_sampler smp_id)
+{
+    sg_dealloc_sampler(smp_id);
+}
+
+SGX_API_DECL void APIENTRY
 sgx_dealloc_shader(sg_shader shd_id)
 {
     sg_dealloc_shader(shd_id);
@@ -528,6 +582,12 @@ SGX_API_DECL void APIENTRY
 sgx_uninit_image(sg_image img_id)
 {
     sg_uninit_image(img_id);
+}
+
+SGX_API_DECL void APIENTRY
+sgx_uninit_sampler(sg_sampler smp_id)
+{
+    sg_uninit_sampler(smp_id);
 }
 
 SGX_API_DECL void APIENTRY

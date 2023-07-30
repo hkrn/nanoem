@@ -22,7 +22,9 @@ AnimatedImageContainer::AnimatedImageContainer(
     , m_dirty(false)
 {
     Inline::clearZeroMemory(m_colorImageDescription);
+    Inline::clearZeroMemory(m_colorSamplerDescription);
     m_colorImage = { SG_INVALID_ID };
+    m_colorSampler = { SG_INVALID_ID };
 }
 
 AnimatedImageContainer::~AnimatedImageContainer() NANOEM_DECL_NOEXCEPT
@@ -37,13 +39,14 @@ AnimatedImageContainer::create()
         m_colorImageDescription.height = m_data->height();
         m_colorImageDescription.type = SG_IMAGETYPE_2D;
         m_colorImageDescription.usage = SG_USAGE_STREAM;
-        m_colorImageDescription.wrap_u = m_colorImageDescription.wrap_v = SG_WRAP_REPEAT;
-        m_colorImageDescription.mag_filter = m_colorImageDescription.min_filter = SG_FILTER_LINEAR;
+        m_colorSamplerDescription.wrap_u = m_colorSamplerDescription.wrap_v = SG_WRAP_REPEAT;
+        m_colorSamplerDescription.mag_filter = m_colorSamplerDescription.min_filter = SG_FILTER_LINEAR;
         m_colorImageDescription.pixel_format = SG_PIXELFORMAT_RGBA8;
         if (Inline::isDebugLabelEnabled()) {
             m_colorImageDescription.label = m_name.c_str();
         }
         m_colorImage = sg::make_image(&m_colorImageDescription);
+        m_colorSampler = sg::make_sampler(&m_colorSamplerDescription);
     }
 }
 
@@ -76,6 +79,8 @@ AnimatedImageContainer::destroy() NANOEM_DECL_NOEXCEPT
     SG_INSERT_MARKERF("effect::AnimatedImageContainer::destroy(id=%d)", m_colorImage.id);
     sg::destroy_image(m_colorImage);
     m_colorImage = { SG_INVALID_ID };
+    sg::destroy_sampler(m_colorSampler);
+    m_colorSampler = { SG_INVALID_ID };
     nanoem_delete_safe(m_data);
 }
 
@@ -89,6 +94,12 @@ sg_image
 AnimatedImageContainer::colorImage() const NANOEM_DECL_NOEXCEPT
 {
     return m_colorImage;
+}
+
+sg_sampler
+AnimatedImageContainer::colorSampler() const NANOEM_DECL_NOEXCEPT
+{
+    return m_colorSampler;
 }
 
 nanoem_f32_t

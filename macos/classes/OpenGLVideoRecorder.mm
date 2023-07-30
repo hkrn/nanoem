@@ -82,14 +82,15 @@ OpenGLVideoRecorder::updateDepthImage(IOSurfaceRef surface)
 {
     int width = IOSurfaceGetWidth(surface), height = IOSurfaceGetHeight(surface),
         sampleCount = int(project()->sampleCount());
-    if (m_description.width != width || m_description.height != height || m_description.sample_count != sampleCount) {
+    if (m_imageDescription.width != width || m_imageDescription.height != height ||
+        m_imageDescription.sample_count != sampleCount) {
         SG_PUSH_GROUP("macos::OpenGLVideoRecorder::updateDepthImage()");
         sg::destroy_image(m_colorImage);
         sg::destroy_image(m_depthImage);
-        m_description.width = width;
-        m_description.height = height;
-        m_colorImage = sg::make_image(&m_description);
-        sg_image_desc ide(m_description);
+        m_imageDescription.width = width;
+        m_imageDescription.height = height;
+        m_colorImage = sg::make_image(&m_imageDescription);
+        sg_image_desc ide(m_imageDescription);
         ide.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
         m_depthImage = sg::make_image(&ide);
         updateAllMSAAImages(width, height);

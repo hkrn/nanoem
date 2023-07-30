@@ -52,7 +52,6 @@ DecoderPluginBasedBackgroundVideoRenderer::load(const URI &fileURI, Error &error
             m_desc.height = height;
             m_desc.pixel_format = SG_PIXELFORMAT_RGBA8;
             m_desc.usage = SG_USAGE_DYNAMIC;
-            m_desc.mag_filter = m_desc.min_filter = SG_FILTER_LINEAR;
             char label[Inline::kMarkerStringLength];
             if (Inline::isDebugLabelEnabled()) {
                 StringUtils::format(label, sizeof(label), "%s/ColorImage", kLabelPrefix);

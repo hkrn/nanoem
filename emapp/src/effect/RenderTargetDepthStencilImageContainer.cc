@@ -36,6 +36,7 @@ RenderTargetDepthStencilImageContainer::RenderTargetDepthStencilImageContainer(c
     , m_dirty(false)
 {
     Inline::clearZeroMemory(m_depthStencilImageDescription);
+    Inline::clearZeroMemory(m_depthStencilSamplerDescription);
 }
 
 RenderTargetDepthStencilImageContainer::RenderTargetDepthStencilImageContainer(
@@ -44,6 +45,7 @@ RenderTargetDepthStencilImageContainer::RenderTargetDepthStencilImageContainer(
     , m_allDepthStencilImages(value.m_allDepthStencilImages)
     , m_scaleFactor(value.m_scaleFactor)
     , m_depthStencilImageDescription(value.m_depthStencilImageDescription)
+    , m_depthStencilSamplerDescription(value.m_depthStencilSamplerDescription)
     , m_dirty(false)
 {
 }
@@ -221,9 +223,6 @@ void
 RenderTargetDepthStencilImageContainer::setImageDescription(const sg_image_desc &value)
 {
     m_depthStencilImageDescription = value;
-    if (m_depthStencilImageDescription.num_mipmaps == 1) {
-        RenderState::normalizeMinFilter(m_depthStencilImageDescription.min_filter);
-    }
     m_dirty = true;
 }
 
@@ -256,6 +255,12 @@ const sg_image_desc &
 RenderTargetDepthStencilImageContainer::depthStencilImageDescription() const NANOEM_DECL_NOEXCEPT
 {
     return m_depthStencilImageDescription;
+}
+
+const sg_sampler_desc &
+RenderTargetDepthStencilImageContainer::depthStencilSamplerDescription() const NANOEM_DECL_NOEXCEPT
+{
+    return m_depthStencilSamplerDescription;
 }
 
 } /* namespace effect */

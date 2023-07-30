@@ -219,20 +219,29 @@ AccessoryProgramBundle::CommonPass::setMaterialParameters(const nanodxm_material
             textureType == NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_ADD ? 1.0f : 0.0f, 0
         };
         m_uniformBuffer[kUniformBufferSphereTextureType] = glm::make_vec4(sphereTextureTypes);
-        sg_image image = accessory->project()->sharedFallbackImage();
+        const Project *project = accessory->project();
+        sg_image image = project->sharedFallbackImage();
+        sg_sampler sampler = project->sharedFallbackSampler();
         if (const IImageView *diffuseImage = materialData->diffuseImage()) {
-            image = diffuseImage->handle();
+            image = diffuseImage->imageHandle();
+            sampler = diffuseImage->samplerHandle();
         }
-        m_bindings.fs_images[CommonPass::kDiffuseTextureSamplerStage] = image;
-        m_bindings.fs_images[CommonPass::kSphereTextureSamplerStage] = image;
+        m_bindings.fs.images[CommonPass::kDiffuseTextureSamplerStage] = image;
+        m_bindings.fs.samplers[CommonPass::kDiffuseTextureSamplerStage] = sampler;
+        m_bindings.fs.images[CommonPass::kSphereTextureSamplerStage] = image;
+        m_bindings.fs.samplers[CommonPass::kSphereTextureSamplerStage] = sampler;
         m_uniformBuffer[kUniformBufferUseTextureSampler].x = materialData->diffuseImage() != nullptr;
         m_uniformBuffer[kUniformBufferUseTextureSampler].y =
             materialData->sphereTextureMapType() != NANOEM_MODEL_MATERIAL_SPHERE_MAP_TEXTURE_TYPE_NONE;
     }
     else {
-        sg_image fallback = accessory->project()->sharedFallbackImage();
-        m_bindings.fs_images[CommonPass::kDiffuseTextureSamplerStage] = fallback;
-        m_bindings.fs_images[CommonPass::kSphereTextureSamplerStage] = fallback;
+        const Project *project = accessory->project();
+        sg_image fallbackImage = project->sharedFallbackImage();
+        sg_sampler fallbackSampler = project->sharedFallbackSampler();
+        m_bindings.fs.images[CommonPass::kDiffuseTextureSamplerStage] = fallbackImage;
+        m_bindings.fs.samplers[CommonPass::kDiffuseTextureSamplerStage] = fallbackSampler;
+        m_bindings.fs.images[CommonPass::kSphereTextureSamplerStage] = fallbackImage;
+        m_bindings.fs.samplers[CommonPass::kSphereTextureSamplerStage] = fallbackSampler;
         m_uniformBuffer[kUniformBufferSphereTextureType] = m_uniformBuffer[kUniformBufferUseTextureSampler] =
             Constants::kZeroV4;
     }
@@ -286,8 +295,9 @@ AccessoryProgramBundle::CommonPass::setGroundShadowParameters(
         glm::value_ptr(shadowViewProjectionMatrix), sizeof(shadowViewProjectionMatrix));
     m_uniformBuffer[kUniformBufferLightColor] =
         Vector4(light->groundShadowColor(), 1.0f + light->isTranslucentGroundShadowEnabled() * -0.5f);
-    m_bindings.fs_images[CommonPass::kShadowMapTextureSamplerStage0] =
-        m_parentTechnique->accessory()->project()->sharedFallbackImage();
+    const Project *project = m_parentTechnique->accessory()->project();
+    m_bindings.fs.images[CommonPass::kShadowMapTextureSamplerStage0] = project->sharedFallbackImage();
+    m_bindings.fs.samplers[CommonPass::kShadowMapTextureSamplerStage0] = project->sharedFallbackSampler();
 }
 
 void
@@ -295,8 +305,9 @@ AccessoryProgramBundle::CommonPass::setShadowMapParameters(const ShadowCamera *s
 {
     BX_UNUSED_2(shadowCamera, world);
     nanoem_parameter_assert(shadowCamera, "must NOT be nullptr");
-    m_bindings.fs_images[CommonPass::kShadowMapTextureSamplerStage0] =
-        m_parentTechnique->accessory()->project()->sharedFallbackImage();
+    const Project *project = m_parentTechnique->accessory()->project();
+    m_bindings.fs.images[CommonPass::kShadowMapTextureSamplerStage0] = project->sharedFallbackImage();
+    m_bindings.fs.samplers[CommonPass::kShadowMapTextureSamplerStage0] = project->sharedFallbackSampler();
 }
 
 void
@@ -330,7 +341,7 @@ AccessoryProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, co
         Accessory::setStandardPipelineDescription(desc);
         desc.shader = m_parentTechnique->shader();
         desc.color_count = format.numColorAttachments();
-        sg_color_state &cs = desc.colors[0];
+        sg_color_target_state &cs = desc.colors[0];
         cs.pixel_format = format.colorPixelFormat(0);
         sg_depth_state &ds = desc.depth;
         ds.compare = isDepthEnabled ? SG_COMPAREFUNC_LESS_EQUAL : SG_COMPAREFUNC_ALWAYS;
@@ -460,23 +471,30 @@ AccessoryProgramBundle::BaseTechnique::setupShader(const char *vs, const char *f
     desc.vs.entry = "nanoemVSMain";
     desc.fs.entry = "nanoemPSMain";
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
-    desc.fs.images[CommonPass::kShadowMapTextureSamplerStage0] =
-        sg_shader_image_desc { "SPIRV_Cross_Combined_2", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
-    desc.fs.images[CommonPass::kDiffuseTextureSamplerStage] =
-        sg_shader_image_desc { "SPIRV_Cross_Combined", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
-    desc.fs.images[CommonPass::kSphereTextureSamplerStage] =
-        sg_shader_image_desc { "SPIRV_Cross_Combined_1", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+    desc.fs.image_sampler_pairs[CommonPass::kShadowMapTextureSamplerStage0] =
+        sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
+    desc.fs.image_sampler_pairs[CommonPass::kDiffuseTextureSamplerStage] =
+        sg_shader_image_sampler_pair_desc { true, 1, 1, "SPIRV_Cross_Combined_1" };
+    desc.fs.image_sampler_pairs[CommonPass::kSphereTextureSamplerStage] =
+        sg_shader_image_sampler_pair_desc { true, 2, 2, "SPIRV_Cross_Combined_2" };
 #else
-    desc.fs.images[CommonPass::kShadowMapTextureSamplerStage0] =
-        sg_shader_image_desc { "SPIRV_Cross_Combinedu_shadowTextureu_shadowTextureSampler", SG_IMAGETYPE_2D,
-            SG_SAMPLERTYPE_FLOAT };
-    desc.fs.images[CommonPass::kDiffuseTextureSamplerStage] =
-        sg_shader_image_desc { "SPIRV_Cross_Combinedu_diffuseTextureu_diffuseTextureSampler", SG_IMAGETYPE_2D,
-            SG_SAMPLERTYPE_FLOAT };
-    desc.fs.images[CommonPass::kSphereTextureSamplerStage] =
-        sg_shader_image_desc { "SPIRV_Cross_Combinedu_spheremapTextureu_spheremapTextureSampler", SG_IMAGETYPE_2D,
-            SG_SAMPLERTYPE_FLOAT };
+    desc.fs.image_sampler_pairs[CommonPass::kShadowMapTextureSamplerStage0] =
+        sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combinedu_shadowTextureu_shadowTextureSampler" };
+    desc.fs.image_sampler_pairs[CommonPass::kDiffuseTextureSamplerStage] =
+        sg_shader_image_sampler_pair_desc { true, 1, 1, "SPIRV_Cross_Combinedu_diffuseTextureu_diffuseTextureSampler" };
+    desc.fs.image_sampler_pairs[CommonPass::kSphereTextureSamplerStage] = sg_shader_image_sampler_pair_desc { true, 2,
+        2, "SPIRV_Cross_Combinedu_spheremapTextureu_spheremapTextureSampler" };
 #endif
+    desc.fs.images[CommonPass::kShadowMapTextureSamplerStage0] =
+        sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+    desc.fs.images[CommonPass::kDiffuseTextureSamplerStage] =
+        sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+    desc.fs.images[CommonPass::kSphereTextureSamplerStage] =
+        sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+    desc.fs.samplers[CommonPass::kShadowMapTextureSamplerStage0] =
+        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+    desc.fs.samplers[CommonPass::kDiffuseTextureSamplerStage] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+    desc.fs.samplers[CommonPass::kSphereTextureSamplerStage] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
     desc.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };
     desc.attrs[1] = sg_shader_attr_desc { "a_normal", "NORMAL", 0 };
     desc.attrs[2] = sg_shader_attr_desc { "a_texcoord0", "TEXCOORD", 0 };

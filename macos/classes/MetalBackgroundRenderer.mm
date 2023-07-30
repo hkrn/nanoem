@@ -94,8 +94,6 @@ MetalBackgroundRenderer::createTexture(CVPixelBufferRef pixelBuffer, sg_image_de
         desc.usage = SG_USAGE_IMMUTABLE;
         desc.width = td.width = IOSurfaceGetWidth(currentSurface);
         desc.height = td.height = IOSurfaceGetHeight(currentSurface);
-        desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
-        desc.wrap_u = desc.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
         td.textureType = MTLTextureType2D;
         /* IOSurface doesn't allow MSAA (sampleCount > 1) */
         td.sampleCount = td.mipmapLevelCount = td.depth = td.arrayLength = 1;

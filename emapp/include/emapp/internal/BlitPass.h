@@ -21,6 +21,8 @@ public:
     BlitPass(Project *project, bool flipY);
     ~BlitPass() NANOEM_DECL_NOEXCEPT;
 
+    void destroy() NANOEM_DECL_NOEXCEPT_OVERRIDE;
+
     void blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, const sg::NamedImage &source,
         const Vector4 &rect, const PixelFormat &format);
     void blit(sg::PassBlock::IDrawQueue *drawQueue, const sg::NamedPass &dest, const sg::NamedImage &source,
@@ -35,6 +37,7 @@ private:
     const char *name() const NANOEM_DECL_NOEXCEPT_OVERRIDE;
 
     sg::QuadVertexUnit m_vertices[4];
+    sg_sampler m_sampler;
     bool m_dirty;
 };
 

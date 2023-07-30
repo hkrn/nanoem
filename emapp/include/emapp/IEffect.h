@@ -33,12 +33,13 @@ public:
         kScriptOrderTypeMaxEnum
     };
     struct ImageResourceParameter {
-        ImageResourceParameter(
-            const String &name, const URI &fileURI, const String &filename, const sg_image_desc &desc, bool shared)
+        ImageResourceParameter(const String &name, const URI &fileURI, const String &filename,
+            const sg_image_desc &imageDescription, const sg_sampler_desc &samplerDescription, bool shared)
             : m_fileURI(fileURI)
             , m_name(name)
             , m_filename(filename)
-            , m_desc(desc)
+            , m_imageDescription(imageDescription)
+            , m_samplerDescription(samplerDescription)
             , m_shared(shared)
         {
         }
@@ -46,7 +47,8 @@ public:
             : m_fileURI(parameter.m_fileURI)
             , m_name(parameter.m_name)
             , m_filename(parameter.m_filename)
-            , m_desc(parameter.m_desc)
+            , m_imageDescription(parameter.m_imageDescription)
+            , m_samplerDescription(parameter.m_samplerDescription)
             , m_shared(parameter.m_shared)
         {
         }
@@ -56,7 +58,8 @@ public:
         const URI m_fileURI;
         const String m_name;
         const String m_filename;
-        sg_image_desc m_desc;
+        sg_image_desc m_imageDescription;
+        sg_sampler_desc m_samplerDescription;
         bool m_shared;
     };
 

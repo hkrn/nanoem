@@ -962,8 +962,6 @@ Project::Pass::update(const Vector2UI16 &size)
     id.width = size.x;
     id.height = size.y;
     id.pixel_format = colorPixelFormat;
-    id.mag_filter = id.min_filter = SG_FILTER_LINEAR;
-    id.wrap_u = id.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     id.sample_count = enableMSAA ? numSamples : 1;
     sg::destroy_image(m_colorImage);
     m_colorImage = sg::make_image(&id);
@@ -1176,7 +1174,7 @@ Project::isLoadableExtension(const URI &fileURI)
 }
 
 void
-Project::setAlphaBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT
+Project::setAlphaBlendMode(sg_color_target_state &state) NANOEM_DECL_NOEXCEPT
 {
     sg_blend_state &bs = state.blend;
     bs.enabled = true;
@@ -1191,7 +1189,7 @@ Project::setAlphaBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT
 }
 
 void
-Project::setAddBlendMode(sg_color_state &state) NANOEM_DECL_NOEXCEPT
+Project::setAddBlendMode(sg_color_target_state &state) NANOEM_DECL_NOEXCEPT
 {
     sg_blend_state &bs = state.blend;
     bs.enabled = true;
@@ -1308,6 +1306,7 @@ Project::Project(const Injector &injector)
     const bool topLeft = sg::query_features().origin_top_left;
     Inline::clearZeroMemory(m_logicalScaleCursorPositions);
     m_fallbackImage = { SG_INVALID_ID };
+    m_fallbackSampler = { SG_INVALID_ID };
     m_currentRenderPass = m_currentOffscreenRenderPass = m_lastDrawnRenderPass = m_originOffscreenRenderPass =
         m_scriptExternalRenderPass = { SG_INVALID_ID };
     m_camera = nanoem_new(PerspectiveCamera(this));
@@ -1474,6 +1473,7 @@ Project::destroy() NANOEM_DECL_NOEXCEPT
         m_sharedImageBlitter->destroy();
     }
     sg::destroy_image(m_fallbackImage);
+    sg::destroy_sampler(m_fallbackSampler);
     m_objectHandleAllocator->free(0);
     bx::destroyHandleAlloc(g_emapp_allocator, m_objectHandleAllocator);
     m_objectHandleAllocator = nullptr;
@@ -2886,6 +2886,12 @@ Project::sharedFallbackImage() const NANOEM_DECL_NOEXCEPT
     return m_fallbackImage;
 }
 
+sg_sampler
+Project::sharedFallbackSampler() const NANOEM_DECL_NOEXCEPT
+{
+    return m_fallbackSampler;
+}
+
 sg::PassBlock::IDrawQueue *
 Project::sharedBatchDrawQueue() NANOEM_DECL_NOEXCEPT
 {
@@ -2953,7 +2959,7 @@ Project::drawShadowMap()
         m_shadowCamera->clear();
         if (m_editingMode != Project::kEditingModeSelect) {
             const nanoem_rsize_t numDrawables = m_drawableOrderList.size();
-            const sg_pass pass = m_shadowCamera->pass();
+            const sg_pass pass = m_shadowCamera->passHandle();
             PassScope scope(m_currentOffscreenRenderPass, pass), scope2(m_originOffscreenRenderPass, pass);
             BX_UNUSED_2(scope, scope2);
             for (nanoem_rsize_t j = 0; j < numDrawables; j++) {
@@ -5901,10 +5907,10 @@ Project::setShadowMapEnabled(bool value)
     if (value) {
         m_shadowCamera->setEnabled(true);
         m_shadowCamera->resize(m_shadowCamera->imageSize());
-        const sg_pass shadowPass = m_shadowCamera->pass();
+        const sg_pass shadowPass = m_shadowCamera->passHandle();
         RenderPassBundle &d = m_renderPassBundleMap[shadowPass.id];
-        d.m_colorImage = m_shadowCamera->colorImage();
-        d.m_depthImage = m_shadowCamera->depthImage();
+        d.m_colorImage = m_shadowCamera->colorImageHandle();
+        d.m_depthImage = m_shadowCamera->depthImageHandle();
         forceResetAllPasses();
     }
     else {
@@ -6934,10 +6940,10 @@ Project::internalResetAllRenderTargets(const Vector2UI16 &size)
     }
     if (isShadowMapEnabled()) {
         m_shadowCamera->update();
-        const sg_pass shadowPass = m_shadowCamera->pass();
+        const sg_pass shadowPass = m_shadowCamera->passHandle();
         RenderPassBundle &d = m_renderPassBundleMap[shadowPass.id];
-        d.m_colorImage = m_shadowCamera->colorImage();
-        d.m_depthImage = m_shadowCamera->depthImage();
+        d.m_colorImage = m_shadowCamera->colorImageHandle();
+        d.m_depthImage = m_shadowCamera->depthImageHandle();
     }
     SG_POP_GROUP();
 }
@@ -7218,6 +7224,16 @@ Project::createFallbackImage()
         m_fallbackImage = sg::make_image(&desc);
         nanoem_assert(sg::query_image_state(m_fallbackImage) == SG_RESOURCESTATE_VALID, "image must be valid");
         SG_LABEL_IMAGE(m_fallbackImage, desc.label);
+    }
+    if (!sg::is_valid(m_fallbackSampler)) {
+        sg_sampler_desc desc;
+        Inline::clearZeroMemory(desc);
+        if (Inline::isDebugLabelEnabled()) {
+            desc.label = "@nanoem/FallbackSampler";
+        }
+        m_fallbackSampler = sg::make_sampler(&desc);
+        nanoem_assert(sg::query_sampler_state(m_fallbackSampler) == SG_RESOURCESTATE_VALID, "image must be valid");
+        SG_LABEL_SAMPLER(m_fallbackSampler, desc.label);
     }
 }
 

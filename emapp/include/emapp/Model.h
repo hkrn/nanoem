@@ -274,7 +274,8 @@ public:
     bool hasOutsideParent(const nanoem_model_bone_t *key) const NANOEM_DECL_NOEXCEPT;
     void setOutsideParent(const nanoem_model_bone_t *key, const StringPair &value);
     void removeOutsideParent(const nanoem_model_bone_t *key);
-    IImageView *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
+    IImageView *uploadImage(const String &filename, const sg_image_desc &imageDesc,
+        const sg_sampler_desc &samplerDesc) NANOEM_DECL_OVERRIDE;
     bool isBoneSelectable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
     bool isMaterialSelected(const nanoem_model_material_t *value) const NANOEM_DECL_NOEXCEPT;
     bool isBoneConnectionDrawable(const nanoem_model_bone_t *value) const NANOEM_DECL_NOEXCEPT;
@@ -502,7 +503,8 @@ private:
     IEffect *activeEffect(model::Material *material);
     IEffect *internalEffect(model::Material *material);
     const Image *createImage(const nanoem_unicode_string_t *path, sg_wrap wrap, nanoem_u32_t flags);
-    Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
+    Image *internalUploadImage(
+        const String &filename, const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc, bool fileExist);
     void updateDiffuseImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
     void updateSphereMapImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);
     void updateToonImage(const nanoem_model_material_t *materialPtr, sg_wrap &mode, nanoem_u32_t &flags);

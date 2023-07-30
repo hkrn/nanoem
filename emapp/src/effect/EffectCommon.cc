@@ -62,24 +62,6 @@ appendSwizzle(size_t numElements, int offset, String &s)
     }
 }
 
-static void
-setMipFilter(nanoem_u32_t value, sg_filter &filter) NANOEM_DECL_NOEXCEPT
-{
-    bool linear = filter == SG_FILTER_LINEAR;
-    switch (value) {
-    case 1: { /* D3DTEXF_POINT */
-        filter = linear ? SG_FILTER_LINEAR_MIPMAP_NEAREST : SG_FILTER_NEAREST_MIPMAP_NEAREST;
-        break;
-    }
-    case 2: { /* D3DTEXF_LINEAR */
-        filter = linear ? SG_FILTER_LINEAR_MIPMAP_LINEAR : SG_FILTER_NEAREST_MIPMAP_LINEAR;
-        break;
-    }
-    default:
-        break;
-    }
-}
-
 } /* namespace anonymous */
 
 PipelineDescriptor::Stencil::Stencil()
@@ -1017,10 +999,12 @@ MatrixUniform::multiply(const Matrix4x4 &world, const Matrix4x4 &view, const Mat
     }
 }
 
-ImageSampler::ImageSampler(const String &name, sg_shader_stage stage, sg_image image, nanoem_u32_t offset)
+ImageSampler::ImageSampler(
+    const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset)
     : m_name(name)
     , m_stage(stage)
     , m_image(image)
+    , m_sampler(sampler)
     , m_offset(offset)
 {
 }
@@ -1227,7 +1211,7 @@ RenderState::convertWrap(nanoem_u32_t value, sg_wrap &wrap)
 }
 
 void
-RenderState::convertFilter(nanoem_u32_t value, sg_image_desc &desc, sg_filter &filter)
+RenderState::convertFilter(nanoem_u32_t value, sg_sampler_desc &desc, sg_filter &filter)
 {
     switch (value) {
     case 2: { /* D3DTEXF_LINEAR */
@@ -1327,7 +1311,7 @@ RenderState::convertCompareFunc(nanoem_u32_t value, sg_compare_func &func)
 }
 
 void
-RenderState::convertSamplerState(nanoem_u32_t key, nanoem_u32_t value, sg_image_desc &desc)
+RenderState::convertSamplerState(nanoem_u32_t key, nanoem_u32_t value, sg_sampler_desc &desc)
 {
     switch (key) {
     case 1: { /* D3DSAMP_ADDRESSU */
@@ -1354,10 +1338,10 @@ RenderState::convertSamplerState(nanoem_u32_t key, nanoem_u32_t value, sg_image_
         break;
     }
     case 7: { /* D3DSAMP_MIPFILTER */
-        setMipFilter(value, desc.min_filter);
+        convertFilter(value, desc, desc.mipmap_filter);
         if (value != 0) {
             /* set actual mipmap levels later */
-            desc.num_mipmaps = 0;
+            // desc.num_mipmaps = 0;
         }
         break;
     }
@@ -1601,23 +1585,6 @@ RenderState::convertPipeline(nanoem_u32_t key, nanoem_u32_t value, PipelineDescr
     }
     default:
         SG_INSERT_MARKERF("RenderState::convertPipeline(key=%d, value=%d)", key, value);
-        break;
-    }
-}
-
-void
-RenderState::normalizeMinFilter(sg_filter &value)
-{
-    switch (value) {
-    case SG_FILTER_LINEAR_MIPMAP_LINEAR:
-    case SG_FILTER_LINEAR_MIPMAP_NEAREST:
-        value = SG_FILTER_LINEAR;
-        break;
-    case SG_FILTER_NEAREST_MIPMAP_LINEAR:
-    case SG_FILTER_NEAREST_MIPMAP_NEAREST:
-        value = SG_FILTER_NEAREST;
-        break;
-    default:
         break;
     }
 }

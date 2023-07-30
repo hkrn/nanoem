@@ -31,14 +31,13 @@ convertPipeline(const TPass *passPtr, PipelineDescriptor &desc)
 
 template <typename TTexture, typename TSamplerState>
 static void
-convertImageDescription(const TTexture *texturePtr, sg_image_desc &desc)
+convertSamplerDescription(const TTexture *texturePtr, sg_sampler_desc &samplerDescription)
 {
     const size_t numSamplerStates = texturePtr->n_sampler_states;
-    desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
-    desc.num_mipmaps = 1;
+    samplerDescription.mag_filter = samplerDescription.min_filter = SG_FILTER_LINEAR;
     for (size_t i = 0; i < numSamplerStates; i++) {
         const TSamplerState *state = texturePtr->sampler_states[i];
-        effect::RenderState::convertSamplerState(state->key, state->value, desc);
+        effect::RenderState::convertSamplerState(state->key, state->value, samplerDescription);
     }
 }
 

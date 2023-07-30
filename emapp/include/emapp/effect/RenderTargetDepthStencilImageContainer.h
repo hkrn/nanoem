@@ -38,6 +38,7 @@ public:
 
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;
     const sg_image_desc &depthStencilImageDescription() const NANOEM_DECL_NOEXCEPT;
+    const sg_sampler_desc &depthStencilSamplerDescription() const NANOEM_DECL_NOEXCEPT;
 
 private:
     const String m_name;
@@ -45,6 +46,7 @@ private:
     DepthStencilImageMap m_allDepthStencilImages;
     Vector2 m_scaleFactor;
     sg_image_desc m_depthStencilImageDescription;
+    sg_sampler_desc m_depthStencilSamplerDescription;
     bool m_dirty;
 };
 

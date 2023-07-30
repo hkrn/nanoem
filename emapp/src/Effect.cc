@@ -139,12 +139,14 @@ public:
     static void retrieveShaderSymbols(const Fx9__Effect__Shader *shaderPtr, RegisterIndexMap &registerIndices,
         UniformBufferOffsetMap &uniformBufferOffsetMap);
     static void setImageTypesFromSampler(
-        const Fx9__Effect__Shader *shaderPtr, sg_shader_image_desc *shaderSamplers) NANOEM_DECL_NOEXCEPT;
-    static void retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_image_desc *shaderSamplers,
-        ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices);
-    static void retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_image_desc *shaderSamplers,
-        ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices);
-    static void fillShaderImageDescriptions(const char *prefix, sg_shader_image_desc *desc, StringList &names);
+        const Fx9__Effect__Shader *shaderPtr, sg_shader_stage_desc &shaderSamplers) NANOEM_DECL_NOEXCEPT;
+    static void retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
+        ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+        SamplerRegisterIndexMap &shaderRegisterIndices);
+    static void retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
+        ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+        SamplerRegisterIndexMap &shaderRegisterIndices);
+    static void fillShaderImageDescriptions(const char *prefix, sg_shader_stage_desc &desc, StringList &names);
     static void parseSubsetString(char *ptr, int numMaterials, Effect::MaterialIndexSet &output);
     static bool hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT;
     static Vector3 angle(const Accessory *accessory);
@@ -792,25 +794,29 @@ PrivateEffectUtils::retrieveShaderSymbols(const Fx9__Effect__Shader *shaderPtr, 
 
 void
 PrivateEffectUtils::setImageTypesFromSampler(
-    const Fx9__Effect__Shader *shaderPtr, sg_shader_image_desc *shaderSamplers) NANOEM_DECL_NOEXCEPT
+    const Fx9__Effect__Shader *shaderPtr, sg_shader_stage_desc &shaderSamplers) NANOEM_DECL_NOEXCEPT
 {
     const size_t numSamplers = shaderPtr->n_samplers;
     for (size_t i = 0; i < numSamplers; i++) {
         const Fx9__Effect__Sampler *samplerPtr = shaderPtr->samplers[i];
         const nanoem_u32_t samplerIndex = samplerPtr->index;
         if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-            sg_shader_image_desc &desc = shaderSamplers[samplerIndex];
-            desc.name = samplerPtr->sampler_name;
+            shaderSamplers.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+            shaderSamplers.image_sampler_pairs[i] = sg_shader_image_sampler_pair_desc { true, Inline::saturateInt32(i),
+                Inline::saturateInt32(i), samplerPtr->sampler_name };
             switch (samplerPtr->type) {
             case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_2D:
             default:
-                desc.image_type = SG_IMAGETYPE_2D;
+                shaderSamplers.images[i] =
+                    sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
                 break;
             case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_VOLUME:
-                desc.image_type = SG_IMAGETYPE_3D;
+                shaderSamplers.images[i] =
+                    sg_shader_image_desc { true, false, SG_IMAGETYPE_3D, SG_IMAGESAMPLETYPE_FLOAT };
                 break;
             case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_CUBE:
-                desc.image_type = SG_IMAGETYPE_CUBE;
+                shaderSamplers.images[i] =
+                    sg_shader_image_desc { true, false, SG_IMAGETYPE_CUBE, SG_IMAGESAMPLETYPE_FLOAT };
                 break;
             }
         }
@@ -818,8 +824,9 @@ PrivateEffectUtils::setImageTypesFromSampler(
 }
 
 void
-PrivateEffectUtils::retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_image_desc *shaderSamplers,
-    ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices)
+PrivateEffectUtils::retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
+    ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+    SamplerRegisterIndexMap &shaderRegisterIndices)
 {
     const Fx9__Effect__Shader *shaderPtr = pass->pixel_shader;
     setImageTypesFromSampler(shaderPtr, shaderSamplers);
@@ -841,21 +848,27 @@ PrivateEffectUtils::retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, s
                 shaderRegisterIndices.insert(tinystl::make_pair(name, samplerRegisterIndex));
             }
             if (textureDescriptions.find(name) == textureDescriptions.end()) {
-                sg_image_desc desc;
-                Inline::clearZeroMemory(desc);
-                convertImageDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(samplerPtr, desc);
+                sg_image_desc imageDescription;
+                sg_sampler_desc samplerDescription;
+                Inline::clearZeroMemory(imageDescription);
+                Inline::clearZeroMemory(samplerDescription);
+                imageDescription.num_mipmaps = 1;
+                convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(
+                    samplerPtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-                    desc.type = shaderSamplers[samplerIndex].image_type;
+                    imageDescription.type = shaderSamplers.images[samplerIndex].image_type;
                 }
-                textureDescriptions.insert(tinystl::make_pair(name, desc));
+                textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
+                samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
             }
         }
     }
 }
 
 void
-PrivateEffectUtils::retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_image_desc *shaderSamplers,
-    ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices)
+PrivateEffectUtils::retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
+    ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+    SamplerRegisterIndexMap &shaderRegisterIndices)
 {
     const Fx9__Effect__Shader *shaderPtr = pass->vertex_shader;
     setImageTypesFromSampler(shaderPtr, shaderSamplers);
@@ -877,32 +890,37 @@ PrivateEffectUtils::retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, 
                 shaderRegisterIndices.insert(tinystl::make_pair(name, samplerRegisterIndex));
             }
             if (textureDescriptions.find(name) == textureDescriptions.end()) {
-                sg_image_desc desc;
-                Inline::clearZeroMemory(desc);
-                convertImageDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(samplerPtr, desc);
+                sg_image_desc imageDescription;
+                sg_sampler_desc samplerDescription;
+                Inline::clearZeroMemory(imageDescription);
+                Inline::clearZeroMemory(samplerDescription);
+                imageDescription.num_mipmaps = 1;
+                convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(
+                    samplerPtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-                    desc.type = shaderSamplers[samplerIndex].image_type;
+                    imageDescription.type = shaderSamplers.images[samplerIndex].image_type;
                 }
-                textureDescriptions.insert(tinystl::make_pair(name, desc));
+                textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
+                samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
             }
         }
     }
 }
 
 void
-PrivateEffectUtils::fillShaderImageDescriptions(const char *prefix, sg_shader_image_desc *desc, StringList &names)
+PrivateEffectUtils::fillShaderImageDescriptions(const char *prefix, sg_shader_stage_desc &desc, StringList &names)
 {
     bool found = false;
     for (int i = SG_MAX_SHADERSTAGE_IMAGES - 1; i >= 0; i--) {
-        sg_shader_image_desc &id = desc[i];
-        if (found && id.image_type == _SG_IMAGETYPE_DEFAULT) {
+        if (found && desc.images[i].image_type == _SG_IMAGETYPE_DEFAULT) {
             String name;
             StringUtils::format(name, "%s_%d", prefix, i);
             names.push_back(name);
-            id.name = name.c_str();
-            id.image_type = SG_IMAGETYPE_2D;
+            desc.image_sampler_pairs[i] = sg_shader_image_sampler_pair_desc { true, i, i, name.c_str() };
+            desc.images[i] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+            desc.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
         }
-        else if (id.image_type != _SG_IMAGETYPE_DEFAULT) {
+        else if (desc.images[i].image_type != _SG_IMAGETYPE_DEFAULT) {
             found = true;
         }
     }
@@ -965,10 +983,12 @@ void createShader(const Fx9__Effect__Dx9ms__Shader *shaderPtr, sg_shader_desc &d
     StringMap &shaderOutputVariables);
 void retrieveShaderSymbols(const Fx9__Effect__Dx9ms__Shader *shaderPtr, RegisterIndexMap &registerIndices,
     UniformBufferOffsetMap &uniformBufferOffsetMap);
-void retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_image_desc *pixelShaderSamplers,
-    ImageDescriptionMap &pixelShaderSamplerFlags, SamplerRegisterIndexMap &shaderRegisterIndices);
-void retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_image_desc *vertexShaderSamplers,
-    ImageDescriptionMap &vertexShaderSamplerFlags, SamplerRegisterIndexMap &shaderRegisterIndices);
+void retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_stage_desc &pixelShaderSamplers,
+    ImageDescriptionMap &pixelShaderSamplerFlags, SamplerDescriptionMap &samplerDescriptions,
+    SamplerRegisterIndexMap &shaderRegisterIndices);
+void retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_stage_desc &vertexShaderSamplers,
+    ImageDescriptionMap &vertexShaderSamplerFlags, SamplerDescriptionMap &samplerDescriptions,
+    SamplerRegisterIndexMap &shaderRegisterIndices);
 void parsePreshader(const Fx9__Effect__Dx9ms__Shader *shaderPtr, Preshader &preshader, GlobalUniform::Buffer &buffer,
     RegisterIndexMap &registerIndices);
 
@@ -1466,10 +1486,10 @@ Effect::createImageResource(const void *ptr, size_t size, const ImageResourcePar
 {
     Error error;
     bool registered = false;
-    if (ImageLoader::validateImageSize(parameter.m_desc, parameter.m_name.c_str(), error)) {
+    if (ImageLoader::validateImageSize(parameter.m_imageDescription, parameter.m_name.c_str(), error)) {
         char label[Inline::kMarkerStringLength];
-        sg_image_desc imageDescription(parameter.m_desc);
-        imageDescription.max_anisotropy = m_project->maxAnisotropyValue();
+        sg_image_desc imageDescription(parameter.m_imageDescription);
+        // imageDescription.max_anisotropy = m_project->maxAnisotropyValue();
         imageDescription.data.subimage[0][0].ptr = ptr;
         imageDescription.data.subimage[0][0].size = size;
         if (Inline::isDebugLabelEnabled()) {
@@ -1478,8 +1498,10 @@ Effect::createImageResource(const void *ptr, size_t size, const ImageResourcePar
         }
         sg_image image = sg::make_image(&imageDescription);
         nanoem_assert(sg::query_image_state(image) == SG_RESOURCESTATE_VALID, "image must be valid");
+        sg_sampler sampler = sg::make_sampler(&parameter.m_samplerDescription);
+        nanoem_assert(sg::query_sampler_state(sampler) == SG_RESOURCESTATE_VALID, "sampler must be valid");
         if (sg::is_valid(image)) {
-            registerImageResource(image, parameter);
+            registerImageResource(image, sampler, parameter);
             registered = true;
         }
     }
@@ -1684,8 +1706,8 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                                 passRegisterIndices.m_vertexPreshader);
                             dx9ms::retrieveShaderSymbols(vertexShader, passRegisterIndices.m_vertexShader,
                                 vertexShaderRegisterUniformBufferOffsetMap);
-                            dx9ms::retrieveVertexShaderSamplers(dx9ms, shaderDescription.vs.images, m_imageDescriptions,
-                                passRegisterIndices.m_vertexShaderSamplers);
+                            dx9ms::retrieveVertexShaderSamplers(dx9ms, shaderDescription.vs, m_imageDescriptions,
+                                m_samplerDescriptions, passRegisterIndices.m_vertexShaderSamplers);
                             String vertexShaderHeaderComment(commonHeaderComment);
                             PrivateEffectUtils::appendShaderVariablesHeaderComment<Fx9__Effect__Dx9ms__Shader,
                                 Fx9__Effect__Dx9ms__Symbol, Fx9__Effect__Dx9ms__Uniform, Fx9__Effect__Dx9ms__Attribute>(
@@ -1706,8 +1728,8 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                                 m_globalUniformPtr->m_preshaderPixelShaderBuffer, passRegisterIndices.m_pixelPreshader);
                             dx9ms::retrieveShaderSymbols(pixelShader, passRegisterIndices.m_pixelShader,
                                 pixelShaderRegisterUniformBufferOffsetMap);
-                            dx9ms::retrievePixelShaderSamplers(dx9ms, shaderDescription.fs.images, m_imageDescriptions,
-                                passRegisterIndices.m_pixelShaderSamplers);
+                            dx9ms::retrievePixelShaderSamplers(dx9ms, shaderDescription.fs, m_imageDescriptions,
+                                m_samplerDescriptions, passRegisterIndices.m_pixelShaderSamplers);
                             String pixelShaderHeaderComment(commonHeaderComment);
                             PrivateEffectUtils::appendShaderVariablesHeaderComment<Fx9__Effect__Dx9ms__Shader,
                                 Fx9__Effect__Dx9ms__Symbol, Fx9__Effect__Dx9ms__Uniform, Fx9__Effect__Dx9ms__Attribute>(
@@ -1751,14 +1773,14 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                                                   *pixelShader = passPtr->pixel_shader;
                         PrivateEffectUtils::retrieveShaderSymbols(vertexShader, passRegisterIndices.m_vertexShader,
                             vertexShaderRegisterUniformBufferOffsetMap);
-                        PrivateEffectUtils::retrieveVertexShaderSamplers(passPtr, shaderDescription.vs.images,
-                            m_imageDescriptions, passRegisterIndices.m_vertexShaderSamplers);
+                        PrivateEffectUtils::retrieveVertexShaderSamplers(passPtr, shaderDescription.vs,
+                            m_imageDescriptions, m_samplerDescriptions, passRegisterIndices.m_vertexShaderSamplers);
                         PrivateEffectUtils::attachShaderSource(vertexShader, techniquePtr->name, passPtr->name,
                             shaderDescription.vs, vertexShaderCode, error);
                         PrivateEffectUtils::retrieveShaderSymbols(
                             pixelShader, passRegisterIndices.m_pixelShader, pixelShaderRegisterUniformBufferOffsetMap);
-                        PrivateEffectUtils::retrievePixelShaderSamplers(passPtr, shaderDescription.fs.images,
-                            m_imageDescriptions, passRegisterIndices.m_pixelShaderSamplers);
+                        PrivateEffectUtils::retrievePixelShaderSamplers(passPtr, shaderDescription.fs,
+                            m_imageDescriptions, m_samplerDescriptions, passRegisterIndices.m_pixelShaderSamplers);
                         PrivateEffectUtils::attachShaderSource(pixelShader, techniquePtr->name, passPtr->name,
                             shaderDescription.fs, pixelShaderCode, error);
                         const size_t numRenderStates = passPtr->n_render_states;
@@ -1842,13 +1864,16 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                             passRegisterIndices.m_pixelShaderSamplers.insert(
                                 tinystl::make_pair(String("ps_s0"), samplerRegisterIndex));
                             shaderDescription.fs.images[0] =
-                                sg_shader_image_desc { "ps_s0", SG_IMAGETYPE_2D, SG_SAMPLERTYPE_FLOAT };
+                                sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+                            shaderDescription.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+                            shaderDescription.fs.image_sampler_pairs[0] =
+                                sg_shader_image_sampler_pair_desc { true, 0, 0, "ps_s0" };
                         }
                         StringList vertexShaderFallbackImageNames, pixelShaderFallbackImageNames;
                         PrivateEffectUtils::fillShaderImageDescriptions(
-                            "vs", shaderDescription.vs.images, vertexShaderFallbackImageNames);
+                            "vs", shaderDescription.vs, vertexShaderFallbackImageNames);
                         PrivateEffectUtils::fillShaderImageDescriptions(
-                            "ps", shaderDescription.fs.images, pixelShaderFallbackImageNames);
+                            "ps", shaderDescription.fs, pixelShaderFallbackImageNames);
                         PrivateEffectUtils::parseAnnotations(
                             passPtr->annotations, passPtr->n_annotations, factory, passAnnotations);
                         char label[Inline::kMarkerStringLength];
@@ -2496,6 +2521,19 @@ Effect::setImageLabel(sg_image texture, const char *name)
 }
 
 void
+Effect::setSamplerLabel(sg_sampler sampler, const char *name)
+{
+    NamedHandleMap::const_iterator it = m_namedSamplerHandles.find(sampler.id);
+    if (it == m_namedSamplerHandles.end()) {
+        char nameBuffer[Inline::kMarkerStringLength];
+        StringUtils::format(nameBuffer, sizeof(nameBuffer), "Effects/%s/%s", nameConstString(), name);
+        SG_LABEL_SAMPLER(sampler, nameBuffer);
+        SG_INSERT_MARKERF("Effect::setSamplerLabel(handle=%d, name=%s)", sampler.id, nameBuffer);
+        m_namedSamplerHandles.insert(tinystl::make_pair(sampler.id, String(nameBuffer)));
+    }
+}
+
+void
 Effect::setShaderLabel(sg_shader shader, const char *name)
 {
     NamedHandleMap::const_iterator it = m_namedShaderHandles.find(shader.id);
@@ -2515,6 +2553,16 @@ Effect::removeImageLabel(sg_image texture)
     if (it != m_namedImageHandles.end()) {
         SG_INSERT_MARKERF("Effect::removeImageLabel(handle=%d, name=%s)", it->first, it->second.c_str());
         m_namedImageHandles.erase(it);
+    }
+}
+
+void
+Effect::removeSamplerLabel(sg_sampler sampler)
+{
+    NamedHandleMap::const_iterator it = m_namedSamplerHandles.find(sampler.id);
+    if (it != m_namedSamplerHandles.end()) {
+        SG_INSERT_MARKERF("Effect::removeSamplerLabel(handle=%d, name=%s)", it->first, it->second.c_str());
+        m_namedSamplerHandles.erase(it);
     }
 }
 
@@ -3241,7 +3289,7 @@ Effect::setMaterialParameters(const Accessory *accessory, const nanodxm_material
             for (SemanticUniformList::const_iterator it = m_sphereImageUniforms.begin(),
                                                      end = m_sphereImageUniforms.end();
                  it != end; ++it) {
-                setImageUniform(*it, pass, createOverrideImage(*it, diffuseImage, true));
+                setImageUniform(*it, pass, diffuseImage->imageHandle(), createOverrideSampler(*it, diffuseImage, true));
             }
             writeUniformBuffer("use_texture", pass, 0);
             writeUniformBuffer("use_spheremap", pass, 1);
@@ -3250,7 +3298,7 @@ Effect::setMaterialParameters(const Accessory *accessory, const nanodxm_material
             for (SemanticUniformList::const_iterator it = m_diffuseImageUniforms.begin(),
                                                      end = m_diffuseImageUniforms.end();
                  it != end; ++it) {
-                setImageUniform(*it, pass, createOverrideImage(*it, diffuseImage, true));
+                setImageUniform(*it, pass, diffuseImage->imageHandle(), createOverrideSampler(*it, diffuseImage, true));
             }
             writeUniformBuffer("use_texture", pass, 1);
             writeUniformBuffer("use_spheremap", pass, 0);
@@ -3369,24 +3417,24 @@ Effect::setMaterialParameters(const nanoem_model_material_t *materialPtr, const 
         for (SemanticUniformList::const_iterator it = m_diffuseImageUniforms.begin(),
                                                  end = m_diffuseImageUniforms.end();
              it != end; ++it) {
-            setImageUniform(*it, pass, createOverrideImage(*it, diffuseImage, true));
+            setImageUniform(*it, pass, diffuseImage->imageHandle(), createOverrideSampler(*it, diffuseImage, true));
         }
     }
     if (const IImageView *sphereImage = material->sphereMapImage()) {
         for (SemanticUniformList::const_iterator it = m_sphereImageUniforms.begin(), end = m_sphereImageUniforms.end();
              it != end; ++it) {
-            setImageUniform(*it, pass, createOverrideImage(*it, sphereImage, true));
+            setImageUniform(*it, pass, sphereImage->imageHandle(), createOverrideSampler(*it, sphereImage, true));
         }
     }
     if (const IImageView *toonImage = material->toonImage()) {
         if (!m_toonImageUniforms.empty() || target == kPassTypeObjectSelfShadow) {
             for (SemanticUniformList::const_iterator it = m_toonImageUniforms.begin(), end = m_toonImageUniforms.end();
                  it != end; ++it) {
-                setImageUniform(*it, pass, createOverrideImage(*it, toonImage, false));
+                setImageUniform(*it, pass, toonImage->imageHandle(), createOverrideSampler(*it, toonImage, false));
             }
         }
         else if (target == kPassTypeObject) {
-            m_firstImageHandle = toonImage->handle();
+            m_firstImageHandle = toonImage->imageHandle();
         }
     }
     const Vector3 lightColor(project()->globalLight()->color());
@@ -3471,7 +3519,7 @@ Effect::setShadowMapParameters(const ShadowCamera *shadowCamera, const Matrix4x4
         }
     }
     if (shadowCamera->isEnabled()) {
-        const sg_image shadowMapImage = shadowCamera->colorImage();
+        const sg_image shadowMapImage = shadowCamera->colorImageHandle();
         bool sameOutput = m_currentRenderTargetPassDescription.color_attachments[0].image.id == shadowMapImage.id;
         m_firstImageHandle = sameOutput ? m_project->sharedFallbackImage() : shadowMapImage;
     }
@@ -4483,7 +4531,7 @@ Effect::internalFindTechnique(const String &passType, nanoem_rsize_t numMaterial
                 sg_pipeline_desc &desc = technique->mutablePipelineDescription();
                 Accessory::setStandardPipelineDescription(desc);
                 if (passType == kPassTypeZplot) {
-                    m_project->setCurrentRenderPass(m_project->shadowCamera()->pass());
+                    m_project->setCurrentRenderPass(m_project->shadowCamera()->passHandle());
                 }
                 else if (passType == kPassTypeShadow) {
                     Project::setShadowDepthStencilState(desc.depth, desc.stencil);
@@ -4535,7 +4583,7 @@ Effect::internalFindTechnique(
                     desc.primitive_type = SG_PRIMITIVETYPE_LINES;
                 }
                 if (passType == kPassTypeZplot) {
-                    m_project->setCurrentRenderPass(m_project->shadowCamera()->pass());
+                    m_project->setCurrentRenderPass(m_project->shadowCamera()->passHandle());
                 }
                 else if (passType == kPassTypeShadow) {
                     Project::setShadowDepthStencilState(desc.depth, desc.stencil);
@@ -4562,29 +4610,38 @@ Effect::createImageResourceParameter(
     Vector2 scaleFactor(0);
     const AnnotationMap &annotations = parameter.m_annotations;
     const Vector4 size(determineImageSize(annotations, Vector4(64, 64, 1, 0), scaleFactor));
-    sg_image_desc desc;
-    Inline::clearZeroMemory(desc);
+    sg_image_desc imageDescription;
+    Inline::clearZeroMemory(imageDescription);
     ImageDescriptionMap::const_iterator it2 = m_imageDescriptions.find(parameter.m_name);
     if (it2 != m_imageDescriptions.end()) {
-        desc = it2->second;
+        imageDescription = it2->second;
     }
     const Vector3SI32 imageSize(size);
-    desc.width = imageSize.x;
-    desc.height = imageSize.y;
-    desc.num_slices = imageSize.z;
-    desc.pixel_format = determinePixelFormat(annotations, SG_PIXELFORMAT_RGBA8);
-    desc.type = determineImageType(annotations, parameter.m_type);
-    if (desc.num_mipmaps == 0) {
-        desc.num_mipmaps = determineMipLevels(annotations, size, SG_MAX_MIPMAPS);
+    imageDescription.width = imageSize.x;
+    imageDescription.height = imageSize.y;
+    imageDescription.num_slices = imageSize.z;
+    imageDescription.pixel_format = determinePixelFormat(annotations, SG_PIXELFORMAT_RGBA8);
+    imageDescription.type = determineImageType(annotations, parameter.m_type);
+    if (imageDescription.num_mipmaps == 0) {
+        imageDescription.num_mipmaps = determineMipLevels(annotations, size, SG_MAX_MIPMAPS);
     }
-    return ImageResourceParameter(parameter.m_name, fileURI, filename, desc, parameter.m_shared);
+    sg_sampler_desc samplerDescription;
+    Inline::clearZeroMemory(samplerDescription);
+    SamplerDescriptionMap::const_iterator it3 = m_samplerDescriptions.find(parameter.m_name);
+    if (it3 != m_samplerDescriptions.end()) {
+        samplerDescription = it3->second;
+    }
+    return ImageResourceParameter(
+        parameter.m_name, fileURI, filename, imageDescription, samplerDescription, parameter.m_shared);
 }
 
 void
 Effect::createBlankImageResource(const TypedSemanticParameter &parameter)
 {
     const ImageResourceParameter resourceParameter(createImageResourceParameter(parameter));
-    registerImageResource(sg::make_image(&resourceParameter.m_desc), resourceParameter);
+    sg_image image = sg::make_image(&resourceParameter.m_imageDescription);
+    sg_sampler sampler = sg::make_sampler(&resourceParameter.m_samplerDescription);
+    registerImageResource(image, sampler, resourceParameter);
 }
 
 void
@@ -4642,12 +4699,12 @@ Effect::createImageResourceFromArchive(const String &name, const TypedSemanticPa
 }
 
 void
-Effect::registerImageResource(sg_image image, const ImageResourceParameter &parameter)
+Effect::registerImageResource(sg_image image, sg_sampler sampler, const ImageResourceParameter &parameter)
 {
     const String &name = parameter.m_name;
     setImageLabel(image, name);
     m_textureResourceUniforms.insert(name);
-    m_resourceImages.insert(tinystl::make_pair(name, image));
+    m_resourceImages.insert(tinystl::make_pair(name, tinystl::make_pair(image, sampler)));
     m_imageResources.push_back(parameter);
     RenderTargetColorImageContainer *sharedContainer = m_project->findSharedRenderTargetImageContainer(name, nullptr);
     if (sharedContainer && parameter.m_shared) {
@@ -4655,67 +4712,41 @@ Effect::registerImageResource(sg_image image, const ImageResourceParameter &para
     }
 }
 
-sg_image
-Effect::createOverrideImage(const String &name, const IImageView *image, bool mipmap)
+sg_sampler
+Effect::createOverrideSampler(const String &name, const IImageView *image, bool mipmap)
 {
-    ImageDescriptionMap::const_iterator it = m_imageDescriptions.find(name);
-    sg_image handle = image->handle();
-    if (it != m_imageDescriptions.end()) {
-        const sg_image_desc originImageDescription(image->description());
+    SamplerDescriptionMap::const_iterator it = m_samplerDescriptions.find(name);
+    sg_sampler handle = image->samplerHandle();
+    if (it != m_samplerDescriptions.end()) {
+        const sg_image_desc originImageDescription(image->imageDescription());
+        const sg_sampler_desc originSamplerDescription(image->samplerDescription());
         bx::HashMurmur2A hash;
         hash.begin();
         hash.add(name.c_str(), Inline::saturateInt32(name.size()));
         hash.add(handle);
         const nanoem_u32_t key = hash.end();
-        OverridenImageHandleMap::const_iterator it2 = m_overridenImageHandles.find(key);
-        if (it2 != m_overridenImageHandles.end()) {
+        OverridenSamplerHandleMap::const_iterator it2 = m_overridenSamplerHandles.find(key);
+        if (it2 != m_overridenSamplerHandles.end()) {
             handle = it2->second;
         }
         else if (originImageDescription.width > 0 && originImageDescription.height > 0) {
-            const sg_image_desc &overridenImageDescription = it->second;
-            sg_image_desc imageDescription(originImageDescription);
-            const sg_filter minFilterValue = overridenImageDescription.min_filter;
-            const int numMipmaps = overridenImageDescription.num_mipmaps;
-            if (mipmap && m_project->isMipmapEnabled() && numMipmaps != 1) {
-                switch (minFilterValue) {
-                case SG_FILTER_LINEAR: {
-                    imageDescription.min_filter = SG_FILTER_LINEAR_MIPMAP_LINEAR;
-                    break;
-                }
-                case SG_FILTER_NEAREST: {
-                    imageDescription.min_filter = SG_FILTER_NEAREST_MIPMAP_NEAREST;
-                    break;
-                }
-                case SG_FILTER_LINEAR_MIPMAP_LINEAR:
-                case SG_FILTER_LINEAR_MIPMAP_NEAREST:
-                case SG_FILTER_NEAREST_MIPMAP_LINEAR:
-                case SG_FILTER_NEAREST_MIPMAP_NEAREST: {
-                    imageDescription.min_filter = minFilterValue;
-                    break;
-                }
-                default:
-                    break;
-                }
+            const sg_sampler_desc &overridenSamplerDescription = it->second;
+            sg_sampler_desc samplerDescription(originSamplerDescription);
+            if (!mipmap) {
+                samplerDescription.mipmap_filter = SG_FILTER_NONE;
             }
-            else {
-                imageDescription.min_filter = minFilterValue;
-                RenderState::normalizeMinFilter(imageDescription.min_filter);
-            }
-            if (numMipmaps > 0) {
-                imageDescription.num_mipmaps = numMipmaps;
-            }
-            imageDescription.mag_filter = overridenImageDescription.mag_filter;
-            imageDescription.wrap_u = overridenImageDescription.wrap_u;
-            imageDescription.wrap_v = overridenImageDescription.wrap_v;
+            samplerDescription.mag_filter = overridenSamplerDescription.mag_filter;
+            samplerDescription.wrap_u = overridenSamplerDescription.wrap_u;
+            samplerDescription.wrap_v = overridenSamplerDescription.wrap_v;
             char suffix[Inline::kMarkerStringLength], label[Inline::kMarkerStringLength];
             StringUtils::format(suffix, sizeof(suffix), "%s/%s", name.c_str(), image->filenameConstString());
             if (Inline::isDebugLabelEnabled()) {
                 StringUtils::format(label, sizeof(label), "Effects/%s/%s", nameConstString(), suffix);
-                imageDescription.label = label;
+                samplerDescription.label = label;
             }
-            handle = sg::make_image(&imageDescription);
-            setImageLabel(handle, suffix);
-            m_overridenImageHandles.insert(tinystl::make_pair(key, handle));
+            handle = sg::make_sampler(&samplerDescription);
+            setSamplerLabel(handle, suffix);
+            m_overridenSamplerHandles.insert(tinystl::make_pair(key, handle));
         }
     }
     return handle;
@@ -4801,17 +4832,17 @@ Effect::determineImageSize(
 }
 
 void
-Effect::setImageUniform(const String &name, const effect::Pass *pass, sg_image handle)
+Effect::setImageUniform(const String &name, const effect::Pass *pass, sg_image image, sg_sampler sampler)
 {
     SamplerRegisterIndex::List indices;
     if (pass->findPixelShaderSamplerRegisterIndex(name, indices)) {
         for (SamplerRegisterIndex::List::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
-            m_imageSamplers[pass].push_back(ImageSampler(name, SG_SHADERSTAGE_FS, handle, *it));
+            m_imageSamplers[pass].push_back(ImageSampler(name, SG_SHADERSTAGE_FS, image, sampler, *it));
         }
     }
     else if (pass->findVertexShaderSamplerRegisterIndex(name, indices)) {
         for (SamplerRegisterIndex::List::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
-            m_imageSamplers[pass].push_back(ImageSampler(name, SG_SHADERSTAGE_VS, handle, *it));
+            m_imageSamplers[pass].push_back(ImageSampler(name, SG_SHADERSTAGE_VS, image, sampler, *it));
         }
     }
 }
@@ -4988,7 +5019,7 @@ Effect::setFoundImageSamplers(
             const String &name = *it;
             SemanticImageMap::const_iterator it2 = images.find(name);
             if (it2 != images.end()) {
-                setImageUniform(name, passPtr, it2->second);
+                setImageUniform(name, passPtr, it2->second.first, it2->second.second);
             }
         }
     }
@@ -5003,7 +5034,8 @@ Effect::setFoundImageSamplers(const SemanticUniformList &uniforms,
             const String &name = *it;
             NamedRenderTargetColorImageContainerMap::const_iterator it2 = containers.find(name);
             if (it2 != containers.end()) {
-                setImageUniform(name, passPtr, it2->second->preferredColorImageHandle());
+                const RenderTargetColorImageContainer *container = it2->second;
+                setImageUniform(name, passPtr, container->preferredColorImageHandle(), container->samplerHandle());
             }
         }
     }
@@ -5018,7 +5050,8 @@ Effect::setFoundImageSamplers(const SemanticUniformList &uniforms,
             const String &name = *it;
             OffscreenRenderTargetImageContainerMap::const_iterator it2 = containers.find(name);
             if (it2 != containers.end()) {
-                setImageUniform(name, passPtr, it2->second->preferredColorImageHandle());
+                const RenderTargetColorImageContainer *container = it2->second;
+                setImageUniform(name, passPtr, container->preferredColorImageHandle(), container->samplerHandle());
             }
         }
     }
@@ -5045,7 +5078,7 @@ Effect::setFoundImageSamplers(const effect::SemanticUniformList &uniforms, const
                 }
                 value = glm::max((value * container->speed()) - container->offset(), 0.0f);
                 container->update(value);
-                setImageUniform(name, passPtr, container->colorImage());
+                setImageUniform(name, passPtr, container->colorImage(), container->colorSampler());
             }
         }
     }
@@ -5065,7 +5098,7 @@ Effect::setTextureValues(const SemanticImageMap &images, effect::Pass *passPtr)
                 const String &target = it2->second;
                 SemanticImageMap::const_iterator it3 = images.find(target);
                 if (it3 != images.end()) {
-                    sg_image image = it3->second;
+                    sg_image image = it3->second.first;
                     StagingBufferMap::iterator it4 = m_imageStagingBuffers.find(target);
                     StagingBuffer *sb = nullptr;
                     if (it4 != m_imageStagingBuffers.end()) {
@@ -5077,7 +5110,7 @@ Effect::setTextureValues(const SemanticImageMap &images, effect::Pass *passPtr)
                                                                end2 = m_imageResources.end();
                              it5 != end2; ++it5) {
                             if (it5->m_name == target) {
-                                const sg_image_desc &desc = it5->m_desc;
+                                const sg_image_desc &desc = it5->m_imageDescription;
                                 size = Vector4UI16(desc.width, desc.height, desc.num_slices, 1);
                                 break;
                             }
@@ -5225,7 +5258,7 @@ void
 Effect::updatePassImageHandles(effect::Pass *pass, sg_bindings &bindings)
 {
     nanoem_parameter_assert(pass, "must not be nullptr");
-    sg_image *pixelShaderImages = bindings.fs_images, *vertexShaderImages = bindings.vs_images,
+    sg_image *pixelShaderImages = bindings.fs.images, *vertexShaderImages = bindings.vs.images,
              fallbackImage = m_project->sharedFallbackImage();
     pixelShaderImages[0] = m_firstImageHandle;
     ImageSamplerMap::iterator it = m_imageSamplers.find(pass);
@@ -5335,13 +5368,14 @@ Effect::destroyAllRenderTargetNormalizers()
 void
 Effect::destroyAllOverridenImages()
 {
-    SG_PUSH_GROUPF("Effect::destroy(overridenImages=%d)", m_overridenImageHandles.size());
-    for (OverridenImageHandleMap::iterator it = m_overridenImageHandles.begin(), end = m_overridenImageHandles.end();
+    SG_PUSH_GROUPF("Effect::destroy(overridenImages=%d)", m_overridenSamplerHandles.size());
+    for (OverridenSamplerHandleMap::iterator it = m_overridenSamplerHandles.begin(),
+                                             end = m_overridenSamplerHandles.end();
          it != end; ++it) {
-        removeImageLabel(it->second);
-        sg::destroy_image(it->second);
+        removeSamplerLabel(it->second);
+        sg::destroy_sampler(it->second);
     }
-    m_overridenImageHandles.clear();
+    m_overridenSamplerHandles.clear();
     SG_POP_GROUP();
 }
 
@@ -5363,8 +5397,10 @@ Effect::destroyAllSemanticImages(SemanticImageMap &images)
 {
     SG_PUSH_GROUPF("Effect::destroyAllSemanticImages(size=%d)", images.size());
     for (SemanticImageMap::iterator it = images.begin(), end = images.end(); it != end; ++it) {
-        removeImageLabel(it->second);
-        sg::destroy_image(it->second);
+        removeImageLabel(it->second.first);
+        sg::destroy_image(it->second.first);
+        removeSamplerLabel(it->second.second);
+        sg::destroy_sampler(it->second.second);
     }
     images.clear();
     SG_POP_GROUP();
@@ -5549,18 +5585,17 @@ Effect::findOffscreenOwnerObject(const IDrawable *ownerDrawable, const Project *
 void
 Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &parameter, Error &error)
 {
-    sg_image_desc desc;
+    sg_image_desc imageDescription;
     nanoem_u8_t *decodedImagePtr = nullptr;
-    Inline::clearZeroMemory(desc);
+    Inline::clearZeroMemory(imageDescription);
     const URI &fileURI = parameter.m_fileURI;
     if (ImageLoader::decodeImageWithSTB(
-            bytes.data(), bytes.size(), parameter.m_filename.c_str(), desc, &decodedImagePtr, error)) {
-        desc.mag_filter = desc.min_filter = SG_FILTER_LINEAR;
-        const sg_range &data = desc.data.subimage[0][0];
+            bytes.data(), bytes.size(), parameter.m_filename.c_str(), imageDescription, &decodedImagePtr, error)) {
+        const sg_range &data = imageDescription.data.subimage[0][0];
         ImageResourceParameter newParameter(parameter);
-        newParameter.m_desc.width = desc.width;
-        newParameter.m_desc.height = desc.height;
-        newParameter.m_desc.pixel_format = desc.pixel_format;
+        newParameter.m_imageDescription.width = imageDescription.width;
+        newParameter.m_imageDescription.height = imageDescription.height;
+        newParameter.m_imageDescription.pixel_format = imageDescription.pixel_format;
         createImageResource(data.ptr, data.size, newParameter);
         ImageLoader::releaseDecodedImageWithSTB(&decodedImagePtr);
     }
@@ -5572,24 +5607,28 @@ Effect::decodeImageData(const ByteArray &bytes, const ImageResourceParameter &pa
             reader.seek(0, ISeekable::kSeekTypeBegin, error);
             error = Error();
             if (image::DDS *dds = ImageLoader::decodeDDS(&reader, error)) {
-                dds->setImageDescription(desc);
-                sg_image image = sg::make_image(&desc);
+                dds->setImageDescription(imageDescription);
+                sg_image image = sg::make_image(&imageDescription);
                 nanoem_delete(dds);
                 nanoem_assert(sg::query_image_state(image) == SG_RESOURCESTATE_VALID, "image must be valid");
-                if (sg::is_valid(image)) {
-                    registerImageResource(image, parameter);
+                sg_sampler sampler = sg::make_sampler(&parameter.m_samplerDescription);
+                nanoem_assert(sg::query_sampler_state(sampler) == SG_RESOURCESTATE_VALID, "image must be valid");
+                if (sg::is_valid(image) && sg::is_valid(sampler)) {
+                    registerImageResource(image, sampler, parameter);
                 }
             }
         }
     }
     else if (StringUtils::equalsIgnoreCase(fileURI.pathExtension().c_str(), "pfm")) {
         if (image::PFM *pfm = ImageLoader::decodePFM(bytes, error)) {
-            pfm->setImageDescription(desc);
-            sg_image image = sg::make_image(&desc);
+            pfm->setImageDescription(imageDescription);
+            sg_image image = sg::make_image(&imageDescription);
             nanoem_delete(pfm);
             nanoem_assert(sg::query_image_state(image) == SG_RESOURCESTATE_VALID, "image must be valid");
-            if (sg::is_valid(image)) {
-                registerImageResource(image, parameter);
+            sg_sampler sampler = sg::make_sampler(&parameter.m_samplerDescription);
+            nanoem_assert(sg::query_sampler_state(sampler) == SG_RESOURCESTATE_VALID, "image must be valid");
+            if (sg::is_valid(image) && sg::is_valid(sampler)) {
+                registerImageResource(image, sampler, parameter);
             }
         }
     }
@@ -5603,18 +5642,18 @@ void
 Effect::setNormalizedColorImageContainer(
     const String &name, int numMipLevels, effect::RenderTargetColorImageContainer *container)
 {
-    ImageDescriptionMap::const_iterator it = m_imageDescriptions.find(name);
-    if (it != m_imageDescriptions.end()) {
+    SamplerDescriptionMap::const_iterator it = m_samplerDescriptions.find(name);
+    if (it != m_samplerDescriptions.end()) {
         const sg_backend backend = sg::query_backend();
         if (backend == SG_BACKEND_GLCORE33 || backend == SG_BACKEND_GLES3) {
-            sg_image_desc desc(it->second);
+            sg_sampler_desc desc(it->second);
             if (numMipLevels == 1) {
-                effect::RenderState::normalizeMinFilter(desc.min_filter);
+                desc.mipmap_filter = SG_FILTER_NONE;
             }
-            container->setColorImageDescription(desc);
+            container->setColorSamplerDescription(desc);
         }
         else {
-            container->setColorImageDescription(it->second);
+            container->setColorSamplerDescription(it->second);
         }
     }
 }

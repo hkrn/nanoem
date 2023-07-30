@@ -104,8 +104,6 @@ MetalVideoRecorder::createTexture(IOSurfaceRef surface, sg_image_desc &ide)
     ide.usage = SG_USAGE_IMMUTABLE;
     ide.width = td.width = IOSurfaceGetWidth(surface);
     ide.height = td.height = IOSurfaceGetHeight(surface);
-    ide.mag_filter = ide.min_filter = SG_FILTER_LINEAR;
-    ide.wrap_u = ide.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     td.textureType = MTLTextureType2D;
     td.pixelFormat = metalPixelFormat(internalPixelFormat());
     /* IOSurface doesn't allow MSAA (sampleCount > 1) */
@@ -122,12 +120,12 @@ void
 MetalVideoRecorder::updateDepthImage(IOSurfaceRef surface)
 {
     int width = IOSurfaceGetWidth(surface), height = IOSurfaceGetHeight(surface);
-    if (width > 0 && height > 0 && (m_description.width != width || m_description.height != height)) {
+    if (width > 0 && height > 0 && (m_imageDescription.width != width || m_imageDescription.height != height)) {
         SG_PUSH_GROUP("macos::MetalVideoRecorder::updateDepthImage()");
         sg::destroy_image(m_depthImage);
-        m_description.width = width;
-        m_description.height = height;
-        sg_image_desc ide(m_description);
+        m_imageDescription.width = width;
+        m_imageDescription.height = height;
+        sg_image_desc ide(m_imageDescription);
         ide.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
         m_depthImage = sg::make_image(&ide);
         updateAllMSAAImages(width, height);

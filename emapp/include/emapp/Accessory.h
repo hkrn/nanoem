@@ -92,7 +92,8 @@ public:
     void destroy();
     void synchronizeMotion(const Motion *motion, nanoem_frame_index_t frameIndex);
     void synchronizeOutsideParent(const nanoem_motion_accessory_keyframe_t *keyframe);
-    IImageView *uploadImage(const String &filename, const sg_image_desc &desc) NANOEM_DECL_OVERRIDE;
+    IImageView *uploadImage(const String &filename, const sg_image_desc &imageDesc,
+        const sg_sampler_desc &samplerDesc) NANOEM_DECL_OVERRIDE;
     const Material *findMaterial(const nanodxm_material_t *material) const NANOEM_DECL_NOEXCEPT;
     void addAttachment(const String &name, const URI &fullPath);
     void removeAttachment(const String &name);
@@ -185,7 +186,8 @@ private:
 
     static void trianguleNormal(const nanodxm_vector3_t *vertices, const glm::uvec3 &index, Vector3List &normalSum);
     const Image *createImage(const nanodxm_uint8_t *path);
-    Image *internalUploadImage(const String &filename, const sg_image_desc &desc, bool fileExist);
+    Image *internalUploadImage(
+        const String &filename, const sg_image_desc &imageDesc, const sg_sampler_desc &samplerDesc, bool fileExist);
     void clearAllLoadingImageItems();
     void createAllImages();
     void fillNormalBuffer(const Vector3List &normalSum, nanodxm_rsize_t numVertices, VertexUnit *ptr) const;

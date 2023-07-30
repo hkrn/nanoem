@@ -144,6 +144,7 @@ struct SamplerRegisterIndex {
 };
 
 typedef tinystl::unordered_map<String, sg_image_desc, TinySTLAllocator> ImageDescriptionMap;
+typedef tinystl::unordered_map<String, sg_sampler_desc, TinySTLAllocator> SamplerDescriptionMap;
 typedef tinystl::unordered_map<String, RegisterIndex, TinySTLAllocator> RegisterIndexMap;
 typedef tinystl::unordered_map<String, SamplerRegisterIndex, TinySTLAllocator> SamplerRegisterIndexMap;
 struct PassRegisterIndexMap {
@@ -283,7 +284,7 @@ typedef tinystl::unordered_map<String, NonSemanticParameter, TinySTLAllocator> F
 typedef tinystl::unordered_map<String, NonSemanticParameter, TinySTLAllocator> VectorParameterUniformMap;
 typedef tinystl::unordered_set<String, TinySTLAllocator> SemanticUniformList;
 typedef tinystl::unordered_map<String, sg_pixel_format, TinySTLAllocator> ImageFormatMap;
-typedef tinystl::unordered_map<String, sg_image, TinySTLAllocator> SemanticImageMap;
+typedef tinystl::unordered_map<String, tinystl::pair<sg_image, sg_sampler>, TinySTLAllocator> SemanticImageMap;
 
 enum MatrixType {
     kMatrixTypeWorld,
@@ -341,11 +342,12 @@ struct MatrixUniform {
 typedef tinystl::unordered_map<String, MatrixUniform, TinySTLAllocator> MatrixUniformMap;
 
 struct ImageSampler {
-    ImageSampler(const String &name, sg_shader_stage stage, sg_image image, nanoem_u32_t offset);
+    ImageSampler(const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset);
     ~ImageSampler() NANOEM_DECL_NOEXCEPT;
     const String m_name;
     const sg_shader_stage m_stage;
     const sg_image m_image;
+    const sg_sampler m_sampler;
     const nanoem_u32_t m_offset;
 };
 typedef tinystl::vector<ImageSampler, TinySTLAllocator> ImageSamplerList;
@@ -380,12 +382,11 @@ public:
     static void convertBlendFactor(nanoem_u32_t value, sg_blend_factor &desc);
     static void convertBlendOperator(nanoem_u32_t value, sg_blend_op &desc);
     static void convertWrap(nanoem_u32_t value, sg_wrap &wrap);
-    static void convertFilter(nanoem_u32_t value, sg_image_desc &desc, sg_filter &filter);
+    static void convertFilter(nanoem_u32_t value, sg_sampler_desc &desc, sg_filter &filter);
     static void convertStencilOp(nanoem_u32_t value, sg_stencil_op &op);
     static void convertCompareFunc(nanoem_u32_t value, sg_compare_func &func);
-    static void convertSamplerState(nanoem_u32_t key, nanoem_u32_t value, sg_image_desc &desc);
+    static void convertSamplerState(nanoem_u32_t key, nanoem_u32_t value, sg_sampler_desc &desc);
     static void convertPipeline(nanoem_u32_t key, nanoem_u32_t value, PipelineDescriptor &desc);
-    static void normalizeMinFilter(sg_filter &value);
 };
 
 class Logger NANOEM_DECL_SEALED : private NonCopyable {

@@ -108,9 +108,9 @@ ClearPass::setupPipelineDescription(sg_pipeline_desc &desc)
     desc.primitive_type = SG_PRIMITIVETYPE_TRIANGLE_STRIP;
     desc.cull_mode = SG_CULLMODE_BACK;
     desc.colors[0].write_mask = SG_COLORMASK_NONE;
-    sg_layout_desc &ld = desc.layout;
+    sg_vertex_layout_state &ld = desc.layout;
     ld.buffers[0].stride = sizeof(sg::QuadVertexUnit);
-    ld.attrs[0] = sg_vertex_attr_desc { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
+    ld.attrs[0] = sg_vertex_attr_state { 0, offsetof(sg::QuadVertexUnit, m_position), SG_VERTEXFORMAT_FLOAT2 };
 }
 
 const char *

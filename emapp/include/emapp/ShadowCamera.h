@@ -41,9 +41,10 @@ public:
     void update();
     void destroy() NANOEM_DECL_NOEXCEPT;
 
-    sg_pass pass() const NANOEM_DECL_NOEXCEPT;
-    sg_image colorImage() const NANOEM_DECL_NOEXCEPT;
-    sg_image depthImage() const NANOEM_DECL_NOEXCEPT;
+    sg_pass passHandle() const NANOEM_DECL_NOEXCEPT;
+    sg_image colorImageHandle() const NANOEM_DECL_NOEXCEPT;
+    sg_image depthImageHandle() const NANOEM_DECL_NOEXCEPT;
+    sg_sampler samplerHandle() const NANOEM_DECL_NOEXCEPT;
     Vector2UI16 imageSize() const NANOEM_DECL_NOEXCEPT;
     void getViewProjection(Matrix4x4 &view, Matrix4x4 &projection) const NANOEM_DECL_NOEXCEPT;
     void getCropMatrix(Matrix4x4 &crop) const NANOEM_DECL_NOEXCEPT;
@@ -69,6 +70,7 @@ private:
     sg_pass_desc m_shadowPassDesc;
     sg_pass m_fallbackPass;
     sg_pass_desc m_fallbackPassDesc;
+    sg_sampler m_sampler;
     Vector2UI16 m_textureSize;
     CoverageModeType m_coverageMode;
     nanoem_f32_t m_distance;

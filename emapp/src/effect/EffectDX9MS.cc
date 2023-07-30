@@ -34,25 +34,29 @@ setSymbolRegisterIndex(const Fx9__Effect__Dx9ms__Symbol *symbolPtr, nanoem_u32_t
 
 static void
 setImageTypesFromSampler(
-    const Fx9__Effect__Dx9ms__Shader *shaderPtr, sg_shader_image_desc *pixelShaderSamplers) NANOEM_DECL_NOEXCEPT
+    const Fx9__Effect__Dx9ms__Shader *shaderPtr, sg_shader_stage_desc &pixelShaderSamplers) NANOEM_DECL_NOEXCEPT
 {
     const size_t numSamplers = shaderPtr->n_samplers;
     for (size_t i = 0; i < numSamplers; i++) {
         const Fx9__Effect__Dx9ms__Sampler *samplerPtr = shaderPtr->samplers[i];
         const nanoem_u32_t samplerIndex = Inline::saturateInt32(samplerPtr->index);
         if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-            sg_shader_image_desc &desc = pixelShaderSamplers[samplerIndex];
-            desc.name = samplerPtr->name;
-            switch (static_cast<Fx9__Effect__Dx9ms__SamplerType>(samplerPtr->type)) {
+            pixelShaderSamplers.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+            pixelShaderSamplers.image_sampler_pairs[i] = sg_shader_image_sampler_pair_desc { true,
+                Inline::saturateInt32(i), Inline::saturateInt32(i), samplerPtr->name };
+            switch (samplerPtr->type) {
             case FX9__EFFECT__DX9MS__SAMPLER_TYPE__SAMPLER_2D:
             default:
-                desc.image_type = SG_IMAGETYPE_2D;
-                break;
-            case FX9__EFFECT__DX9MS__SAMPLER_TYPE__SAMPLER_CUBE:
-                desc.image_type = SG_IMAGETYPE_CUBE;
+                pixelShaderSamplers.images[i] =
+                    sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
                 break;
             case FX9__EFFECT__DX9MS__SAMPLER_TYPE__SAMPLER_VOLUME:
-                desc.image_type = SG_IMAGETYPE_3D;
+                pixelShaderSamplers.images[i] =
+                    sg_shader_image_desc { true, false, SG_IMAGETYPE_3D, SG_IMAGESAMPLETYPE_FLOAT };
+                break;
+            case FX9__EFFECT__DX9MS__SAMPLER_TYPE__SAMPLER_CUBE:
+                pixelShaderSamplers.images[i] =
+                    sg_shader_image_desc { true, false, SG_IMAGETYPE_CUBE, SG_IMAGESAMPLETYPE_FLOAT };
                 break;
             }
         }
@@ -332,8 +336,9 @@ retrieveShaderSymbols(const Fx9__Effect__Dx9ms__Shader *shaderPtr, RegisterIndex
 }
 
 void
-retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_image_desc *shaderSamplers,
-    ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices)
+retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_stage_desc &shaderSamplers,
+    ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+    SamplerRegisterIndexMap &shaderRegisterIndices)
 {
     Fx9__Effect__Dx9ms__Texture *const *textures = pass->textures;
     const Fx9__Effect__Dx9ms__Shader *shaderPtr = pass->pixel_shader;
@@ -351,22 +356,27 @@ retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_imag
                 shaderRegisterIndices.insert(tinystl::make_pair(name, index));
             }
             if (textureDescriptions.find(name) == textureDescriptions.end()) {
-                sg_image_desc desc;
-                Inline::clearZeroMemory(desc);
-                convertImageDescription<Fx9__Effect__Dx9ms__Texture, Fx9__Effect__Dx9ms__SamplerState>(
-                    texturePtr, desc);
+                sg_image_desc imageDescription;
+                sg_sampler_desc samplerDescription;
+                Inline::clearZeroMemory(imageDescription);
+                Inline::clearZeroMemory(samplerDescription);
+                imageDescription.num_mipmaps = 1;
+                convertSamplerDescription<Fx9__Effect__Dx9ms__Texture, Fx9__Effect__Dx9ms__SamplerState>(
+                    texturePtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-                    desc.type = shaderSamplers[samplerIndex].image_type;
+                    imageDescription.type = shaderSamplers.images[samplerIndex].image_type;
                 }
-                textureDescriptions.insert(tinystl::make_pair(name, desc));
+                textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
+                samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
             }
         }
     }
 }
 
 void
-retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_image_desc *shaderSamplers,
-    ImageDescriptionMap &textureDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices)
+retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_stage_desc &shaderSamplers,
+    ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+    SamplerRegisterIndexMap &shaderRegisterIndices)
 {
     Fx9__Effect__Dx9ms__Texture *const *textures = pass->vertex_textures;
     const Fx9__Effect__Dx9ms__Shader *shaderPtr = pass->vertex_shader;
@@ -384,14 +394,18 @@ retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_ima
                 shaderRegisterIndices.insert(tinystl::make_pair(name, index));
             }
             if (textureDescriptions.find(name) == textureDescriptions.end()) {
-                sg_image_desc desc;
-                Inline::clearZeroMemory(desc);
-                convertImageDescription<Fx9__Effect__Dx9ms__Texture, Fx9__Effect__Dx9ms__SamplerState>(
-                    texturePtr, desc);
+                sg_image_desc imageDescription;
+                sg_sampler_desc samplerDescription;
+                Inline::clearZeroMemory(imageDescription);
+                Inline::clearZeroMemory(samplerDescription);
+                imageDescription.num_mipmaps = 1;
+                convertSamplerDescription<Fx9__Effect__Dx9ms__Texture, Fx9__Effect__Dx9ms__SamplerState>(
+                    texturePtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-                    desc.type = shaderSamplers[samplerIndex].image_type;
+                    imageDescription.type = shaderSamplers.images[samplerIndex].image_type;
                 }
-                textureDescriptions.insert(tinystl::make_pair(name, desc));
+                textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
+                samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
             }
         }
     }

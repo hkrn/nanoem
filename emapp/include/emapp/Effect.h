@@ -136,8 +136,10 @@ public:
     void attachAllResources(FileEntityMap &allAttachments) const;
     void setImageLabel(sg_image texture, const String &name);
     void setImageLabel(sg_image texture, const char *name);
+    void setSamplerLabel(sg_sampler sampler, const char *name);
     void setShaderLabel(sg_shader shader, const char *name);
     void removeImageLabel(sg_image texture);
+    void removeSamplerLabel(sg_sampler sampler);
     void removeShaderLabel(sg_shader shader);
 
     const Project *project() const NANOEM_DECL_NOEXCEPT;
@@ -207,7 +209,7 @@ private:
     typedef tinystl::unordered_map<String, SemanticParameterHandler, TinySTLAllocator> SemanticParameterHandlerMap;
     typedef tinystl::unordered_map<const effect::Pass *, effect::ImageSamplerList, TinySTLAllocator> ImageSamplerMap;
     typedef tinystl::unordered_map<nanoem_u32_t, nanoem_u32_t, TinySTLAllocator> HashMap;
-    typedef tinystl::unordered_map<nanoem_u32_t, sg_image, TinySTLAllocator> OverridenImageHandleMap;
+    typedef tinystl::unordered_map<nanoem_u32_t, sg_sampler, TinySTLAllocator> OverridenSamplerHandleMap;
     typedef tinystl::unordered_map<String, effect::TechniqueList, TinySTLAllocator> TechniqueListMap;
     typedef tinystl::unordered_map<const IDrawable *, NamedRenderTargetColorImageContainerMap, TinySTLAllocator>
         DrawableNamedRenderTargetColorImageContainerMap;
@@ -345,8 +347,8 @@ private:
         const effect::TypedSemanticParameter &parameter, const Archiver *archiver, Progress &progress, Error &error);
     void createImageResourceFromArchive(const String &name, const effect::TypedSemanticParameter &parameter,
         const Archiver *archiver, Progress &progress, Error &error);
-    void registerImageResource(sg_image image, const IEffect::ImageResourceParameter &parameter);
-    sg_image createOverrideImage(const String &name, const IImageView *image, bool mipmap);
+    void registerImageResource(sg_image image, sg_sampler sampler, const IEffect::ImageResourceParameter &parameter);
+    sg_sampler createOverrideSampler(const String &name, const IImageView *image, bool mipmap);
     sg_pixel_format determinePixelFormat(
         const effect::AnnotationMap &annotations, sg_pixel_format defaultFormat) const NANOEM_DECL_NOEXCEPT;
     sg_pixel_format determineDepthStencilPixelFormat(
@@ -354,7 +356,7 @@ private:
     Vector4 scaledViewportImageSize(const Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT;
     Vector4 determineImageSize(const effect::AnnotationMap &annotations, const Vector4 &defaultValue,
         Vector2 &scaleFactor) const NANOEM_DECL_NOEXCEPT;
-    void setImageUniform(const String &name, const effect::Pass *pass, sg_image handle);
+    void setImageUniform(const String &name, const effect::Pass *pass, sg_image image, sg_sampler sampler);
     bool writeUniformBuffer(
         const effect::RegisterIndex &index, const void *ptr, size_t size, effect::GlobalUniform::Buffer &bufferPtr);
     void writeUniformBuffer(const String &name, const effect::Pass *passPtr, const void *ptr, size_t size);
@@ -423,6 +425,7 @@ private:
     effect::ImageFormatMap m_imageFormats;
     effect::ImageFormatMap m_depthStencilImageFormats;
     effect::ImageDescriptionMap m_imageDescriptions;
+    effect::SamplerDescriptionMap m_samplerDescriptions;
     effect::ParameterMap m_parameters;
     effect::MatrixUniformMap m_cameraMatrixUniforms;
     effect::MatrixUniformMap m_lightMatrixUniforms;
@@ -482,9 +485,10 @@ private:
     TechniqueListMap m_techniqueByPassTypes;
     PassUniformBufferMap m_passUniformBuffer;
     StagingBufferMap m_imageStagingBuffers;
-    OverridenImageHandleMap m_overridenImageHandles;
+    OverridenSamplerHandleMap m_overridenSamplerHandles;
     ImageSamplerMap m_imageSamplers;
     NamedHandleMap m_namedImageHandles;
+    NamedHandleMap m_namedSamplerHandles;
     NamedHandleMap m_namedShaderHandles;
     HashMap m_hashes;
     StringList m_errorMessages;
