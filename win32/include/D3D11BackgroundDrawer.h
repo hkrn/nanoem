@@ -51,7 +51,7 @@ private:
     internal::DecoderPluginBasedBackgroundVideoRenderer *m_decoderPluginBasedBackgroundVideoRenderer = nullptr;
     URI m_fileURI;
     sg_image m_image = { SG_INVALID_ID };
-    sg_image_desc m_description;
+    sg_image_desc m_imageDescription;
     bool m_durationUpdated = false;
 };
 

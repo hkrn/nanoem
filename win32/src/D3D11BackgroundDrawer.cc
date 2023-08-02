@@ -37,7 +37,7 @@ const char *const D3D11BackgroundVideoDrawer::kLabelPrefix = "@nanoem/D3D11Backg
 D3D11BackgroundVideoDrawer::D3D11BackgroundVideoDrawer(ThreadedApplicationService *service)
     : m_service(service)
 {
-    Inline::clearZeroMemory(m_description);
+    Inline::clearZeroMemory(m_imageDescription);
 }
 
 D3D11BackgroundVideoDrawer::~D3D11BackgroundVideoDrawer()
@@ -93,18 +93,16 @@ D3D11BackgroundVideoDrawer::load(const URI &fileURI, Error &error)
         CoTaskMemFree(activates);
         destroy();
         if (!error.hasReason()) {
-            m_description.pixel_format = SG_PIXELFORMAT_RGBA8;
-            m_description.usage = SG_USAGE_DYNAMIC;
-            m_description.width = Inline::saturateInt32(width);
-            m_description.height = Inline::saturateInt32(height);
-            m_description.mag_filter = m_description.min_filter = SG_FILTER_NEAREST;
-            m_description.wrap_u = m_description.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
+            m_imageDescription.pixel_format = SG_PIXELFORMAT_RGBA8;
+            m_imageDescription.usage = SG_USAGE_DYNAMIC;
+            m_imageDescription.width = Inline::saturateInt32(width);
+            m_imageDescription.height = Inline::saturateInt32(height);
             char label[Inline::kMarkerStringLength];
             if (Inline::isDebugLabelEnabled()) {
                 StringUtils::format(label, sizeof(label), "%s/ColorImage", kLabelPrefix);
-                m_description.label = label;
+                m_imageDescription.label = label;
             }
-            m_image = sg::make_image(&m_description);
+            m_image = sg::make_image(&m_imageDescription);
             SG_LABEL_IMAGE(m_image, label);
             m_fileURI = fileURI;
             m_reader = reader;
@@ -226,7 +224,7 @@ D3D11BackgroundVideoDrawer::updateTexture(IMFMediaBuffer *outputBuffer, Error &e
         sg_image_data content;
         Inline::clearZeroMemory(content);
         content.subimage[0][0].ptr = bytes;
-        content.subimage[0][0].size = stride * m_description.height;
+        content.subimage[0][0].size = stride * m_imageDescription.height;
         sg::update_image(m_image, &content);
         COMInline::wrapCall(buffer2D->Unlock2D(), error);
         COMInline::safeRelease(buffer2D);

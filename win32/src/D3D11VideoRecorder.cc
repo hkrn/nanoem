@@ -56,8 +56,6 @@ D3D11VideoRecorder::D3D11VideoRecorder(Project *project, ID3D11Device *device)
     Inline::clearZeroMemory(m_receiveMSAAPassDesc);
     m_colorImageDescription.pixel_format = SG_PIXELFORMAT_BGRA8;
     m_colorImageDescription.usage = SG_USAGE_IMMUTABLE;
-    m_colorImageDescription.mag_filter = m_colorImageDescription.min_filter = SG_FILTER_LINEAR;
-    m_colorImageDescription.wrap_u = m_colorImageDescription.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
     m_colorImageDescription.render_target = true;
     m_device->AddRef();
     m_blitter = nanoem_new(internal::BlitPass(project, false));
@@ -162,8 +160,6 @@ D3D11VideoRecorder::capture(nanoem_frame_index_t frameIndex)
         colorImageDescription.width = width;
         colorImageDescription.height = height;
         colorImageDescription.pixel_format = m_videoPixelFormat;
-        colorImageDescription.mag_filter = colorImageDescription.min_filter = SG_FILTER_NEAREST;
-        colorImageDescription.wrap_u = colorImageDescription.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
         colorImageDescription.d3d11_texture = m_texture;
         colorImageDescription.render_target = true;
         updateDepthImage(width, height);
@@ -500,7 +496,7 @@ D3D11VideoRecorder::updateDepthImage(int width, int height)
         m_colorImageDescription.width = width;
         m_colorImageDescription.height = height;
         sg_image_desc depthImageDescription(m_colorImageDescription);
-        depthImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        depthImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH;
         char label[Inline::kMarkerStringLength];
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "%s/Depth", kLabelPrefixName);
@@ -525,8 +521,6 @@ D3D11VideoRecorder::updateAllMSAAImages(int width, int height)
         receiveMSAAImageDescription.usage = SG_USAGE_IMMUTABLE;
         receiveMSAAImageDescription.width = width;
         receiveMSAAImageDescription.height = height;
-        receiveMSAAImageDescription.mag_filter = receiveMSAAImageDescription.min_filter = SG_FILTER_LINEAR;
-        receiveMSAAImageDescription.wrap_u = receiveMSAAImageDescription.wrap_v = SG_WRAP_CLAMP_TO_EDGE;
         receiveMSAAImageDescription.render_target = true;
         receiveMSAAImageDescription.sample_count = 1;
         char label[Inline::kMarkerStringLength];
@@ -537,7 +531,7 @@ D3D11VideoRecorder::updateAllMSAAImages(int width, int height)
         sg::destroy_image(m_receiveMSAAPassDesc.color_attachments[0].image);
         m_receiveMSAAPassDesc.color_attachments[0].image = sg::make_image(&receiveMSAAImageDescription);
         SG_LABEL_IMAGE(m_receiveMSAAPassDesc.color_attachments[0].image, label);
-        receiveMSAAImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        receiveMSAAImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "%s/MSAA/Depth", kLabelPrefixName);
             receiveMSAAImageDescription.label = label;

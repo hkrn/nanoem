@@ -10,7 +10,7 @@
 
 namespace nanoem {
 
-PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT : m_depthPixelFormat(_SG_PIXELFORMAT_DEFAULT),
+PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT : m_depthPixelFormat(SG_PIXELFORMAT_DEPTH),
                                                   m_numColorAttachments(1),
                                                   m_numSamples(1)
 {

@@ -976,7 +976,7 @@ Project::Pass::update(const Vector2UI16 &size)
         sg::destroy_image(m_resolveImage);
         m_resolveImage = { SG_INVALID_ID };
     }
-    id.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+    id.pixel_format = SG_PIXELFORMAT_DEPTH;
     sg::destroy_image(m_depthImage);
     if (Inline::isDebugLabelEnabled()) {
         StringUtils::format(label, sizeof(label), "%s/DepthImage", m_name.c_str());
@@ -1004,7 +1004,7 @@ Project::Pass::update(const Vector2UI16 &size)
     desc.m_desciption = pd;
     PixelFormat &format = desc.m_format;
     format.setColorPixelFormat(colorPixelFormat, 0);
-    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL);
+    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH);
     format.setNumSamples(id.sample_count);
     format.setNumColorAttachemnts(1);
     SG_POP_GROUP();
