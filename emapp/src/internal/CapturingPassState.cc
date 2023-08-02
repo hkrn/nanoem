@@ -174,7 +174,7 @@ CapturingPassState::ImageBlitter::blit(sg_pass pass)
     PixelFormat format;
     format.setNumSamples(1);
     format.setColorPixelFormat(SG_PIXELFORMAT_RGBA8, 0);
-    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL);
+    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH);
     format.setNumColorAttachemnts(1);
     setupPipeline(format, pipeline);
     draw(pipeline, pass, m_project->viewportPrimaryImage());
@@ -910,7 +910,7 @@ CapturingPassState::save(Project *project)
 {
     m_outputPassDescription.color_attachments[0].image = sg::make_image(&m_outputImageDescription);
     sg_image_desc depthStencilDescription(m_outputImageDescription);
-    depthStencilDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+    depthStencilDescription.pixel_format = SG_PIXELFORMAT_DEPTH;
     m_outputPassDescription.depth_stencil_attachment.image = sg::make_image(&depthStencilDescription);
     m_outputPass = sg::make_pass(&m_outputPassDescription);
     m_lastLogicalScaleUniformedViewportImageSize = project->logicalScaleUniformedViewportImageSize();
