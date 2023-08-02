@@ -109,21 +109,31 @@ sgx_label_image(sg_image image, const char *text)
                 free(name);
             }
         }
-        ID3D11SamplerState *smp = ptr->d3d11.smp;
-        if (smp) {
-            name = appendSuffix(text, length, L"/SamplerState", &new_size);
-            if (name) {
-                smp->lpVtbl->SetPrivateData(smp, &WKPDID_D3DDebugObjectNameW, 0, NULL);
-                smp->lpVtbl->SetPrivateData(smp, &WKPDID_D3DDebugObjectNameW, new_size, name);
-                free(name);
-            }
-        }
         ID3D11ShaderResourceView *srv = ptr->d3d11.srv;
         if (srv) {
             name = appendSuffix(text, length, L"/ShaderResourceView", &new_size);
             if (name) {
                 srv->lpVtbl->SetPrivateData(srv, &WKPDID_D3DDebugObjectNameW, 0, NULL);
                 srv->lpVtbl->SetPrivateData(srv, &WKPDID_D3DDebugObjectNameW, new_size, name);
+                free(name);
+            }
+        }
+    }
+}
+
+SGX_API_DECL void APIENTRY
+sgx_label_sampler(sg_sampler sampler, const char *text)
+{
+    _sg_sampler_t *ptr = _sg_lookup_sampler(&_sg.pools, sampler.id);
+    if (ptr && text) {
+        int new_size, length = strlen(text), count = MultiByteToWideChar(CP_UTF8, 0, text, length, 0, 0),
+                      size = count * sizeof(wchar_t);
+        ID3D11SamplerState *smp = ptr->d3d11.smp;
+        if (smp) {
+            wchar_t *name = appendSuffix(text, length, L"/SamplerState", &new_size);
+            if (name) {
+                smp->lpVtbl->SetPrivateData(smp, &WKPDID_D3DDebugObjectNameW, 0, NULL);
+                smp->lpVtbl->SetPrivateData(smp, &WKPDID_D3DDebugObjectNameW, new_size, name);
                 free(name);
             }
         }

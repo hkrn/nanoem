@@ -63,7 +63,7 @@ ShadowCamera::initialize()
         nanoem_assert(sg::query_image_state(colorImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
         SG_LABEL_IMAGE(colorImage, kColorImageName);
     }
-    id.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+    id.pixel_format = SG_PIXELFORMAT_DEPTH;
     sg_image &depthImage = m_fallbackPassDesc.depth_stencil_attachment.image;
     if (!sg::is_valid(depthImage)) {
         if (Inline::isDebugLabelEnabled()) {
@@ -97,7 +97,7 @@ void
 ShadowCamera::clear()
 {
     sg_pass_action action;
-    sg::PassBlock::initializeLoadStoreAction(action);
+    sg::PassBlock::initializeClearAction(action);
     memcpy(&action.colors[0].clear_value, glm::value_ptr(Vector4(1)), sizeof(action.colors[0].clear_value));
     action.depth.clear_value = 1;
     const PixelFormat format(m_project->findRenderPassPixelFormat(passHandle(), 1));
@@ -141,8 +141,8 @@ ShadowCamera::update()
         colorImage = sg::make_image(&id);
         nanoem_assert(sg::query_image_state(colorImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
         SG_LABEL_IMAGE(colorImage, kColorImageName);
-        id.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
-        format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH_STENCIL);
+        id.pixel_format = SG_PIXELFORMAT_DEPTH;
+        format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH);
         sg_image &depthImage = m_shadowPassDesc.depth_stencil_attachment.image;
         sg::destroy_image(depthImage);
         if (Inline::isDebugLabelEnabled()) {

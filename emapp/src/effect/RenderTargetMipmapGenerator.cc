@@ -60,7 +60,7 @@ RenderTargetMipmapGenerator::RenderTargetMipmapGenerator(Effect *effect, const c
         nanoem_assert(sg::query_image_state(colorImage) == SG_RESOURCESTATE_VALID, "source color image must be valid");
         effect->setImageLabel(colorImage, label);
         m_sourceColorImages.push_back(colorImage);
-        mipmapImageDesc.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        mipmapImageDesc.pixel_format = SG_PIXELFORMAT_DEPTH;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(
                 label, sizeof(label), "Effects/%s/%s/Mipmaps/%d/Depth", effect->nameConstString(), name, i);
