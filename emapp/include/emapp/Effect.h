@@ -127,7 +127,7 @@ public:
         const IDrawable *drawable, sg_image value) const NANOEM_DECL_NOEXCEPT;
     const effect::RenderTargetColorImageContainer *searchRenderTargetColorImageContainer(
         const IDrawable *drawable, sg_image value) const NANOEM_DECL_NOEXCEPT;
-    const effect::ImageSamplerList *findImageSamplerList(const effect::Pass *passPtr) const NANOEM_DECL_NOEXCEPT;
+    const effect::SampledImageList *findSampledImageList(const effect::Pass *passPtr) const NANOEM_DECL_NOEXCEPT;
     void getAllOffscreenRenderTargetOptions(effect::OffscreenRenderTargetOptionList &value) const;
     void getAllRenderTargetImageContainers(NamedRenderTargetColorImageContainerMap &value) const;
     void getAllUIWidgetParameters(effect::UIWidgetParameterList &value);
@@ -207,7 +207,7 @@ private:
     typedef void (*SemanticParameterHandler)(
         Effect *self, const effect::TypedSemanticParameter &parameter, Progress &progress);
     typedef tinystl::unordered_map<String, SemanticParameterHandler, TinySTLAllocator> SemanticParameterHandlerMap;
-    typedef tinystl::unordered_map<const effect::Pass *, effect::ImageSamplerList, TinySTLAllocator> ImageSamplerMap;
+    typedef tinystl::unordered_map<const effect::Pass *, effect::SampledImageList, TinySTLAllocator> ImageSamplerMap;
     typedef tinystl::unordered_map<nanoem_u32_t, nanoem_u32_t, TinySTLAllocator> HashMap;
     typedef tinystl::unordered_map<nanoem_u32_t, sg_sampler, TinySTLAllocator> OverridenSamplerHandleMap;
     typedef tinystl::unordered_map<String, effect::TechniqueList, TinySTLAllocator> TechniqueListMap;

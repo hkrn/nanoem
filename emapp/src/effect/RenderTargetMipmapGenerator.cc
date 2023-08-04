@@ -48,9 +48,9 @@ RenderTargetMipmapGenerator::RenderTargetMipmapGenerator(Effect *effect, const c
     m_blitter = nanoem_new(internal::BlitPass(effect->project(), false));
     for (int i = 0, numMipmaps = desc.num_mipmaps; i < numMipmaps; i++) {
         sg_image_desc mipmapImageDesc(desc);
-        mipmapImageDesc.num_mipmaps = 1;
         mipmapImageDesc.width >>= i;
         mipmapImageDesc.height >>= i;
+        mipmapImageDesc.num_mipmaps = 0;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(
                 label, sizeof(label), "Effects/%s/%s/Mipmaps/%d/Color", effect->nameConstString(), name, i);
@@ -60,7 +60,7 @@ RenderTargetMipmapGenerator::RenderTargetMipmapGenerator(Effect *effect, const c
         nanoem_assert(sg::query_image_state(colorImage) == SG_RESOURCESTATE_VALID, "source color image must be valid");
         effect->setImageLabel(colorImage, label);
         m_sourceColorImages.push_back(colorImage);
-        mipmapImageDesc.pixel_format = SG_PIXELFORMAT_DEPTH;
+        mipmapImageDesc.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(
                 label, sizeof(label), "Effects/%s/%s/Mipmaps/%d/Depth", effect->nameConstString(), name, i);

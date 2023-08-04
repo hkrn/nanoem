@@ -968,7 +968,6 @@ Project::Pass::update(const Vector2UI16 &size)
     nanoem_assert(sg::query_image_state(m_colorImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
     SG_LABEL_IMAGE(m_colorImage, label);
     if (enableMSAA && numSamples > 1) {
-        id.num_mipmaps = id.sample_count = 1;
         m_resolveImage = sg::make_image(&id);
         id.sample_count = numSamples;
     }

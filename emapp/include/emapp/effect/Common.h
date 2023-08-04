@@ -341,16 +341,16 @@ struct MatrixUniform {
 };
 typedef tinystl::unordered_map<String, MatrixUniform, TinySTLAllocator> MatrixUniformMap;
 
-struct ImageSampler {
-    ImageSampler(const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset);
-    ~ImageSampler() NANOEM_DECL_NOEXCEPT;
+struct SampledImage {
+    SampledImage(const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset);
+    ~SampledImage() NANOEM_DECL_NOEXCEPT;
     const String m_name;
     const sg_shader_stage m_stage;
     const sg_image m_image;
     const sg_sampler m_sampler;
     const nanoem_u32_t m_offset;
 };
-typedef tinystl::vector<ImageSampler, TinySTLAllocator> ImageSamplerList;
+typedef tinystl::vector<SampledImage, TinySTLAllocator> SampledImageList;
 typedef tinystl::vector<tinystl::pair<ScriptCommandType, String>, TinySTLAllocator> ScriptCommandMap;
 
 struct ControlObjectTarget {

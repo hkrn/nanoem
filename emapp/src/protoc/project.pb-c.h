@@ -56,7 +56,7 @@ struct  Nanoem__Project__URI
 };
 #define NANOEM__PROJECT__URI__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__uri__descriptor) \
-    , NULL, NULL, NULL }
+, NULL, NULL, NULL }
 
 
 struct  Nanoem__Project__Confirmation
@@ -70,7 +70,7 @@ struct  Nanoem__Project__Confirmation
 };
 #define NANOEM__PROJECT__CONFIRMATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__confirmation__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Project__Audio
@@ -85,7 +85,7 @@ struct  Nanoem__Project__Audio
 };
 #define NANOEM__PROJECT__AUDIO__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__audio__descriptor) \
-    , 0,NULL, 0, NULL, 0, {0,NULL} }
+, 0,NULL, 0, NULL, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__Video
@@ -102,7 +102,7 @@ struct  Nanoem__Project__Video
 };
 #define NANOEM__PROJECT__VIDEO__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__video__descriptor) \
-    , 0,NULL, NULL, NULL, 0, NULL, 0, {0,NULL} }
+, 0,NULL, NULL, NULL, 0, NULL, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__PhysicSimulation
@@ -128,7 +128,7 @@ struct  Nanoem__Project__PhysicSimulation
 };
 #define NANOEM__PROJECT__PHYSIC_SIMULATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__physic_simulation__descriptor) \
-    , 0,NULL, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
+, 0,NULL, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Project__ProjectiveShadow
@@ -140,7 +140,7 @@ struct  Nanoem__Project__ProjectiveShadow
 };
 #define NANOEM__PROJECT__PROJECTIVE_SHADOW__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__projective_shadow__descriptor) \
-    , 0,NULL, 0 }
+, 0,NULL, 0 }
 
 
 struct  Nanoem__Project__SelfShadow
@@ -155,7 +155,7 @@ struct  Nanoem__Project__SelfShadow
 };
 #define NANOEM__PROJECT__SELF_SHADOW__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__self_shadow__descriptor) \
-    , 0,NULL, 0, NULL, 0, 0 }
+, 0,NULL, 0, NULL, 0, 0 }
 
 
 struct  Nanoem__Project__Grid
@@ -169,7 +169,7 @@ struct  Nanoem__Project__Grid
 };
 #define NANOEM__PROJECT__GRID__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__grid__descriptor) \
-    , 0,NULL, 0, 0, NULL }
+, 0,NULL, 0, 0, NULL }
 
 
 struct  Nanoem__Project__Screen
@@ -185,7 +185,7 @@ struct  Nanoem__Project__Screen
 };
 #define NANOEM__PROJECT__SCREEN__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__screen__descriptor) \
-    , 0,NULL, NULL, NULL, 0, 0, 0 }
+, 0,NULL, NULL, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Project__Timeline
@@ -204,7 +204,7 @@ struct  Nanoem__Project__Timeline
 };
 #define NANOEM__PROJECT__TIMELINE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__timeline__descriptor) \
-    , 0,NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
+, 0,NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Project__Camera
@@ -221,7 +221,7 @@ struct  Nanoem__Project__Camera
 };
 #define NANOEM__PROJECT__CAMERA__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__camera__descriptor) \
-    , 0,NULL, NULL, NULL, 0, 0, 0, 0 }
+, 0,NULL, NULL, NULL, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Project__Light
@@ -237,7 +237,7 @@ struct  Nanoem__Project__Light
 };
 #define NANOEM__PROJECT__LIGHT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__light__descriptor) \
-    , 0,NULL, NULL, NULL, NULL, NULL, NULL }
+, 0,NULL, NULL, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Project__Motion__Camera
@@ -250,7 +250,7 @@ struct  Nanoem__Project__Motion__Camera
 };
 #define NANOEM__PROJECT__MOTION__CAMERA__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__camera__descriptor) \
-    , 0, {0,NULL}, 0, 0 }
+, 0, {0,NULL}, 0, 0 }
 
 
 struct  Nanoem__Project__Motion__Light
@@ -261,7 +261,7 @@ struct  Nanoem__Project__Motion__Light
 };
 #define NANOEM__PROJECT__MOTION__LIGHT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__light__descriptor) \
-    , 0, {0,NULL} }
+, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__Motion__SelfShadow
@@ -272,7 +272,7 @@ struct  Nanoem__Project__Motion__SelfShadow
 };
 #define NANOEM__PROJECT__MOTION__SELF_SHADOW__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__self_shadow__descriptor) \
-    , 0, {0,NULL} }
+, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__Motion__Model
@@ -284,7 +284,7 @@ struct  Nanoem__Project__Motion__Model
 };
 #define NANOEM__PROJECT__MOTION__MODEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__model__descriptor) \
-    , 0, 0, {0,NULL} }
+, 0, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__Motion__Accessory
@@ -296,7 +296,7 @@ struct  Nanoem__Project__Motion__Accessory
 };
 #define NANOEM__PROJECT__MOTION__ACCESSORY__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__accessory__descriptor) \
-    , 0, 0, {0,NULL} }
+, 0, 0, {0,NULL} }
 
 
 typedef enum {
@@ -330,7 +330,7 @@ struct  Nanoem__Project__Motion
 };
 #define NANOEM__PROJECT__MOTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__motion__descriptor) \
-    , 0,NULL, NULL, NULL, 0, 0, NULL, NANOEM__PROJECT__MOTION__TYPE__NOT_SET, {0} }
+, 0,NULL, NULL, NULL, 0, 0, NULL, NANOEM__PROJECT__MOTION__TYPE__NOT_SET, {0} }
 
 
 struct  Nanoem__Project__MaterialEffectAttachment
@@ -344,7 +344,7 @@ struct  Nanoem__Project__MaterialEffectAttachment
 };
 #define NANOEM__PROJECT__MATERIAL_EFFECT_ATTACHMENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__material_effect_attachment__descriptor) \
-    , 0, NULL, NULL, 0, {0,NULL} }
+, 0, NULL, NULL, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__Accessory
@@ -368,7 +368,7 @@ struct  Nanoem__Project__Accessory
 };
 #define NANOEM__PROJECT__ACCESSORY__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__accessory__descriptor) \
-    , 0,NULL, NULL, NULL, 0, 0, 0,NULL, 0, 0, 0,NULL, NULL, 0, {0,NULL} }
+, 0,NULL, NULL, NULL, 0, 0, 0,NULL, 0, 0, 0,NULL, NULL, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__Model
@@ -393,7 +393,7 @@ struct  Nanoem__Project__Model
 };
 #define NANOEM__PROJECT__MODEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__model__descriptor) \
-    , 0,NULL, NULL, NULL, 0, 0, 0, 0,NULL, 0, 0, 0,NULL, NULL, 0, {0,NULL} }
+, 0,NULL, NULL, NULL, 0, 0, 0, 0,NULL, 0, 0, 0,NULL, NULL, 0, {0,NULL} }
 
 
 struct  Nanoem__Project__OffscreenRenderTargetEffect__Attachment
@@ -411,7 +411,7 @@ struct  Nanoem__Project__OffscreenRenderTargetEffect__Attachment
 };
 #define NANOEM__PROJECT__OFFSCREEN_RENDER_TARGET_EFFECT__ATTACHMENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__offscreen_render_target_effect__attachment__descriptor) \
-    , 0, NULL, 0,NULL, NULL, 0, {0,NULL}, 0, 0 }
+, 0, NULL, 0,NULL, NULL, 0, {0,NULL}, 0, 0 }
 
 
 struct  Nanoem__Project__OffscreenRenderTargetEffect
@@ -425,7 +425,7 @@ struct  Nanoem__Project__OffscreenRenderTargetEffect
 };
 #define NANOEM__PROJECT__OFFSCREEN_RENDER_TARGET_EFFECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__offscreen_render_target_effect__descriptor) \
-    , NULL, 0, 0, 0,NULL }
+, NULL, 0, 0, 0,NULL }
 
 
 struct  Nanoem__Project__Project
@@ -463,7 +463,7 @@ struct  Nanoem__Project__Project
 };
 #define NANOEM__PROJECT__PROJECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__project__project__descriptor) \
-    , 0,NULL, 0,NULL, 0,NULL, 0,NULL, NANOEM__COMMON__LANGUAGE__LC_UNKNOWN, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,NULL, NULL }
+, 0,NULL, 0,NULL, 0,NULL, 0,NULL, NANOEM__COMMON__LANGUAGE__LC_UNKNOWN, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,NULL, NULL }
 
 
 /* Nanoem__Project__URI methods */

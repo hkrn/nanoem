@@ -999,7 +999,7 @@ MatrixUniform::multiply(const Matrix4x4 &world, const Matrix4x4 &view, const Mat
     }
 }
 
-ImageSampler::ImageSampler(
+SampledImage::SampledImage(
     const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset)
     : m_name(name)
     , m_stage(stage)
@@ -1009,7 +1009,7 @@ ImageSampler::ImageSampler(
 {
 }
 
-ImageSampler::~ImageSampler() NANOEM_DECL_NOEXCEPT
+SampledImage::~SampledImage() NANOEM_DECL_NOEXCEPT
 {
 }
 
