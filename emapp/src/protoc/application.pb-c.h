@@ -343,7 +343,7 @@ struct  Nanoem__Application__URI
 };
 #define NANOEM__APPLICATION__URI__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__uri__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__Archive__Entry
@@ -354,7 +354,7 @@ struct  Nanoem__Application__Archive__Entry
 };
 #define NANOEM__APPLICATION__ARCHIVE__ENTRY__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__archive__entry__descriptor) \
-    , NULL, {0,NULL} }
+, NULL, {0,NULL} }
 
 
 struct  Nanoem__Application__Archive
@@ -365,7 +365,7 @@ struct  Nanoem__Application__Archive
 };
 #define NANOEM__APPLICATION__ARCHIVE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__archive__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__Bone
@@ -376,7 +376,7 @@ struct  Nanoem__Application__Bone
 };
 #define NANOEM__APPLICATION__BONE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__bone__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__Morph
@@ -387,7 +387,7 @@ struct  Nanoem__Application__Morph
 };
 #define NANOEM__APPLICATION__MORPH__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__morph__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__OutsideParent
@@ -402,7 +402,7 @@ struct  Nanoem__Application__OutsideParent
 };
 #define NANOEM__APPLICATION__OUTSIDE_PARENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__outside_parent__descriptor) \
-    , 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__BoneInterpolation
@@ -415,7 +415,7 @@ struct  Nanoem__Application__BoneInterpolation
 };
 #define NANOEM__APPLICATION__BONE_INTERPOLATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__bone_interpolation__descriptor) \
-    , NULL, NULL, NULL, NULL }
+, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__CameraInterpolation
@@ -430,7 +430,7 @@ struct  Nanoem__Application__CameraInterpolation
 };
 #define NANOEM__APPLICATION__CAMERA_INTERPOLATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__camera_interpolation__descriptor) \
-    , NULL, NULL, NULL, NULL, NULL, NULL }
+, NULL, NULL, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__Plugin
@@ -444,7 +444,7 @@ struct  Nanoem__Application__Plugin
 };
 #define NANOEM__APPLICATION__PLUGIN__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__descriptor) \
-    , NULL, NULL, NULL, 0,NULL }
+, NULL, NULL, NULL, 0,NULL }
 
 
 struct  Nanoem__Application__InitializeCommand
@@ -471,7 +471,7 @@ struct  Nanoem__Application__InitializeCommand
 };
 #define NANOEM__APPLICATION__INITIALIZE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__initialize_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RenderFrameCommand
@@ -480,7 +480,7 @@ struct  Nanoem__Application__RenderFrameCommand
 };
 #define NANOEM__APPLICATION__RENDER_FRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__render_frame_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__DestroyCommand
@@ -489,7 +489,7 @@ struct  Nanoem__Application__DestroyCommand
 };
 #define NANOEM__APPLICATION__DESTROY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__destroy_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__TerminateCommand
@@ -498,7 +498,7 @@ struct  Nanoem__Application__TerminateCommand
 };
 #define NANOEM__APPLICATION__TERMINATE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__terminate_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__WindowResizedCommand
@@ -509,7 +509,7 @@ struct  Nanoem__Application__WindowResizedCommand
 };
 #define NANOEM__APPLICATION__WINDOW_RESIZED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__window_resized_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__ViewportResizedCommand
@@ -520,7 +520,7 @@ struct  Nanoem__Application__ViewportResizedCommand
 };
 #define NANOEM__APPLICATION__VIEWPORT_RESIZED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__viewport_resized_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__ActivateCommand
@@ -529,7 +529,7 @@ struct  Nanoem__Application__ActivateCommand
 };
 #define NANOEM__APPLICATION__ACTIVATE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__activate_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__DeactivateCommand
@@ -538,7 +538,7 @@ struct  Nanoem__Application__DeactivateCommand
 };
 #define NANOEM__APPLICATION__DEACTIVATE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__deactivate_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__CursorPressedCommand
@@ -551,7 +551,7 @@ struct  Nanoem__Application__CursorPressedCommand
 };
 #define NANOEM__APPLICATION__CURSOR_PRESSED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__cursor_pressed_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__CursorMovedCommand
@@ -566,7 +566,7 @@ struct  Nanoem__Application__CursorMovedCommand
 };
 #define NANOEM__APPLICATION__CURSOR_MOVED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__cursor_moved_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__CursorReleasedCommand
@@ -579,7 +579,7 @@ struct  Nanoem__Application__CursorReleasedCommand
 };
 #define NANOEM__APPLICATION__CURSOR_RELEASED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__cursor_released_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__CursorScrolledCommand
@@ -594,7 +594,7 @@ struct  Nanoem__Application__CursorScrolledCommand
 };
 #define NANOEM__APPLICATION__CURSOR_SCROLLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__cursor_scrolled_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__PointerPressedCommand
@@ -606,7 +606,7 @@ struct  Nanoem__Application__PointerPressedCommand
 };
 #define NANOEM__APPLICATION__POINTER_PRESSED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__pointer_pressed_command__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__PointerMovedCommand
@@ -620,7 +620,7 @@ struct  Nanoem__Application__PointerMovedCommand
 };
 #define NANOEM__APPLICATION__POINTER_MOVED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__pointer_moved_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__PointerReleasedCommand
@@ -632,7 +632,7 @@ struct  Nanoem__Application__PointerReleasedCommand
 };
 #define NANOEM__APPLICATION__POINTER_RELEASED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__pointer_released_command__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__PointerScrolledCommand
@@ -647,7 +647,7 @@ struct  Nanoem__Application__PointerScrolledCommand
 };
 #define NANOEM__APPLICATION__POINTER_SCROLLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__pointer_scrolled_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__KeyPressedCommand
@@ -657,7 +657,7 @@ struct  Nanoem__Application__KeyPressedCommand
 };
 #define NANOEM__APPLICATION__KEY_PRESSED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__key_pressed_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__KeyReleasedCommand
@@ -667,7 +667,7 @@ struct  Nanoem__Application__KeyReleasedCommand
 };
 #define NANOEM__APPLICATION__KEY_RELEASED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__key_released_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__UnicodeInputCommand
@@ -677,7 +677,7 @@ struct  Nanoem__Application__UnicodeInputCommand
 };
 #define NANOEM__APPLICATION__UNICODE_INPUT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__unicode_input_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__MenuActionCommand
@@ -687,7 +687,7 @@ struct  Nanoem__Application__MenuActionCommand
 };
 #define NANOEM__APPLICATION__MENU_ACTION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__menu_action_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__DropFileCommand
@@ -697,7 +697,7 @@ struct  Nanoem__Application__DropFileCommand
 };
 #define NANOEM__APPLICATION__DROP_FILE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__drop_file_command__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__LoadFileCommand
@@ -708,7 +708,7 @@ struct  Nanoem__Application__LoadFileCommand
 };
 #define NANOEM__APPLICATION__LOAD_FILE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__load_file_command__descriptor) \
-    , NULL, 0 }
+, NULL, 0 }
 
 
 struct  Nanoem__Application__SaveFileCommand
@@ -719,7 +719,7 @@ struct  Nanoem__Application__SaveFileCommand
 };
 #define NANOEM__APPLICATION__SAVE_FILE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__save_file_command__descriptor) \
-    , NULL, 0 }
+, NULL, 0 }
 
 
 struct  Nanoem__Application__NewProjectCommand
@@ -728,7 +728,7 @@ struct  Nanoem__Application__NewProjectCommand
 };
 #define NANOEM__APPLICATION__NEW_PROJECT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__new_project_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ConfirmBeforeNewProjectCommand
@@ -737,7 +737,7 @@ struct  Nanoem__Application__ConfirmBeforeNewProjectCommand
 };
 #define NANOEM__APPLICATION__CONFIRM_BEFORE_NEW_PROJECT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__confirm_before_new_project_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ConfirmBeforeOpenProjectCommand
@@ -746,7 +746,7 @@ struct  Nanoem__Application__ConfirmBeforeOpenProjectCommand
 };
 #define NANOEM__APPLICATION__CONFIRM_BEFORE_OPEN_PROJECT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__confirm_before_open_project_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ConfirmBeforeExitApplicationCommand
@@ -755,7 +755,7 @@ struct  Nanoem__Application__ConfirmBeforeExitApplicationCommand
 };
 #define NANOEM__APPLICATION__CONFIRM_BEFORE_EXIT_APPLICATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__confirm_before_exit_application_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ChangeDevicePixelRatioCommand
@@ -765,7 +765,7 @@ struct  Nanoem__Application__ChangeDevicePixelRatioCommand
 };
 #define NANOEM__APPLICATION__CHANGE_DEVICE_PIXEL_RATIO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__change_device_pixel_ratio_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ExportImageCommand
@@ -779,7 +779,7 @@ struct  Nanoem__Application__ExportImageCommand
 };
 #define NANOEM__APPLICATION__EXPORT_IMAGE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__export_image_command__descriptor) \
-    , NULL, 0, 0, 0, 0 }
+, NULL, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__ExportVideoCommand
@@ -793,7 +793,7 @@ struct  Nanoem__Application__ExportVideoCommand
 };
 #define NANOEM__APPLICATION__EXPORT_VIDEO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__export_video_command__descriptor) \
-    , NULL, 0, 0, 0, 0 }
+, NULL, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetActiveAccessoryCommand
@@ -803,7 +803,7 @@ struct  Nanoem__Application__SetActiveAccessoryCommand
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_ACCESSORY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_accessory_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetActiveModelCommand
@@ -813,7 +813,7 @@ struct  Nanoem__Application__SetActiveModelCommand
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_MODEL_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_model_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetActiveModelBoneCommand
@@ -823,7 +823,7 @@ struct  Nanoem__Application__SetActiveModelBoneCommand
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_MODEL_BONE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_model_bone_command__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__SetActiveModelMorphCommand
@@ -835,7 +835,7 @@ struct  Nanoem__Application__SetActiveModelMorphCommand
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_MODEL_MORPH_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_model_morph_command__descriptor) \
-    , NULL, 0, 0 }
+, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__LoadAllDecoderPluginsCommand
@@ -846,7 +846,7 @@ struct  Nanoem__Application__LoadAllDecoderPluginsCommand
 };
 #define NANOEM__APPLICATION__LOAD_ALL_DECODER_PLUGINS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__load_all_decoder_plugins_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__LoadAllEncoderPluginsCommand
@@ -857,7 +857,7 @@ struct  Nanoem__Application__LoadAllEncoderPluginsCommand
 };
 #define NANOEM__APPLICATION__LOAD_ALL_ENCODER_PLUGINS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__load_all_encoder_plugins_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__StartRecordingViewportPassCommand
@@ -866,7 +866,7 @@ struct  Nanoem__Application__StartRecordingViewportPassCommand
 };
 #define NANOEM__APPLICATION__START_RECORDING_VIEWPORT_PASS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__start_recording_viewport_pass_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__StopRecordingViewportPassCommand
@@ -875,7 +875,7 @@ struct  Nanoem__Application__StopRecordingViewportPassCommand
 };
 #define NANOEM__APPLICATION__STOP_RECORDING_VIEWPORT_PASS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__stop_recording_viewport_pass_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__SeekCommand
@@ -885,7 +885,7 @@ struct  Nanoem__Application__SeekCommand
 };
 #define NANOEM__APPLICATION__SEEK_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__seek_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetCameraLookAtCommand
@@ -899,7 +899,7 @@ struct  Nanoem__Application__SetCameraLookAtCommand
 };
 #define NANOEM__APPLICATION__SET_CAMERA_LOOK_AT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_camera_look_at_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetCameraAngleCommand
@@ -913,7 +913,7 @@ struct  Nanoem__Application__SetCameraAngleCommand
 };
 #define NANOEM__APPLICATION__SET_CAMERA_ANGLE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_camera_angle_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetCameraFovCommand
@@ -925,7 +925,7 @@ struct  Nanoem__Application__SetCameraFovCommand
 };
 #define NANOEM__APPLICATION__SET_CAMERA_FOV_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_camera_fov_command__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetCameraDistanceCommand
@@ -937,7 +937,7 @@ struct  Nanoem__Application__SetCameraDistanceCommand
 };
 #define NANOEM__APPLICATION__SET_CAMERA_DISTANCE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_camera_distance_command__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetLightColorCommand
@@ -951,7 +951,7 @@ struct  Nanoem__Application__SetLightColorCommand
 };
 #define NANOEM__APPLICATION__SET_LIGHT_COLOR_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_light_color_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetLightDirectionCommand
@@ -965,7 +965,7 @@ struct  Nanoem__Application__SetLightDirectionCommand
 };
 #define NANOEM__APPLICATION__SET_LIGHT_DIRECTION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_light_direction_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetAccessoryTranslationCommand
@@ -981,7 +981,7 @@ struct  Nanoem__Application__SetAccessoryTranslationCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_TRANSLATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_translation_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetAccessoryOrientationCommand
@@ -997,7 +997,7 @@ struct  Nanoem__Application__SetAccessoryOrientationCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_ORIENTATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_orientation_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetAccessoryScaleFactorCommand
@@ -1011,7 +1011,7 @@ struct  Nanoem__Application__SetAccessoryScaleFactorCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_SCALE_FACTOR_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_scale_factor_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetAccessoryOpacityCommand
@@ -1025,7 +1025,7 @@ struct  Nanoem__Application__SetAccessoryOpacityCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_OPACITY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_opacity_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelMorphWeightCommand
@@ -1040,7 +1040,7 @@ struct  Nanoem__Application__SetModelMorphWeightCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_MORPH_WEIGHT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_morph_weight_command__descriptor) \
-    , 0, 0, 0, NULL, 0, 0 }
+, 0, 0, 0, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelBoneTranslationCommand
@@ -1057,7 +1057,7 @@ struct  Nanoem__Application__SetModelBoneTranslationCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_BONE_TRANSLATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_bone_translation_command__descriptor) \
-    , 0, 0, 0, 0, 0, NULL, 0, 0 }
+, 0, 0, 0, 0, 0, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelBoneOrientationCommand
@@ -1075,7 +1075,7 @@ struct  Nanoem__Application__SetModelBoneOrientationCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_BONE_ORIENTATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_bone_orientation_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0, NULL, 0, 0 }
+, 0, 0, 0, 0, 0, 0, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__UpdateModelCommand
@@ -1086,7 +1086,7 @@ struct  Nanoem__Application__UpdateModelCommand
 };
 #define NANOEM__APPLICATION__UPDATE_MODEL_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__update_model_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RegisterAccessoryKeyframeCommand
@@ -1097,7 +1097,7 @@ struct  Nanoem__Application__RegisterAccessoryKeyframeCommand
 };
 #define NANOEM__APPLICATION__REGISTER_ACCESSORY_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_accessory_keyframe_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RegisterAllSelectedBoneKeyframesCommand
@@ -1110,7 +1110,7 @@ struct  Nanoem__Application__RegisterAllSelectedBoneKeyframesCommand
 };
 #define NANOEM__APPLICATION__REGISTER_ALL_SELECTED_BONE_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_all_selected_bone_keyframes_command__descriptor) \
-    , 0, 0, 0,NULL }
+, 0, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RegisterCameraKeyframeCommand
@@ -1119,7 +1119,7 @@ struct  Nanoem__Application__RegisterCameraKeyframeCommand
 };
 #define NANOEM__APPLICATION__REGISTER_CAMERA_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_camera_keyframe_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__RegisterLightKeyframeCommand
@@ -1128,7 +1128,7 @@ struct  Nanoem__Application__RegisterLightKeyframeCommand
 };
 #define NANOEM__APPLICATION__REGISTER_LIGHT_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_light_keyframe_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__RegisterModelKeyframeCommand
@@ -1139,7 +1139,7 @@ struct  Nanoem__Application__RegisterModelKeyframeCommand
 };
 #define NANOEM__APPLICATION__REGISTER_MODEL_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_model_keyframe_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RegisterAllSelectedMorphKeyframesCommand
@@ -1152,7 +1152,7 @@ struct  Nanoem__Application__RegisterAllSelectedMorphKeyframesCommand
 };
 #define NANOEM__APPLICATION__REGISTER_ALL_SELECTED_MORPH_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_all_selected_morph_keyframes_command__descriptor) \
-    , 0, 0, 0,NULL }
+, 0, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RegisterSelfShadowKeyframeCommand
@@ -1161,7 +1161,7 @@ struct  Nanoem__Application__RegisterSelfShadowKeyframeCommand
 };
 #define NANOEM__APPLICATION__REGISTER_SELF_SHADOW_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__register_self_shadow_keyframe_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__RemoveAccessoryKeyframeCommand
@@ -1172,7 +1172,7 @@ struct  Nanoem__Application__RemoveAccessoryKeyframeCommand
 };
 #define NANOEM__APPLICATION__REMOVE_ACCESSORY_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_accessory_keyframe_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RemoveAllSelectedBoneKeyframesCommand
@@ -1185,7 +1185,7 @@ struct  Nanoem__Application__RemoveAllSelectedBoneKeyframesCommand
 };
 #define NANOEM__APPLICATION__REMOVE_ALL_SELECTED_BONE_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_all_selected_bone_keyframes_command__descriptor) \
-    , 0, 0, 0,NULL }
+, 0, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RemoveCameraKeyframeCommand
@@ -1194,7 +1194,7 @@ struct  Nanoem__Application__RemoveCameraKeyframeCommand
 };
 #define NANOEM__APPLICATION__REMOVE_CAMERA_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_camera_keyframe_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__RemoveLightKeyframeCommand
@@ -1203,7 +1203,7 @@ struct  Nanoem__Application__RemoveLightKeyframeCommand
 };
 #define NANOEM__APPLICATION__REMOVE_LIGHT_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_light_keyframe_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__RemoveModelKeyframeCommand
@@ -1214,7 +1214,7 @@ struct  Nanoem__Application__RemoveModelKeyframeCommand
 };
 #define NANOEM__APPLICATION__REMOVE_MODEL_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_model_keyframe_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RemoveAllSelectedMorphKeyframesCommand
@@ -1227,7 +1227,7 @@ struct  Nanoem__Application__RemoveAllSelectedMorphKeyframesCommand
 };
 #define NANOEM__APPLICATION__REMOVE_ALL_SELECTED_MORPH_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_all_selected_morph_keyframes_command__descriptor) \
-    , 0, 0, 0,NULL }
+, 0, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RemoveSelfShadowKeyframeCommand
@@ -1236,7 +1236,7 @@ struct  Nanoem__Application__RemoveSelfShadowKeyframeCommand
 };
 #define NANOEM__APPLICATION__REMOVE_SELF_SHADOW_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_self_shadow_keyframe_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__SetBoneBezierControlPointCommand
@@ -1253,7 +1253,7 @@ struct  Nanoem__Application__SetBoneBezierControlPointCommand
 };
 #define NANOEM__APPLICATION__SET_BONE_BEZIER_CONTROL_POINT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_bone_bezier_control_point_command__descriptor) \
-    , 0, 0, 0, 0, 0, 0, 0, NULL }
+, 0, 0, 0, 0, 0, 0, 0, NULL }
 
 
 struct  Nanoem__Application__SetCameraBezierControlPointCommand
@@ -1267,7 +1267,7 @@ struct  Nanoem__Application__SetCameraBezierControlPointCommand
 };
 #define NANOEM__APPLICATION__SET_CAMERA_BEZIER_CONTROL_POINT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_camera_bezier_control_point_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SelectBoneCommand
@@ -1279,7 +1279,7 @@ struct  Nanoem__Application__SelectBoneCommand
 };
 #define NANOEM__APPLICATION__SELECT_BONE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_bone_command__descriptor) \
-    , NULL, 0, 0 }
+, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__SelectAllBonesCommand
@@ -1290,7 +1290,7 @@ struct  Nanoem__Application__SelectAllBonesCommand
 };
 #define NANOEM__APPLICATION__SELECT_ALL_BONES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_all_bones_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SelectAllDirtyBonesCommand
@@ -1301,7 +1301,7 @@ struct  Nanoem__Application__SelectAllDirtyBonesCommand
 };
 #define NANOEM__APPLICATION__SELECT_ALL_DIRTY_BONES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_all_dirty_bones_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SelectAllMovableBonesCommand
@@ -1312,7 +1312,7 @@ struct  Nanoem__Application__SelectAllMovableBonesCommand
 };
 #define NANOEM__APPLICATION__SELECT_ALL_MOVABLE_BONES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_all_movable_bones_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__ClearSelectBoneCommand
@@ -1324,7 +1324,7 @@ struct  Nanoem__Application__ClearSelectBoneCommand
 };
 #define NANOEM__APPLICATION__CLEAR_SELECT_BONE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__clear_select_bone_command__descriptor) \
-    , NULL, 0, 0 }
+, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__ClearSelectAllBonesCommand
@@ -1335,7 +1335,7 @@ struct  Nanoem__Application__ClearSelectAllBonesCommand
 };
 #define NANOEM__APPLICATION__CLEAR_SELECT_ALL_BONES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__clear_select_all_bones_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SelectMotionKeyframeCommand
@@ -1348,7 +1348,7 @@ struct  Nanoem__Application__SelectMotionKeyframeCommand
 };
 #define NANOEM__APPLICATION__SELECT_MOTION_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_motion_keyframe_command__descriptor) \
-    , 0, 0, 0, NULL }
+, 0, 0, 0, NULL }
 
 
 struct  Nanoem__Application__SelectAllRowMotionKeyframesCommand
@@ -1360,7 +1360,7 @@ struct  Nanoem__Application__SelectAllRowMotionKeyframesCommand
 };
 #define NANOEM__APPLICATION__SELECT_ALL_ROW_MOTION_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_all_row_motion_keyframes_command__descriptor) \
-    , NULL, 0, 0 }
+, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__SelectAllColumnMotionKeyframesCommand
@@ -1372,7 +1372,7 @@ struct  Nanoem__Application__SelectAllColumnMotionKeyframesCommand
 };
 #define NANOEM__APPLICATION__SELECT_ALL_COLUMN_MOTION_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__select_all_column_motion_keyframes_command__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__ClearSelectAllMotionKeyframesCommand
@@ -1383,7 +1383,7 @@ struct  Nanoem__Application__ClearSelectAllMotionKeyframesCommand
 };
 #define NANOEM__APPLICATION__CLEAR_SELECT_ALL_MOTION_KEYFRAMES_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__clear_select_all_motion_keyframes_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__UpdateCurrentFPSCommand
@@ -1393,7 +1393,7 @@ struct  Nanoem__Application__UpdateCurrentFPSCommand
 };
 #define NANOEM__APPLICATION__UPDATE_CURRENT_FPSCOMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__update_current_fpscommand__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__StartDebugCaptureCommand
@@ -1402,7 +1402,7 @@ struct  Nanoem__Application__StartDebugCaptureCommand
 };
 #define NANOEM__APPLICATION__START_DEBUG_CAPTURE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__start_debug_capture_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__StopDebugCaptureCommand
@@ -1411,7 +1411,7 @@ struct  Nanoem__Application__StopDebugCaptureCommand
 };
 #define NANOEM__APPLICATION__STOP_DEBUG_CAPTURE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__stop_debug_capture_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ReloadAccessoryEffectCommand
@@ -1421,7 +1421,7 @@ struct  Nanoem__Application__ReloadAccessoryEffectCommand
 };
 #define NANOEM__APPLICATION__RELOAD_ACCESSORY_EFFECT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__reload_accessory_effect_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ReloadModelEffectCommand
@@ -1431,7 +1431,7 @@ struct  Nanoem__Application__ReloadModelEffectCommand
 };
 #define NANOEM__APPLICATION__RELOAD_MODEL_EFFECT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__reload_model_effect_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetModelVisibleCommand
@@ -1442,7 +1442,7 @@ struct  Nanoem__Application__SetModelVisibleCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_VISIBLE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_visible_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelEdgeColorCommand
@@ -1456,7 +1456,7 @@ struct  Nanoem__Application__SetModelEdgeColorCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_EDGE_COLOR_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_edge_color_command__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelEdgeSizeCommand
@@ -1467,7 +1467,7 @@ struct  Nanoem__Application__SetModelEdgeSizeCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_EDGE_SIZE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_edge_size_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelConstraintStateCommand
@@ -1479,7 +1479,7 @@ struct  Nanoem__Application__SetModelConstraintStateCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_CONSTRAINT_STATE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_constraint_state_command__descriptor) \
-    , 0, NULL, 0 }
+, 0, NULL, 0 }
 
 
 struct  Nanoem__Application__SetModelOutsideParentCommand
@@ -1492,7 +1492,7 @@ struct  Nanoem__Application__SetModelOutsideParentCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_OUTSIDE_PARENT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_outside_parent_command__descriptor) \
-    , 0, NULL, NULL, NULL }
+, 0, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__SetAccessoryOutsideParentCommand
@@ -1504,7 +1504,7 @@ struct  Nanoem__Application__SetAccessoryOutsideParentCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_OUTSIDE_PARENT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_outside_parent_command__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RecoveryCommand
@@ -1514,7 +1514,7 @@ struct  Nanoem__Application__RecoveryCommand
 };
 #define NANOEM__APPLICATION__RECOVERY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__recovery_command__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__SetEffectPluginEnabledCommand
@@ -1524,7 +1524,7 @@ struct  Nanoem__Application__SetEffectPluginEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_EFFECT_PLUGIN_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_effect_plugin_enabled_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SavePointCommand
@@ -1538,7 +1538,7 @@ struct  Nanoem__Application__SavePointCommand
 };
 #define NANOEM__APPLICATION__SAVE_POINT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__save_point_command__descriptor) \
-    , NULL, 0,NULL, 0,NULL }
+, NULL, 0,NULL, 0,NULL }
 
 
 struct  Nanoem__Application__SetAccessoryAddBlendEnabledCommand
@@ -1549,7 +1549,7 @@ struct  Nanoem__Application__SetAccessoryAddBlendEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_ADD_BLEND_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_add_blend_enabled_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetAccessoryShadowEnabledCommand
@@ -1560,7 +1560,7 @@ struct  Nanoem__Application__SetAccessoryShadowEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_SHADOW_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_shadow_enabled_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetAccessoryVisibleCommand
@@ -1571,7 +1571,7 @@ struct  Nanoem__Application__SetAccessoryVisibleCommand
 };
 #define NANOEM__APPLICATION__SET_ACCESSORY_VISIBLE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_accessory_visible_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelAddBlendEnabledCommand
@@ -1582,7 +1582,7 @@ struct  Nanoem__Application__SetModelAddBlendEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_ADD_BLEND_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_add_blend_enabled_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelShadowEnabledCommand
@@ -1593,7 +1593,7 @@ struct  Nanoem__Application__SetModelShadowEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_SHADOW_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_shadow_enabled_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelShadowMapEnabledCommand
@@ -1604,7 +1604,7 @@ struct  Nanoem__Application__SetModelShadowMapEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_SHADOW_MAP_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_shadow_map_enabled_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetDrawableOrderIndexCommand
@@ -1615,7 +1615,7 @@ struct  Nanoem__Application__SetDrawableOrderIndexCommand
 };
 #define NANOEM__APPLICATION__SET_DRAWABLE_ORDER_INDEX_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_drawable_order_index_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelTransformOrderIndexCommand
@@ -1626,7 +1626,7 @@ struct  Nanoem__Application__SetModelTransformOrderIndexCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_TRANSFORM_ORDER_INDEX_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_transform_order_index_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetModelPhysicsSimulationEnabledCommand
@@ -1638,7 +1638,7 @@ struct  Nanoem__Application__SetModelPhysicsSimulationEnabledCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_PHYSICS_SIMULATION_ENABLED_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_physics_simulation_enabled_command__descriptor) \
-    , 0, 0, NULL }
+, 0, 0, NULL }
 
 
 struct  Nanoem__Application__SetModelBoneKeyframeInterpolationCommand
@@ -1650,7 +1650,7 @@ struct  Nanoem__Application__SetModelBoneKeyframeInterpolationCommand
 };
 #define NANOEM__APPLICATION__SET_MODEL_BONE_KEYFRAME_INTERPOLATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_model_bone_keyframe_interpolation_command__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__SetCameraKeyframeInterpolationCommand
@@ -1660,7 +1660,7 @@ struct  Nanoem__Application__SetCameraKeyframeInterpolationCommand
 };
 #define NANOEM__APPLICATION__SET_CAMERA_KEYFRAME_INTERPOLATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_camera_keyframe_interpolation_command__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__UpdatePerformanceMonitorCommand
@@ -1672,7 +1672,7 @@ struct  Nanoem__Application__UpdatePerformanceMonitorCommand
 };
 #define NANOEM__APPLICATION__UPDATE_PERFORMANCE_MONITOR_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__update_performance_monitor_command__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__LoadAllModelIOPluginsCommand
@@ -1683,7 +1683,7 @@ struct  Nanoem__Application__LoadAllModelIOPluginsCommand
 };
 #define NANOEM__APPLICATION__LOAD_ALL_MODEL_IOPLUGINS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__load_all_model_ioplugins_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__LoadAllMotionIOPluginsCommand
@@ -1694,7 +1694,7 @@ struct  Nanoem__Application__LoadAllMotionIOPluginsCommand
 };
 #define NANOEM__APPLICATION__LOAD_ALL_MOTION_IOPLUGINS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__load_all_motion_ioplugins_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__ExecuteModelIOPluginCommand
@@ -1705,7 +1705,7 @@ struct  Nanoem__Application__ExecuteModelIOPluginCommand
 };
 #define NANOEM__APPLICATION__EXECUTE_MODEL_IOPLUGIN_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__execute_model_ioplugin_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__ExecuteMotionIOPluginCommand
@@ -1716,7 +1716,7 @@ struct  Nanoem__Application__ExecuteMotionIOPluginCommand
 };
 #define NANOEM__APPLICATION__EXECUTE_MOTION_IOPLUGIN_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__execute_motion_ioplugin_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RequestExportImageConfigurationCommand
@@ -1725,7 +1725,7 @@ struct  Nanoem__Application__RequestExportImageConfigurationCommand
 };
 #define NANOEM__APPLICATION__REQUEST_EXPORT_IMAGE_CONFIGURATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__request_export_image_configuration_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__RequestExportVideoConfigurationCommand
@@ -1734,7 +1734,7 @@ struct  Nanoem__Application__RequestExportVideoConfigurationCommand
 };
 #define NANOEM__APPLICATION__REQUEST_EXPORT_VIDEO_CONFIGURATION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__request_export_video_configuration_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ExecuteExportingImageCommand
@@ -1744,7 +1744,7 @@ struct  Nanoem__Application__ExecuteExportingImageCommand
 };
 #define NANOEM__APPLICATION__EXECUTE_EXPORTING_IMAGE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__execute_exporting_image_command__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__ExecuteExportingVideoCommand
@@ -1754,7 +1754,7 @@ struct  Nanoem__Application__ExecuteExportingVideoCommand
 };
 #define NANOEM__APPLICATION__EXECUTE_EXPORTING_VIDEO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__execute_exporting_video_command__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__ScreenCursorPressCommand
@@ -1767,7 +1767,7 @@ struct  Nanoem__Application__ScreenCursorPressCommand
 };
 #define NANOEM__APPLICATION__SCREEN_CURSOR_PRESS_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__screen_cursor_press_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__ScreenCursorMoveCommand
@@ -1780,7 +1780,7 @@ struct  Nanoem__Application__ScreenCursorMoveCommand
 };
 #define NANOEM__APPLICATION__SCREEN_CURSOR_MOVE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__screen_cursor_move_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__ScreenCursorReleaseCommand
@@ -1793,7 +1793,7 @@ struct  Nanoem__Application__ScreenCursorReleaseCommand
 };
 #define NANOEM__APPLICATION__SCREEN_CURSOR_RELEASE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__screen_cursor_release_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__ConfirmBeforeExportingImageCommand
@@ -1802,7 +1802,7 @@ struct  Nanoem__Application__ConfirmBeforeExportingImageCommand
 };
 #define NANOEM__APPLICATION__CONFIRM_BEFORE_EXPORTING_IMAGE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__confirm_before_exporting_image_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ConfirmBeforeExportingVideoCommand
@@ -1811,7 +1811,7 @@ struct  Nanoem__Application__ConfirmBeforeExportingVideoCommand
 };
 #define NANOEM__APPLICATION__CONFIRM_BEFORE_EXPORTING_VIDEO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__confirm_before_exporting_video_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__SaveProjectCommand
@@ -1820,7 +1820,7 @@ struct  Nanoem__Application__SaveProjectCommand
 };
 #define NANOEM__APPLICATION__SAVE_PROJECT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__save_project_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__UndoCommand
@@ -1831,7 +1831,7 @@ struct  Nanoem__Application__UndoCommand
 };
 #define NANOEM__APPLICATION__UNDO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__undo_command__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 typedef enum {
@@ -1854,7 +1854,7 @@ struct  Nanoem__Application__RedoLoadAccessoryCommand
 };
 #define NANOEM__APPLICATION__REDO_LOAD_ACCESSORY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_load_accessory_command__descriptor) \
-    , 0, NULL, NANOEM__APPLICATION__REDO_LOAD_ACCESSORY_COMMAND__CONTENT__NOT_SET, {0} }
+, 0, NULL, NANOEM__APPLICATION__REDO_LOAD_ACCESSORY_COMMAND__CONTENT__NOT_SET, {0} }
 
 
 typedef enum {
@@ -1881,7 +1881,7 @@ struct  Nanoem__Application__RedoLoadModelCommand
 };
 #define NANOEM__APPLICATION__REDO_LOAD_MODEL_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_load_model_command__descriptor) \
-    , 0, NULL, 0,NULL, 0,NULL, NANOEM__APPLICATION__REDO_LOAD_MODEL_COMMAND__CONTENT__NOT_SET, {0} }
+, 0, NULL, 0,NULL, 0,NULL, NANOEM__APPLICATION__REDO_LOAD_MODEL_COMMAND__CONTENT__NOT_SET, {0} }
 
 
 typedef enum {
@@ -1905,7 +1905,7 @@ struct  Nanoem__Application__RedoLoadMotionCommand
 };
 #define NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_load_motion_command__descriptor) \
-    , NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__ACCESSORY, 0, 0, NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__CONTENT__NOT_SET, {0} }
+, NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__TYPE__ACCESSORY, 0, 0, NANOEM__APPLICATION__REDO_LOAD_MOTION_COMMAND__CONTENT__NOT_SET, {0} }
 
 
 struct  Nanoem__Application__RedoTransformBoneCommand__State
@@ -1920,7 +1920,7 @@ struct  Nanoem__Application__RedoTransformBoneCommand__State
 };
 #define NANOEM__APPLICATION__REDO_TRANSFORM_BONE_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_transform_bone_command__state__descriptor) \
-    , 0, NULL, NULL, NULL, NULL, NULL }
+, 0, NULL, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoTransformBoneCommand
@@ -1936,7 +1936,7 @@ struct  Nanoem__Application__RedoTransformBoneCommand
 };
 #define NANOEM__APPLICATION__REDO_TRANSFORM_BONE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_transform_bone_command__descriptor) \
-    , 0, 0,NULL, 0,NULL, 0,NULL }
+, 0, 0,NULL, 0,NULL, 0,NULL }
 
 
 struct  Nanoem__Application__RedoTransformMorphCommand__State
@@ -1947,7 +1947,7 @@ struct  Nanoem__Application__RedoTransformMorphCommand__State
 };
 #define NANOEM__APPLICATION__REDO_TRANSFORM_MORPH_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_transform_morph_command__state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoTransformMorphCommand
@@ -1961,7 +1961,7 @@ struct  Nanoem__Application__RedoTransformMorphCommand
 };
 #define NANOEM__APPLICATION__REDO_TRANSFORM_MORPH_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_transform_morph_command__descriptor) \
-    , 0, 0,NULL, 0,NULL }
+, 0, 0,NULL, 0,NULL }
 
 
 struct  Nanoem__Application__RedoAccessoryKeyframeCommand__State
@@ -1978,7 +1978,7 @@ struct  Nanoem__Application__RedoAccessoryKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_ACCESSORY_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_accessory_keyframe_command__state__descriptor) \
-    , NULL, NULL, 0, 0, 0, 0, 0, NULL }
+, NULL, NULL, 0, 0, 0, 0, 0, NULL }
 
 
 struct  Nanoem__Application__RedoAccessoryKeyframeCommand__Keyframe
@@ -1991,7 +1991,7 @@ struct  Nanoem__Application__RedoAccessoryKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_ACCESSORY_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_accessory_keyframe_command__keyframe__descriptor) \
-    , 0, 0, NULL, NULL }
+, 0, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoAccessoryKeyframeCommand
@@ -2003,7 +2003,7 @@ struct  Nanoem__Application__RedoAccessoryKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_ACCESSORY_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_accessory_keyframe_command__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RedoBoneKeyframeCommand__State
@@ -2016,7 +2016,7 @@ struct  Nanoem__Application__RedoBoneKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_BONE_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_bone_keyframe_command__state__descriptor) \
-    , NULL, NULL, NULL, 0 }
+, NULL, NULL, NULL, 0 }
 
 
 struct  Nanoem__Application__RedoBoneKeyframeCommand__Keyframe
@@ -2030,7 +2030,7 @@ struct  Nanoem__Application__RedoBoneKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_BONE_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_bone_keyframe_command__keyframe__descriptor) \
-    , 0, 0, NULL, NULL, 0 }
+, 0, 0, NULL, NULL, 0 }
 
 
 struct  Nanoem__Application__RedoBoneKeyframeCommand
@@ -2042,7 +2042,7 @@ struct  Nanoem__Application__RedoBoneKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_BONE_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_bone_keyframe_command__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RedoCameraKeyframeCommand__State
@@ -2057,7 +2057,7 @@ struct  Nanoem__Application__RedoCameraKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_CAMERA_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_camera_keyframe_command__state__descriptor) \
-    , NULL, NULL, 0, 0, 0, NULL }
+, NULL, NULL, 0, 0, 0, NULL }
 
 
 struct  Nanoem__Application__RedoCameraKeyframeCommand__Keyframe
@@ -2069,7 +2069,7 @@ struct  Nanoem__Application__RedoCameraKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_CAMERA_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_camera_keyframe_command__keyframe__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoCameraKeyframeCommand
@@ -2080,7 +2080,7 @@ struct  Nanoem__Application__RedoCameraKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_CAMERA_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_camera_keyframe_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__RedoLightKeyframeCommand__State
@@ -2091,7 +2091,7 @@ struct  Nanoem__Application__RedoLightKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_LIGHT_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_light_keyframe_command__state__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoLightKeyframeCommand__Keyframe
@@ -2103,7 +2103,7 @@ struct  Nanoem__Application__RedoLightKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_LIGHT_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_light_keyframe_command__keyframe__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoLightKeyframeCommand
@@ -2114,7 +2114,7 @@ struct  Nanoem__Application__RedoLightKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_LIGHT_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_light_keyframe_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__RedoModelKeyframeCommand__ConstraintState
@@ -2125,7 +2125,7 @@ struct  Nanoem__Application__RedoModelKeyframeCommand__ConstraintState
 };
 #define NANOEM__APPLICATION__REDO_MODEL_KEYFRAME_COMMAND__CONSTRAINT_STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_keyframe_command__constraint_state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelKeyframeCommand__State
@@ -2142,7 +2142,7 @@ struct  Nanoem__Application__RedoModelKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_MODEL_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_keyframe_command__state__descriptor) \
-    , 0,NULL, 0,NULL, NULL, 0, 0, 0 }
+, 0,NULL, 0,NULL, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelKeyframeCommand__Keyframe
@@ -2154,7 +2154,7 @@ struct  Nanoem__Application__RedoModelKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_MODEL_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_keyframe_command__keyframe__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelKeyframeCommand
@@ -2166,7 +2166,7 @@ struct  Nanoem__Application__RedoModelKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_keyframe_command__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RedoMorphKeyframeCommand__State
@@ -2176,7 +2176,7 @@ struct  Nanoem__Application__RedoMorphKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_MORPH_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_morph_keyframe_command__state__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__RedoMorphKeyframeCommand__Keyframe
@@ -2189,7 +2189,7 @@ struct  Nanoem__Application__RedoMorphKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_MORPH_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_morph_keyframe_command__keyframe__descriptor) \
-    , 0, 0, NULL, NULL }
+, 0, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoMorphKeyframeCommand
@@ -2201,7 +2201,7 @@ struct  Nanoem__Application__RedoMorphKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_MORPH_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_morph_keyframe_command__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RedoSelfShadowKeyframeCommand__State
@@ -2212,7 +2212,7 @@ struct  Nanoem__Application__RedoSelfShadowKeyframeCommand__State
 };
 #define NANOEM__APPLICATION__REDO_SELF_SHADOW_KEYFRAME_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_self_shadow_keyframe_command__state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoSelfShadowKeyframeCommand__Keyframe
@@ -2224,7 +2224,7 @@ struct  Nanoem__Application__RedoSelfShadowKeyframeCommand__Keyframe
 };
 #define NANOEM__APPLICATION__REDO_SELF_SHADOW_KEYFRAME_COMMAND__KEYFRAME__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_self_shadow_keyframe_command__keyframe__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoSelfShadowKeyframeCommand
@@ -2235,7 +2235,7 @@ struct  Nanoem__Application__RedoSelfShadowKeyframeCommand
 };
 #define NANOEM__APPLICATION__REDO_SELF_SHADOW_KEYFRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_self_shadow_keyframe_command__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__RedoUpdateAccessoryCommand__State
@@ -2252,7 +2252,7 @@ struct  Nanoem__Application__RedoUpdateAccessoryCommand__State
 };
 #define NANOEM__APPLICATION__REDO_UPDATE_ACCESSORY_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_update_accessory_command__state__descriptor) \
-    , NULL, NULL, 0, 0, 0, 0, 0, NULL }
+, NULL, NULL, 0, 0, 0, 0, 0, NULL }
 
 
 struct  Nanoem__Application__RedoUpdateAccessoryCommand
@@ -2264,7 +2264,7 @@ struct  Nanoem__Application__RedoUpdateAccessoryCommand
 };
 #define NANOEM__APPLICATION__REDO_UPDATE_ACCESSORY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_update_accessory_command__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoUpdateCameraCommand__State
@@ -2278,7 +2278,7 @@ struct  Nanoem__Application__RedoUpdateCameraCommand__State
 };
 #define NANOEM__APPLICATION__REDO_UPDATE_CAMERA_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_update_camera_command__state__descriptor) \
-    , NULL, NULL, 0, 0, 0 }
+, NULL, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoUpdateCameraCommand
@@ -2289,7 +2289,7 @@ struct  Nanoem__Application__RedoUpdateCameraCommand
 };
 #define NANOEM__APPLICATION__REDO_UPDATE_CAMERA_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_update_camera_command__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoUpdateLightCommand__State
@@ -2300,7 +2300,7 @@ struct  Nanoem__Application__RedoUpdateLightCommand__State
 };
 #define NANOEM__APPLICATION__REDO_UPDATE_LIGHT_COMMAND__STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_update_light_command__state__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoUpdateLightCommand
@@ -2311,7 +2311,7 @@ struct  Nanoem__Application__RedoUpdateLightCommand
 };
 #define NANOEM__APPLICATION__REDO_UPDATE_LIGHT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_update_light_command__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoRemoveTimelineFrameCommand
@@ -2324,7 +2324,7 @@ struct  Nanoem__Application__RedoRemoveTimelineFrameCommand
 };
 #define NANOEM__APPLICATION__REDO_REMOVE_TIMELINE_FRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_remove_timeline_frame_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoInsertEmptyTimelineFrameCommand
@@ -2337,7 +2337,7 @@ struct  Nanoem__Application__RedoInsertEmptyTimelineFrameCommand
 };
 #define NANOEM__APPLICATION__REDO_INSERT_EMPTY_TIMELINE_FRAME_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_insert_empty_timeline_frame_command__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoSaveMotionSnapshotCommand
@@ -2351,7 +2351,7 @@ struct  Nanoem__Application__RedoSaveMotionSnapshotCommand
 };
 #define NANOEM__APPLICATION__REDO_SAVE_MOTION_SNAPSHOT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_save_motion_snapshot_command__descriptor) \
-    , {0,NULL}, {0,NULL}, 0, 0, 0 }
+, {0,NULL}, {0,NULL}, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoDeleteAccessoryCommand
@@ -2361,7 +2361,7 @@ struct  Nanoem__Application__RedoDeleteAccessoryCommand
 };
 #define NANOEM__APPLICATION__REDO_DELETE_ACCESSORY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_delete_accessory_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__RedoDeleteModelCommand
@@ -2371,7 +2371,7 @@ struct  Nanoem__Application__RedoDeleteModelCommand
 };
 #define NANOEM__APPLICATION__REDO_DELETE_MODEL_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_delete_model_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 typedef enum {
@@ -2392,7 +2392,7 @@ struct  Nanoem__Application__RedoLoadAudioCommand
 };
 #define NANOEM__APPLICATION__REDO_LOAD_AUDIO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_load_audio_command__descriptor) \
-    , NANOEM__APPLICATION__REDO_LOAD_AUDIO_COMMAND__CONTENT__NOT_SET, {0} }
+, NANOEM__APPLICATION__REDO_LOAD_AUDIO_COMMAND__CONTENT__NOT_SET, {0} }
 
 
 typedef enum {
@@ -2413,7 +2413,7 @@ struct  Nanoem__Application__RedoLoadVideoCommand
 };
 #define NANOEM__APPLICATION__REDO_LOAD_VIDEO_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_load_video_command__descriptor) \
-    , NANOEM__APPLICATION__REDO_LOAD_VIDEO_COMMAND__CONTENT__NOT_SET, {0} }
+, NANOEM__APPLICATION__REDO_LOAD_VIDEO_COMMAND__CONTENT__NOT_SET, {0} }
 
 
 struct  Nanoem__Application__RedoBatchUndoCommandListCommand
@@ -2426,7 +2426,7 @@ struct  Nanoem__Application__RedoBatchUndoCommandListCommand
 };
 #define NANOEM__APPLICATION__REDO_BATCH_UNDO_COMMAND_LIST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_batch_undo_command_list_command__descriptor) \
-    , 0,NULL, 0, 0 }
+, 0,NULL, 0, 0 }
 
 
 struct  Nanoem__Application__RedoSaveModelSnapshotCommand
@@ -2438,7 +2438,7 @@ struct  Nanoem__Application__RedoSaveModelSnapshotCommand
 };
 #define NANOEM__APPLICATION__REDO_SAVE_MODEL_SNAPSHOT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_save_model_snapshot_command__descriptor) \
-    , {0,NULL}, {0,NULL}, 0 }
+, {0,NULL}, {0,NULL}, 0 }
 
 
 struct  Nanoem__Application__BaseModelObject
@@ -2449,7 +2449,7 @@ struct  Nanoem__Application__BaseModelObject
 };
 #define NANOEM__APPLICATION__BASE_MODEL_OBJECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__base_model_object__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelHeaderCommand
@@ -2466,7 +2466,7 @@ struct  Nanoem__Application__RedoModelHeaderCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_HEADER_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_header_command__descriptor) \
-    , 0, 0, 0, 0, NULL, NULL, NULL, NULL }
+, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelVertexCommand__Weight
@@ -2477,7 +2477,7 @@ struct  Nanoem__Application__RedoModelVertexCommand__Weight
 };
 #define NANOEM__APPLICATION__REDO_MODEL_VERTEX_COMMAND__WEIGHT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_vertex_command__weight__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelVertexCommand
@@ -2499,7 +2499,7 @@ struct  Nanoem__Application__RedoModelVertexCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_VERTEX_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_vertex_command__descriptor) \
-    , NULL, NULL, NULL, NULL, 0,NULL, 0, 0,NULL, 0, NULL, NULL, NULL }
+, NULL, NULL, NULL, NULL, 0,NULL, 0, 0,NULL, 0, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelMaterialCommand
@@ -2534,7 +2534,7 @@ struct  Nanoem__Application__RedoModelMaterialCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MATERIAL_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_material_command__descriptor) \
-    , NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+, NULL, NULL, NULL, NULL, NULL, 0, NULL, 0, NULL, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelBoneCommand
@@ -2546,7 +2546,7 @@ struct  Nanoem__Application__RedoModelBoneCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_BONE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_bone_command__descriptor) \
-    , NULL, NULL, NULL }
+, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelConstraintCommand
@@ -2558,7 +2558,7 @@ struct  Nanoem__Application__RedoModelConstraintCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_CONSTRAINT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_constraint_command__descriptor) \
-    , NULL, NULL, NULL }
+, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__Bone
@@ -2569,7 +2569,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__Bone
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__BONE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__bone__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__Group
@@ -2580,7 +2580,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__Group
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__GROUP__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__group__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__Flip
@@ -2591,7 +2591,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__Flip
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__FLIP__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__flip__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__Impulse
@@ -2604,7 +2604,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__Impulse
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__IMPULSE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__impulse__descriptor) \
-    , 0, NULL, NULL, 0 }
+, 0, NULL, NULL, 0 }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__Material
@@ -2626,7 +2626,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__Material
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__MATERIAL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__material__descriptor) \
-    , 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0 }
+, 0, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__UV
@@ -2637,7 +2637,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__UV
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__UV__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__uv__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand__Vertex
@@ -2648,7 +2648,7 @@ struct  Nanoem__Application__RedoModelMorphCommand__Vertex
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__VERTEX__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__vertex__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__RedoModelMorphCommand
@@ -2676,7 +2676,7 @@ struct  Nanoem__Application__RedoModelMorphCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_MORPH_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_morph_command__descriptor) \
-    , NULL, NULL, NULL, 0, 0, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
+, NULL, NULL, NULL, 0, 0, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
 
 
 typedef enum {
@@ -2697,7 +2697,7 @@ struct  Nanoem__Application__RedoModelLabelCommand__Item
 };
 #define NANOEM__APPLICATION__REDO_MODEL_LABEL_COMMAND__ITEM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_label_command__item__descriptor) \
-    , NANOEM__APPLICATION__REDO_MODEL_LABEL_COMMAND__ITEM__TYPE__NOT_SET, {0} }
+, NANOEM__APPLICATION__REDO_MODEL_LABEL_COMMAND__ITEM__TYPE__NOT_SET, {0} }
 
 
 struct  Nanoem__Application__RedoModelLabelCommand
@@ -2712,7 +2712,7 @@ struct  Nanoem__Application__RedoModelLabelCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_LABEL_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_label_command__descriptor) \
-    , NULL, NULL, NULL, 0, 0,NULL }
+, NULL, NULL, NULL, 0, 0,NULL }
 
 
 struct  Nanoem__Application__RedoModelRigidBodyCommand
@@ -2738,7 +2738,7 @@ struct  Nanoem__Application__RedoModelRigidBodyCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_RIGID_BODY_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_rigid_body_command__descriptor) \
-    , NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+, NULL, NULL, NULL, 0, NULL, NULL, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__RedoModelJointCommand
@@ -2761,7 +2761,7 @@ struct  Nanoem__Application__RedoModelJointCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_JOINT_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_joint_command__descriptor) \
-    , NULL, NULL, NULL, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL }
+, NULL, NULL, NULL, 0, 0, NULL, NULL, 0, NULL, NULL, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__RedoModelFaceCommand
@@ -2774,7 +2774,7 @@ struct  Nanoem__Application__RedoModelFaceCommand
 };
 #define NANOEM__APPLICATION__REDO_MODEL_FACE_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_model_face_command__descriptor) \
-    , NULL, 0, 0, 0 }
+, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Application__PingPongCommand
@@ -2783,7 +2783,7 @@ struct  Nanoem__Application__PingPongCommand
 };
 #define NANOEM__APPLICATION__PING_PONG_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__ping_pong_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__IsProjectDirtyRequestCommand
@@ -2792,7 +2792,7 @@ struct  Nanoem__Application__IsProjectDirtyRequestCommand
 };
 #define NANOEM__APPLICATION__IS_PROJECT_DIRTY_REQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__is_project_dirty_request_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__GetAllModelBonesRequestCommand
@@ -2802,7 +2802,7 @@ struct  Nanoem__Application__GetAllModelBonesRequestCommand
 };
 #define NANOEM__APPLICATION__GET_ALL_MODEL_BONES_REQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_model_bones_request_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__GetAllModelMorphsRequestCommand
@@ -2812,7 +2812,7 @@ struct  Nanoem__Application__GetAllModelMorphsRequestCommand
 };
 #define NANOEM__APPLICATION__GET_ALL_MODEL_MORPHS_REQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_model_morphs_request_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__GetProjectFileURIRequestCommand
@@ -2821,7 +2821,7 @@ struct  Nanoem__Application__GetProjectFileURIRequestCommand
 };
 #define NANOEM__APPLICATION__GET_PROJECT_FILE_URIREQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_project_file_urirequest_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__GetBackgroundImageTextureHandleRequestCommand
@@ -2830,7 +2830,7 @@ struct  Nanoem__Application__GetBackgroundImageTextureHandleRequestCommand
 };
 #define NANOEM__APPLICATION__GET_BACKGROUND_IMAGE_TEXTURE_HANDLE_REQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_background_image_texture_handle_request_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__GetAllModelsRequestCommand
@@ -2839,7 +2839,7 @@ struct  Nanoem__Application__GetAllModelsRequestCommand
 };
 #define NANOEM__APPLICATION__GET_ALL_MODELS_REQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_models_request_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__GetAllAccessoriesRequestCommand
@@ -2848,7 +2848,7 @@ struct  Nanoem__Application__GetAllAccessoriesRequestCommand
 };
 #define NANOEM__APPLICATION__GET_ALL_ACCESSORIES_REQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_accessories_request_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__QueryOpenSingleFileDialogCommand
@@ -2859,7 +2859,7 @@ struct  Nanoem__Application__QueryOpenSingleFileDialogCommand
 };
 #define NANOEM__APPLICATION__QUERY_OPEN_SINGLE_FILE_DIALOG_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__query_open_single_file_dialog_command__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__QueryOpenMultipleFilesDialogCommand
@@ -2871,7 +2871,7 @@ struct  Nanoem__Application__QueryOpenMultipleFilesDialogCommand
 };
 #define NANOEM__APPLICATION__QUERY_OPEN_MULTIPLE_FILES_DIALOG_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__query_open_multiple_files_dialog_command__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__QuerySaveFileDialogCommand
@@ -2882,7 +2882,7 @@ struct  Nanoem__Application__QuerySaveFileDialogCommand
 };
 #define NANOEM__APPLICATION__QUERY_SAVE_FILE_DIALOG_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__query_save_file_dialog_command__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__GetHandleFileURIRequestCommand
@@ -2892,7 +2892,7 @@ struct  Nanoem__Application__GetHandleFileURIRequestCommand
 };
 #define NANOEM__APPLICATION__GET_HANDLE_FILE_URIREQUEST_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_handle_file_urirequest_command__descriptor) \
-    , 0 }
+, 0 }
 
 
 typedef enum {
@@ -3302,7 +3302,7 @@ struct  Nanoem__Application__Command
 };
 #define NANOEM__APPLICATION__COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__command__descriptor) \
-    , 0, NANOEM__APPLICATION__COMMAND__TYPE__NOT_SET, {0} }
+, 0, NANOEM__APPLICATION__COMMAND__TYPE__NOT_SET, {0} }
 
 
 struct  Nanoem__Application__TrackEvent
@@ -3315,7 +3315,7 @@ struct  Nanoem__Application__TrackEvent
 };
 #define NANOEM__APPLICATION__TRACK_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__track_event__descriptor) \
-    , NULL, NULL, NULL, NULL }
+, NULL, NULL, NULL, NULL }
 
 
 struct  Nanoem__Application__UndoEvent
@@ -3326,7 +3326,7 @@ struct  Nanoem__Application__UndoEvent
 };
 #define NANOEM__APPLICATION__UNDO_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__undo_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__RedoEvent
@@ -3337,7 +3337,7 @@ struct  Nanoem__Application__RedoEvent
 };
 #define NANOEM__APPLICATION__REDO_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__redo_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__UndoChangeEvent
@@ -3346,7 +3346,7 @@ struct  Nanoem__Application__UndoChangeEvent
 };
 #define NANOEM__APPLICATION__UNDO_CHANGE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__undo_change_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__AddModelEvent
@@ -3357,7 +3357,7 @@ struct  Nanoem__Application__AddModelEvent
 };
 #define NANOEM__APPLICATION__ADD_MODEL_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__add_model_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__SetActiveModelEvent
@@ -3368,7 +3368,7 @@ struct  Nanoem__Application__SetActiveModelEvent
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_MODEL_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_model_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__SetActiveBoneEvent
@@ -3380,7 +3380,7 @@ struct  Nanoem__Application__SetActiveBoneEvent
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_BONE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_bone_event__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__SetActiveMorphEvent
@@ -3392,7 +3392,7 @@ struct  Nanoem__Application__SetActiveMorphEvent
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_MORPH_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_morph_event__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__RemoveModelEvent
@@ -3403,7 +3403,7 @@ struct  Nanoem__Application__RemoveModelEvent
 };
 #define NANOEM__APPLICATION__REMOVE_MODEL_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_model_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__AddAccessoryEvent
@@ -3414,7 +3414,7 @@ struct  Nanoem__Application__AddAccessoryEvent
 };
 #define NANOEM__APPLICATION__ADD_ACCESSORY_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__add_accessory_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__SetActiveAccessoryEvent
@@ -3425,7 +3425,7 @@ struct  Nanoem__Application__SetActiveAccessoryEvent
 };
 #define NANOEM__APPLICATION__SET_ACTIVE_ACCESSORY_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_active_accessory_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__RemoveAccessoryEvent
@@ -3436,7 +3436,7 @@ struct  Nanoem__Application__RemoveAccessoryEvent
 };
 #define NANOEM__APPLICATION__REMOVE_ACCESSORY_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_accessory_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Nanoem__Application__AddMotionEvent
@@ -3446,7 +3446,7 @@ struct  Nanoem__Application__AddMotionEvent
 };
 #define NANOEM__APPLICATION__ADD_MOTION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__add_motion_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__RemoveMotionEvent
@@ -3456,7 +3456,7 @@ struct  Nanoem__Application__RemoveMotionEvent
 };
 #define NANOEM__APPLICATION__REMOVE_MOTION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__remove_motion_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__PlayEvent
@@ -3467,7 +3467,7 @@ struct  Nanoem__Application__PlayEvent
 };
 #define NANOEM__APPLICATION__PLAY_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__play_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__StopEvent
@@ -3478,7 +3478,7 @@ struct  Nanoem__Application__StopEvent
 };
 #define NANOEM__APPLICATION__STOP_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__stop_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__PauseEvent
@@ -3489,7 +3489,7 @@ struct  Nanoem__Application__PauseEvent
 };
 #define NANOEM__APPLICATION__PAUSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__pause_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__ResumeEvent
@@ -3500,7 +3500,7 @@ struct  Nanoem__Application__ResumeEvent
 };
 #define NANOEM__APPLICATION__RESUME_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__resume_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SeekEvent
@@ -3512,7 +3512,7 @@ struct  Nanoem__Application__SeekEvent
 };
 #define NANOEM__APPLICATION__SEEK_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__seek_event__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Application__UpdateDurationEvent
@@ -3523,7 +3523,7 @@ struct  Nanoem__Application__UpdateDurationEvent
 };
 #define NANOEM__APPLICATION__UPDATE_DURATION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__update_duration_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SaveProjectAfterConfirmEvent
@@ -3532,7 +3532,7 @@ struct  Nanoem__Application__SaveProjectAfterConfirmEvent
 };
 #define NANOEM__APPLICATION__SAVE_PROJECT_AFTER_CONFIRM_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__save_project_after_confirm_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__DiscardProjectAfterConfirmEvent
@@ -3541,7 +3541,7 @@ struct  Nanoem__Application__DiscardProjectAfterConfirmEvent
 };
 #define NANOEM__APPLICATION__DISCARD_PROJECT_AFTER_CONFIRM_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__discard_project_after_confirm_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ToggleProjectEffectEnabledEvent
@@ -3551,7 +3551,7 @@ struct  Nanoem__Application__ToggleProjectEffectEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_PROJECT_EFFECT_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_project_effect_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleProjectGroundShadowEnabledEvent
@@ -3561,7 +3561,7 @@ struct  Nanoem__Application__ToggleProjectGroundShadowEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_PROJECT_GROUND_SHADOW_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_project_ground_shadow_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleProjectVertexShaderSkinningEnabledEvent
@@ -3571,7 +3571,7 @@ struct  Nanoem__Application__ToggleProjectVertexShaderSkinningEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_PROJECT_VERTEX_SHADER_SKINNING_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_project_vertex_shader_skinning_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleProjectComputeShaderSkinningEnabledEvent
@@ -3581,7 +3581,7 @@ struct  Nanoem__Application__ToggleProjectComputeShaderSkinningEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_PROJECT_COMPUTE_SHADER_SKINNING_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_project_compute_shader_skinning_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetProjectSampleLevelEvent
@@ -3591,7 +3591,7 @@ struct  Nanoem__Application__SetProjectSampleLevelEvent
 };
 #define NANOEM__APPLICATION__SET_PROJECT_SAMPLE_LEVEL_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_project_sample_level_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleGridEnabledEvent
@@ -3601,7 +3601,7 @@ struct  Nanoem__Application__ToggleGridEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_GRID_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_grid_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetGridCellEvent
@@ -3612,7 +3612,7 @@ struct  Nanoem__Application__SetGridCellEvent
 };
 #define NANOEM__APPLICATION__SET_GRID_CELL_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_grid_cell_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetGridSizeEvent
@@ -3623,7 +3623,7 @@ struct  Nanoem__Application__SetGridSizeEvent
 };
 #define NANOEM__APPLICATION__SET_GRID_SIZE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_grid_size_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetPreferredMotionFPSEvent
@@ -3634,7 +3634,7 @@ struct  Nanoem__Application__SetPreferredMotionFPSEvent
 };
 #define NANOEM__APPLICATION__SET_PREFERRED_MOTION_FPSEVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_preferred_motion_fpsevent__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__SetPreferredEditingFPSEvent
@@ -3644,7 +3644,7 @@ struct  Nanoem__Application__SetPreferredEditingFPSEvent
 };
 #define NANOEM__APPLICATION__SET_PREFERRED_EDITING_FPSEVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_preferred_editing_fpsevent__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetPhysicsSimulationModeEvent
@@ -3654,7 +3654,7 @@ struct  Nanoem__Application__SetPhysicsSimulationModeEvent
 };
 #define NANOEM__APPLICATION__SET_PHYSICS_SIMULATION_MODE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_physics_simulation_mode_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetPhysicsSimulationEngineDebugFlagEvent
@@ -3664,7 +3664,7 @@ struct  Nanoem__Application__SetPhysicsSimulationEngineDebugFlagEvent
 };
 #define NANOEM__APPLICATION__SET_PHYSICS_SIMULATION_ENGINE_DEBUG_FLAG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_physics_simulation_engine_debug_flag_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleShadowMapEnabledEvent
@@ -3674,7 +3674,7 @@ struct  Nanoem__Application__ToggleShadowMapEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_SHADOW_MAP_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_shadow_map_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetShadowMapModeEvent
@@ -3684,7 +3684,7 @@ struct  Nanoem__Application__SetShadowMapModeEvent
 };
 #define NANOEM__APPLICATION__SET_SHADOW_MAP_MODE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_shadow_map_mode_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetShadowMapDistanceEvent
@@ -3694,7 +3694,7 @@ struct  Nanoem__Application__SetShadowMapDistanceEvent
 };
 #define NANOEM__APPLICATION__SET_SHADOW_MAP_DISTANCE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_shadow_map_distance_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelAddBlendEnabledEvent
@@ -3704,7 +3704,7 @@ struct  Nanoem__Application__ToggleActiveModelAddBlendEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_ADD_BLEND_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_add_blend_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelShadowMapEnabledEvent
@@ -3714,7 +3714,7 @@ struct  Nanoem__Application__ToggleActiveModelShadowMapEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_SHADOW_MAP_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_shadow_map_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelVisibleEvent
@@ -3724,7 +3724,7 @@ struct  Nanoem__Application__ToggleActiveModelVisibleEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_VISIBLE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_visible_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelComputeShaderSkinningEnabledEvent
@@ -3734,7 +3734,7 @@ struct  Nanoem__Application__ToggleActiveModelComputeShaderSkinningEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_COMPUTE_SHADER_SKINNING_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_compute_shader_skinning_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelShowAllBonesEvent
@@ -3744,7 +3744,7 @@ struct  Nanoem__Application__ToggleActiveModelShowAllBonesEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_SHOW_ALL_BONES_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_show_all_bones_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelShowAllRigidBodiesEvent
@@ -3754,7 +3754,7 @@ struct  Nanoem__Application__ToggleActiveModelShowAllRigidBodiesEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_SHOW_ALL_RIGID_BODIES_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_show_all_rigid_bodies_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelShowAllVertexFacesEvent
@@ -3764,7 +3764,7 @@ struct  Nanoem__Application__ToggleActiveModelShowAllVertexFacesEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_SHOW_ALL_VERTEX_FACES_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_show_all_vertex_faces_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelShowAllVertexPointsEvent
@@ -3774,7 +3774,7 @@ struct  Nanoem__Application__ToggleActiveModelShowAllVertexPointsEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_SHOW_ALL_VERTEX_POINTS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_show_all_vertex_points_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveModelVertexShaderSkinningEnabledEvent
@@ -3784,7 +3784,7 @@ struct  Nanoem__Application__ToggleActiveModelVertexShaderSkinningEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_MODEL_VERTEX_SHADER_SKINNING_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_model_vertex_shader_skinning_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__DisableCursorEvent
@@ -3795,7 +3795,7 @@ struct  Nanoem__Application__DisableCursorEvent
 };
 #define NANOEM__APPLICATION__DISABLE_CURSOR_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__disable_cursor_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__EnableCursorEvent
@@ -3806,7 +3806,7 @@ struct  Nanoem__Application__EnableCursorEvent
 };
 #define NANOEM__APPLICATION__ENABLE_CURSOR_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__enable_cursor_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__AvailableAllImportingAudioExtensionsEvent
@@ -3817,7 +3817,7 @@ struct  Nanoem__Application__AvailableAllImportingAudioExtensionsEvent
 };
 #define NANOEM__APPLICATION__AVAILABLE_ALL_IMPORTING_AUDIO_EXTENSIONS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__available_all_importing_audio_extensions_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__AvailableAllImportingVideoExtensionsEvent
@@ -3828,7 +3828,7 @@ struct  Nanoem__Application__AvailableAllImportingVideoExtensionsEvent
 };
 #define NANOEM__APPLICATION__AVAILABLE_ALL_IMPORTING_VIDEO_EXTENSIONS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__available_all_importing_video_extensions_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__AvailableAllExportingImageExtensionsEvent
@@ -3839,7 +3839,7 @@ struct  Nanoem__Application__AvailableAllExportingImageExtensionsEvent
 };
 #define NANOEM__APPLICATION__AVAILABLE_ALL_EXPORTING_IMAGE_EXTENSIONS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__available_all_exporting_image_extensions_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__AvailableAllExportingVideoExtensionsEvent
@@ -3850,7 +3850,7 @@ struct  Nanoem__Application__AvailableAllExportingVideoExtensionsEvent
 };
 #define NANOEM__APPLICATION__AVAILABLE_ALL_EXPORTING_VIDEO_EXTENSIONS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__available_all_exporting_video_extensions_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__InitializationCompleteEvent
@@ -3859,7 +3859,7 @@ struct  Nanoem__Application__InitializationCompleteEvent
 };
 #define NANOEM__APPLICATION__INITIALIZATION_COMPLETE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__initialization_complete_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__CompleteDestructionEvent
@@ -3868,7 +3868,7 @@ struct  Nanoem__Application__CompleteDestructionEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_DESTRUCTION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_destruction_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ErrorEvent
@@ -3880,7 +3880,7 @@ struct  Nanoem__Application__ErrorEvent
 };
 #define NANOEM__APPLICATION__ERROR_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__error_event__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__StartRecordingViewportPassEvent
@@ -3891,7 +3891,7 @@ struct  Nanoem__Application__StartRecordingViewportPassEvent
 };
 #define NANOEM__APPLICATION__START_RECORDING_VIEWPORT_PASS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__start_recording_viewport_pass_event__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Application__StopRecordingViewportPassEvent
@@ -3900,7 +3900,7 @@ struct  Nanoem__Application__StopRecordingViewportPassEvent
 };
 #define NANOEM__APPLICATION__STOP_RECORDING_VIEWPORT_PASS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__stop_recording_viewport_pass_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__CompleteLoadingFileEvent
@@ -3913,7 +3913,7 @@ struct  Nanoem__Application__CompleteLoadingFileEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_LOADING_FILE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_loading_file_event__descriptor) \
-    , NULL, 0, 0, 0 }
+, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Application__CompleteSavingFileEvent
@@ -3926,7 +3926,7 @@ struct  Nanoem__Application__CompleteSavingFileEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_SAVING_FILE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_saving_file_event__descriptor) \
-    , NULL, 0, 0, 0 }
+, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Application__CompleteTerminationEvent
@@ -3935,7 +3935,7 @@ struct  Nanoem__Application__CompleteTerminationEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_TERMINATION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_termination_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ConsumePassEvent
@@ -3945,7 +3945,7 @@ struct  Nanoem__Application__ConsumePassEvent
 };
 #define NANOEM__APPLICATION__CONSUME_PASS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__consume_pass_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__AddModalDialogEvent
@@ -3954,7 +3954,7 @@ struct  Nanoem__Application__AddModalDialogEvent
 };
 #define NANOEM__APPLICATION__ADD_MODAL_DIALOG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__add_modal_dialog_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__ClearModalDialogEvent
@@ -3963,7 +3963,7 @@ struct  Nanoem__Application__ClearModalDialogEvent
 };
 #define NANOEM__APPLICATION__CLEAR_MODAL_DIALOG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__clear_modal_dialog_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__SetLanguageEvent
@@ -3973,7 +3973,7 @@ struct  Nanoem__Application__SetLanguageEvent
 };
 #define NANOEM__APPLICATION__SET_LANGUAGE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_language_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleProjectPlayingWithLoopEnabledEvent
@@ -3983,7 +3983,7 @@ struct  Nanoem__Application__ToggleProjectPlayingWithLoopEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_PROJECT_PLAYING_WITH_LOOP_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_project_playing_with_loop_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveAccessoryAddBlendEnabledEvent
@@ -3993,7 +3993,7 @@ struct  Nanoem__Application__ToggleActiveAccessoryAddBlendEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_ACCESSORY_ADD_BLEND_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_accessory_add_blend_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveAccessoryShadowEnabledEvent
@@ -4003,7 +4003,7 @@ struct  Nanoem__Application__ToggleActiveAccessoryShadowEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_ACCESSORY_SHADOW_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_accessory_shadow_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleActiveAccessoryVisibleEvent
@@ -4013,7 +4013,7 @@ struct  Nanoem__Application__ToggleActiveAccessoryVisibleEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_ACTIVE_ACCESSORY_VISIBLE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_active_accessory_visible_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 typedef enum {
@@ -4036,7 +4036,7 @@ struct  Nanoem__Application__UpdateProgressEvent
 };
 #define NANOEM__APPLICATION__UPDATE_PROGRESS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__update_progress_event__descriptor) \
-    , 0, 0, NANOEM__APPLICATION__UPDATE_PROGRESS_EVENT__TYPE__NOT_SET, {0} }
+, 0, 0, NANOEM__APPLICATION__UPDATE_PROGRESS_EVENT__TYPE__NOT_SET, {0} }
 
 
 struct  Nanoem__Application__StartProgressEvent
@@ -4048,7 +4048,7 @@ struct  Nanoem__Application__StartProgressEvent
 };
 #define NANOEM__APPLICATION__START_PROGRESS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__start_progress_event__descriptor) \
-    , 0, NULL, NULL }
+, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__StopProgressEvent
@@ -4057,7 +4057,7 @@ struct  Nanoem__Application__StopProgressEvent
 };
 #define NANOEM__APPLICATION__STOP_PROGRESS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__stop_progress_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__SetupProjectEvent
@@ -4071,7 +4071,7 @@ struct  Nanoem__Application__SetupProjectEvent
 };
 #define NANOEM__APPLICATION__SETUP_PROJECT_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__setup_project_event__descriptor) \
-    , 0, 0, 0, 0, 0 }
+, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__SetEditingModeEvent
@@ -4081,7 +4081,7 @@ struct  Nanoem__Application__SetEditingModeEvent
 };
 #define NANOEM__APPLICATION__SET_EDITING_MODE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_editing_mode_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__CompleteLoadingAllModelIOPluginsEvent
@@ -4092,7 +4092,7 @@ struct  Nanoem__Application__CompleteLoadingAllModelIOPluginsEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_LOADING_ALL_MODEL_IOPLUGINS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_loading_all_model_ioplugins_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__CompleteLoadingAllMotionIOPluginsEvent
@@ -4103,7 +4103,7 @@ struct  Nanoem__Application__CompleteLoadingAllMotionIOPluginsEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_LOADING_ALL_MOTION_IOPLUGINS_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_loading_all_motion_ioplugins_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__CompleteExportImageConfigurationEvent
@@ -4114,7 +4114,7 @@ struct  Nanoem__Application__CompleteExportImageConfigurationEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_EXPORT_IMAGE_CONFIGURATION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_export_image_configuration_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__CompleteExportVideoConfigurationEvent
@@ -4125,7 +4125,7 @@ struct  Nanoem__Application__CompleteExportVideoConfigurationEvent
 };
 #define NANOEM__APPLICATION__COMPLETE_EXPORT_VIDEO_CONFIGURATION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__complete_export_video_configuration_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__CanCopyEvent
@@ -4135,7 +4135,7 @@ struct  Nanoem__Application__CanCopyEvent
 };
 #define NANOEM__APPLICATION__CAN_COPY_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__can_copy_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__CanPasteEvent
@@ -4145,7 +4145,7 @@ struct  Nanoem__Application__CanPasteEvent
 };
 #define NANOEM__APPLICATION__CAN_PASTE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__can_paste_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetWindowDevicePixelRatioEvent
@@ -4155,7 +4155,7 @@ struct  Nanoem__Application__SetWindowDevicePixelRatioEvent
 };
 #define NANOEM__APPLICATION__SET_WINDOW_DEVICE_PIXEL_RATIO_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_window_device_pixel_ratio_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__SetViewportDevicePixelRatioEvent
@@ -4165,7 +4165,7 @@ struct  Nanoem__Application__SetViewportDevicePixelRatioEvent
 };
 #define NANOEM__APPLICATION__SET_VIEWPORT_DEVICE_PIXEL_RATIO_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__set_viewport_device_pixel_ratio_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__ToggleModelEditingEnabledEvent
@@ -4175,7 +4175,7 @@ struct  Nanoem__Application__ToggleModelEditingEnabledEvent
 };
 #define NANOEM__APPLICATION__TOGGLE_MODEL_EDITING_ENABLED_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__toggle_model_editing_enabled_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__QuitApplicationEvent
@@ -4184,7 +4184,7 @@ struct  Nanoem__Application__QuitApplicationEvent
 };
 #define NANOEM__APPLICATION__QUIT_APPLICATION_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__quit_application_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__PingPongEvent
@@ -4193,7 +4193,7 @@ struct  Nanoem__Application__PingPongEvent
 };
 #define NANOEM__APPLICATION__PING_PONG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__ping_pong_event__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__IsProjectDirtyResponseEvent
@@ -4203,7 +4203,7 @@ struct  Nanoem__Application__IsProjectDirtyResponseEvent
 };
 #define NANOEM__APPLICATION__IS_PROJECT_DIRTY_RESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__is_project_dirty_response_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__GetAllModelBonesResponseEvent
@@ -4215,7 +4215,7 @@ struct  Nanoem__Application__GetAllModelBonesResponseEvent
 };
 #define NANOEM__APPLICATION__GET_ALL_MODEL_BONES_RESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_model_bones_response_event__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__GetAllModelMorphsResponseEvent
@@ -4233,7 +4233,7 @@ struct  Nanoem__Application__GetAllModelMorphsResponseEvent
 };
 #define NANOEM__APPLICATION__GET_ALL_MODEL_MORPHS_RESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_model_morphs_response_event__descriptor) \
-    , 0, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
+, 0, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
 
 
 struct  Nanoem__Application__GetProjectFileURIResponseEvent
@@ -4243,7 +4243,7 @@ struct  Nanoem__Application__GetProjectFileURIResponseEvent
 };
 #define NANOEM__APPLICATION__GET_PROJECT_FILE_URIRESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_project_file_uriresponse_event__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Nanoem__Application__GetBackgroundImageTextureHandleResponseEvent
@@ -4253,7 +4253,7 @@ struct  Nanoem__Application__GetBackgroundImageTextureHandleResponseEvent
 };
 #define NANOEM__APPLICATION__GET_BACKGROUND_IMAGE_TEXTURE_HANDLE_RESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_background_image_texture_handle_response_event__descriptor) \
-    , 0 }
+, 0 }
 
 
 struct  Nanoem__Application__GetAllAccessoriesResponseEvent__Item
@@ -4265,7 +4265,7 @@ struct  Nanoem__Application__GetAllAccessoriesResponseEvent__Item
 };
 #define NANOEM__APPLICATION__GET_ALL_ACCESSORIES_RESPONSE_EVENT__ITEM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_accessories_response_event__item__descriptor) \
-    , 0, NULL, 0 }
+, 0, NULL, 0 }
 
 
 struct  Nanoem__Application__GetAllAccessoriesResponseEvent
@@ -4276,7 +4276,7 @@ struct  Nanoem__Application__GetAllAccessoriesResponseEvent
 };
 #define NANOEM__APPLICATION__GET_ALL_ACCESSORIES_RESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_accessories_response_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__GetAllModelsResponseEvent__Item
@@ -4288,7 +4288,7 @@ struct  Nanoem__Application__GetAllModelsResponseEvent__Item
 };
 #define NANOEM__APPLICATION__GET_ALL_MODELS_RESPONSE_EVENT__ITEM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_models_response_event__item__descriptor) \
-    , 0, NULL, 0 }
+, 0, NULL, 0 }
 
 
 struct  Nanoem__Application__GetAllModelsResponseEvent
@@ -4299,7 +4299,7 @@ struct  Nanoem__Application__GetAllModelsResponseEvent
 };
 #define NANOEM__APPLICATION__GET_ALL_MODELS_RESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_all_models_response_event__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 struct  Nanoem__Application__QueryOpenSingleFileDialogEvent
@@ -4311,7 +4311,7 @@ struct  Nanoem__Application__QueryOpenSingleFileDialogEvent
 };
 #define NANOEM__APPLICATION__QUERY_OPEN_SINGLE_FILE_DIALOG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__query_open_single_file_dialog_event__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__QueryOpenMultipleFilesDialogEvent
@@ -4323,7 +4323,7 @@ struct  Nanoem__Application__QueryOpenMultipleFilesDialogEvent
 };
 #define NANOEM__APPLICATION__QUERY_OPEN_MULTIPLE_FILES_DIALOG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__query_open_multiple_files_dialog_event__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__QuerySaveFileDialogEvent
@@ -4335,7 +4335,7 @@ struct  Nanoem__Application__QuerySaveFileDialogEvent
 };
 #define NANOEM__APPLICATION__QUERY_SAVE_FILE_DIALOG_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__query_save_file_dialog_event__descriptor) \
-    , 0, 0,NULL }
+, 0, 0,NULL }
 
 
 struct  Nanoem__Application__GetHandleFileURIResponseEvent
@@ -4346,7 +4346,7 @@ struct  Nanoem__Application__GetHandleFileURIResponseEvent
 };
 #define NANOEM__APPLICATION__GET_HANDLE_FILE_URIRESPONSE_EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__get_handle_file_uriresponse_event__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 typedef enum {
@@ -4556,7 +4556,7 @@ struct  Nanoem__Application__Event
 };
 #define NANOEM__APPLICATION__EVENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__event__descriptor) \
-    , 0, 0, 0, NANOEM__APPLICATION__EVENT__TYPE__NOT_SET, {0} }
+, 0, 0, 0, NANOEM__APPLICATION__EVENT__TYPE__NOT_SET, {0} }
 
 
 /* Nanoem__Application__URI methods */

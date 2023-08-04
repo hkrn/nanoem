@@ -70,7 +70,6 @@ RenderTargetDepthStencilImageContainer::findImage(const Effect *effect, const sg
         char label[Inline::kMarkerStringLength];
         sg_image_desc depthStencilImageDescription(colorImageDescription);
         depthStencilImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
-        depthStencilImageDescription.num_mipmaps = 1;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImages/%d", effect->nameConstString(),
                 m_name.c_str(), Inline::saturateInt32(m_allDepthStencilImages.size()));
@@ -114,7 +113,7 @@ RenderTargetDepthStencilImageContainer::findMipmapImages(
             sg_image_desc mipmapImageDescription(depthStencilImageDescription);
             mipmapImageDescription.width = glm::max(mipmapImageDescription.width >> i, 1);
             mipmapImageDescription.height = glm::max(mipmapImageDescription.height >> i, 1);
-            mipmapImageDescription.num_mipmaps = 1;
+            mipmapImageDescription.num_mipmaps = 0;
             if (Inline::isDebugLabelEnabled()) {
                 StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImage/Mipmaps/%d",
                     effect->nameConstString(), mipmapImageDescription.label, i);
@@ -165,7 +164,6 @@ RenderTargetDepthStencilImageContainer::create(Effect *effect)
         sg_image_desc mipmapImageDescription(m_depthStencilImageDescription);
         mipmapImageDescription.width = glm::max(mipmapImageDescription.width >> i, 1);
         mipmapImageDescription.height = glm::max(mipmapImageDescription.height >> i, 1);
-        mipmapImageDescription.num_mipmaps = 1;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImage/Mipmaps/%d",
                 effect->nameConstString(), m_name.c_str(), i);

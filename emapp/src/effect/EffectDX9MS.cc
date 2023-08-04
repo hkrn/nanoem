@@ -360,7 +360,6 @@ retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_stag
                 sg_sampler_desc samplerDescription;
                 Inline::clearZeroMemory(imageDescription);
                 Inline::clearZeroMemory(samplerDescription);
-                imageDescription.num_mipmaps = 1;
                 convertSamplerDescription<Fx9__Effect__Dx9ms__Texture, Fx9__Effect__Dx9ms__SamplerState>(
                     texturePtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
@@ -398,7 +397,6 @@ retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_sta
                 sg_sampler_desc samplerDescription;
                 Inline::clearZeroMemory(imageDescription);
                 Inline::clearZeroMemory(samplerDescription);
-                imageDescription.num_mipmaps = 1;
                 convertSamplerDescription<Fx9__Effect__Dx9ms__Texture, Fx9__Effect__Dx9ms__SamplerState>(
                     texturePtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {

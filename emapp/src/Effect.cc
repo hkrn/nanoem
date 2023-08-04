@@ -125,8 +125,8 @@ public:
     static nanoem_u32_t offsetParameterType(const Fx9__Effect__Parameter *parameter) NANOEM_DECL_NOEXCEPT;
     static ParameterType determineParameterType(const Fx9__Effect__Parameter *parameter) NANOEM_DECL_NOEXCEPT;
     static String concatPrefix(const char *const name, const char *const prefix);
-    static void fillFallbackImage(
-        sg_image *images, const nanoem_u8_t imageCount, const sg_image &fallbackImage) NANOEM_DECL_NOEXCEPT;
+    static void fillFallbackImageAndSampler(
+        const nanoem_u8_t imageCount, const Project *project, sg_stage_bindings &bindings) NANOEM_DECL_NOEXCEPT;
     static int sortRenderStateAscent(const void *left, const void *right) NANOEM_DECL_NOEXCEPT;
 
     template <typename TShader, typename TSymbol, typename TUniform, typename TAttribute>
@@ -413,13 +413,17 @@ PrivateEffectUtils::concatPrefix(const char *const name, const char *const prefi
 }
 
 void
-PrivateEffectUtils::fillFallbackImage(
-    sg_image *images, const nanoem_u8_t imageCount, const sg_image &fallbackImage) NANOEM_DECL_NOEXCEPT
+PrivateEffectUtils::fillFallbackImageAndSampler(
+    const nanoem_u8_t imageCount, const Project *project, sg_stage_bindings &bindings) NANOEM_DECL_NOEXCEPT
 {
+    const sg_image fallbackImage = project->sharedFallbackImage();
+    const sg_sampler fallbackSampler = project->sharedFallbackSampler();
     for (nanoem_u8_t i = 0; i < imageCount; i++) {
-        sg_image &sd = images[i];
-        if (!sg::is_valid(sd)) {
-            sd = fallbackImage;
+        if (!sg::is_valid(bindings.images[i])) {
+            bindings.images[i] = fallbackImage;
+        }
+        if (!sg::is_valid(bindings.samplers[i])) {
+            bindings.samplers[i] = fallbackSampler;
         }
     }
 }
@@ -852,7 +856,6 @@ PrivateEffectUtils::retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, s
                 sg_sampler_desc samplerDescription;
                 Inline::clearZeroMemory(imageDescription);
                 Inline::clearZeroMemory(samplerDescription);
-                imageDescription.num_mipmaps = 1;
                 convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(
                     samplerPtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
@@ -894,7 +897,6 @@ PrivateEffectUtils::retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, 
                 sg_sampler_desc samplerDescription;
                 Inline::clearZeroMemory(imageDescription);
                 Inline::clearZeroMemory(samplerDescription);
-                imageDescription.num_mipmaps = 1;
                 convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(
                     samplerPtr, samplerDescription);
                 if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
@@ -2294,7 +2296,7 @@ void
 Effect::generateOffscreenMipmapImagesChain(const effect::OffscreenRenderTargetOption &option)
 {
     const sg_image_desc &colorImageDesc = option.m_colorImageDescription;
-    if (colorImageDesc.num_mipmaps > 1) {
+    if (colorImageDesc.num_mipmaps >= 1) {
         const String &name = option.m_name;
         OffscreenRenderTargetImageContainerMap::const_iterator it = m_offscreenRenderTargetImages.find(name);
         if (it != m_offscreenRenderTargetImages.end()) {
@@ -2393,8 +2395,8 @@ Effect::searchRenderTargetColorImageContainer(const IDrawable *drawable, sg_imag
     return containerPtr;
 }
 
-const ImageSamplerList *
-Effect::findImageSamplerList(const Pass *passPtr) const NANOEM_DECL_NOEXCEPT
+const SampledImageList *
+Effect::findSampledImageList(const Pass *passPtr) const NANOEM_DECL_NOEXCEPT
 {
     ImageSamplerMap::const_iterator it = m_imageSamplers.find(passPtr);
     return it != m_imageSamplers.end() ? &it->second : nullptr;
@@ -4161,7 +4163,7 @@ Effect::handleRenderColorTargetSemantic(
                 self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
             const sg_pixel_format format =
                 self->determinePixelFormat(annotations, self->m_project->viewportPixelFormat());
-            const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
+            const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 0);
             bool enableAA = RenderTargetColorImageContainer::kAntialiasEnabled;
             AnnotationMap::const_iterator it2 = annotations.findAnnotation(kAntiAliasKeyLiteral);
             if (it2 != annotations.end()) {
@@ -4194,7 +4196,7 @@ Effect::handleRenderDepthStencilTargetSemantic(
             self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
         const sg_pixel_format format =
             self->determineDepthStencilPixelFormat(annotations, SG_PIXELFORMAT_DEPTH_STENCIL);
-        const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
+        const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 0);
         const String &name = parameter.m_name;
         bool enableAA = RenderTargetColorImageContainer::kAntialiasEnabled;
         RenderTargetDepthStencilImageContainer *container = nanoem_new(RenderTargetDepthStencilImageContainer(name));
@@ -4280,7 +4282,7 @@ Effect::handleOffscreenRenderTargetSemantic(
             const Vector4 size(
                 self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
             const sg_pixel_format format = self->determinePixelFormat(annotations, SG_PIXELFORMAT_RGBA8);
-            const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 1);
+            const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 0);
             AnnotationMap::const_iterator it;
             String description;
             Vector4 clearColor(Constants::kZeroV3, 1.0f);
@@ -4474,7 +4476,7 @@ nanoem_u8_t
 Effect::determineMipLevels(const AnnotationMap &annotations, const Vector2 &size, int defaultLevel)
 {
     AnnotationMap::const_iterator it = annotations.findAnnotation(kMiplevelsKeyLiteral);
-    int numMipLevels = 1, maxMipLevels = glm::min(int(glm::log2(glm::max(size.x, size.y))), int(SG_MAX_MIPMAPS));
+    int numMipLevels, maxMipLevels = glm::min(int(glm::log2(glm::max(size.x, size.y))), int(SG_MAX_MIPMAPS));
     if (it != annotations.end()) {
         int value = it->second.toInt();
         numMipLevels = value > 0 ? value : maxMipLevels;
@@ -4622,9 +4624,6 @@ Effect::createImageResourceParameter(
     imageDescription.num_slices = imageSize.z;
     imageDescription.pixel_format = determinePixelFormat(annotations, SG_PIXELFORMAT_RGBA8);
     imageDescription.type = determineImageType(annotations, parameter.m_type);
-    if (imageDescription.num_mipmaps == 0) {
-        imageDescription.num_mipmaps = determineMipLevels(annotations, size, SG_MAX_MIPMAPS);
-    }
     sg_sampler_desc samplerDescription;
     Inline::clearZeroMemory(samplerDescription);
     SamplerDescriptionMap::const_iterator it3 = m_samplerDescriptions.find(parameter.m_name);
@@ -4837,12 +4836,12 @@ Effect::setImageUniform(const String &name, const effect::Pass *pass, sg_image i
     SamplerRegisterIndex::List indices;
     if (pass->findPixelShaderSamplerRegisterIndex(name, indices)) {
         for (SamplerRegisterIndex::List::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
-            m_imageSamplers[pass].push_back(ImageSampler(name, SG_SHADERSTAGE_FS, image, sampler, *it));
+            m_imageSamplers[pass].push_back(SampledImage(name, SG_SHADERSTAGE_FS, image, sampler, *it));
         }
     }
     else if (pass->findVertexShaderSamplerRegisterIndex(name, indices)) {
         for (SamplerRegisterIndex::List::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
-            m_imageSamplers[pass].push_back(ImageSampler(name, SG_SHADERSTAGE_VS, image, sampler, *it));
+            m_imageSamplers[pass].push_back(SampledImage(name, SG_SHADERSTAGE_VS, image, sampler, *it));
         }
     }
 }
@@ -5258,23 +5257,23 @@ void
 Effect::updatePassImageHandles(effect::Pass *pass, sg_bindings &bindings)
 {
     nanoem_parameter_assert(pass, "must not be nullptr");
-    sg_image *pixelShaderImages = bindings.fs.images, *vertexShaderImages = bindings.vs.images,
-             fallbackImage = m_project->sharedFallbackImage();
-    pixelShaderImages[0] = m_firstImageHandle;
+    bindings.fs.images[0] = m_firstImageHandle;
     ImageSamplerMap::iterator it = m_imageSamplers.find(pass);
     if (it != m_imageSamplers.end()) {
-        ImageSamplerList &samplers = it->second;
-        for (ImageSamplerList::const_iterator it = samplers.begin(), end = samplers.end(); it != end; ++it) {
-            const ImageSampler &sampler = *it;
-            const nanoem_u8_t samplerOffset = sampler.m_offset;
+        SampledImageList &sampledImages = it->second;
+        for (SampledImageList::const_iterator it = sampledImages.begin(), end = sampledImages.end(); it != end; ++it) {
+            const SampledImage &sampledImage = *it;
+            const nanoem_u8_t samplerOffset = sampledImage.m_offset;
             if (samplerOffset < SG_MAX_SHADERSTAGE_IMAGES) {
-                switch (sampler.m_stage) {
+                switch (sampledImage.m_stage) {
                 case SG_SHADERSTAGE_FS: {
-                    pixelShaderImages[samplerOffset] = sampler.m_image;
+                    bindings.fs.images[samplerOffset] = sampledImage.m_image;
+                    bindings.fs.samplers[samplerOffset] = sampledImage.m_sampler;
                     break;
                 }
                 case SG_SHADERSTAGE_VS: {
-                    vertexShaderImages[samplerOffset] = sampler.m_image;
+                    bindings.vs.images[samplerOffset] = sampledImage.m_image;
+                    bindings.vs.samplers[samplerOffset] = sampledImage.m_sampler;
                     break;
                 }
                 default:
@@ -5282,10 +5281,10 @@ Effect::updatePassImageHandles(effect::Pass *pass, sg_bindings &bindings)
                 }
             }
         }
-        samplers.clear();
+        sampledImages.clear();
     }
-    PrivateEffectUtils::fillFallbackImage(pixelShaderImages, pass->pixelShaderImageCount(), fallbackImage);
-    PrivateEffectUtils::fillFallbackImage(vertexShaderImages, pass->vertexShaderImageCount(), fallbackImage);
+    PrivateEffectUtils::fillFallbackImageAndSampler(pass->pixelShaderImageCount(), m_project, bindings.fs);
+    PrivateEffectUtils::fillFallbackImageAndSampler(pass->vertexShaderImageCount(), m_project, bindings.vs);
 }
 
 void
@@ -5647,7 +5646,7 @@ Effect::setNormalizedColorImageContainer(
         const sg_backend backend = sg::query_backend();
         if (backend == SG_BACKEND_GLCORE33 || backend == SG_BACKEND_GLES3) {
             sg_sampler_desc desc(it->second);
-            if (numMipLevels == 1) {
+            if (numMipLevels == 0) {
                 desc.mipmap_filter = SG_FILTER_NONE;
             }
             container->setColorSamplerDescription(desc);
@@ -5771,13 +5770,14 @@ Effect::containsPassOutputImageSampler(const Pass *passPtr) const NANOEM_DECL_NO
     if (passPtr) {
         ImageSamplerMap::const_iterator it = m_imageSamplers.find(passPtr);
         if (it != m_imageSamplers.end()) {
-            const ImageSamplerList &images = it->second;
+            const SampledImageList &sampledImages = it->second;
             for (nanoem_rsize_t i = 0; !result && i < SG_MAX_COLOR_ATTACHMENTS; i++) {
                 sg_image outputColorImage = m_currentRenderTargetPassDescription.color_attachments[i].image;
                 if (sg::is_valid(outputColorImage)) {
-                    for (ImageSamplerList::const_iterator it = images.begin(), end = images.end(); it != end; ++it) {
-                        const ImageSampler &sampler = *it;
-                        if (sampler.m_image.id == outputColorImage.id) {
+                    for (SampledImageList::const_iterator it = sampledImages.begin(), end = sampledImages.end();
+                         it != end; ++it) {
+                        const SampledImage &sampledImage = *it;
+                        if (sampledImage.m_image.id == outputColorImage.id) {
                             result = true;
                             break;
                         }
@@ -5847,7 +5847,7 @@ void
 Effect::generateRenderTargetMipmapImagesChain(const IDrawable *drawable, const String &colorContainerName,
     const String &depthContainerName, const sg_image_desc &imageDescription)
 {
-    if (imageDescription.num_mipmaps > 1) {
+    if (imageDescription.num_mipmaps >= 1) {
         const NamedRenderTargetColorImageContainerMap *containers =
             findNamedRenderTargetColorImageContainerMap(drawable);
         NamedRenderTargetColorImageContainerMap::const_iterator it = containers->find(colorContainerName);

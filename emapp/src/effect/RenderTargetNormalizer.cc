@@ -187,12 +187,12 @@ RenderTargetNormalizer::resolveRenderTargetIOConfliction(const Pass *passPtr,
     const sg_pass_desc &originPassDescription, nanoem_rsize_t index, sg_pixel_format normalizedColorFormat,
     sg_pass_desc &currentPassDescriptionRef)
 {
-    if (const ImageSamplerList *images = m_effect->findImageSamplerList(passPtr)) {
+    if (const SampledImageList *images = m_effect->findSampledImageList(passPtr)) {
         for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
             sg_image outputColorImage = currentPassDescriptionRef.color_attachments[i].image;
             if (sg::is_valid(outputColorImage)) {
-                for (ImageSamplerList::const_iterator it = images->begin(), end = images->end(); it != end; ++it) {
-                    const ImageSampler &inputSampler = *it;
+                for (SampledImageList::const_iterator it = images->begin(), end = images->end(); it != end; ++it) {
+                    const SampledImage &inputSampler = *it;
                     if (inputSampler.m_image.id == outputColorImage.id) {
                         const sg_image_desc &originImageDescription = containerPtr->colorImageDescription();
                         sg_image &colorImage = m_normalizedColorImages[index].first;
