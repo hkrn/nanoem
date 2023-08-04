@@ -165,7 +165,7 @@ struct  Fx9__Effect__Dx9ms__Uniform
 };
 #define FX9__EFFECT__DX9MS__UNIFORM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__uniform__descriptor) \
-    , FX9__EFFECT__DX9MS__UNIFORM_TYPE__UT_FLOAT, 0, 0, 0, NULL }
+, FX9__EFFECT__DX9MS__UNIFORM_TYPE__UT_FLOAT, 0, 0, 0, NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Constant
@@ -176,7 +176,7 @@ struct  Fx9__Effect__Dx9ms__Constant
 };
 #define FX9__EFFECT__DX9MS__CONSTANT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__constant__descriptor) \
-    , FX9__EFFECT__DX9MS__UNIFORM_TYPE__UT_FLOAT, 0 }
+, FX9__EFFECT__DX9MS__UNIFORM_TYPE__UT_FLOAT, 0 }
 
 
 struct  Fx9__Effect__Dx9ms__Sampler
@@ -188,7 +188,7 @@ struct  Fx9__Effect__Dx9ms__Sampler
 };
 #define FX9__EFFECT__DX9MS__SAMPLER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__sampler__descriptor) \
-    , FX9__EFFECT__DX9MS__SAMPLER_TYPE__SAMPLER_2D, 0, NULL }
+, FX9__EFFECT__DX9MS__SAMPLER_TYPE__SAMPLER_2D, 0, NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Attribute
@@ -200,7 +200,7 @@ struct  Fx9__Effect__Dx9ms__Attribute
 };
 #define FX9__EFFECT__DX9MS__ATTRIBUTE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__attribute__descriptor) \
-    , FX9__EFFECT__DX9MS__ATTRIBUTE_USAGE__AU_POSITION, 0, NULL }
+, FX9__EFFECT__DX9MS__ATTRIBUTE_USAGE__AU_POSITION, 0, NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Symbol
@@ -213,7 +213,7 @@ struct  Fx9__Effect__Dx9ms__Symbol
 };
 #define FX9__EFFECT__DX9MS__SYMBOL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__symbol__descriptor) \
-    , NULL, FX9__EFFECT__DX9MS__REGISTER_SET__RS_BOOL, 0, 0 }
+, NULL, FX9__EFFECT__DX9MS__REGISTER_SET__RS_BOOL, 0, 0 }
 
 
 struct  Fx9__Effect__Dx9ms__SamplerState
@@ -224,7 +224,7 @@ struct  Fx9__Effect__Dx9ms__SamplerState
 };
 #define FX9__EFFECT__DX9MS__SAMPLER_STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__sampler_state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Fx9__Effect__Dx9ms__RenderState
@@ -235,7 +235,7 @@ struct  Fx9__Effect__Dx9ms__RenderState
 };
 #define FX9__EFFECT__DX9MS__RENDER_STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__render_state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Fx9__Effect__Dx9ms__Texture
@@ -248,7 +248,7 @@ struct  Fx9__Effect__Dx9ms__Texture
 };
 #define FX9__EFFECT__DX9MS__TEXTURE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__texture__descriptor) \
-    , NULL, 0, 0,NULL }
+, NULL, 0, 0,NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Operand
@@ -259,7 +259,7 @@ struct  Fx9__Effect__Dx9ms__Operand
 };
 #define FX9__EFFECT__DX9MS__OPERAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__operand__descriptor) \
-    , FX9__EFFECT__DX9MS__OPERAND_TYPE__PSOT_INPUT, 0 }
+, FX9__EFFECT__DX9MS__OPERAND_TYPE__PSOT_INPUT, 0 }
 
 
 struct  Fx9__Effect__Dx9ms__Instruction
@@ -272,7 +272,7 @@ struct  Fx9__Effect__Dx9ms__Instruction
 };
 #define FX9__EFFECT__DX9MS__INSTRUCTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__instruction__descriptor) \
-    , FX9__EFFECT__DX9MS__OPCODE__PSO_NOP, 0, 0,NULL }
+, FX9__EFFECT__DX9MS__OPCODE__PSO_NOP, 0, 0,NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Preshader
@@ -288,7 +288,7 @@ struct  Fx9__Effect__Dx9ms__Preshader
 };
 #define FX9__EFFECT__DX9MS__PRESHADER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__preshader__descriptor) \
-    , 0,NULL, 0, 0,NULL, 0,NULL }
+, 0,NULL, 0, 0,NULL, 0,NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Shader
@@ -315,7 +315,7 @@ struct  Fx9__Effect__Dx9ms__Shader
 };
 #define FX9__EFFECT__DX9MS__SHADER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__shader__descriptor) \
-    , 0, 0, 0, FX9__EFFECT__DX9MS__SHADER_TYPE__ST_PIXEL, NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, NULL }
+, 0, 0, 0, FX9__EFFECT__DX9MS__SHADER_TYPE__ST_PIXEL, NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, NULL }
 
 
 struct  Fx9__Effect__Dx9ms__Pass
@@ -332,7 +332,7 @@ struct  Fx9__Effect__Dx9ms__Pass
 };
 #define FX9__EFFECT__DX9MS__PASS__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__dx9ms__pass__descriptor) \
-    , NULL, NULL, 0,NULL, 0,NULL, 0,NULL }
+, NULL, NULL, 0,NULL, 0,NULL, 0,NULL }
 
 
 /* Fx9__Effect__Dx9ms__Uniform methods */

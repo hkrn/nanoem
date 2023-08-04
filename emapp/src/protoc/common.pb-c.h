@@ -49,7 +49,7 @@ struct  Nanoem__Common__Annotation
 };
 #define NANOEM__COMMON__ANNOTATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__annotation__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Common__Vector3
@@ -61,7 +61,7 @@ struct  Nanoem__Common__Vector3
 };
 #define NANOEM__COMMON__VECTOR3__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__vector3__descriptor) \
-    , 0, 0, 0 }
+, 0, 0, 0 }
 
 
 struct  Nanoem__Common__Vector4
@@ -74,7 +74,7 @@ struct  Nanoem__Common__Vector4
 };
 #define NANOEM__COMMON__VECTOR4__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__vector4__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Common__Color
@@ -87,7 +87,7 @@ struct  Nanoem__Common__Color
 };
 #define NANOEM__COMMON__COLOR__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__color__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Common__Quaternion
@@ -100,7 +100,7 @@ struct  Nanoem__Common__Quaternion
 };
 #define NANOEM__COMMON__QUATERNION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__quaternion__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Common__Interpolation
@@ -113,7 +113,7 @@ struct  Nanoem__Common__Interpolation
 };
 #define NANOEM__COMMON__INTERPOLATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__interpolation__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Common__Point
@@ -124,7 +124,7 @@ struct  Nanoem__Common__Point
 };
 #define NANOEM__COMMON__POINT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__point__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Common__Size
@@ -135,7 +135,7 @@ struct  Nanoem__Common__Size
 };
 #define NANOEM__COMMON__SIZE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__size__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Nanoem__Common__Rect
@@ -146,7 +146,7 @@ struct  Nanoem__Common__Rect
 };
 #define NANOEM__COMMON__RECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__rect__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Common__Rational
@@ -157,7 +157,7 @@ struct  Nanoem__Common__Rational
 };
 #define NANOEM__COMMON__RATIONAL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__common__rational__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 /* Nanoem__Common__Annotation methods */

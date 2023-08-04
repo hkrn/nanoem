@@ -125,7 +125,7 @@ struct  Fx9__Effect__Uniform
 };
 #define FX9__EFFECT__UNIFORM__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__uniform__descriptor) \
-    , FX9__EFFECT__UNIFORM__TYPE__UT_FLOAT, 0, 0, 0, NULL }
+, FX9__EFFECT__UNIFORM__TYPE__UT_FLOAT, 0, 0, 0, NULL }
 
 
 struct  Fx9__Effect__SamplerState
@@ -136,7 +136,7 @@ struct  Fx9__Effect__SamplerState
 };
 #define FX9__EFFECT__SAMPLER_STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__sampler_state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Fx9__Effect__Sampler
@@ -151,7 +151,7 @@ struct  Fx9__Effect__Sampler
 };
 #define FX9__EFFECT__SAMPLER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__sampler__descriptor) \
-    , FX9__EFFECT__SAMPLER__TYPE__SAMPLER_2D, 0, NULL, NULL, 0,NULL }
+, FX9__EFFECT__SAMPLER__TYPE__SAMPLER_2D, 0, NULL, NULL, 0,NULL }
 
 
 struct  Fx9__Effect__Attribute
@@ -163,7 +163,7 @@ struct  Fx9__Effect__Attribute
 };
 #define FX9__EFFECT__ATTRIBUTE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__attribute__descriptor) \
-    , FX9__EFFECT__ATTRIBUTE__USAGE__AU_POSITION, 0, NULL }
+, FX9__EFFECT__ATTRIBUTE__USAGE__AU_POSITION, 0, NULL }
 
 
 struct  Fx9__Effect__Symbol
@@ -176,7 +176,7 @@ struct  Fx9__Effect__Symbol
 };
 #define FX9__EFFECT__SYMBOL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__symbol__descriptor) \
-    , NULL, FX9__EFFECT__SYMBOL__REGISTER_SET__RS_BOOL, 0, 0 }
+, NULL, FX9__EFFECT__SYMBOL__REGISTER_SET__RS_BOOL, 0, 0 }
 
 
 struct  Fx9__Effect__RenderState
@@ -187,7 +187,7 @@ struct  Fx9__Effect__RenderState
 };
 #define FX9__EFFECT__RENDER_STATE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__render_state__descriptor) \
-    , 0, 0 }
+, 0, 0 }
 
 
 struct  Fx9__Effect__Texture
@@ -198,7 +198,7 @@ struct  Fx9__Effect__Texture
 };
 #define FX9__EFFECT__TEXTURE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__texture__descriptor) \
-    , 0, NULL }
+, 0, NULL }
 
 
 struct  Fx9__Effect__Semantic
@@ -211,7 +211,7 @@ struct  Fx9__Effect__Semantic
 };
 #define FX9__EFFECT__SEMANTIC__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__semantic__descriptor) \
-    , 0, NULL, NULL, NULL }
+, 0, NULL, NULL, NULL }
 
 
 typedef enum {
@@ -254,7 +254,7 @@ struct  Fx9__Effect__Shader
 };
 #define FX9__EFFECT__SHADER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__shader__descriptor) \
-    , FX9__EFFECT__SHADER__TYPE__ST_PIXEL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, NULL, FX9__EFFECT__SHADER__BODY__NOT_SET, {0} }
+, FX9__EFFECT__SHADER__TYPE__ST_PIXEL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL, NULL, FX9__EFFECT__SHADER__BODY__NOT_SET, {0} }
 
 
 struct  Fx9__Effect__Metadata
@@ -265,7 +265,7 @@ struct  Fx9__Effect__Metadata
 };
 #define FX9__EFFECT__METADATA__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__metadata__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Fx9__Effect__Vector4i
@@ -278,7 +278,7 @@ struct  Fx9__Effect__Vector4i
 };
 #define FX9__EFFECT__VECTOR4I__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__vector4i__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Fx9__Effect__Vector4f
@@ -291,7 +291,7 @@ struct  Fx9__Effect__Vector4f
 };
 #define FX9__EFFECT__VECTOR4F__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__vector4f__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 typedef enum {
@@ -335,7 +335,7 @@ struct  Fx9__Effect__Parameter
 };
 #define FX9__EFFECT__PARAMETER__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__parameter__descriptor) \
-    , NULL, NULL, 0, 0, 0, 0,NULL, 0,NULL, 0, {0,NULL}, 0, FX9__EFFECT__PARAMETER__CLASS_COMMON__PC_SCALAR, 0, FX9__EFFECT__PARAMETER__TYPE_COMMON__PT_VOID, FX9__EFFECT__PARAMETER__CLASS__NOT_SET, {0}, FX9__EFFECT__PARAMETER__TYPE__NOT_SET, {0} }
+, NULL, NULL, 0, 0, 0, 0,NULL, 0,NULL, 0, {0,NULL}, 0, FX9__EFFECT__PARAMETER__CLASS_COMMON__PC_SCALAR, 0, FX9__EFFECT__PARAMETER__TYPE_COMMON__PT_VOID, FX9__EFFECT__PARAMETER__CLASS__NOT_SET, {0}, FX9__EFFECT__PARAMETER__TYPE__NOT_SET, {0} }
 
 
 typedef enum {
@@ -367,7 +367,7 @@ struct  Fx9__Effect__Annotation
 };
 #define FX9__EFFECT__ANNOTATION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__annotation__descriptor) \
-    , NULL, FX9__EFFECT__ANNOTATION__VALUE__NOT_SET, {0} }
+, NULL, FX9__EFFECT__ANNOTATION__VALUE__NOT_SET, {0} }
 
 
 typedef enum {
@@ -393,7 +393,7 @@ struct  Fx9__Effect__Pass
 };
 #define FX9__EFFECT__PASS__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__pass__descriptor) \
-    , NULL, 0,NULL, NULL, NULL, 0,NULL, FX9__EFFECT__PASS__IMPLEMENTATION__NOT_SET, {0} }
+, NULL, 0,NULL, NULL, NULL, 0,NULL, FX9__EFFECT__PASS__IMPLEMENTATION__NOT_SET, {0} }
 
 
 struct  Fx9__Effect__Technique
@@ -407,7 +407,7 @@ struct  Fx9__Effect__Technique
 };
 #define FX9__EFFECT__TECHNIQUE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__technique__descriptor) \
-    , NULL, 0,NULL, 0,NULL }
+, NULL, 0,NULL, 0,NULL }
 
 
 struct  Fx9__Effect__Include
@@ -417,7 +417,7 @@ struct  Fx9__Effect__Include
 };
 #define FX9__EFFECT__INCLUDE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__include__descriptor) \
-    , NULL }
+, NULL }
 
 
 struct  Fx9__Effect__Effect
@@ -436,7 +436,7 @@ struct  Fx9__Effect__Effect
 };
 #define FX9__EFFECT__EFFECT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&fx9__effect__effect__descriptor) \
-    , 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
+, 0,NULL, 0,NULL, 0,NULL, 0,NULL, 0,NULL }
 
 
 /* Fx9__Effect__Uniform methods */

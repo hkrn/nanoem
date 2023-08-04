@@ -34,7 +34,7 @@ struct  Nanoem__Translation__Phrase
 };
 #define NANOEM__TRANSLATION__PHRASE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__translation__phrase__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Translation__Unit
@@ -46,7 +46,7 @@ struct  Nanoem__Translation__Unit
 };
 #define NANOEM__TRANSLATION__UNIT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__translation__unit__descriptor) \
-    , NANOEM__COMMON__LANGUAGE__LC_UNKNOWN, 0,NULL }
+, NANOEM__COMMON__LANGUAGE__LC_UNKNOWN, 0,NULL }
 
 
 struct  Nanoem__Translation__Bundle
@@ -57,7 +57,7 @@ struct  Nanoem__Translation__Bundle
 };
 #define NANOEM__TRANSLATION__BUNDLE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__translation__bundle__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 /* Nanoem__Translation__Phrase methods */

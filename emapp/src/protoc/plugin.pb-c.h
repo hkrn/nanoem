@@ -69,7 +69,7 @@ struct  Nanoem__Application__Plugin__AudioDescription
 };
 #define NANOEM__APPLICATION__PLUGIN__AUDIO_DESCRIPTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__audio_description__descriptor) \
-    , 0, 0, 0, 0, NULL, NULL }
+, 0, 0, 0, 0, NULL, NULL }
 
 
 struct  Nanoem__Application__Plugin__CameraDescription
@@ -83,7 +83,7 @@ struct  Nanoem__Application__Plugin__CameraDescription
 };
 #define NANOEM__APPLICATION__PLUGIN__CAMERA_DESCRIPTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__camera_description__descriptor) \
-    , NULL, NULL, 0, 0, 0 }
+, NULL, NULL, 0, 0, 0 }
 
 
 struct  Nanoem__Application__Plugin__LightDescription
@@ -94,7 +94,7 @@ struct  Nanoem__Application__Plugin__LightDescription
 };
 #define NANOEM__APPLICATION__PLUGIN__LIGHT_DESCRIPTION__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__light_description__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Label
@@ -106,7 +106,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Label
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__LABEL__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__label__descriptor) \
-    , NULL, 0, 0 }
+, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Selectable
@@ -117,7 +117,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Selectable
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__SELECTABLE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__selectable__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Button
@@ -128,7 +128,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Button
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__BUTTON__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__button__descriptor) \
-    , NULL, NULL }
+, NULL, NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__CheckBox
@@ -140,7 +140,7 @@ struct  Nanoem__Application__Plugin__UIComponent__CheckBox
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__CHECK_BOX__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__check_box__descriptor) \
-    , NULL, NULL, 0 }
+, NULL, NULL, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__RadioButton
@@ -152,7 +152,7 @@ struct  Nanoem__Application__Plugin__UIComponent__RadioButton
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__RADIO_BUTTON__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__radio_button__descriptor) \
-    , NULL, NULL, 0 }
+, NULL, NULL, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__ComboBox
@@ -166,7 +166,7 @@ struct  Nanoem__Application__Plugin__UIComponent__ComboBox
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__COMBO_BOX__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__combo_box__descriptor) \
-    , NULL, NULL, 0, 0,NULL }
+, NULL, NULL, 0, 0,NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__DragScalarN
@@ -188,7 +188,7 @@ struct  Nanoem__Application__Plugin__UIComponent__DragScalarN
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DRAG_SCALAR_N__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__drag_scalar_n__descriptor) \
-    , NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DATA_TYPE__S8, 0, 0, NULL, NULL, {0,NULL}, 0, 0, 0, {0,NULL}, 0, {0,NULL}, NULL }
+, NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DATA_TYPE__S8, 0, 0, NULL, NULL, {0,NULL}, 0, 0, 0, {0,NULL}, 0, {0,NULL}, NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__SliderScalarN
@@ -209,7 +209,7 @@ struct  Nanoem__Application__Plugin__UIComponent__SliderScalarN
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__SLIDER_SCALAR_N__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__slider_scalar_n__descriptor) \
-    , NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DATA_TYPE__S8, 0, NULL, NULL, {0,NULL}, 0, {0,NULL}, 0, {0,NULL}, NULL, 0, 0 }
+, NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DATA_TYPE__S8, 0, NULL, NULL, {0,NULL}, 0, {0,NULL}, 0, {0,NULL}, NULL, 0, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__InputScalarN
@@ -228,7 +228,7 @@ struct  Nanoem__Application__Plugin__UIComponent__InputScalarN
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__INPUT_SCALAR_N__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__input_scalar_n__descriptor) \
-    , NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DATA_TYPE__S8, 0, NULL, NULL, {0,NULL}, 0, {0,NULL}, 0, {0,NULL}, NULL }
+, NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DATA_TYPE__S8, 0, NULL, NULL, {0,NULL}, 0, {0,NULL}, 0, {0,NULL}, NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Separator
@@ -237,7 +237,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Separator
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__SEPARATOR__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__separator__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__SameLine
@@ -250,7 +250,7 @@ struct  Nanoem__Application__Plugin__UIComponent__SameLine
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__SAME_LINE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__same_line__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__ChildWindow
@@ -270,7 +270,7 @@ struct  Nanoem__Application__Plugin__UIComponent__ChildWindow
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__CHILD_WINDOW__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__child_window__descriptor) \
-    , NULL, 0,NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
+, NULL, 0,NULL, 0, 0, 0, 0, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Dummy
@@ -283,7 +283,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Dummy
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__DUMMY__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__dummy__descriptor) \
-    , 0, 0, 0, 0 }
+, 0, 0, 0, 0 }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Tree
@@ -295,7 +295,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Tree
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__TREE__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__tree__descriptor) \
-    , NULL, 0,NULL }
+, NULL, 0,NULL }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Canvas__DrawCommand
@@ -304,7 +304,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Canvas__DrawCommand
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__CANVAS__DRAW_COMMAND__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__canvas__draw_command__descriptor) \
-     }
+ }
 
 
 struct  Nanoem__Application__Plugin__UIComponent__Canvas
@@ -315,7 +315,7 @@ struct  Nanoem__Application__Plugin__UIComponent__Canvas
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__CANVAS__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__canvas__descriptor) \
-    , 0,NULL }
+, 0,NULL }
 
 
 typedef enum {
@@ -362,7 +362,7 @@ struct  Nanoem__Application__Plugin__UIComponent
 };
 #define NANOEM__APPLICATION__PLUGIN__UICOMPONENT__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uicomponent__descriptor) \
-    , NANOEM__APPLICATION__PLUGIN__UICOMPONENT__TYPE__NOT_SET, {0} }
+, NANOEM__APPLICATION__PLUGIN__UICOMPONENT__TYPE__NOT_SET, {0} }
 
 
 struct  Nanoem__Application__Plugin__UIWindow
@@ -375,7 +375,7 @@ struct  Nanoem__Application__Plugin__UIWindow
 };
 #define NANOEM__APPLICATION__PLUGIN__UIWINDOW__INIT \
  { PROTOBUF_C_MESSAGE_INIT (&nanoem__application__plugin__uiwindow__descriptor) \
-    , NULL, NULL, 0,NULL }
+, NULL, NULL, 0,NULL }
 
 
 /* Nanoem__Application__Plugin__AudioDescription methods */

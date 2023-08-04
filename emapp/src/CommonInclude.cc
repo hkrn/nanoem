@@ -461,7 +461,8 @@ openSharedLibrary(const char *dllPath)
         query_sampler_defaults =
             reinterpret_cast<PFN_sgx_query_sampler_defaults>(bx::dlsym(handle, "sgx_query_sampler_defaults"));
         query_sampler_info = reinterpret_cast<PFN_sgx_query_sampler_info>(bx::dlsym(handle, "sgx_query_sampler_info"));
-        query_sampler_state = reinterpret_cast<PFN_sgx_query_sampler_state>(bx::dlsym(handle, "sgx_query_sampler_state"));
+        query_sampler_state =
+            reinterpret_cast<PFN_sgx_query_sampler_state>(bx::dlsym(handle, "sgx_query_sampler_state"));
         query_shader_info = reinterpret_cast<PFN_sgx_query_shader_info>(bx::dlsym(handle, "sgx_query_shader_info"));
         query_shader_state = reinterpret_cast<PFN_sgx_query_shader_state>(bx::dlsym(handle, "sgx_query_shader_state"));
         reset_state_cache = reinterpret_cast<PFN_sgx_reset_state_cache>(bx::dlsym(handle, "sgx_reset_state_cache"));

@@ -1453,8 +1453,8 @@ ImageLoader::copySampledImageDescrption(
     const sg_range &src = imageDesc.data.subimage[0][0];
     const nanoem_u8_t *dataPtr = static_cast<const nanoem_u8_t *>(src.ptr);
     image->setOriginData(dataPtr, src.size);
-    if (imageDesc.num_mipmaps > 1) {
-        const int numMipmaps = imageDesc.num_mipmaps - 1;
+    if (imageDesc.num_mipmaps >= 1) {
+        const int numMipmaps = imageDesc.num_mipmaps;
         for (int i = 0; i < numMipmaps; i++) {
             const sg_range &innerSrc = imageDesc.data.subimage[0][i + 1];
             const nanoem_u8_t *innerDataPtr = static_cast<const nanoem_u8_t *>(innerSrc.ptr);

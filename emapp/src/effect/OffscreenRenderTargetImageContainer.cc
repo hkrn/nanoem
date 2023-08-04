@@ -54,7 +54,6 @@ OffscreenRenderTargetImageContainer::generateDepthStencilMipmapImages(const Effe
             sg_image_desc mipmapImageDescription(depthStencilImageDescription);
             mipmapImageDescription.width = glm::max(mipmapImageDescription.width >> i, 1);
             mipmapImageDescription.height = glm::max(mipmapImageDescription.height >> i, 1);
-            mipmapImageDescription.num_mipmaps = 1;
             if (Inline::isDebugLabelEnabled()) {
                 StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImage/Mipmaps/%d",
                     effect->nameConstString(), nameConstString(), i);
@@ -99,7 +98,6 @@ OffscreenRenderTargetImageContainer::create(Effect *effect, const Vector2UI16 &s
 {
     setColorImageDescription(size, numMipLevels, sampleCount, format);
     m_depthStencilImageDescription = colorImageDescription();
-    m_depthStencilImageDescription.num_mipmaps = 1;
     m_depthStencilImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
     setScaleFactor(scaleFactor);
     create(effect);
