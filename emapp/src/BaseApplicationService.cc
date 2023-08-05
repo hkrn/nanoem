@@ -2850,6 +2850,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         desc.logger.user_data = this;
         desc.buffer_pool_size = glm::clamp(commandPtr->buffer_pool_size, 1024u, 0xffffu);
         desc.image_pool_size = glm::clamp(commandPtr->image_pool_size, 4096u, 0xffffu);
+        desc.sampler_pool_size = glm::clamp(commandPtr->image_pool_size, 4096u, 0xffffu);
         desc.shader_pool_size = glm::clamp(commandPtr->shader_pool_size, 1024u, 0xffffu);
         desc.pipeline_pool_size = glm::clamp(commandPtr->pipeline_pool_size, 1024u, 0xffffu);
         desc.pass_pool_size = glm::clamp(commandPtr->pass_pool_size, 512u, 0xffffu);

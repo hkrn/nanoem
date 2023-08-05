@@ -27,7 +27,7 @@ struct OffscreenRenderTargetOption {
     const nanoem_f32_t m_clearDepth;
     sg_image m_colorImage;
     sg_image m_depthStencilImage;
-    sg_image m_resolveImage;
+    sg_image m_msaaImage;
     sg_image_desc m_colorImageDescription;
     sg_image_desc m_depthStencilImageDescription;
     StringPairList m_conditions;

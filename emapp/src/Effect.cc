@@ -2305,7 +2305,7 @@ Effect::generateOffscreenMipmapImagesChain(const effect::OffscreenRenderTargetOp
             PixelFormat format;
             format.setColorPixelFormat(colorImageDesc.pixel_format, 0);
             format.setDepthPixelFormat(offscreenContainer->depthStencilImageDescription().pixel_format);
-            format.setNumSamples(colorImageDesc.sample_count);
+            // format.setNumSamples(colorImageDesc.sample_count);
             RenderTargetMipmapGenerator *generator = offscreenContainer->mipmapGenerator();
             if (!generator) {
                 generator = nanoem_new(RenderTargetMipmapGenerator(this, name.c_str(), colorImageDesc));
@@ -2417,7 +2417,7 @@ Effect::getAllOffscreenRenderTargetOptions(OffscreenRenderTargetOptionList &valu
             const OffscreenRenderTargetImageContainer *container = it2->second;
             option.m_colorImage = container->colorImageHandle();
             option.m_depthStencilImage = container->depthStencilImageHandle();
-            option.m_resolveImage = container->resolveImageHandle();
+            option.m_msaaImage = container->msaaImageHandle();
             option.m_colorImageDescription = container->colorImageDescription();
             option.m_depthStencilImageDescription = container->depthStencilImageDescription();
             option.m_sharedImageReferenceCount = m_project->countSharedRenderTargetImageContainer(name, this);
@@ -4171,7 +4171,11 @@ Effect::handleRenderColorTargetSemantic(
             }
             self->setNormalizedColorImageContainer(parameter.m_name, numMipLevels, container);
             int sampleCount = enableAA ? project->sampleCount() : 1;
-            container->create(self, size, scaleFactor, numMipLevels, sampleCount, format);
+            sg_image_desc colorImagDescription(container->colorImageDescription());
+            RenderTargetColorImageContainer::setDescription(size, numMipLevels, sampleCount, format, colorImagDescription);
+            container->setColorImageDescription(colorImagDescription);
+            container->create(self);
+            container->setScaleFactor(scaleFactor);
             if (parameter.m_shared) {
                 project->setSharedRenderTargetImageContainer(name, self, container);
             }
@@ -4195,17 +4199,21 @@ Effect::handleRenderDepthStencilTargetSemantic(
         const Vector4 size(
             self->determineImageSize(annotations, self->scaledViewportImageSize(Vector2(1)), scaleFactor));
         const sg_pixel_format format =
-            self->determineDepthStencilPixelFormat(annotations, SG_PIXELFORMAT_DEPTH_STENCIL);
+            self->determineDepthStencilPixelFormat(annotations, PixelFormat::depthStencilPixelFormat());
         const nanoem_u8_t numMipLevels = self->determineMipLevels(annotations, size, 0);
         const String &name = parameter.m_name;
         bool enableAA = RenderTargetColorImageContainer::kAntialiasEnabled;
         RenderTargetDepthStencilImageContainer *container = nanoem_new(RenderTargetDepthStencilImageContainer(name));
         ImageDescriptionMap::const_iterator it = self->m_imageDescriptions.find(parameter.m_name);
         if (it != self->m_imageDescriptions.end()) {
-            container->setImageDescription(it->second);
+            container->setDepthStencilImageDescription(it->second);
         }
         int sampleCount = enableAA ? self->m_project->sampleCount() : 1;
-        container->create(self, size, scaleFactor, numMipLevels, sampleCount, format);
+        sg_image_desc depthStencilImageDescription(container->depthStencilImageDescription());
+        RenderTargetColorImageContainer::setDescription(size, numMipLevels, sampleCount, format, depthStencilImageDescription);
+        container->setDepthStencilImageDescription(depthStencilImageDescription);
+        container->create(self);
+        container->setScaleFactor(scaleFactor);
         self->m_renderTargetDepthStencilUniforms.insert(name);
         self->m_renderTargetDepthStencilImages.insert(tinystl::make_pair(name, container));
     }
@@ -5860,7 +5868,7 @@ Effect::generateRenderTargetMipmapImagesChain(const IDrawable *drawable, const S
             PixelFormat format;
             format.setColorPixelFormat(imageDescription.pixel_format, 0);
             format.setDepthPixelFormat(depthStencilImageContainer->depthStencilImageDescription().pixel_format);
-            format.setNumSamples(imageDescription.sample_count);
+            // format.setNumSamples(imageDescription.sample_count);
             RenderTargetMipmapGenerator *generator = colorImageContainer->mipmapGenerator();
             if (!generator) {
                 generator = nanoem_new(
@@ -6004,10 +6012,7 @@ Effect::setRenderTargetColorImageDescription(const IDrawable *drawable, size_t r
         if (it != containers->end()) {
             const RenderTargetColorImageContainer *container = it->second;
             const sg_image_desc &sourceColorImageDescription = container->colorImageDescription();
-            m_currentRenderTargetPassDescription.color_attachments[renderTargetIndex].image =
-                container->colorImageHandle();
-            m_currentRenderTargetPassDescription.resolve_attachments[renderTargetIndex].image =
-                container->resolveImageHandle();
+            container->getPassDescription(renderTargetIndex, m_currentRenderTargetPassDescription);
             m_currentRenderTargetPixelFormat.setColorPixelFormat(
                 sourceColorImageDescription.pixel_format, renderTargetIndex);
             m_currentRenderTargetPixelFormat.setNumSamples(sourceColorImageDescription.sample_count);
@@ -6091,7 +6096,7 @@ Effect::setRenderTargetDepthStencilImageDescription(const String &value)
             }
         }
         m_currentNamedDepthStencilImageDescription.first = String();
-        m_currentNamedDepthStencilImageDescription.second.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        m_currentNamedDepthStencilImageDescription.second.pixel_format = PixelFormat::depthStencilPixelFormat();
         SG_POP_GROUP();
     }
 }
@@ -6132,18 +6137,18 @@ Effect::clearRenderPass(
         m_currentNamedDepthStencilImageDescription.second.sample_count) {
         const String passName(name);
         sg_image_desc desc(m_currentNamedPrimaryRenderTargetColorImageDescription.second);
-        desc.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        desc.pixel_format = PixelFormat::depthStencilPixelFormat();
         desc.render_target = true;
         RenderTargetDepthStencilImageContainerMap::iterator it = m_renderTargetDepthStencilImages.find(passName);
         if (it != m_renderTargetDepthStencilImages.end()) {
             RenderTargetDepthStencilImageContainer *container = it->second;
             m_currentRenderTargetPassDescription.depth_stencil_attachment.image = container->findImage(this, desc);
-            container->setImageDescription(desc);
+            container->setDepthStencilImageDescription(desc);
         }
         else {
             RenderTargetDepthStencilImageContainer *newContainer =
                 nanoem_new(RenderTargetDepthStencilImageContainer(name));
-            newContainer->setImageDescription(desc);
+            newContainer->setDepthStencilImageDescription(desc);
             m_currentRenderTargetPassDescription.depth_stencil_attachment.image = newContainer->findImage(this, desc);
             m_renderTargetDepthStencilImages.insert(tinystl::make_pair(passName, newContainer));
         }

@@ -941,7 +941,7 @@ Project::Pass::Pass(Project *project, const char *name)
     , m_name(name)
 {
     m_handle = { SG_INVALID_ID };
-    m_colorImage = m_depthImage = m_resolveImage = { SG_INVALID_ID };
+    m_colorImage = m_depthImage = m_msaaImage = { SG_INVALID_ID };
 }
 
 void
@@ -962,20 +962,21 @@ Project::Pass::update(const Vector2UI16 &size)
     id.width = size.x;
     id.height = size.y;
     id.pixel_format = colorPixelFormat;
-    id.sample_count = enableMSAA ? numSamples : 1;
+    id.sample_count = numSamples;
+    SG_LABEL_IMAGE(m_colorImage, label);
+    if (enableMSAA && numSamples > 1) {
+        m_msaaImage = sg::make_image(&id);
+        id.sample_count = 1;
+    }
+    else if (sg::is_valid(m_msaaImage)) {
+        sg::destroy_image(m_msaaImage);
+        m_msaaImage = { SG_INVALID_ID };
+    }
     sg::destroy_image(m_colorImage);
     m_colorImage = sg::make_image(&id);
     nanoem_assert(sg::query_image_state(m_colorImage) == SG_RESOURCESTATE_VALID, "color image must be valid");
-    SG_LABEL_IMAGE(m_colorImage, label);
-    if (enableMSAA && numSamples > 1) {
-        m_resolveImage = sg::make_image(&id);
-        id.sample_count = numSamples;
-    }
-    else if (sg::is_valid(m_resolveImage)) {
-        sg::destroy_image(m_resolveImage);
-        m_resolveImage = { SG_INVALID_ID };
-    }
-    id.pixel_format = SG_PIXELFORMAT_DEPTH;
+    id.sample_count = numSamples;
+    id.pixel_format = PixelFormat::depthStencilPixelFormat();
     sg::destroy_image(m_depthImage);
     if (Inline::isDebugLabelEnabled()) {
         StringUtils::format(label, sizeof(label), "%s/DepthImage", m_name.c_str());
@@ -999,11 +1000,11 @@ Project::Pass::update(const Vector2UI16 &size)
     desc.m_handle = m_handle;
     desc.m_colorImage = m_colorImage;
     desc.m_depthImage = m_depthImage;
-    desc.m_resolveImage = m_resolveImage;
+    desc.m_msaaImage = m_msaaImage;
     desc.m_desciption = pd;
     PixelFormat &format = desc.m_format;
     format.setColorPixelFormat(colorPixelFormat, 0);
-    format.setDepthPixelFormat(SG_PIXELFORMAT_DEPTH);
+    format.setDepthPixelFormat(PixelFormat::depthStencilPixelFormat());
     format.setNumSamples(id.sample_count);
     format.setNumColorAttachemnts(1);
     SG_POP_GROUP();
@@ -1013,9 +1014,14 @@ void
 Project::Pass::getDescription(sg_pass_desc &pd) const NANOEM_DECL_NOEXCEPT
 {
     Inline::clearZeroMemory(pd);
-    pd.color_attachments[0].image = m_colorImage;
+    if (sg::is_valid(m_msaaImage)) {
+        pd.color_attachments[0].image = m_msaaImage;
+        pd.resolve_attachments[0].image = m_colorImage;
+    }
+    else {
+        pd.color_attachments[0].image = m_colorImage;
+    }
     pd.depth_stencil_attachment.image = m_depthImage;
-    pd.resolve_attachments[0].image = m_resolveImage;
 }
 
 void
@@ -1028,8 +1034,8 @@ Project::Pass::destroy()
     m_colorImage = { SG_INVALID_ID };
     sg::destroy_image(m_depthImage);
     m_depthImage = { SG_INVALID_ID };
-    sg::destroy_image(m_resolveImage);
-    m_resolveImage = { SG_INVALID_ID };
+    sg::destroy_image(m_msaaImage);
+    m_msaaImage = { SG_INVALID_ID };
     SG_POP_GROUP();
 }
 
@@ -1064,7 +1070,7 @@ Project::RenderPassBundle::RenderPassBundle()
     Inline::clearZeroMemory(m_format);
     Inline::clearZeroMemory(m_desciption);
     m_handle = { SG_INVALID_ID };
-    m_colorImage = m_depthImage = m_resolveImage = { SG_INVALID_ID };
+    m_colorImage = m_depthImage = m_msaaImage = { SG_INVALID_ID };
 }
 
 Project::RenderPassBundle::~RenderPassBundle() NANOEM_DECL_NOEXCEPT
@@ -3115,8 +3121,13 @@ Project::getOriginOffscreenRenderPassColorImageDescription(
                 const PixelFormat &format = desc.m_format;
                 id.pixel_format = format.colorPixelFormat(0);
                 id.sample_count = format.numSamples();
-                pd.color_attachments[0].image = colorImage;
-                pd.resolve_attachments[0].image = desc.m_resolveImage;
+                if (sg::is_valid(desc.m_msaaImage)) {
+                    pd.color_attachments[0].image = desc.m_msaaImage;
+                    pd.resolve_attachments[0].image = colorImage;
+                }
+                else {
+                    pd.color_attachments[0].image = colorImage;
+                }
                 const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
                 id.width = imageSize.x;
                 id.height = imageSize.y;
@@ -3168,8 +3179,13 @@ Project::getViewportRenderPassColorImageDescription(sg_pass_desc &pd, sg_image_d
 {
     id.pixel_format = viewportPixelFormat();
     id.sample_count = sampleCount();
-    pd.color_attachments[0].image = m_viewportPrimaryPass.m_colorImage;
-    pd.resolve_attachments[0].image = m_viewportPrimaryPass.m_resolveImage;
+    if (sg::is_valid(m_viewportPrimaryPass.m_msaaImage)) {
+        pd.color_attachments[0].image = m_viewportPrimaryPass.m_msaaImage;
+        pd.resolve_attachments[0].image = m_viewportPrimaryPass.m_colorImage;
+    }
+    else {
+        pd.color_attachments[0].image = m_viewportPrimaryPass.m_colorImage;
+    }
     const Vector2UI16 imageSize(deviceScaleViewportPrimaryImageSize());
     id.width = imageSize.x;
     id.height = imageSize.y;
@@ -5297,10 +5313,7 @@ sg_image
 Project::viewportPrimaryImage() const NANOEM_DECL_NOEXCEPT
 {
     sg_image image = m_fallbackImage;
-    if (sg::is_valid(m_viewportPrimaryPass.m_resolveImage)) {
-        image = m_viewportPrimaryPass.m_resolveImage;
-    }
-    else if (sg::is_valid(m_viewportPrimaryPass.m_colorImage)) {
+    if (sg::is_valid(m_viewportPrimaryPass.m_colorImage)) {
         image = m_viewportPrimaryPass.m_colorImage;
     }
     return image;
@@ -5310,10 +5323,7 @@ sg_image
 Project::viewportSecondaryImage() const NANOEM_DECL_NOEXCEPT
 {
     sg_image image = m_fallbackImage;
-    if (sg::is_valid(m_viewportSecondaryPass.m_resolveImage)) {
-        image = m_viewportSecondaryPass.m_resolveImage;
-    }
-    else if (sg::is_valid(m_viewportSecondaryPass.m_colorImage)) {
+    if (sg::is_valid(m_viewportSecondaryPass.m_colorImage)) {
         image = m_viewportSecondaryPass.m_colorImage;
     }
     return image;

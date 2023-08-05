@@ -753,7 +753,7 @@ private:
         sg_pass m_handle;
         sg_image m_colorImage;
         sg_image m_depthImage;
-        sg_image m_resolveImage;
+        sg_image m_msaaImage;
     };
     struct FPSUnit {
         FPSUnit() NANOEM_DECL_NOEXCEPT;
@@ -771,7 +771,7 @@ private:
         sg_pass m_handle;
         sg_image m_colorImage;
         sg_image m_depthImage;
-        sg_image m_resolveImage;
+        sg_image m_msaaImage;
         sg_pass_desc m_desciption;
         PixelFormat m_format;
     };
