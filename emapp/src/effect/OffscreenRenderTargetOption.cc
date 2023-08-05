@@ -21,7 +21,7 @@ OffscreenRenderTargetOption::OffscreenRenderTargetOption(
 {
     Inline::clearZeroMemory(m_colorImageDescription);
     Inline::clearZeroMemory(m_depthStencilImageDescription);
-    m_colorImage = m_depthStencilImage = m_resolveImage = { SG_INVALID_ID };
+    m_colorImage = m_depthStencilImage = m_msaaImage = { SG_INVALID_ID };
 }
 
 OffscreenRenderTargetOption::~OffscreenRenderTargetOption() NANOEM_DECL_NOEXCEPT
@@ -40,9 +40,14 @@ void
 OffscreenRenderTargetOption::getPassDescription(sg_pass_desc &pd) const NANOEM_DECL_NOEXCEPT
 {
     Inline::clearZeroMemory(pd);
-    pd.color_attachments[0].image = m_colorImage;
+    if (sg::is_valid(m_msaaImage)) {
+        pd.color_attachments[0].image = m_msaaImage;
+        pd.resolve_attachments[0].image = m_colorImage;
+    }
+    else {
+        pd.color_attachments[0].image = m_colorImage;
+    }
     pd.depth_stencil_attachment.image = m_depthStencilImage;
-    pd.resolve_attachments[0].image = m_resolveImage;
 }
 
 } /* namespace effect */

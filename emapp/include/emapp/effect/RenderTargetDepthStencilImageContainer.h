@@ -28,12 +28,11 @@ public:
     sg_image findImage(const Effect *effect, const sg_image_desc &colorImageDescription);
     const SGImageList *findMipmapImages(const Effect *effect, const sg_image_desc &colorImageDescription);
     void create(Effect *effect);
-    void create(Effect *effect, const Vector2UI16 &size, const Vector2 &scaleFactor, int numMipLevels, int sampleCount,
-        sg_pixel_format format);
     void resizeWithScale(const Vector2UI16 &size);
     void setSampleCount(int value);
     void invalidate(Effect *effect);
-    void setImageDescription(const sg_image_desc &value);
+    void setDepthStencilImageDescription(const sg_image_desc &value);
+    void setScaleFactor(const Vector2 &value);
     void destroy(Effect *effect) NANOEM_DECL_NOEXCEPT;
 
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;

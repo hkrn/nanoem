@@ -37,7 +37,7 @@ RenderTargetColorImageContainer::RenderTargetColorImageContainer(const String &n
 {
     Inline::clearZeroMemory(m_colorImageDescription);
     Inline::clearZeroMemory(m_colorSamplerDescription);
-    m_colorImage = m_resolveImage = { SG_INVALID_ID };
+    m_colorImage = m_msaaImage = { SG_INVALID_ID };
     m_sampler = { SG_INVALID_ID };
     if (Inline::isDebugLabelEnabled()) {
         m_colorImageDescription.label = m_name.c_str();
@@ -49,7 +49,7 @@ RenderTargetColorImageContainer::RenderTargetColorImageContainer(const RenderTar
     , m_mipmapGenerator(nullptr)
     , m_scaleFactor(value.m_scaleFactor)
     , m_colorImage(value.m_colorImage)
-    , m_resolveImage(value.m_resolveImage)
+    , m_msaaImage(value.m_msaaImage)
     , m_colorImageDescription(value.m_colorImageDescription)
     , m_colorSamplerDescription(value.m_colorSamplerDescription)
     , m_sharedTexture(value.m_sharedTexture)
@@ -63,41 +63,28 @@ RenderTargetColorImageContainer::create(Effect *effect)
     SG_PUSH_GROUPF("effect::RenderTargetImageContainer::create(name=%s, width=%d, height=%d)", m_name.c_str(),
         m_colorImageDescription.width, m_colorImageDescription.height);
     char label[Inline::kMarkerStringLength];
+    sg_image_desc colorImageDescription(m_colorImageDescription);
     if (Inline::isDebugLabelEnabled()) {
-        sg_image_desc labeledColorImageDescription(m_colorImageDescription);
         StringUtils::format(
             label, sizeof(label), "Effects/%s/%s/ColorImage", effect->nameConstString(), m_name.c_str());
-        labeledColorImageDescription.label = label;
-        m_colorImage = sg::make_image(&labeledColorImageDescription);
-        if (labeledColorImageDescription.sample_count > 1) {
-            labeledColorImageDescription.sample_count = 1;
-            m_resolveImage = sg::make_image(&labeledColorImageDescription);
-        }
+        colorImageDescription.label = label;
     }
     else {
         *label = 0;
-        m_colorImage = sg::make_image(&m_colorImageDescription);
-        if (m_colorImageDescription.sample_count > 1) {
-            sg_image_desc desc(m_colorImageDescription);
-            desc.sample_count = 1;
-            m_resolveImage = sg::make_image(&desc);
-        }
     }
+    if (colorImageDescription.sample_count > 1) {
+        sg_image_desc innerColorImageDescription(colorImageDescription);
+        innerColorImageDescription.num_mipmaps = 0;
+        m_msaaImage = sg::make_image(&innerColorImageDescription);
+        colorImageDescription.sample_count = 1;
+    }
+    m_colorImage = sg::make_image(&colorImageDescription);
     nanoem_assert(sg::query_image_state(m_colorImage) == SG_RESOURCESTATE_VALID, "image must be valid");
     effect->setImageLabel(m_colorImage, m_name);
     m_sampler = sg::make_sampler(&m_colorSamplerDescription);
     effect->setSamplerLabel(m_sampler, m_name.c_str());
     nanoem_assert(sg::query_sampler_state(m_sampler) == SG_RESOURCESTATE_VALID, "sampler must be valid");
     SG_POP_GROUP();
-}
-
-void
-RenderTargetColorImageContainer::create(Effect *effect, const Vector2UI16 &size, const Vector2 &scaleFactor,
-    int numMipLevels, int sampleCount, sg_pixel_format format)
-{
-    setDescription(size, numMipLevels, sampleCount, format, m_colorImageDescription);
-    create(effect);
-    m_scaleFactor = scaleFactor;
 }
 
 void
@@ -145,6 +132,18 @@ RenderTargetColorImageContainer::inherit(const RenderTargetColorImageContainer *
 }
 
 void
+RenderTargetColorImageContainer::getPassDescription(size_t offset, sg_pass_desc &desc) const NANOEM_DECL_NOEXCEPT
+{
+    if (sg::is_valid(m_msaaImage)) {
+        desc.color_attachments[offset].image = m_msaaImage;
+        desc.resolve_attachments[offset].image = m_colorImage;
+    }
+    else {
+        desc.color_attachments[offset].image = m_colorImage;
+    }
+}
+
+void
 RenderTargetColorImageContainer::setMipmapGenerator(RenderTargetMipmapGenerator *value)
 {
     m_mipmapGenerator = value;
@@ -183,8 +182,10 @@ RenderTargetColorImageContainer::destroy(Effect *effect) NANOEM_DECL_NOEXCEPT
     if (!m_sharedTexture) {
         effect->removeImageLabel(m_colorImage);
         sg::destroy_image(m_colorImage);
+        sg::destroy_image(m_msaaImage);
     }
     m_colorImage = { SG_INVALID_ID };
+    m_msaaImage = { SG_INVALID_ID };
     if (m_mipmapGenerator) {
         m_mipmapGenerator->destroy(effect);
         nanoem_delete_safe(m_mipmapGenerator);
@@ -226,10 +227,7 @@ sg_image
 RenderTargetColorImageContainer::preferredColorImageHandle() const NANOEM_DECL_NOEXCEPT
 {
     sg_image handle = { SG_INVALID_ID };
-    if (sg::is_valid(m_resolveImage)) {
-        handle = m_resolveImage;
-    }
-    else if (sg::is_valid(m_colorImage)) {
+    if (sg::is_valid(m_colorImage)) {
         handle = m_colorImage;
     }
     return handle;
@@ -242,9 +240,9 @@ RenderTargetColorImageContainer::colorImageHandle() const NANOEM_DECL_NOEXCEPT
 }
 
 sg_image
-RenderTargetColorImageContainer::resolveImageHandle() const NANOEM_DECL_NOEXCEPT
+RenderTargetColorImageContainer::msaaImageHandle() const NANOEM_DECL_NOEXCEPT
 {
-    return m_resolveImage;
+    return m_msaaImage;
 }
 
 sg_sampler

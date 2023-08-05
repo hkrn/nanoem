@@ -10,7 +10,13 @@
 
 namespace nanoem {
 
-PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT : m_depthPixelFormat(SG_PIXELFORMAT_DEPTH),
+sg_pixel_format
+PixelFormat::depthStencilPixelFormat() NANOEM_DECL_NOEXCEPT
+{
+    return SG_PIXELFORMAT_DEPTH;
+}
+
+PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT : m_depthPixelFormat(depthStencilPixelFormat()),
                                                   m_numColorAttachments(1),
                                                   m_numSamples(1)
 {
@@ -53,7 +59,7 @@ PixelFormat::reset(int numSamples)
     for (int i = 0; i < SG_MAX_COLOR_ATTACHMENTS; i++) {
         m_colorPixelFormats[i] = _SG_PIXELFORMAT_DEFAULT;
     }
-    m_depthPixelFormat = _SG_PIXELFORMAT_DEFAULT;
+    m_depthPixelFormat = depthStencilPixelFormat();
     m_numColorAttachments = 1;
     m_numSamples = numSamples;
 }
