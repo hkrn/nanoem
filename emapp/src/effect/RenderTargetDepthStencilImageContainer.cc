@@ -69,7 +69,8 @@ RenderTargetDepthStencilImageContainer::findImage(const Effect *effect, const sg
     else {
         char label[Inline::kMarkerStringLength];
         sg_image_desc depthStencilImageDescription(colorImageDescription);
-        depthStencilImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        depthStencilImageDescription.pixel_format = PixelFormat::depthStencilPixelFormat();
+        depthStencilImageDescription.num_mipmaps = 1;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImages/%d", effect->nameConstString(),
                 m_name.c_str(), Inline::saturateInt32(m_allDepthStencilImages.size()));
@@ -105,7 +106,8 @@ RenderTargetDepthStencilImageContainer::findMipmapImages(
     }
     else {
         sg_image_desc depthStencilImageDescription(colorImageDescription);
-        depthStencilImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        depthStencilImageDescription.pixel_format = PixelFormat::depthStencilPixelFormat();
+        depthStencilImageDescription.sample_count = 1;
         const int numMipmapImages = colorImageDescription.num_mipmaps;
         SGImageList mipmapImages;
         char label[Inline::kMarkerStringLength];
@@ -144,17 +146,17 @@ RenderTargetDepthStencilImageContainer::create(Effect *effect)
     char label[Inline::kMarkerStringLength];
     nanoem_u32_t key = hash.end();
     sg_image image = { SG_INVALID_ID };
+    sg_image_desc depthStencilImageDescription(m_depthStencilImageDescription);
+    depthStencilImageDescription.num_mipmaps = 1;
     if (Inline::isDebugLabelEnabled()) {
-        sg_image_desc labeledDepthStencilImageDescription(m_depthStencilImageDescription);
         StringUtils::format(
             label, sizeof(label), "Effects/%s/%s/DepthStencilImage", effect->nameConstString(), m_name.c_str());
-        labeledDepthStencilImageDescription.label = label;
-        image = sg::make_image(&labeledDepthStencilImageDescription);
+        depthStencilImageDescription.label = label;
     }
     else {
         *label = 0;
-        image = sg::make_image(&m_depthStencilImageDescription);
     }
+    image = sg::make_image(&depthStencilImageDescription);
     nanoem_assert(sg::query_image_state(image) == SG_RESOURCESTATE_VALID, "image must be valid");
     effect->setImageLabel(image, m_name);
     m_allDepthStencilImages.insert(tinystl::make_pair(key, image));
@@ -164,6 +166,8 @@ RenderTargetDepthStencilImageContainer::create(Effect *effect)
         sg_image_desc mipmapImageDescription(m_depthStencilImageDescription);
         mipmapImageDescription.width = glm::max(mipmapImageDescription.width >> i, 1);
         mipmapImageDescription.height = glm::max(mipmapImageDescription.height >> i, 1);
+        mipmapImageDescription.num_mipmaps = 0;
+        mipmapImageDescription.sample_count = 1;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImage/Mipmaps/%d",
                 effect->nameConstString(), m_name.c_str(), i);
@@ -175,16 +179,6 @@ RenderTargetDepthStencilImageContainer::create(Effect *effect)
     }
     m_allDepthStencilMipmapImages.insert(tinystl::make_pair(key, mipmapImages));
     SG_POP_GROUP();
-}
-
-void
-RenderTargetDepthStencilImageContainer::create(Effect *effect, const Vector2UI16 &size, const Vector2 &scaleFactor,
-    int numMipLevels, int sampleCount, sg_pixel_format format)
-{
-    RenderTargetColorImageContainer::setDescription(
-        size, numMipLevels, sampleCount, format, m_depthStencilImageDescription);
-    create(effect);
-    m_scaleFactor = scaleFactor;
 }
 
 void
@@ -218,9 +212,16 @@ RenderTargetDepthStencilImageContainer::invalidate(Effect *effect)
 }
 
 void
-RenderTargetDepthStencilImageContainer::setImageDescription(const sg_image_desc &value)
+RenderTargetDepthStencilImageContainer::setDepthStencilImageDescription(const sg_image_desc &value)
 {
     m_depthStencilImageDescription = value;
+    m_dirty = true;
+}
+
+void
+RenderTargetDepthStencilImageContainer::setScaleFactor(const Vector2 &value)
+{
+    m_scaleFactor = value;
     m_dirty = true;
 }
 

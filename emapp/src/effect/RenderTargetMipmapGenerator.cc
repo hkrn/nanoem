@@ -47,26 +47,27 @@ RenderTargetMipmapGenerator::RenderTargetMipmapGenerator(Effect *effect, const c
     char label[Inline::kMarkerStringLength];
     m_blitter = nanoem_new(internal::BlitPass(effect->project(), false));
     for (int i = 0, numMipmaps = desc.num_mipmaps; i < numMipmaps; i++) {
-        sg_image_desc mipmapImageDesc(desc);
-        mipmapImageDesc.width >>= i;
-        mipmapImageDesc.height >>= i;
-        mipmapImageDesc.num_mipmaps = 0;
+        sg_image_desc mipmapImageDescription(desc);
+        mipmapImageDescription.width >>= i;
+        mipmapImageDescription.height >>= i;
+        mipmapImageDescription.num_mipmaps = 0;
+        mipmapImageDescription.sample_count = 1;
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(
                 label, sizeof(label), "Effects/%s/%s/Mipmaps/%d/Color", effect->nameConstString(), name, i);
-            mipmapImageDesc.label = label;
+            mipmapImageDescription.label = label;
         }
-        sg_image colorImage = sg::make_image(&mipmapImageDesc);
+        sg_image colorImage = sg::make_image(&mipmapImageDescription);
         nanoem_assert(sg::query_image_state(colorImage) == SG_RESOURCESTATE_VALID, "source color image must be valid");
         effect->setImageLabel(colorImage, label);
         m_sourceColorImages.push_back(colorImage);
-        mipmapImageDesc.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        mipmapImageDescription.pixel_format = PixelFormat::depthStencilPixelFormat();
         if (Inline::isDebugLabelEnabled()) {
             StringUtils::format(
                 label, sizeof(label), "Effects/%s/%s/Mipmaps/%d/Depth", effect->nameConstString(), name, i);
-            mipmapImageDesc.label = label;
+            mipmapImageDescription.label = label;
         }
-        sg_image depthImage = sg::make_image(&mipmapImageDesc);
+        sg_image depthImage = sg::make_image(&mipmapImageDescription);
         nanoem_assert(sg::query_image_state(depthImage) == SG_RESOURCESTATE_VALID, "source depth image must be valid");
         effect->setImageLabel(depthImage, label);
         m_sourceDepthImages.push_back(depthImage);

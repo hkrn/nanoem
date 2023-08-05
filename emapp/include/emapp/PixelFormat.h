@@ -16,6 +16,8 @@ namespace nanoem {
 
 class PixelFormat NANOEM_DECL_SEALED : private NonCopyable {
 public:
+    static sg_pixel_format depthStencilPixelFormat() NANOEM_DECL_NOEXCEPT;
+
     PixelFormat() NANOEM_DECL_NOEXCEPT;
     PixelFormat(const PixelFormat &value) NANOEM_DECL_NOEXCEPT;
     ~PixelFormat() NANOEM_DECL_NOEXCEPT;

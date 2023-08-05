@@ -29,13 +29,12 @@ public:
     RenderTargetColorImageContainer(const RenderTargetColorImageContainer &value);
 
     void create(Effect *effect);
-    void create(Effect *effect, const Vector2UI16 &size, const Vector2 &scaleFactor, int numMipLevels, int sampleCount,
-        sg_pixel_format format);
     void resizeWithScale(const Vector2UI16 &size);
     void setSampleCount(int value);
     void invalidate(Effect *effect);
     void share(const RenderTargetColorImageContainer *value);
     void inherit(const RenderTargetColorImageContainer *shared);
+    void getPassDescription(size_t offset, sg_pass_desc &desc) const NANOEM_DECL_NOEXCEPT;
     void setMipmapGenerator(RenderTargetMipmapGenerator *value);
     void setColorImageDescription(const sg_image_desc &value);
     void setColorSamplerDescription(const sg_sampler_desc &value);
@@ -50,7 +49,7 @@ public:
     const Vector2 scaleFactor() const NANOEM_DECL_NOEXCEPT;
     sg_image preferredColorImageHandle() const NANOEM_DECL_NOEXCEPT;
     sg_image colorImageHandle() const NANOEM_DECL_NOEXCEPT;
-    sg_image resolveImageHandle() const NANOEM_DECL_NOEXCEPT;
+    sg_image msaaImageHandle() const NANOEM_DECL_NOEXCEPT;
     sg_sampler samplerHandle() const NANOEM_DECL_NOEXCEPT;
     bool isSharedTexture() const NANOEM_DECL_NOEXCEPT;
 
@@ -63,7 +62,7 @@ private:
     RenderTargetMipmapGenerator *m_mipmapGenerator;
     Vector2 m_scaleFactor;
     sg_image m_colorImage;
-    sg_image m_resolveImage;
+    sg_image m_msaaImage;
     sg_sampler m_sampler;
     sg_image_desc m_colorImageDescription;
     sg_sampler_desc m_colorSamplerDescription;

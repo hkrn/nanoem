@@ -47,13 +47,15 @@ OffscreenRenderTargetImageContainer::generateDepthStencilMipmapImages(const Effe
 {
     if (m_depthStencilMipmapImages.empty()) {
         sg_image_desc depthStencilImageDescription(colorImageDescription());
-        depthStencilImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+        depthStencilImageDescription.pixel_format = PixelFormat::depthStencilPixelFormat();
         const int numMipmapImages = depthStencilImageDescription.num_mipmaps;
         char label[Inline::kMarkerStringLength];
         for (int i = 1; i < numMipmapImages; i++) {
             sg_image_desc mipmapImageDescription(depthStencilImageDescription);
             mipmapImageDescription.width = glm::max(mipmapImageDescription.width >> i, 1);
             mipmapImageDescription.height = glm::max(mipmapImageDescription.height >> i, 1);
+            mipmapImageDescription.num_mipmaps = 0;
+            mipmapImageDescription.sample_count = 1;
             if (Inline::isDebugLabelEnabled()) {
                 StringUtils::format(label, sizeof(label), "Effects/%s/%s/DepthStencilImage/Mipmaps/%d",
                     effect->nameConstString(), nameConstString(), i);
@@ -98,7 +100,7 @@ OffscreenRenderTargetImageContainer::create(Effect *effect, const Vector2UI16 &s
 {
     setColorImageDescription(size, numMipLevels, sampleCount, format);
     m_depthStencilImageDescription = colorImageDescription();
-    m_depthStencilImageDescription.pixel_format = SG_PIXELFORMAT_DEPTH_STENCIL;
+    m_depthStencilImageDescription.pixel_format = PixelFormat::depthStencilPixelFormat();
     setScaleFactor(scaleFactor);
     create(effect);
 }
