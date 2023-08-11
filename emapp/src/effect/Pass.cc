@@ -23,7 +23,20 @@ Pass::countShaderImages(const sg_shader_image_desc *images)
 {
     int count = SG_MAX_SHADERSTAGE_IMAGES;
     for (int i = 0; i < SG_MAX_SHADERSTAGE_IMAGES; i++) {
-        if (images[i].image_type == _SG_IMAGETYPE_DEFAULT) {
+        if (!images[i].used) {
+            count = i;
+            break;
+        }
+    }
+    return count;
+}
+
+int
+Pass::countShaderSamplers(const sg_shader_sampler_desc *samplers)
+{
+    int count = SG_MAX_SHADERSTAGE_SAMPLERS;
+    for (int i = 0; i < SG_MAX_SHADERSTAGE_SAMPLERS; i++) {
+        if (!samplers[i].used) {
             count = i;
             break;
         }
@@ -43,7 +56,9 @@ Pass::Pass(Effect *effect, const String &name, const PipelineDescriptor &pd,
     , m_activeAccessoryPtr(nullptr)
     , m_pipelineDescriptor(pd)
     , m_vertexShaderImageCount(countShaderImages(desc.vs.images))
+    , m_vertexShaderSamplerCount(countShaderSamplers(desc.vs.samplers))
     , m_pixelShaderImageCount(countShaderImages(desc.fs.images))
+    , m_pixelShaderSamplerCount(countShaderSamplers(desc.fs.samplers))
     , m_effect(effect)
     , m_techniquePtr(nullptr)
     , m_preshaderPair(preshaderPair)
@@ -389,9 +404,21 @@ Pass::vertexShaderImageCount() const NANOEM_DECL_NOEXCEPT
 }
 
 nanoem_u8_t
+Pass::vertexShaderSamplerCount() const NANOEM_DECL_NOEXCEPT
+{
+    return m_vertexShaderSamplerCount;
+}
+
+nanoem_u8_t
 Pass::pixelShaderImageCount() const NANOEM_DECL_NOEXCEPT
 {
     return m_pixelShaderImageCount;
+}
+
+nanoem_u8_t
+Pass::pixelShaderSamplerCount() const NANOEM_DECL_NOEXCEPT
+{
+    return m_pixelShaderSamplerCount;
 }
 
 const PipelineDescriptor &

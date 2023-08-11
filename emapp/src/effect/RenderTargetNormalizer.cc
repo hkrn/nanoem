@@ -193,7 +193,7 @@ RenderTargetNormalizer::resolveRenderTargetIOConfliction(const Pass *passPtr,
             if (sg::is_valid(outputColorImage)) {
                 for (SampledImageList::const_iterator it = images->begin(), end = images->end(); it != end; ++it) {
                     const SampledImage &inputSampler = *it;
-                    if (inputSampler.m_image.id == outputColorImage.id) {
+                    if (inputSampler.m_imageHandle.id == outputColorImage.id) {
                         const sg_image_desc &originImageDescription = containerPtr->colorImageDescription();
                         sg_image &colorImage = m_normalizedColorImages[index].first;
                         if (!sg::is_valid(colorImage)) {

@@ -125,8 +125,8 @@ public:
     static nanoem_u32_t offsetParameterType(const Fx9__Effect__Parameter *parameter) NANOEM_DECL_NOEXCEPT;
     static ParameterType determineParameterType(const Fx9__Effect__Parameter *parameter) NANOEM_DECL_NOEXCEPT;
     static String concatPrefix(const char *const name, const char *const prefix);
-    static void fillFallbackImageAndSampler(
-        const nanoem_u8_t imageCount, const Project *project, sg_stage_bindings &bindings) NANOEM_DECL_NOEXCEPT;
+    static void fillFallbackImageAndSampler(const nanoem_u8_t imageCount, const nanoem_u8_t samplerCount,
+        const Project *project, sg_stage_bindings &bindings) NANOEM_DECL_NOEXCEPT;
     static int sortRenderStateAscent(const void *left, const void *right) NANOEM_DECL_NOEXCEPT;
 
     template <typename TShader, typename TSymbol, typename TUniform, typename TAttribute>
@@ -138,17 +138,19 @@ public:
         const char *passName, sg_shader_stage_desc &desc, String &newShaderCode, Error &error);
     static void retrieveShaderSymbols(const Fx9__Effect__Shader *shaderPtr, RegisterIndexMap &registerIndices,
         UniformBufferOffsetMap &uniformBufferOffsetMap);
-    static void setImageTypesFromSampler(
-        const Fx9__Effect__Shader *shaderPtr, sg_shader_stage_desc &shaderSamplers) NANOEM_DECL_NOEXCEPT;
     static void retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
         ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
         SamplerRegisterIndexMap &shaderRegisterIndices);
     static void retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
         ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
         SamplerRegisterIndexMap &shaderRegisterIndices);
+    static void retrieveCommonShaderSamplers(const Fx9__Effect__Shader *shader, sg_shader_stage_desc &shaderSamplers,
+        ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
+        SamplerRegisterIndexMap &shaderRegisterIndices);
     static void fillShaderImageDescriptions(const char *prefix, sg_shader_stage_desc &desc, StringList &names);
     static void parseSubsetString(char *ptr, int numMaterials, Effect::MaterialIndexSet &output);
     static bool hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT;
+    static sg_image_type imageType(const Fx9__Effect__Sampler *sampler) NANOEM_DECL_NOEXCEPT;
     static Vector3 angle(const Accessory *accessory);
 
     static inline void
@@ -413,15 +415,17 @@ PrivateEffectUtils::concatPrefix(const char *const name, const char *const prefi
 }
 
 void
-PrivateEffectUtils::fillFallbackImageAndSampler(
-    const nanoem_u8_t imageCount, const Project *project, sg_stage_bindings &bindings) NANOEM_DECL_NOEXCEPT
+PrivateEffectUtils::fillFallbackImageAndSampler(const nanoem_u8_t imageCount, const nanoem_u8_t samplerCount,
+    const Project *project, sg_stage_bindings &bindings) NANOEM_DECL_NOEXCEPT
 {
     const sg_image fallbackImage = project->sharedFallbackImage();
-    const sg_sampler fallbackSampler = project->sharedFallbackSampler();
     for (nanoem_u8_t i = 0; i < imageCount; i++) {
         if (!sg::is_valid(bindings.images[i])) {
             bindings.images[i] = fallbackImage;
         }
+    }
+    const sg_sampler fallbackSampler = project->sharedFallbackSampler();
+    for (nanoem_u8_t i = 0; i < samplerCount; i++) {
         if (!sg::is_valid(bindings.samplers[i])) {
             bindings.samplers[i] = fallbackSampler;
         }
@@ -797,75 +801,13 @@ PrivateEffectUtils::retrieveShaderSymbols(const Fx9__Effect__Shader *shaderPtr, 
 }
 
 void
-PrivateEffectUtils::setImageTypesFromSampler(
-    const Fx9__Effect__Shader *shaderPtr, sg_shader_stage_desc &shaderSamplers) NANOEM_DECL_NOEXCEPT
-{
-    const size_t numSamplers = shaderPtr->n_samplers;
-    for (size_t i = 0; i < numSamplers; i++) {
-        const Fx9__Effect__Sampler *samplerPtr = shaderPtr->samplers[i];
-        const nanoem_u32_t samplerIndex = samplerPtr->index;
-        if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-            shaderSamplers.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
-            shaderSamplers.image_sampler_pairs[i] = sg_shader_image_sampler_pair_desc { true, Inline::saturateInt32(i),
-                Inline::saturateInt32(i), samplerPtr->sampler_name };
-            switch (samplerPtr->type) {
-            case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_2D:
-            default:
-                shaderSamplers.images[i] =
-                    sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
-                break;
-            case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_VOLUME:
-                shaderSamplers.images[i] =
-                    sg_shader_image_desc { true, false, SG_IMAGETYPE_3D, SG_IMAGESAMPLETYPE_FLOAT };
-                break;
-            case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_CUBE:
-                shaderSamplers.images[i] =
-                    sg_shader_image_desc { true, false, SG_IMAGETYPE_CUBE, SG_IMAGESAMPLETYPE_FLOAT };
-                break;
-            }
-        }
-    }
-}
-
-void
 PrivateEffectUtils::retrievePixelShaderSamplers(const Fx9__Effect__Pass *pass, sg_shader_stage_desc &shaderSamplers,
     ImageDescriptionMap &textureDescriptions, SamplerDescriptionMap &samplerDescriptions,
     SamplerRegisterIndexMap &shaderRegisterIndices)
 {
     const Fx9__Effect__Shader *shaderPtr = pass->pixel_shader;
-    setImageTypesFromSampler(shaderPtr, shaderSamplers);
-    for (size_t i = 0, numSamplers = shaderPtr->n_samplers; i < numSamplers; i++) {
-        const Fx9__Effect__Sampler *samplerPtr = shaderPtr->samplers[i];
-        const String name(samplerPtr->texture_name);
-        const nanoem_u32_t samplerIndex = samplerPtr->index;
-        if (!name.empty()) {
-            SamplerRegisterIndexMap::iterator it = shaderRegisterIndices.find(name);
-            if (it != shaderRegisterIndices.end()) {
-                SamplerRegisterIndex &samplerRegisterIndex = it->second;
-                samplerRegisterIndex.m_indices.push_back(samplerIndex);
-            }
-            else {
-                SamplerRegisterIndex samplerRegisterIndex;
-                samplerRegisterIndex.m_indices.push_back(samplerIndex);
-                samplerRegisterIndex.m_type = FX9__EFFECT__DX9MS__PARAMETER_TYPE__PT_TEXTURE;
-                samplerRegisterIndex.m_name = samplerPtr->sampler_name;
-                shaderRegisterIndices.insert(tinystl::make_pair(name, samplerRegisterIndex));
-            }
-            if (textureDescriptions.find(name) == textureDescriptions.end()) {
-                sg_image_desc imageDescription;
-                sg_sampler_desc samplerDescription;
-                Inline::clearZeroMemory(imageDescription);
-                Inline::clearZeroMemory(samplerDescription);
-                convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(
-                    samplerPtr, samplerDescription);
-                if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-                    imageDescription.type = shaderSamplers.images[samplerIndex].image_type;
-                }
-                textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
-                samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
-            }
-        }
-    }
+    retrieveCommonShaderSamplers(
+        shaderPtr, shaderSamplers, textureDescriptions, samplerDescriptions, shaderRegisterIndices);
 }
 
 void
@@ -874,37 +816,78 @@ PrivateEffectUtils::retrieveVertexShaderSamplers(const Fx9__Effect__Pass *pass, 
     SamplerRegisterIndexMap &shaderRegisterIndices)
 {
     const Fx9__Effect__Shader *shaderPtr = pass->vertex_shader;
-    setImageTypesFromSampler(shaderPtr, shaderSamplers);
-    for (size_t i = 0, numSamplers = shaderPtr->n_samplers; i < numSamplers; i++) {
+    retrieveCommonShaderSamplers(
+        shaderPtr, shaderSamplers, textureDescriptions, samplerDescriptions, shaderRegisterIndices);
+}
+
+void
+PrivateEffectUtils::retrieveCommonShaderSamplers(const Fx9__Effect__Shader *shaderPtr,
+    sg_shader_stage_desc &shaderSamplers, ImageDescriptionMap &textureDescriptions,
+    SamplerDescriptionMap &samplerDescriptions, SamplerRegisterIndexMap &shaderRegisterIndices)
+{
+    struct Slot {
+        const char *samplerName;
+        sg_image_type imageType;
+        int textureIndex;
+        int samplerIndex;
+    };
+    const size_t numSamplers = glm::min(shaderPtr->n_samplers, size_t(SG_MAX_SHADERSTAGE_IMAGESAMPLERPAIRS));
+    typedef tinystl::unordered_map<nanoem_u32_t, int, TinySTLAllocator> UniqueSamplerDescriptionMap;
+    Slot slots[SG_MAX_SHADERSTAGE_IMAGESAMPLERPAIRS];
+    UniqueSamplerDescriptionMap offsets;
+    bx::HashMurmur2A hasher;
+    int samplerOffset = 0;
+    Inline::clearZeroMemory(slots);
+    for (size_t i = 0, j = 0; i < numSamplers; i++) {
         const Fx9__Effect__Sampler *samplerPtr = shaderPtr->samplers[i];
         const String name(samplerPtr->texture_name);
-        const nanoem_u32_t samplerIndex = samplerPtr->index;
-        if (!name.empty()) {
-            SamplerRegisterIndexMap::iterator it = shaderRegisterIndices.find(name);
-            if (it != shaderRegisterIndices.end()) {
-                SamplerRegisterIndex &samplerRegisterIndex = it->second;
-                samplerRegisterIndex.m_indices.push_back(samplerIndex);
+        if (textureDescriptions.find(name) == textureDescriptions.end()) {
+            sg_image_desc imageDescription;
+            sg_sampler_desc samplerDescription;
+            Inline::clearZeroMemory(imageDescription);
+            Inline::clearZeroMemory(samplerDescription);
+            convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(samplerPtr, samplerDescription);
+            Slot &slot = slots[j];
+            slot.samplerName = samplerPtr->sampler_name;
+            slot.textureIndex = j;
+            slot.imageType = imageDescription.type = imageType(samplerPtr);
+            hasher.begin();
+            hasher.add(samplerDescription);
+            const nanoem_u32_t hash = hasher.end();
+            UniqueSamplerDescriptionMap::const_iterator it = offsets.find(hash);
+            if (it != offsets.end()) {
+                slot.samplerIndex = it->second;
+            }
+            else {
+                slot.samplerIndex = samplerOffset;
+                offsets.insert(tinystl::make_pair(hash, samplerOffset));
+                samplerOffset++;
+            }
+            textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
+            samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
+            SamplerRegisterIndexMap::iterator it2 = shaderRegisterIndices.find(name);
+            if (it2 != shaderRegisterIndices.end()) {
+                SamplerRegisterIndex &samplerRegisterIndex = it2->second;
+                samplerRegisterIndex.m_indices.push_back(tinystl::make_pair(slot.textureIndex, slot.samplerIndex));
             }
             else {
                 SamplerRegisterIndex samplerRegisterIndex;
-                samplerRegisterIndex.m_indices.push_back(samplerIndex);
+                samplerRegisterIndex.m_indices.push_back(tinystl::make_pair(slot.textureIndex, slot.samplerIndex));
                 samplerRegisterIndex.m_type = FX9__EFFECT__DX9MS__PARAMETER_TYPE__PT_TEXTURE;
                 samplerRegisterIndex.m_name = samplerPtr->sampler_name;
                 shaderRegisterIndices.insert(tinystl::make_pair(name, samplerRegisterIndex));
             }
-            if (textureDescriptions.find(name) == textureDescriptions.end()) {
-                sg_image_desc imageDescription;
-                sg_sampler_desc samplerDescription;
-                Inline::clearZeroMemory(imageDescription);
-                Inline::clearZeroMemory(samplerDescription);
-                convertSamplerDescription<Fx9__Effect__Sampler, Fx9__Effect__SamplerState>(
-                    samplerPtr, samplerDescription);
-                if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-                    imageDescription.type = shaderSamplers.images[samplerIndex].image_type;
-                }
-                textureDescriptions.insert(tinystl::make_pair(name, imageDescription));
-                samplerDescriptions.insert(tinystl::make_pair(name, samplerDescription));
-            }
+            j++;
+        }
+    }
+    for (size_t i = 0; i < SG_MAX_SHADERSTAGE_IMAGESAMPLERPAIRS; i++) {
+        const Slot &slot = slots[i];
+        if (slot.imageType != _SG_IMAGETYPE_DEFAULT) {
+            shaderSamplers.samplers[slot.samplerIndex] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+            shaderSamplers.image_sampler_pairs[slot.textureIndex] =
+                sg_shader_image_sampler_pair_desc { true, slot.textureIndex, slot.samplerIndex, slot.samplerName };
+            shaderSamplers.images[slot.textureIndex] =
+                sg_shader_image_desc { true, false, slot.imageType, SG_IMAGESAMPLETYPE_FLOAT };
         }
     }
 }
@@ -964,6 +947,25 @@ bool
 PrivateEffectUtils::hasShaderSource(const sg_shader_desc &desc) NANOEM_DECL_NOEXCEPT
 {
     return (desc.vs.source && desc.fs.source) || (desc.vs.bytecode.size > 0 && desc.fs.bytecode.size > 0);
+}
+
+sg_image_type
+PrivateEffectUtils::imageType(const Fx9__Effect__Sampler *sampler) NANOEM_DECL_NOEXCEPT
+{
+    sg_image_type type;
+    switch (sampler->type) {
+    case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_2D:
+    default:
+        type = SG_IMAGETYPE_2D;
+        break;
+    case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_VOLUME:
+        type = SG_IMAGETYPE_3D;
+        break;
+    case FX9__EFFECT__SAMPLER__TYPE__SAMPLER_CUBE:
+        type = SG_IMAGETYPE_CUBE;
+        break;
+    }
+    return type;
 }
 
 Vector3
@@ -1861,7 +1863,7 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                         }
                         if (shaderDescription.fs.images[0].image_type == _SG_IMAGETYPE_DEFAULT) {
                             SamplerRegisterIndex samplerRegisterIndex;
-                            samplerRegisterIndex.m_indices.push_back(0);
+                            samplerRegisterIndex.m_indices.push_back(tinystl::make_pair(0, 0));
                             samplerRegisterIndex.m_type = FX9__EFFECT__DX9MS__PARAMETER_TYPE__PT_SAMPLER;
                             passRegisterIndices.m_pixelShaderSamplers.insert(
                                 tinystl::make_pair(String("ps_s0"), samplerRegisterIndex));
@@ -4172,7 +4174,8 @@ Effect::handleRenderColorTargetSemantic(
             self->setNormalizedColorImageContainer(parameter.m_name, numMipLevels, container);
             int sampleCount = enableAA ? project->sampleCount() : 1;
             sg_image_desc colorImagDescription(container->colorImageDescription());
-            RenderTargetColorImageContainer::setDescription(size, numMipLevels, sampleCount, format, colorImagDescription);
+            RenderTargetColorImageContainer::setDescription(
+                size, numMipLevels, sampleCount, format, colorImagDescription);
             container->setColorImageDescription(colorImagDescription);
             container->create(self);
             container->setScaleFactor(scaleFactor);
@@ -4210,7 +4213,8 @@ Effect::handleRenderDepthStencilTargetSemantic(
         }
         int sampleCount = enableAA ? self->m_project->sampleCount() : 1;
         sg_image_desc depthStencilImageDescription(container->depthStencilImageDescription());
-        RenderTargetColorImageContainer::setDescription(size, numMipLevels, sampleCount, format, depthStencilImageDescription);
+        RenderTargetColorImageContainer::setDescription(
+            size, numMipLevels, sampleCount, format, depthStencilImageDescription);
         container->setDepthStencilImageDescription(depthStencilImageDescription);
         container->create(self);
         container->setScaleFactor(scaleFactor);
@@ -4844,12 +4848,14 @@ Effect::setImageUniform(const String &name, const effect::Pass *pass, sg_image i
     SamplerRegisterIndex::List indices;
     if (pass->findPixelShaderSamplerRegisterIndex(name, indices)) {
         for (SamplerRegisterIndex::List::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
-            m_imageSamplers[pass].push_back(SampledImage(name, SG_SHADERSTAGE_FS, image, sampler, *it));
+            m_imageSamplers[pass].push_back(
+                SampledImage(name, SG_SHADERSTAGE_FS, image, sampler, it->first, it->second));
         }
     }
     else if (pass->findVertexShaderSamplerRegisterIndex(name, indices)) {
         for (SamplerRegisterIndex::List::const_iterator it = indices.begin(), end = indices.end(); it != end; ++it) {
-            m_imageSamplers[pass].push_back(SampledImage(name, SG_SHADERSTAGE_VS, image, sampler, *it));
+            m_imageSamplers[pass].push_back(
+                SampledImage(name, SG_SHADERSTAGE_VS, image, sampler, it->first, it->second));
         }
     }
 }
@@ -5271,28 +5277,29 @@ Effect::updatePassImageHandles(effect::Pass *pass, sg_bindings &bindings)
         SampledImageList &sampledImages = it->second;
         for (SampledImageList::const_iterator it = sampledImages.begin(), end = sampledImages.end(); it != end; ++it) {
             const SampledImage &sampledImage = *it;
-            const nanoem_u8_t samplerOffset = sampledImage.m_offset;
-            if (samplerOffset < SG_MAX_SHADERSTAGE_IMAGES) {
-                switch (sampledImage.m_stage) {
-                case SG_SHADERSTAGE_FS: {
-                    bindings.fs.images[samplerOffset] = sampledImage.m_image;
-                    bindings.fs.samplers[samplerOffset] = sampledImage.m_sampler;
-                    break;
-                }
-                case SG_SHADERSTAGE_VS: {
-                    bindings.vs.images[samplerOffset] = sampledImage.m_image;
-                    bindings.vs.samplers[samplerOffset] = sampledImage.m_sampler;
-                    break;
-                }
-                default:
-                    break;
-                }
+            const nanoem_u8_t imageOffset = sampledImage.m_imageIndex;
+            const nanoem_u8_t samplerOffset = sampledImage.m_samplerIndex;
+            switch (sampledImage.m_stage) {
+            case SG_SHADERSTAGE_FS: {
+                bindings.fs.images[imageOffset] = sampledImage.m_imageHandle;
+                bindings.fs.samplers[samplerOffset] = sampledImage.m_samplerHandle;
+                break;
+            }
+            case SG_SHADERSTAGE_VS: {
+                bindings.vs.images[imageOffset] = sampledImage.m_imageHandle;
+                bindings.vs.samplers[samplerOffset] = sampledImage.m_samplerHandle;
+                break;
+            }
+            default:
+                break;
             }
         }
         sampledImages.clear();
     }
-    PrivateEffectUtils::fillFallbackImageAndSampler(pass->pixelShaderImageCount(), m_project, bindings.fs);
-    PrivateEffectUtils::fillFallbackImageAndSampler(pass->vertexShaderImageCount(), m_project, bindings.vs);
+    PrivateEffectUtils::fillFallbackImageAndSampler(
+        pass->pixelShaderImageCount(), pass->pixelShaderSamplerCount(), m_project, bindings.fs);
+    PrivateEffectUtils::fillFallbackImageAndSampler(
+        pass->vertexShaderImageCount(), pass->vertexShaderSamplerCount(), m_project, bindings.vs);
 }
 
 void
@@ -5785,7 +5792,7 @@ Effect::containsPassOutputImageSampler(const Pass *passPtr) const NANOEM_DECL_NO
                     for (SampledImageList::const_iterator it = sampledImages.begin(), end = sampledImages.end();
                          it != end; ++it) {
                         const SampledImage &sampledImage = *it;
-                        if (sampledImage.m_image.id == outputColorImage.id) {
+                        if (sampledImage.m_imageHandle.id == outputColorImage.id) {
                             result = true;
                             break;
                         }

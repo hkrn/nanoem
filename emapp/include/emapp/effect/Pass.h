@@ -28,6 +28,7 @@ class Technique;
 class Pass NANOEM_DECL_SEALED : public IPass {
 public:
     static int countShaderImages(const sg_shader_image_desc *images);
+    static int countShaderSamplers(const sg_shader_sampler_desc *samplers);
 
     Pass(Effect *effect, const String &name, const PipelineDescriptor &pd, const PassRegisterIndexMap &indices,
         const AnnotationMap &annotations, const UniformBufferOffsetMap &vertexShaderRegisterUniformBufferOffsetMap,
@@ -63,7 +64,9 @@ public:
     String name() const;
     const char *nameConstString() const NANOEM_DECL_NOEXCEPT;
     nanoem_u8_t vertexShaderImageCount() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u8_t vertexShaderSamplerCount() const NANOEM_DECL_NOEXCEPT;
     nanoem_u8_t pixelShaderImageCount() const NANOEM_DECL_NOEXCEPT;
+    nanoem_u8_t pixelShaderSamplerCount() const NANOEM_DECL_NOEXCEPT;
 
     const PipelineDescriptor &pipelineDescriptor() const NANOEM_DECL_NOEXCEPT;
     void setParentTechnique(Technique *value);
@@ -85,7 +88,9 @@ private:
     const Accessory *m_activeAccessoryPtr;
     const PipelineDescriptor m_pipelineDescriptor;
     const nanoem_u8_t m_vertexShaderImageCount;
+    const nanoem_u8_t m_vertexShaderSamplerCount;
     const nanoem_u8_t m_pixelShaderImageCount;
+    const nanoem_u8_t m_pixelShaderSamplerCount;
     Effect *m_effect;
     Technique *m_techniquePtr;
     PipelineSet m_pipelineSet;
