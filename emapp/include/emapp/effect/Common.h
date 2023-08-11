@@ -134,7 +134,7 @@ struct RegisterIndex {
     nanoem_u32_t m_flags;
 };
 struct SamplerRegisterIndex {
-    typedef tinystl::vector<nanoem_u32_t, TinySTLAllocator> List;
+    typedef tinystl::vector<tinystl::pair<int, int>, TinySTLAllocator> List;
     SamplerRegisterIndex();
     ~SamplerRegisterIndex() NANOEM_DECL_NOEXCEPT;
     List m_indices;
@@ -342,13 +342,15 @@ struct MatrixUniform {
 typedef tinystl::unordered_map<String, MatrixUniform, TinySTLAllocator> MatrixUniformMap;
 
 struct SampledImage {
-    SampledImage(const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset);
+    SampledImage(const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t imageIndex,
+        nanoem_u32_t samplerIndex);
     ~SampledImage() NANOEM_DECL_NOEXCEPT;
     const String m_name;
     const sg_shader_stage m_stage;
-    const sg_image m_image;
-    const sg_sampler m_sampler;
-    const nanoem_u32_t m_offset;
+    const sg_image m_imageHandle;
+    const sg_sampler m_samplerHandle;
+    const nanoem_u32_t m_imageIndex;
+    const nanoem_u32_t m_samplerIndex;
 };
 typedef tinystl::vector<SampledImage, TinySTLAllocator> SampledImageList;
 typedef tinystl::vector<tinystl::pair<ScriptCommandType, String>, TinySTLAllocator> ScriptCommandMap;

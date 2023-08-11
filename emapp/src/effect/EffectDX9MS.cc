@@ -351,7 +351,7 @@ retrievePixelShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_stag
         if (samplerIndex < numSamplers) {
             if (shaderRegisterIndices.find(name) == shaderRegisterIndices.end()) {
                 SamplerRegisterIndex index;
-                index.m_indices.push_back(samplerIndex);
+                // index.m_indices.push_back(samplerIndex);
                 index.m_type = FX9__EFFECT__DX9MS__PARAMETER_TYPE__PT_TEXTURE;
                 shaderRegisterIndices.insert(tinystl::make_pair(name, index));
             }
@@ -388,7 +388,7 @@ retrieveVertexShaderSamplers(const Fx9__Effect__Dx9ms__Pass *pass, sg_shader_sta
         if (samplerIndex < numSamplers) {
             if (shaderRegisterIndices.find(name) == shaderRegisterIndices.end()) {
                 SamplerRegisterIndex index;
-                index.m_indices.push_back(samplerIndex);
+                // index.m_indices.push_back(samplerIndex);
                 index.m_type = FX9__EFFECT__DX9MS__PARAMETER_TYPE__PT_TEXTURE;
                 shaderRegisterIndices.insert(tinystl::make_pair(name, index));
             }

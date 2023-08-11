@@ -999,13 +999,14 @@ MatrixUniform::multiply(const Matrix4x4 &world, const Matrix4x4 &view, const Mat
     }
 }
 
-SampledImage::SampledImage(
-    const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler, nanoem_u32_t offset)
+SampledImage::SampledImage(const String &name, sg_shader_stage stage, sg_image image, sg_sampler sampler,
+    nanoem_u32_t imageIndex, nanoem_u32_t samplerIndex)
     : m_name(name)
     , m_stage(stage)
-    , m_image(image)
-    , m_sampler(sampler)
-    , m_offset(offset)
+    , m_imageHandle(image)
+    , m_samplerHandle(sampler)
+    , m_imageIndex(glm::min(imageIndex, nanoem_u32_t(SG_MAX_SHADERSTAGE_IMAGES)))
+    , m_samplerIndex(glm::min(samplerIndex, nanoem_u32_t(SG_MAX_SHADERSTAGE_SAMPLERS)))
 {
 }
 
