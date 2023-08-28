@@ -1163,7 +1163,7 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "walkdir",
- "wasmer",
+ "wasmer 4.1.2",
  "wasmer-wasix",
 ]
 
@@ -2263,7 +2263,7 @@ dependencies = [
  "thiserror",
  "tracing",
  "wai-bindgen-wasmer-impl",
- "wasmer",
+ "wasmer 3.3.0",
 ]
 
 [[package]]
@@ -2418,12 +2418,38 @@ dependencies = [
  "thiserror",
  "wasm-bindgen",
  "wasm-bindgen-downcast",
- "wasmer-compiler",
- "wasmer-compiler-cranelift",
- "wasmer-derive",
- "wasmer-types",
- "wasmer-vm",
+ "wasmer-compiler 3.3.0",
+ "wasmer-derive 3.3.0",
+ "wasmer-types 3.3.0",
+ "wasmer-vm 3.3.0",
  "wat",
+ "winapi",
+]
+
+[[package]]
+name = "wasmer"
+version = "4.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fc7142dbb91ede83cc0aef2301fa75fcc7e0c9e5a7d5358e3c4f3a7249fe9ce8"
+dependencies = [
+ "bytes",
+ "cfg-if",
+ "derivative",
+ "indexmap",
+ "js-sys",
+ "more-asserts",
+ "rustc-demangle",
+ "serde",
+ "serde-wasm-bindgen",
+ "target-lexicon",
+ "thiserror",
+ "wasm-bindgen",
+ "wasm-bindgen-downcast",
+ "wasmer-compiler 4.1.2",
+ "wasmer-compiler-cranelift",
+ "wasmer-derive 4.1.2",
+ "wasmer-types 4.1.2",
+ "wasmer-vm 4.1.2",
  "winapi",
 ]
 
@@ -2444,17 +2470,39 @@ dependencies = [
  "region",
  "smallvec",
  "thiserror",
- "wasmer-types",
- "wasmer-vm",
+ "wasmer-types 3.3.0",
+ "wasmer-vm 3.3.0",
+ "winapi",
+]
+
+[[package]]
+name = "wasmer-compiler"
+version = "4.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5b99c70711ec7631b602a9fc95577c40df21e8f3916159c9d80c3fb4f77abdc"
+dependencies = [
+ "backtrace",
+ "cfg-if",
+ "enum-iterator",
+ "enumset",
+ "lazy_static",
+ "leb128",
+ "memmap2",
+ "more-asserts",
+ "region",
+ "smallvec",
+ "thiserror",
+ "wasmer-types 4.1.2",
+ "wasmer-vm 4.1.2",
  "wasmparser",
  "winapi",
 ]
 
 [[package]]
 name = "wasmer-compiler-cranelift"
-version = "3.3.0"
+version = "4.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a1e5633f90f372563ebbdf3f9799c7b29ba11c90e56cf9b54017112d2e656c95"
+checksum = "52aef2ef35513a04fed54de9a7dc9c469d4742a5c2e378a5f7e2a79b1327e3bd"
 dependencies = [
  "cranelift-codegen",
  "cranelift-entity",
@@ -2465,8 +2513,8 @@ dependencies = [
  "smallvec",
  "target-lexicon",
  "tracing",
- "wasmer-compiler",
- "wasmer-types",
+ "wasmer-compiler 4.1.2",
+ "wasmer-types 4.1.2",
 ]
 
 [[package]]
@@ -2482,10 +2530,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "wasmer-derive"
+version = "4.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "25bb1425c9e4dc3e2d3aacd6e82e22e27a3127379e0d09bcbdf25ff376229162"
+dependencies = [
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "wasmer-types"
 version = "3.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "67f1f2839f4f61509550e4ddcd0e658e19f3af862b51c79fda15549d735d659b"
+dependencies = [
+ "bytecheck",
+ "enum-iterator",
+ "enumset",
+ "indexmap",
+ "more-asserts",
+ "rkyv",
+ "target-lexicon",
+ "thiserror",
+]
+
+[[package]]
+name = "wasmer-types"
+version = "4.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d7e32ed799fa8c0d96ca9615d9ea8006857a0f0c18e7c2ed8082bd5c63a9ea70"
 dependencies = [
  "bytecheck",
  "enum-iterator",
@@ -2520,7 +2596,34 @@ dependencies = [
  "region",
  "scopeguard",
  "thiserror",
- "wasmer-types",
+ "wasmer-types 3.3.0",
+ "winapi",
+]
+
+[[package]]
+name = "wasmer-vm"
+version = "4.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0847513cb176b5d62a6f65d6ae474594935e726a10e9e3387177d9cbf8b8cda0"
+dependencies = [
+ "backtrace",
+ "cc",
+ "cfg-if",
+ "corosensei",
+ "dashmap",
+ "derivative",
+ "enum-iterator",
+ "fnv",
+ "indexmap",
+ "lazy_static",
+ "libc",
+ "mach",
+ "memoffset",
+ "more-asserts",
+ "region",
+ "scopeguard",
+ "thiserror",
+ "wasmer-types 4.1.2",
  "winapi",
 ]
 
@@ -2565,8 +2668,8 @@ dependencies = [
  "wai-bindgen-wasmer",
  "waker-fn",
  "wasm-bindgen",
- "wasmer",
- "wasmer-types",
+ "wasmer 3.3.0",
+ "wasmer-types 3.3.0",
  "wasmer-wasix-types",
  "webc",
  "weezl",
@@ -2590,9 +2693,9 @@ dependencies = [
  "wai-bindgen-gen-rust-wasm",
  "wai-bindgen-rust",
  "wai-parser",
- "wasmer",
- "wasmer-derive",
- "wasmer-types",
+ "wasmer 3.3.0",
+ "wasmer-derive 3.3.0",
+ "wasmer-types 3.3.0",
 ]
 
 [[package]]
