@@ -461,8 +461,11 @@ CocoaApplicationMenuBuilder::createApplicationMenu(NSMenu *bar)
                              [app orderFrontStandardAboutPanel:app];
                          }];
     [m_appMenu addSeparator];
+    NSString *settingsTitle = NSAppKitVersionNumber > NSAppKitVersionNumber12_5
+        ? translatedString("nanoem.menu.macos.settings")
+        : translatedString("nanoem.menu.macos.preferences");
     NSMenuItem *preferenceMenuItem =
-        [m_appMenu addItemWithTitle:translatedString("nanoem.menu.macos.preferences")
+        [m_appMenu addItemWithTitle:settingsTitle
                              action:^() {
                                  m_client->sendMenuActionMessage(kMenuItemTypeEditPreference);
                              }

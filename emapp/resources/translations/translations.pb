@@ -1,5 +1,5 @@
 
-��@
+��@
 nanoem.gui.unimplemented$未実装のため現在利用不可
 nanoem.gui.camera	カメラ%
 nanoem.gui.keyframe.copy	コピー'
@@ -953,7 +953,8 @@ $nanoem.menu.accessory.enable.visible表示を有効にする(&V)+
 'nanoem.menu.edit.morph.reset-all-morphs!全てのモーフをリセット[
 *nanoem.menu.edit.morph.register-all-morphs-全てのモーフをキーフレーム登録.
 nanoem.menu.macos.aboutnanoem について*
-nanoem.menu.macos.preferences	設定...*
+nanoem.menu.macos.preferences	設定...'
+nanoem.menu.macos.settings	設定...*
 nanoem.menu.macos.hidenanoem を隠す-
 nanoem.menu.macos.hide-allほかを隠す-
 nanoem.menu.macos.show-allすべて表示*
@@ -1181,7 +1182,7 @@ Ananoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_STATE_NOT_FOUND3モーフの
 ;nanoem.status.ERROR_DOCUMENT_MODEL_OUTSIDE_PARENT_CORRUPTED-モデルの外部親が破損していますl
 2nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_CORRUPTED6セルフシャドウデータが破損しています�
 ;nanoem.status.ERROR_DOCUMENT_SELF_SHADOW_KEYFRAME_CORRUPTEDBセルフシャドウのキーフレームが破損しています
-��F
+��F
 nanoem.gui.unimplemented*Currently Unavailable due to unimplemented
 nanoem.gui.cameraCamera 
 nanoem.gui.keyframe.copyCopy
@@ -2155,7 +2156,8 @@ Fullscreen#
 'nanoem.menu.edit.morph.reset-all-morphsReset All MorphsJ
 *nanoem.menu.edit.morph.register-all-morphsRegister All Morph Keyframes'
 nanoem.menu.macos.aboutAbout nanoem/
-nanoem.menu.macos.preferencesPreferences...%
+nanoem.menu.macos.preferencesPreferences...)
+nanoem.menu.macos.settingsSettings...%
 nanoem.menu.macos.hideHide nanoem)
 nanoem.menu.macos.hide-allHide Others&
 nanoem.menu.macos.show-allShow All%
