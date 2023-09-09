@@ -4023,6 +4023,11 @@
     en_US: 'Preferences...'
     ja_JP: '設定...'
   description: ''
+- key: nanoem.menu.macos.settings
+  phrase:
+    en_US: 'Settings...'
+    ja_JP: '設定...'
+  description: ''
 - key: nanoem.menu.macos.hide
   phrase:
     en_US: 'Hide nanoem'
