@@ -44,7 +44,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreate(
 /// This function should be called from nanoem via plugin loader
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
-    path: *const i8,
+    path: *const c_char,
 ) -> *mut nanoem_application_plugin_model_io_t {
     let path = CStr::from_ptr(path as *const c_char);
     if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new(path) {
@@ -76,7 +76,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLanguage(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
     plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => instance.name(),
         None => null(),
@@ -89,7 +89,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetDescription(
     plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => instance.description(),
         None => null(),
@@ -102,7 +102,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetDescription(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetVersion(
     plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => instance.version(),
         None => null(),
@@ -129,7 +129,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCountAllFunctions(
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFunctionName(
     plugin: *const nanoem_application_plugin_model_io_t,
     index: i32,
-) -> *const i8 {
+) -> *const c_char {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => instance.function_name(index),
         None => null(),
@@ -663,7 +663,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutData(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
     plugin: *mut nanoem_application_plugin_model_io_t,
-    id: *const i8,
+    id: *const c_char,
     data: *const u8,
     length: u32,
     reload_layout: *mut i32,
@@ -695,10 +695,10 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFailureReason(
     plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => match instance.failure_reason() {
-            Some(reason) => reason.as_ptr() as *const i8,
+            Some(reason) => reason.as_ptr() as *const c_char,
             None => null(),
         },
         None => null(),
@@ -711,10 +711,10 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFailureReason(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetRecoverySuggestion(
     plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     match nanoem_application_plugin_model_io_t::get(plugin) {
         Some(instance) => match instance.recovery_suggestion() {
-            Some(reason) => reason.as_ptr() as *const i8,
+            Some(reason) => reason.as_ptr() as *const c_char,
             None => null(),
         },
         None => null(),

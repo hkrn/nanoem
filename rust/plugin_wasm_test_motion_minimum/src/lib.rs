@@ -7,6 +7,7 @@
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use std::ffi::c_char;
 use std::os::raw::c_void;
 
 #[allow(non_camel_case_types)]
@@ -95,7 +96,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetLanguage(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -104,7 +105,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
         })
         .unwrap()
     );
-    b"plugin_wasm_test_motion_minimum\0" as *const u8 as *const i8
+    b"plugin_wasm_test_motion_minimum\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -113,7 +114,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -122,7 +123,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
         })
         .unwrap()
     );
-    b"This is plugin_wasm_test_motion_minimum\0" as *const u8 as *const i8
+    b"This is plugin_wasm_test_motion_minimum\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -131,7 +132,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetVersion(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -140,7 +141,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetVersion(
         })
         .unwrap()
     );
-    b"1.2.3\0" as *const u8 as *const i8
+    b"1.2.3\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -168,7 +169,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCountAllFunctions(
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
     _plugin: *const nanoem_application_plugin_motion_io_t,
     index: i32,
-) -> *const i8 {
+) -> *const c_char {
     let mut arguments = HashMap::new();
     arguments.insert("index".to_owned(), json!(index));
     println!(
@@ -179,7 +180,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
         })
         .unwrap()
     );
-    b"function0\0" as *const u8 as *const i8
+    b"function0\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -308,7 +309,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetOutputMotionData(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -317,7 +318,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
         })
         .unwrap()
     );
-    b"Failure Reason\0" as *const u8 as *const i8
+    b"Failure Reason\0" as *const u8 as *const c_char
 }
 
 /// # Safety
