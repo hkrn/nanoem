@@ -10,7 +10,7 @@ use crate::nanoem_application_plugin_status_t;
 
 use super::plugin::ModelIOPluginController;
 
-use std::ffi::CStr;
+use std::ffi::{c_char, CStr};
 use std::path::Path;
 use std::ptr::null;
 
@@ -52,19 +52,19 @@ impl nanoem_application_plugin_model_io_t {
     pub fn create(&mut self) -> Result<()> {
         self.controller.create()
     }
-    pub fn name(&self) -> *const i8 {
-        crate::PLUGIN_NAME.as_ptr() as *const i8
+    pub fn name(&self) -> *const c_char {
+        crate::PLUGIN_NAME.as_ptr() as *const c_char
     }
-    pub fn description(&self) -> *const i8 {
-        crate::PLUGIN_DESCRIPTION.as_ptr() as *const i8
+    pub fn description(&self) -> *const c_char {
+        crate::PLUGIN_DESCRIPTION.as_ptr() as *const c_char
     }
-    pub fn version(&self) -> *const i8 {
-        crate::PLUGIN_VERSION.as_ptr() as *const i8
+    pub fn version(&self) -> *const c_char {
+        crate::PLUGIN_VERSION.as_ptr() as *const c_char
     }
     pub fn count_all_functions(&self) -> i32 {
         self.controller.count_all_functions()
     }
-    pub fn function_name(&self, value: i32) -> *const i8 {
+    pub fn function_name(&self, value: i32) -> *const c_char {
         if let Ok(name) = self.controller.function_name(value) {
             name.as_ptr()
         } else {

@@ -7,6 +7,7 @@
 use serde_derive::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use std::ffi::c_char;
 use std::os::raw::c_void;
 
 #[allow(non_camel_case_types)]
@@ -95,7 +96,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLanguage(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
     _plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -104,7 +105,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
         })
         .unwrap()
     );
-    b"plugin_wasm_test_model_minimum\0" as *const u8 as *const i8
+    b"plugin_wasm_test_model_minimum\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -113,7 +114,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetName(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetVersion(
     _plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -122,7 +123,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetVersion(
         })
         .unwrap()
     );
-    b"1.2.3\0" as *const u8 as *const i8
+    b"1.2.3\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -150,7 +151,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCountAllFunctions(
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFunctionName(
     _plugin: *const nanoem_application_plugin_model_io_t,
     index: i32,
-) -> *const i8 {
+) -> *const c_char {
     let mut arguments = HashMap::new();
     arguments.insert("index".to_owned(), json!(index));
     println!(
@@ -161,7 +162,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFunctionName(
         })
         .unwrap()
     );
-    b"function0\0" as *const u8 as *const i8
+    b"function0\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -290,7 +291,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelData(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFailureReason(
     _plugin: *const nanoem_application_plugin_model_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -299,7 +300,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetFailureReason(
         })
         .unwrap()
     );
-    b"Failure Reason\0" as *const u8 as *const i8
+    b"Failure Reason\0" as *const u8 as *const c_char
 }
 
 /// # Safety

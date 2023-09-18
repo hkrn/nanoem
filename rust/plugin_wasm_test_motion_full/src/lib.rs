@@ -126,7 +126,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetLanguage(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -135,7 +135,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
         })
         .unwrap()
     );
-    b"plugin_wasm_test_motion_full\0" as *const u8 as *const i8
+    b"plugin_wasm_test_motion_full\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -144,7 +144,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetName(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -153,7 +153,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
         })
         .unwrap()
     );
-    b"This is plugin_wasm_test_motion_full\0" as *const u8 as *const i8
+    b"This is plugin_wasm_test_motion_full\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -162,7 +162,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetDescription(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetVersion(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -171,7 +171,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetVersion(
         })
         .unwrap()
     );
-    b"1.2.3\0" as *const u8 as *const i8
+    b"1.2.3\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -199,7 +199,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCountAllFunctions(
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
     _plugin: *const nanoem_application_plugin_motion_io_t,
     index: i32,
-) -> *const i8 {
+) -> *const c_char {
     let mut arguments = HashMap::new();
     arguments.insert("index".to_owned(), json!(index));
     println!(
@@ -210,7 +210,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFunctionName(
         })
         .unwrap()
     );
-    b"function0\0" as *const u8 as *const i8
+    b"function0\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -244,7 +244,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetFunction(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedBoneKeyframes(
     _plugin: *mut nanoem_application_plugin_motion_io_t,
-    name: *const i8,
+    name: *const c_char,
     frame_indices: *const u32,
     length: u32,
     status_ptr: *mut nanoem_application_plugin_status_t,
@@ -272,7 +272,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedBoneK
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetAllNamedSelectedMorphKeyframes(
     _plugin: *mut nanoem_application_plugin_motion_io_t,
-    name: *const i8,
+    name: *const c_char,
     frame_indices: *const u32,
     length: u32,
     status_ptr: *mut nanoem_application_plugin_status_t,
@@ -710,7 +710,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetUIWindowLayoutData(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIComponentLayoutData(
     _plugin: *mut nanoem_application_plugin_motion_io_t,
-    id: *const i8,
+    id: *const c_char,
     data: *const u8,
     length: u32,
     _reload_layout: *mut i32,
@@ -739,7 +739,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOSetUIComponentLayoutData
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -748,7 +748,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
         })
         .unwrap()
     );
-    b"Failure Reason\0" as *const u8 as *const i8
+    b"Failure Reason\0" as *const u8 as *const c_char
 }
 
 /// # Safety
@@ -757,7 +757,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetFailureReason(
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetRecoverySuggestion(
     _plugin: *const nanoem_application_plugin_motion_io_t,
-) -> *const i8 {
+) -> *const c_char {
     println!(
         "{}",
         serde_json::to_string(&Output {
@@ -766,7 +766,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOGetRecoverySuggestion(
         })
         .unwrap()
     );
-    b"Recovery Suggestion\0" as *const u8 as *const i8
+    b"Recovery Suggestion\0" as *const u8 as *const c_char
 }
 
 /// # Safety
