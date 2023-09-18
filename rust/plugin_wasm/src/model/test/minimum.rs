@@ -9,16 +9,15 @@ use assert_matches::assert_matches;
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use wasmer_wasix::Pipe;
 
 use crate::model::{
     plugin::ModelIOPluginController,
-    test::{create_random_data, read_plugin_output, PluginOutput},
+    test::{create_random_data, read_plugin_output, Pipe, PluginOutput},
 };
 
 use super::{build_type_and_flags, inner_create_controller};
 
-fn create_controller(pipe: Pipe) -> Result<ModelIOPluginController> {
+fn create_controller(pipe: Box<Pipe>) -> Result<ModelIOPluginController> {
     let package = "plugin_wasm_test_model_minimum";
     let (ty, flag) = build_type_and_flags();
     inner_create_controller(pipe, &format!("target/wasm32-wasi/{ty}/{package}.wasm")).with_context(
