@@ -9,16 +9,15 @@ use assert_matches::assert_matches;
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use wasmer_wasix::Pipe;
 
 use crate::motion::{
     plugin::MotionIOPluginController,
-    test::{create_random_data, inner_create_controller, read_plugin_output, PluginOutput},
+    test::{create_random_data, inner_create_controller, read_plugin_output, Pipe, PluginOutput},
 };
 
 use super::build_type_and_flags;
 
-fn create_controller(stdout: Pipe) -> Result<MotionIOPluginController> {
+fn create_controller(stdout: Box<Pipe>) -> Result<MotionIOPluginController> {
     let package = "plugin_wasm_test_motion_full";
     let (ty, flag) = build_type_and_flags();
     inner_create_controller( stdout, &format!("target/wasm32-wasi/{ty}/{package}.wasm"))

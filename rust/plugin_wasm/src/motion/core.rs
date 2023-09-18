@@ -30,7 +30,8 @@ impl Drop for nanoem_application_plugin_motion_io_t {
 impl nanoem_application_plugin_motion_io_t {
     pub fn new(path: &CStr) -> Result<Self> {
         let path = Path::new(path.to_str()?);
-        let mut controller = MotionIOPluginController::from_path(path, |_| ())?;
+        let mut controller =
+            MotionIOPluginController::from_path(path, |builder| builder.inherit_stdio())?;
         controller.initialize()?;
         Ok(Self { controller })
     }
@@ -65,7 +66,7 @@ impl nanoem_application_plugin_motion_io_t {
     }
     pub fn function_name(&self, value: i32) -> *const i8 {
         if let Ok(name) = self.controller.function_name(value) {
-            name.as_ptr() as *const i8
+            name.as_ptr()
         } else {
             null()
         }

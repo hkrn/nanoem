@@ -4,13 +4,13 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use std::{ffi::CString, mem::size_of, path::Path, slice};
+use std::{ffi::CString, path::Path, slice};
 
 use anyhow::Result;
 use tracing::warn;
 use walkdir::WalkDir;
-use wasmer::{Instance, Module, Store};
-use wasmer_wasix::{wasmer_wasix_types::wasi::Errno, WasiEnv, WasiEnvBuilder, WasiFunctionEnv};
+use wasmtime::{AsContextMut, Engine, Instance, Linker, Module};
+use wasmtime_wasi::WasiCtxBuilder;
 
 use crate::{
     allocate_byte_array_with_data, allocate_status_ptr, inner_count_all_functions,
@@ -18,13 +18,12 @@ use crate::{
     inner_get_function_name, inner_get_string, inner_initialize_function, inner_load_ui_window,
     inner_set_data, inner_set_function, inner_set_language, inner_set_ui_component_layout,
     inner_terminate_function, release_byte_array, release_status_ptr, ByteArray, OpaquePtr,
-    SizePtr, StatusPtr, FREE_FN, MALLOC_FN,
+    SizePtr, StatusPtr, Store, FREE_FN, MALLOC_FN,
 };
 
 pub struct MotionIOPlugin {
     instance: Instance,
     store: Store,
-    env: WasiFunctionEnv,
     opaque: Option<OpaquePtr>,
 }
 
@@ -34,103 +33,107 @@ fn inner_set_named_data(
     name: &str,
     data: &[u32],
     func: &str,
-    store: &mut Store,
+    mut store: impl AsContextMut,
 ) -> Result<()> {
     if let Some(opaque) = opaque {
-        if let Ok(set_input_model_data) =
-            instance
-                .exports
-                .get_typed_function::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>(
-                    store, func,
-                )
+        if let Ok(set_input_model_data) = instance
+            .get_typed_func::<(OpaquePtr, ByteArray, ByteArray, u32, StatusPtr), ()>(
+                store.as_context_mut(),
+                func,
+            )
         {
-            let component_size = size_of::<u32>();
             let data_size = data.len();
-            let len = data_size * component_size;
+            let len = std::mem::size_of_val(data);
             let data = unsafe { slice::from_raw_parts(data.as_ptr() as *const u8, len) };
             let mut name = name.as_bytes().to_vec();
             name.push(0);
-            let name_ptr = allocate_byte_array_with_data(instance, name.as_slice(), store)?;
-            let data_ptr = allocate_byte_array_with_data(instance, data, store)?;
-            let status_ptr = allocate_status_ptr(instance, store)?;
+            let name_ptr =
+                allocate_byte_array_with_data(instance, name.as_slice(), store.as_context_mut())?;
+            let data_ptr = allocate_byte_array_with_data(instance, data, store.as_context_mut())?;
+            let status_ptr = allocate_status_ptr(instance, store.as_context_mut())?;
             set_input_model_data.call(
-                store,
-                *opaque,
-                name_ptr,
-                data_ptr,
-                data_size as u32,
-                status_ptr,
+                store.as_context_mut(),
+                (*opaque, name_ptr, data_ptr, data_size as u32, status_ptr),
             )?;
-            release_byte_array(instance, name_ptr, store)?;
-            release_byte_array(instance, data_ptr, store)?;
-            release_status_ptr(instance, status_ptr, store)?;
+            release_byte_array(instance, name_ptr, store.as_context_mut())?;
+            release_byte_array(instance, data_ptr, store.as_context_mut())?;
+            release_status_ptr(instance, status_ptr, store.as_context_mut())?;
         }
     }
     Ok(())
 }
 
-fn validate_plugin(instance: &Instance, store: &Store) -> Result<()> {
-    let e = &instance.exports;
-    e.get_memory("memory")?;
-    e.get_typed_function::<u32, OpaquePtr>(store, MALLOC_FN)?;
-    e.get_typed_function::<OpaquePtr, ()>(store, FREE_FN)?;
-    e.get_typed_function::<(), OpaquePtr>(store, "nanoemApplicationPluginMotionIOCreate")?;
-    e.get_typed_function::<OpaquePtr, ByteArray>(store, "nanoemApplicationPluginMotionIOGetName")?;
-    e.get_typed_function::<OpaquePtr, ByteArray>(
-        store,
+fn validate_plugin(instance: &Instance, mut store: impl AsContextMut) -> Result<()> {
+    instance
+        .get_memory(store.as_context_mut(), "memory")
+        .unwrap();
+    instance.get_typed_func::<u32, OpaquePtr>(store.as_context_mut(), MALLOC_FN)?;
+    instance.get_typed_func::<OpaquePtr, ()>(store.as_context_mut(), FREE_FN)?;
+    instance.get_typed_func::<(), OpaquePtr>(
+        store.as_context_mut(),
+        "nanoemApplicationPluginMotionIOCreate",
+    )?;
+    instance.get_typed_func::<OpaquePtr, ByteArray>(
+        store.as_context_mut(),
+        "nanoemApplicationPluginMotionIOGetName",
+    )?;
+    instance.get_typed_func::<OpaquePtr, ByteArray>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOGetVersion",
     )?;
-    e.get_typed_function::<(OpaquePtr, i32), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, i32), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOSetLanguage",
     )?;
-    e.get_typed_function::<OpaquePtr, i32>(
-        store,
+    instance.get_typed_func::<OpaquePtr, i32>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOCountAllFunctions",
     )?;
-    e.get_typed_function::<(OpaquePtr, i32), ByteArray>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, i32), ByteArray>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOGetFunctionName",
     )?;
-    e.get_typed_function::<(OpaquePtr, i32, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, i32, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOSetFunction",
     )?;
-    e.get_typed_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOSetInputMotionData",
     )?;
-    e.get_typed_function::<(OpaquePtr, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOExecute",
     )?;
-    e.get_typed_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOGetOutputMotionData",
     )?;
-    e.get_typed_function::<(OpaquePtr, SizePtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, SizePtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOGetOutputMotionDataSize",
     )?;
-    e.get_typed_function::<OpaquePtr, ByteArray>(
-        store,
+    instance.get_typed_func::<OpaquePtr, ByteArray>(
+        store.as_context_mut(),
         "nanoemApplicationPluginMotionIOGetFailureReason",
     )?;
-    e.get_typed_function::<OpaquePtr, ()>(store, "nanoemApplicationPluginMotionIODestroy")?;
+    instance.get_typed_func::<OpaquePtr, ()>(
+        store.as_context_mut(),
+        "nanoemApplicationPluginMotionIODestroy",
+    )?;
     Ok(())
 }
 
 impl MotionIOPlugin {
-    pub fn new(bytes: &[u8], mut env: WasiFunctionEnv, mut store: Store) -> Result<Self> {
-        let module = Module::new(&store, bytes)?;
-        let imports = env.import_object(&mut store, &module)?;
-        let instance = Instance::new(&mut store, &module, &imports)?;
-        validate_plugin(&instance, &store)?;
-        env.initialize(&mut store, instance.clone())?;
+    pub fn new(engine: &Engine, bytes: &[u8], mut store: Store) -> Result<Self> {
+        let module = Module::new(engine, bytes)?;
+        let mut linker = Linker::new(engine);
+        wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+        let instance = linker.instantiate(store.as_context_mut(), &module)?;
+        validate_plugin(&instance, store.as_context_mut())?;
         Ok(Self {
             instance,
             store,
-            env,
             opaque: None,
         })
     }
@@ -418,17 +421,6 @@ impl MotionIOPlugin {
             &mut self.store,
         )
     }
-    #[allow(dead_code)]
-    pub(super) fn wasi_env(&mut self) -> &mut WasiEnv {
-        self.env.env.as_mut(&mut self.store)
-    }
-}
-
-impl Drop for MotionIOPlugin {
-    fn drop(&mut self) {
-        self.env
-            .cleanup(&mut self.store, Some(Errno::Success.into()));
-    }
 }
 
 pub struct MotionIOPluginController {
@@ -450,9 +442,9 @@ impl MotionIOPluginController {
             recovery_suggestion: None,
         }
     }
-    pub fn from_path<F>(path: &Path, builder_callback: F) -> Result<Self>
+    pub fn from_path<F>(path: &Path, cb: F) -> Result<Self>
     where
-        F: Fn(&mut WasiEnvBuilder),
+        F: Fn(WasiCtxBuilder) -> WasiCtxBuilder,
     {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
@@ -460,11 +452,10 @@ impl MotionIOPluginController {
             let filename = entry.file_name().to_str();
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
-                let mut store = Store::default();
-                let mut builder = WasiEnvBuilder::new("nanoem");
-                builder_callback(&mut builder);
-                let env = builder.finalize(&mut store)?;
-                match MotionIOPlugin::new(&bytes, env, store) {
+                let data = cb(WasiCtxBuilder::new()).build();
+                let engine = Engine::default();
+                let store = Store::new(&engine, data);
+                match MotionIOPlugin::new(&engine, &bytes, store) {
                     Ok(plugin) => {
                         plugins.push(plugin);
                         tracing::debug!(filename = filename.unwrap(), "Loaded motion WASM plugin");

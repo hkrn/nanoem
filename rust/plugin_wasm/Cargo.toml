@@ -10,16 +10,13 @@ anyhow = "1"
 nanoem-protobuf = { version = "35", path = "../protobuf" }
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
-wasmer = { version = "3.3", default-features = false, features = [
-    "sys",
+wasmtime = { version = "12", default-features = false, features = [
     "cranelift",
+    "pooling-allocator",
 ] }
-wasmer-wasix = { version = "0.4", default-features = false, features = [
-    "sys",
-    "sys-poll",
-    "sys-thread",
-] }
+wasmtime-wasi = { version = "12" }
 walkdir = "2"
+zerocopy = "0.7"
 
 [dev-dependencies]
 serde = "1"
@@ -29,6 +26,9 @@ maplit = "1"
 rand = "0.8"
 pretty_assertions = "1"
 assert_matches = "1"
+async-trait = { version = "0.1" }
+wasi-common = { version = "12" }
+futures = { version = "0.3" }
 
 [lib]
 path = "src/lib.rs"

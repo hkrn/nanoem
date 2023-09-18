@@ -8,85 +8,93 @@ use std::{ffi::CString, path::Path};
 
 use anyhow::Result;
 use walkdir::WalkDir;
-use wasmer::{Instance, Module, Store};
-use wasmer_wasix::{wasmer_wasix_types::wasi::Errno, WasiEnv, WasiEnvBuilder, WasiFunctionEnv};
+use wasmtime::{AsContextMut, Engine, Instance, Linker, Module};
+use wasmtime_wasi::WasiCtxBuilder;
 
 use crate::{
     inner_count_all_functions, inner_create_opaque, inner_destroy_opaque, inner_execute,
     inner_get_data, inner_get_function_name, inner_get_string, inner_initialize_function,
     inner_load_ui_window, inner_set_data, inner_set_function, inner_set_language,
     inner_set_ui_component_layout, inner_terminate_function, ByteArray, OpaquePtr, SizePtr,
-    StatusPtr, FREE_FN, MALLOC_FN,
+    StatusPtr, Store, FREE_FN, MALLOC_FN,
 };
 
-fn validate_plugin(instance: &Instance, store: &mut Store) -> Result<()> {
-    let e = &instance.exports;
-    e.get_memory("memory")?;
-    e.get_typed_function::<u32, OpaquePtr>(store, MALLOC_FN)?;
-    e.get_typed_function::<OpaquePtr, ()>(store, FREE_FN)?;
-    e.get_typed_function::<(), OpaquePtr>(store, "nanoemApplicationPluginModelIOCreate")?;
-    e.get_typed_function::<OpaquePtr, ByteArray>(store, "nanoemApplicationPluginModelIOGetName")?;
-    e.get_typed_function::<OpaquePtr, ByteArray>(
-        store,
+fn validate_plugin(instance: &Instance, mut store: impl AsContextMut) -> Result<()> {
+    instance
+        .get_memory(store.as_context_mut(), "memory")
+        .unwrap();
+    instance.get_typed_func::<u32, OpaquePtr>(store.as_context_mut(), MALLOC_FN)?;
+    instance.get_typed_func::<OpaquePtr, ()>(store.as_context_mut(), FREE_FN)?;
+    instance.get_typed_func::<(), OpaquePtr>(
+        store.as_context_mut(),
+        "nanoemApplicationPluginModelIOCreate",
+    )?;
+    instance.get_typed_func::<OpaquePtr, ByteArray>(
+        store.as_context_mut(),
+        "nanoemApplicationPluginModelIOGetName",
+    )?;
+    instance.get_typed_func::<OpaquePtr, ByteArray>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOGetVersion",
     )?;
-    e.get_typed_function::<(OpaquePtr, i32), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, i32), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOSetLanguage",
     )?;
-    e.get_typed_function::<OpaquePtr, i32>(
-        store,
+    instance.get_typed_func::<OpaquePtr, i32>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOCountAllFunctions",
     )?;
-    e.get_typed_function::<(OpaquePtr, i32), ByteArray>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, i32), ByteArray>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOGetFunctionName",
     )?;
-    e.get_typed_function::<(OpaquePtr, i32, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, i32, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOSetFunction",
     )?;
-    e.get_typed_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOSetInputModelData",
     )?;
-    e.get_typed_function::<(OpaquePtr, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOExecute",
     )?;
-    e.get_typed_function::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, ByteArray, u32, StatusPtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOGetOutputModelData",
     )?;
-    e.get_typed_function::<(OpaquePtr, SizePtr), ()>(
-        store,
+    instance.get_typed_func::<(OpaquePtr, SizePtr), ()>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOGetOutputModelDataSize",
     )?;
-    e.get_typed_function::<OpaquePtr, ByteArray>(
-        store,
+    instance.get_typed_func::<OpaquePtr, ByteArray>(
+        store.as_context_mut(),
         "nanoemApplicationPluginModelIOGetFailureReason",
     )?;
-    e.get_typed_function::<OpaquePtr, ()>(store, "nanoemApplicationPluginModelIODestroy")?;
+    instance.get_typed_func::<OpaquePtr, ()>(
+        store.as_context_mut(),
+        "nanoemApplicationPluginModelIODestroy",
+    )?;
     Ok(())
 }
 
 pub struct ModelIOPlugin {
     instance: Instance,
     store: Store,
-    env: WasiFunctionEnv,
     opaque: Option<OpaquePtr>,
 }
 
 impl ModelIOPlugin {
-    pub fn new(bytes: &[u8], mut env: WasiFunctionEnv, mut store: Store) -> Result<Self> {
-        let module = Module::new(&store, bytes)?;
-        let imports = env.import_object(&mut store, &module)?;
-        let instance = Instance::new(&mut store, &module, &imports)?;
-        validate_plugin(&instance, &mut store)?;
-        env.initialize(&mut store, instance.clone())?;
+    pub fn new(engine: &Engine, bytes: &[u8], mut store: Store) -> Result<Self> {
+        let module = Module::new(engine, bytes)?;
+        let mut linker = Linker::new(engine);
+        wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+        let instance = linker.instantiate(store.as_context_mut(), &module)?;
+        validate_plugin(&instance, store.as_context_mut())?;
         Ok(Self {
             instance,
-            env,
             store,
             opaque: None,
         })
@@ -364,17 +372,6 @@ impl ModelIOPlugin {
             &mut self.store,
         )
     }
-    #[allow(dead_code)]
-    pub(super) fn wasi_env(&mut self) -> &mut WasiEnv {
-        self.env.env.as_mut(&mut self.store)
-    }
-}
-
-impl Drop for ModelIOPlugin {
-    fn drop(&mut self) {
-        self.env
-            .cleanup(&mut self.store, Some(Errno::Success.into()));
-    }
 }
 
 pub struct ModelIOPluginController {
@@ -396,9 +393,9 @@ impl ModelIOPluginController {
             recovery_suggestion: None,
         }
     }
-    pub fn from_path<F>(path: &Path, builder_callback: F) -> Result<Self>
+    pub fn from_path<F>(path: &Path, cb: F) -> Result<Self>
     where
-        F: Fn(&mut WasiEnvBuilder),
+        F: Fn(WasiCtxBuilder) -> WasiCtxBuilder,
     {
         let mut plugins = vec![];
         for entry in WalkDir::new(path.parent().unwrap()) {
@@ -406,11 +403,10 @@ impl ModelIOPluginController {
             let filename = entry.file_name().to_str();
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
-                let mut store = Store::default();
-                let mut builder = WasiEnvBuilder::new("nanoem");
-                builder_callback(&mut builder);
-                let env = builder.finalize(&mut store)?;
-                match ModelIOPlugin::new(&bytes, env, store) {
+                let data = cb(WasiCtxBuilder::new()).build();
+                let engine = Engine::default();
+                let store = Store::new(&engine, data);
+                match ModelIOPlugin::new(&engine, &bytes, store) {
                     Ok(plugin) => {
                         plugins.push(plugin);
                         tracing::debug!(filename = filename.unwrap(), "Loaded model WASM plugin");

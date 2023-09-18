@@ -5,9 +5,11 @@
 */
 
 use std::{
+    any::Any,
     collections::{HashMap, HashSet},
     env::current_dir,
-    io::Read,
+    io::IoSliceMut,
+    sync::{Arc, Mutex},
 };
 
 use anyhow::Result;
@@ -15,8 +17,14 @@ use pretty_assertions::assert_eq;
 use rand::{thread_rng, Rng};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
-use wasmer::Store;
-use wasmer_wasix::{Pipe, WasiEnvBuilder, WasiFunctionEnv};
+use wasi_common::{
+    file::{FileType, Filestat},
+    snapshots::preview_1::types::Error,
+};
+use wasmtime::Engine;
+use wasmtime_wasi::{WasiCtxBuilder, WasiFile};
+
+use crate::Store;
 
 use super::plugin::{ModelIOPlugin, ModelIOPluginController};
 
@@ -26,18 +34,67 @@ struct PluginOutput {
     arguments: Option<HashMap<String, Value>>,
 }
 
+pub(super) struct Pipe {
+    content: Arc<Mutex<Vec<u8>>>,
+}
+
+impl Pipe {
+    pub fn channel() -> (Box<Self>, Box<Self>) {
+        let content = Arc::new(Mutex::new(Vec::new()));
+        (
+            Box::new(Self {
+                content: Arc::clone(&content),
+            }),
+            Box::new(Self {
+                content: Arc::clone(&content),
+            }),
+        )
+    }
+}
+
+#[async_trait::async_trait]
+impl WasiFile for Pipe {
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+    async fn get_filetype(&self) -> Result<FileType, Error> {
+        Ok(FileType::RegularFile)
+    }
+    async fn get_filestat(&self) -> Result<Filestat, Error> {
+        Ok(Filestat {
+            device_id: 0,
+            inode: 0,
+            filetype: self.get_filetype().await?,
+            nlink: 0,
+            size: self.content.lock().unwrap().len() as _,
+            atim: None,
+            mtim: None,
+            ctim: None,
+        })
+    }
+    async fn read_vectored<'a>(&self, _bufs: &mut [std::io::IoSliceMut<'a>]) -> Result<u64, Error> {
+        let guard = self.content.lock().unwrap();
+        for slice in _bufs.iter_mut() {
+            slice.copy_from_slice(guard.as_slice());
+        }
+        Ok(guard.len() as _)
+    }
+    async fn write_vectored<'a>(&self, _bufs: &[std::io::IoSlice<'a>]) -> Result<u64, Error> {
+        let mut guard = self.content.lock().unwrap();
+        let size = guard.len();
+        for slice in _bufs.iter() {
+            guard.extend(slice.iter());
+        }
+        Ok((guard.len() - size) as _)
+    }
+}
+
 fn build_type_and_flags() -> (&'static str, &'static str) {
     if cfg!(debug_assertions) {
         ("debug", "")
     } else {
         ("release-lto", " --profile release-lto")
     }
-}
-
-fn create_wasi_env(pipe: Pipe, store: &mut Store) -> Result<WasiFunctionEnv> {
-    Ok(WasiEnvBuilder::new("nanoem")
-        .stdout(Box::new(pipe))
-        .finalize(store)?)
 }
 
 fn create_random_data(size: usize) -> Vec<u8> {
@@ -50,9 +107,12 @@ fn create_random_data(size: usize) -> Vec<u8> {
     data
 }
 
-fn read_plugin_output(mut pipe: Pipe) -> Result<Vec<PluginOutput>> {
-    let mut s = String::new();
-    pipe.read_to_string(&mut s)?;
+fn read_plugin_output(pipe: Box<dyn WasiFile>) -> Result<Vec<PluginOutput>> {
+    let stat = futures::executor::block_on(pipe.get_filestat())?;
+    let mut buffer = Vec::new();
+    buffer.resize(stat.size as _, 0);
+    futures::executor::block_on(pipe.read_vectored(&mut [IoSliceMut::new(&mut buffer)]))?;
+    let s = String::from_utf8(buffer)?;
     let mut data: Vec<_> = s.split('\n').collect();
     data.pop();
     Ok(data
@@ -61,13 +121,14 @@ fn read_plugin_output(mut pipe: Pipe) -> Result<Vec<PluginOutput>> {
         .collect())
 }
 
-fn inner_create_controller(pipe: Pipe, path: &str) -> Result<ModelIOPluginController> {
+fn inner_create_controller(pipe: Box<dyn WasiFile>, path: &str) -> Result<ModelIOPluginController> {
     let path = current_dir()?.parent().unwrap().join(path);
     tracing::info!(path = ?path);
-    let mut store = Store::default();
-    let env = create_wasi_env(pipe, &mut store)?;
+    let engine = Engine::default();
+    let data = WasiCtxBuilder::new().stdout(pipe).build();
+    let store = Store::new(&engine, data);
     let bytes = std::fs::read(path)?;
-    let plugin = ModelIOPlugin::new(&bytes, env, store)?;
+    let plugin = ModelIOPlugin::new(&engine, &bytes, store)?;
     Ok(ModelIOPluginController::new(vec![plugin]))
 }
 
@@ -78,16 +139,9 @@ fn from_path() -> Result<()> {
         .parent()
         .unwrap()
         .join(format!("target/wasm32-wasi/{ty}/deps"));
-    let (_stdout_reader, stdout_writer) = Pipe::channel();
-    let mut controller = ModelIOPluginController::from_path(&path, |builder| {
-        builder.set_stdout(Box::new(stdout_writer.clone()));
-    })?;
+    let mut controller = ModelIOPluginController::from_path(&path, |builder| builder)?;
     let mut names = vec![];
     for plugin in controller.all_plugins_mut() {
-        /* let stdout = Box::new(Pipe::new());
-        let state = Arc::clone(&plugin.wasi_env().state);
-        let inodes = state.inodes.read().unwrap();
-        state.fs.swap_file(&inodes, __WASI_STDOUT_FILENO, stdout)?; */
         plugin.create()?;
         names.push(plugin.name()?);
     }
