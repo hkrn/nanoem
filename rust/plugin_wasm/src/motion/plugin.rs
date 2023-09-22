@@ -444,16 +444,18 @@ impl MotionIOPluginController {
     }
     pub fn from_path<F>(path: &Path, cb: F) -> Result<Self>
     where
-        F: Fn(WasiCtxBuilder) -> WasiCtxBuilder,
+        F: Fn(&mut WasiCtxBuilder),
     {
         let mut plugins = vec![];
+        let engine = Engine::default();
         for entry in WalkDir::new(path.parent().unwrap()) {
             let entry = entry?;
             let filename = entry.file_name().to_str();
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
-                let data = cb(WasiCtxBuilder::new()).build();
-                let engine = Engine::default();
+                let mut builder = WasiCtxBuilder::new();
+                cb(&mut builder);
+                let data = builder.build();
                 let store = Store::new(&engine, data);
                 match MotionIOPlugin::new(&engine, &bytes, store) {
                     Ok(plugin) => {

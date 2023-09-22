@@ -39,10 +39,16 @@ impl nanoem_application_plugin_status_t {
     }
 }
 
-pub(crate) type ByteArray = i32; //WasmPtr<u8>;
-pub(crate) type OpaquePtr = i32; //WasmPtr<u8>;
-pub(crate) type SizePtr = i32; // WasmPtr<u32>;
-pub(crate) type StatusPtr = i32; // WasmPtr<i32>;
+impl From<nanoem_application_plugin_status_t> for i32 {
+    fn from(val: nanoem_application_plugin_status_t) -> Self {
+        val as i32
+    }
+}
+
+pub(crate) type OpaquePtr = u32;
+pub(crate) type ByteArray = u32;
+pub(crate) type SizePtr = u32;
+pub(crate) type StatusPtr = u32;
 type Store = wasmtime::Store<wasmtime_wasi::WasiCtx>;
 
 fn notify_export_function_error(name: &str) {
@@ -469,7 +475,7 @@ pub(crate) fn inner_set_function(
         release_status_ptr(instance, status_ptr, store.as_context_mut())?;
         result
     } else {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.into()
     };
     Ok(result)
 }
@@ -495,7 +501,7 @@ pub(crate) fn inner_execute(
         release_status_ptr(instance, status_ptr, store.as_context_mut())?;
         result
     } else {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.into()
     };
     Ok(result)
 }
@@ -522,10 +528,10 @@ pub(crate) fn inner_load_ui_window(
             release_status_ptr(instance, status_ptr, store.as_context_mut())?;
             result
         } else {
-            nanoem_application_plugin_status_t::SUCCESS as i32
+            nanoem_application_plugin_status_t::SUCCESS.into()
         }
     } else {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.into()
     };
     Ok(result)
 }
@@ -578,10 +584,10 @@ pub(crate) fn inner_set_ui_component_layout(
             result
         } else {
             notify_export_function_error(name);
-            nanoem_application_plugin_status_t::SUCCESS as i32
+            nanoem_application_plugin_status_t::SUCCESS.into()
         }
     } else {
-        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT as i32
+        nanoem_application_plugin_status_t::ERROR_NULL_OBJECT.into()
     };
     Ok(result)
 }

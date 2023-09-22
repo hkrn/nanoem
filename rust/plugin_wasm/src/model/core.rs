@@ -30,8 +30,9 @@ impl Drop for nanoem_application_plugin_model_io_t {
 impl nanoem_application_plugin_model_io_t {
     pub fn new(path: &CStr) -> Result<Self> {
         let path = Path::new(path.to_str()?);
-        let mut controller =
-            ModelIOPluginController::from_path(path, |builder| builder.inherit_stdio())?;
+        let mut controller = ModelIOPluginController::from_path(path, |builder| {
+            builder.inherit_stdio();
+        })?;
         controller.initialize()?;
         Ok(Self { controller })
     }
