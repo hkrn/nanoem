@@ -21,7 +21,7 @@ use wasi_common::{
     file::{FileType, Filestat},
     snapshots::preview_1::types::Error,
 };
-use wasmtime::Engine;
+use wasmtime::{Engine, Linker};
 use wasmtime_wasi::{WasiCtxBuilder, WasiFile};
 
 use crate::Store;
@@ -127,9 +127,13 @@ fn inner_create_controller(pipe: Box<dyn WasiFile>, path: &str) -> Result<ModelI
     let engine = Engine::default();
     let data = WasiCtxBuilder::new().stdout(pipe).build();
     let store = Store::new(&engine, data);
-    let bytes = std::fs::read(path)?;
-    let plugin = ModelIOPlugin::new(&engine, &bytes, store)?;
-    Ok(ModelIOPluginController::new(vec![plugin]))
+    let bytes = std::fs::read(&path)?;
+    let mut linker = Linker::new(&engine);
+    wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+    let plugin = ModelIOPlugin::new(&linker, &path, &bytes, store)?;
+    Ok(ModelIOPluginController::new(Arc::new(Mutex::new(vec![
+        plugin,
+    ]))))
 }
 
 #[test]
@@ -141,7 +145,7 @@ fn from_path() -> Result<()> {
         .join(format!("target/wasm32-wasi/{ty}/deps"));
     let mut controller = ModelIOPluginController::from_path(&path, |_builder| ())?;
     let mut names = vec![];
-    for plugin in controller.all_plugins_mut() {
+    for plugin in controller.all_plugins_mut().lock().unwrap().iter_mut() {
         plugin.create()?;
         names.push(plugin.name()?);
     }
