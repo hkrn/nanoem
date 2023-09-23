@@ -8,6 +8,7 @@ license = "MPL-2.0"
 [dependencies]
 anyhow = "1"
 nanoem-protobuf = { version = "35", path = "../protobuf" }
+notify = "6"
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
 wasmtime = { version = "13", default-features = false, features = [
