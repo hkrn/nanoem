@@ -407,7 +407,7 @@ impl ModelIOPluginController {
             recovery_suggestion: None,
         }
     }
-    pub fn from_path<F>(path: &Path, cb: F) -> Result<Self>
+    pub fn from_path<F>(path: &Path, callback: F) -> Result<Self>
     where
         F: Fn(&mut WasiCtxBuilder) + Copy + std::marker::Sync + std::marker::Send + 'static,
     {
@@ -418,43 +418,64 @@ impl ModelIOPluginController {
         let linker_inner = linker.clone();
         wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
         let event_handler = move |res: notify::Result<notify::Event>| match res {
-            Ok(ev) => match ev.kind {
-                notify::EventKind::Modify(_) => {
-                    for path in ev.paths.iter() {
-                        if let Some(plugin_mut) = plugins_inner
-                            .lock()
-                            .unwrap()
-                            .iter_mut()
-                            .find(|plugin: &&mut ModelIOPlugin| plugin.path() == path)
-                        {
-                            let bytes = std::fs::read(path).unwrap();
-                            let mut builder = WasiCtxBuilder::new();
-                            cb(&mut builder);
-                            let data = builder.build();
-                            let store = Store::new(linker_inner.engine(), data);
-                            match ModelIOPlugin::new(&linker_inner, path, &bytes, store) {
-                                Ok(plugin) => {
-                                    *plugin_mut = plugin;
-                                }
-                                Err(err) => {
-                                    tracing::warn!(
-                                        error = %err,
-                                        path = ?path,
-                                        "Cannot reload model WASM plugin",
-                                    )
+            Ok(ev) => {
+                let create_plugin = |path: &Path| -> Result<ModelIOPlugin> {
+                    let bytes = std::fs::read(path)?;
+                    let mut builder = WasiCtxBuilder::new();
+                    callback(&mut builder);
+                    let data = builder.build();
+                    let store = Store::new(linker_inner.engine(), data);
+                    ModelIOPlugin::new(&linker_inner, path, &bytes, store)
+                };
+                match ev.kind {
+                    notify::EventKind::Create(notify::event::CreateKind::File) => {
+                        for path in ev.paths.iter() {
+                            if path.ends_with(".wasm") {
+                                match create_plugin(path) {
+                                    Ok(plugin) => {
+                                        plugins_inner.lock().unwrap().push(plugin);
+                                    }
+                                    Err(err) => {
+                                        tracing::warn!(
+                                            error = %err,
+                                            path = ?path,
+                                            "Cannot create model WASM plugin",
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                    notify::EventKind::Modify(_) => {
+                        for path in ev.paths.iter() {
+                            if let Some(plugin_mut) = plugins_inner
+                                .lock()
+                                .unwrap()
+                                .iter_mut()
+                                .find(|plugin: &&mut ModelIOPlugin| plugin.path() == path)
+                            {
+                                match create_plugin(path) {
+                                    Ok(plugin) => *plugin_mut = plugin,
+                                    Err(err) => {
+                                        tracing::warn!(
+                                            error = %err,
+                                            path = ?path,
+                                            "Cannot reload model WASM plugin",
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    notify::EventKind::Remove(_) => {
+                        plugins_inner
+                            .lock()
+                            .unwrap()
+                            .retain(|plugin| !ev.paths.contains(&plugin.path));
+                    }
+                    _ => {}
                 }
-                notify::EventKind::Remove(_) => {
-                    plugins_inner
-                        .lock()
-                        .unwrap()
-                        .retain(|plugin| !ev.paths.contains(&plugin.path));
-                }
-                _ => {}
-            },
+            }
             Err(e) => tracing::warn!(error = ?e, "Catched an watch error"),
         };
         let mut watcher = notify::recommended_watcher(event_handler)?;
@@ -464,7 +485,7 @@ impl ModelIOPluginController {
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
                 let mut builder = WasiCtxBuilder::new();
-                cb(&mut builder);
+                callback(&mut builder);
                 let data = builder.build();
                 let store = Store::new(linker.engine(), data);
                 let path = entry.path();
@@ -525,11 +546,19 @@ impl ModelIOPluginController {
             Err(anyhow::anyhow!("out of bound function index: {}", index))
         }
     }
-    pub fn set_function(&mut self, index: i32) -> Result<i32> {
-        if let Some((plugin_index, function_index, _)) = self.function_indices.get(index as usize) {
-            let result = self.plugins.lock().unwrap()[*plugin_index].set_function(*function_index);
-            self.plugin_index = Some(*plugin_index);
-            result
+    pub fn set_function(&mut self, index: i32) -> Result<()> {
+        if let Some((plugin_index, function_index, _)) =
+            self.function_indices.get(index as usize).cloned()
+        {
+            let result = self.plugins.lock().unwrap()[plugin_index].set_function(function_index);
+            match result {
+                Ok(0) => {
+                    self.plugin_index = Some(plugin_index);
+                    Ok(())
+                }
+                Ok(_) => self.set_failure(),
+                Err(err) => Err(err),
+            }
         } else {
             Err(anyhow::anyhow!("out of bound function index: {}", index))
         }
@@ -676,9 +705,9 @@ impl ModelIOPluginController {
         }
         Ok(())
     }
-    fn current_plugin<T>(&mut self, mut cb: T) -> Result<()>
+    fn current_plugin<T>(&mut self, cb: T) -> Result<()>
     where
-        T: FnMut(&mut ModelIOPlugin) -> Result<()>,
+        T: FnOnce(&mut ModelIOPlugin) -> Result<()>,
     {
         if let Some(plugin_index) = self.plugin_index {
             let plugins = &mut self.plugins.lock().unwrap();

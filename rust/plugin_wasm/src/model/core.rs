@@ -75,7 +75,7 @@ impl nanoem_application_plugin_model_io_t {
     pub fn set_language(&mut self, value: i32) -> Result<()> {
         self.controller.set_language(value)
     }
-    pub fn set_function(&mut self, value: i32) -> Result<i32> {
+    pub fn set_function(&mut self, value: i32) -> Result<()> {
         self.controller.set_function(value)
     }
     pub fn set_all_selected_vertex_indices(&mut self, data: &[i32]) -> Result<()> {

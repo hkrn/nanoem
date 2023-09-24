@@ -457,7 +457,7 @@ impl MotionIOPluginController {
             recovery_suggestion: None,
         }
     }
-    pub fn from_path<F>(path: &Path, cb: F) -> Result<Self>
+    pub fn from_path<F>(path: &Path, callback: F) -> Result<Self>
     where
         F: Fn(&mut WasiCtxBuilder) + Copy + std::marker::Sync + std::marker::Send + 'static,
     {
@@ -468,43 +468,64 @@ impl MotionIOPluginController {
         let linker_inner = linker.clone();
         wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
         let event_handler = move |res: notify::Result<notify::Event>| match res {
-            Ok(ev) => match ev.kind {
-                notify::EventKind::Modify(_) => {
-                    for path in ev.paths.iter() {
-                        if let Some(plugin_mut) = plugins_inner
-                            .lock()
-                            .unwrap()
-                            .iter_mut()
-                            .find(|plugin: &&mut MotionIOPlugin| plugin.path() == path)
-                        {
-                            let bytes = std::fs::read(path).unwrap();
-                            let mut builder = WasiCtxBuilder::new();
-                            cb(&mut builder);
-                            let data = builder.build();
-                            let store = Store::new(linker_inner.engine(), data);
-                            match MotionIOPlugin::new(&linker_inner, path, &bytes, store) {
-                                Ok(plugin) => {
-                                    *plugin_mut = plugin;
-                                }
-                                Err(err) => {
-                                    tracing::warn!(
-                                        error = %err,
-                                        path = ?path,
-                                        "Cannot reload motion WASM plugin",
-                                    )
+            Ok(ev) => {
+                let create_plugin = |path: &Path| -> Result<MotionIOPlugin> {
+                    let bytes = std::fs::read(path)?;
+                    let mut builder = WasiCtxBuilder::new();
+                    callback(&mut builder);
+                    let data = builder.build();
+                    let store = Store::new(linker_inner.engine(), data);
+                    MotionIOPlugin::new(&linker_inner, path, &bytes, store)
+                };
+                match ev.kind {
+                    notify::EventKind::Create(notify::event::CreateKind::File) => {
+                        for path in ev.paths.iter() {
+                            if path.ends_with(".wasm") {
+                                match create_plugin(path) {
+                                    Ok(plugin) => {
+                                        plugins_inner.lock().unwrap().push(plugin);
+                                    }
+                                    Err(err) => {
+                                        tracing::warn!(
+                                            error = %err,
+                                            path = ?path,
+                                            "Cannot create motion WASM plugin",
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                    notify::EventKind::Modify(_) => {
+                        for path in ev.paths.iter() {
+                            if let Some(plugin_mut) = plugins_inner
+                                .lock()
+                                .unwrap()
+                                .iter_mut()
+                                .find(|plugin: &&mut MotionIOPlugin| plugin.path() == path)
+                            {
+                                match create_plugin(path) {
+                                    Ok(plugin) => *plugin_mut = plugin,
+                                    Err(err) => {
+                                        tracing::warn!(
+                                            error = %err,
+                                            path = ?path,
+                                            "Cannot reload motion WASM plugin",
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    notify::EventKind::Remove(_) => {
+                        plugins_inner
+                            .lock()
+                            .unwrap()
+                            .retain(|plugin| !ev.paths.contains(&plugin.path));
+                    }
+                    _ => {}
                 }
-                notify::EventKind::Remove(_) => {
-                    plugins_inner
-                        .lock()
-                        .unwrap()
-                        .retain(|plugin| !ev.paths.contains(&plugin.path));
-                }
-                _ => {}
-            },
+            }
             Err(e) => tracing::warn!(error = ?e, "Catched an watch error"),
         };
         let mut watcher = notify::recommended_watcher(event_handler)?;
@@ -514,7 +535,7 @@ impl MotionIOPluginController {
             if filename.map(|s| s.ends_with(".wasm")).unwrap_or(false) {
                 let bytes = std::fs::read(entry.path())?;
                 let mut builder = WasiCtxBuilder::new();
-                cb(&mut builder);
+                callback(&mut builder);
                 let data = builder.build();
                 let store = Store::new(&engine, data);
                 match MotionIOPlugin::new(&linker, path, &bytes, store) {
@@ -575,11 +596,13 @@ impl MotionIOPluginController {
         }
     }
     pub fn set_function(&mut self, index: i32) -> Result<()> {
-        if let Some((plugin_index, function_index, _)) = self.function_indices.get(index as usize) {
-            let result = self.plugins.lock().unwrap()[*plugin_index].set_function(*function_index);
+        if let Some((plugin_index, function_index, _)) =
+            self.function_indices.get(index as usize).cloned()
+        {
+            let result = self.plugins.lock().unwrap()[plugin_index].set_function(function_index);
             match result {
                 Ok(0) => {
-                    self.plugin_index = Some(*plugin_index);
+                    self.plugin_index = Some(plugin_index);
                     Ok(())
                 }
                 Ok(_) => self.set_failure(),
@@ -739,9 +762,9 @@ impl MotionIOPluginController {
         }
         Ok(())
     }
-    fn current_plugin<T>(&mut self, mut cb: T) -> Result<()>
+    fn current_plugin<T>(&mut self, cb: T) -> Result<()>
     where
-        T: FnMut(&mut MotionIOPlugin) -> Result<()>,
+        T: FnOnce(&mut MotionIOPlugin) -> Result<()>,
     {
         if let Some(plugin_index) = self.plugin_index {
             let plugins = &mut self.plugins.lock().unwrap();
