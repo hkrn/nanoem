@@ -8,12 +8,12 @@ use std::{
     ffi::CString,
     path::{Path, PathBuf},
     slice,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 
 use anyhow::Result;
 use notify::Watcher;
-use tracing::warn;
+use parking_lot::Mutex;
 use walkdir::WalkDir;
 use wasmtime::{AsContextMut, Engine, Instance, Linker, Module};
 use wasmtime_wasi::{WasiCtx, WasiCtxBuilder};
@@ -433,7 +433,7 @@ impl MotionIOPlugin {
             &mut self.store,
         )
     }
-    pub fn path(&self) -> &Path {
+    pub fn path(&self) -> &PathBuf {
         &self.path
     }
 }
@@ -441,17 +441,22 @@ impl MotionIOPlugin {
 pub struct MotionIOPluginController {
     plugins: Arc<Mutex<Vec<MotionIOPlugin>>>,
     function_indices: Vec<(usize, i32, CString)>,
+    _watcher: notify::RecommendedWatcher,
     plugin_index: Option<usize>,
     failure_reason: Option<String>,
     recovery_suggestion: Option<String>,
 }
 
 impl MotionIOPluginController {
-    pub fn new(plugins: Arc<Mutex<Vec<MotionIOPlugin>>>) -> Self {
+    pub fn new(
+        plugins: Arc<Mutex<Vec<MotionIOPlugin>>>,
+        watcher: notify::RecommendedWatcher,
+    ) -> Self {
         let function_indices = vec![];
         Self {
             plugins,
             function_indices,
+            _watcher: watcher,
             plugin_index: None,
             failure_reason: None,
             recovery_suggestion: None,
@@ -483,13 +488,17 @@ impl MotionIOPluginController {
                             if path.ends_with(".wasm") {
                                 match create_plugin(path) {
                                     Ok(plugin) => {
-                                        plugins_inner.lock().unwrap().push(plugin);
+                                        tracing::info!(
+                                            path = ?path,
+                                            "WASM motion I/O plugin is added",
+                                        );
+                                        plugins_inner.lock().push(plugin);
                                     }
                                     Err(err) => {
                                         tracing::warn!(
                                             error = %err,
                                             path = ?path,
-                                            "Cannot create motion WASM plugin",
+                                            "Cannot create WASM motion I/O plugin",
                                         )
                                     }
                                 }
@@ -498,19 +507,24 @@ impl MotionIOPluginController {
                     }
                     notify::EventKind::Modify(_) => {
                         for path in ev.paths.iter() {
-                            if let Some(plugin_mut) = plugins_inner
-                                .lock()
-                                .unwrap()
+                            let mut guard = plugins_inner.lock();
+                            if let Some(plugin_mut) = guard
                                 .iter_mut()
                                 .find(|plugin: &&mut MotionIOPlugin| plugin.path() == path)
                             {
                                 match create_plugin(path) {
-                                    Ok(plugin) => *plugin_mut = plugin,
+                                    Ok(plugin) => {
+                                        tracing::info!(
+                                            path = ?path,
+                                            "WASM motion I/O plugin is modified and reloaded",
+                                        );
+                                        *plugin_mut = plugin
+                                    }
                                     Err(err) => {
                                         tracing::warn!(
                                             error = %err,
                                             path = ?path,
-                                            "Cannot reload motion WASM plugin",
+                                            "Cannot reload WASM motion I/O plugin",
                                         )
                                     }
                                 }
@@ -518,10 +532,13 @@ impl MotionIOPluginController {
                         }
                     }
                     notify::EventKind::Remove(_) => {
+                        tracing::info!(
+                            path = ?ev.paths,
+                            "WASM motion I/O plugins are removed",
+                        );
                         plugins_inner
                             .lock()
-                            .unwrap()
-                            .retain(|plugin| !ev.paths.contains(&plugin.path));
+                            .retain(|plugin| !ev.paths.contains(plugin.path()));
                     }
                     _ => {}
                 }
@@ -541,30 +558,32 @@ impl MotionIOPluginController {
                 match MotionIOPlugin::new(&linker, path, &bytes, store) {
                     Ok(plugin) => {
                         watcher.watch(path, notify::RecursiveMode::NonRecursive)?;
-                        plugins.lock().unwrap().push(plugin);
-                        tracing::debug!(filename = filename.unwrap(), "Loaded motion WASM plugin");
+                        plugins.lock().push(plugin);
+                        tracing::debug!(
+                            filename = filename.unwrap(),
+                            "Loaded WASM motion I/O plugin"
+                        );
                     }
                     Err(err) => {
-                        warn!(
-                            "Cannot load motion WASM plugin {}: {}",
-                            filename.unwrap(),
-                            err
+                        tracing::warn!(
+                            filename = filename.unwrap(),
+                            err = %err,
+                            "Cannot load WASM motion I/O plugin",
                         )
                     }
                 }
             }
         }
-        Ok(Self::new(plugins))
+        Ok(Self::new(plugins, watcher))
     }
     pub fn initialize(&mut self) -> Result<()> {
         self.plugins
             .lock()
-            .unwrap()
             .iter_mut()
             .try_for_each(|plugin| plugin.initialize())
     }
     pub fn create(&mut self) -> Result<()> {
-        let mut guard = self.plugins.lock().unwrap();
+        let mut guard = self.plugins.lock();
         guard.iter_mut().try_for_each(|plugin| plugin.create())?;
         for (offset, plugin) in guard.iter_mut().enumerate() {
             let name = plugin.name()?;
@@ -581,7 +600,6 @@ impl MotionIOPluginController {
     pub fn set_language(&mut self, value: i32) -> Result<()> {
         self.plugins
             .lock()
-            .unwrap()
             .iter_mut()
             .try_for_each(|plugin| plugin.set_language(value))
     }
@@ -599,7 +617,7 @@ impl MotionIOPluginController {
         if let Some((plugin_index, function_index, _)) =
             self.function_indices.get(index as usize).cloned()
         {
-            let result = self.plugins.lock().unwrap()[plugin_index].set_function(function_index);
+            let result = self.plugins.lock()[plugin_index].set_function(function_index);
             match result {
                 Ok(0) => {
                     self.plugin_index = Some(plugin_index);
@@ -728,14 +746,12 @@ impl MotionIOPluginController {
     pub fn destroy(&mut self) {
         self.plugins
             .lock()
-            .unwrap()
             .iter_mut()
             .for_each(|plugin| plugin.destroy())
     }
     pub fn terminate(&mut self) {
         self.plugins
             .lock()
-            .unwrap()
             .iter_mut()
             .for_each(|plugin| plugin.terminate())
     }
@@ -767,7 +783,7 @@ impl MotionIOPluginController {
         T: FnOnce(&mut MotionIOPlugin) -> Result<()>,
     {
         if let Some(plugin_index) = self.plugin_index {
-            let plugins = &mut self.plugins.lock().unwrap();
+            let plugins = &mut self.plugins.lock();
             cb(&mut plugins[plugin_index])
         } else {
             Err(anyhow::anyhow!("plugin is not set"))
