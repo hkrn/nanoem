@@ -5,6 +5,7 @@
 */
 
 mod c_api;
+mod controller;
 mod core;
 mod plugin;
 

@@ -8,11 +8,11 @@ use anyhow::Result;
 
 use crate::nanoem_application_plugin_status_t;
 
-use super::plugin::ModelIOPluginController;
-
 use std::ffi::{c_char, CStr};
 use std::path::Path;
 use std::ptr::null;
+
+use super::controller::ModelIOPluginController;
 
 #[allow(non_camel_case_types)]
 pub struct nanoem_application_plugin_model_io_t {

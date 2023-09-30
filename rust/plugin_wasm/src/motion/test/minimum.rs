@@ -11,7 +11,7 @@ use pretty_assertions::assert_eq;
 use serde_json::json;
 
 use crate::motion::{
-    plugin::MotionIOPluginController,
+    controller::MotionIOPluginController,
     test::{create_random_data, read_plugin_output, Pipe, PluginOutput},
 };
 

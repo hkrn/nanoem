@@ -9,10 +9,11 @@ use std::{
     collections::{HashMap, HashSet},
     env::current_dir,
     io::IoSliceMut,
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 
 use anyhow::Result;
+use parking_lot::Mutex;
 use pretty_assertions::assert_eq;
 use rand::{thread_rng, Rng};
 use serde_derive::{Deserialize, Serialize};
@@ -24,9 +25,9 @@ use wasi_common::{
 use wasmtime::{Engine, Linker};
 use wasmtime_wasi::{WasiCtxBuilder, WasiFile};
 
-use crate::Store;
+use crate::{motion::controller::MotionIOPluginController, Store};
 
-use super::plugin::{MotionIOPlugin, MotionIOPluginController};
+use super::plugin::MotionIOPlugin;
 
 #[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 struct PluginOutput {
@@ -66,21 +67,21 @@ impl WasiFile for Pipe {
             inode: 0,
             filetype: self.get_filetype().await?,
             nlink: 0,
-            size: self.content.lock().unwrap().len() as _,
+            size: self.content.lock().len() as _,
             atim: None,
             mtim: None,
             ctim: None,
         })
     }
     async fn read_vectored<'a>(&self, _bufs: &mut [std::io::IoSliceMut<'a>]) -> Result<u64, Error> {
-        let guard = self.content.lock().unwrap();
+        let guard = self.content.lock();
         for slice in _bufs.iter_mut() {
             slice.copy_from_slice(guard.as_slice());
         }
         Ok(guard.len() as u64)
     }
     async fn write_vectored<'a>(&self, _bufs: &[std::io::IoSlice<'a>]) -> Result<u64, Error> {
-        let mut guard = self.content.lock().unwrap();
+        let mut guard = self.content.lock();
         let size = guard.len();
         for slice in _bufs.iter() {
             guard.extend(slice.iter());
@@ -133,9 +134,11 @@ fn inner_create_controller(
     let mut linker = Linker::new(&engine);
     wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
     let plugin = MotionIOPlugin::new(&linker, &path, &bytes, store)?;
-    Ok(MotionIOPluginController::new(Arc::new(Mutex::new(vec![
-        plugin,
-    ]))))
+    let watcher = notify::recommended_watcher(|_res| {})?;
+    Ok(MotionIOPluginController::new(
+        Arc::new(Mutex::new(vec![plugin])),
+        watcher,
+    ))
 }
 
 #[test]
@@ -147,7 +150,7 @@ fn from_path() -> Result<()> {
         .join(format!("target/wasm32-wasi/{ty}/deps"));
     let mut controller = MotionIOPluginController::from_path(&path, |_builder| ())?;
     let mut names = vec![];
-    for plugin in controller.all_plugins_mut().lock().unwrap().iter_mut() {
+    for plugin in controller.all_plugins_mut().lock().iter_mut() {
         plugin.create()?;
         names.push(plugin.name()?);
     }
