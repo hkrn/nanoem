@@ -27,7 +27,7 @@ use wasmtime_wasi::{WasiCtxBuilder, WasiFile};
 
 use crate::Store;
 
-use super::plugin::{ModelIOPlugin, ModelIOPluginController};
+use super::{controller::ModelIOPluginController, plugin::ModelIOPlugin};
 
 #[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 struct PluginOutput {

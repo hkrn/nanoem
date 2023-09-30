@@ -12,7 +12,7 @@ use serde_json::json;
 use wasmtime_wasi::WasiFile;
 
 use crate::model::{
-    plugin::ModelIOPluginController,
+    controller::ModelIOPluginController,
     test::{create_random_data, read_plugin_output, Pipe, PluginOutput},
 };
 

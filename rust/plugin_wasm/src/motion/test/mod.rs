@@ -25,9 +25,9 @@ use wasi_common::{
 use wasmtime::{Engine, Linker};
 use wasmtime_wasi::{WasiCtxBuilder, WasiFile};
 
-use crate::Store;
+use crate::{motion::controller::MotionIOPluginController, Store};
 
-use super::plugin::{MotionIOPlugin, MotionIOPluginController};
+use super::plugin::MotionIOPlugin;
 
 #[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 struct PluginOutput {
