@@ -110,8 +110,7 @@ fn create_random_data(size: usize) -> Vec<u8> {
 
 fn read_plugin_output(pipe: Box<dyn WasiFile>) -> Result<Vec<PluginOutput>> {
     let stat = futures::executor::block_on(pipe.get_filestat())?;
-    let mut buffer = Vec::new();
-    buffer.resize(stat.size as _, 0);
+    let mut buffer = vec![0; stat.size as _];
     futures::executor::block_on(pipe.read_vectored(&mut [IoSliceMut::new(&mut buffer)]))?;
     let s = String::from_utf8(buffer)?;
     let mut data: Vec<_> = s.split('\n').collect();

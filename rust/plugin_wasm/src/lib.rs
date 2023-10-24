@@ -208,8 +208,7 @@ pub(crate) fn read_utf8_string(
         .iter()
         .position(|i| *i == 0)
     {
-        let mut value = Vec::new();
-        value.resize(size, 0);
+        let mut value = vec![0; size];
         memory.read(store.as_context_mut(), ptr as usize, value.as_mut())?;
         Ok(String::from_utf8(value)?)
     } else {
