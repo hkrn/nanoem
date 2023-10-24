@@ -59,7 +59,10 @@ impl MotionIOPluginController {
                     callback(&mut builder);
                     let data = builder.build();
                     let store = Store::new(linker_inner.engine(), data);
-                    MotionIOPlugin::new(&linker_inner, path, &bytes, store)
+                    let mut plugin = MotionIOPlugin::new(&linker_inner, path, &bytes, store)?;
+                    plugin.initialize()?;
+                    plugin.create()?;
+                    Ok(plugin)
                 };
                 match ev.kind {
                     notify::EventKind::Create(notify::event::CreateKind::File) => {
@@ -93,6 +96,8 @@ impl MotionIOPluginController {
                             {
                                 match create_plugin(path) {
                                     Ok(plugin) => {
+                                        plugin_mut.destroy();
+                                        plugin_mut.terminate();
                                         tracing::info!(
                                             path = ?path,
                                             "WASM motion I/O plugin is modified and reloaded",
@@ -111,13 +116,19 @@ impl MotionIOPluginController {
                         }
                     }
                     notify::EventKind::Remove(_) => {
-                        tracing::info!(
-                            path = ?ev.paths,
-                            "WASM motion I/O plugins are removed",
-                        );
-                        plugins_inner
-                            .lock()
-                            .retain(|plugin| !ev.paths.contains(plugin.path()));
+                        plugins_inner.lock().retain_mut(|plugin| {
+                            if ev.paths.contains(plugin.path()) {
+                                plugin.destroy();
+                                plugin.terminate();
+                                tracing::info!(
+                                    path = ?plugin.path(),
+                                    "WASM motion I/O is removed",
+                                );
+                                false
+                            } else {
+                                true
+                            }
+                        });
                     }
                     _ => {}
                 }

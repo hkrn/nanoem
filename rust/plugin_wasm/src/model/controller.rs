@@ -59,7 +59,10 @@ impl ModelIOPluginController {
                     callback(&mut builder);
                     let data = builder.build();
                     let store = Store::new(linker_inner.engine(), data);
-                    ModelIOPlugin::new(&linker_inner, path, &bytes, store)
+                    let mut plugin = ModelIOPlugin::new(&linker_inner, path, &bytes, store)?;
+                    plugin.initialize()?;
+                    plugin.create()?;
+                    Ok(plugin)
                 };
                 match ev.kind {
                     notify::EventKind::Create(notify::event::CreateKind::File) => {
@@ -93,6 +96,8 @@ impl ModelIOPluginController {
                             {
                                 match create_plugin(path) {
                                     Ok(plugin) => {
+                                        plugin_mut.destroy();
+                                        plugin_mut.terminate();
                                         tracing::info!(
                                             path = ?path,
                                             "WASM model I/O plugin is modified and reloaded",
@@ -111,13 +116,19 @@ impl ModelIOPluginController {
                         }
                     }
                     notify::EventKind::Remove(_) => {
-                        tracing::info!(
-                            path = ?ev.paths,
-                            "WASM model I/O plugins are removed",
-                        );
-                        plugins_inner
-                            .lock()
-                            .retain(|plugin| !ev.paths.contains(plugin.path()));
+                        plugins_inner.lock().retain_mut(|plugin| {
+                            if ev.paths.contains(plugin.path()) {
+                                plugin.destroy();
+                                plugin.terminate();
+                                tracing::info!(
+                                    path = ?plugin.path(),
+                                    "WASM model I/O is removed",
+                                );
+                                false
+                            } else {
+                                true
+                            }
+                        });
                     }
                     _ => {}
                 }
