@@ -352,14 +352,16 @@ typedef enum sg_image_sample_type {
     SG_IMAGESAMPLETYPE_DEPTH,
     SG_IMAGESAMPLETYPE_SINT,
     SG_IMAGESAMPLETYPE_UINT,
+    SG_IMAGESAMPLETYPE_UNFILTERABLE_FLOAT,
     _SG_IMAGESAMPLETYPE_NUM,
     _SG_IMAGESAMPLETYPE_FORCE_U32 = 0x7FFFFFFF
 } sg_image_sample_type;
 
 typedef enum sg_sampler_type {
     _SG_SAMPLERTYPE_DEFAULT,
-    SG_SAMPLERTYPE_SAMPLE,
-    SG_SAMPLERTYPE_COMPARE,
+    SG_SAMPLERTYPE_FILTERING,
+    SG_SAMPLERTYPE_NONFILTERING,
+    SG_SAMPLERTYPE_COMPARISON,
     _SG_SAMPLERTYPE_NUM,
     _SG_SAMPLERTYPE_FORCE_U32,
 } sg_sampler_type;
@@ -998,8 +1000,8 @@ typedef struct sg_commit_listener {
 } sg_commit_listener;
 
 typedef struct sg_allocator {
-    void *(*alloc)(size_t size, void *user_data);
-    void (*free)(void *ptr, void *user_data);
+    void *(*alloc_fn)(size_t size, void *user_data);
+    void (*free_fn)(void *ptr, void *user_data);
     void *user_data;
 } sg_allocator;
 
@@ -1019,12 +1021,13 @@ typedef struct sg_desc {
     int pass_pool_size;
     int context_pool_size;
     int uniform_buffer_size;
-    int staging_buffer_size;
     int max_commit_listeners;
-    bool disable_validation; // disable validation layer even in debug mode, useful for tests
-    bool mtl_force_managed_storage_mode; // for debugging: use Metal managed storage mode for resources even with UMA
+    bool disable_validation;
+    bool mtl_force_managed_storage_mode;
+    bool wgpu_disable_bindgroups_cache;
+    int wgpu_bindgroups_cache_size;
     sg_allocator allocator;
-    sg_logger logger; // optional log function override
+    sg_logger logger;
     sg_context_desc context;
     uint32_t _end_canary;
 } sg_desc;

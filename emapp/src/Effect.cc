@@ -883,7 +883,7 @@ PrivateEffectUtils::retrieveCommonShaderSamplers(const Fx9__Effect__Shader *shad
     for (size_t i = 0; i < SG_MAX_SHADERSTAGE_IMAGESAMPLERPAIRS; i++) {
         const Slot &slot = slots[i];
         if (slot.imageType != _SG_IMAGETYPE_DEFAULT) {
-            shaderSamplers.samplers[slot.samplerIndex] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+            shaderSamplers.samplers[slot.samplerIndex] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
             shaderSamplers.image_sampler_pairs[slot.textureIndex] =
                 sg_shader_image_sampler_pair_desc { true, slot.textureIndex, slot.samplerIndex, slot.samplerName };
             shaderSamplers.images[slot.textureIndex] =
@@ -903,7 +903,7 @@ PrivateEffectUtils::fillShaderImageDescriptions(const char *prefix, sg_shader_st
             names.push_back(name);
             desc.image_sampler_pairs[i] = sg_shader_image_sampler_pair_desc { true, i, i, name.c_str() };
             desc.images[i] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
-            desc.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+            desc.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
         }
         else if (desc.images[i].image_type != _SG_IMAGETYPE_DEFAULT) {
             found = true;
@@ -1869,7 +1869,8 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                                 tinystl::make_pair(String("ps_s0"), samplerRegisterIndex));
                             shaderDescription.fs.images[0] =
                                 sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
-                            shaderDescription.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+                            shaderDescription.fs.samplers[0] =
+                                sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
                             shaderDescription.fs.image_sampler_pairs[0] =
                                 sg_shader_image_sampler_pair_desc { true, 0, 0, "ps_s0" };
                         }

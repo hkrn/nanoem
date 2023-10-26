@@ -1356,7 +1356,7 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
     }
     sd.vs.entry = "nanoemVSMain";
     sd.fs.uniform_blocks[0].size = sd.vs.uniform_blocks[0].size = sizeof(UniformBlock);
-    sd.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+    sd.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
     sd.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
     sd.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
