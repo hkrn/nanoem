@@ -328,7 +328,7 @@ DebugDrawer::setupShader()
         desc.vs.entry = "nanoemVSMain";
         desc.vs.uniform_blocks[0].size = sizeof(Matrix4x4);
         desc.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
-        desc.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+        desc.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
         desc.vs.uniform_blocks[0].uniforms[0] = sg_shader_uniform_desc { "_30", SG_UNIFORMTYPE_MAT4, 1 };
         desc.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };

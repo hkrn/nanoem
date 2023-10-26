@@ -179,7 +179,7 @@ BlitPass::setupShaderDescription(sg_shader_desc &desc)
         desc.vs.source = reinterpret_cast<const char *>(g_nanoem_blit_vs_glsl_es3_data);
     }
     desc.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
-    desc.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+    desc.fs.samplers[0] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
 #if defined(NANOEM_ENABLE_SHADER_OPTIMIZED)
     desc.fs.image_sampler_pairs[0] = sg_shader_image_sampler_pair_desc { true, 0, 0, "SPIRV_Cross_Combined" };
 #else
