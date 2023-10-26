@@ -41,7 +41,7 @@ setImageTypesFromSampler(
         const Fx9__Effect__Dx9ms__Sampler *samplerPtr = shaderPtr->samplers[i];
         const nanoem_u32_t samplerIndex = Inline::saturateInt32(samplerPtr->index);
         if (samplerIndex < SG_MAX_SHADERSTAGE_IMAGES) {
-            pixelShaderSamplers.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+            pixelShaderSamplers.samplers[i] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
             pixelShaderSamplers.image_sampler_pairs[i] = sg_shader_image_sampler_pair_desc { true,
                 Inline::saturateInt32(i), Inline::saturateInt32(i), samplerPtr->name };
             switch (samplerPtr->type) {

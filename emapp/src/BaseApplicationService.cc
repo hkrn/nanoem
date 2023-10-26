@@ -2844,8 +2844,8 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         sg_desc desc;
         Inline::clearZeroMemory(desc);
         m_dllHandle = sg::openSharedLibrary(commandPtr->sokol_dll_path);
-        desc.allocator.alloc = allocateSGXMemory;
-        desc.allocator.free = releaseSGXMemory;
+        desc.allocator.alloc_fn = allocateSGXMemory;
+        desc.allocator.free_fn = releaseSGXMemory;
         desc.logger.log_cb = handleSGXMessage;
         desc.logger.user_data = this;
         desc.buffer_pool_size = glm::clamp(commandPtr->buffer_pool_size, 1024u, 0xffffu);
@@ -2854,8 +2854,7 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         desc.shader_pool_size = glm::clamp(commandPtr->shader_pool_size, 1024u, 0xffffu);
         desc.pipeline_pool_size = glm::clamp(commandPtr->pipeline_pool_size, 1024u, 0xffffu);
         desc.pass_pool_size = glm::clamp(commandPtr->pass_pool_size, 512u, 0xffffu);
-        desc.uniform_buffer_size = desc.staging_buffer_size =
-            glm::clamp(commandPtr->mtl_global_uniform_buffer_size, 0x10000u, 0x7fffffu);
+        desc.uniform_buffer_size = glm::clamp(commandPtr->mtl_global_uniform_buffer_size, 0x10000u, 0x7fffffu);
         beginDrawContext();
         handleSetupGraphicsEngine(desc);
         sg::setup(&desc);
@@ -5678,7 +5677,7 @@ BaseApplicationService::handleSGXMessage(const char * /* tag */, uint32_t /* log
             sentry_add_breadcrumb(breadcrumb);
         }
         if (message_or_null) {
-            EMLOG_DEBUG("Captured SGX error: message=\"{}\"", message_or_null);
+            EMLOG_ERROR("Captured SGX error: message=\"{}\"", message_or_null);
         }
         self->m_handledSGXMessages.insert(key);
     }

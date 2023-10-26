@@ -492,9 +492,11 @@ AccessoryProgramBundle::BaseTechnique::setupShader(const char *vs, const char *f
     desc.fs.images[CommonPass::kSphereTextureSamplerStage] =
         sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
     desc.fs.samplers[CommonPass::kShadowMapTextureSamplerStage0] =
-        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
-    desc.fs.samplers[CommonPass::kDiffuseTextureSamplerStage] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
-    desc.fs.samplers[CommonPass::kSphereTextureSamplerStage] = sg_shader_sampler_desc { true, SG_SAMPLERTYPE_SAMPLE };
+        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
+    desc.fs.samplers[CommonPass::kDiffuseTextureSamplerStage] =
+        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
+    desc.fs.samplers[CommonPass::kSphereTextureSamplerStage] =
+        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
     desc.attrs[0] = sg_shader_attr_desc { "a_position", "SV_POSITION", 0 };
     desc.attrs[1] = sg_shader_attr_desc { "a_normal", "NORMAL", 0 };
     desc.attrs[2] = sg_shader_attr_desc { "a_texcoord0", "TEXCOORD", 0 };

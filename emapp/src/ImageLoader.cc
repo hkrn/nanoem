@@ -1662,7 +1662,7 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
     if (decodeImageWithSTB(
             container.m_dataPtr, container.m_dataSize, container.m_name.c_str(), imageDesc, &decodedImagePtr, error)) {
         samplerDesc.mag_filter = samplerDesc.min_filter = SG_FILTER_LINEAR;
-        samplerDesc.max_anisotropy = container.m_anisotropy;
+        // samplerDesc.max_anisotropy = container.m_anisotropy;
         samplerDesc.wrap_u = samplerDesc.wrap_v = container.m_wrap;
         imageView = drawable->uploadImage(container.m_name, imageDesc, samplerDesc);
         releaseDecodedImageWithSTB(&decodedImagePtr);
@@ -1675,7 +1675,7 @@ ImageLoader::decodeImageContainer(const ImmutableImageContainer &container, IDra
         if (image::DDS *dds = decodeDDS(&reader, innerError)) {
             dds->setImageDescription(imageDesc);
             samplerDesc.mag_filter = samplerDesc.min_filter = SG_FILTER_LINEAR;
-            samplerDesc.max_anisotropy = container.m_anisotropy;
+            // samplerDesc.max_anisotropy = container.m_anisotropy;
             samplerDesc.wrap_u = samplerDesc.wrap_v = container.m_wrap;
             imageView = drawable->uploadImage(container.m_name, imageDesc, samplerDesc);
             nanoem_delete(dds);
