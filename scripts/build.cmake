@@ -13,7 +13,7 @@ function(get_compiler_flags _cflags _cxxflags)
   if(DEFINED ENV{CFLAGS})
     set(_inner_cflags "${_inner_cflags} $ENV{CFLAGS}")
   endif()
-  set(_inner_cxxflags "-std=c++14")
+  set(_inner_cxxflags "-std=c++17")
   if(DEFINED ENV{CXXFLAGS})
     set(_inner_cxxflags "${_inner_cxxflags} $ENV{CXXFLAGS}")
   endif()
@@ -176,7 +176,7 @@ function(compile_glslang _cmake_build_type _generator _toolset_option _arch_opti
                                            -DENABLE_GLSLANG_BINARIES=ON
                                            -DENABLE_HLSL=ON
                                            -DENABLE_NV_EXTENSIONS=OFF
-                                           -DENABLE_OPT=ON
+																					 -DENABLE_OPT=OFF
                                            -DENABLE_SPVREMAPPER=ON
                                            -DCMAKE_BUILD_TYPE=${_cmake_build_type}
                                            -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
@@ -253,8 +253,8 @@ function(compile_spirv_tools _cmake_build_type _generator _toolset_option _arch_
   set(_build_path ${base_build_path}/spirv-tools/out/${_triple_path})
   file(MAKE_DIRECTORY ${_build_path})
   # checkout spirv-headers
-  set(_branch "master")
-  set(_revision "87d5b782bec60822aa878941e6b13c0a9a954c9b")
+  set(_branch "main")
+  set(_revision "124a9665e464ef98b8b718d572d5f329311061eb")
   execute_process(COMMAND ${GIT_EXECUTABLE} clone --branch ${_branch} https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers WORKING_DIRECTORY ${_source_path})
   execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_revision} WORKING_DIRECTORY ${_source_path}/external/spirv-headers)
   execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
@@ -382,12 +382,10 @@ function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option
     execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_branch_name} WORKING_DIRECTORY ${_source_path})
     set(_build_flags "-DUCONFIG_NO_BREAK_ITERATION=1 -DUCONFIG_NO_COLLATION=1 -DUCONFIG_NO_FORMATTING=1 -DUCONFIG_NO_TRANSLITERATION=1 -DUCONFIG_NO_REGULAR_EXPRESSIONS=1")
     if(APPLE)
-      set(_macos_ver_min_flags "-mmacosx-version-min=10.13")
+      set(_macos_ver_min_flags "-mmacosx-version-min=11.0")
       set(_macos_arch_flags "-arch ${_arch}")
       if("${_arch}" STREQUAL "ub")
         set(_macos_arch_flags "-arch arm64 -arch x86_64")
-      elseif("${_arch}" STREQUAL "arm64")
-        set(_macos_ver_min_flags "-mmacosx-version-min=11.0")
       endif()
       if(DEFINED ENV{NANOEM_MACOS_SYSROOT})
         set(_macos_sysroot $ENV{NANOEM_MACOS_SYSROOT})
@@ -404,6 +402,8 @@ function(compile_icu4c _cmake_build_type _generator _toolset_option _arch_option
       set(_configure_flags --enable-release)
     endif()
     get_compiler_flags(_cflags _cxxflags)
+    set(_cflags "${_cflags} ${_build_flags}")
+    set(_cxxflags "${_cxxflags} ${_build_flags}")
     # see https://unicode-org.github.io/icu/userguide/icu_data/buildtool.html#icu-data-configuration-file for more details of ICU_DATA_FILTER_FILE
     execute_process(COMMAND
       ${CMAKE_COMMAND} -E env
@@ -485,7 +485,7 @@ function(compile_ffmpeg _cmake_build_type _generator _toolset_option _arch_optio
     set(_macos_archs "${_arch}")
     endif()
     foreach(_item ${_macos_archs})
-      set(_build_flags "-arch ${_item} -mmacosx-version-min=10.13")
+      set(_build_flags "-arch ${_item} -mmacosx-version-min=11.0")
       if(DEFINED ENV{NANOEM_MACOS_SYSROOT})
         set(_macos_sysroot $ENV{NANOEM_MACOS_SYSROOT})
         set(_build_flags "-isysroot ${_macos_sysroot}")
@@ -663,7 +663,7 @@ if(NOT CONFIG_LIST)
 endif()
 set(OSX_TARGET $ENV{NANOEM_TARGET_MACOS_VERSION})
 if(NOT OSX_TARGET)
-  set(OSX_TARGET "10.13")
+  set(OSX_TARGET "11.0")
 endif()
 set(CMAKE_FIND_LIBRARY_PREFIXES "lib;")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".so;.a;.lib")
@@ -720,7 +720,7 @@ foreach(arch_item ${ARCH_LIST})
     # MinGW
     if("${target_compiler}" STREQUAL "gcc")
       list(APPEND _gcc_flags "-DCMAKE_C_FLAGS='-std=c99'")
-      list(APPEND _gcc_flags "-DCMAKE_CXX_FLAGS='-std=c++14 -fpermissive'")
+      list(APPEND _gcc_flags "-DCMAKE_CXX_FLAGS='-std=c++17 -fpermissive'")
       set(global_cmake_flags "${_gcc_flags}")
     endif()
   else()

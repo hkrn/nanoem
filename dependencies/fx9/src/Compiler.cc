@@ -53,7 +53,8 @@ static void
 getDefaultResourceLimit(TBuiltInResource &resources)
 {
     /* values from StandAlone/ResourceLimits.cpp */
-    resources = { /* .MaxLights = */ 32,
+    resources = {
+        /* .MaxLights = */ 32,
         /* .MaxClipPlanes = */ 6,
         /* .MaxTextureUnits = */ 32,
         /* .MaxTextureCoords = */ 32,
@@ -145,10 +146,18 @@ getDefaultResourceLimit(TBuiltInResource &resources)
         /* .maxTaskWorkGroupSizeY_NV = */ 1,
         /* .maxTaskWorkGroupSizeZ_NV = */ 1,
         /* .maxMeshViewCountNV = */ 4,
+        /* .maxMeshOutputVerticesEXT = */ 256,
+        /* .maxMeshOutputPrimitivesEXT = */ 256,
+        /* .maxMeshWorkGroupSizeX_EXT = */ 128,
+        /* .maxMeshWorkGroupSizeY_EXT = */ 128,
+        /* .maxMeshWorkGroupSizeZ_EXT = */ 128,
+        /* .maxTaskWorkGroupSizeX_EXT = */ 128,
+        /* .maxTaskWorkGroupSizeY_EXT = */ 128,
+        /* .maxTaskWorkGroupSizeZ_EXT = */ 128,
+        /* .maxMeshViewCountEXT = */ 4,
         /* .maxDualSourceDrawBuffersEXT = */ 1,
 
-        /* .limits = */
-        {
+        /* .limits = */ {
             /* .nonInductiveForLoops = */ 1,
             /* .whileLoops = */ 1,
             /* .doWhileLoops = */ 1,
@@ -157,8 +166,9 @@ getDefaultResourceLimit(TBuiltInResource &resources)
             /* .generalVaryingIndexing = */ 1,
             /* .generalSamplerIndexing = */ 1,
             /* .generalVariableIndexing = */ 1,
-            /* .generalConstantMatrixVectorIndexing = */ 1,
-        } };
+            /* .generalConstantMatrixVectorIndexing = */ 1
+        }
+    };
 }
 
 static std::string
