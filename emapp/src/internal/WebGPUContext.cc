@@ -74,7 +74,14 @@ WebGPUContext::WebGPUContext(const WGPUSurfaceDescriptor &surfaceDescriptor, con
     Inline::clearZeroMemory(adapterOptions);
     adapterOptions.compatibleSurface = m_surface;
     wgpuInstanceRequestAdapter(m_instance, &adapterOptions, &handleAdapterRequest, this);
-    wgpuAdapterRequestDevice(m_adapter, nullptr, &handleDeviceRequest, this);
+    WGPUFeatureName requiredFeatures[] = {
+        WGPUFeatureName_Depth32FloatStencil8
+    };
+    WGPUDeviceDescriptor deviceDescriptor;
+    Inline::clearZeroMemory(deviceDescriptor);
+    deviceDescriptor.requiredFeatureCount = BX_COUNTOF(requiredFeatures);
+    deviceDescriptor.requiredFeatures = requiredFeatures;
+    wgpuAdapterRequestDevice(m_adapter, &deviceDescriptor, &handleDeviceRequest, this);
     wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
 }
 
