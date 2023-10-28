@@ -3,12 +3,7 @@ cmake_minimum_required(VERSION 3.5)
 
 set(CMAKE_C_STANDARD 99)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-if(WIN32 AND "${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-  set(fx9_cxx_standard 14)
-else()
-  set(fx9_cxx_standard 11)
-endif()
+set(fx9_cxx_standard 17)
 
 if(MSVC)
   if(BUILD_SHARED_LIBS)

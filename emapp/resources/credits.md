@@ -23,9 +23,9 @@ This software uses below libraries.
   - [ini.h](https://github.com/mattiasgustavsson/libs/blob/master/docs/ini.md)
     - [PD/MIT](https://github.com/mattiasgustavsson/libs/blob/master/README.md)
   - [Dear ImGui](https://github.com/ocornut/imgui)
-    - [MIT](https://github.com/ocornut/imgui/blob/a8df192df022ed6ac447e7b7ada718c4c4824b41/LICENSE.md)
+    - [MIT](https://github.com/ocornut/imgui/blob/c6e0284ac58b3f205c95365478888f7b53b077e2/LICENSE.md)
   - [ImGuizmo](https://github.com/CedricGuillemet/ImGuizmo/)
-    - [MIT](https://github.com/CedricGuillemet/ImGuizmo/blob/e3174578bdc99c715e51c5ad88e7d50b4eeb19b0/LICENSE)
+    - [MIT](https://github.com/CedricGuillemet/ImGuizmo/blob/090184e4b315bd508929a362c4d4fa9b36b1249f/LICENSE)
   - [jo_gif](http://jonolick.com/home/gif-writer/)
     - [PD](http://www.jonolick.com/home/gif-writer)
   - [l-smash](https://github.com/l-smash/l-smash)
@@ -37,29 +37,29 @@ This software uses below libraries.
   - [lz4](https://github.com/lz4/lz4/)
     - [BSDL](https://github.com/lz4/lz4/blob/fdf2ef5809ca875c454510610764d9125ef2ebbd/lib/LICENSE)
   - [mimalloc](https://github.com/microsoft/mimalloc)
-    - [MIT](https://github.com/microsoft/mimalloc/blob/f2712f4a8f038a7fb4df2790f4c3b7e3ed9e219b/LICENSE)
+    - [MIT](https://github.com/microsoft/mimalloc/blob/43ce4bd7fd34bcc730c1c7471c99995597415488/LICENSE)
   - [minizip](https://github.com/nmoinvaz/minizip/)
     - [zlib](https://github.com/nmoinvaz/minizip/blob/2aa369c468aa1d931c52ff7dc3da962b71a94118/LICENSE)
   - [nanomsg](https://github.com/nanomsg/nanomsg/)
     - [MIT](https://github.com/nanomsg/nanomsg/blob/1749fd7b039165a91b8d556b4df18e3e632ad830/COPYING)
   - [par](https://github.com/prideout/par/)
-    - [MIT](https://github.com/prideout/par/blob/28868466e9897e16bc115635e859490706590029/README.md#par)
+    - [MIT](https://github.com/prideout/par/blob/24f26c12926b746db5814de759163144ad79843a/README.md#par)
   - [parson](https://github.com/kgabis/parson/)
     - [MIT](https://github.com/kgabis/parson/blob/master/README.md#license)
   - [protobuf-c](https://github.com/protobuf-c/protobuf-c/)
     - [BSDL](https://github.com/protobuf-c/protobuf-c/blob/f224ab2eeb648a818eb20687d7150a285442c907/LICENSE)
   - [spdlog](https://github.com/gabime/spdlog)
-    - [MIT](https://github.com/gabime/spdlog/blob/ad0e89cbfb4d0c1ce4d097e134eb7be67baebb36/LICENSE)
+    - [MIT](https://github.com/gabime/spdlog/blob/7e635fca68d014934b4af8a1cf874f63989352b7/LICENSE)
   - [sentry-native](https://github.com/getsentry/sentry-native)
     - [MIT](https://github.com/getsentry/sentry-native/blob/ff5bfcf0eb2c47d03eb57a51bdf2e6ad4b8ece10/LICENSE)
   - [sokol](https://github.com/hkrn/sokol)
-    - [zlib](https://github.com/hkrn/sokol/blob/0f8f7787fe1d0cfd73df673869f536b41135c327/LICENSE)
+    - [zlib](https://github.com/hkrn/sokol/blob/a9570b503ad98d956064354a0cc92a93a8fb5bd6/LICENSE)
   - [SPIRV-Cross](https://github.com/KhronosGroup/SPIRV-Cross/)
-    - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Cross/blob/9acb9ec31f5a8ef80ea6b994bb77be787b08d3d1/LICENSE)
+    - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Cross/blob/bccaa94db814af33d8ef05c153e7c34d8bd4d685/LICENSE)
   - [SPIRV-Tools](https://github.com/KhronosGroup/SPIRV-Tools/)
-    - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Tools/blob/409e1167951de8d7ab9334773885fa656bc898d5/LICENSE)
+    - [Apache License 2.0](https://github.com/KhronosGroup/SPIRV-Tools/blob/e553b884c7c9febaa4e52334f683641fb5f196a0/LICENSE)
   - [STB](https://github.com/nothings/stb/)
-    - [PD/MIT](https://github.com/nothings/stb/blob/af1a5bc352164740c1cc1354942b1c6b72eacb8a/README.md#whats-the-license)
+    - [PD/MIT](https://github.com/nothings/stb/blob/beebb24b945efdea3b9bba23affb8eb3ba8982e7/README.md#whats-the-license)
   - [TBB](https://github.com/wjakob/tbb/)
     - [Apache License 2.0](https://github.com/wjakob/tbb/blob/3c91aea522427b3a0cd6022b2d3a142acaa8136d/LICENSE)
   - [zlib](https://github.com/madler/zlib/)
@@ -135,21 +135,3 @@ if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 fi
 ```
 
-### ICU build configuration
-
-```
-FLAGS="-DUCONFIG_NO_BREAK_ITERATION -DUCONFIG_NO_COLLATION -DUCONFIG_NO_FORMATTING -DUCONFIG_NO_TRANSLITERATION -DUCONFIG_NO_REGULAR_EXPRESSIONS -mmacosx-version-min=10.13"
-CFLAGS="$FLAGS -std=c99" CXXFLAGS="$FLAGS -std=c++11" ./configure \
-  --prefix=$PWD/../install-root \
-  --with-data-packaging=static \
-  --enable-static \
-  --disable-dyload \
-  --disable-shared \
-  --disable-extras \
-  --disable-icuio \
-  --disable-layout \
-  --disable-layoutex \
-  --disable-tests \
-  --enable-tools=yes \
-  --disable-samples
-```
