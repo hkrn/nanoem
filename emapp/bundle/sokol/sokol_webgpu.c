@@ -31,6 +31,13 @@ sgx_label_image(sg_image image, const char *text)
 }
 
 SGX_API_DECL void APIENTRY
+sgx_label_sampler(sg_sampler sampler, const char *text)
+{
+    _SOKOL_UNUSED(sampler);
+    _SOKOL_UNUSED(text);
+}
+
+SGX_API_DECL void APIENTRY
 sgx_label_shader(sg_shader shader, const char *text)
 {
     _SOKOL_UNUSED(shader);

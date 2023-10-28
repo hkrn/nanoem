@@ -55,7 +55,7 @@ private:
     WGPUProcSurfaceRelease wgpuSurfaceRelease;
     WGPUProcInstanceRelease wgpuInstanceRelease;
 
-    String m_pluginPath;
+    void *m_dllHandle;
     WGPUInstance m_instance;
     WGPUSurface m_surface;
     WGPUSurfaceCapabilities m_surfaceCapabilities;

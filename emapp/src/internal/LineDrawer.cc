@@ -18,11 +18,13 @@ namespace {
 #include "emapp/private/shaders/grid_fs_glsl_core33.h"
 #include "emapp/private/shaders/grid_fs_glsl_es3.h"
 #include "emapp/private/shaders/grid_fs_msl_macos.h"
+#include "emapp/private/shaders/grid_fs_wgsl.h"
 #include "emapp/private/shaders/grid_ps_dxbc.h"
 #include "emapp/private/shaders/grid_vs_dxbc.h"
 #include "emapp/private/shaders/grid_vs_glsl_core33.h"
 #include "emapp/private/shaders/grid_vs_glsl_es3.h"
 #include "emapp/private/shaders/grid_vs_msl_macos.h"
+#include "emapp/private/shaders/grid_vs_wgsl.h"
 #include "emapp/private/shaders/pointed_grid_vs_msl_macos.h"
 
 struct Uniform {
@@ -83,6 +85,10 @@ LineDrawer::initialize()
         sd.fs.bytecode.size = g_nanoem_grid_fs_msl_macos_size;
         sd.vs.bytecode.ptr = g_nanoem_grid_vs_msl_macos_data;
         sd.vs.bytecode.size = g_nanoem_grid_vs_msl_macos_size;
+    }
+    else if (backend == SG_BACKEND_WGPU) {
+        sd.fs.source = reinterpret_cast<const char *>(g_nanoem_grid_fs_wgsl_data);
+        sd.vs.source = reinterpret_cast<const char *>(g_nanoem_grid_vs_wgsl_data);
     }
     else if (backend == SG_BACKEND_GLCORE33) {
         sd.fs.source = reinterpret_cast<const char *>(g_nanoem_grid_fs_glsl_core33_data);

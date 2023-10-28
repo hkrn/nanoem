@@ -38,35 +38,39 @@ WebGPUContext::handleDeviceRequest(
 }
 
 WebGPUContext::WebGPUContext(const WGPUSurfaceDescriptor &surfaceDescriptor, const String &pluginPath)
-    : m_pluginPath(pluginPath)
+    : m_dllHandle(nullptr)
     , m_instance(nullptr)
     , m_surface(nullptr)
     , m_surfaceTextureView(nullptr)
     , m_adapter(nullptr)
     , m_device(nullptr)
 {
-    if (void *dll = bx::dlopen(pluginPath.c_str())) {
-        wgpuCreateInstance = reinterpret_cast<WGPUProcCreateInstance>(bx::dlsym(dll, "wgpuCreateInstance"));
-        wgpuInstanceCreateSurface =
-            reinterpret_cast<WGPUProcInstanceCreateSurface>(bx::dlsym(dll, "wgpuInstanceCreateSurface"));
-        wgpuInstanceRequestAdapter =
-            reinterpret_cast<WGPUProcInstanceRequestAdapter>(bx::dlsym(dll, "wgpuInstanceRequestAdapter"));
-        wgpuAdapterRequestDevice =
-            reinterpret_cast<WGPUProcAdapterRequestDevice>(bx::dlsym(dll, "wgpuAdapterRequestDevice"));
-        wgpuSurfaceGetCapabilities =
-            reinterpret_cast<WGPUProcSurfaceGetCapabilities>(bx::dlsym(dll, "wgpuSurfaceGetCapabilities"));
-        wgpuSurfaceGetCurrentTexture =
-            reinterpret_cast<WGPUProcSurfaceGetCurrentTexture>(bx::dlsym(dll, "wgpuSurfaceGetCurrentTexture"));
-        wgpuTextureCreateView = reinterpret_cast<WGPUProcTextureCreateView>(bx::dlsym(dll, "wgpuTextureCreateView"));
-        wgpuSurfaceConfigure = reinterpret_cast<WGPUProcSurfaceConfigure>(bx::dlsym(dll, "wgpuSurfaceConfigure"));
-        wgpuTextureViewRelease = reinterpret_cast<WGPUProcTextureViewRelease>(bx::dlsym(dll, "wgpuTextureViewRelease"));
-        wgpuTextureRelease = reinterpret_cast<WGPUProcTextureRelease>(bx::dlsym(dll, "wgpuTextureRelease"));
-        wgpuDeviceRelease = reinterpret_cast<WGPUProcDeviceRelease>(bx::dlsym(dll, "wgpuDeviceRelease"));
-        wgpuAdapterRelease = reinterpret_cast<WGPUProcAdapterRelease>(bx::dlsym(dll, "wgpuAdapterRelease"));
-        wgpuSurfaceRelease = reinterpret_cast<WGPUProcSurfaceRelease>(bx::dlsym(dll, "wgpuSurfaceRelease"));
-        wgpuInstanceRelease = reinterpret_cast<WGPUProcInstanceRelease>(bx::dlsym(dll, "wgpuInstanceRelease"));
-        bx::dlclose(dll);
+    m_dllHandle = bx::dlopen(pluginPath.c_str());
+    typedef void (*PFN_sgx_dawn_setup)();
+    if (PFN_sgx_dawn_setup sgx_dawn_setup = reinterpret_cast<PFN_sgx_dawn_setup>(bx::dlsym(m_dllHandle, "sgx_dawn_setup"))) {
+        sgx_dawn_setup();
     }
+    wgpuCreateInstance = reinterpret_cast<WGPUProcCreateInstance>(bx::dlsym(m_dllHandle, "wgpuCreateInstance"));
+    wgpuInstanceCreateSurface =
+        reinterpret_cast<WGPUProcInstanceCreateSurface>(bx::dlsym(m_dllHandle, "wgpuInstanceCreateSurface"));
+    wgpuInstanceRequestAdapter =
+        reinterpret_cast<WGPUProcInstanceRequestAdapter>(bx::dlsym(m_dllHandle, "wgpuInstanceRequestAdapter"));
+    wgpuAdapterRequestDevice =
+        reinterpret_cast<WGPUProcAdapterRequestDevice>(bx::dlsym(m_dllHandle, "wgpuAdapterRequestDevice"));
+    wgpuSurfaceGetCapabilities =
+        reinterpret_cast<WGPUProcSurfaceGetCapabilities>(bx::dlsym(m_dllHandle, "wgpuSurfaceGetCapabilities"));
+    wgpuSurfaceGetCurrentTexture =
+        reinterpret_cast<WGPUProcSurfaceGetCurrentTexture>(bx::dlsym(m_dllHandle, "wgpuSurfaceGetCurrentTexture"));
+    wgpuTextureCreateView =
+        reinterpret_cast<WGPUProcTextureCreateView>(bx::dlsym(m_dllHandle, "wgpuTextureCreateView"));
+    wgpuSurfaceConfigure = reinterpret_cast<WGPUProcSurfaceConfigure>(bx::dlsym(m_dllHandle, "wgpuSurfaceConfigure"));
+    wgpuTextureViewRelease =
+        reinterpret_cast<WGPUProcTextureViewRelease>(bx::dlsym(m_dllHandle, "wgpuTextureViewRelease"));
+    wgpuTextureRelease = reinterpret_cast<WGPUProcTextureRelease>(bx::dlsym(m_dllHandle, "wgpuTextureRelease"));
+    wgpuDeviceRelease = reinterpret_cast<WGPUProcDeviceRelease>(bx::dlsym(m_dllHandle, "wgpuDeviceRelease"));
+    wgpuAdapterRelease = reinterpret_cast<WGPUProcAdapterRelease>(bx::dlsym(m_dllHandle, "wgpuAdapterRelease"));
+    wgpuSurfaceRelease = reinterpret_cast<WGPUProcSurfaceRelease>(bx::dlsym(m_dllHandle, "wgpuSurfaceRelease"));
+    wgpuInstanceRelease = reinterpret_cast<WGPUProcInstanceRelease>(bx::dlsym(m_dllHandle, "wgpuInstanceRelease"));
     Inline::clearZeroMemory(m_surfaceTexture);
     m_instance = wgpuCreateInstance(nullptr);
     m_surface = wgpuInstanceCreateSurface(m_instance, &surfaceDescriptor);
@@ -74,15 +78,15 @@ WebGPUContext::WebGPUContext(const WGPUSurfaceDescriptor &surfaceDescriptor, con
     Inline::clearZeroMemory(adapterOptions);
     adapterOptions.compatibleSurface = m_surface;
     wgpuInstanceRequestAdapter(m_instance, &adapterOptions, &handleAdapterRequest, this);
-    WGPUFeatureName requiredFeatures[] = {
-        WGPUFeatureName_Depth32FloatStencil8
-    };
+    WGPUFeatureName requiredFeatures[] = { WGPUFeatureName_Depth32FloatStencil8 };
     WGPUDeviceDescriptor deviceDescriptor;
     Inline::clearZeroMemory(deviceDescriptor);
     deviceDescriptor.requiredFeatureCount = BX_COUNTOF(requiredFeatures);
     deviceDescriptor.requiredFeatures = requiredFeatures;
     wgpuAdapterRequestDevice(m_adapter, &deviceDescriptor, &handleDeviceRequest, this);
-    wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
+    if (wgpuSurfaceGetCapabilities) {
+        wgpuSurfaceGetCapabilities(m_surface, m_adapter, &m_surfaceCapabilities);
+    }
 }
 
 WebGPUContext::~WebGPUContext() NANOEM_DECL_NOEXCEPT
@@ -95,6 +99,8 @@ WebGPUContext::~WebGPUContext() NANOEM_DECL_NOEXCEPT
     m_surface = nullptr;
     wgpuInstanceRelease(m_instance);
     m_instance = nullptr;
+    bx::dlclose(m_dllHandle);
+    m_dllHandle = nullptr;
 }
 
 void

@@ -27,6 +27,8 @@
 /dependencies/libsoundio
 /dependencies/optick
 /dependencies/yaml-cpp
+/dependencies/wgpu-native
+/dependencies/dawn
 
 # rust
 /rust/**/target
