@@ -25,6 +25,8 @@
 @class NSTextInputContext;
 @class WebView;
 
+@class MTKView;
+
 namespace bx {
 class CommandLine;
 }
@@ -114,6 +116,7 @@ private:
         uint32_t m_preferred;
         bool m_enabled;
     };
+
     typedef tinystl::unordered_map<String, nanoem_u16_t, TinySTLAllocator> FileHandleMap;
 
     static BaseApplicationService::KeyType translateKeyType(const NSEvent *event) noexcept;
@@ -123,7 +126,9 @@ private:
     Vector2SI32 deviceScaleScreenPosition(const NSEvent *event) noexcept;
     float invertedDevicePixelRatio() const noexcept;
 
+    MTKView *createMetalView(id<MTLDevice> device, sg_pixel_format &pixelFormat);
     void initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat);
+    void initializeWebGPU(id<MTLDevice> device, const String &pluginPath, sg_pixel_format &pixelFormat);
     void initializeOpenGL();
     void getWindowCenterPoint(Vector2SI32 *value);
     bool getLogicalCursorPosition(const NSEvent *event, Vector2SI32 &position, Vector2SI32 &delta);
@@ -164,7 +169,6 @@ private:
     dispatch_queue_t m_lazyExecutionQueue = nullptr;
     dispatch_queue_t m_metricsQueue = nullptr;
     dispatch_semaphore_t m_metricsSemaphore = nullptr;
-    void *m_logger = nullptr;
     void *m_sentryDllHandle = nullptr;
     CocoaApplicationMenuBuilder m_menu;
     FileHandleMap m_watchEffectSourceHandles;

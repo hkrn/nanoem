@@ -37,6 +37,10 @@ namespace nanoem {
 class Allocator;
 class ThreadedApplicationClient;
 
+namespace internal {
+class WebGPUContext;
+}
+
 namespace macos {
 
 class IBackgroundRenderer;
@@ -64,11 +68,12 @@ public:
 
     void setDisplaySyncEnabled(bool value);
 
-    NSOpenGLContext *OpenGLContext();
-    id<MTLDevice> metalDevice();
-    id<MTLCommandQueue> metalCommandQueue();
-    id<CAMetalDrawable> metalCurrentDrawable();
-    MTKView *nativeView();
+    NSOpenGLContext *OpenGLContext() noexcept;
+    id<MTLDevice> metalDevice() noexcept;
+    id<MTLCommandQueue> metalCommandQueue() noexcept;
+    id<CAMetalDrawable> metalCurrentDrawable() noexcept;
+    internal::WebGPUContext *webGPUContext() noexcept;
+    MTKView *nativeView() noexcept;
     Vector2SI32 textInputOrigin() const noexcept;
 
 private:
@@ -105,6 +110,7 @@ private:
         nanoem_u32_t windowID, const sg_pass_action &pa, int width, int height, int &sampleCount) override;
     void postEmptyApplicationEvent() override;
     void presentDefaultPass(const Project *project) override;
+    void resizeDefaultRenderTarget(const Vector2UI16 &devicePixelWindowSize, const Project *project) override;
     bool loadFromFile(const URI &fileURI, Project *project, IFileManager::DialogType type, Error &error) override;
     bool saveAsFile(const URI &fileURI, Project *project, IFileManager::DialogType type, Error &error) override;
     URI recoverableRedoFileURI() const override;
