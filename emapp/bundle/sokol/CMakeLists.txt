@@ -83,15 +83,15 @@ function(nanoem_emapp_build_sokol_webgpu)
     find_library(WGPU_NATIVE_LIBRARY_RELEASE NAMES libwgpu_native.a webgpu_native PATH_SUFFIXES target/release PATHS ${WGPU_NATIVE_BASE_PATH})
     find_path(WEBGPU_INCLUDE_DIR NAMES webgpu.h PATHS ${WEBGPU_HEADERS_PATH})
     mark_as_advanced(WGPU_NATIVE_LIBRARY_DEBUG WGPU_NATIVE_LIBRARY_RELEASE WEBGPU_INCLUDE_DIR)
+    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/webgpu/webgpu.h
+                       COMMAND ${CMAKE_COMMAND} ARGS -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/webgpu"
+                       COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${WEBGPU_INCLUDE_DIR}/webgpu.h" "${CMAKE_CURRENT_BINARY_DIR}/webgpu/webgpu.h")
     add_library(sokol_webgpu ${_library_type} ${CMAKE_CURRENT_SOURCE_DIR}/sokol_webgpu.c ${CMAKE_CURRENT_BINARY_DIR}/webgpu/webgpu.h)
     set_property(TARGET sokol_webgpu PROPERTY FOLDER nanoem/sokol)
     target_compile_definitions(sokol_webgpu PRIVATE SOKOL_DEBUG=$<BOOL:${SOKOL_ENABLE_DEBUG}>)
     target_include_directories(sokol_webgpu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/dependencies ${CMAKE_CURRENT_BINARY_DIR})
     set_target_properties(sokol_webgpu PROPERTIES OUTPUT_NAME sokol_webgpu PREFIX "" DEFINE_SYMBOL "")
     target_link_libraries(sokol_webgpu optimized ${WGPU_NATIVE_LIBRARY_RELEASE} debug ${WGPU_NATIVE_LIBRARY_DEBUG})
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/webgpu/webgpu.h
-                       COMMAND ${CMAKE_COMMAND} ARGS -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/webgpu"
-                       COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different "${WEBGPU_INCLUDE_DIR}/webgpu.h" "${CMAKE_CURRENT_BINARY_DIR}/webgpu/webgpu.h")
     if(APPLE)
       target_link_libraries(sokol_webgpu "-framework Metal -framework QuartzCore")
     endif()

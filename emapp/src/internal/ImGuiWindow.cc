@@ -99,12 +99,14 @@ namespace {
 #include "emapp/private/shaders/ui_fs_glsl_es3.h"
 #include "emapp/private/shaders/ui_fs_msl_macos.h"
 #include "emapp/private/shaders/ui_fs_spirv.h"
+#include "emapp/private/shaders/ui_fs_wgsl.h"
 #include "emapp/private/shaders/ui_ps_dxbc.h"
 #include "emapp/private/shaders/ui_vs_dxbc.h"
 #include "emapp/private/shaders/ui_vs_glsl_core33.h"
 #include "emapp/private/shaders/ui_vs_glsl_es3.h"
 #include "emapp/private/shaders/ui_vs_msl_macos.h"
 #include "emapp/private/shaders/ui_vs_spirv.h"
+#include "emapp/private/shaders/ui_vs_wgsl.h"
 
 BX_ALIGN_DECL_16(struct)
 UniformBlock
@@ -1346,6 +1348,10 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
         sd.fs.bytecode.ptr = g_nanoem_ui_fs_msl_macos_data;
         sd.fs.bytecode.size = g_nanoem_ui_fs_msl_macos_size;
     }
+    else if (backend == SG_BACKEND_WGPU) {
+        sd.vs.source = reinterpret_cast<const char *>(g_nanoem_ui_vs_wgsl_data);
+        sd.fs.source = reinterpret_cast<const char *>(g_nanoem_ui_fs_wgsl_data);
+    }
     else if (backend == SG_BACKEND_GLCORE33) {
         sd.vs.source = reinterpret_cast<const char *>(g_nanoem_ui_vs_glsl_core33_data);
         sd.fs.source = reinterpret_cast<const char *>(g_nanoem_ui_fs_glsl_core33_data);
@@ -1399,6 +1405,7 @@ ImGuiWindow::initialize(nanoem_f32_t windowDevicePixelRatio, nanoem_f32_t viewpo
     ld.attrs[5] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
     ld.attrs[6] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_uv), SG_VERTEXFORMAT_FLOAT2 };
     ld.attrs[7] = sg_vertex_attr_state { 0, offsetof(VertexUnit, m_color), SG_VERTEXFORMAT_UBYTE4N };
+    m_basePipelineDescription.colors[0].pixel_format = SG_PIXELFORMAT_RGBA8;
     m_basePipelineDescription.depth.write_enabled = false;
     m_basePipelineDescription.sample_count = 1;
     sg_blend_state &bs = m_basePipelineDescription.colors[0].blend;

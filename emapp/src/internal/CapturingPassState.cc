@@ -46,12 +46,14 @@ nanoem_pragma_diagnostics_pop()
 #include "emapp/private/shaders/color_transform_fs_glsl_es3.h"
 #include "emapp/private/shaders/color_transform_fs_msl_macos.h"
 #include "emapp/private/shaders/color_transform_fs_spirv.h"
+#include "emapp/private/shaders/color_transform_fs_wgsl.h"
 #include "emapp/private/shaders/color_transform_ps_dxbc.h"
 #include "emapp/private/shaders/color_transform_vs_dxbc.h"
 #include "emapp/private/shaders/color_transform_vs_glsl_core33.h"
 #include "emapp/private/shaders/color_transform_vs_glsl_es3.h"
 #include "emapp/private/shaders/color_transform_vs_msl_macos.h"
 #include "emapp/private/shaders/color_transform_vs_spirv.h"
+#include "emapp/private/shaders/color_transform_vs_wgsl.h"
 
 class ImageWriter : private NonCopyable {
 public:
@@ -231,6 +233,10 @@ CapturingPassState::ImageBlitter::setupShaderDescription(sg_shader_desc &desc)
         desc.fs.bytecode.size = g_nanoem_color_transform_fs_msl_macos_size;
         desc.vs.bytecode.ptr = g_nanoem_color_transform_vs_msl_macos_data;
         desc.vs.bytecode.size = g_nanoem_color_transform_vs_msl_macos_size;
+    }
+    else if (backend == SG_BACKEND_WGPU) {
+        desc.fs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_fs_wgsl_data);
+        desc.vs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_vs_wgsl_data);
     }
     else if (backend == SG_BACKEND_GLCORE33) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_color_transform_fs_glsl_core33_data);

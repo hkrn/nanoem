@@ -16,12 +16,14 @@ namespace {
 #include "emapp/private/shaders/clear_fs_glsl_es3.h"
 #include "emapp/private/shaders/clear_fs_msl_macos.h"
 #include "emapp/private/shaders/clear_fs_spirv.h"
+#include "emapp/private/shaders/clear_fs_wgsl.h"
 #include "emapp/private/shaders/clear_ps_dxbc.h"
 #include "emapp/private/shaders/clear_vs_dxbc.h"
 #include "emapp/private/shaders/clear_vs_glsl_core33.h"
 #include "emapp/private/shaders/clear_vs_glsl_es3.h"
 #include "emapp/private/shaders/clear_vs_msl_macos.h"
 #include "emapp/private/shaders/clear_vs_spirv.h"
+#include "emapp/private/shaders/clear_vs_wgsl.h"
 } /* namespace anonymous */
 
 ClearPass::ClearPass(Project *project)
@@ -88,6 +90,10 @@ ClearPass::setupShaderDescription(sg_shader_desc &desc)
         desc.vs.bytecode.size = g_nanoem_clear_vs_msl_macos_size;
         desc.fs.bytecode.ptr = g_nanoem_clear_fs_msl_macos_data;
         desc.fs.bytecode.size = g_nanoem_clear_fs_msl_macos_size;
+    }
+    else if (backend == SG_BACKEND_WGPU) {
+        desc.fs.source = reinterpret_cast<const char *>(g_nanoem_clear_fs_wgsl_data);
+        desc.vs.source = reinterpret_cast<const char *>(g_nanoem_clear_vs_wgsl_data);
     }
     else if (backend == SG_BACKEND_GLCORE33) {
         desc.fs.source = reinterpret_cast<const char *>(g_nanoem_clear_fs_glsl_core33_data);

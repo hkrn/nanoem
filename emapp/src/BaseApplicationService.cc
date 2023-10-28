@@ -5679,6 +5679,9 @@ BaseApplicationService::handleSGXMessage(const char * /* tag */, uint32_t /* log
         }
         if (message_or_null) {
             EMLOG_ERROR("Captured SGX error: message=\"{}\"", message_or_null);
+#ifndef NDEBUG
+            bx::debugBreak();
+#endif /* NDEBUG */
         }
         self->m_handledSGXMessages.insert(key);
     }
