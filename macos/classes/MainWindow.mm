@@ -18,6 +18,7 @@
 
 #include "bx/commandline.h"
 #include "emapp/emapp.h"
+#include "emapp/internal/WebGPUContext.h"
 #include "emapp/private/CommonInclude.h"
 #include "sokol/sokol_time.h"
 
@@ -503,10 +504,6 @@ MainWindow::MainWindow(const bx::CommandLine *cmd, macos::CocoaThreadedApplicati
 
 MainWindow::~MainWindow()
 {
-    if (m_logger) {
-        asl_close(static_cast<asl_object_t>(m_logger));
-        m_logger = nullptr;
-    }
 }
 
 void
@@ -546,6 +543,13 @@ MainWindow::initialize()
 #ifdef NDEBUG
         isLowPower = device.lowPower == YES;
 #endif /* NDEBUG */
+        m_textInputContext = [[NSTextInputContext alloc] initWithClient:m_nativeWindow.contentView];
+    }
+    else if (StringUtils::equalsIgnoreCase(rendererBackend, BaseApplicationService::kRendererWebGPU) &&
+        Preference::isMetalAvailable()) {
+        id<MTLDevice> device = MTLCreateSystemDefaultDevice();
+        pluginPath.append("/sokol_webgpu.dylib");
+        initializeWebGPU(device, pluginPath, pixelFormat);
         m_textInputContext = [[NSTextInputContext alloc] initWithClient:m_nativeWindow.contentView];
     }
     else {
@@ -1371,8 +1375,8 @@ MainWindow::invertedDevicePixelRatio() const noexcept
     return 1.0f / m_nativeWindow.backingScaleFactor;
 }
 
-void
-MainWindow::initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat)
+MTKView *
+MainWindow::createMetalView(id<MTLDevice> device, sg_pixel_format &pixelFormat)
 {
     MainWindowMetalView *view = [[MainWindowMetalView alloc] initWithFrame:m_nativeWindow.contentView.bounds
                                                                     device:device
@@ -1380,26 +1384,14 @@ MainWindow::initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat)
     [view registerForDraggedTypes:@[ NSFilenamesPboardType ]];
     auto setColorSpaceDisplayP3 = [&view]() {
         CGColorSpaceRef cs = CGColorSpaceCreateWithName(kCGColorSpaceDisplayP3);
-        if (@available(macOS 10.12, *)) {
-            view.colorspace = cs;
-        }
-        else {
-            CAMetalLayer *layer = (CAMetalLayer *) view.layer;
-            layer.colorspace = cs;
-        }
+        view.colorspace = cs;
         CGColorSpaceRelease(cs);
     };
     switch (m_preference->applicationPreference()->defaultColorPixelFormat()) {
     case SG_PIXELFORMAT_RGB10A2: {
-        if (@available(macOS 10.13, *)) {
-            view.colorPixelFormat = MTLPixelFormatBGR10A2Unorm;
-            pixelFormat = SG_PIXELFORMAT_RGB10A2;
-            setColorSpaceDisplayP3();
-        }
-        else {
-            view.colorPixelFormat = MTLPixelFormatBGRA8Unorm;
-            pixelFormat = SG_PIXELFORMAT_RGBA8;
-        }
+        view.colorPixelFormat = MTLPixelFormatBGR10A2Unorm;
+        pixelFormat = SG_PIXELFORMAT_RGB10A2;
+        setColorSpaceDisplayP3();
         break;
     }
     case SG_PIXELFORMAT_RGBA16F: {
@@ -1413,12 +1405,36 @@ MainWindow::initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat)
         pixelFormat = SG_PIXELFORMAT_BGRA8;
         break;
     }
-    if (@available(macOS 10.13, *)) {
-        view.currentDrawable.layer.displaySyncEnabled = isEditingDisplaySyncEnabled();
-    }
+    view.currentDrawable.layer.displaySyncEnabled = isEditingDisplaySyncEnabled();
+    return view;
+}
+
+void
+MainWindow::initializeMetal(id<MTLDevice> device, sg_pixel_format &pixelFormat)
+{
+    MTKView *view = createMetalView(device, pixelFormat);
     m_nativeWindow.contentView = view;
     m_service->setNativeDevice((__bridge void *) device);
     m_service->setNativeView((__bridge void *) view);
+    JSON_Object *pending = json_object(m_service->applicationPendingChangeConfiguration());
+    json_object_dotset_string(pending, "macos.renderer.name", device.name.UTF8String);
+}
+
+void
+MainWindow::initializeWebGPU(id<MTLDevice> device, const String &pluginPath, sg_pixel_format &pixelFormat)
+{
+    MTKView *view = createMetalView(device, pixelFormat);
+    WGPUSurfaceDescriptorFromMetalLayer surfaceDescriptorFromMetalLayer;
+    Inline::clearZeroMemory(surfaceDescriptorFromMetalLayer);
+    surfaceDescriptorFromMetalLayer.chain.sType = WGPUSType_SurfaceDescriptorFromMetalLayer;
+    surfaceDescriptorFromMetalLayer.layer = (__bridge void *) view.layer;
+    WGPUSurfaceDescriptor surfaceDescriptor;
+    Inline::clearZeroMemory(surfaceDescriptor);
+    surfaceDescriptor.nextInChain = reinterpret_cast<WGPUChainedStruct *>(&surfaceDescriptorFromMetalLayer);
+    internal::WebGPUContext *context = nanoem_new(internal::WebGPUContext(surfaceDescriptor, pluginPath));
+    m_nativeWindow.contentView = view;
+    m_service->setNativeDevice(context->device());
+    m_service->setNativeContext(context);
     JSON_Object *pending = json_object(m_service->applicationPendingChangeConfiguration());
     json_object_dotset_string(pending, "macos.renderer.name", device.name.UTF8String);
 }
@@ -1755,14 +1771,7 @@ MainWindow::registerAllPrerequisiteEventListeners()
         },
         this, true);
     m_client->addErrorEventListener(
-        [](void *userData, int code, const char *reason, const char *recoverySuggestion) {
-            auto self = static_cast<MainWindow *>(userData);
-            asl_object_t asl = static_cast<asl_object_t>(self->m_logger);
-            if (!asl) {
-                self->m_logger = asl_open(nullptr, BaseApplicationService::kOrganizationDomain, ASL_LEVEL_NOTICE);
-            }
-            asl_log(asl, nullptr, ASL_LEVEL_ERR, "code=%d, reason=\"%s\", suggestion=\"%s\"", code, reason,
-                recoverySuggestion);
+        [](void * /* userData */, int code, const char *reason, const char *recoverySuggestion) {
             if (recoverySuggestion) {
                 EMLOG_ERROR(
                     "Received an error: code={} reason=\"{}\" suggestion=\"{}\"", code, reason, recoverySuggestion);
@@ -2016,6 +2025,10 @@ MainWindow::sendDestroyMessage()
                     if (auto handle = self->m_sentryDllHandle) {
                         BaseApplicationService::closeSentryDll(handle);
                         self->m_sentryDllHandle = nullptr;
+                    }
+                    if (internal::WebGPUContext *context = self->m_service->webGPUContext()) {
+                        self->m_service->setNativeContext(nullptr);
+                        nanoem_delete(context);
                     }
                     self->closeProgressWindow();
                     [self->m_nativeWindow close];

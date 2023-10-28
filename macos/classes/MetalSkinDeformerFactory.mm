@@ -180,9 +180,7 @@ void
 MetalSkinDeformerFactory::pushDebugGroup(id<MTLCommandBuffer> commandBuffer, NSString *label)
 {
 #if defined(NANOEM_ENABLE_DEBUG_LABEL)
-    if (@available(macOS 10.13, *)) {
-        [commandBuffer pushDebugGroup:label];
-    }
+    [commandBuffer pushDebugGroup:label];
 #else
     BX_UNUSED_2(commandBuffer, label);
 #endif
@@ -192,9 +190,7 @@ void
 MetalSkinDeformerFactory::popDebugGroup(id<MTLCommandBuffer> commandBuffer)
 {
 #if defined(NANOEM_ENABLE_DEBUG_LABEL)
-    if (@available(macOS 10.13, *)) {
-        [commandBuffer popDebugGroup];
-    }
+    [commandBuffer popDebugGroup];
 #else
     BX_UNUSED_1(commandBuffer);
 #endif
@@ -285,33 +281,31 @@ MetalSkinDeformerFactory::Deformer::destroy(sg_buffer value, int bufferIndex) no
 void
 MetalSkinDeformerFactory::Deformer::execute(int bufferIndex)
 {
-    if (@available(macOS 10.13, *)) {
-        SG_PUSH_GROUPF("MetalSkinDeformerFactory::Deformer::execute(bufferIndex=%d)", bufferIndex);
-        nanoem_rsize_t numBones, numMorphs, numVertices;
-        initializeUberBuffer(numBones, numMorphs, numVertices);
-        updateMatrixBuffer(numBones);
-        updateMorphBuffer(numBones, numMorphs);
-        [m_mutableUberBuffer didModifyRange:NSMakeRange(0, m_mutableUberBuffer.length)];
-        initializeArgumentBuffer(numBones, numVertices, bufferIndex);
-        id<MTLComputePipelineState> state = m_parent->m_state;
-        const MTLSize threadsPerGroup = MTLSizeMake(state.maxTotalThreadsPerThreadgroup, 1, 1),
-                      numThreads = MTLSizeMake((numVertices / threadsPerGroup.width) + 1, 1, 1);
-        id<MTLCommandBuffer> commandBuffer = m_parent->m_commandBuffer;
-        NSString *label = [[NSString alloc] initWithFormat:@"MetalSkinDeformerFactory::Deformer::execute(name=%@)",
-                                            [[NSString alloc] initWithUTF8String:m_model->canonicalNameConstString()]];
-        pushDebugGroup(commandBuffer, label);
-        id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
-        [commandEncoder useResource:m_inputBuffer usage:MTLResourceUsageRead];
-        [commandEncoder useResource:m_immutableUberBuffer usage:MTLResourceUsageRead];
-        [commandEncoder useResource:m_mutableUberBuffer usage:MTLResourceUsageRead];
-        [commandEncoder useResource:m_outputBuffers[bufferIndex] usage:MTLResourceUsageWrite];
-        [commandEncoder setBuffer:m_argumentBuffers[bufferIndex] offset:0 atIndex:0];
-        [commandEncoder setComputePipelineState:state];
-        [commandEncoder dispatchThreadgroups:numThreads threadsPerThreadgroup:threadsPerGroup];
-        [commandEncoder endEncoding];
-        popDebugGroup(commandBuffer);
-        SG_POP_GROUP();
-    }
+    SG_PUSH_GROUPF("MetalSkinDeformerFactory::Deformer::execute(bufferIndex=%d)", bufferIndex);
+    nanoem_rsize_t numBones, numMorphs, numVertices;
+    initializeUberBuffer(numBones, numMorphs, numVertices);
+    updateMatrixBuffer(numBones);
+    updateMorphBuffer(numBones, numMorphs);
+    [m_mutableUberBuffer didModifyRange:NSMakeRange(0, m_mutableUberBuffer.length)];
+    initializeArgumentBuffer(numBones, numVertices, bufferIndex);
+    id<MTLComputePipelineState> state = m_parent->m_state;
+    const MTLSize threadsPerGroup = MTLSizeMake(state.maxTotalThreadsPerThreadgroup, 1, 1),
+                  numThreads = MTLSizeMake((numVertices / threadsPerGroup.width) + 1, 1, 1);
+    id<MTLCommandBuffer> commandBuffer = m_parent->m_commandBuffer;
+    NSString *label = [[NSString alloc] initWithFormat:@"MetalSkinDeformerFactory::Deformer::execute(name=%@)",
+                                        [[NSString alloc] initWithUTF8String:m_model->canonicalNameConstString()]];
+    pushDebugGroup(commandBuffer, label);
+    id<MTLComputeCommandEncoder> commandEncoder = [commandBuffer computeCommandEncoder];
+    [commandEncoder useResource:m_inputBuffer usage:MTLResourceUsageRead];
+    [commandEncoder useResource:m_immutableUberBuffer usage:MTLResourceUsageRead];
+    [commandEncoder useResource:m_mutableUberBuffer usage:MTLResourceUsageRead];
+    [commandEncoder useResource:m_outputBuffers[bufferIndex] usage:MTLResourceUsageWrite];
+    [commandEncoder setBuffer:m_argumentBuffers[bufferIndex] offset:0 atIndex:0];
+    [commandEncoder setComputePipelineState:state];
+    [commandEncoder dispatchThreadgroups:numThreads threadsPerThreadgroup:threadsPerGroup];
+    [commandEncoder endEncoding];
+    popDebugGroup(commandBuffer);
+    SG_POP_GROUP();
 }
 
 void
@@ -329,30 +323,28 @@ void
 MetalSkinDeformerFactory::Deformer::initializeArgumentBuffer(
     nanoem_rsize_t numBones, nanoem_rsize_t numVertices, int bufferIndex)
 {
-    if (@available(macOS 10.13, *)) {
-        id<MTLBuffer> argumentBuffer = m_argumentBuffers[bufferIndex];
-        if (!argumentBuffer) {
-            const nanoem_rsize_t constantDataOffset = 0, matrixBufferOffset = sizeof(ConstantData),
-                                 morphWeightBufferOffset =
-                                     matrixBufferOffset + BatchUpdateMatrixBufferRunner::size(numBones),
-                                 vertexBufferOffset = 0,
-                                 sdefOffset = vertexBufferOffset +
-                BatchUpdateMorphWeightBufferRunner::vertexBufferSize(numVertices, m_numMaxMorphItems);
-            id<MTLArgumentEncoder> argumentEncoder = [m_parent->m_function newArgumentEncoderWithBufferIndex:0];
-            const NSUInteger encodedLength = argumentEncoder.encodedLength;
-            argumentBuffer = [m_parent->m_device newBufferWithLength:encodedLength options:0];
-            setLabel(argumentBuffer, bufferIndex == 0 ? "ArgumentBufferEven" : "ArgumentBufferOdd");
-            [argumentEncoder setArgumentBuffer:argumentBuffer offset:0];
-            /* same as SPIRV generated order */
-            [argumentEncoder setBuffer:m_mutableUberBuffer offset:matrixBufferOffset atIndex:0];
-            [argumentEncoder setBuffer:m_mutableUberBuffer offset:constantDataOffset atIndex:1];
-            [argumentEncoder setBuffer:m_inputBuffer offset:0 atIndex:2];
-            [argumentEncoder setBuffer:m_immutableUberBuffer offset:sdefOffset atIndex:3];
-            [argumentEncoder setBuffer:m_immutableUberBuffer offset:0 atIndex:4];
-            [argumentEncoder setBuffer:m_mutableUberBuffer offset:morphWeightBufferOffset atIndex:5];
-            [argumentEncoder setBuffer:m_outputBuffers[bufferIndex] offset:0 atIndex:6];
-            m_argumentBuffers[bufferIndex] = argumentBuffer;
-        }
+    id<MTLBuffer> argumentBuffer = m_argumentBuffers[bufferIndex];
+    if (!argumentBuffer) {
+        const nanoem_rsize_t constantDataOffset = 0, matrixBufferOffset = sizeof(ConstantData),
+                             morphWeightBufferOffset =
+                                 matrixBufferOffset + BatchUpdateMatrixBufferRunner::size(numBones),
+                             vertexBufferOffset = 0,
+                             sdefOffset = vertexBufferOffset +
+            BatchUpdateMorphWeightBufferRunner::vertexBufferSize(numVertices, m_numMaxMorphItems);
+        id<MTLArgumentEncoder> argumentEncoder = [m_parent->m_function newArgumentEncoderWithBufferIndex:0];
+        const NSUInteger encodedLength = argumentEncoder.encodedLength;
+        argumentBuffer = [m_parent->m_device newBufferWithLength:encodedLength options:0];
+        setLabel(argumentBuffer, bufferIndex == 0 ? "ArgumentBufferEven" : "ArgumentBufferOdd");
+        [argumentEncoder setArgumentBuffer:argumentBuffer offset:0];
+        /* same as SPIRV generated order */
+        [argumentEncoder setBuffer:m_mutableUberBuffer offset:matrixBufferOffset atIndex:0];
+        [argumentEncoder setBuffer:m_mutableUberBuffer offset:constantDataOffset atIndex:1];
+        [argumentEncoder setBuffer:m_inputBuffer offset:0 atIndex:2];
+        [argumentEncoder setBuffer:m_immutableUberBuffer offset:sdefOffset atIndex:3];
+        [argumentEncoder setBuffer:m_immutableUberBuffer offset:0 atIndex:4];
+        [argumentEncoder setBuffer:m_mutableUberBuffer offset:morphWeightBufferOffset atIndex:5];
+        [argumentEncoder setBuffer:m_outputBuffers[bufferIndex] offset:0 atIndex:6];
+        m_argumentBuffers[bufferIndex] = argumentBuffer;
     }
 }
 

@@ -74,10 +74,8 @@ main(int argc, char *argv[])
         {
             const bx::CommandLine command(argc, argv);
             NSApplication *app = macos::CocoaThreadedApplicationService::createApplication();
-            if (@available(macOS 10.12.1, *)) {
-                if (NSClassFromString(@"NSTouchBar") != nil) {
-                    app.automaticCustomizeTouchBarMenuItemEnabled = YES;
-                }
+            if (NSClassFromString(@"NSTouchBar") != nil) {
+                app.automaticCustomizeTouchBarMenuItemEnabled = YES;
             }
             if (command.hasArg("locale")) {
                 json_object_dotset_string(root, "project.locale", command.findOption("locale"));

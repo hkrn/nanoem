@@ -39,6 +39,7 @@
 #include "emapp/ThreadedApplicationClient.h"
 #include "emapp/internal/DecoderPluginBasedBackgroundVideoRenderer.h"
 #include "emapp/internal/ImGuiWindow.h"
+#include "emapp/internal/WebGPUContext.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "emapp/src/protoc/application.pb-c.h"
@@ -492,23 +493,19 @@ MetalDebugCapture::MetalDebugCapture(id<MTLDevice> device)
 void
 MetalDebugCapture::start(const char *label)
 {
-    if (@available(macOS 10.15, *)) {
-        if (label) {
-            MTLCaptureManager *capture = [MTLCaptureManager sharedCaptureManager];
-            MTLCaptureDescriptor *desc = [[MTLCaptureDescriptor alloc] init];
-            desc.captureObject = m_device;
-            [capture startCaptureWithDescriptor:desc error:nil];
-        }
+    if (label) {
+        MTLCaptureManager *capture = [MTLCaptureManager sharedCaptureManager];
+        MTLCaptureDescriptor *desc = [[MTLCaptureDescriptor alloc] init];
+        desc.captureObject = m_device;
+        [capture startCaptureWithDescriptor:desc error:nil];
     }
 }
 
 void
 MetalDebugCapture::stop()
 {
-    if (@available(macOS 10.15, *)) {
-        MTLCaptureManager *capture = [MTLCaptureManager sharedCaptureManager];
-        [capture stopCapture];
-    }
+    MTLCaptureManager *capture = [MTLCaptureManager sharedCaptureManager];
+    [capture stopCapture];
 }
 
 #if defined(IMGUI_HAS_VIEWPORT)
@@ -990,25 +987,29 @@ CocoaThreadedApplicationService::setDisplaySyncEnabled(bool value)
 }
 
 NSOpenGLContext *
-CocoaThreadedApplicationService::OpenGLContext()
+CocoaThreadedApplicationService::OpenGLContext() noexcept
 {
-    return (__bridge NSOpenGLContext *) m_nativeContext;
+    NSOpenGLContext *context = nil;
+    if (m_nativeView) {
+        context = (__bridge NSOpenGLContext *) m_nativeContext;
+    }
+    return context;
 }
 
 id<MTLDevice>
-CocoaThreadedApplicationService::metalDevice()
+CocoaThreadedApplicationService::metalDevice() noexcept
 {
     return (__bridge id<MTLDevice>) m_nativeDevice;
 }
 
 id<MTLCommandQueue>
-CocoaThreadedApplicationService::metalCommandQueue()
+CocoaThreadedApplicationService::metalCommandQueue() noexcept
 {
     return m_commandQueue;
 }
 
 id<CAMetalDrawable>
-CocoaThreadedApplicationService::metalCurrentDrawable()
+CocoaThreadedApplicationService::metalCurrentDrawable() noexcept
 {
     id<CAMetalDrawable> drawable = nil;
     @synchronized(m_nativeView) {
@@ -1017,8 +1018,18 @@ CocoaThreadedApplicationService::metalCurrentDrawable()
     return drawable;
 }
 
+internal::WebGPUContext *
+CocoaThreadedApplicationService::webGPUContext() noexcept
+{
+    internal::WebGPUContext *context = nullptr;
+    if (m_nativeDevice) {
+        context = static_cast<internal::WebGPUContext *>(m_nativeContext);
+    }
+    return context;
+}
+
 MTKView *
-CocoaThreadedApplicationService::nativeView()
+CocoaThreadedApplicationService::nativeView() noexcept
 {
     return (__bridge MTKView *) m_nativeView;
 }
@@ -1078,19 +1089,17 @@ CocoaThreadedApplicationService::createSkinDeformerFactory()
     const sg_backend backend = sg::query_backend();
     if (backend == SG_BACKEND_METAL_MACOS) {
         id<MTLDevice> device = (__bridge id<MTLDevice>) m_nativeDevice;
-        if (@available(macOS 10.13, *)) {
-            const ApplicationPreference preference(this);
-            bool supported = [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v3];
-            if (supported && preference.isSkinDeformAcceleratorEnabled()) {
-                if (!m_commandQueue) {
-                    typedef void *(*PFN_sgx_mtl_cmd_queue)(void);
-                    if (auto sgx_mtl_cmd_queue =
-                            reinterpret_cast<PFN_sgx_mtl_cmd_queue>(resolveDllProcAddress("sgx_mtl_cmd_queue"))) {
-                        m_commandQueue = (__bridge id<MTLCommandQueue>) sgx_mtl_cmd_queue();
-                    }
+        const ApplicationPreference preference(this);
+        bool supported = [device supportsFeatureSet:MTLFeatureSet_macOS_GPUFamily1_v3];
+        if (supported && preference.isSkinDeformAcceleratorEnabled()) {
+            if (!m_commandQueue) {
+                typedef void *(*PFN_sgx_mtl_cmd_queue)(void);
+                if (auto sgx_mtl_cmd_queue =
+                        reinterpret_cast<PFN_sgx_mtl_cmd_queue>(resolveDllProcAddress("sgx_mtl_cmd_queue"))) {
+                    m_commandQueue = (__bridge id<MTLCommandQueue>) sgx_mtl_cmd_queue();
                 }
-                factory = nanoem_new(MetalSkinDeformerFactory(this));
             }
+            factory = nanoem_new(MetalSkinDeformerFactory(this));
         }
     }
     return factory;
@@ -1137,7 +1146,7 @@ bool
 CocoaThreadedApplicationService::isRendererAvailable(const char *value) const noexcept
 {
     bool result = false;
-    if (StringUtils::equals(value, kRendererMetal)) {
+    if (StringUtils::equals(value, kRendererMetal) || StringUtils::equals(value, kRendererWebGPU)) {
         result = Preference::isMetalAvailable();
     }
     else if (StringUtils::equals(value, kRendererOpenGL)) {
@@ -1183,6 +1192,22 @@ CocoaThreadedApplicationService::handleSetupGraphicsEngine(sg_desc &desc)
             auto self = static_cast<CocoaThreadedApplicationService *>(userData);
             auto view = (__bridge MTKView *) self->m_nativeView;
             return (__bridge const void *) view.currentDrawable;
+        };
+    }
+    else if (m_nativeDevice && m_nativeContext) {
+        desc.context.wgpu.user_data = this;
+        desc.context.wgpu.device = m_nativeDevice;
+        desc.context.wgpu.render_view_userdata_cb = [](void *userData) -> const void * {
+            auto self = static_cast<CocoaThreadedApplicationService *>(userData);
+            return self->webGPUContext()->renderTextureView();
+        };
+        desc.context.wgpu.resolve_view_userdata_cb = [](void *userData) -> const void * {
+            auto self = static_cast<CocoaThreadedApplicationService *>(userData);
+            return self->webGPUContext()->resolveTextureView();
+        };
+        desc.context.wgpu.depth_stencil_view_userdata_cb = [](void *userData) -> const void * {
+            auto self = static_cast<CocoaThreadedApplicationService *>(userData);
+            return self->webGPUContext()->depthStencilTextureView();
         };
     }
     else if (m_nativeContext) {
@@ -1538,6 +1563,9 @@ CocoaThreadedApplicationService::beginDefaultPass(
             m_colorImageDescriptions.insert(tinystl::make_pair(windowID, desc));
         }
     }
+    else if (backend == SG_BACKEND_WGPU) {
+        webGPUContext()->beginDefaultPass();
+    }
     else if (backend == SG_BACKEND_GLCORE33) {
         ThreadedApplicationService::beginDefaultPass(windowID, pa, width, height, sampleCount);
     }
@@ -1577,10 +1605,11 @@ CocoaThreadedApplicationService::presentDefaultPass(const Project *project)
         }
         bool expected = true;
         if (m_displaySyncChanged.compare_exchange_strong(expected, false)) {
-            if (@available(macOS 10.13, *)) {
-                contentView.currentDrawable.layer.displaySyncEnabled = m_displaySyncEnabled;
-            }
+            contentView.currentDrawable.layer.displaySyncEnabled = m_displaySyncEnabled;
         }
+    }
+    else if (backend == SG_BACKEND_WGPU) {
+        webGPUContext()->presentDefaultPass();
     }
     else if (backend == SG_BACKEND_GLCORE33) {
         NSOpenGLContext *context = (__bridge NSOpenGLContext *) m_nativeContext;
@@ -1594,6 +1623,15 @@ CocoaThreadedApplicationService::presentDefaultPass(const Project *project)
         }
     }
     SG_POP_GROUP();
+}
+
+void
+CocoaThreadedApplicationService::resizeDefaultRenderTarget(
+    const Vector2UI16 &devicePixelWindowSize, const Project * /* project */)
+{
+    if (internal::WebGPUContext *context = webGPUContext()) {
+        context->resizeDefaultPass(devicePixelWindowSize);
+    }
 }
 
 bool

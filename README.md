@@ -30,8 +30,7 @@ nanoem is designed to achieve both of the following goals.
 ### Prerequisites
 
 - [cmake](https://cmake.org) (>= 3.5)
-- C++14 compliant compiler
-  - confirmed on Clang and Visual Studio 2017
+- C++17 compliant compiler
 - [git](https://git-scm.com)
 - [ninja-build](https://ninja-build.org/)
   - Optional but recommend on macOS/Linux
