@@ -253,6 +253,7 @@ const char *const BaseApplicationService::kOrganizationDomain = "com.github.nano
 const char *const BaseApplicationService::kRendererOpenGL = "OpenGL";
 const char *const BaseApplicationService::kRendererDirectX = "DirectX";
 const char *const BaseApplicationService::kRendererMetal = "Metal";
+const char *const BaseApplicationService::kRendererWebGPU = "WebGPU";
 
 class BaseApplicationService::EventPublisher : public IEventPublisher {
 public:

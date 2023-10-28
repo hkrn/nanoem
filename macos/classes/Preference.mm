@@ -40,11 +40,8 @@ namespace macos {
 bool
 Preference::isMetalAvailable()
 {
-    bool result = false;
-    if (@available(macOS 10.11, *)) {
-        NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
-        result = devices.count > 0 && !(NSAppKitVersionNumber10_13 > NSAppKitVersionNumber);
-    }
+    NSArray<id<MTLDevice>> *devices = MTLCopyAllDevices();
+    bool result = devices.count > 0 && !(NSAppKitVersionNumber10_13 > NSAppKitVersionNumber);
     return result;
 }
 

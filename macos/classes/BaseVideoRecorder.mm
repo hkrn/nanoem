@@ -258,9 +258,7 @@ BaseVideoRecorder::getAllAvailableVideoCodecs(StringPairList &value) const
 {
     value.clear();
     value.push_back(StringPair(AVVideoCodecH264.UTF8String, "H.264/AVC"));
-    if (@available(macOS 10.13, *)) {
-        value.push_back(StringPair(AVVideoCodecTypeHEVC.UTF8String, "H.265/HEVC"));
-    }
+    value.push_back(StringPair(AVVideoCodecTypeHEVC.UTF8String, "H.265/HEVC"));
     if ([m_videoFileType isEqualToString:AVFileTypeQuickTimeMovie]) {
         value.push_back(StringPair(AVVideoCodecAppleProRes422.UTF8String, "Apple ProRes 422"));
         value.push_back(StringPair(AVVideoCodecAppleProRes4444.UTF8String, "Apple ProRes 4444"));
@@ -593,10 +591,7 @@ BaseVideoRecorder::setupVideoInput(int width, int height, Error &error)
     };
     NSMutableDictionary *pixelBufferAttributes =
         [[NSMutableDictionary alloc] initWithDictionary:initialOutputVideoSettings];
-    if (@available(macOS 10.11, *)) {
-        [pixelBufferAttributes setObject:@(m_compatibleWithMetal)
-                                  forKey:(NSString *) kCVPixelBufferMetalCompatibilityKey];
-    }
+    [pixelBufferAttributes setObject:@(m_compatibleWithMetal) forKey:(NSString *) kCVPixelBufferMetalCompatibilityKey];
     CVPixelBufferPoolCreate(
         kCFAllocatorDefault, nullptr, (__bridge CFDictionaryRef) pixelBufferAttributes, &m_pixelBufferPool);
     @try {

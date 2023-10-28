@@ -78,3 +78,6 @@
 	url = https://github.com/oneapi-src/oneTBB
 [submodule "tbb"]
 	url = https://github.com/oneapi-src/oneTBB
+[submodule "dependencies/webgpu-headers"]
+	path = dependencies/webgpu-headers
+	url = https://github.com/webgpu-native/webgpu-headers

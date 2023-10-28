@@ -4,72 +4,72 @@
 
 #include <stdlib.h>
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_setup(const sg_desc *desc)
 {
     sg_setup(desc);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_shutdown(void)
 {
     sg_shutdown();
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_buffer(sg_buffer buffer, const char *text)
 {
     _SOKOL_UNUSED(buffer);
     _SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_image(sg_image image, const char *text)
 {
     _SOKOL_UNUSED(image);
     _SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_shader(sg_shader shader, const char *text)
 {
     _SOKOL_UNUSED(shader);
     _SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_pass(sg_pass pass, const char *text)
 {
     _SOKOL_UNUSED(pass);
     _SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_label_pipeline(sg_pipeline pipeline, const char *text)
 {
     _SOKOL_UNUSED(pipeline);
     _SOKOL_UNUSED(text);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_push_group(const char *text)
 {
-    WGPUCommandEncoder encoder = _sg.wgpu.render_cmd_enc;
+    WGPUCommandEncoder encoder = _sg.wgpu.cmd_enc;
     if (encoder) {
         wgpuCommandEncoderPushDebugGroup(encoder, text);
     }
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_pop_group(void)
 {
-    WGPUCommandEncoder encoder = _sg.wgpu.render_cmd_enc;
+    WGPUCommandEncoder encoder = _sg.wgpu.cmd_enc;
     if (encoder) {
         wgpuCommandEncoderPopDebugGroup(encoder);
     }
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_read_image(sg_image image, void *data, size_t size)
 {
 #if 0
@@ -118,7 +118,7 @@ sgx_read_image(sg_image image, void *data, size_t size)
     _SOKOL_UNUSED(size);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_read_pass(sg_pass pass, void *data, size_t size)
 {
     _SOKOL_UNUSED(pass);
@@ -126,7 +126,7 @@ sgx_read_pass(sg_pass pass, void *data, size_t size)
     _SOKOL_UNUSED(size);
 }
 
-SOKOL_API_DECL void *APIENTRY
+SGX_API_DECL void *APIENTRY
 sgx_map_buffer(sg_buffer buffer)
 {
 #if 0
@@ -140,7 +140,7 @@ sgx_map_buffer(sg_buffer buffer)
     return 0;
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_unmap_buffer(sg_buffer buffer, void *address)
 {
 #if 0
@@ -154,10 +154,10 @@ sgx_unmap_buffer(sg_buffer buffer, void *address)
     _SOKOL_UNUSED(address);
 }
 
-SOKOL_API_DECL void APIENTRY
+SGX_API_DECL void APIENTRY
 sgx_insert_marker(const char *text)
 {
-    WGPUCommandEncoder encoder = _sg.wgpu.render_cmd_enc;
+    WGPUCommandEncoder encoder = _sg.wgpu.cmd_enc;
     if (encoder) {
         wgpuCommandEncoderInsertDebugMarker(encoder, text);
     }

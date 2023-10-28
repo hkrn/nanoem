@@ -83,6 +83,7 @@ public:
     static const char *const kRendererOpenGL;
     static const char *const kRendererDirectX;
     static const char *const kRendererMetal;
+    static const char *const kRendererWebGPU;
     enum KeyType {
         kKeyType_UNKNOWN = -1,
         kKeyType_FIRST = 32,
