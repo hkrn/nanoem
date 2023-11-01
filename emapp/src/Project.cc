@@ -1186,6 +1186,7 @@ Project::setAlphaBlendMode(sg_color_target_state &state) NANOEM_DECL_NOEXCEPT
     bs.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     bs.dst_factor_rgb = SG_BLENDFACTOR_ONE_MINUS_SRC_ALPHA;
 #if defined(NANOEM_ENABLE_BLENDOP_MINMAX)
+    bs.src_factor_alpha = bs.dst_factor_alpha = SG_BLENDFACTOR_ONE;
     bs.op_alpha = SG_BLENDOP_MAX;
     state.write_mask = SG_COLORMASK_RGBA;
 #else
@@ -1201,6 +1202,7 @@ Project::setAddBlendMode(sg_color_target_state &state) NANOEM_DECL_NOEXCEPT
     bs.src_factor_rgb = SG_BLENDFACTOR_SRC_ALPHA;
     bs.dst_factor_rgb = SG_BLENDFACTOR_ONE;
 #if defined(NANOEM_ENABLE_BLENDOP_MINMAX)
+    bs.src_factor_alpha = bs.dst_factor_alpha = SG_BLENDFACTOR_ONE;
     bs.op_alpha = SG_BLENDOP_MAX;
     state.write_mask = SG_COLORMASK_RGBA;
 #else

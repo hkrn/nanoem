@@ -61,18 +61,22 @@ sgx_label_pipeline(sg_pipeline pipeline, const char *text)
 SGX_API_DECL void APIENTRY
 sgx_push_group(const char *text)
 {
-    WGPUCommandEncoder encoder = _sg.wgpu.cmd_enc;
-    if (encoder) {
-        wgpuCommandEncoderPushDebugGroup(encoder, text);
+    if (_sg.wgpu.in_pass) {
+        wgpuRenderPassEncoderPushDebugGroup(_sg.wgpu.pass_enc, text);
+    }
+    else if (_sg.wgpu.cmd_enc) {
+        wgpuCommandEncoderPushDebugGroup(_sg.wgpu.cmd_enc, text);
     }
 }
 
 SGX_API_DECL void APIENTRY
 sgx_pop_group(void)
 {
-    WGPUCommandEncoder encoder = _sg.wgpu.cmd_enc;
-    if (encoder) {
-        wgpuCommandEncoderPopDebugGroup(encoder);
+    if (_sg.wgpu.in_pass) {
+        wgpuRenderPassEncoderPopDebugGroup(_sg.wgpu.pass_enc);
+    }
+    else if (_sg.wgpu.cmd_enc) {
+        wgpuCommandEncoderPopDebugGroup(_sg.wgpu.cmd_enc);
     }
 }
 
@@ -164,8 +168,10 @@ sgx_unmap_buffer(sg_buffer buffer, void *address)
 SGX_API_DECL void APIENTRY
 sgx_insert_marker(const char *text)
 {
-    WGPUCommandEncoder encoder = _sg.wgpu.cmd_enc;
-    if (encoder) {
-        wgpuCommandEncoderInsertDebugMarker(encoder, text);
+    if (_sg.wgpu.in_pass) {
+        wgpuRenderPassEncoderInsertDebugMarker(_sg.wgpu.pass_enc, text);
+    }
+    else if (_sg.wgpu.cmd_enc) {
+        wgpuCommandEncoderInsertDebugMarker(_sg.wgpu.cmd_enc, text);
     }
 }

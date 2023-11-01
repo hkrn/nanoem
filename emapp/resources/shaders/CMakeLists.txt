@@ -1,4 +1,4 @@
-set(glslang_common_options -D -DGLSLANG=1 --target-env vulkan1.0)
+set(glslang_common_options -D -DGLSLANG=1 -DWGSL_TEXTURE_OFFSET=0 -DWGSL_SAMPLER_OFFSET=0 -DWGSL_VS_UNIFORM_OFFSET=0 -DWGSL_FS_UNIFORM_OFFSET=0 --target-env vulkan1.0)
 set(glslang_vertex_shader_options ${glslang_common_options} -S vert -e nanoemVSMain)
 set(glslang_pixel_shader_options ${glslang_common_options} -S frag -e nanoemPSMain)
 set(glslang_compute_shader_options ${glslang_common_options} -S comp -e nanoemCSMain)
@@ -9,6 +9,8 @@ set(spirv_cross_glsl_core43_options ${spirv_cross_common_options} --version 430)
 set(spirv_cross_glsl_es30_options ${spirv_cross_common_options} --flatten-ubo --es --version 300)
 set(spirv_cross_glsl_es31_options ${spirv_cross_common_options} --es --version 310)
 set(spirv_cross_msl_options ${spirv_cross_common_options} --msl)
+
+set(dxc_common_options -DGLSLANG=1 -DWGSL_TEXTURE_OFFSET=32 -DWGSL_SAMPLER_OFFSET=48 -DWGSL_VS_UNIFORM_OFFSET=0 -DWGSL_FS_UNIFORM_OFFSET=3 -spirv)
 
 if(NOT NANOEM_ENABLE_SHADER_OPTIMIZED)
   set(fxc_common_options /Od /Zi /nologo)
@@ -206,17 +208,28 @@ function(nanoem_emapp_shader_compile_vertex_shader_glsl_es3 _source _intermediat
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_vs_filename}" PARENT_SCOPE)
 endfunction()
 
-function(nanoem_emapp_shader_compile_vertex_shader_wgsl _source _intermediate_path _output_path _generated_sources)
+function(nanoem_emapp_shader_compile_vertex_shader_wgsl _source _include_path _intermediate_path _output_path _generated_sources)
   get_filename_component(source_without_extension ${_source} NAME_WE)
   # vertex shader with WGSL
-  set(intermediate_spirv_vs_filename "${_intermediate_path}/${source_without_extension}_vs.spv")
+  set(intermediate_spirv_vs_filename "${_intermediate_path}/${source_without_extension}_vs_dxc.spv")
   set(intermediate_wgsl_vs_filename "${_intermediate_path}/${source_without_extension}_vs.wgsl")
   set(output_wgsl_vs_filename "${_output_path}/${source_without_extension}_vs_wgsl.h")
   if("${source_without_extension}" STREQUAL "model_skinning_tf" OR "${source_without_extension}" MATCHES "pointed_")
     message(DEBUG "[emapp/resources] ${source_without_extension} cannot be compiled and will be skipped")
     return()
   endif()
-  if(NAGA_PATH)
+  if(NAGA_PATH AND DXC_PATH)
+    add_custom_command(OUTPUT ${intermediate_spirv_vs_filename}
+                       COMMAND ${DXC_PATH} ARGS
+                         ${dxc_common_options}
+                         -fvk-invert-y
+                         -I${_include_path}
+                         -Fo ${intermediate_spirv_vs_filename}
+                         -E nanoemVSMain
+                         -T vs_6_0
+                         ${source}
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
     add_custom_command(OUTPUT ${intermediate_wgsl_vs_filename}
                        COMMAND ${NAGA_PATH} ARGS
                          ${intermediate_spirv_vs_filename}
@@ -378,13 +391,23 @@ function(nanoem_emapp_shader_compile_pixel_shader_glsl_es3 _source _intermediate
   set(${_generated_sources} "${${_generated_sources}};${output_glsl_fs_filename}" PARENT_SCOPE)
 endfunction()
 
-function(nanoem_emapp_shader_compile_pixel_shader_wgsl _source _intermediate_path _output_path _generated_sources)
+function(nanoem_emapp_shader_compile_pixel_shader_wgsl _source _include_path _intermediate_path _output_path _generated_sources)
   get_filename_component(source_without_extension ${_source} NAME_WE)
   # pixel shader with WGSL
-  set(intermediate_spirv_fs_filename "${_intermediate_path}/${source_without_extension}_fs.spv")
+  set(intermediate_spirv_fs_filename "${_intermediate_path}/${source_without_extension}_fs_dxc.spv")
   set(intermediate_wgsl_fs_filename "${_intermediate_path}/${source_without_extension}_fs.wgsl")
   set(output_wgsl_fs_filename "${_output_path}/${source_without_extension}_fs_wgsl.h")
-  if(NAGA_PATH)
+  if(NAGA_PATH AND DXC_PATH)
+    add_custom_command(OUTPUT ${intermediate_spirv_fs_filename}
+                       COMMAND ${DXC_PATH} ARGS
+                         ${dxc_common_options}
+                         -I${_include_path}
+                         -Fo ${intermediate_spirv_fs_filename}
+                         -E nanoemPSMain
+                         -T ps_6_0
+                         ${source}
+                       MAIN_DEPENDENCY ${_source}
+                       VERBATIM)
     add_custom_command(OUTPUT ${intermediate_wgsl_fs_filename}
                        COMMAND ${NAGA_PATH} ARGS
                          ${intermediate_spirv_fs_filename}
@@ -613,6 +636,7 @@ function(nanoem_emapp_shader_compile_all_shaders)
   set(include_path "${CMAKE_CURRENT_SOURCE_DIR}/include")
   file(GLOB VERTEX_PIXEL_SHADER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.hlsl)
   file(GLOB COMPUTE_SHADER_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/compute/*.hlsl)
+  find_program(DXC_PATH dxc)
   find_program(FXC_PATH fxc)
   find_program(NAGA_PATH naga)
   nanoem_cmake_get_install_path("glslang" GLSLANG_INSTALL_BASE_PATH GLSLANG_INSTALL_PATH_DEBUG GLSLANG_INSTALL_PATH_RELEASE)
@@ -640,11 +664,11 @@ function(nanoem_emapp_shader_compile_all_shaders)
       nanoem_emapp_shader_compile_vertex_shader_spirv(${source} ${include_path} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
       nanoem_emapp_shader_compile_vertex_shader_glsl_core33(${source} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
       nanoem_emapp_shader_compile_vertex_shader_glsl_es3(${source} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
-      nanoem_emapp_shader_compile_vertex_shader_wgsl(${source} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
+      nanoem_emapp_shader_compile_vertex_shader_wgsl(${source} ${include_path} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
       nanoem_emapp_shader_compile_pixel_shader_spirv(${source} ${include_path} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
       nanoem_emapp_shader_compile_pixel_shader_glsl_core33(${source} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
       nanoem_emapp_shader_compile_pixel_shader_glsl_es3(${source} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
-      nanoem_emapp_shader_compile_pixel_shader_wgsl(${source} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
+      nanoem_emapp_shader_compile_pixel_shader_wgsl(${source} ${include_path} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)
     endforeach()
     foreach(source ${COMPUTE_SHADER_SOURCES})
       nanoem_emapp_shader_compile_compute_shader_spirv(${source} ${include_path} ${intermediate_path_prefix} ${output_path_prefix} generated_sources)

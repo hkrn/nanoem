@@ -10,11 +10,11 @@
 vs_output_t
 nanoemVSMain(vs_input_t input)
 {
-    float4 position = mul(u_modelViewProjectionMatrix, float4(input.position, 1));
+    float4 position = mul(vs.u_modelViewProjectionMatrix, float4(input.position, 1));
     vs_output_t output;
     output.position = position;
     output.texcoord0 = input.texcoord0.xy;
-    output.color0 = u_lightColor;
+    output.color0 = vs.u_lightColor;
     return output;
 }
 

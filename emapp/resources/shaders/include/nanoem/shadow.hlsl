@@ -9,9 +9,10 @@
 
 #include "macros.hlsl"
 
-GLSLANG_ANNOTATION([[vk::binding(1, VK_DESCRIPTOR_SET_TEXTURE)]])
+GLSLANG_ANNOTATION([[vk::binding(0 + WGSL_TEXTURE_OFFSET, VK_DESCRIPTOR_SET_TEXTURE)]])
 Texture2D u_shadowTexture : register(t0);
-GLSLANG_ANNOTATION([[vk::binding(2, VK_DESCRIPTOR_SET_SAMPLER)]])
+
+GLSLANG_ANNOTATION([[vk::binding(0 + WGSL_SAMPLER_OFFSET, VK_DESCRIPTOR_SET_SAMPLER)]])
 SamplerState u_shadowTextureSampler : register(s0);
 
 float

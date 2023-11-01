@@ -1867,10 +1867,10 @@ Effect::load(const nanoem_u8_t *data, size_t size, Progress &progress, Error &er
                             samplerRegisterIndex.m_type = FX9__EFFECT__DX9MS__PARAMETER_TYPE__PT_SAMPLER;
                             passRegisterIndices.m_pixelShaderSamplers.insert(
                                 tinystl::make_pair(String("ps_s0"), samplerRegisterIndex));
-                            shaderDescription.fs.images[0] =
-                                sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+                            shaderDescription.fs.images[0] = sg_shader_image_desc { true, false, SG_IMAGETYPE_2D,
+                                SG_IMAGESAMPLETYPE_UNFILTERABLE_FLOAT };
                             shaderDescription.fs.samplers[0] =
-                                sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
+                                sg_shader_sampler_desc { true, SG_SAMPLERTYPE_NONFILTERING };
                             shaderDescription.fs.image_sampler_pairs[0] =
                                 sg_shader_image_sampler_pair_desc { true, 0, 0, "ps_s0" };
                         }

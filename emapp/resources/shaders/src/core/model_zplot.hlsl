@@ -10,7 +10,7 @@
 vs_output_t
 nanoemVSMain(vs_input_t input)
 {
-    float4 position = mul(u_modelViewProjectionMatrix, float4(input.position, 1));
+    float4 position = mul(vs.u_modelViewProjectionMatrix, float4(input.position, 1));
     vs_output_t output;
     output.position = output.shadow0 = position;
     output.normal = 1;
