@@ -21,6 +21,7 @@
 #include "emapp/internal/WebGPUContext.h"
 #include "emapp/private/CommonInclude.h"
 #include "sokol/sokol_time.h"
+#include "webgpu-headers/webgpu.h"
 
 #include <asl.h>
 #include <sys/sysctl.h>

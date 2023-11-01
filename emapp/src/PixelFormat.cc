@@ -13,7 +13,7 @@ namespace nanoem {
 sg_pixel_format
 PixelFormat::depthStencilPixelFormat() NANOEM_DECL_NOEXCEPT
 {
-    return SG_PIXELFORMAT_DEPTH;
+    return SG_PIXELFORMAT_DEPTH_STENCIL;
 }
 
 PixelFormat::PixelFormat() NANOEM_DECL_NOEXCEPT : m_depthPixelFormat(depthStencilPixelFormat()),

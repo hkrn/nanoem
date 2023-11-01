@@ -8,10 +8,15 @@
 #ifndef NANOEM_EMAPP_INTERNAL_WEBGPUCONTEXT_H_
 #define NANOEM_EMAPP_INTERNAL_WEBGPUCONTEXT_H_
 
-#define WGPU_SKIP_DECLARATIONS
-#include "webgpu-headers/webgpu.h"
-
 #include "emapp/Forward.h"
+#include "emapp/Project.h"
+
+struct WGPUSurfaceDescriptor;
+
+typedef struct WGPUInstanceImpl *WGPUInstance;
+typedef struct WGPUAdapterImpl *WGPUAdapter;
+typedef struct WGPUDeviceImpl *WGPUDevice;
+typedef struct WGPUTextureViewImpl *WGPUTextureView;
 
 namespace nanoem {
 namespace internal {
@@ -21,12 +26,12 @@ public:
     WebGPUContext(const WGPUSurfaceDescriptor &surfaceDescriptor, const String &pluginPath);
     ~WebGPUContext() NANOEM_DECL_NOEXCEPT;
 
-    void beginDefaultPass();
-    void resizeDefaultPass(const Vector2UI16 &devicePixelWindowSize);
+    Project::IRendererCapability *createRendererCapability();
+    void beginDefaultPass(const Vector2UI16 &devicePixelWindowSize, nanoem_u32_t sampleCount);
+    void resizeDefaultPass(const Vector2UI16 &devicePixelWindowSize, nanoem_u32_t sampleCount);
     void presentDefaultPass();
 
     WGPUInstance instance() NANOEM_DECL_NOEXCEPT;
-    WGPUSurface surface() NANOEM_DECL_NOEXCEPT;
     WGPUAdapter adapter() NANOEM_DECL_NOEXCEPT;
     WGPUDevice device() NANOEM_DECL_NOEXCEPT;
 
@@ -35,34 +40,9 @@ public:
     WGPUTextureView depthStencilTextureView() NANOEM_DECL_NOEXCEPT;
 
 private:
-    static void handleAdapterRequest(
-        WGPURequestAdapterStatus status, WGPUAdapter adapter, char const *message, void *userdata);
-    static void handleDeviceRequest(
-        WGPURequestDeviceStatus status, WGPUDevice device, char const *message, void *userdata);
+    class PrivateContext;
 
-    WGPUProcCreateInstance wgpuCreateInstance;
-    WGPUProcInstanceCreateSurface wgpuInstanceCreateSurface;
-    WGPUProcInstanceRequestAdapter wgpuInstanceRequestAdapter;
-    WGPUProcAdapterRequestDevice wgpuAdapterRequestDevice;
-    WGPUProcSurfaceGetCapabilities wgpuSurfaceGetCapabilities;
-    WGPUProcSurfaceGetCurrentTexture wgpuSurfaceGetCurrentTexture;
-    WGPUProcTextureCreateView wgpuTextureCreateView;
-    WGPUProcSurfaceConfigure wgpuSurfaceConfigure;
-    WGPUProcTextureViewRelease wgpuTextureViewRelease;
-    WGPUProcTextureRelease wgpuTextureRelease;
-    WGPUProcDeviceRelease wgpuDeviceRelease;
-    WGPUProcAdapterRelease wgpuAdapterRelease;
-    WGPUProcSurfaceRelease wgpuSurfaceRelease;
-    WGPUProcInstanceRelease wgpuInstanceRelease;
-
-    void *m_dllHandle;
-    WGPUInstance m_instance;
-    WGPUSurface m_surface;
-    WGPUSurfaceCapabilities m_surfaceCapabilities;
-    WGPUSurfaceTexture m_surfaceTexture;
-    WGPUTextureView m_surfaceTextureView;
-    WGPUAdapter m_adapter;
-    WGPUDevice m_device;
+    PrivateContext *m_context;
 };
 
 } /* namespace internal */

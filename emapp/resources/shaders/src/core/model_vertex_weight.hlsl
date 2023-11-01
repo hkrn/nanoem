@@ -12,7 +12,7 @@ nanoemVSMain(vs_input_t input)
 {
     float4 position = float4(input.position, 1);
     vs_output_t output;
-    output.position = mul(u_modelViewProjectionMatrix, position);
+    output.position = mul(vs.u_modelViewProjectionMatrix, position);
     output.color0 = input.color0;
     return output;
 }
