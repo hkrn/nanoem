@@ -1078,8 +1078,17 @@ Project::IRendererCapability *
 CocoaThreadedApplicationService::createRendererCapability()
 {
     const sg_backend backend = sg::query_backend();
-    return backend == SG_BACKEND_METAL_MACOS ? nanoem_new(MetalRendererCapability(this))
-                                             : ThreadedApplicationService::createRendererCapability();
+    Project::IRendererCapability *capability;
+    if (backend == SG_BACKEND_METAL_MACOS) {
+        capability = nanoem_new(MetalRendererCapability(this));
+    }
+    else if (internal::WebGPUContext *context = webGPUContext()) {
+        capability = context->createRendererCapability();
+    }
+    else {
+        capability = ThreadedApplicationService::createRendererCapability();
+    }
+    return capability;
 }
 
 Project::ISkinDeformerFactory *
@@ -1564,7 +1573,8 @@ CocoaThreadedApplicationService::beginDefaultPass(
         }
     }
     else if (backend == SG_BACKEND_WGPU) {
-        webGPUContext()->beginDefaultPass();
+        webGPUContext()->beginDefaultPass(Vector2UI16(width, height), sampleCount);
+        ThreadedApplicationService::beginDefaultPass(windowID, pa, width, height, sampleCount);
     }
     else if (backend == SG_BACKEND_GLCORE33) {
         ThreadedApplicationService::beginDefaultPass(windowID, pa, width, height, sampleCount);
@@ -1627,10 +1637,10 @@ CocoaThreadedApplicationService::presentDefaultPass(const Project *project)
 
 void
 CocoaThreadedApplicationService::resizeDefaultRenderTarget(
-    const Vector2UI16 &devicePixelWindowSize, const Project * /* project */)
+    const Vector2UI16 &devicePixelWindowSize, const Project *project)
 {
     if (internal::WebGPUContext *context = webGPUContext()) {
-        context->resizeDefaultPass(devicePixelWindowSize);
+        context->resizeDefaultPass(devicePixelWindowSize, project->sampleCount());
     }
 }
 

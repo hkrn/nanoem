@@ -442,6 +442,10 @@ ModelProgramBundle::CommonPass::execute(const IDrawable * /* drawable */, const 
         else {
             Project::setAlphaBlendMode(cs);
         }
+        if (techniqueType == kTechniqueTypeZplot) {
+            Inline::clearZeroMemory(desc.colors[0].blend);
+            Inline::clearZeroMemory(desc.stencil);
+        }
         if (!project->isRenderPassViewport()) {
             cs.write_mask = SG_COLORMASK_RGBA;
         }
@@ -599,7 +603,7 @@ ModelProgramBundle::BaseTechnique::setupShader(const char *vs, const char *fs, s
         sg_shader_image_sampler_pair_desc { true, 3, 3, "SPIRV_Cross_Combinedu_toonTextureu_toonTextureSampler" };
 #endif
     desc.fs.images[CommonPass::kShadowMapTextureSamplerStage0] =
-        sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
+        sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_UNFILTERABLE_FLOAT };
     desc.fs.images[CommonPass::kDiffuseTextureSamplerStage] =
         sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
     desc.fs.images[CommonPass::kSphereTextureSamplerStage] =
@@ -607,7 +611,7 @@ ModelProgramBundle::BaseTechnique::setupShader(const char *vs, const char *fs, s
     desc.fs.images[CommonPass::kToonTextureSamplerStage] =
         sg_shader_image_desc { true, false, SG_IMAGETYPE_2D, SG_IMAGESAMPLETYPE_FLOAT };
     desc.fs.samplers[CommonPass::kShadowMapTextureSamplerStage0] =
-        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
+        sg_shader_sampler_desc { true, SG_SAMPLERTYPE_NONFILTERING };
     desc.fs.samplers[CommonPass::kDiffuseTextureSamplerStage] =
         sg_shader_sampler_desc { true, SG_SAMPLERTYPE_FILTERING };
     desc.fs.samplers[CommonPass::kSphereTextureSamplerStage] =

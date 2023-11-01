@@ -12,9 +12,9 @@ nanoemVSMain(vs_input_t input)
 {
     float4 position = float4(input.position, 1);
     float4 normal = float4(input.normal, 0);
-    float2 sphere = normalize(mul(u_modelViewMatrix, normal)).xy * 0.5 + 0.5;
+    float2 sphere = normalize(mul(vs.u_modelViewMatrix, normal)).xy * 0.5 + 0.5;
     vs_output_t output;
-    output.position = mul(u_modelViewProjectionMatrix, position);
+    output.position = mul(vs.u_modelViewProjectionMatrix, position);
     output.normal = normal.xyz;
     output.texcoord0 = input.texcoord0;
     output.texcoord1 = sphere;
@@ -24,5 +24,5 @@ nanoemVSMain(vs_input_t input)
 float4
 nanoemPSMain(ps_input_t input) : SV_TARGET0
 {
-    return coverageAlpha(input, u_lightColor);
+    return coverageAlpha(input, fs.u_lightColor);
 }

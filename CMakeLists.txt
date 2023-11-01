@@ -43,6 +43,8 @@ option(NANOEM_ENABLE_PLUGIN_WASM "Enable bundling release build of plugin_wasm" 
 option(NANOEM_ENABLE_PROTOC "Enable building protocol buffer source code generation with protoc-c" OFF)
 option(NANOEM_MINIMAL "Builds nanoem library only." OFF)
 option(SOKOL_ENABLE_DEBUG "Enable building sokol with debug validation layer." OFF)
+option(NANOEM_ENABLE_GLES3_COMPAT "Enable building sokol_gles3 with compatibility profile" OFF)
+option(NANOEM_ENABLE_WEBGPU "Enable building sokol_webgpu" OFF)
 
 mark_as_advanced(NANOEM_ENABLE_SHADER_OPTIMIZED NANOEM_ENABLE_SDEF NANOEM_ENABLE_SOFTBODY SOKOL_ENABLE_UPDATE_CREDITS NANOEM_ENABLE_OPTICK NANOEM_ENABLE_PROTOC)
 define_property(GLOBAL PROPERTY NANOEM_PROPERTY_INSTALL_PLUGINS BRIEF_DOCS "all installing plugins for nanoem binary bundle" FULL_DOCS "all installing plugins for nanoem binary bundle")

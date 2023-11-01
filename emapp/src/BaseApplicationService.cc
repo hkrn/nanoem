@@ -2856,6 +2856,12 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         desc.pipeline_pool_size = glm::clamp(commandPtr->pipeline_pool_size, 1024u, 0xffffu);
         desc.pass_pool_size = glm::clamp(commandPtr->pass_pool_size, 512u, 0xffffu);
         desc.uniform_buffer_size = glm::clamp(commandPtr->mtl_global_uniform_buffer_size, 0x10000u, 0x7fffffu);
+        sg_pixel_format pixelFormat = SG_PIXELFORMAT_RGBA8;
+        if (commandPtr->has_pixel_format) {
+            pixelFormat = static_cast<sg_pixel_format>(commandPtr->pixel_format);
+        }
+        desc.context.color_format = pixelFormat;
+        desc.context.depth_format = SG_PIXELFORMAT_DEPTH_STENCIL;
         beginDrawContext();
         handleSetupGraphicsEngine(desc);
         sg::setup(&desc);
@@ -2868,10 +2874,6 @@ BaseApplicationService::handleCommandMessage(Nanoem__Application__Command *comma
         initialize(windowDevicePixelRatio, viewportDevicePixelRatio);
         const Vector2UI16 viewportSize(commandPtr->window_width, commandPtr->window_height);
         createDefaultRenderTarget(Vector2(viewportSize) * windowDevicePixelRatio);
-        sg_pixel_format pixelFormat = SG_PIXELFORMAT_RGBA8;
-        if (commandPtr->has_pixel_format) {
-            pixelFormat = static_cast<sg_pixel_format>(commandPtr->pixel_format);
-        }
         nanoem_u32_t fps = commandPtr->preferred_editing_fps;
         m_stateController->newProject(
             viewportSize, "", pixelFormat, windowDevicePixelRatio, viewportDevicePixelRatio, fps);
