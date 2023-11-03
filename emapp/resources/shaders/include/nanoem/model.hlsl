@@ -46,18 +46,22 @@ Texture2D u_toonTexture : register(t3);
 
 GLSLANG_ANNOTATION([[vk::binding(3 + WGSL_SAMPLER_OFFSET, VK_DESCRIPTOR_SET_SAMPLER)]])
 SamplerState u_toonTextureSampler  : register(s3);
-
 #if defined(GLSLANG)
 [[vk::binding(0 + WGSL_VS_UNIFORM_OFFSET, VK_DESCRIPTOR_SET_UNIFORM)]]
 ConstantBuffer<model_parameters_t> vs : register(b0);
 [[vk::binding(1 + WGSL_FS_UNIFORM_OFFSET, VK_DESCRIPTOR_SET_UNIFORM)]]
 ConstantBuffer<model_parameters_t> fs : register(b1);
 #else
-cbuffer model_parameters_buffer_t : register(b0) {
 #if defined(NANOEM_IS_VERTEX_SHADER)
+cbuffer model_parameters_buffer_t : register(b0) {
     model_parameters_t vs;
+};
+model_parameters_t fs;
 #elif defined(NANOEM_IS_PIXEL_SHADER)
+cbuffer model_parameters_buffer_t : register(b0) {
     model_parameters_t fs;
+};
+model_parameters_t vs; /* stub */
 #else
 #error NANOEM_IS_VERTEX_SHADER or NANOEM_IS_PIXEL_SHADER must be defined
 #endif
