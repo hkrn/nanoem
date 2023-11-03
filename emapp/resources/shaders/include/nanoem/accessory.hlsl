@@ -43,15 +43,19 @@ ConstantBuffer<accessory_parameters_t> vs : register(b0);
 [[vk::binding(1 + WGSL_FS_UNIFORM_OFFSET, VK_DESCRIPTOR_SET_UNIFORM)]]
 ConstantBuffer<accessory_parameters_t> fs : register(b1);
 #else
-cbuffer accessory_parameters_buffer_t : register(b0) {
 #if defined(NANOEM_IS_VERTEX_SHADER)
+cbuffer accessory_parameters_buffer_t : register(b0) {
     accessory_parameters_t vs;
+};
+accessory_parameters_t fs; /* stub */
 #elif defined(NANOEM_IS_PIXEL_SHADER)
+cbuffer accessory_parameters_buffer_t : register(b0) {
     accessory_parameters_t fs;
+};
+accessory_parameters_t vs; /* stub */
 #else
 #error NANOEM_IS_VERTEX_SHADER or NANOEM_IS_PIXEL_SHADER must be defined
 #endif
-};
 #endif /* GLSLANG */
 
 bool

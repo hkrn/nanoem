@@ -25,15 +25,19 @@ ConstantBuffer<ui_parameters_t> vs : register(b0);
 [[vk::binding(1 + WGSL_FS_UNIFORM_OFFSET, VK_DESCRIPTOR_SET_UNIFORM)]]
 ConstantBuffer<ui_parameters_t> fs : register(b1);
 #else
-cbuffer ui_parameters_buffer_t : register(b0) {
 #if defined(NANOEM_IS_VERTEX_SHADER)
+cbuffer ui_parameters_buffer_t : register(b0) {
     ui_parameters_t vs;
+};
+ui_parameters_t fs; /* stub */
 #elif defined(NANOEM_IS_PIXEL_SHADER)
+cbuffer ui_parameters_buffer_t : register(b0) {
     ui_parameters_t fs;
+};
+ui_parameters_t vs; /* stub */
 #else
 #error NANOEM_IS_VERTEX_SHADER or NANOEM_IS_PIXEL_SHADER must be defined
 #endif
-};
 #endif /* GLSLANG */
 
 vs_output_t
