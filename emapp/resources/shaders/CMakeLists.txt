@@ -17,8 +17,8 @@ if(NOT NANOEM_ENABLE_SHADER_OPTIMIZED)
 else()
   set(fxc_common_options /O3 /nologo /Qstrip_debug /Qstrip_reflect)
 endif()
-set(fxc_vertex_shader_options ${fxc_common_options} /T vs_4_0 /E nanoemVSMain)
-set(fxc_pixel_shader_options ${fxc_common_options} /T ps_4_0 /E nanoemPSMain)
+set(fxc_vertex_shader_options ${fxc_common_options} /T vs_4_0 /E nanoemVSMain /D NANOEM_IS_VERTEX_SHADER=1)
+set(fxc_pixel_shader_options ${fxc_common_options} /T ps_4_0 /E nanoemPSMain /D NANOEM_IS_PIXEL_SHADER=1)
 set(fxc_compute_shader_options ${fxc_common_options} /T cs_4_0 /E nanoemCSMain)
 set(xcrun_metal_macos_options -arch air64 -emit-llvm -ffast-math -mmacosx-version-min=10.13 -std=osx-metal2.0 -c)
 if(NOT NANOEM_ENABLE_SHADER_OPTIMIZED)
@@ -245,6 +245,8 @@ function(nanoem_emapp_shader_compile_vertex_shader_wgsl _source _include_path _i
                        MAIN_DEPENDENCY ${intermediate_wgsl_vs_filename}
                        VERBATIM)
     set(${_generated_sources} "${${_generated_sources}};${output_wgsl_vs_filename}" PARENT_SCOPE)
+  else()
+    file(WRITE ${output_wgsl_vs_filename} "static const unsigned int g_nanoem_${source_without_extension}_vs_wgsl_size = 0;\nstatic const unsigned char g_nanoem_${source_without_extension}_vs_wgsl_data[] = {0};\n")
   endif()
 endfunction()
 
@@ -423,6 +425,8 @@ function(nanoem_emapp_shader_compile_pixel_shader_wgsl _source _include_path _in
                        MAIN_DEPENDENCY ${intermediate_wgsl_fs_filename}
                        VERBATIM)
     set(${_generated_sources} "${${_generated_sources}};${output_wgsl_fs_filename}" PARENT_SCOPE)
+  else()
+    file(WRITE ${output_wgsl_fs_filename} "static const unsigned int g_nanoem_${source_without_extension}_fs_wgsl_size = 0;\nstatic const unsigned char g_nanoem_${source_without_extension}_fs_wgsl_data[] = {0};\n")
   endif()
 endfunction()
 

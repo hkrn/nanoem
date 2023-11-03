@@ -985,6 +985,12 @@ typedef struct sg_wgpu_context_desc {
     void *user_data;
 } sg_wgpu_context_desc;
 
+typedef struct sg_gl_context_desc {
+    uint32_t (*default_framebuffer_cb)(void);
+    uint32_t (*default_framebuffer_userdata_cb)(void *);
+    void *user_data;
+} sg_gl_context_desc;
+
 typedef struct sg_context_desc {
     sg_pixel_format color_format;
     sg_pixel_format depth_format;
@@ -992,6 +998,7 @@ typedef struct sg_context_desc {
     sg_metal_context_desc metal;
     sg_d3d11_context_desc d3d11;
     sg_wgpu_context_desc wgpu;
+    sg_gl_context_desc gl;
 } sg_context_desc;
 
 typedef struct sg_commit_listener {
