@@ -164,6 +164,11 @@ function(compile_glslang _cmake_build_type _generator _toolset_option _arch_opti
   set(_build_path ${base_build_path}/glslang/out/${_triple_path})
   file(MAKE_DIRECTORY ${_build_path})
   set(_extra_options "")
+  if("${_cmake_build_type}" STREQUAL "Debug")
+    set(_msvc_runtime_library "MultiThreadedDebug")
+  else()
+    set(_msvc_runtime_library "MultiThreaded")
+  endif()
   execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
                                            ${CMAKE_COMMAND}
                                            ${global_cmake_flags}
@@ -181,6 +186,7 @@ function(compile_glslang _cmake_build_type _generator _toolset_option _arch_opti
                                            -DCMAKE_BUILD_TYPE=${_cmake_build_type}
                                            -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
                                            -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DCMAKE_MSVC_RUNTIME_LIBRARY=${_msvc_runtime_library}
                                            ${_extra_options}
                                            -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
   rewrite_cmake_cache(${_build_path})
@@ -255,11 +261,18 @@ function(compile_spirv_tools _cmake_build_type _generator _toolset_option _arch_
   # checkout spirv-headers
   set(_branch "main")
   set(_revision "124a9665e464ef98b8b718d572d5f329311061eb")
+  if("${_cmake_build_type}" STREQUAL "Debug")
+    set(_msvc_runtime_library "MultiThreadedDebug")
+  else()
+    set(_msvc_runtime_library "MultiThreaded")
+  endif()
   execute_process(COMMAND ${GIT_EXECUTABLE} clone --branch ${_branch} https://github.com/KhronosGroup/SPIRV-Headers.git external/spirv-headers WORKING_DIRECTORY ${_source_path})
   execute_process(COMMAND ${GIT_EXECUTABLE} checkout ${_revision} WORKING_DIRECTORY ${_source_path}/external/spirv-headers)
   execute_process(COMMAND ${CMAKE_COMMAND} -E chdir ${_build_path}
                                            ${CMAKE_COMMAND}
                                            ${global_cmake_flags}
+                                           -DBUILD_SHARED_LIBS=OFF
+                                           -DSPIRV_TOOLS_BUILD_STATIC=ON
                                            -DSPIRV_COLOR_TERMINAL=OFF
                                            -DSPIRV_SKIP_TESTS=ON
                                            -DSPIRV_WARN_EVERYTHING=OFF
@@ -268,6 +281,7 @@ function(compile_spirv_tools _cmake_build_type _generator _toolset_option _arch_
                                            -DCMAKE_CONFIGURATION_TYPES=${_cmake_build_type}
                                            -DCMAKE_INSTALL_LIBDIR=lib
                                            -DCMAKE_INSTALL_PREFIX=${_build_path}/install-root
+                                           -DCMAKE_MSVC_RUNTIME_LIBRARY=${_msvc_runtime_library}
                                            -G "${_generator}" ${_arch_option} ${_toolset_option} ${_source_path})
   rewrite_cmake_cache(${_build_path})
   execute_build(${_build_path})
@@ -698,7 +712,7 @@ foreach(arch_item ${ARCH_LIST})
   if(WIN32)
     # https://docs.microsoft.com/en-us/cpp/build/reference/utf-8-set-source-and-executable-character-sets-to-utf-8
     if(NOT "${arch_item}" STREQUAL "arm64" AND NOT "${target_compiler}" STREQUAL "clang")
-      set(global_cmake_flags "-DCMAKE_CXX_FLAGS='-utf-8'")
+      set(global_cmake_flags "-DCMAKE_CXX_FLAGS=-utf-8")
     endif()
     if(NOT target_compiler)
       set(target_compiler "vs2022")
@@ -751,6 +765,7 @@ foreach(arch_item ${ARCH_LIST})
       set(target_toolset " ")
     endif()
   endif()
+  set(global_cmake_flags_origin ${global_cmake_flags})
   foreach(config_item ${CONFIG_LIST})
     compile_all_repositories(${target_generator} ${target_toolset} ${target_compiler} ${arch_item} ${config_item})
   endforeach()

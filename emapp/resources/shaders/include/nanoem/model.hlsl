@@ -65,7 +65,6 @@ model_parameters_t vs; /* stub */
 #else
 #error NANOEM_IS_VERTEX_SHADER or NANOEM_IS_PIXEL_SHADER must be defined
 #endif
-};
 #endif /* GLSLANG */
 
 bool

@@ -26,16 +26,16 @@ struct accessory_parameters_t {
 };
 
 GLSLANG_ANNOTATION([[vk::binding(1 + WGSL_TEXTURE_OFFSET, VK_DESCRIPTOR_SET_TEXTURE)]])
-Texture2D u_diffuseTexture : register(t0);
+Texture2D u_diffuseTexture : register(t1);
 
 GLSLANG_ANNOTATION([[vk::binding(1 + WGSL_SAMPLER_OFFSET, VK_DESCRIPTOR_SET_SAMPLER)]])
-SamplerState u_diffuseTextureSampler : register(s0);
+SamplerState u_diffuseTextureSampler : register(s1);
 
 GLSLANG_ANNOTATION([[vk::binding(2 + WGSL_TEXTURE_OFFSET, VK_DESCRIPTOR_SET_TEXTURE)]])
-Texture2D u_spheremapTexture : register(t1);
+Texture2D u_spheremapTexture : register(t2);
 
 GLSLANG_ANNOTATION([[vk::binding(2 + WGSL_SAMPLER_OFFSET, VK_DESCRIPTOR_SET_SAMPLER)]])
-SamplerState u_spheremapTextureSampler : register(s1);
+SamplerState u_spheremapTextureSampler : register(s2);
 
 #if defined(GLSLANG)
 [[vk::binding(0 + WGSL_VS_UNIFORM_OFFSET, VK_DESCRIPTOR_SET_UNIFORM)]]
