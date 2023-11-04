@@ -141,7 +141,7 @@ set_property(TARGET fx9 APPEND PROPERTY COMPILE_DEFINITIONS
                         "FX9_INTERMEDIATE=$<BOOL:${INTERMEDIATE}>"
                         $<$<BOOL:${WIN32}>:_CRT_SECURE_NO_WARNINGS=1>)
 set_property(TARGET fx9 APPEND PROPERTY COMPILE_OPTIONS -fno-rtti)
-set_property(TARGET ${_plugin_name} PROPERTY CXX_STANDARD 17)
+set_property(TARGET fx9 PROPERTY CXX_STANDARD 17)
 
 option(FX9_ENABLE_ASAN "Enable ASAN" OFF)
 option(FX9_ENABLE_UBSAN "Enable UBSAN" OFF)
