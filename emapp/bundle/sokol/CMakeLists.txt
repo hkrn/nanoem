@@ -76,18 +76,28 @@ function(nanoem_emapp_build_sokol_webgpu)
   if(NANOEM_ENABLE_WEBGPU)
     if(ON)
       set(DAWN_BASE_PATH ${PROJECT_SOURCE_DIR}/dependencies/dawn)
-      file(GLOB_RECURSE DAWN_LIBRARIES_DEBUG ${DAWN_BASE_PATH}/out/Debug/src/*.a ${DAWN_BASE_PATH}/out/Debug/third_party/abseil/*.a PARENT_SCOPE)
-      file(GLOB_RECURSE DAWN_LIBRARIES_RELEASE ${DAWN_BASE_PATH}/out/Release/src/*.a ${DAWN_BASE_PATH}/out/Release/third_party/abseil/*.a PARENT_SCOPE)
+      file(GLOB_RECURSE DAWN_LIBRARIES_DEBUG ${DAWN_BASE_PATH}/out/Debug/src/*.a
+                                             ${DAWN_BASE_PATH}/out/Debug/src/*.lib
+                                             ${DAWN_BASE_PATH}/out/Debug/third_party/abseil/*.a
+                                             ${DAWN_BASE_PATH}/out/Debug/third_party/*.lib)
+      file(GLOB_RECURSE DAWN_LIBRARIES_RELEASE ${DAWN_BASE_PATH}/out/Release/src/*.a
+                                               ${DAWN_BASE_PATH}/out/Release/src/*.lib
+                                               ${DAWN_BASE_PATH}/out/Release/third_party/abseil/*.a
+                                               ${DAWN_BASE_PATH}/out/Release/third_party/*.lib)
       find_path(WEBGPU_INCLUDE_DIR NAMES webgpu/webgpu.h PATH_SUFFIXES include PATHS ${DAWN_BASE_PATH})
       find_path(DAWN_WEBGPU_INCLUDE_DIR NAMES dawn/webgpu.h PATH_SUFFIXES out/Release/gen/include PATHS ${DAWN_BASE_PATH})
       mark_as_advanced(WEBGPU_INCLUDE_DIR DAWN_WEBGPU_INCLUDE_DIR)
-      add_library(sokol_webgpu ${_library_type} ${CMAKE_CURRENT_SOURCE_DIR}/sokol_webgpu.c ${CMAKE_CURRENT_SOURCE_DIR}/sokol_webgpu_dawn.cc)
-      set_property(TARGET sokol_webgpu PROPERTY FOLDER nanoem/sokol)
+      add_library(sokol_webgpu ${_library_type} ${CMAKE_CURRENT_SOURCE_DIR}/sokol_webgpu.c
+                                                ${CMAKE_CURRENT_SOURCE_DIR}/sokol_webgpu_dawn.cc
+                                                $<$<BOOL:${WIN32}>:${CMAKE_CURRENT_SOURCE_DIR}/sokol_webgpu.def>)
       target_compile_definitions(sokol_webgpu PRIVATE SOKOL_DEBUG=$<BOOL:${SOKOL_ENABLE_DEBUG}> SOKOL_WGPU_DAWN)
       target_include_directories(sokol_webgpu PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${PROJECT_SOURCE_DIR}/dependencies ${WEBGPU_INCLUDE_DIR} ${DAWN_WEBGPU_INCLUDE_DIR})
-      set_target_properties(sokol_webgpu PROPERTIES OUTPUT_NAME sokol_webgpu PREFIX "" DEFINE_SYMBOL "")
+      set_target_properties(sokol_webgpu PROPERTIES CXX_STANDARD 17 FOLDER nanoem/sokol OUTPUT_NAME sokol_webgpu PREFIX "" DEFINE_SYMBOL "")
       target_link_libraries(sokol_webgpu optimized "${DAWN_LIBRARIES_RELEASE}" debug "${DAWN_LIBRARIES_DEBUG}")
-      if(APPLE)
+      if(MSVC)
+        target_link_libraries(sokol_webgpu dxguid)
+        set_property(TARGET sokol_webgpu PROPERTY MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>DLL)
+      elseif(APPLE)
         target_link_libraries(sokol_webgpu "-framework Metal -framework QuartzCore -framework IOKit -framework IOSurface")
       endif()
     elseif(OFF)

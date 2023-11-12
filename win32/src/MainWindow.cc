@@ -33,10 +33,12 @@
 #include "bx/commandline.h"
 #include "bx/handlealloc.h"
 #include "emapp/emapp.h"
+#include "emapp/internal/WebGPUContext.h"
 #include "emapp/private/CommonInclude.h"
 
 #include "imgui/imgui.h"
 #include "sokol/sokol_time.h"
+#include "webgpu-headers/webgpu.h"
 
 namespace nanoem {
 namespace win32 {
@@ -168,7 +170,14 @@ MainWindow::initialize(HWND windowHandle, Error &error)
     }
     else
 #endif /* NANOEM_WIN32_HAS_OPENGL */
-    {
+        if (true) {
+        // if (StringUtils::equalsIgnoreCase(preference.rendererBackend(), BaseApplicationService::kRendererWebGPU)) {
+            sokolPath.append("sokol_webgpu.dll");
+            result = setupWebGPURenderer(windowHandle, sokolPath, error);
+            pixelFormat = SG_PIXELFORMAT_BGRA8;
+            isLowPower = false;
+    }
+    else {
         result = setupDirectXRenderer(windowHandle, windowSize.x, windowSize.y, isLowPower, error);
         sokolPath.append("sokol_d3d11.dll");
         pixelFormat = SG_PIXELFORMAT_BGRA8;
@@ -222,7 +231,7 @@ MainWindow::processMessage(MSG *msg)
             DispatchMessageW(msg);
         }
     }
-    if (m_running) {
+    if (m_running && m_initialized) {
         WaitMessage();
     }
 }
@@ -2148,6 +2157,22 @@ MainWindow::setupDirectXRenderer(HWND windowHandle, int width, int height, bool 
         COMInline::wrapCall(rc, error);
     }
     return result;
+}
+
+bool
+MainWindow::setupWebGPURenderer(HWND windowHandle, const String &pluginPath, Error &error)
+{
+    WGPUSurfaceDescriptorFromWindowsHWND surfaceDescriptorFromWindowsHWND;
+    Inline::clearZeroMemory(surfaceDescriptorFromWindowsHWND);
+    surfaceDescriptorFromWindowsHWND.chain.sType = WGPUSType_SurfaceDescriptorFromWindowsHWND;
+    surfaceDescriptorFromWindowsHWND.hwnd = windowHandle;
+    WGPUSurfaceDescriptor surfaceDescriptor;
+    Inline::clearZeroMemory(surfaceDescriptor);
+    surfaceDescriptor.nextInChain = reinterpret_cast<WGPUChainedStruct *>(&surfaceDescriptorFromWindowsHWND);
+    internal::WebGPUContext *context = nanoem_new(internal::WebGPUContext(surfaceDescriptor, pluginPath));
+    m_service->setNativeDevice(context->device());
+    m_service->setNativeContext(context);
+    return true;
 }
 
 bool

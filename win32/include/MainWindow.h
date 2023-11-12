@@ -125,6 +125,7 @@ private:
     void exportVideo();
 
     bool setupDirectXRenderer(HWND windowHandle, int width, int height, bool &isLowPower, Error &error);
+    bool setupWebGPURenderer(HWND windowHandle, const String &pluginPath, Error &error);
     bool setupOpenGLRenderer(HWND windowHandle, Error &error);
     void destroyRenderer();
     void destroyWindow();
