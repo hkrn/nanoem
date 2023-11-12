@@ -22,6 +22,10 @@ namespace nanoem {
 
 class IVideoRecorder;
 
+namespace internal {
+class WebGPUContext;
+} /* namespace internal */
+
 namespace win32 {
 
 class Win32ThreadedApplicationService final : public ThreadedApplicationService {
@@ -104,6 +108,8 @@ private:
     void handleNewProject() override;
     void handleTerminateApplication() override;
     void postEmptyApplicationEvent() override;
+    void beginDefaultPass(
+        nanoem_u32_t windowID, const sg_pass_action &pa, int width, int height, int &sampleCount) override;
     void presentDefaultPass(const Project *project) override;
     URI recoverableRedoFileURI() const override;
 
@@ -111,6 +117,7 @@ private:
     void resizeDefaultRenderTarget(const Vector2UI16 &devicePixelWindowSize, const Project *project) override;
     void destroyDefaultRenderTarget() override;
 
+    internal::WebGPUContext *webGPUContext() noexcept;
     void setupNewProject();
     void updateAllMonitors();
 

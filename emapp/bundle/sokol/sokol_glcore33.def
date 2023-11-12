@@ -6,6 +6,7 @@ EXPORTS
     sgx_alloc_image
     sgx_alloc_pass
     sgx_alloc_pipeline
+    sgx_alloc_sampler
     sgx_alloc_shader
     sgx_append_buffer
     sgx_apply_bindings
@@ -20,6 +21,7 @@ EXPORTS
     sgx_destroy_image
     sgx_destroy_pass
     sgx_destroy_pipeline
+    sgx_destroy_sampler
     sgx_destroy_shader
     sgx_discard_context
     sgx_draw
@@ -29,16 +31,19 @@ EXPORTS
     sgx_label_image
     sgx_label_pass
     sgx_label_pipeline
+    sgx_label_sampler
     sgx_label_shader
     sgx_fail_buffer
     sgx_fail_image
     sgx_fail_pass
     sgx_fail_pipeline
+    sgx_fail_sampler
     sgx_fail_shader
     sgx_init_buffer
     sgx_init_image
     sgx_init_pass
     sgx_init_pipeline
+    sgx_init_sampler
     sgx_init_shader
     sgx_install_allocator_hooks
     sgx_install_trace_hooks
@@ -47,6 +52,7 @@ EXPORTS
     sgx_make_image
     sgx_make_pass
     sgx_make_pipeline
+    sgx_make_sampler
     sgx_make_shader
     sgx_map_buffer
     sgx_pop_group
@@ -71,6 +77,7 @@ EXPORTS
     sgx_query_pipeline_info
     sgx_query_pipeline_state
     sgx_query_pixelformat
+    sgx_query_sampler_state
     sgx_query_shader_defaults
     sgx_query_shader_info
     sgx_query_shader_state
