@@ -1,4 +1,4 @@
-LIBRARY sokol_d3d11
+LIBRARY sokol_webgpu
 
 EXPORTS
     sgx_activate_context
@@ -90,3 +90,27 @@ EXPORTS
     sgx_unmap_buffer
     sgx_update_buffer
     sgx_update_image
+    sgx_dawn_setup
+    wgpuCreateInstance
+    wgpuInstanceCreateSurface
+    wgpuInstanceRequestAdapter
+    wgpuAdapterRequestDevice
+    wgpuAdapterGetProperties
+    wgpuDeviceSetUncapturedErrorCallback
+    wgpuDevicePushErrorScope
+    wgpuDevicePopErrorScope
+    wgpuDeviceCreateTexture
+    wgpuTextureCreateView
+    wgpuTextureViewRelease
+    wgpuTextureRelease
+    wgpuDeviceRelease
+    wgpuAdapterRelease
+    wgpuSurfaceRelease
+    wgpuInstanceRelease
+    wgpuInstanceProcessEvents
+    wgpuDeviceCreateSwapChain
+    wgpuDeviceSetDeviceLostCallback
+    wgpuDeviceSetLoggingCallback
+    wgpuSwapChainGetCurrentTextureView
+    wgpuSwapChainPresent
+    wgpuSwapChainRelease

@@ -30,6 +30,7 @@
 #include "emapp/internal/ImGuiWindow.h"
 #include "emapp/internal/OpenGLComputeShaderSkinDeformerFactory.h"
 #include "emapp/internal/OpenGLTransformFeedbackSkinDeformerFactory.h"
+#include "emapp/internal/WebGPUContext.h"
 #include "emapp/private/CommonInclude.h"
 
 #if defined(NANOEM_ENABLE_RENDERDOC)
@@ -576,8 +577,18 @@ Project::IRendererCapability *
 Win32ThreadedApplicationService::createRendererCapability()
 {
     const sg_backend backend = sg::query_backend();
-    return backend == SG_BACKEND_D3D11 ? nanoem_new(D3D11RendererCapability((ID3D11Device *) m_nativeDevice))
-                                       : ThreadedApplicationService::createRendererCapability();
+    Project::IRendererCapability *capability;
+    if (backend == SG_BACKEND_D3D11) {
+        capability = nanoem_new(D3D11RendererCapability((ID3D11Device *) m_nativeDevice));
+    }
+    else if (internal::WebGPUContext *context = webGPUContext())
+    {
+        capability = context->createRendererCapability();
+    }
+    else {
+        capability = ThreadedApplicationService::createRendererCapability();
+    }
+    return capability;
 }
 
 Project::ISkinDeformerFactory *
@@ -676,6 +687,22 @@ Win32ThreadedApplicationService::handleSetupGraphicsEngine(sg_desc &desc)
             return reinterpret_cast<const void *>(self->m_d3d11RenderTargetView);
         };
         d3d11.user_data = this;
+    }
+    else if (m_nativeDevice && m_nativeContext) {
+        desc.context.wgpu.user_data = this;
+        desc.context.wgpu.device = m_nativeDevice;
+        desc.context.wgpu.render_view_userdata_cb = [](void *userData) -> const void * {
+            auto self = static_cast<Win32ThreadedApplicationService *>(userData);
+            return self->webGPUContext()->renderTextureView();
+        };
+        desc.context.wgpu.resolve_view_userdata_cb = [](void *userData) -> const void * {
+            auto self = static_cast<Win32ThreadedApplicationService *>(userData);
+            return self->webGPUContext()->resolveTextureView();
+        };
+        desc.context.wgpu.depth_stencil_view_userdata_cb = [](void *userData) -> const void * {
+            auto self = static_cast<Win32ThreadedApplicationService *>(userData);
+            return self->webGPUContext()->depthStencilTextureView();
+        };
     }
 #if defined(NANOEM_WIN32_HAS_OPENGL)
     else {
@@ -982,6 +1009,19 @@ Win32ThreadedApplicationService::postEmptyApplicationEvent()
 }
 
 void
+Win32ThreadedApplicationService::beginDefaultPass(
+    nanoem_u32_t windowID, const sg_pass_action &pa, int width, int height, int &sampleCount)
+{
+    SG_PUSH_GROUP("win32::Win32ThreadedApplicationService::beginDefaultPass");
+    const sg_backend backend = sg::query_backend();
+    if (backend == SG_BACKEND_WGPU) {
+        webGPUContext()->beginDefaultPass(Vector2UI16(width, height), sampleCount);
+    }
+    ThreadedApplicationService::beginDefaultPass(windowID, pa, width, height, sampleCount);
+    SG_POP_GROUP();
+}
+
+void
 Win32ThreadedApplicationService::presentDefaultPass(const Project * /* project */)
 {
     SG_PUSH_GROUP("win32::Win32ThreadedApplicationService::presentDefaultPass");
@@ -990,6 +1030,9 @@ Win32ThreadedApplicationService::presentDefaultPass(const Project * /* project *
     if (backend == SG_BACKEND_D3D11) {
         auto swapChain = (IDXGISwapChain *) m_nativeSwapChain;
         swapChain->Present(m_displaySyncInterval, 0);
+    }
+    else if (backend == SG_BACKEND_WGPU) {
+        webGPUContext()->presentDefaultPass();
     }
 #if defined(NANOEM_WIN32_HAS_OPENGL)
     else if (backend == SG_BACKEND_GLCORE33) {
@@ -1106,6 +1149,9 @@ Win32ThreadedApplicationService::resizeDefaultRenderTarget(
             2, devicePixelWindowSize.x, devicePixelWindowSize.y, swapChainDesc->BufferDesc.Format, 0);
         createDefaultRenderTarget(devicePixelWindowSize);
     }
+    else if (internal::WebGPUContext *context = webGPUContext()) {
+        context->resizeDefaultPass(devicePixelWindowSize, project->sampleCount());
+    }
 }
 
 void
@@ -1115,6 +1161,16 @@ Win32ThreadedApplicationService::destroyDefaultRenderTarget()
     COMInline::safeRelease(m_d3d11RenderTargetTexture);
     COMInline::safeRelease(m_d3d11DepthStencilView);
     COMInline::safeRelease(m_d3d11DepthStencilTexture);
+}
+
+internal::WebGPUContext *
+Win32ThreadedApplicationService::webGPUContext() noexcept
+{
+    internal::WebGPUContext *context = nullptr;
+    if (m_nativeDevice) {
+        context = static_cast<internal::WebGPUContext *>(m_nativeContext);
+    }
+    return context;
 }
 
 void
