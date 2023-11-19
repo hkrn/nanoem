@@ -44,7 +44,7 @@ vs_output_t
 nanoemVSMain(vs_input_t input)
 {
     vs_output_t output;
-    float2 position = ((vs.u_viewportTexel.xy + input.position.xy * vs.u_viewportTexel.zw) - 0.5) * vs.u_scaleFactor;
+    float2 position = ((vs.u_viewportTexel.xy + input.position.xy * vs.u_viewportTexel.zw) - 0.5) * vs.u_scaleFactor.xy;
     output.position = float4(position, 0, 1);
     output.texcoord0 = input.texcoord0;
     output.color0 = input.color0;

@@ -10,7 +10,7 @@ set(spirv_cross_glsl_es30_options ${spirv_cross_common_options} --flatten-ubo --
 set(spirv_cross_glsl_es31_options ${spirv_cross_common_options} --es --version 310)
 set(spirv_cross_msl_options ${spirv_cross_common_options} --msl)
 
-set(dxc_common_options -DGLSLANG=1 -DWGSL_TEXTURE_OFFSET=32 -DWGSL_SAMPLER_OFFSET=48 -DWGSL_VS_UNIFORM_OFFSET=0 -DWGSL_FS_UNIFORM_OFFSET=3 -spirv)
+set(dxc_common_options -DGLSLANG=1 -DWGSL=1 -DWGSL_TEXTURE_OFFSET=32 -DWGSL_SAMPLER_OFFSET=48 -DWGSL_VS_UNIFORM_OFFSET=0 -DWGSL_FS_UNIFORM_OFFSET=3 -spirv)
 
 if(NOT NANOEM_ENABLE_SHADER_OPTIMIZED)
   set(fxc_common_options /Od /Zi /nologo)
