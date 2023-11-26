@@ -15,11 +15,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-ActiveModelSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+ActiveModelSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const ActiveModelSelector *self = static_cast<const ActiveModelSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 ActiveModelSelector::ActiveModelSelector(const Project *project)
@@ -34,12 +34,11 @@ ActiveModelSelector::combo(int *modelIndex)
     return ImGui::Combo("##model.active", modelIndex, callback, this, count());
 }
 
-bool
-ActiveModelSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+ActiveModelSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
-    *out =
-        index > 0 ? m_models[index - 1]->nameConstString() : m_translator->translate("nanoem.gui.panel.model.default");
-    return true;
+    return index > 0 ? m_models[index - 1]->nameConstString()
+                     : m_translator->translate("nanoem.gui.panel.model.default");
 }
 
 int

@@ -15,11 +15,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-ActiveAccessorySelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+ActiveAccessorySelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const ActiveAccessorySelector *self = static_cast<const ActiveAccessorySelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 ActiveAccessorySelector::ActiveAccessorySelector(const Project *project)
@@ -34,12 +34,11 @@ ActiveAccessorySelector::combo(int *accessoryIndex)
     return ImGui::Combo("##accessory.active", accessoryIndex, callback, this, count());
 }
 
-bool
-ActiveAccessorySelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+ActiveAccessorySelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
-    *out = index > 0 ? m_accessories[index - 1]->nameConstString()
+    return index > 0 ? m_accessories[index - 1]->nameConstString()
                      : m_translator->translate("nanoem.gui.panel.accessory.none");
-    return true;
 }
 
 int

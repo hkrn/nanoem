@@ -18,10 +18,10 @@ namespace internal {
 namespace imgui {
 
 struct CameraParentModelBoneSelector {
-    static bool callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT;
+    static const char *callback(void *userData, int index) NANOEM_DECL_NOEXCEPT;
     CameraParentModelBoneSelector(const Model *model, const ITranslator *translator);
     bool combo(int *modelIndex);
-    bool select(int index, const char **out) const NANOEM_DECL_NOEXCEPT;
+    const char *select(int index) const NANOEM_DECL_NOEXCEPT;
     int index(const StringPair &pair) const;
     int count() const NANOEM_DECL_NOEXCEPT;
     const nanoem_model_bone_t *resolveBone(int offset) const NANOEM_DECL_NOEXCEPT;

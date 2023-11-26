@@ -15,11 +15,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-MorphSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+MorphSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const MorphSelector *self = static_cast<const MorphSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 MorphSelector::MorphSelector(const Model *model, const ITranslator *translator, nanoem_model_morph_category_t category)
@@ -121,8 +121,8 @@ MorphSelector::handleRegisterButton(Model *model, Project *project)
     registrator.registerAddMorphKeyframesCommandByActiveMorph(model, m_category);
 }
 
-bool
-MorphSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+MorphSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
     const char *name = nullptr;
     if (index > 0 && index < count()) {
@@ -133,8 +133,7 @@ MorphSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
     if (!name) {
         name = m_translator->translate("nanoem.gui.panel.morph.none");
     }
-    *out = name;
-    return true;
+    return name;
 }
 
 int

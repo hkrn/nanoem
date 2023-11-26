@@ -18,11 +18,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-ProjectKeyframeSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+ProjectKeyframeSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const ProjectKeyframeSelector *self = static_cast<const ProjectKeyframeSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 ProjectKeyframeSelector::ProjectKeyframeSelector(Project *project)
@@ -69,33 +69,34 @@ ProjectKeyframeSelector::handleAction(const TimelineSegment &segment, int index)
     }
 }
 
-bool
-ProjectKeyframeSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+ProjectKeyframeSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
+    const char *name = nullptr;
     switch (index) {
     case kSelectTypeCamera: {
-        *out = m_project->translator()->translate("nanoem.project.track.camera");
+        name = m_project->translator()->translate("nanoem.project.track.camera");
         break;
     }
     case kSelectTypeLight: {
-        *out = m_project->translator()->translate("nanoem.project.track.light");
+        name = m_project->translator()->translate("nanoem.project.track.light");
         break;
     }
     case kSelectTypeSelfShadow: {
-        *out = m_project->translator()->translate("nanoem.project.track.self-shadow");
+        name = m_project->translator()->translate("nanoem.project.track.self-shadow");
         break;
     }
     default:
         if (index < count()) {
             int offset = index - kSelectTypeMaxEnum;
-            *out = m_accessories[offset]->nameConstString();
+            name = m_accessories[offset]->nameConstString();
         }
         else {
-            *out = "(Unknown)";
+            name = "(Unknown)";
         }
         break;
     }
-    return true;
+    return name;
 }
 
 int

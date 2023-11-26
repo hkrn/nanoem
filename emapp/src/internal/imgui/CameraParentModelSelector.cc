@@ -15,11 +15,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-CameraParentModelSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+CameraParentModelSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const CameraParentModelSelector *self = static_cast<const CameraParentModelSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 CameraParentModelSelector::CameraParentModelSelector(const Project *project)
@@ -34,12 +34,11 @@ CameraParentModelSelector::combo(int *modelIndex)
     return ImGui::Combo("##camera.model", modelIndex, callback, this, count());
 }
 
-bool
-CameraParentModelSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+CameraParentModelSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
-    *out = index > 0 ? m_models[index - 1]->nameConstString()
+    return index > 0 ? m_models[index - 1]->nameConstString()
                      : m_translator->translate("nanoem.gui.panel.camera.model.none");
-    return true;
 }
 
 int
