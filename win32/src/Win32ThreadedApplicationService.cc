@@ -581,8 +581,7 @@ Win32ThreadedApplicationService::createRendererCapability()
     if (backend == SG_BACKEND_D3D11) {
         capability = nanoem_new(D3D11RendererCapability((ID3D11Device *) m_nativeDevice));
     }
-    else if (internal::WebGPUContext *context = webGPUContext())
-    {
+    else if (internal::WebGPUContext *context = webGPUContext()) {
         capability = context->createRendererCapability();
     }
     else {
