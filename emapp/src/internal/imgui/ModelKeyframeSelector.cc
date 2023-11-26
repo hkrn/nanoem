@@ -19,11 +19,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-ModelKeyframeSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+ModelKeyframeSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const ModelKeyframeSelector *self = static_cast<const ModelKeyframeSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 ModelKeyframeSelector::ModelKeyframeSelector(Project *project)
@@ -120,33 +120,34 @@ ModelKeyframeSelector::handleAction(const TimelineSegment &segment, int index)
     }
 }
 
-bool
-ModelKeyframeSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+ModelKeyframeSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
     const ITranslator *translator = m_project->translator();
+    const char *name = nullptr;
     switch (static_cast<SelectType>(index)) {
     case kSelectTypeAll: {
-        *out = translator->translate("nanoem.project.track.select-all");
+        name = translator->translate("nanoem.project.track.select-all");
         break;
     }
     case kSelectTypeLabelRoot: {
-        *out = m_rootTrack ? m_rootTrack->nameConstString() : translator->translate("nanoem.project.track.none");
+        name = m_rootTrack ? m_rootTrack->nameConstString() : translator->translate("nanoem.project.track.none");
         break;
     }
     case kSelectTypeModel: {
-        *out = translator->translate("nanoem.project.track.model");
+        name = translator->translate("nanoem.project.track.model");
         break;
     }
     case kSelectTypeBones: {
-        *out = translator->translate("nanoem.project.track.selected-bones");
+        name = translator->translate("nanoem.project.track.selected-bones");
         break;
     }
     case kSelectTypeMorphs: {
-        *out = translator->translate("nanoem.project.track.selected-morphs");
+        name = translator->translate("nanoem.project.track.selected-morphs");
         break;
     }
     case kSelectTypeAllMorphs: {
-        *out = translator->translate("nanoem.project.track.all-morphs");
+        name = translator->translate("nanoem.project.track.all-morphs");
         break;
     }
     default:
@@ -155,28 +156,28 @@ ModelKeyframeSelector::select(int index, const char **out) const NANOEM_DECL_NOE
             if (!m_bones.empty() && index >= base) {
                 int offset = index - base;
                 if (const model::Bone *bone = model::Bone::cast(m_bones[offset])) {
-                    *out = bone->nameConstString();
+                    name = bone->nameConstString();
                 }
                 else {
-                    *out = "(Unknown)";
+                    name = "(Unknown)";
                 }
             }
             else if (!m_morphs.empty()) {
                 int offset = index - kSelectTypeMaxEnum;
                 if (const model::Morph *morph = model::Morph::cast(m_morphs[offset])) {
-                    *out = morph->nameConstString();
+                    name = morph->nameConstString();
                 }
                 else {
-                    *out = "(Unknown)";
+                    name = "(Unknown)";
                 }
             }
         }
         else {
-            *out = "(Unknown)";
+            name = "(Unknown)";
         }
         break;
     }
-    return true;
+    return name;
 }
 
 int

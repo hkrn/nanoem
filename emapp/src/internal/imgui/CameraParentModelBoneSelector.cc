@@ -16,11 +16,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-CameraParentModelBoneSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+CameraParentModelBoneSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const CameraParentModelBoneSelector *self = static_cast<const CameraParentModelBoneSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 CameraParentModelBoneSelector::CameraParentModelBoneSelector(const Model *model, const ITranslator *translator)
@@ -46,8 +46,8 @@ CameraParentModelBoneSelector::combo(int *modelIndex)
     return ImGui::Combo("##camera.model.bone", modelIndex, callback, this, count());
 }
 
-bool
-CameraParentModelBoneSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+CameraParentModelBoneSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
     const char *name = nullptr;
     if (index > 0 && index < count()) {
@@ -58,8 +58,7 @@ CameraParentModelBoneSelector::select(int index, const char **out) const NANOEM_
     if (!name) {
         name = m_translator->translate("nanoem.gui.panel.camera.bone.none");
     }
-    *out = name;
-    return true;
+    return name;
 }
 
 int

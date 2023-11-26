@@ -16,11 +16,11 @@ namespace nanoem {
 namespace internal {
 namespace imgui {
 
-bool
-ConstraintSelector::callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT
+const char *
+ConstraintSelector::callback(void *userData, int index) NANOEM_DECL_NOEXCEPT
 {
     const ConstraintSelector *self = static_cast<const ConstraintSelector *>(userData);
-    return self->select(index, out);
+    return self->select(index);
 }
 
 ConstraintSelector::ConstraintSelector(const Model *model, const ITranslator *translator)
@@ -60,8 +60,8 @@ ConstraintSelector::combo(int *constraintIndex)
     return ImGui::Combo("##model.constraint", constraintIndex, callback, this, count());
 }
 
-bool
-ConstraintSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCEPT
+const char *
+ConstraintSelector::select(int index) const NANOEM_DECL_NOEXCEPT
 {
     const char *name = nullptr;
     if (index > 0 && index < count()) {
@@ -72,8 +72,7 @@ ConstraintSelector::select(int index, const char **out) const NANOEM_DECL_NOEXCE
     if (!name) {
         name = m_translator->translate("nanoem.gui.panel.model.constraint.none");
     }
-    *out = name;
-    return true;
+    return name;
 }
 
 int
