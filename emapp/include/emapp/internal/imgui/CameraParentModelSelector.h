@@ -15,10 +15,10 @@ namespace internal {
 namespace imgui {
 
 struct CameraParentModelSelector {
-    static bool callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT;
+    static const char *callback(void *userData, int index) NANOEM_DECL_NOEXCEPT;
     CameraParentModelSelector(const Project *project);
     bool combo(int *modelIndex);
-    bool select(int index, const char **out) const NANOEM_DECL_NOEXCEPT;
+    const char *select(int index) const NANOEM_DECL_NOEXCEPT;
     int index(const StringPair &pair) const;
     int count() const NANOEM_DECL_NOEXCEPT;
     const Model *resolveModel(int index) const NANOEM_DECL_NOEXCEPT;

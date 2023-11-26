@@ -19,10 +19,10 @@ namespace internal {
 namespace imgui {
 
 struct ConstraintSelector {
-    static bool callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT;
+    static const char *callback(void *userData, int index) NANOEM_DECL_NOEXCEPT;
     ConstraintSelector(const Model *model, const ITranslator *translator);
     bool combo(int *constraintIndex);
-    bool select(int index, const char **out) const NANOEM_DECL_NOEXCEPT;
+    const char *select(int index) const NANOEM_DECL_NOEXCEPT;
     int index(const Model *activeModel) const NANOEM_DECL_NOEXCEPT;
     int count() const NANOEM_DECL_NOEXCEPT;
     const nanoem_model_constraint_t *activeConstraint(int offset) const NANOEM_DECL_NOEXCEPT;

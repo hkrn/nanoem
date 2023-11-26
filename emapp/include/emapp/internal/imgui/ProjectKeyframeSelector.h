@@ -27,11 +27,11 @@ struct ProjectKeyframeSelector : IKeyframeSelector {
         kSelectTypeMaxEnum,
     };
 
-    static bool callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT;
+    static const char *callback(void *userData, int index) NANOEM_DECL_NOEXCEPT;
     ProjectKeyframeSelector(Project *project);
     bool combo(int *index);
     void handleAction(const TimelineSegment &segment, int index) NANOEM_DECL_OVERRIDE;
-    bool select(int index, const char **out) const NANOEM_DECL_NOEXCEPT;
+    const char *select(int index) const NANOEM_DECL_NOEXCEPT;
     int count() const NANOEM_DECL_NOEXCEPT;
 
     typedef tinystl::vector<Accessory *, TinySTLAllocator> AccessoryList;

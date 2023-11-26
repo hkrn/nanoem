@@ -20,13 +20,13 @@ namespace internal {
 namespace imgui {
 
 struct MorphSelector {
-    static bool callback(void *userData, int index, const char **out) NANOEM_DECL_NOEXCEPT;
+    static const char *callback(void *userData, int index) NANOEM_DECL_NOEXCEPT;
     MorphSelector(const Model *model, const ITranslator *translator, nanoem_model_morph_category_t category);
     bool combo(int *morphIndex);
     bool slider(nanoem_f32_t *weight, const Model *activeModel);
     bool canRegister(const Model *activeModel) const;
     void handleRegisterButton(Model *model, Project *project);
-    bool select(int index, const char **out) const NANOEM_DECL_NOEXCEPT;
+    const char *select(int index) const NANOEM_DECL_NOEXCEPT;
     int index() const NANOEM_DECL_NOEXCEPT;
     int count() const NANOEM_DECL_NOEXCEPT;
     const nanoem_model_morph_t *activeMorph(int offset) const NANOEM_DECL_NOEXCEPT;
