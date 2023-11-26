@@ -171,17 +171,18 @@ MainWindow::initialize(HWND windowHandle, Error &error)
     else
 #endif /* NANOEM_WIN32_HAS_OPENGL */
         if (true) {
-        // if (StringUtils::equalsIgnoreCase(preference.rendererBackend(), BaseApplicationService::kRendererWebGPU)) {
+            // if (StringUtils::equalsIgnoreCase(preference.rendererBackend(), BaseApplicationService::kRendererWebGPU))
+            // {
             sokolPath.append("sokol_webgpu.dll");
             result = setupWebGPURenderer(windowHandle, sokolPath, error);
             pixelFormat = SG_PIXELFORMAT_BGRA8;
             isLowPower = false;
-    }
-    else {
-        result = setupDirectXRenderer(windowHandle, windowSize.x, windowSize.y, isLowPower, error);
-        sokolPath.append("sokol_d3d11.dll");
-        pixelFormat = SG_PIXELFORMAT_BGRA8;
-    }
+        }
+        else {
+            result = setupDirectXRenderer(windowHandle, windowSize.x, windowSize.y, isLowPower, error);
+            sokolPath.append("sokol_d3d11.dll");
+            pixelFormat = SG_PIXELFORMAT_BGRA8;
+        }
     if (result) {
         m_logicalWindowSize = Vector2(windowSize) * invertedDevicePixelRatio();
         const ApplicationPreference preference(m_service);
