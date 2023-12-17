@@ -181,6 +181,15 @@ WebGPUContext::PrivateContext::PrivateContext(const WGPUSurfaceDescriptor &surfa
     Inline::clearZeroMemory(adapterOptions);
     m_surface = _wgpuInstanceCreateSurface(m_instance, &surfaceDescriptor);
     adapterOptions.compatibleSurface = m_surface;
+#if defined(NANOEM_WEBGPU_DAWN)
+    WGPUDawnTogglesDescriptor toggleDescriptor;
+    const char *toggles[] = { "allow_unsafe_apis", "use_dxc" };
+    Inline::clearZeroMemory(toggleDescriptor);
+    toggleDescriptor.chain.sType = WGPUSType_DawnTogglesDescriptor;
+    toggleDescriptor.enabledToggleCount = BX_COUNTOF(toggles);
+    toggleDescriptor.enabledToggles = toggles;
+    adapterOptions.nextInChain = &toggleDescriptor.chain;
+#endif /* NANOEM_WEBGPU_DAWN */
     _wgpuInstanceRequestAdapter(m_instance, &adapterOptions, &handleAdapterRequest, this);
     WGPUFeatureName requiredFeatures[] = { WGPUFeatureName_Depth32FloatStencil8 };
     WGPUDeviceDescriptor deviceDescriptor;
