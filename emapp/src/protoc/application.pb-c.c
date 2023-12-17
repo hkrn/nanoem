@@ -19080,7 +19080,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_accessory_c
     offsetof(Nanoem__Application__RedoLoadAccessoryCommand, archive),
     &nanoem__application__archive__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -19092,7 +19092,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_accessory_c
     offsetof(Nanoem__Application__RedoLoadAccessoryCommand, file_uri),
     &nanoem__application__uri__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -19157,7 +19157,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_model_comma
     offsetof(Nanoem__Application__RedoLoadModelCommand, archive),
     &nanoem__application__archive__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -19169,7 +19169,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_model_comma
     offsetof(Nanoem__Application__RedoLoadModelCommand, file_uri),
     &nanoem__application__uri__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -19294,7 +19294,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_motion_comm
     offsetof(Nanoem__Application__RedoLoadMotionCommand, archive),
     &nanoem__application__archive__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -19306,7 +19306,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_motion_comm
     offsetof(Nanoem__Application__RedoLoadMotionCommand, file_uri),
     &nanoem__application__uri__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -21780,7 +21780,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_audio_comma
     offsetof(Nanoem__Application__RedoLoadAudioCommand, archive),
     &nanoem__application__archive__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -21792,7 +21792,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_audio_comma
     offsetof(Nanoem__Application__RedoLoadAudioCommand, file_uri),
     &nanoem__application__uri__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -21831,7 +21831,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_video_comma
     offsetof(Nanoem__Application__RedoLoadVideoCommand, archive),
     &nanoem__application__archive__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -21843,7 +21843,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_load_video_comma
     offsetof(Nanoem__Application__RedoLoadVideoCommand, file_uri),
     &nanoem__application__uri__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -23595,7 +23595,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_model_label_comm
     offsetof(Nanoem__Application__RedoModelLabelCommand__Item, bone_index),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -23607,7 +23607,7 @@ static const ProtobufCFieldDescriptor nanoem__application__redo_model_label_comm
     offsetof(Nanoem__Application__RedoModelLabelCommand__Item, morph_index),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -24653,7 +24653,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, initialize),
     &nanoem__application__initialize_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24665,7 +24665,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, render_frame),
     &nanoem__application__render_frame_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24677,7 +24677,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, destroy),
     &nanoem__application__destroy_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24689,7 +24689,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, terminate),
     &nanoem__application__terminate_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24701,7 +24701,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, activate),
     &nanoem__application__activate_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24713,7 +24713,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, deactivate),
     &nanoem__application__deactivate_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24725,7 +24725,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, window_resized),
     &nanoem__application__window_resized_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24737,7 +24737,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, viewport_resized),
     &nanoem__application__viewport_resized_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24749,7 +24749,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, cursor_pressed),
     &nanoem__application__cursor_pressed_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24761,7 +24761,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, cursor_moved),
     &nanoem__application__cursor_moved_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24773,7 +24773,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, cursor_released),
     &nanoem__application__cursor_released_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24785,7 +24785,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, cursor_scrolled),
     &nanoem__application__cursor_scrolled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24797,7 +24797,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, pointer_pressed),
     &nanoem__application__pointer_pressed_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24809,7 +24809,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, pointer_moved),
     &nanoem__application__pointer_moved_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24821,7 +24821,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, pointer_released),
     &nanoem__application__pointer_released_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24833,7 +24833,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, pointer_scrolled),
     &nanoem__application__pointer_scrolled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24845,7 +24845,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, key_pressed),
     &nanoem__application__key_pressed_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24857,7 +24857,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, key_released),
     &nanoem__application__key_released_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24869,7 +24869,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, unicode_input),
     &nanoem__application__unicode_input_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24881,7 +24881,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, menu_action),
     &nanoem__application__menu_action_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24893,7 +24893,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, drop_file),
     &nanoem__application__drop_file_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24905,7 +24905,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, load_file),
     &nanoem__application__load_file_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24917,7 +24917,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, save_file),
     &nanoem__application__save_file_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24929,7 +24929,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, new_project),
     &nanoem__application__new_project_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24941,7 +24941,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, confirm_before_new_project),
     &nanoem__application__confirm_before_new_project_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24953,7 +24953,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, confirm_before_open_project),
     &nanoem__application__confirm_before_open_project_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24965,7 +24965,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, confirm_before_exit_application),
     &nanoem__application__confirm_before_exit_application_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24977,7 +24977,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, change_device_pixel_ratio),
     &nanoem__application__change_device_pixel_ratio_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -24989,7 +24989,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_active_accessory),
     &nanoem__application__set_active_accessory_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25001,7 +25001,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_active_model),
     &nanoem__application__set_active_model_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25013,7 +25013,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_active_model_bone),
     &nanoem__application__set_active_model_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25025,7 +25025,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_active_model_morph),
     &nanoem__application__set_active_model_morph_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25037,7 +25037,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, load_all_decoder_plugins),
     &nanoem__application__load_all_decoder_plugins_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25049,7 +25049,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, load_all_encoder_plugins),
     &nanoem__application__load_all_encoder_plugins_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25061,7 +25061,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, seek),
     &nanoem__application__seek_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25073,7 +25073,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_camera_look_at),
     &nanoem__application__set_camera_look_at_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25085,7 +25085,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_camera_angle),
     &nanoem__application__set_camera_angle_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25097,7 +25097,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_camera_fov),
     &nanoem__application__set_camera_fov_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25109,7 +25109,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_camera_distance),
     &nanoem__application__set_camera_distance_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25121,7 +25121,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_light_color),
     &nanoem__application__set_light_color_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25133,7 +25133,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_light_direction),
     &nanoem__application__set_light_direction_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25145,7 +25145,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_translation),
     &nanoem__application__set_accessory_translation_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25157,7 +25157,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_orientation),
     &nanoem__application__set_accessory_orientation_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25169,7 +25169,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_scale_factor),
     &nanoem__application__set_accessory_scale_factor_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25181,7 +25181,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_opacity),
     &nanoem__application__set_accessory_opacity_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25193,7 +25193,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_morph_weight),
     &nanoem__application__set_model_morph_weight_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25205,7 +25205,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_bone_translation),
     &nanoem__application__set_model_bone_translation_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25217,7 +25217,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_bone_orientation),
     &nanoem__application__set_model_bone_orientation_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25229,7 +25229,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, update_model),
     &nanoem__application__update_model_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25241,7 +25241,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_accessory_keyframe),
     &nanoem__application__register_accessory_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25253,7 +25253,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_all_selected_bone_keyframes),
     &nanoem__application__register_all_selected_bone_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25265,7 +25265,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_camera_keyframe),
     &nanoem__application__register_camera_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25277,7 +25277,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_light_keyframe),
     &nanoem__application__register_light_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25289,7 +25289,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_model_keyframe),
     &nanoem__application__register_model_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25301,7 +25301,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_all_selected_morph_keyframes),
     &nanoem__application__register_all_selected_morph_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25313,7 +25313,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, register_self_shadow_keyframe),
     &nanoem__application__register_self_shadow_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25325,7 +25325,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_accessory_keyframe),
     &nanoem__application__remove_accessory_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25337,7 +25337,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_all_selected_bone_keyframes),
     &nanoem__application__remove_all_selected_bone_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25349,7 +25349,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_camera_keyframe),
     &nanoem__application__remove_camera_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25361,7 +25361,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_light_keyframe),
     &nanoem__application__remove_light_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25373,7 +25373,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_model_keyframe),
     &nanoem__application__remove_model_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25385,7 +25385,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_all_selected_morph_keyframes),
     &nanoem__application__remove_all_selected_morph_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25397,7 +25397,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, remove_self_shadow_keyframe),
     &nanoem__application__remove_self_shadow_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25409,7 +25409,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_bone_bezier_control_point),
     &nanoem__application__set_bone_bezier_control_point_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25421,7 +25421,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_camera_bezier_control_point),
     &nanoem__application__set_camera_bezier_control_point_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25433,7 +25433,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_bone),
     &nanoem__application__select_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25445,7 +25445,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_all_bones),
     &nanoem__application__select_all_bones_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25457,7 +25457,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_all_dirty_bones),
     &nanoem__application__select_all_dirty_bones_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25469,7 +25469,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_all_movable_bones),
     &nanoem__application__select_all_movable_bones_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25481,7 +25481,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, clear_select_bone),
     &nanoem__application__clear_select_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25493,7 +25493,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, clear_select_all_bones),
     &nanoem__application__clear_select_all_bones_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25505,7 +25505,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_motion_keyframe),
     &nanoem__application__select_motion_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25517,7 +25517,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_all_row_motion_keyframes),
     &nanoem__application__select_all_row_motion_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25529,7 +25529,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, select_all_column_motion_keyframes),
     &nanoem__application__select_all_column_motion_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25541,7 +25541,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, clear_select_all_motion_keyframes),
     &nanoem__application__clear_select_all_motion_keyframes_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25553,7 +25553,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, update_current_fps),
     &nanoem__application__update_current_fpscommand__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25565,7 +25565,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, start_debug_capture),
     &nanoem__application__start_debug_capture_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25577,7 +25577,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, stop_debug_capture),
     &nanoem__application__stop_debug_capture_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25589,7 +25589,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, reload_accessory_effect),
     &nanoem__application__reload_accessory_effect_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25601,7 +25601,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, reload_model_effect),
     &nanoem__application__reload_model_effect_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25613,7 +25613,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_visible),
     &nanoem__application__set_model_visible_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25625,7 +25625,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_edge_color),
     &nanoem__application__set_model_edge_color_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25637,7 +25637,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_edge_size),
     &nanoem__application__set_model_edge_size_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25649,7 +25649,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_constraint_state),
     &nanoem__application__set_model_constraint_state_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25661,7 +25661,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_outside_parent),
     &nanoem__application__set_model_outside_parent_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25673,7 +25673,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_outside_parent),
     &nanoem__application__set_accessory_outside_parent_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25685,7 +25685,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, recovery),
     &nanoem__application__recovery_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25697,7 +25697,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_effect_plugin_enabled),
     &nanoem__application__set_effect_plugin_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25709,7 +25709,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, save_point),
     &nanoem__application__save_point_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25721,7 +25721,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_add_blend_enabled),
     &nanoem__application__set_accessory_add_blend_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25733,7 +25733,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_shadow_enabled),
     &nanoem__application__set_accessory_shadow_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25745,7 +25745,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_accessory_visible),
     &nanoem__application__set_accessory_visible_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25757,7 +25757,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_add_blend_enabled),
     &nanoem__application__set_model_add_blend_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25769,7 +25769,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_shadow_enabled),
     &nanoem__application__set_model_shadow_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25781,7 +25781,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_shadow_map_enabled),
     &nanoem__application__set_model_shadow_map_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25793,7 +25793,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_drawable_order_index),
     &nanoem__application__set_drawable_order_index_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25805,7 +25805,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_transform_order_index),
     &nanoem__application__set_model_transform_order_index_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25817,7 +25817,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_physics_simulation_enabled),
     &nanoem__application__set_model_physics_simulation_enabled_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25829,7 +25829,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_model_bone_keyframe_interpolation),
     &nanoem__application__set_model_bone_keyframe_interpolation_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25841,7 +25841,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, set_camera_keyframe_interpolation),
     &nanoem__application__set_camera_keyframe_interpolation_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25853,7 +25853,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, update_performance_monitor),
     &nanoem__application__update_performance_monitor_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25865,7 +25865,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, load_all_model_io_plugins),
     &nanoem__application__load_all_model_ioplugins_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25877,7 +25877,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, load_all_motion_io_plugins),
     &nanoem__application__load_all_motion_ioplugins_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25889,7 +25889,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, execute_model_io_plugin),
     &nanoem__application__execute_model_ioplugin_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25901,7 +25901,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, execute_motion_io_plugin),
     &nanoem__application__execute_motion_ioplugin_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25913,7 +25913,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, request_export_image_configuration),
     &nanoem__application__request_export_image_configuration_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25925,7 +25925,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, request_export_video_configuration),
     &nanoem__application__request_export_video_configuration_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25937,7 +25937,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, execute_exporting_image),
     &nanoem__application__execute_exporting_image_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25949,7 +25949,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, execute_exporting_video),
     &nanoem__application__execute_exporting_video_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25961,7 +25961,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, screen_cursor_press),
     &nanoem__application__screen_cursor_press_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25973,7 +25973,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, screen_cursor_move),
     &nanoem__application__screen_cursor_move_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25985,7 +25985,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, screen_cursor_release),
     &nanoem__application__screen_cursor_release_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -25997,7 +25997,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, confirm_before_exporting_image),
     &nanoem__application__confirm_before_exporting_image_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26009,7 +26009,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, confirm_before_exporting_video),
     &nanoem__application__confirm_before_exporting_video_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26021,7 +26021,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, save_project),
     &nanoem__application__save_project_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26033,7 +26033,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, ping_pong),
     &nanoem__application__ping_pong_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26045,7 +26045,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, is_project_dirty),
     &nanoem__application__is_project_dirty_request_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26057,7 +26057,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_all_model_bones),
     &nanoem__application__get_all_model_bones_request_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26069,7 +26069,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_all_model_morphs),
     &nanoem__application__get_all_model_morphs_request_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26081,7 +26081,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_project_file_uri),
     &nanoem__application__get_project_file_urirequest_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26093,7 +26093,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_background_image_texture_handle),
     &nanoem__application__get_background_image_texture_handle_request_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26105,7 +26105,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_all_accessories),
     &nanoem__application__get_all_accessories_request_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26117,7 +26117,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_all_models),
     &nanoem__application__get_all_models_request_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26129,7 +26129,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, query_open_single_file_dialog),
     &nanoem__application__query_open_single_file_dialog_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26141,7 +26141,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, query_open_multiple_files_dialog),
     &nanoem__application__query_open_multiple_files_dialog_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26153,7 +26153,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, query_save_file_dialog),
     &nanoem__application__query_save_file_dialog_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26165,7 +26165,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, get_handle_file_uri),
     &nanoem__application__get_handle_file_urirequest_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26177,7 +26177,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, undo),
     &nanoem__application__undo_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26189,7 +26189,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_load_accessory),
     &nanoem__application__redo_load_accessory_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26201,7 +26201,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_load_model),
     &nanoem__application__redo_load_model_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26213,7 +26213,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_load_motion),
     &nanoem__application__redo_load_motion_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26225,7 +26225,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_transform_bone),
     &nanoem__application__redo_transform_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26237,7 +26237,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_transform_morph),
     &nanoem__application__redo_transform_morph_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26249,7 +26249,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_accessory_keyframe),
     &nanoem__application__redo_accessory_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26261,7 +26261,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_accessory_keyframe),
     &nanoem__application__redo_accessory_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26273,7 +26273,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_bone_keyframe),
     &nanoem__application__redo_bone_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26285,7 +26285,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_bone_keyframe),
     &nanoem__application__redo_bone_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26297,7 +26297,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_camera_keyframe),
     &nanoem__application__redo_camera_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26309,7 +26309,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_camera_keyframe),
     &nanoem__application__redo_camera_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26321,7 +26321,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_light_keyframe),
     &nanoem__application__redo_light_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26333,7 +26333,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_light_keyframe),
     &nanoem__application__redo_light_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26345,7 +26345,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_model_keyframe),
     &nanoem__application__redo_model_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26357,7 +26357,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_model_keyframe),
     &nanoem__application__redo_model_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26369,7 +26369,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_morph_keyframe),
     &nanoem__application__redo_morph_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26381,7 +26381,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_morph_keyframe),
     &nanoem__application__redo_morph_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26393,7 +26393,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_self_shadow_keyframe),
     &nanoem__application__redo_self_shadow_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26405,7 +26405,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_self_shadow_keyframe),
     &nanoem__application__redo_self_shadow_keyframe_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26417,7 +26417,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_accessory),
     &nanoem__application__redo_update_accessory_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26429,7 +26429,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_camera),
     &nanoem__application__redo_update_camera_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26441,7 +26441,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_light),
     &nanoem__application__redo_update_light_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26453,7 +26453,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_insert_empty_timeline_frame),
     &nanoem__application__redo_insert_empty_timeline_frame_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26465,7 +26465,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_timeline_frame),
     &nanoem__application__redo_remove_timeline_frame_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26477,7 +26477,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_save_motion_snapshot),
     &nanoem__application__redo_save_motion_snapshot_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26489,7 +26489,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_delete_accessory),
     &nanoem__application__redo_delete_accessory_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26501,7 +26501,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_delete_model),
     &nanoem__application__redo_delete_model_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26513,7 +26513,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_load_audio),
     &nanoem__application__redo_load_audio_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26525,7 +26525,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_load_video),
     &nanoem__application__redo_load_video_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26537,7 +26537,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_batch_undo_command_list),
     &nanoem__application__redo_batch_undo_command_list_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26549,7 +26549,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_save_model_snapshot),
     &nanoem__application__redo_save_model_snapshot_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26561,7 +26561,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_model_header),
     &nanoem__application__redo_model_header_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26573,7 +26573,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_vertex),
     &nanoem__application__redo_model_vertex_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26585,7 +26585,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_vertex),
     &nanoem__application__redo_model_vertex_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26597,7 +26597,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_vertex),
     &nanoem__application__redo_model_vertex_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26609,7 +26609,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_material),
     &nanoem__application__redo_model_material_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26621,7 +26621,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_material),
     &nanoem__application__redo_model_material_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26633,7 +26633,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_material),
     &nanoem__application__redo_model_material_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26645,7 +26645,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_bone),
     &nanoem__application__redo_model_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26657,7 +26657,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_bone),
     &nanoem__application__redo_model_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26669,7 +26669,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_bone),
     &nanoem__application__redo_model_bone_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26681,7 +26681,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_constraint),
     &nanoem__application__redo_model_constraint_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26693,7 +26693,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_constraint),
     &nanoem__application__redo_model_constraint_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26705,7 +26705,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_constraint),
     &nanoem__application__redo_model_constraint_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26717,7 +26717,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_morph),
     &nanoem__application__redo_model_morph_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26729,7 +26729,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_morph),
     &nanoem__application__redo_model_morph_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26741,7 +26741,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_morph),
     &nanoem__application__redo_model_morph_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26753,7 +26753,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_label),
     &nanoem__application__redo_model_label_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26765,7 +26765,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_label),
     &nanoem__application__redo_model_label_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26777,7 +26777,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_label),
     &nanoem__application__redo_model_label_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26789,7 +26789,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_rigid_body),
     &nanoem__application__redo_model_rigid_body_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26801,7 +26801,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_rigid_body),
     &nanoem__application__redo_model_rigid_body_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26813,7 +26813,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_rigid_body),
     &nanoem__application__redo_model_rigid_body_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26825,7 +26825,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_joint),
     &nanoem__application__redo_model_joint_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26837,7 +26837,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_joint),
     &nanoem__application__redo_model_joint_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26849,7 +26849,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_joint),
     &nanoem__application__redo_model_joint_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26861,7 +26861,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_add_face),
     &nanoem__application__redo_model_face_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26873,7 +26873,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_update_face),
     &nanoem__application__redo_model_face_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -26885,7 +26885,7 @@ static const ProtobufCFieldDescriptor nanoem__application__command__field_descri
     offsetof(Nanoem__Application__Command, redo_remove_face),
     &nanoem__application__redo_model_face_command__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -29985,7 +29985,7 @@ static const ProtobufCFieldDescriptor nanoem__application__update_progress_event
     offsetof(Nanoem__Application__UpdateProgressEvent, text),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -29997,7 +29997,7 @@ static const ProtobufCFieldDescriptor nanoem__application__update_progress_event
     offsetof(Nanoem__Application__UpdateProgressEvent, item),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -31300,7 +31300,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, track),
     &nanoem__application__track_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31312,7 +31312,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, undo),
     &nanoem__application__undo_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31324,7 +31324,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, redo),
     &nanoem__application__redo_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31336,7 +31336,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, undo_change),
     &nanoem__application__undo_change_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31348,7 +31348,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, add_model),
     &nanoem__application__add_model_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31360,7 +31360,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_active_model),
     &nanoem__application__set_active_model_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31372,7 +31372,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_active_bone),
     &nanoem__application__set_active_bone_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31384,7 +31384,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_active_morph),
     &nanoem__application__set_active_morph_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31396,7 +31396,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, remove_model),
     &nanoem__application__remove_model_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31408,7 +31408,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, add_accessory),
     &nanoem__application__add_accessory_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31420,7 +31420,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_active_accessory),
     &nanoem__application__set_active_accessory_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31432,7 +31432,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, remove_accessory),
     &nanoem__application__remove_accessory_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31444,7 +31444,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, add_motion),
     &nanoem__application__add_motion_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31456,7 +31456,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, remove_motion),
     &nanoem__application__remove_motion_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31468,7 +31468,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, play),
     &nanoem__application__play_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31480,7 +31480,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, stop),
     &nanoem__application__stop_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31492,7 +31492,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, pause),
     &nanoem__application__pause_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31504,7 +31504,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, resume),
     &nanoem__application__resume_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31516,7 +31516,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, seek),
     &nanoem__application__seek_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31528,7 +31528,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, update_duration),
     &nanoem__application__update_duration_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31540,7 +31540,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, save_project_after_confirm),
     &nanoem__application__save_project_after_confirm_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31552,7 +31552,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, discard_project_after_confirm),
     &nanoem__application__discard_project_after_confirm_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31564,7 +31564,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_project_effect_enabled),
     &nanoem__application__toggle_project_effect_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31576,7 +31576,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_project_ground_shadow_enabled),
     &nanoem__application__toggle_project_ground_shadow_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31588,7 +31588,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_project_vertex_shader_skinning_enabled),
     &nanoem__application__toggle_project_vertex_shader_skinning_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31600,7 +31600,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_project_compute_shader_skinning_enabled),
     &nanoem__application__toggle_project_compute_shader_skinning_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31612,7 +31612,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_project_sample_level),
     &nanoem__application__set_project_sample_level_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31624,7 +31624,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_grid_enabled),
     &nanoem__application__toggle_grid_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31636,7 +31636,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_grid_cell),
     &nanoem__application__set_grid_cell_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31648,7 +31648,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_grid_size),
     &nanoem__application__set_grid_size_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31660,7 +31660,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_preferred_motion_fps),
     &nanoem__application__set_preferred_motion_fpsevent__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31672,7 +31672,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_physics_simulation_mode),
     &nanoem__application__set_physics_simulation_mode_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31684,7 +31684,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_physics_simulation_engine_debug_flag),
     &nanoem__application__set_physics_simulation_engine_debug_flag_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31696,7 +31696,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_shadow_map_enabled),
     &nanoem__application__toggle_shadow_map_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31708,7 +31708,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_shadow_map_mode),
     &nanoem__application__set_shadow_map_mode_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31720,7 +31720,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_shadow_map_distance),
     &nanoem__application__set_shadow_map_distance_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31732,7 +31732,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_add_blend_enabled),
     &nanoem__application__toggle_active_model_add_blend_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31744,7 +31744,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_shadow_map_enabled),
     &nanoem__application__toggle_active_model_shadow_map_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31756,7 +31756,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_visible),
     &nanoem__application__toggle_active_model_visible_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31768,7 +31768,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_compute_shader_skinning_enabled),
     &nanoem__application__toggle_active_model_compute_shader_skinning_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31780,7 +31780,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_show_all_bones),
     &nanoem__application__toggle_active_model_show_all_bones_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31792,7 +31792,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_show_all_rigid_bodies),
     &nanoem__application__toggle_active_model_show_all_rigid_bodies_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31804,7 +31804,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_show_all_vertex_faces),
     &nanoem__application__toggle_active_model_show_all_vertex_faces_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31816,7 +31816,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_show_all_vertex_points),
     &nanoem__application__toggle_active_model_show_all_vertex_points_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31828,7 +31828,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_model_vertex_shader_skinning),
     &nanoem__application__toggle_active_model_vertex_shader_skinning_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31840,7 +31840,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, disable_cursor),
     &nanoem__application__disable_cursor_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31852,7 +31852,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, enable_cursor),
     &nanoem__application__enable_cursor_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31864,7 +31864,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, available_all_importing_audio_extensions),
     &nanoem__application__available_all_importing_audio_extensions_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31876,7 +31876,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, available_all_importing_video_extensions),
     &nanoem__application__available_all_importing_video_extensions_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31888,7 +31888,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, available_all_exporting_image_extensions),
     &nanoem__application__available_all_exporting_image_extensions_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31900,7 +31900,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, available_all_exporting_video_extensions),
     &nanoem__application__available_all_exporting_video_extensions_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31912,7 +31912,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, initialization_complete),
     &nanoem__application__initialization_complete_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31924,7 +31924,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_destruction),
     &nanoem__application__complete_destruction_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31936,7 +31936,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, error),
     &nanoem__application__error_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31948,7 +31948,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, start_recording_viewport_pass),
     &nanoem__application__start_recording_viewport_pass_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31960,7 +31960,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, stop_recording_viewport_pass),
     &nanoem__application__stop_recording_viewport_pass_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31972,7 +31972,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_loading_file),
     &nanoem__application__complete_loading_file_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31984,7 +31984,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_saving_file),
     &nanoem__application__complete_saving_file_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -31996,7 +31996,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_preferred_editing_fps),
     &nanoem__application__set_preferred_editing_fpsevent__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32008,7 +32008,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_termination),
     &nanoem__application__complete_termination_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32020,7 +32020,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, consume_pass),
     &nanoem__application__consume_pass_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32032,7 +32032,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, add_modal_dialog),
     &nanoem__application__add_modal_dialog_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32044,7 +32044,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, clear_modal_dialog),
     &nanoem__application__clear_modal_dialog_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32056,7 +32056,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_language),
     &nanoem__application__set_language_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32068,7 +32068,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_project_playing_with_loop_enabled),
     &nanoem__application__toggle_project_playing_with_loop_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32080,7 +32080,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_accessory_add_blend_enabled),
     &nanoem__application__toggle_active_accessory_add_blend_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32092,7 +32092,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_accessory_shadow_enabled),
     &nanoem__application__toggle_active_accessory_shadow_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32104,7 +32104,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_active_accessory_visible),
     &nanoem__application__toggle_active_accessory_visible_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32116,7 +32116,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, update_progress),
     &nanoem__application__update_progress_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32128,7 +32128,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, start_progress),
     &nanoem__application__start_progress_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32140,7 +32140,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, stop_progress),
     &nanoem__application__stop_progress_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32152,7 +32152,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, setup_project),
     &nanoem__application__setup_project_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32164,7 +32164,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_editing_mode),
     &nanoem__application__set_editing_mode_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32176,7 +32176,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_loading_all_model_io_plugins),
     &nanoem__application__complete_loading_all_model_ioplugins_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32188,7 +32188,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_loading_all_motion_io_plugins),
     &nanoem__application__complete_loading_all_motion_ioplugins_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32200,7 +32200,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_export_image_configuration),
     &nanoem__application__complete_export_image_configuration_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32212,7 +32212,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, complete_export_video_configuration),
     &nanoem__application__complete_export_video_configuration_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32224,7 +32224,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, can_copy_event),
     &nanoem__application__can_copy_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32236,7 +32236,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, can_paste_event),
     &nanoem__application__can_paste_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32248,7 +32248,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_window_device_pixel_ratio_event),
     &nanoem__application__set_window_device_pixel_ratio_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32260,7 +32260,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, set_viewport_device_pixel_ratio_event),
     &nanoem__application__set_viewport_device_pixel_ratio_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32272,7 +32272,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, toggle_model_editing_enabled),
     &nanoem__application__toggle_model_editing_enabled_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32284,7 +32284,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, quit_application),
     &nanoem__application__quit_application_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32296,7 +32296,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, ping_pong),
     &nanoem__application__ping_pong_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32308,7 +32308,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, is_project_dirty),
     &nanoem__application__is_project_dirty_response_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32320,7 +32320,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_all_model_bones),
     &nanoem__application__get_all_model_bones_response_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32332,7 +32332,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_all_model_morphs),
     &nanoem__application__get_all_model_morphs_response_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32344,7 +32344,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_project_file_uri),
     &nanoem__application__get_project_file_uriresponse_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32356,7 +32356,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_background_image_texture_handle),
     &nanoem__application__get_background_image_texture_handle_response_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32368,7 +32368,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_all_accessories),
     &nanoem__application__get_all_accessories_response_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32380,7 +32380,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_all_models),
     &nanoem__application__get_all_models_response_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32392,7 +32392,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, query_open_single_file_dialog),
     &nanoem__application__query_open_single_file_dialog_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32404,7 +32404,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, query_open_multiple_files_dialog),
     &nanoem__application__query_open_multiple_files_dialog_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32416,7 +32416,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, query_save_file_dialog),
     &nanoem__application__query_save_file_dialog_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -32428,7 +32428,7 @@ static const ProtobufCFieldDescriptor nanoem__application__event__field_descript
     offsetof(Nanoem__Application__Event, get_handle_file_uri),
     &nanoem__application__get_handle_file_uriresponse_event__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };

@@ -1635,7 +1635,7 @@ static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[14]
     offsetof(Fx9__Effect__Shader, glsl),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1647,7 +1647,7 @@ static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[14]
     offsetof(Fx9__Effect__Shader, msl),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1659,7 +1659,7 @@ static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[14]
     offsetof(Fx9__Effect__Shader, hlsl),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1671,7 +1671,7 @@ static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[14]
     offsetof(Fx9__Effect__Shader, spirv),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1683,7 +1683,7 @@ static const ProtobufCFieldDescriptor fx9__effect__shader__field_descriptors[14]
     offsetof(Fx9__Effect__Shader, wgsl),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2160,7 +2160,7 @@ static const ProtobufCFieldDescriptor fx9__effect__parameter__field_descriptors[
     offsetof(Fx9__Effect__Parameter, class_dx9ms),
     &fx9__effect__dx9ms__parameter_class__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2172,7 +2172,7 @@ static const ProtobufCFieldDescriptor fx9__effect__parameter__field_descriptors[
     offsetof(Fx9__Effect__Parameter, type_dx9ms),
     &fx9__effect__dx9ms__parameter_type__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2271,7 +2271,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, bval),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2283,7 +2283,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, fval),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2295,7 +2295,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, ival),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2307,7 +2307,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, sval),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2319,7 +2319,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, ival4),
     &fx9__effect__vector4i__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2331,7 +2331,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, fval4),
     &fx9__effect__vector4f__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2343,7 +2343,7 @@ static const ProtobufCFieldDescriptor fx9__effect__annotation__field_descriptors
     offsetof(Fx9__Effect__Annotation, sval_utf8),
     NULL,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
@@ -2412,7 +2412,7 @@ static const ProtobufCFieldDescriptor fx9__effect__pass__field_descriptors[6] =
     offsetof(Fx9__Effect__Pass, implementation_dx9ms),
     &fx9__effect__dx9ms__pass__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
