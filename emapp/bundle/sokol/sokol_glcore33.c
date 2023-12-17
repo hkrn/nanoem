@@ -72,6 +72,11 @@ sgx_label_image(sg_image image, const char *text)
 }
 
 SGX_API_DECL void APIENTRY
+sgx_label_sampler(sg_sampler sampler, const char *text)
+{
+}
+
+SGX_API_DECL void APIENTRY
 sgx_label_shader(sg_shader shader, const char *text)
 {
     _sg_shader_t *ptr = _sg_lookup_shader(&_sg.pools, shader.id);
