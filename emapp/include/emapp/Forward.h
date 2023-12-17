@@ -674,6 +674,7 @@ typedef struct sg_image_desc {
     const void *d3d11_shader_resource_view;
     /* WebGPU specific */
     const void *wgpu_texture;
+    const void *wgpu_texture_view;
     uint32_t _end_canary;
 } sg_image_desc;
 
