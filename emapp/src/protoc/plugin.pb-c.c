@@ -1741,7 +1741,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, separator),
     &nanoem__application__plugin__uicomponent__separator__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1753,7 +1753,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, label),
     &nanoem__application__plugin__uicomponent__label__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1765,7 +1765,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, button),
     &nanoem__application__plugin__uicomponent__button__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1777,7 +1777,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, check_box),
     &nanoem__application__plugin__uicomponent__check_box__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1789,7 +1789,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, radio_button),
     &nanoem__application__plugin__uicomponent__radio_button__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1801,7 +1801,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, selectable),
     &nanoem__application__plugin__uicomponent__selectable__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1813,7 +1813,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, combo_box),
     &nanoem__application__plugin__uicomponent__combo_box__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1825,7 +1825,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, drag_scalar_n),
     &nanoem__application__plugin__uicomponent__drag_scalar_n__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1837,7 +1837,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, slider_scalar_n),
     &nanoem__application__plugin__uicomponent__slider_scalar_n__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1849,7 +1849,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, input_scalar_n),
     &nanoem__application__plugin__uicomponent__input_scalar_n__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1861,7 +1861,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, same_line),
     &nanoem__application__plugin__uicomponent__same_line__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1873,7 +1873,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, child_window),
     &nanoem__application__plugin__uicomponent__child_window__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1885,7 +1885,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, dummy),
     &nanoem__application__plugin__uicomponent__dummy__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1897,7 +1897,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, tree),
     &nanoem__application__plugin__uicomponent__tree__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -1909,7 +1909,7 @@ static const ProtobufCFieldDescriptor nanoem__application__plugin__uicomponent__
     offsetof(Nanoem__Application__Plugin__UIComponent, canvas),
     &nanoem__application__plugin__uicomponent__canvas__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };

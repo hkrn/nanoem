@@ -2285,7 +2285,7 @@ static const ProtobufCFieldDescriptor nanoem__project__motion__field_descriptors
     offsetof(Nanoem__Project__Motion, camera),
     &nanoem__project__motion__camera__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2297,7 +2297,7 @@ static const ProtobufCFieldDescriptor nanoem__project__motion__field_descriptors
     offsetof(Nanoem__Project__Motion, light),
     &nanoem__project__motion__light__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2309,7 +2309,7 @@ static const ProtobufCFieldDescriptor nanoem__project__motion__field_descriptors
     offsetof(Nanoem__Project__Motion, self_shadow),
     &nanoem__project__motion__self_shadow__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2321,7 +2321,7 @@ static const ProtobufCFieldDescriptor nanoem__project__motion__field_descriptors
     offsetof(Nanoem__Project__Motion, model),
     &nanoem__project__motion__model__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
   {
@@ -2333,7 +2333,7 @@ static const ProtobufCFieldDescriptor nanoem__project__motion__field_descriptors
     offsetof(Nanoem__Project__Motion, accessory),
     &nanoem__project__motion__accessory__descriptor,
     NULL,
-    0 | PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
+    PROTOBUF_C_FIELD_FLAG_ONEOF,             /* flags */
     0,NULL,NULL    /* reserved1,reserved2, etc */
   },
 };
