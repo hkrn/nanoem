@@ -14,7 +14,7 @@ notify = { version = "6", default-features = false, features = [
 parking_lot = "0.12"
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
-wasmtime = { version = "16", default-features = false, features = [
+wasmtime = { version = "17", default-features = false, features = [
     "cranelift",
 ] }
 wasmtime-wasi = { version = "16" }
