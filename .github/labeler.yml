@@ -1,11 +1,21 @@
-docs: docs/**/*
+docs:
+  - changed-files:
+    - any-glob-to-any-file: docs/**
 emapp:
-- emapp/**/*
-- glfw/**/*
-- macos/**/*
-- sandbox/**/*
-- sapp/**/*
-- win32/**/*
-github: .github/**/*
-nanoem: nanoem/**/*
-rust: rust/**/*
+  - changed-files:
+    - any-glob-to-any-file:
+      - emapp/**
+      - glfw/**
+      - macos/**
+      - sandbox/**
+      - sapp/**
+      - win32/**
+github:
+  - changed-files:
+    - any-glob-to-any-file: .github/**
+nanoem:
+  - changed-files:
+    - any-glob-to-any-file: nanoem/**
+rust:
+  - changed-files:
+    - any-glob-to-any-file: rust/**

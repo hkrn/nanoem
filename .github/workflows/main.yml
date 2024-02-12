@@ -25,7 +25,7 @@ jobs:
       LDFLAGS: -lc++abi
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       # Assumes clang/cmake/libc++/libc++abi are installed on GitHub Actions Runner
@@ -86,7 +86,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: checkout ffmpeg
@@ -131,7 +131,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: recursive
@@ -174,7 +174,7 @@ jobs:
         working-directory: ${{ github.workspace }}/rust
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: setup prerequisite packages
         run: |
           sudo apt-get update && sudo apt-get install -y \
@@ -191,7 +191,7 @@ jobs:
       NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: initialize CodeQL
