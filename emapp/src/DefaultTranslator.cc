@@ -37,7 +37,9 @@ DefaultTranslator::loadFromMemory(const nanoem_u8_t *ptr, size_t length)
             const Nanoem__Translation__Unit *unit = bundle->units[i];
             const bool match =
                 (unit->language == NANOEM__COMMON__LANGUAGE__LC_JAPANESE && m_language == kLanguageTypeJapanese) ||
-                (unit->language == NANOEM__COMMON__LANGUAGE__LC_ENGLISH && m_language == kLanguageTypeEnglish);
+                (unit->language == NANOEM__COMMON__LANGUAGE__LC_ENGLISH && m_language == kLanguageTypeEnglish) ||
+                (unit->language == NANOEM__COMMON__LANGUAGE__LC_SCHINESE && m_language == kLanguageTypeSChinese) ||
+                (unit->language == NANOEM__COMMON__LANGUAGE__LC_TCHINESE && m_language == kLanguageTypeTChinese);
             if (match) {
                 for (size_t j = 0, numPhrases = unit->n_phrases; j < numPhrases; j++) {
                     const Nanoem__Translation__Phrase *phrase = unit->phrases[j];
