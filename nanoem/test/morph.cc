@@ -14,6 +14,8 @@ TEST_CASE("null_morph_basic", "[nanoem]")
     CHECK(nanoemModelMorphGetCategory(NULL) == NANOEM_MODEL_MORPH_CATEGORY_UNKNOWN);
     CHECK_FALSE(nanoemModelMorphGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE));
     CHECK_FALSE(nanoemModelMorphGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH));
+    CHECK_FALSE(nanoemModelMorphGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE));
+    CHECK_FALSE(nanoemModelMorphGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE));
     CHECK(nanoemModelMorphGetType(NULL) == NANOEM_MODEL_MORPH_TYPE_UNKNOWN);
     CHECK_FALSE(nanoemModelMorphGetAllBoneMorphObjects(NULL, &num_objects));
     CHECK(num_objects == 0);
