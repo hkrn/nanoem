@@ -2476,6 +2476,8 @@ CreateBoneMorphFromPoseCommand::CreateBoneMorphFromPoseCommand(
     if (StringUtils::tryGetString(factory, filename, us)) {
         nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_JAPANESE, &status);
         nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE, &status);
+        nanoemMutableModelMorphSetName(m_creatingMorph, us.value(), NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE, &status);
     }
     nanoemMutableModelMorphSetType(m_creatingMorph, NANOEM_MODEL_MORPH_TYPE_BONE);
     nanoemMutableModelMorphSetCategory(m_creatingMorph, NANOEM_MODEL_MORPH_CATEGORY_OTHER);
