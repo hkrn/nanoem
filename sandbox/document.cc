@@ -165,6 +165,10 @@ copyDocument(nanoem_unicode_string_factory_t *factory, const nanoem_document_t *
                 nanoemDocumentModelGetName(model, NANOEM_LANGUAGE_TYPE_JAPANESE), &status);
             nanoemMutableDocumentModelSetName(m, NANOEM_LANGUAGE_TYPE_ENGLISH,
                 nanoemDocumentModelGetName(model, NANOEM_LANGUAGE_TYPE_ENGLISH), &status);
+            nanoemMutableDocumentModelSetName(m, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE,
+                nanoemDocumentModelGetName(model, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE), &status);
+            nanoemMutableDocumentModelSetName(m, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE,
+                nanoemDocumentModelGetName(model, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE), &status);
             nanoemMutableDocumentModelSetPath(m, nanoemDocumentModelGetPath(model), &status);
             nanoemMutableDocumentModelSetTransformOrderIndex(m, nanoemDocumentModelGetTransformOrderIndex(model));
             // bone keyframes
