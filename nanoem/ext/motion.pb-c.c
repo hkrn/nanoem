@@ -3769,6 +3769,8 @@ static const ProtobufCEnumValue nanoem__motion__language_code__enum_values_by_nu
 {
   { "LC_JAPANESE", "NANOEM__MOTION__LANGUAGE_CODE__LC_JAPANESE", 0 },
   { "LC_ENGLISH", "NANOEM__MOTION__LANGUAGE_CODE__LC_ENGLISH", 1 },
+  { "LC_SIMPLIFIED_CHINESE", "NANOEM__MOTION__LANGUAGE_CODE__LC_SIMPLIFIED_CHINESE", 2 },
+  { "LC_TRADITIONAL_CHINESE", "NANOEM__MOTION__LANGUAGE_CODE__LC_TRADITIONAL_CHINESE", 3 },
 };
 static const ProtobufCIntRange nanoem__motion__language_code__value_ranges[] = {
 {0, 0},{0, 2}
