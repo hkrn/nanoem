@@ -19,6 +19,8 @@ TEST_CASE("null_rigid_body_basic", "[nanoem]")
     CHECK(nanoemModelRigidBodyGetMass(NULL) == Approx(0));
     CHECK_FALSE(nanoemModelRigidBodyGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE));
     CHECK_FALSE(nanoemModelRigidBodyGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH));
+    CHECK_FALSE(nanoemModelRigidBodyGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE));
+    CHECK_FALSE(nanoemModelRigidBodyGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE));
     CHECK(nanoemModelRigidBodyGetTransformType(NULL) == NANOEM_MODEL_RIGID_BODY_TRANSFORM_TYPE_UNKNOWN);
     CHECK(nanoemModelRigidBodyGetOrigin(NULL));
     CHECK(nanoemModelRigidBodyGetRestitution(NULL) == Approx(0));
