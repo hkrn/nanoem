@@ -57,6 +57,8 @@ _sym_db.RegisterEnumDescriptor(_LANGUAGE)
 Language = enum_type_wrapper.EnumTypeWrapper(_LANGUAGE)
 LC_JAPANESE = 1
 LC_ENGLISH = 2
+LC_SIMPLIFIED_CHINESE = 3
+LC_TRADITIONAL_CHINESE = 4
 
 
 
