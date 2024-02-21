@@ -2201,6 +2201,12 @@ nanoemDocumentModelGetName(const nanoem_document_model_t *model, nanoem_language
         case NANOEM_LANGUAGE_TYPE_ENGLISH:
             name = model->name_en;
             break;
+        case NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE:
+            name = model->name_en;
+            break;
+        case NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE:
+            name = model->name_en;
+            break;
         default:
             break;
         }
