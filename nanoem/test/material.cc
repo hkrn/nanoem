@@ -19,6 +19,8 @@ TEST_CASE("null_material_basic", "[nanoem]")
     CHECK(nanoemModelMaterialGetEdgeSize(NULL) == Approx(0));
     CHECK(nanoemModelMaterialGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE) == NULL);
     CHECK(nanoemModelMaterialGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH) == NULL);
+    CHECK(nanoemModelMaterialGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE) == NULL);
+    CHECK(nanoemModelMaterialGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE) == NULL);
     CHECK(nanoemModelMaterialGetNumVertexIndices(NULL) == 0);
     CHECK(nanoemModelMaterialGetClob(NULL) == NULL);
     CHECK(nanoemModelMaterialGetSpecularPower(NULL) == Approx(0));
