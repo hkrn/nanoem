@@ -99,6 +99,8 @@ DefaultTranslator::isSupportedLanguage(LanguageType value) const NANOEM_DECL_NOE
     switch (value) {
     case kLanguageTypeJapanese:
     case kLanguageTypeEnglish:
+    case kLanguageTypeSChinese:
+    case kLanguageTypeTChinese:
         return true;
     default:
         return false;
