@@ -819,6 +819,12 @@ EditingModelTrait::Morph::createGroupMorphFromCurrentPose()
         if (StringUtils::tryGetString(factory, name, s)) {
             nanoemMutableModelMorphSetName(parentMorph, s.value(), NANOEM_LANGUAGE_TYPE_ENGLISH, &status);
         }
+        if (StringUtils::tryGetString(factory, name, s)) {
+            nanoemMutableModelMorphSetName(parentMorph, s.value(), NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE, &status);
+        }
+        if (StringUtils::tryGetString(factory, name, s)) {
+            nanoemMutableModelMorphSetName(parentMorph, s.value(), NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE, &status);
+        }
         ModelScope scope(m_model);
         nanoemMutableModelInsertMorphObject(scope.m_value, parentMorph, -1, &status);
         bind(parentMorph);
