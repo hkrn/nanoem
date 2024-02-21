@@ -13,6 +13,8 @@ TEST_CASE("null_label_basic", "[nanoem]")
     nanoem_rsize_t num_objects;
     CHECK_FALSE(nanoemModelLabelGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE));
     CHECK_FALSE(nanoemModelLabelGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH));
+    CHECK_FALSE(nanoemModelLabelGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE));
+    CHECK_FALSE(nanoemModelLabelGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE));
     CHECK_FALSE(nanoemModelLabelIsSpecial(NULL));
     CHECK_FALSE(nanoemModelLabelGetAllItemObjects(NULL, &num_objects));
     CHECK(num_objects == 0);
