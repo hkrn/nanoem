@@ -78,6 +78,8 @@ main(int argc, char *argv[])
         bundle->units = new Nanoem__Translation__Unit *[2];
         bundle->units[0] = packUnit(rootNode, NANOEM__COMMON__LANGUAGE__LC_JAPANESE, "ja_JP");
         bundle->units[1] = packUnit(rootNode, NANOEM__COMMON__LANGUAGE__LC_ENGLISH, "en_US");
+        bundle->units[2] = packUnit(rootNode, NANOEM__COMMON__LANGUAGE__LC_SIMPLIFIED_CHINESE, "zh_SG");
+        bundle->units[3] = packUnit(rootNode, NANOEM__COMMON__LANGUAGE__LC_TRADITIONAL_CHINESE, "zh_TW");
         size_t size = nanoem__translation__bundle__get_packed_size(bundle);
         uint8_t *buffer = new uint8_t[size];
         nanoem__translation__bundle__pack(bundle, buffer);
