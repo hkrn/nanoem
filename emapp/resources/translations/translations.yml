@@ -2,242 +2,242 @@
   phrase:
     en_US: Currently Unavailable due to unimplemented
     ja_JP: 未実装のため現在利用不可
-    zh_SG:
-    zh_TW:
+    zh_SG: 由于未实装，目前不可用
+    zh_TW: 由於未実装，目前不可用
 - key: nanoem.gui.camera
   phrase:
     en_US: Camera
     ja_JP: カメラ
-    zh_SG:
-    zh_TW:
+    zh_SG: 相机
+    zh_TW: 相機
 - key: nanoem.gui.keyframe.copy
   phrase:
     en_US: Copy
     ja_JP: コピー
-    zh_SG:
-    zh_TW:
+    zh_SG: 复制
+    zh_TW: 複製
 - key: nanoem.gui.keyframe.cut
   phrase:
     en_US: Cut
     ja_JP: 切り取り
-    zh_SG:
-    zh_TW:
+    zh_SG: 剪取
+    zh_TW: 剪取
 - key: nanoem.gui.keyframe.end
   phrase:
     en_US: "#End"
     ja_JP: "#終了"
-    zh_SG:
-    zh_TW:
+    zh_SG: "#End"
+    zh_TW: "#End"
 - key: nanoem.gui.keyframe.paste
   phrase:
     en_US: Paste
     ja_JP: ペースト
-    zh_SG:
-    zh_TW:
+    zh_SG: 粘贴
+    zh_TW: 貼上
 - key: nanoem.gui.keyframe.inverse-paste
   phrase:
     en_US: I-Paste
     ja_JP: 反転ペースト
-    zh_SG:
-    zh_TW:
+    zh_SG: 反转粘贴
+    zh_TW: 反轉貼上
 - key: nanoem.gui.keyframe.remove
   phrase:
     en_US: Remove
     ja_JP: 削除
-    zh_SG:
-    zh_TW:
+    zh_SG: 删除
+    zh_TW: 刪除
 - key: nanoem.gui.keyframe.scale
   phrase:
     en_US: Scale
     ja_JP: 拡大
-    zh_SG:
-    zh_TW:
+    zh_SG: 扩大
+    zh_TW: 擴大
 - key: nanoem.gui.keyframe.select
   phrase:
     en_US: Select
     ja_JP: 選択
-    zh_SG:
-    zh_TW:
+    zh_SG: 选择
+    zh_TW: 選擇
 - key: nanoem.gui.keyframe.select-column
   phrase:
     en_US: Column
     ja_JP: 列選択
-    zh_SG:
-    zh_TW:
+    zh_SG: 栏位选择
+    zh_TW: 欄位選擇
 - key: nanoem.gui.keyframe.start
   phrase:
     en_US: "#Start"
     ja_JP: "#開始"
-    zh_SG:
-    zh_TW:
+    zh_SG: "#Start"
+    zh_TW: "#Start"
 - key: nanoem.gui.effect
   phrase:
     en_US: Effect
     ja_JP: エフェクト
-    zh_SG:
-    zh_TW:
+    zh_SG: 效果
+    zh_TW: 效果
 - key: nanoem.gui.effect.reload
   phrase:
     en_US: Reload Effect
     ja_JP: エフェクトの再読込
-    zh_SG:
-    zh_TW:
+    zh_SG: 重载效果
+    zh_TW: 重載效果
 - key: nanoem.gui.panel.accessory.title
   phrase:
     en_US: Accessory
     ja_JP: アクセサリ
-    zh_SG:
-    zh_TW:
+    zh_SG: 配饰
+    zh_TW: 配件
 - key: nanoem.gui.panel.accessory.none
   phrase:
     en_US: (none)
     ja_JP: （なし）
-    zh_SG:
-    zh_TW:
+    zh_SG: （无）
+    zh_TW: （无）
 - key: nanoem.gui.panel.accessory.bone.none
   phrase:
     en_US: (none)
     ja_JP: (なし)
-    zh_SG:
-    zh_TW:
+    zh_SG: （无）
+    zh_TW: （无）
 - key: nanoem.gui.panel.accessory.delete
   phrase:
     en_US: Delete
     ja_JP: 削除
-    zh_SG:
-    zh_TW:
+    zh_SG: 删除
+    zh_TW: 刪除
 - key: nanoem.gui.panel.accessory.ground
   phrase:
     en_US: Ground
     ja_JP: 地面
-    zh_SG:
-    zh_TW:
+    zh_SG: 地面
+    zh_TW: 地面
 - key: nanoem.gui.panel.accessory.load
   phrase:
     en_US: Load
     ja_JP: 読込
-    zh_SG:
-    zh_TW:
+    zh_SG: 加载
+    zh_TW: 載入
 - key: nanoem.gui.panel.accessory.none
   phrase:
     en_US: (none)
     ja_JP: (なし)
-    zh_SG:
-    zh_TW:
+    zh_SG: （无）
+    zh_TW: （无）
 - key: nanoem.gui.panel.accessory.opacity
   phrase:
     en_US: Opacity
     ja_JP: 不透明度
-    zh_SG:
-    zh_TW:
+    zh_SG: 不透明度
+    zh_TW: 不透明度
 - key: nanoem.gui.panel.accessory.orientation
   phrase:
     en_US: Orientation
     ja_JP: 回転
-    zh_SG:
-    zh_TW:
+    zh_SG: 旋转
+    zh_TW: 旋轉
 - key: nanoem.gui.panel.accessory.register
   phrase:
     en_US: Register
     ja_JP: 登録
-    zh_SG:
-    zh_TW:
+    zh_SG: 注册
+    zh_TW: 註冊
 - key: nanoem.gui.panel.accessory.scale
   phrase:
     en_US: "Scale"
     ja_JP: "拡大率"
-    zh_SG:
-    zh_TW:
+    zh_SG: "扩大率"
+    zh_TW: "擴大率"
 - key: nanoem.gui.panel.accessory.translation
   phrase:
     en_US: "Translation"
     ja_JP: "移動"
-    zh_SG:
-    zh_TW:
+    zh_SG: "移动"
+    zh_TW: "移動"
 - key: nanoem.gui.panel.accessory.visible
   phrase:
     en_US: Visible
     ja_JP: 表示
-    zh_SG:
-    zh_TW:
+    zh_SG: 可见
+    zh_TW: 可見
 - key: nanoem.gui.panel.accessory.op
   phrase:
     en_US: OP
     ja_JP: 外部親
-    zh_SG:
-    zh_TW:
+    zh_SG: 外部父级
+    zh_TW: 外部父級
 - key: nanoem.gui.panel.bone.title
   phrase:
     en_US: Bone
     ja_JP: ボーン
-    zh_SG:
-    zh_TW:
+    zh_SG: 骨
+    zh_TW: 骨
 - key: nanoem.gui.panel.bone.copy
   phrase:
     en_US: Copy
     ja_JP: コピー
-    zh_SG:
-    zh_TW:
+    zh_SG: 复制
+    zh_TW: 複製
 - key: nanoem.gui.panel.bone.label.selection-mode
   phrase:
     en_US: Selection Mode
     ja_JP: 選択モード
-    zh_SG:
-    zh_TW:
+    zh_SG: 选择方式
+    zh_TW: 選擇方式
 - key: nanoem.gui.panel.bone.move
   phrase:
     en_US: Move
     ja_JP: 移動
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动
+    zh_TW: 移動
 - key: nanoem.gui.panel.bone.paste
   phrase:
     en_US: Paste
     ja_JP: ペースト
-    zh_SG:
-    zh_TW:
+    zh_SG: 粘贴
+    zh_TW: 貼上
 - key: nanoem.gui.panel.bone.inverse-paste
   phrase:
     en_US: I-Paste
     ja_JP: 反転ペースト
-    zh_SG:
-    zh_TW:
+    zh_SG: 反转粘贴
+    zh_TW: 反轉貼上
 - key: nanoem.gui.panel.bone.physics-simulation
   phrase:
     en_US: Physics
     ja_JP: 物理
-    zh_SG:
-    zh_TW:
+    zh_SG: 物理
+    zh_TW: 物理
 - key: nanoem.gui.panel.bone.register
   phrase:
     en_US: Register
     ja_JP: 登録
-    zh_SG:
-    zh_TW:
+    zh_SG: 注册
+    zh_TW: 註冊
 - key: nanoem.gui.panel.bone.rotate
   phrase:
     en_US: Rotate
     ja_JP: 回転
-    zh_SG:
-    zh_TW:
+    zh_SG: 旋转
+    zh_TW: 旋轉
 - key: nanoem.gui.panel.bone.select
   phrase:
     en_US: Select
     ja_JP: 選択
-    zh_SG:
-    zh_TW:
+    zh_SG: 选择
+    zh_TW: 選擇
 - key: nanoem.gui.panel.bone.select.all
   phrase:
     en_US: All
     ja_JP: 全選択
-    zh_SG:
-    zh_TW:
+    zh_SG: 全选
+    zh_TW: 全選
 - key: nanoem.gui.panel.bone.select.box
   phrase:
     en_US: Box
     ja_JP: 箱選択
-    zh_SG:
-    zh_TW:
+    zh_SG: 箱选择
+    zh_TW: 箱選擇
 - key: nanoem.gui.panel.bone.select.dirty
   phrase:
     en_US: Unreg
