@@ -8,7 +8,7 @@
   phrase:
     en_US: Camera
     ja_JP: カメラ
-    zh_SG: 相机
+    zh_SG: 摄像头
     zh_TW: 相機
 - key: nanoem.gui.keyframe.copy
   phrase:
@@ -242,56 +242,56 @@
   phrase:
     en_US: Unreg
     ja_JP: 未登録
-    zh_SG:
-    zh_TW:
+    zh_SG: 未注册
+    zh_TW: 未注冊
 - key: nanoem.gui.panel.camera.title
   phrase:
     en_US: Camera
     ja_JP: カメラ
-    zh_SG:
-    zh_TW:
+    zh_SG: 摄像头
+    zh_TW: 相機
 - key: nanoem.gui.panel.camera.following-to-bone
   phrase:
     en_US: Following to Bone
     ja_JP: ボーン追従
-    zh_SG:
-    zh_TW:
+    zh_SG: 骨骼追踪
+    zh_TW: 骨骼追蹤
 - key: nanoem.gui.panel.camera.bone.none
   phrase:
     en_US: (none)
     ja_JP: (なし)
-    zh_SG:
-    zh_TW:
+    zh_SG: （无）
+    zh_TW: （无）
 - key: nanoem.gui.panel.camera.fov
   phrase:
     en_US: Fov
     ja_JP: 視野角
-    zh_SG:
-    zh_TW:
+    zh_SG: 视场
+    zh_TW: 視野
 - key: nanoem.gui.panel.camera.fov.format
   phrase:
     en_US: "Fov: %d"
     ja_JP: "視野角: %d"
-    zh_SG:
-    zh_TW:
+    zh_SG: "视场: %d"
+    zh_TW: "視野: %d"
 - key: nanoem.gui.panel.camera.reset
   phrase:
     en_US: Initialize
     ja_JP: 初期化
-    zh_SG:
-    zh_TW:
+    zh_SG: 初始化
+    zh_TW: 初始化
 - key: nanoem.gui.panel.camera.label
   phrase:
     en_US: Camera
     ja_JP: カメラ
-    zh_SG:
-    zh_TW:
+    zh_SG: 摄像头
+    zh_TW: 相機
 - key: nanoem.gui.panel.camera.model.none
   phrase:
     en_US: (none)
     ja_JP: (なし)
-    zh_SG:
-    zh_TW:
+    zh_SG: （无）
+    zh_TW: （无）
 - key: nanoem.gui.panel.camera.perspective
   phrase:
     en_US: Perspective
