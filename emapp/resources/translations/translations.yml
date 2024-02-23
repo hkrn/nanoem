@@ -296,97 +296,97 @@
   phrase:
     en_US: Perspective
     ja_JP: パースペクティブ
-    zh_SG:
-    zh_TW:
+    zh_SG: 透视法
+    zh_TW: 透視法
 - key: nanoem.gui.panel.camera.register
   phrase:
     en_US: Register
     ja_JP: 登録
-    zh_SG:
-    zh_TW:
+    zh_SG: 注册
+    zh_TW: 注冊
 - key: nanoem.gui.panel.interpolation.title
   phrase:
     en_US: Interpolation
     ja_JP: 補間曲線
-    zh_SG:
-    zh_TW:
+    zh_SG: 插值曲线
+    zh_TW: 插值曲線
 - key: nanoem.gui.panel.interpolation.automatic
   phrase:
     en_US: Automatic
     ja_JP: 自動補間
-    zh_SG:
-    zh_TW:
+    zh_SG: 自动插值
+    zh_TW: 自動插值
 - key: nanoem.gui.panel.interpolation.bone.orientation
   phrase:
     en_US: Orientation
     ja_JP: 回転
-    zh_SG:
-    zh_TW:
+    zh_SG: 旋转
+    zh_TW: 旋轉
 - key: nanoem.gui.panel.interpolation.bone.translation.x
   phrase:
     en_US: Translation (X-Axis)
     ja_JP: 移動(X軸)
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动(X轴)
+    zh_TW: 移動(X軸)
 - key: nanoem.gui.panel.interpolation.bone.translation.y
   phrase:
     en_US: Translation (Y-Axis)
     ja_JP: 移動(Y軸)
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动(Y轴)
+    zh_TW: 移動(Y軸)
 - key: nanoem.gui.panel.interpolation.bone.translation.z
   phrase:
     en_US: Translation (Z-Axis)
     ja_JP: 移動(Z軸)
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动(Z轴)
+    zh_TW: 移動(Z軸)
 - key: nanoem.gui.panel.interpolation.camera.distance
   phrase:
     en_US: Distance
     ja_JP: 視野距離
-    zh_SG:
-    zh_TW:
+    zh_SG: 视距
+    zh_TW: 視距
 - key: nanoem.gui.panel.interpolation.camera.fov
   phrase:
     en_US: Fov
     ja_JP: 視野角
-    zh_SG:
-    zh_TW:
+    zh_SG: 视场
+    zh_TW: 視野
 - key: nanoem.gui.panel.interpolation.camera.orientation
   phrase:
     en_US: Orientation
     ja_JP: 回転
-    zh_SG:
-    zh_TW:
+    zh_SG: 旋转
+    zh_TW: 旋轉
 - key: nanoem.gui.panel.interpolation.camera.translation.x
   phrase:
     en_US: Translation (X-Axis)
     ja_JP: 移動(X軸)
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动(X轴)
+    zh_TW: 移動(X軸)
 - key: nanoem.gui.panel.interpolation.camera.translation.y
   phrase:
     en_US: Translation (Y-Axis)
     ja_JP: 移動(Y軸)
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动(Y轴)
+    zh_TW: 移動(Y軸)
 - key: nanoem.gui.panel.interpolation.camera.translation.z
   phrase:
     en_US: Translation (Z-Axis)
     ja_JP: 移動(Z軸)
-    zh_SG:
-    zh_TW:
+    zh_SG: 移动(Z轴)
+    zh_TW: 移動(Z軸)
 - key: nanoem.gui.panel.interpolation.copy
   phrase:
     en_US: Copy
     ja_JP: コピー
-    zh_SG:
-    zh_TW:
+    zh_SG: 复制
+    zh_TW: 複製
 - key: nanoem.gui.panel.interpolation.linear
   phrase:
     en_US: Linear
     ja_JP: 線形補間
-    zh_SG:
+    zh_SG: 
     zh_TW:
 - key: nanoem.gui.panel.interpolation.paste
   phrase:
