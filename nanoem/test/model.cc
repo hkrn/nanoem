@@ -19,6 +19,8 @@ TEST_CASE("null_model_basic", "[nanoem]")
     CHECK(nanoemModelGetCodecType(NULL) == NANOEM_CODEC_TYPE_UNKNOWN);
     CHECK_FALSE(nanoemModelGetComment(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE));
     CHECK_FALSE(nanoemModelGetComment(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH));
+    CHECK_FALSE(nanoemModelGetComment(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE));
+    CHECK_FALSE(nanoemModelGetComment(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE));
     CHECK_FALSE(nanoemModelGetAllConstraintObjects(NULL, &num_objects));
     CHECK(num_objects == 0);
     CHECK_FALSE(nanoemModelGetAllJointObjects(NULL, &num_objects));

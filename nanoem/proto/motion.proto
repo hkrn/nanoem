@@ -5,6 +5,8 @@ package nanoem.motion;
 enum LanguageCode {
   LC_JAPANESE = 0;
   LC_ENGLISH = 1;
+  LC_SIMPLIFIED_CHINESE = 2;
+  LC_TRADITIONAL_CHINESE = 3;
 };
 
 message Annotation {

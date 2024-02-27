@@ -12,6 +12,8 @@ TEST_CASE("null_joint_basic", "[nanoem]")
 {
     CHECK_FALSE(nanoemModelJointGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE));
     CHECK_FALSE(nanoemModelJointGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH));
+    CHECK_FALSE(nanoemModelJointGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE));
+    CHECK_FALSE(nanoemModelJointGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE));
     CHECK(nanoemModelJointGetOrigin(NULL));
     CHECK(nanoemModelJointGetLinearLowerLimit(NULL));
     CHECK(nanoemModelJointGetLinearStiffness(NULL));

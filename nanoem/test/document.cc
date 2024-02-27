@@ -228,6 +228,8 @@ TEST_CASE("null_document_model", "[nanoem]")
     CHECK(nanoemDocumentModelGetLastFrameIndex(NULL) == 0);
     CHECK(nanoemDocumentModelGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH) == NULL);
     CHECK(nanoemDocumentModelGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE) == NULL);
+    CHECK(nanoemDocumentModelGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE) == NULL);
+    CHECK(nanoemDocumentModelGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE) == NULL);
     CHECK(nanoemDocumentModelGetOutsideParentSubjectBoneName(NULL, 0) == NULL);
     CHECK(nanoemDocumentModelGetPath(NULL) == 0);
     CHECK(nanoemDocumentModelGetSelectedBoneName(NULL) == NULL);

@@ -18,6 +18,8 @@ TEST_CASE("null_bone_basic", "[nanoem]")
     CHECK(nanoemModelBoneGetLocalZAxis(NULL));
     CHECK_FALSE(nanoemModelBoneGetName(NULL, NANOEM_LANGUAGE_TYPE_JAPANESE));
     CHECK_FALSE(nanoemModelBoneGetName(NULL, NANOEM_LANGUAGE_TYPE_ENGLISH));
+    CHECK_FALSE(nanoemModelBoneGetName(NULL, NANOEM_LANGUAGE_TYPE_SIMPLIFIED_CHINESE));
+    CHECK_FALSE(nanoemModelBoneGetName(NULL, NANOEM_LANGUAGE_TYPE_TRADITIONAL_CHINESE));
     CHECK(nanoemModelBoneGetOrigin(NULL));
     CHECK_FALSE(nanoemModelBoneGetParentBoneObject(NULL));
     CHECK_FALSE(nanoemModelBoneGetInherentParentBoneObject(NULL));
