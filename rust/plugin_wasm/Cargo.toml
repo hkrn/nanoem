@@ -14,10 +14,11 @@ notify = { version = "6", default-features = false, features = [
 parking_lot = "0.12"
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
-wasmtime = { version = "17", default-features = false, features = [
+wasmtime = { version = "18", default-features = false, features = [
     "cranelift",
 ] }
-wasmtime-wasi = { version = "17" }
+wasmtime-wasi = { version = "18" }
+wasi-common = { version = "18" }
 walkdir = "2"
 zerocopy = "0.7"
 
@@ -30,7 +31,6 @@ rand = "0.8"
 pretty_assertions = "1"
 assert_matches = "1"
 async-trait = { version = "0.1" }
-wasi-common = { version = "17" }
 futures = { version = "0.3" }
 
 [lib]

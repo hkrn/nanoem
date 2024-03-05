@@ -10,8 +10,8 @@ use std::{
 };
 
 use anyhow::Result;
+use wasi_common::WasiCtx;
 use wasmtime::{AsContextMut, Instance, Linker, Module};
-use wasmtime_wasi::WasiCtx;
 
 use crate::{
     allocate_byte_array_with_data, allocate_status_ptr, inner_count_all_functions,
