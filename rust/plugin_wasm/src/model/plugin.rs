@@ -7,8 +7,8 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::Result;
+use wasi_common::WasiCtx;
 use wasmtime::{AsContextMut, Instance, Linker, Module};
-use wasmtime_wasi::WasiCtx;
 
 use crate::{
     inner_count_all_functions, inner_create_opaque, inner_destroy_opaque, inner_execute,

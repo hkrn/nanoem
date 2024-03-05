@@ -8,6 +8,7 @@ use core::slice;
 use std::mem::size_of;
 
 use anyhow::Result;
+use wasi_common::WasiCtx;
 use wasmtime::{AsContextMut, Instance, Memory, TypedFunc};
 use zerocopy::AsBytes;
 
@@ -49,7 +50,7 @@ pub(crate) type OpaquePtr = u32;
 pub(crate) type ByteArray = u32;
 pub(crate) type SizePtr = u32;
 pub(crate) type StatusPtr = u32;
-type Store = wasmtime::Store<wasmtime_wasi::WasiCtx>;
+type Store = wasmtime::Store<WasiCtx>;
 
 fn notify_export_function_error(name: &str) {
     tracing::warn!(

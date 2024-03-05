@@ -9,7 +9,7 @@ use assert_matches::assert_matches;
 use maplit::hashmap;
 use pretty_assertions::assert_eq;
 use serde_json::json;
-use wasmtime_wasi::WasiFile;
+use wasi_common::WasiFile;
 
 use crate::model::{
     controller::ModelIOPluginController,

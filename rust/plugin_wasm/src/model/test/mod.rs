@@ -20,10 +20,10 @@ use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 use wasi_common::{
     file::{FileType, Filestat},
-    snapshots::preview_1::types::Error,
+    snapshots::preview_1::types::Error, WasiFile,
 };
 use wasmtime::{Engine, Linker};
-use wasmtime_wasi::{WasiCtxBuilder, WasiFile};
+use wasmtime_wasi::WasiCtxBuilder;
 
 use crate::Store;
 
