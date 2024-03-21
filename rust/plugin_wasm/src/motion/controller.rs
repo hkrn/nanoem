@@ -10,8 +10,8 @@ use anyhow::Result;
 use notify::Watcher;
 use parking_lot::Mutex;
 use walkdir::WalkDir;
+use wasi_common::sync::WasiCtxBuilder;
 use wasmtime::{Engine, Linker};
-use wasmtime_wasi::WasiCtxBuilder;
 
 use crate::Store;
 
@@ -50,7 +50,7 @@ impl MotionIOPluginController {
         let plugins_inner = Arc::clone(&plugins);
         let mut linker = Linker::new(&engine);
         let linker_inner = linker.clone();
-        wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+        wasi_common::sync::add_to_linker(&mut linker, |ctx| ctx)?;
         let event_handler = move |res: notify::Result<notify::Event>| match res {
             Ok(ev) => {
                 let create_plugin = |path: &Path| -> Result<MotionIOPlugin> {
