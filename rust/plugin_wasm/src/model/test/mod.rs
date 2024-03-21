@@ -16,7 +16,7 @@ use anyhow::Result;
 use parking_lot::Mutex;
 use pretty_assertions::assert_eq;
 use rand::{thread_rng, Rng};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasi_common::{
     file::{FileType, Filestat}, snapshots::preview_1::types::Error, sync::WasiCtxBuilder, WasiFile

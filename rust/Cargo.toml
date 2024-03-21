@@ -10,6 +10,11 @@ members = [
 ]
 default-members = ["plugin_wasm"]
 
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+libc = "0.2"
+
 [profile.release-lto]
 inherits = "release"
 lto = true

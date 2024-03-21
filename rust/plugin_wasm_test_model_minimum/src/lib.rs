@@ -4,7 +4,7 @@
   This file is part of emapp component and it's licensed under Mozilla Public License. see LICENSE.md for more details.
 */
 
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use std::ffi::c_char;

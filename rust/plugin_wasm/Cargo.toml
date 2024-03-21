@@ -23,9 +23,8 @@ walkdir = "2"
 zerocopy = "0.7"
 
 [dev-dependencies]
-serde = "1"
-serde_derive = "1"
-serde_json = "1"
+serde.workspace = true
+serde_json.workspace = true
 maplit = "1"
 rand = "0.8"
 pretty_assertions = "1"
