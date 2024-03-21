@@ -4,3 +4,6 @@ updates:
     directory: "/rust"
     schedule:
       interval: "weekly"
+    ignore:
+      - dependency-name: "wasmtime"
+        update-types: ["version-update:semver-major"]

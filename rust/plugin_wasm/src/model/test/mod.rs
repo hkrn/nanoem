@@ -16,14 +16,12 @@ use anyhow::Result;
 use parking_lot::Mutex;
 use pretty_assertions::assert_eq;
 use rand::{thread_rng, Rng};
-use serde_derive::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasi_common::{
-    file::{FileType, Filestat},
-    snapshots::preview_1::types::Error, WasiFile,
+    file::{FileType, Filestat}, snapshots::preview_1::types::Error, sync::WasiCtxBuilder, WasiFile
 };
 use wasmtime::{Engine, Linker};
-use wasmtime_wasi::WasiCtxBuilder;
 
 use crate::Store;
 
@@ -129,7 +127,7 @@ fn inner_create_controller(pipe: Box<dyn WasiFile>, path: &str) -> Result<ModelI
     let store = Store::new(&engine, data);
     let bytes = std::fs::read(&path)?;
     let mut linker = Linker::new(&engine);
-    wasmtime_wasi::add_to_linker(&mut linker, |ctx| ctx)?;
+    wasi_common::sync::add_to_linker(&mut linker, |ctx| ctx)?;
     let plugin = ModelIOPlugin::new(&linker, &path, &bytes, store)?;
     let watcher = notify::recommended_watcher(|_res| {})?;
     Ok(ModelIOPluginController::new(
