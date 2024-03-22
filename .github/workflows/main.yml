@@ -181,6 +181,8 @@ jobs:
             protobuf-compiler
       - name: setup cargo-deny
         uses: EmbarkStudios/cargo-deny-action@v1
+        with:
+          manifest-path: ${{ github.workspace }}/rust/Cargo.toml
       - name: setup rust toolchain
         uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: build plugin_wasm and its test WASMs
