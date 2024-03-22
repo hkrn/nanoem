@@ -40,10 +40,11 @@ option(NANOEM_ENABLE_TSAN "Enable clang/gcc TSan (thread sanitizer) option." OFF
 option(NANOEM_ENABLE_UBSAN "Enable clang/gcc UBSan (undefined behavior sanitizer) option." OFF)
 option(NANOEM_ENABLE_UPDATE_CREDITS "Enable updating credits per cmake execution." OFF)
 option(NANOEM_ENABLE_PLUGIN_WASM "Enable bundling release build of plugin_wasm" OFF)
+option(NANOEM_ENABLE_PROTOC "Enable building protocol buffer source code generation with protoc-c" OFF)
 option(NANOEM_MINIMAL "Builds nanoem library only." OFF)
 option(SOKOL_ENABLE_DEBUG "Enable building sokol with debug validation layer." OFF)
 
-mark_as_advanced(NANOEM_ENABLE_SHADER_OPTIMIZED NANOEM_ENABLE_SDEF NANOEM_ENABLE_SOFTBODY SOKOL_ENABLE_UPDATE_CREDITS NANOEM_ENABLE_OPTICK)
+mark_as_advanced(NANOEM_ENABLE_SHADER_OPTIMIZED NANOEM_ENABLE_SDEF NANOEM_ENABLE_SOFTBODY SOKOL_ENABLE_UPDATE_CREDITS NANOEM_ENABLE_OPTICK NANOEM_ENABLE_PROTOC)
 define_property(GLOBAL PROPERTY NANOEM_PROPERTY_INSTALL_PLUGINS BRIEF_DOCS "all installing plugins for nanoem binary bundle" FULL_DOCS "all installing plugins for nanoem binary bundle")
 
 cmake_policy(SET CMP0028 NEW)
