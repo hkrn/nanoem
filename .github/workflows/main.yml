@@ -179,10 +179,30 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y \
             protobuf-compiler
-      - name: setup rust toolchain
+      - name: setup cargo-deny
+        uses: EmbarkStudios/cargo-deny-action@v1
+        with:
+          manifest-path: ./rust/Cargo.toml
+      - name: setup rust toolchain (stable and wasm32-wasi)
         uses: actions-rust-lang/setup-rust-toolchain@v1
-      - name: build plugin_wasm
-        run: ./scripts/build.sh
+        with:
+          target: wasm32-wasi
+      - name: build plugin_wasm and its test WASMs
+        run: |
+          profiles=('dev' 'release-lto')
+          packages=(
+            'plugin_wasm_test_model_minimum'
+            'plugin_wasm_test_motion_minimum'
+            'plugin_wasm_test_model_full'
+            'plugin_wasm_test_motion_full'
+          )
+          for profile in "${profiles[@]}"; do
+            for package in "${packages[@]}"; do
+              cargo build --profile ${profile} --package ${package} --target wasm32-wasi
+            done
+          done
+          cargo check --profile release-lto
+          cargo test --profile release-lto
   codeql:
     if: ${{ false }}
     runs-on: ubuntu-latest
