@@ -230,8 +230,12 @@ jobs:
             xorg-dev \
             libxi-dev \
             libxcursor-dev
+      - name: checkout ffmpeg
+        run: git clone --depth=1 --branch=${{ env.FFMPEG_VERSION_TAG }} https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: checkout glfw
-        run: git clone https://github.com/glfw/glfw.git dependencies/glfw
+        run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
+      - name: checkout ICU
+        run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
       - name: build all dependencies of nanoem
         run: |
           cd ${{ github.workspace }}
