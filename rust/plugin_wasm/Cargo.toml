@@ -1,9 +1,9 @@
 [package]
 name = "plugin_wasm"
-version = "35.0.0"
-authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
-edition = "2021"
-license = "MPL-2.0"
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+version.workspace = true
 
 [dependencies]
 anyhow = "1"

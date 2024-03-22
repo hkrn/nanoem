@@ -10,6 +10,13 @@ members = [
 ]
 default-members = ["plugin_wasm"]
 
+[workspace.package]
+authors = ["hkrn <129939+hkrn@users.noreply.github.com>"]
+edition = "2021"
+license = "MPL-2.0"
+rust-version = "1.74"
+version = "35.0.0"
+
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
