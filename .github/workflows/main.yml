@@ -183,8 +183,10 @@ jobs:
         uses: EmbarkStudios/cargo-deny-action@v1
         with:
           manifest-path: ./rust/Cargo.toml
-      - name: setup rust toolchain
+      - name: setup rust toolchain (stable and wasm32-wasi)
         uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          target: wasm32-wasi
       - name: build plugin_wasm and its test WASMs
         run: |
           profiles=('dev' 'release-lto')
