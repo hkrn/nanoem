@@ -250,5 +250,7 @@ jobs:
           NANOEM_TARGET_COMPILER: clang
       - name: autobuild
         uses: github/codeql-action/autobuild@v3
+        env:
+          CODEQL_EXTRACTOR_CPP_AUTOINSTALL_DEPENDENCIES: false
       - name: perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
