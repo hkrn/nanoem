@@ -79,7 +79,7 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -133,7 +133,7 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
