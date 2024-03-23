@@ -164,7 +164,7 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip --r nanoem.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          tar.exe -a -c -f nanoem.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
