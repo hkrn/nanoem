@@ -26,21 +26,23 @@ endif()
 
 # plugins
 get_property(_plugins GLOBAL PROPERTY NANOEM_PROPERTY_INSTALL_PLUGINS)
-foreach(_item ${_plugins})
-  set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/${_item}.touch")
-  add_custom_command(OUTPUT ${touch_file}
-                     COMMAND ${CMAKE_COMMAND} -E touch ${touch_file}
-                     COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/main.cc
-                     DEPENDS ${_item}
-                     VERBATIM)
-  add_custom_target(${_item}_touch_glfw_st DEPENDS ${touch_file})
-  set_property(TARGET ${_item}_touch_glfw_st PROPERTY FOLDER plugins/touch)
-  add_dependencies(${NANOEM_EXECUTABLE_NAME} ${_item}_touch_glfw_st)
-  add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
-                     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins"
-                     COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${_item}>" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/$<TARGET_FILE_NAME:${_item}>"
-                     VERBATIM)
-endforeach()
+if(NOT DEFINED ENV{CODEQL_ACTION_VERSION}) # workaround for build failure on CodeQL
+  foreach(_item ${_plugins})
+    set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/${_item}.touch")
+    add_custom_command(OUTPUT ${touch_file}
+                       COMMAND ${CMAKE_COMMAND} -E touch ${touch_file}
+                       COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_CURRENT_SOURCE_DIR}/main.cc
+                       DEPENDS ${_item}
+                       VERBATIM)
+    add_custom_target(${_item}_touch_glfw_st DEPENDS ${touch_file})
+    set_property(TARGET ${_item}_touch_glfw_st PROPERTY FOLDER plugins/touch)
+    add_dependencies(${NANOEM_EXECUTABLE_NAME} ${_item}_touch_glfw_st)
+    add_custom_command(TARGET ${NANOEM_EXECUTABLE_NAME} POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins"
+                       COMMAND ${CMAKE_COMMAND} -E copy_if_different "$<TARGET_FILE:${_item}>" "$<TARGET_FILE_DIR:${NANOEM_EXECUTABLE_NAME}>/plugins/$<TARGET_FILE_NAME:${_item}>"
+                       VERBATIM)
+  endforeach()
+endif()
 
 if(TARGET plugin_ffmpeg)
   get_property(ffmpeg_dependencies TARGET plugin_ffmpeg PROPERTY LINK_LIBRARIES)

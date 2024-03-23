@@ -3,7 +3,7 @@ function(nanoem_emapp_build_emarb_protoc)
   # protoc
   find_program(PROTOC_PATH protoc-c)
   mark_as_advanced(PROTOC_PATH)
-  if(PROTOC_PATH)
+  if(PROTOC_PATH AND ${NANOEM_ENABLE_PROTOC})
     file(GLOB PROTO_FILES ${CMAKE_CURRENT_SOURCE_DIR}/*.proto)
     set(intermediate_path_prefix "${CMAKE_CURRENT_BINARY_DIR}/intermediate")
     set(output_path_prefix "${PROJECT_SOURCE_DIR}/emapp/src/protoc")

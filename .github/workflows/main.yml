@@ -204,21 +204,21 @@ jobs:
           cargo check --profile release-lto
           cargo test --profile release-lto
   codeql:
-    if: ${{ false }}
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     env:
-      FX9_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
-      NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
+      CC: clang
+      CXX: clang++
     steps:
       - name: checkout
         uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@v3
         with:
-          languages: cpp
           config-file: ${{ github.workspace }}/.github/codeql/codeql-config.yml
+          languages: c-cpp
       - name: setup prerequisite packages
         run: |
           sudo apt-get update && sudo apt-get install -y \
@@ -231,19 +231,27 @@ jobs:
             xorg-dev \
             libxi-dev \
             libxcursor-dev
+      - name: checkout ffmpeg
+        run: git clone --depth=1 --branch=${{ env.FFMPEG_VERSION_TAG }} https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
       - name: checkout glfw
-        run: git clone https://github.com/glfw/glfw.git dependencies/glfw
+        run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
+      - name: checkout ICU
+        run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
       - name: build all dependencies of nanoem
         run: |
           cd ${{ github.workspace }}
           cmake -DCONFIG=release -P $PWD/scripts/build.cmake
         env:
+          NANOEM_ENABLE_BUILD_FFMPEG: 1
+          NANOEM_ENABLE_BUILD_GLFW: 1
+          NANOEM_ENABLE_BUILD_ICU4C: 1
+          NANOEM_ENABLE_BUILD_MIMALLOC: 1
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
-          NANOEM_TARGET_COMPILER: gcc
-          NANOEM_DISABLE_BUILD_SENTRY_NATIVE: 1
-          NANOEM_DISABLE_BUILD_SPIRV_TOOLS: 1
+          NANOEM_TARGET_COMPILER: clang
       - name: autobuild
-        uses: github/codeql-action/autobuild@v1
+        uses: github/codeql-action/autobuild@v3
+        env:
+          CODEQL_EXTRACTOR_CPP_AUTOINSTALL_DEPENDENCIES: false
       - name: perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v3
