@@ -159,6 +159,11 @@ public:
     {
         effect::countRegisterSet(shaderPtr->symbols, shaderPtr->n_symbols, buffer);
     }
+    static inline rsize_t
+    calculateF32ImageSize(const Vector2UI16 &size) NANOEM_DECL_NOEXCEPT
+    {
+        return nanoem_rsize_t(4) * sizeof(nanoem_f32_t) * size.x * size.y;
+    }
 };
 
 void
@@ -5076,7 +5081,7 @@ Effect::setTextureValues(const SemanticImageMap &images, effect::Pass *passPtr)
                                 break;
                             }
                         }
-                        const nanoem_rsize_t imageDataSize = size.x * size.y * 4 * sizeof(nanoem_f32_t);
+                        const nanoem_rsize_t imageDataSize = PrivateEffectUtils::calculateF32ImageSize(size);
                         sb = &m_imageStagingBuffers[target];
                         sb->m_content.resize(imageDataSize);
                         sg_buffer_desc bd;
@@ -5128,7 +5133,7 @@ Effect::setTextureValues(const NamedRenderTargetColorImageContainerMap &containe
                     else {
                         const sg_image_desc &desc = container->colorImageDescription();
                         const Vector2UI16 size(desc.width, desc.height);
-                        const nanoem_rsize_t imageDataSize = size.x * size.y * 4 * sizeof(nanoem_f32_t);
+                        const nanoem_rsize_t imageDataSize = PrivateEffectUtils::calculateF32ImageSize(size);
                         sb = &m_imageStagingBuffers[target];
                         sb->m_content.resize(imageDataSize);
                         sg_buffer_desc bd;
@@ -5183,7 +5188,7 @@ Effect::setTextureValues(const OffscreenRenderTargetImageContainerMap &container
                     else {
                         const sg_image_desc &desc = container->colorImageDescription();
                         const Vector2UI16 size(desc.width, desc.height);
-                        const nanoem_rsize_t imageDataSize = size.x * size.y * 4 * sizeof(nanoem_f32_t);
+                        const nanoem_rsize_t imageDataSize = PrivateEffectUtils::calculateF32ImageSize(size);
                         sb = &m_imageStagingBuffers[target];
                         sb->m_content.resize(imageDataSize);
                         sg_buffer_desc bd;

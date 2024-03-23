@@ -1003,7 +1003,7 @@ CapturingPassState::setOutputImageSize(const Vector2UI16 &value)
 {
     m_outputImageDescription.width = value.x;
     m_outputImageDescription.height = value.y;
-    m_frameImageData.resize(value.x * value.y * 4 * sizeof(nanoem_u8_t));
+    m_frameImageData.resize(nanoem_rsize_t(4) * sizeof(nanoem_u8_t) * value.x * value.y);
     sg_buffer_desc desc;
     Inline::clearZeroMemory(desc);
     desc.size = m_frameImageData.size();
