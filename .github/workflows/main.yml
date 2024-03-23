@@ -163,10 +163,19 @@ jobs:
             -Tv141 `
             ../..
           cmake --build . --config release
+          cd ..
+          zip --r nanoem.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+      - name: Upload artifacts
+        id: upload-artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: nanoem-windows
+          path: ${{ github.workspace }}/nanoem.zip
+          if-no-files-found: error
   build-rust:
     runs-on: ubuntu-latest
     defaults:
