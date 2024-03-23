@@ -1132,7 +1132,7 @@ image::DDS::decodeImage(IReader *reader, nanoem_u32_t faceIndex, nanoem_u32_t mi
             error = Error(message, 0, Error::kDomainTypeApplication);
         }
         if (m_format == SG_PIXELFORMAT_RGBA8 && m_header.m_pixelFormat.m_colorBitCount == 24) {
-            const nanoem_rsize_t numPixels = width * height;
+            const nanoem_rsize_t numPixels = nanoem_rsize_t(width) * height;
             ByteArray newPixels(numPixels * 4);
             for (nanoem_rsize_t i = 0; i < numPixels; i++) {
                 const nanoem_u8_t *source = bytes.data() + i * 3;
