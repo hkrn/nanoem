@@ -159,7 +159,7 @@ public:
     {
         effect::countRegisterSet(shaderPtr->symbols, shaderPtr->n_symbols, buffer);
     }
-    static inline rsize_t
+    static inline nanoem_rsize_t
     calculateF32ImageSize(const Vector2UI16 &size) NANOEM_DECL_NOEXCEPT
     {
         return nanoem_rsize_t(4) * sizeof(nanoem_f32_t) * size.x * size.y;
