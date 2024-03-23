@@ -78,10 +78,19 @@ jobs:
             -GNinja \
             ../..
           cmake --build . --config release
+          cd ..
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+      - name: Upload artifacts
+        id: upload-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanoem-windows
+          path: ${{ github.workspace }}/nanoem-linux64.zip
+          if-no-files-found: error
   build-macos:
     runs-on: macos-latest
     steps:
@@ -123,10 +132,19 @@ jobs:
             -GNinja \
             ../..
           cmake --build . --config release
+          cd ..
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+      - name: Upload artifacts
+        id: upload-artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanoem-windows
+          path: ${{ github.workspace }}/nanoem-win64.zip
+          if-no-files-found: error
   build-windows:
     runs-on: windows-2022
     steps:
@@ -164,7 +182,7 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -174,7 +192,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: nanoem-windows
-          path: ${{ github.workspace }}/nanoem.zip
+          path: ${{ github.workspace }}/nanoem-win64.zip
           if-no-files-found: error
   build-rust:
     runs-on: ubuntu-latest
