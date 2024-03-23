@@ -26,7 +26,7 @@ endif()
 
 # plugins
 get_property(_plugins GLOBAL PROPERTY NANOEM_PROPERTY_INSTALL_PLUGINS)
-if(NOT $ENV{CODEQL_ACTION_VERSION})
+if(NOT DEFINED ENV{CODEQL_ACTION_VERSION}) # workaround for build failure on CodeQL
   foreach(_item ${_plugins})
     set(touch_file "${CMAKE_CURRENT_BINARY_DIR}/${_item}.touch")
     add_custom_command(OUTPUT ${touch_file}
