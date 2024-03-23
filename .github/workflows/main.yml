@@ -204,6 +204,7 @@ jobs:
           cargo check --profile release-lto
           cargo test --profile release-lto
   codeql:
+    if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     env:
       CC: clang
