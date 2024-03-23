@@ -174,7 +174,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: nanoem-windows
-          path: ${{ github.workspace }}/nanoem.zip
+          path: D:\a\nanoem\nanoem\out\core\nanoem.zip
           if-no-files-found: error
   build-rust:
     runs-on: ubuntu-latest
