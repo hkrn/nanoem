@@ -174,8 +174,6 @@ jobs:
         run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
       - name: checkout ICU
         run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
-      - name: checkout Libsoundio
-        run: git clone https://github.com/andrewrk/libsoundio dependencies/libsoundio
       - name: checkout Yamlapp
         run: git clone https://github.com/jbeder/yaml-cpp dependencies/yaml-cpp
       - name: build all dependencies of nanoem
@@ -189,7 +187,6 @@ jobs:
           NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_LIBSOUNDIO: 1
           NANOEM_ENABLE_BUILD_YAMLCPP: 1
       - name: build nanoem itself
         run: |
@@ -294,6 +291,10 @@ jobs:
         run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
       - name: checkout ICU
         run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
+      - name: checkout Libsoundio
+        run: git clone https://github.com/andrewrk/libsoundio dependencies/libsoundio
+      - name: checkout Yamlapp
+        run: git clone https://github.com/jbeder/yaml-cpp dependencies/yaml-cpp
       - name: build all dependencies of nanoem
         run: |
           cd ${{ github.workspace }}
