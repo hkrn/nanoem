@@ -88,7 +88,7 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nanoem-windows
+          name: nanoem-linux
           path: ${{ github.workspace }}/nanoem-linux64.zip
           if-no-files-found: error
   build-macos:
@@ -142,8 +142,8 @@ jobs:
         id: upload-artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: nanoem-windows
-          path: ${{ github.workspace }}/nanoem-win64.zip
+          name: nanoem-macos
+          path: ${{ github.workspace }}/nanoem-macos.zip
           if-no-files-found: error
   build-windows:
     runs-on: windows-2022
