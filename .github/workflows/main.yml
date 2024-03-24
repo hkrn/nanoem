@@ -85,7 +85,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}\home\runner\work\nanoem\nanoem\out\core\sapp
+          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}\home\runner\work\nanoem\nanoem\out\core\emapp\plugins\ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -96,6 +97,13 @@ jobs:
         with:
           name: nanoem-linux
           path: ${{ github.workspace }}/nanoem-linux64.zip
+          if-no-files-found: error
+      - name: Upload artifacts (ssb Plugin)
+        id: upload-artifacts-ssb
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanoem-linux-ssb
+          path: ${{ github.workspace }}/nanoem-linux64-ssb.zip
           if-no-files-found: error
   build-macos:
     runs-on: macos-latest
@@ -149,7 +157,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/Users/runner/work/nanoem/nanoem/out/core/sapp
+          zip -vr ${{ github.workspace }}/nanoem-macos-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/Users/runner/work/nanoem/nanoem/out/core/emapp/plugins/ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -160,6 +169,13 @@ jobs:
         with:
           name: nanoem-macos
           path: ${{ github.workspace }}/nanoem-macos.zip
+          if-no-files-found: error
+      - name: Upload artifacts (ssb Plugin)
+        id: upload-artifacts-ssb
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanoem-macos-ssb
+          path: ${{ github.workspace }}/nanoem-macos-ssb.zip
           if-no-files-found: error
   build-windows:
     runs-on: windows-2022
@@ -211,7 +227,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/a/nanoem/nanoem/out/core/sapp/Release
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/a/nanoem/nanoem/out/core/emapp/plugins/ssb/Release
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -222,6 +239,13 @@ jobs:
         with:
           name: nanoem-windows
           path: ${{ github.workspace }}/nanoem-win64.zip
+          if-no-files-found: error
+      - name: Upload artifacts (ssb Plugin)
+        id: upload-artifacts-ssb
+        uses: actions/upload-artifact@v4
+        with:
+          name: nanoem-windows-ssb
+          path: ${{ github.workspace }}/nanoem-win64-ssb.zip
           if-no-files-found: error
   build-rust:
     runs-on: ubuntu-latest
