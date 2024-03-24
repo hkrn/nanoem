@@ -85,8 +85,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/home/runner/work/nanoem/nanoem/out/core/sapp
-          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/home/runner/work/nanoem/nanoem/out/core/emapp/plugins/ssb
+          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp
+          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -157,8 +157,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/Users/runner/work/nanoem/nanoem/out/core/sapp
-          zip -vr ${{ github.workspace }}/nanoem-macos-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/Users/runner/work/nanoem/nanoem/out/core/emapp/plugins/ssb
+          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp
+          zip -vr ${{ github.workspace }}/nanoem-macos-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -227,8 +227,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/a/nanoem/nanoem/out/core/sapp/Release
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/a/nanoem/nanoem/out/core/emapp/plugins/ssb/Release
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp/Release
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb/Release
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
