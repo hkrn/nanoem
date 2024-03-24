@@ -85,8 +85,8 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}\home\runner\work\nanoem\nanoem\out\core\sapp
-          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}\home\runner\work\nanoem\nanoem\out\core\emapp\plugins\ssb
+          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/home/runner/work/nanoem/nanoem/out/core/sapp
+          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/home/runner/work/nanoem/nanoem/out/core/emapp/plugins/ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
