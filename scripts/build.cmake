@@ -260,7 +260,7 @@ function(compile_spirv_tools _cmake_build_type _generator _toolset_option _arch_
   file(MAKE_DIRECTORY ${_build_path})
   # checkout spirv-headers
   set(_branch "main")
-  set(_revision "124a9665e464ef98b8b718d572d5f329311061eb")
+  set(_revision "8b246ff75c6615ba4532fe4fde20f1be090c3764")
   if("${_cmake_build_type}" STREQUAL "Debug")
     set(_msvc_runtime_library "MultiThreadedDebug")
   else()
