@@ -20,7 +20,10 @@ use rand::{thread_rng, Rng};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use wasi_common::{
-    file::{FileType, Filestat}, snapshots::preview_1::types::Error, sync::WasiCtxBuilder, WasiFile
+    file::{FileType, Filestat},
+    snapshots::preview_1::types::Error,
+    sync::WasiCtxBuilder,
+    WasiFile,
 };
 use wasmtime::{Engine, Linker};
 
@@ -101,7 +104,7 @@ fn create_random_data(size: usize) -> Vec<u8> {
     let mut data = vec![];
     let mut rng = thread_rng();
     for _ in 0..size {
-        let v: u8 = rng.gen();
+        let v: u8 = rng.r#gen();
         data.push(v);
     }
     data

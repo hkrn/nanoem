@@ -36,16 +36,16 @@ impl nanoem_application_plugin_model_io_t {
         controller.initialize()?;
         Ok(Self { controller })
     }
-    pub(crate) unsafe fn get(plugin: *const Self) -> Option<&'static Self> {
+    pub(crate) fn get(plugin: *const Self) -> Option<&'static Self> {
         if !plugin.is_null() {
-            Some(&(*plugin))
+            Some(unsafe { &(*plugin) })
         } else {
             None
         }
     }
-    pub(crate) unsafe fn get_mut(plugin: *mut Self) -> Option<&'static mut Self> {
+    pub(crate) fn get_mut(plugin: *mut Self) -> Option<&'static mut Self> {
         if !plugin.is_null() {
-            Some(&mut (*plugin))
+            Some(unsafe { &mut (*plugin) })
         } else {
             None
         }

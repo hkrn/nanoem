@@ -33,9 +33,9 @@ pub enum nanoem_application_plugin_status_t {
 }
 
 impl nanoem_application_plugin_status_t {
-    pub(crate) unsafe fn assign(self, value: *mut nanoem_application_plugin_status_t) {
+    pub(crate) fn assign(self, value: *mut nanoem_application_plugin_status_t) {
         if !value.is_null() {
-            *value = self;
+            unsafe { *value = self };
         }
     }
 }
