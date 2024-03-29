@@ -36,7 +36,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOInitialize() {
 #[no_mangle]
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreate(
 ) -> *mut nanoem_application_plugin_model_io_t {
-    nanoemApplicationPluginModelIOCreateWithLocation(null())
+    unsafe { nanoemApplicationPluginModelIOCreateWithLocation(null()) }
 }
 
 /// # Safety
@@ -46,12 +46,12 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreate(
 pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
     path: *const c_char,
 ) -> *mut nanoem_application_plugin_model_io_t {
-    let path = CStr::from_ptr(path as *const c_char);
+    let path = unsafe { CStr::from_ptr(path as *const c_char) };
     if let Ok(mut instance) = nanoem_application_plugin_model_io_t::new(path) {
         let result = instance.create();
         if result.is_ok() {
             let plugin = Box::new(instance);
-            return std::mem::transmute(plugin);
+            return unsafe { std::mem::transmute(plugin) };
         }
     }
     null_mut()
@@ -168,7 +168,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedVertexObjec
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -195,7 +195,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedMaterialObj
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -222,7 +222,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedBoneObjectI
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -249,7 +249,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedConstraintO
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -276,7 +276,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedMorphObject
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -303,7 +303,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedLabelObject
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -330,7 +330,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedRigidBodyOb
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -357,7 +357,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedJointObject
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -384,7 +384,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAllSelectedSoftBodyObj
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             let slice = if !data.is_null() && length > 0 {
-                std::slice::from_raw_parts(data, length as usize)
+                unsafe { std::slice::from_raw_parts(data, length as usize) }
             } else {
                 &[]
             };
@@ -411,7 +411,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetAudioDescription(
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
-                let slice = std::slice::from_raw_parts(data, length as usize);
+                let slice = unsafe { std::slice::from_raw_parts(data, length as usize) };
                 match instance.set_audio_description(slice) {
                     Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                     Err(value) => instance.assign_failure_reason(value),
@@ -438,7 +438,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetCameraDescription(
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
-                let slice = std::slice::from_raw_parts(data, length as usize);
+                let slice = unsafe { std::slice::from_raw_parts(data, length as usize) };
                 match instance.set_camera_description(slice) {
                     Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                     Err(value) => instance.assign_failure_reason(value),
@@ -465,7 +465,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetLightDescription(
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
-                let slice = std::slice::from_raw_parts(data, length as usize);
+                let slice = unsafe { std::slice::from_raw_parts(data, length as usize) };
                 match instance.set_light_description(slice) {
                     Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                     Err(value) => instance.assign_failure_reason(value),
@@ -492,7 +492,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputAudioData(
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
-                let slice = std::slice::from_raw_parts(data, length as usize);
+                let slice = unsafe { std::slice::from_raw_parts(data, length as usize) };
                 match instance.set_audio_data(slice) {
                     Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                     Err(value) => instance.assign_failure_reason(value),
@@ -519,7 +519,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetInputModelData(
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
         Some(instance) => {
             if !data.is_null() && length > 0 {
-                let slice = std::slice::from_raw_parts(data, length as usize);
+                let slice = unsafe { std::slice::from_raw_parts(data, length as usize) };
                 match instance.set_input_data(slice) {
                     Ok(_) => nanoem_application_plugin_status_t::SUCCESS,
                     Err(value) => instance.assign_failure_reason(value),
@@ -561,7 +561,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelDataSize(
 ) {
     if let Some(instance) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
         if !length.is_null() {
-            *length = instance.output_slice().len() as u32
+            unsafe { *length = instance.output_slice().len() as u32 }
         }
     }
 }
@@ -580,11 +580,13 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetOutputModelData(
         Some(instance) => {
             if !data.is_null() && length > 0 {
                 let slice = instance.output_slice();
-                std::ptr::copy(
-                    slice.as_ptr(),
-                    data,
-                    std::cmp::min(length as usize, slice.len()),
-                );
+                unsafe {
+                    std::ptr::copy(
+                        slice.as_ptr(),
+                        data,
+                        std::cmp::min(length as usize, slice.len()),
+                    )
+                };
                 nanoem_application_plugin_status_t::SUCCESS
             } else {
                 nanoem_application_plugin_status_t::ERROR_NULL_OBJECT
@@ -623,7 +625,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutDataSize
 ) {
     if let Some(instance) = nanoem_application_plugin_model_io_t::get_mut(plugin) {
         if !length.is_null() {
-            *length = instance.window_layout_data_slice().len() as u32
+            unsafe { *length = instance.window_layout_data_slice().len() as u32 }
         }
     }
 }
@@ -642,11 +644,13 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOGetUIWindowLayoutData(
         Some(instance) => {
             if !data.is_null() && length > 0 {
                 let slice = instance.window_layout_data_slice();
-                std::ptr::copy(
-                    slice.as_ptr(),
-                    data,
-                    std::cmp::min(length as usize, slice.len()),
-                );
+                unsafe {
+                    std::ptr::copy(
+                        slice.as_ptr(),
+                        data,
+                        std::cmp::min(length as usize, slice.len()),
+                    )
+                };
                 nanoem_application_plugin_status_t::SUCCESS
             } else {
                 nanoem_application_plugin_status_t::ERROR_NULL_OBJECT
@@ -670,7 +674,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
     status_ptr: *mut nanoem_application_plugin_status_t,
 ) {
     let status = match nanoem_application_plugin_model_io_t::get_mut(plugin) {
-        Some(instance) => {
+        Some(instance) => unsafe {
             let id = CStr::from_ptr(id as *const c_char);
             let data = std::slice::from_raw_parts(data, length as usize);
             let mut reload = false;
@@ -683,7 +687,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOSetUIComponentLayoutData(
                 }
                 Err(value) => instance.assign_failure_reason(value),
             }
-        }
+        },
         None => nanoem_application_plugin_status_t::ERROR_NULL_OBJECT,
     };
     status.assign(status_ptr)
@@ -729,7 +733,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIODestroy(
     plugin: *mut nanoem_application_plugin_model_io_t,
 ) {
     if !plugin.is_null() {
-        let _: Box<nanoem_application_plugin_model_io_t> = std::mem::transmute(plugin);
+        let _: Box<nanoem_application_plugin_model_io_t> = unsafe { std::mem::transmute(plugin) };
     }
 }
 
