@@ -116,13 +116,17 @@ impl ModelIOPluginController {
                     }
                     notify::EventKind::Remove(_) => {
                         let mut guard = plugins_inner.lock();
-                        let indices = guard.iter().enumerate().filter_map(|(i, plugin)| {
-                            if ev.paths.contains(plugin.path()) {
-                                Some(i)
-                            } else {
-                                None
-                            }
-                        }).collect::<Vec<_>>();
+                        let indices = guard
+                            .iter()
+                            .enumerate()
+                            .filter_map(|(i, plugin)| {
+                                if ev.paths.contains(plugin.path()) {
+                                    Some(i)
+                                } else {
+                                    None
+                                }
+                            })
+                            .collect::<Vec<_>>();
                         for index in indices {
                             let mut plugin = guard.remove(index);
                             tracing::info!(
