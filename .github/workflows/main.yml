@@ -13,6 +13,7 @@ env:
   ICU_VERSION_TAG: release-71-1
   NANOEM_BUILD_DEPENDENCIES_DIRECTORY: ${{ github.workspace }}/out/dependencies
   NANOEM_BUILD_ARTIFACT_DIRECTORY: ${{ github.workspace }}/out/core
+  NANOEM_RUST_DIRECTORY: ${{ github.workspace }}/rust
 
 jobs:
   build-linux:
@@ -171,7 +172,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ${{ github.workspace }}/rust
+        working-directory: ${{ env.NANOEM_RUST_DIRECTORY }}
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -182,10 +183,13 @@ jobs:
       - name: setup rust toolchain (stable and wasm32-wasi)
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
+          cache-workspaces: ${{ env.NANOEM_RUST_DIRECTORY }}
           components: rustfmt
           target: wasm32-wasi
       - name: run rustfmt for check
         uses: actions-rust-lang/rustfmt@v1
+        with:
+          manifest-path: ${{ env.NANOEM_RUST_DIRECTORY }}/Cargo.toml
       - name: setup prerequisite packages
         run: |
           sudo apt-get update && sudo apt-get install -y \
