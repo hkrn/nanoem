@@ -97,12 +97,11 @@ impl ModelIOPluginController {
                                 match create_plugin(path) {
                                     Ok(plugin) => {
                                         plugin_mut.destroy();
-                                        plugin_mut.terminate();
+                                        std::mem::replace(plugin_mut, plugin).terminate();
                                         tracing::info!(
                                             path = ?path,
                                             "WASM model I/O plugin is modified and reloaded",
                                         );
-                                        *plugin_mut = plugin
                                     }
                                     Err(err) => {
                                         tracing::warn!(
@@ -116,19 +115,23 @@ impl ModelIOPluginController {
                         }
                     }
                     notify::EventKind::Remove(_) => {
-                        plugins_inner.lock().retain_mut(|plugin| {
+                        let mut guard = plugins_inner.lock();
+                        let indices = guard.iter().enumerate().filter_map(|(i, plugin)| {
                             if ev.paths.contains(plugin.path()) {
-                                plugin.destroy();
-                                plugin.terminate();
-                                tracing::info!(
-                                    path = ?plugin.path(),
-                                    "WASM model I/O is removed",
-                                );
-                                false
+                                Some(i)
                             } else {
-                                true
+                                None
                             }
-                        });
+                        }).collect::<Vec<_>>();
+                        for index in indices {
+                            let mut plugin = guard.remove(index);
+                            tracing::info!(
+                                path = ?plugin.path(),
+                                "WASM model I/O is removed",
+                            );
+                            plugin.destroy();
+                            plugin.terminate();
+                        }
                     }
                     _ => {}
                 }
@@ -333,10 +336,10 @@ impl ModelIOPluginController {
             .for_each(|plugin| plugin.destroy())
     }
     pub fn terminate(&mut self) {
-        self.plugins
-            .lock()
-            .iter_mut()
-            .for_each(|plugin| plugin.terminate())
+        let mut guard = self.plugins.lock();
+        while let Some(plugin) = guard.pop() {
+            plugin.terminate();
+        }
     }
     #[allow(unused)]
     pub(super) fn all_plugins_mut(&mut self) -> Arc<Mutex<Vec<ModelIOPlugin>>> {

@@ -421,7 +421,7 @@ impl MotionIOPlugin {
             &mut self.store,
         )
     }
-    pub fn terminate(&mut self) {
+    pub fn terminate(mut self) {
         inner_terminate_function(
             &self.instance,
             "nanoemApplicationPluginMotionIOTerminate",
