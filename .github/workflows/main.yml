@@ -204,24 +204,6 @@ jobs:
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
-      - name: Make artifacts
-        run: |
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp/Release
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb/Release
-      - name: Upload artifacts
-        id: upload-artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: nanoem-windows
-          path: ${{ github.workspace }}/nanoem-win64.zip
-          if-no-files-found: error
-      - name: Upload artifacts (ssb Plugin)
-        id: upload-artifacts-ssb
-        uses: actions/upload-artifact@v4
-        with:
-          name: nanoem-windows-ssb
-          path: ${{ github.workspace }}/nanoem-win64-ssb.zip
-          if-no-files-found: error
   build-rust:
     runs-on: ubuntu-latest
     defaults:
