@@ -79,7 +79,6 @@ jobs:
             -GNinja \
             ../..
           cmake --build . --config release
-          cd ..
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -143,7 +142,6 @@ jobs:
             -GNinja \
             ../..
           cmake --build . --config release
-          cd ..
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -202,7 +200,6 @@ jobs:
             -Tv141 `
             ../..
           cmake --build . --config release
-          cd ..
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
