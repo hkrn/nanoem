@@ -46,10 +46,6 @@ jobs:
         run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
       - name: checkout ICU
         run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
-      - name: checkout Libsoundio
-        run: git clone https://github.com/andrewrk/libsoundio dependencies/libsoundio
-      - name: checkout Yamlapp
-        run: git clone https://github.com/jbeder/yaml-cpp dependencies/yaml-cpp
       - name: build all dependencies of nanoem
         run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
@@ -57,8 +53,6 @@ jobs:
           NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_LIBSOUNDIO: 1
-          NANOEM_ENABLE_BUILD_YAMLCPP: 1
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
@@ -115,14 +109,8 @@ jobs:
           submodules: recursive
       - name: checkout ffmpeg
         run: git clone --depth=1 --branch=${{ env.FFMPEG_VERSION_TAG }} https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
-      - name: checkout glfw
-        run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
       - name: checkout ICU
         run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
-      - name: checkout Libsoundio
-        run: git clone https://github.com/andrewrk/libsoundio dependencies/libsoundio
-      - name: checkout Yamlapp
-        run: git clone https://github.com/jbeder/yaml-cpp dependencies/yaml-cpp
       - name: setup prerequisite packages
         run: brew install ninja
       - name: build all dependencies of nanoem
@@ -131,12 +119,8 @@ jobs:
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
           NANOEM_ENABLE_BUILD_FFMPEG: 1
-          NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_LIBSOUNDIO: 1
-          NANOEM_ENABLE_BUILD_YAMLCPP: 1
-          NANOEM_ENABLE_BUILD_SENTRY_NATIVE: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -186,14 +170,6 @@ jobs:
         with:
           fetch-depth: 0
           submodules: recursive
-      - name: checkout ffmpeg
-        run: git clone --depth=1 --branch=${{ env.FFMPEG_VERSION_TAG }} https://github.com/ffmpeg/ffmpeg.git dependencies/ffmpeg
-      - name: checkout glfw
-        run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
-      - name: checkout ICU
-        run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
-      - name: checkout Yamlapp
-        run: git clone https://github.com/jbeder/yaml-cpp dependencies/yaml-cpp
       - name: build all dependencies of nanoem
         run: cmake -DCONFIG=release -P ${{ github.workspace }}/scripts/build.cmake
         env:
@@ -201,12 +177,7 @@ jobs:
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: vs2017
           NANOEM_TARGET_TOOLSET: v141
-          NANOEM_ENABLE_BUILD_FFMPEG: 1
-          NANOEM_ENABLE_BUILD_GLFW: 1
-          NANOEM_ENABLE_BUILD_ICU4C: 1
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_YAMLCPP: 1
-          NANOEM_ENABLE_BUILD_SENTRY_NATIVE: 1
       - name: build nanoem itself
         run: |
           mkdir -p ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
@@ -324,10 +295,6 @@ jobs:
         run: git clone --depth=1 --branch=${{ env.GLFW_VERSION_TAG }} https://github.com/glfw/glfw.git dependencies/glfw
       - name: checkout ICU
         run: git clone --depth=1 --branch=${{ env.ICU_VERSION_TAG }} https://github.com/unicode-org/icu.git dependencies/icu
-      - name: checkout Libsoundio
-        run: git clone https://github.com/andrewrk/libsoundio dependencies/libsoundio
-      - name: checkout Yamlapp
-        run: git clone https://github.com/jbeder/yaml-cpp dependencies/yaml-cpp
       - name: build all dependencies of nanoem
         run: |
           cd ${{ github.workspace }}
@@ -337,8 +304,6 @@ jobs:
           NANOEM_ENABLE_BUILD_GLFW: 1
           NANOEM_ENABLE_BUILD_ICU4C: 1
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
-          NANOEM_ENABLE_BUILD_LIBSOUNDIO: 1
-          NANOEM_ENABLE_BUILD_YAMLCPP: 1
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
