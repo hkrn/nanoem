@@ -80,12 +80,14 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp
-          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+      - name: Make artifacts
+        run: |
+          zip -r ${{ github.workspace }}/nanoem-linux64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp
+          zip -r ${{ github.workspace }}/nanoem-linux64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb
       - name: Upload artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v4
@@ -142,12 +144,14 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp
-          zip -vr ${{ github.workspace }}/nanoem-macos-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+      - name: Make artifacts
+        run: |
+          zip -vr ${{ github.workspace }}/nanoem-macos.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp
+          zip -vr ${{ github.workspace }}/nanoem-macos-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb
       - name: Upload artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v4
@@ -199,12 +203,14 @@ jobs:
             ../..
           cmake --build . --config release
           cd ..
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp/Release
-          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb/Release
       - name: test nanoem's unit tests
         run: |
           cd ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}
           ctest
+      - name: Make artifacts
+        run: |
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/sapp/Release
+          tar.exe -a -c -f ${{ github.workspace }}/nanoem-win64-ssb.zip ${{ env.NANOEM_BUILD_ARTIFACT_DIRECTORY }}/emapp/plugins/ssb/Release
       - name: Upload artifacts
         id: upload-artifacts
         uses: actions/upload-artifact@v4
