@@ -17,7 +17,7 @@ tracing-subscriber = "0.3"
 wasmtime = { version = "19", default-features = false, features = [
     "cranelift",
 ] }
-wasmtime-wasi = { version = "19" }
+wasmtime-wasi = { version = "20" }
 wasi-common = { version = "19" }
 walkdir = "2"
 zerocopy = "0.7"
