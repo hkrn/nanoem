@@ -2,7 +2,6 @@
 db-path = "~/.cargo/advisory-db"
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "warn"
-ignore = ["RUSTSEC-2020-0168"]
 
 [licenses]
 allow = [
