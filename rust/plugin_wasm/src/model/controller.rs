@@ -130,7 +130,7 @@ impl ModelIOPluginController {
                         for index in indices {
                             let mut plugin = guard.remove(index);
                             tracing::info!(
-                                path = ?plugin.path(),
+                                path = %plugin.path().display(),
                                 "WASM model I/O is removed",
                             );
                             plugin.destroy();
@@ -175,14 +175,35 @@ impl ModelIOPluginController {
         Ok(Self::new(plugins, watcher))
     }
     pub fn initialize(&mut self) -> Result<()> {
-        self.plugins
-            .lock()
-            .iter_mut()
-            .try_for_each(|plugin| plugin.initialize())
+        let mut guard = self.plugins.lock();
+        let mut offsets = vec![];
+        for (index, plugin) in guard.iter_mut().enumerate() {
+            if let Err(err) = plugin.initialize() {
+                tracing::warn!(err = %err, path = %plugin.path().display(), "Cannot initialize WASM plugin and will be deleted");
+                offsets.push(index);
+            }
+        }
+        for i in offsets {
+            let mut plugin = guard.remove(i);
+            plugin.destroy();
+            plugin.terminate();
+        }
+        Ok(())
     }
     pub fn create(&mut self) -> Result<()> {
         let mut guard = self.plugins.lock();
-        guard.iter_mut().try_for_each(|plugin| plugin.create())?;
+        let mut offsets = vec![];
+        for (index, plugin) in guard.iter_mut().enumerate() {
+            if let Err(err) = plugin.create() {
+                tracing::warn!(err = %err, path = %plugin.path().display(), "Cannot create WASM plugin and will be deleted");
+                offsets.push(index);
+            }
+        }
+        for i in offsets {
+            let mut plugin = guard.remove(i);
+            plugin.destroy();
+            plugin.terminate();
+        }
         for (offset, plugin) in guard.iter_mut().enumerate() {
             let name = plugin.name()?;
             let version = plugin.version()?;
@@ -196,10 +217,11 @@ impl ModelIOPluginController {
         Ok(())
     }
     pub fn set_language(&mut self, value: i32) -> Result<()> {
-        self.plugins
-            .lock()
-            .iter_mut()
-            .try_for_each(|plugin| plugin.set_language(value))
+        let mut guard = self.plugins.lock();
+        for plugin in guard.iter_mut() {
+            plugin.set_language(value)?;
+        }
+        Ok(())
     }
     pub fn count_all_functions(&self) -> i32 {
         self.function_indices.len() as i32
@@ -334,10 +356,10 @@ impl ModelIOPluginController {
         self.failure_reason = Some(value.to_string());
     }
     pub fn destroy(&mut self) {
-        self.plugins
-            .lock()
-            .iter_mut()
-            .for_each(|plugin| plugin.destroy())
+        let mut guard = self.plugins.lock();
+        for plugin in guard.iter_mut() {
+            plugin.destroy();
+        }
     }
     pub fn terminate(&mut self) {
         let mut guard = self.plugins.lock();
