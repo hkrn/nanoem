@@ -2359,7 +2359,7 @@ ImGuiWindow::selectTrack(nanoem_rsize_t offset, ITrack::Type targetTrackType, Pr
 {
     const ImGuiIO &io = ImGui::GetIO();
     ITrack *track = nullptr;
-    if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_UpArrow), io.KeyRepeatDelay, 0.02f) > 0 && offset > 0) {
+    if (ImGui::GetKeyPressedAmount(ImGuiKey_UpArrow, io.KeyRepeatDelay, 0.02f) > 0 && offset > 0) {
         for (Project::TrackList::const_iterator it = tracks.begin() + offset - 1, end = tracks.begin(); it != end;
              --it) {
             ITrack *item = *it;
@@ -2370,7 +2370,7 @@ ImGuiWindow::selectTrack(nanoem_rsize_t offset, ITrack::Type targetTrackType, Pr
             }
         }
     }
-    else if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_DownArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
+    else if (ImGui::GetKeyPressedAmount(ImGuiKey_DownArrow, io.KeyRepeatDelay, 0.02f) > 0 &&
         offset < tracks.size() - 1) {
         for (Project::TrackList::const_iterator it = tracks.begin() + offset + 1, end = tracks.end(); it != end; ++it) {
             ITrack *item = *it;
@@ -5580,19 +5580,19 @@ ImGuiWindow::batchLazySetAllObjects(Project *project, bool seekable)
         const ImGuiIO &io = ImGui::GetIO();
         const nanoem_frame_index_t frameIndex = project->currentLocalFrameIndex();
         if (Inline::isDebuggerPresent()) {
-            if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightArrow), false) &&
+            if (ImGui::IsKeyPressed(ImGuiKey_RightArrow, false) &&
                 frameIndex < Motion::kMaxFrameIndex) {
                 project->seek(frameIndex + 1, false);
             }
-            else if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftArrow), false) && frameIndex > 0) {
+            else if (ImGui::IsKeyPressed(ImGuiKey_LeftArrow, false) && frameIndex > 0) {
                 project->seek(frameIndex - 1, false);
             }
         }
-        else if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_RightArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
+        else if (ImGui::GetKeyPressedAmount(ImGuiKey_RightArrow, io.KeyRepeatDelay, 0.02f) > 0 &&
             frameIndex < Motion::kMaxFrameIndex) {
             project->seek(frameIndex + 1, false);
         }
-        else if (ImGui::GetKeyPressedAmount(ImGui::GetKeyIndex(ImGuiKey_LeftArrow), io.KeyRepeatDelay, 0.02f) > 0 &&
+        else if (ImGui::GetKeyPressedAmount(ImGuiKey_LeftArrow, io.KeyRepeatDelay, 0.02f) > 0 &&
             frameIndex > 0) {
             project->seek(frameIndex - 1, false);
         }
