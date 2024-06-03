@@ -24,6 +24,7 @@ jobs:
       CXX: clang++
       CXXFLAGS: -stdlib=libc++
       LDFLAGS: -lc++abi
+      GIT_CLONE_PROTECTION_ACTIVE: false
     steps:
       - name: checkout
         uses: actions/checkout@v4
