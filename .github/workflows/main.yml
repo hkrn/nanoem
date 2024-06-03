@@ -24,6 +24,7 @@ jobs:
       CXX: clang++
       CXXFLAGS: -stdlib=libc++
       LDFLAGS: -lc++abi
+      GIT_CLONE_PROTECTION_ACTIVE: false
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -141,8 +142,8 @@ jobs:
         env:
           NANOEM_TARGET_ARCHITECTURES: x86_64
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
-          NANOEM_TARGET_COMPILER: vs2017
-          NANOEM_TARGET_TOOLSET: v141
+          NANOEM_TARGET_COMPILER: vs2019
+          NANOEM_TARGET_TOOLSET: v142
           NANOEM_ENABLE_BUILD_MIMALLOC: 1
       - name: build nanoem itself
         run: |
@@ -159,9 +160,9 @@ jobs:
             -DNANOEM_INSTALL_FFMPEG_PLUGIN=OFF `
             -DNANOEM_INSTALL_GIF_PLUGIN=OFF `
             -DNANOEM_INSTALL_LSMASH_PLUGIN=ON `
-            -DNANOEM_TARGET_COMPILER=vs2017 `
+            -DNANOEM_TARGET_COMPILER=vs2019 `
             -G"Visual Studio 17 2022" `
-            -Tv141 `
+            -Tv142 `
             ../..
           cmake --build . --config release
       - name: test nanoem's unit tests
