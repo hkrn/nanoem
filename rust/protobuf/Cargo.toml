@@ -8,10 +8,10 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 bytes = "1"
-prost = "0.12"
+prost = "0.13"
 
 [build-dependencies]
-prost-build = "0.12"
+prost-build = "0.13"
 
 [lib]
 name = "nanoem_protobuf"
