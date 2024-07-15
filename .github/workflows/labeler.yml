@@ -1,7 +1,10 @@
 name: "Pull Request Labeler"
+
 on:
   pull_request:
     branches: [ main ]
+
+permissions: {}
 
 jobs:
   triage:
