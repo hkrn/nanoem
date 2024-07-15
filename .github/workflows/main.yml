@@ -221,6 +221,8 @@ jobs:
   codeql:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    permissions:
+      security-events: write
     timeout-minutes: 60
     env:
       CC: clang
