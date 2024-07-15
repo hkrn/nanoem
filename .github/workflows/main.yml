@@ -15,9 +15,13 @@ env:
   NANOEM_BUILD_ARTIFACT_DIRECTORY: ${{ github.workspace }}/out/core
   NANOEM_RUST_DIRECTORY: ${{ github.workspace }}/rust
 
+permissions:
+  contents: read
+
 jobs:
   build-linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     # libc++/libc++abi are not prerequsite libraries but specifies to test CXXFLAGS/LDFLAGS are functional
     env:
       CC: clang
@@ -86,6 +90,7 @@ jobs:
           ctest
   build-macos:
     runs-on: macos-latest
+    timeout-minutes: 30
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -131,6 +136,7 @@ jobs:
           ctest
   build-windows:
     runs-on: windows-2022
+    timeout-minutes: 30
     steps:
       - name: checkout
         uses: actions/checkout@v4
@@ -171,6 +177,7 @@ jobs:
           ctest
   build-rust:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     defaults:
       run:
         working-directory: ${{ env.NANOEM_RUST_DIRECTORY }}
@@ -206,7 +213,7 @@ jobs:
           )
           for profile in "${profiles[@]}"; do
             for package in "${packages[@]}"; do
-              cargo build --profile ${profile} --package ${package} --target wasm32-wasi
+              cargo build --profile "${profile}" --package "${package}" --target wasm32-wasi
             done
           done
           cargo check --profile release-lto
@@ -214,6 +221,7 @@ jobs:
   codeql:
     if: ${{ github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     env:
       CC: clang
       CXX: clang++
@@ -248,7 +256,7 @@ jobs:
       - name: build all dependencies of nanoem
         run: |
           cd ${{ github.workspace }}
-          cmake -DCONFIG=release -P $PWD/scripts/build.cmake
+          cmake -DCONFIG=release -P "$PWD/scripts/build.cmake"
         env:
           NANOEM_ENABLE_BUILD_FFMPEG: 1
           NANOEM_ENABLE_BUILD_GLFW: 1
