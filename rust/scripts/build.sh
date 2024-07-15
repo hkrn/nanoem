@@ -12,7 +12,7 @@ packages=(
 )
 for profile in "${profiles[@]}"; do
   for package in "${packages[@]}"; do
-    cargo build --profile ${profile} --package ${package} --target wasm32-wasi
+    cargo build --profile "${profile}" --package "${package}" --target wasm32-wasi
   done
 done
 cargo build --profile release-lto
