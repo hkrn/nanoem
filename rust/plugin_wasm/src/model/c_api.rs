@@ -51,7 +51,12 @@ pub unsafe extern "C" fn nanoemApplicationPluginModelIOCreateWithLocation(
         let result = instance.create();
         if result.is_ok() {
             let plugin = Box::new(instance);
-            return unsafe { std::mem::transmute(plugin) };
+            return unsafe {
+                std::mem::transmute::<
+                    Box<nanoem_application_plugin_model_io_t>,
+                    *mut nanoem_application_plugin_model_io_t,
+                >(plugin)
+            };
         }
     }
     null_mut()
