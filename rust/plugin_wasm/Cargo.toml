@@ -14,11 +14,11 @@ notify = { version = "6", default-features = false, features = [
 parking_lot = "0.12"
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
-wasmtime = { version = "22", default-features = false, features = [
+wasmtime = { version = "23", default-features = false, features = [
     "cranelift",
 ] }
-wasmtime-wasi = { version = "22" }
-wasi-common = { version = "22" }
+wasmtime-wasi = { version = "23" }
+wasi-common = { version = "23" }
 walkdir = "2"
 zerocopy = "0.7"
 
