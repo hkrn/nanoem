@@ -18,7 +18,7 @@ updates:
         update-types: ["version-update:semver-major"]
       - dependency-name: "wasmtime-wasi"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "wasm-common"
+      - dependency-name: "wasi-common"
         update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
