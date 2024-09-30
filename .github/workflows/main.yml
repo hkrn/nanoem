@@ -189,7 +189,7 @@ jobs:
         with:
           manifest-path: ./rust/Cargo.toml
       - name: setup rust toolchain (stable and wasm32-wasi)
-        uses: actions-rust-lang/setup-rust-toolchain@1fbea72663f6d4c03efaab13560c8a24cfd2a7cc # v1.9.0
+        uses: actions-rust-lang/setup-rust-toolchain@4d1965c9142484e48d40c19de54b5cba84953a06 # v1.10.0
         with:
           cache-workspaces: ${{ env.NANOEM_RUST_DIRECTORY }}
           components: rustfmt
