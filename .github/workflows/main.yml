@@ -195,7 +195,7 @@ jobs:
           components: rustfmt
           target: wasm32-wasi
       - name: run rustfmt for check
-        uses: actions-rust-lang/rustfmt@2d1d4e9f72379428552fa1def0b898733fb8472d # v1.1.0
+        uses: actions-rust-lang/rustfmt@559aa3035a47390ba96088dffa783b5d26da9326 # v1.1.1
         with:
           manifest-path: ${{ env.NANOEM_RUST_DIRECTORY }}/Cargo.toml
       - name: setup prerequisite packages
