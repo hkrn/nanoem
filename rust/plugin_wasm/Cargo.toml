@@ -20,7 +20,7 @@ wasmtime = { version = "23", default-features = false, features = [
 wasmtime-wasi = { version = "23" }
 wasi-common = { version = "23" }
 walkdir = "2"
-zerocopy = "0.7"
+zerocopy = "0.8"
 
 [dev-dependencies]
 serde.workspace = true
