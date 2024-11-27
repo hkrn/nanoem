@@ -51,12 +51,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreateWithLocation(
         let result = instance.create();
         if result.is_ok() {
             let plugin = Box::new(instance);
-            return unsafe {
-                std::mem::transmute::<
-                    Box<nanoem_application_plugin_motion_io_t>,
-                    *mut nanoem_application_plugin_motion_io_t,
-                >(plugin)
-            };
+            return Box::into_raw(plugin);
         }
     }
     null_mut()
@@ -719,7 +714,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIODestroy(
     plugin: *mut nanoem_application_plugin_motion_io_t,
 ) {
     if !plugin.is_null() {
-        let _: Box<nanoem_application_plugin_motion_io_t> = unsafe { std::mem::transmute(plugin) };
+        let _ = unsafe { Box::from_raw(plugin) };
     }
 }
 
