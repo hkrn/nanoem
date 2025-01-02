@@ -20,7 +20,7 @@ use super::{build_type_and_flags, inner_create_controller};
 fn create_controller(stdout: Box<Pipe>) -> Result<MotionIOPluginController> {
     let package = "plugin_wasm_test_motion_minimum";
     let (ty, flag) = build_type_and_flags();
-    inner_create_controller(stdout, &format!("target/wasm32-wasi/{ty}/{package}.wasm"))
+    inner_create_controller(stdout, &format!("target/wasm32-wasip1/{ty}/{package}.wasm"))
         .with_context(|| {
             format!(
                 "try build with \"cargo build --package {package} --target wasm32-wasi{flag}\"",
