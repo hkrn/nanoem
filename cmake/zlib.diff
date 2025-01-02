@@ -1,0 +1,22 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0fe939d..407ec52 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -230,12 +230,12 @@ endif()
+ # Example binaries
+ #============================================================================
+ 
+-add_executable(example test/example.c)
+-target_link_libraries(example zlib)
+-add_test(example example)
++# add_executable(example test/example.c)
++# target_link_libraries(example zlib)
++# add_test(example example)
+ 
+-add_executable(minigzip test/minigzip.c)
+-target_link_libraries(minigzip zlib)
++# add_executable(minigzip test/minigzip.c)
++# target_link_libraries(minigzip zlib)
+ 
+ if(HAVE_OFF64_T)
+     add_executable(example64 test/example.c)

@@ -675,6 +675,12 @@ execute_process(COMMAND ${GIT_EXECUTABLE} apply --ignore-space-change ${CMAKE_CU
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/bullet3
                 RESULT_VARIABLE result)
 execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib
+                RESULT_VARIABLE result)
+execute_process(COMMAND ${GIT_EXECUTABLE} apply --ignore-space-change ${CMAKE_CURRENT_SOURCE_DIR}/cmake/zlib.diff
+                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/zlib
+                RESULT_VARIABLE result)
+execute_process(COMMAND ${GIT_EXECUTABLE} checkout -- .
                 WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang)
 file(STRINGS ${CMAKE_CURRENT_SOURCE_DIR}/dependencies/glslang/glslang/Include/InfoSink.h input_info_sink_h NEWLINE_CONSUME)
 # due to error detection of LLVM for windows, replaccde "UNKNOWN ERROR :" to "UNKNOWN :"
