@@ -181,7 +181,7 @@ UVEditDialog::State::setOperation(OperationType value)
 void
 UVEditDialog::drawImage(const IImageView *image, nanoem_f32_t scaleFactor)
 {
-    const ImTextureID textureID = reinterpret_cast<ImTextureID>(image->imageHandle().id);
+    const ImTextureID textureID = static_cast<ImTextureID>(image->imageHandle().id);
     const ImVec2 itemSize(calcExpandedImageSize(image->imageDescription(), scaleFactor));
     ImGui::ImageButton(nullptr, textureID, itemSize, ImVec2(0, 0), ImVec2(1, 1));
 }
@@ -344,7 +344,7 @@ UVEditDialog::draw(Project *project)
             drawList->PopClipRect();
         }
         else {
-            const ImTextureID textureID = reinterpret_cast<ImTextureID>(diffuseImage->imageHandle().id);
+            const ImTextureID textureID = static_cast<ImTextureID>(diffuseImage->imageHandle().id);
             const ImVec2 itemSize(calcExpandedImageSize(diffuseImage->imageDescription(), m_scaleFactor));
             ImGui::Image(textureID, itemSize);
             ImDrawList *drawList = ImGui::GetWindowDrawList();

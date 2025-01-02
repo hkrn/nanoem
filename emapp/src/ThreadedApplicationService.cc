@@ -316,7 +316,6 @@ ThreadedApplicationService::terminate()
 {
 #if defined(NANOEM_ENABLE_LOGGING)
     spdlog::drop_all();
-    spdlog::shutdown();
 #endif /* NANOEM_ENABLE_LOGGING */
     nn_term();
 }

@@ -18,9 +18,7 @@
 #include "CocoaThreadedApplicationService.h"
 
 #include "bx/commandline.h"
-#include "spdlog/async.h"
-#include "spdlog/cfg/env.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 
 using namespace nanoem;
 
@@ -405,13 +403,7 @@ main(int argc, char *argv[])
             ThreadedApplicationClient client;
             service.start();
             client.connect();
-            spdlog::init_thread_pool(1024, 1);
-            tinystl::vector<spdlog::sink_ptr, TinySTLAllocator> sinks;
-            sinks.push_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
-            auto logger = std::make_shared<spdlog::async_logger>(
-                "emapp", sinks.begin(), sinks.end(), spdlog::thread_pool(), spdlog::async_overflow_policy::block);
-            spdlog::register_logger(logger);
-            spdlog::cfg::load_env_levels();
+            spdlog::stdout_color_mt("emapp");
             {
                 NSWindow *nativeWindow = macos::CocoaThreadedApplicationService::createMainWindow();
                 TestWindow window(&cmd, &service, &client, nativeWindow);

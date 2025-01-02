@@ -33,6 +33,17 @@ enum ImGuiFileDialogFlags_ {
     ImGuiFileDialogFlags_ConfirmOverwrite = (1 << 0),
     ImGuiFileDialogFlags_DontShowHiddenFiles = (1 << 1),
 };
+
+typedef int IGFD_ResultMode;
+enum IGFD_ResultMode_ {
+    IGFD_ResultMode_AddIfNoFileExt = 0,
+};
+
+struct IGFD_FileDialog_Config {
+    const char *path;
+    ImGuiFileDialogFlags flags;
+};
+
 extern "C" {
 IMGUIFILEDIALOG_API ImGuiFileDialog *
 IGFD_Create(void)
@@ -64,9 +75,9 @@ IGFD_IsOpened(ImGuiFileDialog *vContext)
     return false;
 }
 IMGUIFILEDIALOG_API char *
-IGFD_GetCurrentFileName(ImGuiFileDialog *vContext)
+IGFD_GetCurrentFileName(ImGuiFileDialog *vContext, IGFD_ResultMode mode)
 {
-    BX_UNUSED_1(vContext);
+    BX_UNUSED_2(vContext, mode);
     return nullptr;
 }
 IMGUIFILEDIALOG_API char *
@@ -75,12 +86,18 @@ IGFD_GetCurrentPath(ImGuiFileDialog *vContext)
     BX_UNUSED_1(vContext);
     return nullptr;
 }
+IMGUIFILEDIALOG_API IGFD_FileDialog_Config
+IGFD_FileDialog_Config_Get()
+{
+    IGFD_FileDialog_Config config;
+    Inline::clearZeroMemory(config);
+    return config;
+}
 IMGUIFILEDIALOG_API void
 IGFD_OpenDialog(ImGuiFileDialog *vContext, const char *vKey, const char *vTitle, const char *vFilters,
-    const char *vPath, const char *vFileName, const int vCountSelectionMax, void *vUserDatas,
-    ImGuiFileDialogFlags vFlags)
+    IGFD_FileDialog_Config config)
 {
-    BX_UNUSED_9(vContext, vKey, vTitle, vFilters, vPath, vFileName, vCountSelectionMax, vUserDatas, vFlags);
+    BX_UNUSED_5(vContext, vKey, vTitle, vFilters, config);
 }
 IMGUIFILEDIALOG_API void
 IGFD_CloseDialog(ImGuiFileDialog *vContext)
@@ -876,7 +893,7 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, ImGuiWindow::kWindowRounding * scale.x);
     if (IGFD_DisplayDialog(instance, windowID(), 0, minimumSize, maximumSize)) {
         if (IGFD_IsOk(instance)) {
-            char *filePathPtr = IGFD_GetCurrentPath(instance), *currentFileNamePtr = IGFD_GetCurrentFileName(instance);
+            char *filePathPtr = IGFD_GetCurrentPath(instance), *currentFileNamePtr = IGFD_GetCurrentFileName(instance, IGFD_ResultMode_AddIfNoFileExt);
             String filePath(filePathPtr), canonicalizedFilePath;
             filePath.append("/");
             filePath.append(currentFileNamePtr);
@@ -911,8 +928,10 @@ ImGuiApplicationMenuBuilder::FileDialogState::draw(BaseApplicationClient *client
                 extension.append(",");
             }
         }
-        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), m_lastOpenDirectoryPath.c_str(), "", 1,
-            nullptr, flags());
+        IGFD_FileDialog_Config config = IGFD_FileDialog_Config_Get();
+        config.path = m_lastOpenDirectoryPath.c_str();
+        config.flags = flags();
+        IGFD_OpenDialog(instance, windowID(), windowTitle(), extension.c_str(), config);
     }
     ImGui::PopStyleVar();
 }

@@ -1235,10 +1235,10 @@ CocoaThreadedApplicationService::handleInitializeApplication()
 {
     initializeInputDevices();
     setupNewProject();
-    ImGuiIO &io = ImGui::GetIO();
-    io.ClipboardUserData = this;
-    io.GetClipboardTextFn = [](void *userData) -> const char * {
-        auto self = static_cast<CocoaThreadedApplicationService *>(userData);
+    ImGuiPlatformIO &io = ImGui::GetPlatformIO();
+    io.Platform_ClipboardUserData = this;
+    io.Platform_GetClipboardTextFn = [](ImGuiContext * /* userData */) -> const char * {
+        auto self = static_cast<CocoaThreadedApplicationService *>(ImGui::GetPlatformIO().Platform_ClipboardUserData);
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
         NSString *available = [pasteboard availableTypeFromArray:@[ NSPasteboardTypeString ]], *data = nil;
         if ([available isEqualToString:NSPasteboardTypeString]) {
@@ -1247,7 +1247,7 @@ CocoaThreadedApplicationService::handleInitializeApplication()
         }
         return self->m_clipboard.UTF8String;
     };
-    io.SetClipboardTextFn = [](void * /* userData */, const char *value) {
+    io.Platform_SetClipboardTextFn = [](ImGuiContext * /* userData */, const char *value) {
         NSString *data = [[NSString alloc] initWithUTF8String:value];
         NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
         [pasteboard declareTypes:@[ NSPasteboardTypeString ] owner:nil];
@@ -1433,7 +1433,7 @@ CocoaThreadedApplicationService::handleInitializeApplication()
     updateAllMonitors();
 #else /* IMGUI_HAS_VIEWPORT */
     ImGui::GetMainViewport()->PlatformHandleRaw = this;
-    io.SetPlatformImeDataFn = [](ImGuiViewport *viewport, ImGuiPlatformImeData *data) {
+    io.Platform_SetImeDataFn = [](ImGuiContext * /* context */, ImGuiViewport *viewport, ImGuiPlatformImeData *data) {
         const ImGuiIO &io = ImGui::GetIO();
         const nanoem_f32_t fx = data->InputPos.x * (1.0f / io.DisplayFramebufferScale.x),
                            fy = data->InputPos.y * (1.0f / io.DisplayFramebufferScale.y) + data->InputLineHeight;

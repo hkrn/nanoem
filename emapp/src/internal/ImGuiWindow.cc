@@ -1078,7 +1078,7 @@ ImGuiWindow::saveDefaultStyle(nanoem_f32_t deviceScaleRatio)
     ImGui::PushStyleColor(ImGuiCol_TitleBg, kColorTitleBg);
     ImGui::PushStyleColor(ImGuiCol_TitleBgActive, kColorTitleBgActive);
     ImGui::PushStyleColor(ImGuiCol_Tab, kColorTab);
-    ImGui::PushStyleColor(ImGuiCol_TabActive, kColorTabActive);
+    ImGui::PushStyleColor(ImGuiCol_TabSelected, kColorTabActive);
     ImGui::PushStyleColor(ImGuiCol_TabHovered, kColorTabHovered);
     ImGui::PushStyleColor(ImGuiCol_ResizeGrip, kColorResizeGrip);
     ImGui::PushStyleColor(ImGuiCol_ResizeGripHovered, kColorResizeGripHovered);
@@ -2920,7 +2920,7 @@ ImGuiWindow::drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_fram
 {
     ImGui::Dummy(ImVec2(padding, 0));
     ImGui::SameLine();
-    ImGui::PushButtonRepeat(true);
+    ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
     const nanoem_motion_keyframe_object_t *pk, *nk;
     bool buttonEnabled = !project->isPlaying();
     searchNearestKeyframe(frameIndex, project, pk, nk);
@@ -2933,7 +2933,7 @@ ImGuiWindow::drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_fram
     ImGui::SameLine();
     ImGui::PushItemWidth((ImGui::GetContentRegionAvail().x - padding) * 0.65f);
     if (ImGui::InputScalar("##timeline.frame-index", kFrameIndexDataType, &frameIndex, nullptr, nullptr, nullptr,
-            ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_EnterReturnsTrue)) {
+            ImGuiInputTextFlags_CharsDecimal) && ImGui::IsItemDeactivatedAfterEdit()) {
         frameIndexChanged = true;
     }
     ImGui::PopItemWidth();
@@ -2945,7 +2945,7 @@ ImGuiWindow::drawSeekerPanel(Project *project, nanoem_f32_t padding, nanoem_fram
         frameIndex = nextKeyframeIndex;
         frameIndexChanged = true;
     }
-    ImGui::PopButtonRepeat();
+    ImGui::PopItemFlag();
     ImGui::Dummy(ImVec2(padding, 0));
 }
 
@@ -3204,7 +3204,7 @@ ImGuiWindow::drawAllMarkersPanel(
     }
     else if (!m_draggingTimelineScrollBar && ImGui::IsWindowHovered()) {
         const ImGuiIO &io = ImGui::GetIO();
-        nanoem_f32_t x = ImGui::GetCursorScreenPos().x + ImGui::GetWindowContentRegionMax().x;
+        nanoem_f32_t x = ImGui::GetCursorScreenPos().x;
         if (x < io.MousePos.x) {
             m_draggingTimelineScrollBar = true;
         }
@@ -3770,7 +3770,7 @@ ImGuiWindow::drawViewport(Project *project, IState *state, nanoem_u32_t flags)
         viewportImageFrom.y > a.y ? (viewportImageFrom.y - a.y) * invertDeviceScaleRatio : 0);
     project->setLogicalViewportPadding(viewportPadding);
     drawList->PushClipRect(a, b);
-    drawList->AddImage(reinterpret_cast<ImTextureID>(m_transparentTileImage.id), viewportImageFrom, viewportImageTo,
+    drawList->AddImage(static_cast<ImTextureID>(m_transparentTileImage.id), viewportImageFrom, viewportImageTo,
         ImVec2(0, 0), ImVec2(viewportImageRect.z * tileSizeRatio, viewportImageRect.w * tileSizeRatio));
     ImVec2 uv0, uv1;
     if (sg::query_features().origin_top_left) {
@@ -3781,7 +3781,7 @@ ImGuiWindow::drawViewport(Project *project, IState *state, nanoem_u32_t flags)
         uv1 = ImVec2(1, 0);
     }
     drawList->AddImage(
-        reinterpret_cast<ImTextureID>(viewportImageHandle.id), viewportImageFrom, viewportImageTo, uv0, uv1);
+        static_cast<ImTextureID>(viewportImageHandle.id), viewportImageFrom, viewportImageTo, uv0, uv1);
     if (isModelEditingEnabled) {
         if (m_gizmoController) {
             hovered &= m_gizmoController->draw(drawList, offset, size, project);
@@ -5671,7 +5671,7 @@ ImGuiWindow::renderDrawList(const Project *project, const ImDrawData *drawData, 
                               sw = static_cast<int>(command.ClipRect.z - sx - displayPos.x),
                               sh = static_cast<int>(command.ClipRect.w - sy - displayPos.y);
                     pb.applyScissorRect(sx, sy, sw, sh);
-                    const intptr_t id = reinterpret_cast<intptr_t>(command.TextureId);
+                    const intptr_t id = static_cast<intptr_t>(command.TextureId);
                     const sg_image image = { static_cast<nanoem_u32_t>(id) };
                     if (viewportWithOpaque && image.id == viewportPrimaryImage.id) {
                         pb.applyUniformBlock(

@@ -224,8 +224,8 @@ EffectParameterDialog::layoutAllOffscreenRenderTargetAttachments(Project *projec
         layoutOffscreenRenderTargetAttachment(project, drawable, name, maxTextWidth);
     }
     addSeparator();
-    const ImTextureID textureID = reinterpret_cast<ImTextureID>(option.m_colorImage.id);
-    if (ImGui::TreeNode(textureID, "%s", tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
+    const ImTextureID textureID = static_cast<ImTextureID>(option.m_colorImage.id);
+    if (ImGui::TreeNode(reinterpret_cast<const void *>(textureID), "%s", tr("nanoem.gui.window.project.effect.offscreen.display-texture"))) {
         ImVec2 uv0, uv1;
         ImGuiWindow::getImageCoordinate(uv0, uv1);
         ImGui::Image(textureID, calcExpandedImageSize(option.m_colorImageDescription, 1.0f), uv0, uv1,
@@ -572,7 +572,7 @@ EffectParameterDialog::layoutRenderTargetImage(
         ImVec2(0, ImGui::GetTextLineHeightWithSpacing() * 2), ImGuiInputTextFlags_ReadOnly);
     ImVec2 uv0, uv1;
     ImGuiWindow::getImageCoordinate(uv0, uv1);
-    ImGui::Image(reinterpret_cast<ImTextureID>(handle.id), calcExpandedImageSize(size.x, size.y, 1.0f), uv0, uv1);
+    ImGui::Image(static_cast<ImTextureID>(handle.id), calcExpandedImageSize(size.x, size.y, 1.0f), uv0, uv1);
 }
 
 void

@@ -14,8 +14,7 @@
 #include "bx/os.h"
 
 #if defined(NANOEM_ENABLE_LOGGING)
-#include "spdlog/cfg/env.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
+#include "spdlog/spdlog.h"
 #endif /* NANOEM_ENABLE_LOGGING */
 
 using namespace nanoem;
@@ -28,7 +27,6 @@ nanoemTestSuiteRun(int argc, char *argv[])
 #if defined(NANOEM_ENABLE_LOGGING)
     spdlog::set_level(spdlog::level::off);
     spdlog::stdout_color_mt("emapp");
-    spdlog::cfg::load_env_levels();
 #endif /* NANOEM_ENABLE_LOGGING */
     void *dllHandle = sg::openSharedLibrary(
 #ifdef CMAKE_INTDIR
