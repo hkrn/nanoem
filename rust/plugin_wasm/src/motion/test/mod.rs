@@ -148,7 +148,7 @@ fn from_path() -> Result<()> {
     let path = current_dir()?
         .parent()
         .unwrap()
-        .join(format!("target/wasm32-wasi/{ty}/deps"));
+        .join(format!("target/wasm32-wasip1/{ty}/deps"));
     let mut controller = MotionIOPluginController::from_path(&path, |_builder| ())?;
     let mut names = vec![];
     for plugin in controller.all_plugins_mut().lock().iter_mut() {

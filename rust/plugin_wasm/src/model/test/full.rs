@@ -21,9 +21,10 @@ use super::{build_type_and_flags, inner_create_controller};
 fn create_controller(pipe: Box<dyn WasiFile>) -> Result<ModelIOPluginController> {
     let package = "plugin_wasm_test_model_full";
     let (ty, flag) = build_type_and_flags();
-    inner_create_controller(pipe, &format!("target/wasm32-wasi/{ty}/{package}.wasm")).with_context(
-        || format!("try build with \"cargo build --package {package} --target wasm32-wasi{flag}\""),
-    )
+    inner_create_controller(pipe, &format!("target/wasm32-wasip1/{ty}/{package}.wasm"))
+        .with_context(|| {
+            format!("try build with \"cargo build --package {package} --target wasm32-wasi{flag}\"")
+        })
 }
 
 #[test]

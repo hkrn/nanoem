@@ -1,6 +1,6 @@
 #!/bin/bash -eu
 
-rustup target add wasm32-wasi
+rustup target add wasm32-wasip1
 cargo install cargo-deny
 cargo deny check
 profiles=('dev' 'release-lto')
@@ -12,7 +12,7 @@ packages=(
 )
 for profile in "${profiles[@]}"; do
   for package in "${packages[@]}"; do
-    cargo build --profile "${profile}" --package "${package}" --target wasm32-wasi
+    cargo build --profile "${profile}" --package "${package}" --target wasm32-wasip1
   done
 done
 cargo build --profile release-lto

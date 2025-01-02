@@ -10,7 +10,7 @@ use std::mem::size_of;
 use anyhow::Result;
 use wasi_common::WasiCtx;
 use wasmtime::{AsContextMut, Instance, Memory, TypedFunc};
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 pub(crate) const PLUGIN_MODEL_IO_ABI_VERSION: u32 = 2 << 16;
 pub(crate) const PLUGIN_MOTION_IO_ABI_VERSION: u32 = 2 << 16;
@@ -73,7 +73,7 @@ fn inner_get_data_internal(
     inner_memory(instance, store.as_context_mut())?.read(
         store.as_context_mut(),
         data_size_ptr as usize,
-        data_size.as_bytes_mut(),
+        data_size.as_mut_bytes(),
     )?;
     let bytes = allocate_byte_array(instance, data_size, store.as_context_mut())?;
     let status_ptr = allocate_status_ptr(instance, store.as_context_mut())?;
@@ -469,7 +469,7 @@ pub(crate) fn inner_set_function(
         inner_memory(instance, store.as_context_mut())?.read(
             store.as_context_mut(),
             status_ptr as usize,
-            result.as_bytes_mut(),
+            result.as_mut_bytes(),
         )?;
         tracing::debug!(name = name, opaque = ?opaque, index = index, "Called setting function");
         release_status_ptr(instance, status_ptr, store.as_context_mut())?;
@@ -495,7 +495,7 @@ pub(crate) fn inner_execute(
         inner_memory(instance, store.as_context_mut())?.read(
             store.as_context_mut(),
             status_ptr as usize,
-            result.as_bytes_mut(),
+            result.as_mut_bytes(),
         )?;
         tracing::debug!(name = name, opaque = ?opaque, "Called executing function");
         release_status_ptr(instance, status_ptr, store.as_context_mut())?;
@@ -522,7 +522,7 @@ pub(crate) fn inner_load_ui_window(
             inner_memory(instance, store.as_context_mut())?.read(
                 store.as_context_mut(),
                 status_ptr as usize,
-                result.as_bytes_mut(),
+                result.as_mut_bytes(),
             )?;
             tracing::debug!(name = name, opaque = ?opaque, "Called loading UI window");
             release_status_ptr(instance, status_ptr, store.as_context_mut())?;
@@ -574,7 +574,7 @@ pub(crate) fn inner_set_ui_component_layout(
             inner_memory(instance, store.as_context_mut())?.read(
                 store.as_context_mut(),
                 status_ptr as usize,
-                result.as_bytes_mut(),
+                result.as_mut_bytes(),
             )?;
             tracing::debug!(name = name, opaque = ?opaque, "Called setting UI component layout");
             release_byte_array(instance, id_ptr, store.as_context_mut())?;

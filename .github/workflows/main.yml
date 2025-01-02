@@ -39,6 +39,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y \
             libasound-dev \
+            libc++-dev \
+            libc++abi-dev \
             libgtk-3-dev \
             libglu1-mesa-dev \
             ninja-build \
@@ -188,12 +190,12 @@ jobs:
         uses: EmbarkStudios/cargo-deny-action@8371184bd11e21dcf8ac82ebf8c9c9f74ebf7268 # v2.0.1
         with:
           manifest-path: ./rust/Cargo.toml
-      - name: setup rust toolchain (stable and wasm32-wasi)
+      - name: setup rust toolchain (stable and wasm32-wasip1)
         uses: actions-rust-lang/setup-rust-toolchain@1fbea72663f6d4c03efaab13560c8a24cfd2a7cc # v1.9.0
         with:
           cache-workspaces: ${{ env.NANOEM_RUST_DIRECTORY }}
           components: rustfmt
-          target: wasm32-wasi
+          target: wasm32-wasip1
       - name: run rustfmt for check
         uses: actions-rust-lang/rustfmt@559aa3035a47390ba96088dffa783b5d26da9326 # v1.1.1
         with:
@@ -213,7 +215,7 @@ jobs:
           )
           for profile in "${profiles[@]}"; do
             for package in "${packages[@]}"; do
-              cargo build --profile "${profile}" --package "${package}" --target wasm32-wasi
+              cargo build --profile "${profile}" --package "${package}" --target wasm32-wasip1
             done
           done
           cargo check --profile release-lto
