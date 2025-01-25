@@ -31,7 +31,7 @@ jobs:
       GIT_CLONE_PROTECTION_ACTIVE: false
     steps:
       - name: checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: recursive
       # Assumes clang/cmake/libc++/libc++abi are installed on GitHub Actions Runner
@@ -39,6 +39,8 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y \
             libasound-dev \
+            libc++-dev \
+            libc++abi-dev \
             libgtk-3-dev \
             libglu1-mesa-dev \
             ninja-build \
@@ -93,7 +95,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: recursive
       - name: checkout ffmpeg
@@ -139,7 +141,7 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           fetch-depth: 0
           submodules: recursive
@@ -183,17 +185,17 @@ jobs:
         working-directory: ${{ env.NANOEM_RUST_DIRECTORY }}
     steps:
       - name: checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: setup cargo-deny
-        uses: EmbarkStudios/cargo-deny-action@8371184bd11e21dcf8ac82ebf8c9c9f74ebf7268 # v2.0.1
+        uses: EmbarkStudios/cargo-deny-action@e2f4ede4a4e60ea15ff31bc0647485d80c66cfba # v2.0.4
         with:
           manifest-path: ./rust/Cargo.toml
-      - name: setup rust toolchain (stable and wasm32-wasi)
+      - name: setup rust toolchain (stable and wasm32-wasip1)
         uses: actions-rust-lang/setup-rust-toolchain@1fbea72663f6d4c03efaab13560c8a24cfd2a7cc # v1.9.0
         with:
           cache-workspaces: ${{ env.NANOEM_RUST_DIRECTORY }}
           components: rustfmt
-          target: wasm32-wasi
+          target: wasm32-wasip1
       - name: run rustfmt for check
         uses: actions-rust-lang/rustfmt@559aa3035a47390ba96088dffa783b5d26da9326 # v1.1.1
         with:
@@ -213,7 +215,7 @@ jobs:
           )
           for profile in "${profiles[@]}"; do
             for package in "${packages[@]}"; do
-              cargo build --profile "${profile}" --package "${package}" --target wasm32-wasi
+              cargo build --profile "${profile}" --package "${package}" --target wasm32-wasip1
             done
           done
           cargo check --profile release-lto
@@ -229,11 +231,11 @@ jobs:
       CXX: clang++
     steps:
       - name: checkout
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: recursive
       - name: initialize CodeQL
-        uses: github/codeql-action/init@c36620d31ac7c881962c3d9dd939c40ec9434f2b # v3.26.12
+        uses: github/codeql-action/init@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3.28.1
         with:
           config-file: ${{ github.workspace }}/.github/codeql/codeql-config.yml
           languages: c-cpp
@@ -268,8 +270,8 @@ jobs:
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
       - name: autobuild
-        uses: github/codeql-action/autobuild@c36620d31ac7c881962c3d9dd939c40ec9434f2b # v3.26.12
+        uses: github/codeql-action/autobuild@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3.28.1
         env:
           CODEQL_EXTRACTOR_CPP_AUTOINSTALL_DEPENDENCIES: false
       - name: perform CodeQL Analysis
-        uses: github/codeql-action/analyze@c36620d31ac7c881962c3d9dd939c40ec9434f2b # v3.26.12
+        uses: github/codeql-action/analyze@b6a472f63d85b9c78a3ac5e89422239fc15e9b3c # v3.28.1
