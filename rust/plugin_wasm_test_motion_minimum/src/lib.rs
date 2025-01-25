@@ -67,7 +67,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIOCreate(
         .unwrap()
     );
     let plugin = Box::<nanoem_application_plugin_motion_io_t>::default();
-    std::mem::transmute(plugin)
+    Box::into_raw(plugin)
 }
 
 /// # Safety
@@ -337,7 +337,7 @@ pub unsafe extern "C" fn nanoemApplicationPluginMotionIODestroy(
         .unwrap()
     );
     if !plugin.is_null() {
-        let _: Box<nanoem_application_plugin_motion_io_t> = std::mem::transmute(plugin);
+        let _ = unsafe { Box::from_raw(plugin) };
     }
 }
 
