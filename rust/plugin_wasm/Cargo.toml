@@ -8,7 +8,7 @@ version.workspace = true
 [dependencies]
 anyhow = "1"
 nanoem-protobuf = { version = "35", path = "../protobuf" }
-notify = { version = "6", default-features = false, features = [
+notify = { version = "7", default-features = false, features = [
     "macos_kqueue",
 ] }
 parking_lot = "0.12"
