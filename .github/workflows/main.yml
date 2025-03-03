@@ -187,7 +187,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: setup cargo-deny
-        uses: EmbarkStudios/cargo-deny-action@0484eedcba649433ebd03d9b7c9c002746bbc4b9 # v2.0.6
+        uses: EmbarkStudios/cargo-deny-action@8d73959fce1cdc8989f23fdf03bec6ae6a6576ef # v2.0.7
         with:
           manifest-path: ./rust/Cargo.toml
       - name: setup rust toolchain (stable and wasm32-wasip1)
