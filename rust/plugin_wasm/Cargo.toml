@@ -26,7 +26,7 @@ zerocopy = "0.8"
 serde.workspace = true
 serde_json.workspace = true
 maplit = "1"
-rand = "0.8"
+rand = "0.9"
 pretty_assertions = "1"
 assert_matches = "1"
 async-trait = { version = "0.1" }
