@@ -227,9 +227,11 @@ nanoemUnicodeStringFactoryDestroyStringCallbackEMST(void *opaque, nanoem_unicode
     }
 }
 
-nanoem_unicode_string_factory_t *APIENTRY
-nanoemUnicodeStringFactoryCreateEMST(nanoem_status_t *status)
+NANOEM_DECL_API nanoem_unicode_string_factory_t *APIENTRY
+nanoemUnicodeStringFactoryCreateEMST(void)
 {
+    nanoem_status_t status_storage = NANOEM_STATUS_SUCCESS;
+    nanoem_status_t *status = &status_storage;
     nanoem_unicode_factory_opaque_data_emscripten_t *opaque;
     nanoem_unicode_string_factory_t *factory;
     opaque = (nanoem_unicode_factory_opaque_data_emscripten_t *) nanoem_calloc(1, sizeof(*opaque), status);
@@ -266,7 +268,7 @@ nanoemUnicodeStringFactoryCreateEMST(nanoem_status_t *status)
     return factory;
 }
 
-void APIENTRY
+NANOEM_DECL_API void APIENTRY
 nanoemUnicodeStringFactoryDestroyEMST(nanoem_unicode_string_factory_t *factory)
 {
     nanoem_unicode_factory_opaque_data_emscripten_t *opaque;
@@ -277,24 +279,24 @@ nanoemUnicodeStringFactoryDestroyEMST(nanoem_unicode_string_factory_t *factory)
     nanoemUnicodeStringFactoryDestroy(factory);
 }
 
-void APIENTRY
-nanoemUnicodeStringFactoryToUtf8OnStackEMST(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, nanoem_u8_t *buffer, size_t capacity, nanoem_status_t *status)
+NANOEM_DECL_API void APIENTRY
+nanoemUnicodeStringFactoryToUtf8OnStackEMST(nanoem_unicode_string_factory_t *factory, const nanoem_unicode_string_t *string, nanoem_rsize_t *length, char *buffer, size_t capacity, nanoem_status_t *status)
 {
     void *opaque = nanoemUnicodeStringFactoryGetOpaqueData(factory);
     const nanoem_unicode_string_emscripten_t *s = (const nanoem_unicode_string_emscripten_t *) string;
     nanoem_unicode_factory_opaque_data_emscripten_t *data = (nanoem_unicode_factory_opaque_data_emscripten_t *) opaque;
-    nanoemUnicodeStringFactoryToStringEMST(data->encoder.utf8, s, length, buffer, capacity, status);
+    nanoemUnicodeStringFactoryToStringEMST(data->encoder.utf8, s, length, (nanoem_u8_t *)buffer, capacity, status);
     buffer[*length >= capacity ? (capacity - 1) : *length] = '\0';
 }
 
-const wchar_t *APIENTRY
+NANOEM_DECL_API const wchar_t *APIENTRY
 nanoemUnicodeStringGetData(const nanoem_unicode_string_t *string)
 {
     const nanoem_unicode_string_emscripten_t *s = (const nanoem_unicode_string_emscripten_t *) string;
     return nanoem_is_not_null(s) ? s->value.c_str() : NULL;
 }
 
-nanoem_rsize_t APIENTRY
+NANOEM_DECL_API nanoem_rsize_t APIENTRY
 nanoemUnicodeStringGetLength(const nanoem_unicode_string_t *string)
 {
     const nanoem_unicode_string_emscripten_t *s = (const nanoem_unicode_string_emscripten_t *) string;
