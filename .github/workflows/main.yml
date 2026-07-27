@@ -274,4 +274,4 @@ jobs:
         env:
           CODEQL_EXTRACTOR_CPP_AUTOINSTALL_DEPENDENCIES: false
       - name: perform CodeQL Analysis
-        uses: github/codeql-action/analyze@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3.28.10
+        uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
