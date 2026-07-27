@@ -270,7 +270,7 @@ jobs:
           NANOEM_TARGET_CONFIGURATIONS: "debug;release"
           NANOEM_TARGET_COMPILER: clang
       - name: autobuild
-        uses: github/codeql-action/autobuild@b56ba49b26e50535fa1e7f7db0f4f7b4bf65d80d # v3.28.10
+        uses: github/codeql-action/autobuild@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         env:
           CODEQL_EXTRACTOR_CPP_AUTOINSTALL_DEPENDENCIES: false
       - name: perform CodeQL Analysis
