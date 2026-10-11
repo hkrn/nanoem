@@ -9,6 +9,8 @@
 #import "MainWindow.h"
 
 #include "CocoaThreadedApplicationService.h"
+#include "emapp/emapp.h"
+#include "emapp/private/CommonInclude.h"
 
 @implementation ApplicationDelegate
 
@@ -33,6 +35,35 @@
     NSApplication *app = [NSApplication sharedApplication];
     [app stop:app];
     nanoem::macos::CocoaThreadedApplicationService::sendDummyEvent(app, false);
+}
+
+/* Handle files opened from Finder (double click / "Open With") ourselves instead of letting
+   NSDocumentController instantiate Document without a project holder, which always failed with
+   "nanoem cannot open files in the ... format".
+   - .nanoem packages go through the same path as File > Open Project
+   - everything else (nma/nmm/pmm projects, PMX/PMD models, VMD/VPD, accessories...) goes through
+     the same path as drag and drop */
+- (void)application:(NSApplication *)application openURLs:(NSArray<NSURL *> *)urls
+{
+    BX_UNUSED_1(application);
+    nanoem::ThreadedApplicationClient *client = m_window->client();
+    for (NSURL *url in urls) {
+        if (!url.isFileURL) {
+            continue;
+        }
+        NSString *filePath = url.path;
+        const nanoem::URI &fileURI = nanoem::URI::createFromFilePath(filePath.UTF8String);
+        if ([url.pathExtension caseInsensitiveCompare:@"nanoem"] == NSOrderedSame) {
+            client->sendLoadFileMessage(fileURI, nanoem::IFileManager::kDialogTypeOpenProject);
+            m_window->setTitle(filePath.lastPathComponent);
+        }
+        else {
+            client->sendDropFileMessage(fileURI);
+            if (nanoem::Project::isLoadableExtension(fileURI)) {
+                m_window->setTitle(filePath.lastPathComponent);
+            }
+        }
+    }
 }
 
 @end
