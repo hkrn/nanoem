@@ -11,7 +11,7 @@ nanoem-protobuf = { version = "35", path = "../protobuf" }
 notify = { version = "6", default-features = false, features = [
     "macos_kqueue",
 ] }
-parking_lot = "0.12"
+parking_lot = "0.13"
 tracing = { version = "0.1", default-features = false, features = ["std"] }
 tracing-subscriber = "0.3"
 wasmtime = { version = "28", default-features = false, features = [
